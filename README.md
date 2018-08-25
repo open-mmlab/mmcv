@@ -1,2 +1,2 @@
-# mm-cvf
+# mmcv
 Open MMLab Computer Vision Foundation
