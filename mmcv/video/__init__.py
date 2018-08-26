@@ -15,3 +15,4 @@ else:
 
 from .io import *
 from .processing import *
+from .optflow import *
