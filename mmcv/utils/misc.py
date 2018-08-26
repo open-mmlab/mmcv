@@ -104,15 +104,7 @@ def concat_list(in_list):
     Returns:
         list: The concatenated flat list.
     """
-    # if len(in_list) == 1:
-    #     return in_list[0]
-    # else:
-    #     return list(itertools.chain(*in_list))
     return list(itertools.chain(*in_list))
-    # out_list = []
-    # for sub_list in in_list:
-    #     out_list.extend(sub_list)
-    # return out_list
 
 
 def check_prerequisites(
