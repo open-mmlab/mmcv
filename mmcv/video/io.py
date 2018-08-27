@@ -50,12 +50,12 @@ class VideoReader(object):
     cache.
 
     :Example:
-    >>> import cvbase as cvb
-    >>> v = cvb.VideoReader('sample.mp4')
+    >>> import mmcv
+    >>> v = mmcv.VideoReader('sample.mp4')
     >>> len(v)  # get the total frame number with `len()`
     120
     >>> for img in v:  # v is iterable
-    >>>     cvb.show_img(img)
+    >>>     mmcv.imshow(img)
     >>> v[5]  # get the 6th frame
     """
 

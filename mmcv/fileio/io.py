@@ -25,7 +25,7 @@ def load(file, file_format=None, **kwargs):
     Returns:
         The content from the file.
     """
-    if file_format is None and isinstance(file, str):
+    if file_format is None and is_str(file):
         file_format = file.split('.')[-1]
     if file_format not in file_processors:
         raise TypeError('Unsupported format: {}'.format(file_format))

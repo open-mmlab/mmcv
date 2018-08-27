@@ -13,16 +13,16 @@ class Timer(object):
 
     :Example:
     >>> import time
-    >>> import cvbase as cvb
-    >>> with cvb.Timer():
+    >>> import mmcv
+    >>> with mmcv.Timer():
     >>>     # simulate a code block that will run for 1s
     >>>     time.sleep(1)
     1.000
-    >>> with cvb.Timer(print_tmpl='it takes {:.1f} seconds'):
+    >>> with mmcv.Timer(print_tmpl='it takes {:.1f} seconds'):
     >>>     # simulate a code block that will run for 1s
     >>>     time.sleep(1)
     it takes 1.0 seconds
-    >>> timer = cvb.Timer()
+    >>> timer = mmcv.Timer()
     >>> time.sleep(0.5)
     >>> print(timer.since_start())
     0.500
@@ -95,11 +95,11 @@ def check_time(timer_id):
 
     :Example:
     >>> import time
-    >>> import cvbase as cvb
+    >>> import mmcv
     >>> for i in range(1, 6):
     >>>     # simulate a code block
     >>>     time.sleep(i)
-    >>>     cvb.check_time('task1')
+    >>>     mmcv.check_time('task1')
     2.000
     3.000
     4.000
