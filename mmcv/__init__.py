@@ -1,3 +1,4 @@
+from .arraymisc import *
 from .utils import *
 from .fileio import *
 from .opencv_info import *

@@ -8,39 +8,67 @@ import pytest
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 
-def test_read_flow():
-    flow = mmcv.read_flow(osp.join(osp.dirname(__file__), 'data/optflow.flo'))
-    assert flow.ndim == 3 and flow.shape[-1] == 2
-    flow_same = mmcv.read_flow(flow)
+def test_flowread():
+    flow_shape = (60, 80, 2)
+
+    # read .flo file
+    flow = mmcv.flowread(osp.join(osp.dirname(__file__), 'data/optflow.flo'))
+    assert flow.shape == flow_shape
+
+    # pseudo read
+    flow_same = mmcv.flowread(flow)
     assert_array_equal(flow, flow_same)
-    flow = mmcv.read_flow(
-        osp.join(osp.dirname(__file__), 'data/optflow.jpg'),
+
+    # read quantized flow concatenated vertically
+    flow = mmcv.flowread(
+        osp.join(osp.dirname(__file__), 'data/optflow_concat0.jpg'),
         quantize=True,
         denorm=True)
-    assert flow.ndim == 3 and flow.shape[-1] == 2
-    with pytest.raises(IOError):
-        mmcv.read_flow(osp.join(osp.dirname(__file__), 'data/color.jpg'))
-    with pytest.raises(ValueError):
-        mmcv.read_flow(np.zeros((100, 100, 1)))
+    assert flow.shape == flow_shape
+
+    # read quantized flow concatenated horizontally
+    flow = mmcv.flowread(
+        osp.join(osp.dirname(__file__), 'data/optflow_concat1.jpg'),
+        quantize=True,
+        concat_axis=1,
+        denorm=True)
+    assert flow.shape == flow_shape
+
+    # test exceptions
+    notflow_file = osp.join(osp.dirname(__file__), 'data/color.jpg')
     with pytest.raises(TypeError):
-        mmcv.read_flow(1)
+        mmcv.flowread(1)
+    with pytest.raises(IOError):
+        mmcv.flowread(notflow_file)
+    with pytest.raises(IOError):
+        mmcv.flowread(notflow_file, quantize=True)
+    with pytest.raises(ValueError):
+        mmcv.flowread(np.zeros((100, 100, 1)))
 
 
-def test_write_flow():
+def test_flowwrite():
     flow = np.random.rand(100, 100, 2).astype(np.float32)
+
     # write to a .flo file
     _, filename = tempfile.mkstemp()
-    mmcv.write_flow(flow, filename)
-    flow_from_file = mmcv.read_flow(filename)
+    mmcv.flowwrite(flow, filename)
+    flow_from_file = mmcv.flowread(filename)
     assert_array_equal(flow, flow_from_file)
     os.remove(filename)
+
     # write to two .jpg files
-    tmp_dir = tempfile.gettempdir()
-    mmcv.write_flow(flow, osp.join(tmp_dir, 'test_flow.jpg'), quantize=True)
-    assert osp.isfile(osp.join(tmp_dir, 'test_flow_dx.jpg'))
-    assert osp.isfile(osp.join(tmp_dir, 'test_flow_dy.jpg'))
-    os.remove(osp.join(tmp_dir, 'test_flow_dx.jpg'))
-    os.remove(osp.join(tmp_dir, 'test_flow_dy.jpg'))
+    tmp_filename = osp.join(tempfile.gettempdir(), 'mmcv_test_flow.jpg')
+    for concat_axis in range(2):
+        mmcv.flowwrite(
+            flow, tmp_filename, quantize=True, concat_axis=concat_axis)
+        shape = (200, 100) if concat_axis == 0 else (100, 200)
+        assert osp.isfile(tmp_filename)
+        assert mmcv.imread(tmp_filename, flag='unchanged').shape == shape
+        os.remove(tmp_filename)
+
+    # test exceptions
+    with pytest.raises(AssertionError):
+        mmcv.flowwrite(flow, tmp_filename, quantize=True, concat_axis=2)
 
 
 def test_quantize_flow():
@@ -53,7 +81,7 @@ def test_quantize_flow():
             for k in range(ref.shape[2]):
                 val = flow[i, j, k] + max_val
                 val = min(max(val, 0), 2 * max_val)
-                ref[i, j, k] = np.round(255 * val / (2 * max_val))
+                ref[i, j, k] = min(np.floor(255 * val / (2 * max_val)), 254)
     assert_array_equal(dx, ref[..., 0])
     assert_array_equal(dy, ref[..., 1])
     max_val = 0.5
@@ -65,7 +93,7 @@ def test_quantize_flow():
                 scale = flow.shape[1] if k == 0 else flow.shape[0]
                 val = flow[i, j, k] / scale + max_val
                 val = min(max(val, 0), 2 * max_val)
-                ref[i, j, k] = np.round(255 * val / (2 * max_val))
+                ref[i, j, k] = min(np.floor(255 * val / (2 * max_val)), 254)
     assert_array_equal(dx, ref[..., 0])
     assert_array_equal(dy, ref[..., 1])
 
@@ -78,8 +106,8 @@ def test_dequantize_flow():
     ref = np.zeros_like(flow, dtype=np.float32)
     for i in range(ref.shape[0]):
         for j in range(ref.shape[1]):
-            ref[i, j, 0] = float(dx[i, j]) * 2 * max_val / 255 - max_val
-            ref[i, j, 1] = float(dy[i, j]) * 2 * max_val / 255 - max_val
+            ref[i, j, 0] = float(dx[i, j] + 0.5) * 2 * max_val / 255 - max_val
+            ref[i, j, 1] = float(dy[i, j] + 0.5) * 2 * max_val / 255 - max_val
     assert_array_almost_equal(flow, ref)
     max_val = 0.5
     flow = mmcv.dequantize_flow(dx, dy, max_val=max_val, denorm=True)
@@ -87,8 +115,10 @@ def test_dequantize_flow():
     ref = np.zeros_like(flow, dtype=np.float32)
     for i in range(ref.shape[0]):
         for j in range(ref.shape[1]):
-            ref[i, j, 0] = (float(dx[i, j]) * 2 * max_val / 255 - max_val) * w
-            ref[i, j, 1] = (float(dy[i, j]) * 2 * max_val / 255 - max_val) * h
+            ref[i, j,
+                0] = (float(dx[i, j] + 0.5) * 2 * max_val / 255 - max_val) * w
+            ref[i, j,
+                1] = (float(dy[i, j] + 0.5) * 2 * max_val / 255 - max_val) * h
     assert_array_almost_equal(flow, ref)
 
 
