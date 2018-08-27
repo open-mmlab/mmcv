@@ -1,5 +1,5 @@
 from .utils import *
-from .io import *
+from .fileio import *
 from .opencv_info import *
 from .image import *
 from .video import *
