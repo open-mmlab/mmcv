@@ -2,12 +2,12 @@ from __future__ import division
 
 import numpy as np
 
-from .image import show_img
+from .image import imshow
 from mmcv.image import rgb2bgr
-from mmcv.video import read_flow
+from mmcv.video import flowread
 
 
-def show_flow(flow, win_name='', wait_time=0):
+def flowshow(flow, win_name='', wait_time=0):
     """Show optical flow.
 
     Args:
@@ -15,9 +15,9 @@ def show_flow(flow, win_name='', wait_time=0):
         win_name (str): The window name.
         wait_time (int): Value of waitKey param.
     """
-    flow = read_flow(flow)
+    flow = flowread(flow)
     flow_img = flow2rgb(flow)
-    show_img(rgb2bgr(flow_img), win_name, wait_time)
+    imshow(rgb2bgr(flow_img), win_name, wait_time)
 
 
 def flow2rgb(flow, color_wheel=None, unknown_thr=1e6):
