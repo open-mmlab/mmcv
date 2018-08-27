@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from mmcv.image import read_img, write_img
+from mmcv.image import imread, imwrite
 from .color import color_val
 
 
@@ -13,7 +13,7 @@ def show_img(img, win_name='', wait_time=0):
         win_name (str): The window name.
         wait_time (int): Value of waitKey param.
     """
-    cv2.imshow(win_name, read_img(img))
+    cv2.imshow(win_name, imread(img))
     cv2.waitKey(wait_time)
 
 
@@ -39,7 +39,7 @@ def draw_bboxes(img,
         wait_time (int): Value of waitKey param.
         out_file (str, optional): The filename to write the image.
     """
-    img = read_img(img)
+    img = imread(img)
 
     if isinstance(bboxes, np.ndarray):
         bboxes = [bboxes]
@@ -63,4 +63,4 @@ def draw_bboxes(img,
     if show:
         show_img(img, win_name, wait_time)
     if out_file is not None:
-        write_img(img, out_file)
+        imwrite(img, out_file)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from mmcv.image import read_img, write_img
+from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
 
 
@@ -52,8 +52,8 @@ def read_flow(flow_or_path, quantize=False, *args, **kwargs):
             flow = np.fromfile(f, np.float32, w * h * 2).reshape((h, w, 2))
     else:
         dx_filename, dy_filename = _pair_name(flow_or_path)
-        dx = read_img(dx_filename, flag='unchanged')
-        dy = read_img(dy_filename, flag='unchanged')
+        dx = imread(dx_filename, flag='unchanged')
+        dy = imread(dy_filename, flag='unchanged')
         flow = dequantize_flow(dx, dy, *args, **kwargs)
 
     return flow.astype(np.float32)
@@ -79,8 +79,8 @@ def write_flow(flow, filename, quantize=False, *args, **kwargs):
     else:
         dx, dy = quantize_flow(flow, *args, **kwargs)
         dx_filename, dy_filename = _pair_name(filename)
-        write_img(dx, dx_filename)
-        write_img(dy, dy_filename)
+        imwrite(dx, dx_filename)
+        imwrite(dy, dy_filename)
 
 
 def quantize_flow(flow, max_val=0.02, norm=True):

@@ -19,8 +19,10 @@ imread_flags = {
     'unchanged': IMREAD_UNCHANGED
 }
 
+__all__ = ['imread', 'imwrite', 'imfrombytes']
 
-def read_img(img_or_path, flag='color'):
+
+def imread(img_or_path, flag='color'):
     """Read an image.
 
     Args:
@@ -44,12 +46,12 @@ def read_img(img_or_path, flag='color'):
         raise TypeError('"img" must be a numpy array or a filename')
 
 
-def img_from_bytes(content, flag='color'):
+def imfrombytes(content, flag='color'):
     """Read an image from bytes.
 
     Args:
         content (bytes): Image bytes got from files or other streams.
-        flag (str): Same as :func:`read_img`.
+        flag (str): Same as :func:`imread`.
 
     Returns:
         ndarray: Loaded image array.
@@ -60,11 +62,11 @@ def img_from_bytes(content, flag='color'):
     return img
 
 
-def write_img(img, file_path, params=None, auto_mkdir=True):
+def imwrite(img, file_path, params=None, auto_mkdir=True):
     """Write image to file
 
     Args:
-        img (ndarray): Image to be written to file.
+        img (ndarray): Image array to be written.
         file_path (str): Image file path.
         params (None or list): Same as opencv's :func:`imwrite` interface.
         auto_mkdir (bool): If the parrent folder of `file_path` does not exist,
