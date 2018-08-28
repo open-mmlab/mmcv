@@ -108,11 +108,14 @@ class Runner(object):
         Args:
             optimizer (dict or :obj:`~torch.optim.Optimizer`): Either an
                 optimizer object or a dict used for constructing the optimizer.
-                An example of the dict: ``{'algorithm': 'SGD', 'lr': 0.02,
-                'momentum': 0.9, 'weight_decay': 0.0001}``.
 
         Returns:
             :obj:`~torch.optim.Optimizer`: An optimizer object.
+
+        Examples:
+            >>> optimizer = dict(type='SGD', lr=0.01, momentum=0.9)
+            >>> type(runner.init_optimizer(optimizer))
+            <class 'torch.optim.sgd.SGD'>
         """
         if isinstance(optimizer, dict):
             optimizer = obj_from_dict(
