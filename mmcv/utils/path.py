@@ -33,11 +33,20 @@ def check_file_exist(filename, msg_tmpl='file "{}" does not exist'):
 
 
 def mkdir_or_exist(dir_name, mode=0o777):
+    if dir_name == '':
+        return
+    dir_name = osp.expanduser(dir_name)
     if six.PY3:
         os.makedirs(dir_name, mode=mode, exist_ok=True)
     else:
         if not osp.isdir(dir_name):
             os.makedirs(dir_name, mode=0o777)
+
+
+def symlink(src, dst, overwrite=True, **kwargs):
+    if os.path.lexists(dst) and overwrite:
+        os.remove(dst)
+    os.symlink(src, dst, **kwargs)
 
 
 def _scandir_py35(dir_path, suffix=None):

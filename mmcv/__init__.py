@@ -5,4 +5,4 @@ from .opencv_info import *
 from .image import *
 from .video import *
 from .visualization import *
-from .version import *
+from .version import __version__
