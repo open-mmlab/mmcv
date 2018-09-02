@@ -178,6 +178,36 @@ class TestImage(object):
         resized_img, scale = mmcv.limit_size(img, 200, True)
         assert resized_img.shape == (150, 200, 3) and scale == 0.5
 
+    def test_imflip(self):
+        # test color image
+        img = np.random.rand(80, 60, 3)
+        h, w, c = img.shape
+        hf_img = mmcv.imflip(img)
+        assert hf_img.shape == (h, w, c)
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert hf_img[i, j, k] == img[i, w - 1 - j, k]
+        hf_img = mmcv.imflip(img, direction='vertical')
+        assert hf_img.shape == (h, w, c)
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert hf_img[i, j, k] == self.img[h - 1 - i, j, k]
+        # test grayscale image
+        img = np.random.rand(80, 60)
+        h, w, c = img.shape
+        hf_img = mmcv.imflip(img)
+        assert hf_img.shape == (h, w, c)
+        for i in range(h):
+            for j in range(w):
+                assert hf_img[i, j, k] == img[i, w - 1 - j]
+        hf_img = mmcv.imflip(img, direction='vertical')
+        assert hf_img.shape == (h, w, c)
+        for i in range(h):
+            for j in range(w):
+                assert hf_img[i, j, k] == self.img[h - 1 - i, j]
+
     def test_imcrop(self):
         # yapf: disable
         bboxes = np.array([[100, 100, 199, 199],  # center
@@ -245,6 +275,17 @@ class TestImage(object):
             mmcv.impad(img, (5, 5), 0)
         with pytest.raises(AssertionError):
             mmcv.impad(img, (5, 5), [0, 1])
+
+    def test_impad_to_multiple(self):
+        img = np.random.rand(11, 14, 3).astype(np.float32)
+        padded_img = mmcv.impad_to_multiple(img, 4)
+        assert padded_img.shape == (12, 16, 3)
+        img = np.random.rand(20, 12).astype(np.float32)
+        padded_img = mmcv.impad_to_multiple(img, 5)
+        assert padded_img.shape == (20, 15)
+        img = np.random.rand(20, 12).astype(np.float32)
+        padded_img = mmcv.impad_to_multiple(img, 2)
+        assert padded_img.shape == (20, 12)
 
     def test_imrotate(self):
         img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)

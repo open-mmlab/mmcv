@@ -1,5 +1,6 @@
 import functools
 import logging
+import sys
 import time
 from getpass import getuser
 from socket import gethostname
@@ -45,7 +46,7 @@ def add_file_handler(logger, filename=None, mode='w', level=logging.INFO):
     return logger
 
 
-def obj_from_dict(info, module, default_args=None):
+def obj_from_dict(info, parrent=None, default_args=None):
     """Initialize an object from dict.
 
     The dict must contain the key "type", which indicates the object type, it
@@ -60,14 +61,17 @@ def obj_from_dict(info, module, default_args=None):
             object.
 
     Returns:
-
+        any type: Object built from the dict.
     """
     assert isinstance(info, dict) and 'type' in info
     assert isinstance(default_args, dict) or default_args is None
     args = info.copy()
     obj_type = args.pop('type')
     if mmcv.is_str(obj_type):
-        obj_type = getattr(module, obj_type)
+        if parrent is not None:
+            obj_type = getattr(parrent, obj_type)
+        else:
+            obj_type = sys.modules[obj_type]
     elif not isinstance(obj_type, type):
         raise TypeError('type must be a str or valid type, but got {}'.format(
             type(obj_type)))

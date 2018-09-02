@@ -145,3 +145,17 @@ class PaviLoggerHook(LoggerHook):
         log_outs.pop('time', None)
         log_outs.pop('data_time', None)
         self.pavi.log(runner.mode, runner.iter, log_outs)
+
+
+def pavi_hook_connect(runner, cfg_filename, cfg_text):
+    for hook in runner.hooks:
+        if isinstance(hook, PaviLoggerHook):
+            hook.connect(
+                runner.model_name,
+                runner.work_dir,
+                info={
+                    'session_file': cfg_filename,
+                    'session_text': cfg_text
+                },
+                logger=runner.logger)
+            break
