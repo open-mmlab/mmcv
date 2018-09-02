@@ -179,34 +179,36 @@ class TestImage(object):
         assert resized_img.shape == (150, 200, 3) and scale == 0.5
 
     def test_imflip(self):
-        # test color image
+        # test horizontal flip (color image)
         img = np.random.rand(80, 60, 3)
         h, w, c = img.shape
-        hf_img = mmcv.imflip(img)
-        assert hf_img.shape == (h, w, c)
+        flipped_img = mmcv.imflip(img)
+        assert flipped_img.shape == img.shape
         for i in range(h):
             for j in range(w):
                 for k in range(c):
-                    assert hf_img[i, j, k] == img[i, w - 1 - j, k]
-        hf_img = mmcv.imflip(img, direction='vertical')
-        assert hf_img.shape == (h, w, c)
+                    assert flipped_img[i, j, k] == img[i, w - 1 - j, k]
+        # test vertical flip (color image)
+        flipped_img = mmcv.imflip(img, direction='vertical')
+        assert flipped_img.shape == img.shape
         for i in range(h):
             for j in range(w):
                 for k in range(c):
-                    assert hf_img[i, j, k] == self.img[h - 1 - i, j, k]
-        # test grayscale image
+                    assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+        # test horizontal flip (grayscale image)
         img = np.random.rand(80, 60)
-        h, w, c = img.shape
-        hf_img = mmcv.imflip(img)
-        assert hf_img.shape == (h, w, c)
+        h, w = img.shape
+        flipped_img = mmcv.imflip(img)
+        assert flipped_img.shape == img.shape
         for i in range(h):
             for j in range(w):
-                assert hf_img[i, j, k] == img[i, w - 1 - j]
-        hf_img = mmcv.imflip(img, direction='vertical')
-        assert hf_img.shape == (h, w, c)
+                assert flipped_img[i, j] == img[i, w - 1 - j]
+        # test vertical flip (grayscale image)
+        flipped_img = mmcv.imflip(img, direction='vertical')
+        assert flipped_img.shape == img.shape
         for i in range(h):
             for j in range(w):
-                assert hf_img[i, j, k] == self.img[h - 1 - i, j]
+                assert flipped_img[i, j] == img[h - 1 - i, j]
 
     def test_imcrop(self):
         # yapf: disable
