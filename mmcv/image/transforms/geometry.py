@@ -3,7 +3,7 @@ from __future__ import division
 import cv2
 import numpy as np
 
-__all__ = ['imflip', 'imrotate', 'imcrop', 'impad', 'impad_to_multiple']
+__all__ = ['imflip', 'imrotate', 'imcrop', 'impad', 'impad_to_multiple', 'bbox_flip']
 
 
 def imflip(img, direction='horizontal'):
@@ -109,6 +109,20 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
         return bbox_clip(scaled_bboxes, clip_shape)
     else:
         return scaled_bboxes
+
+
+def bbox_flip(bboxes, img_shape):
+    """Flip bboxes horizontally
+    Args:
+        bboxes(ndarray): shape (..., 4*k)
+        img_shape(tuple): (height, width)
+    """
+    assert bboxes.shape[-1] % 4 == 0
+    w = img_shape[1]
+    flipped = bboxes.copy()
+    flipped[..., 0::4] = w - bboxes[..., 2::4] - 1
+    flipped[..., 2::4] = w - bboxes[..., 0::4] - 1
+    return flipped
 
 
 def imcrop(img, bboxes, scale_ratio=1.0, pad_fill=None):

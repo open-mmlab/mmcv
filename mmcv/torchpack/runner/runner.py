@@ -201,7 +201,7 @@ class Runner(object):
         else:
             meta.update(epoch=self.epoch + 1, iter=self.iter)
 
-        filename = osp.join(out_dir, filename_tmpl.format(self.epoch))
+        filename = osp.join(out_dir, filename_tmpl.format(self.epoch + 1))
         linkname = osp.join(out_dir, 'latest.pth')
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filename, optimizer=optimizer, meta=meta)
@@ -213,7 +213,6 @@ class Runner(object):
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(data_loader)
         self.call_hook('before_train_epoch')
-
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
@@ -347,7 +346,16 @@ class Runner(object):
         if checkpoint_config is None:
             checkpoint_config = {}
         self.register_lr_hooks(lr_config)
-        self.register_hook(OptimizerStepperHook(**grad_clip_config))
+ 
+        if isinstance(grad_clip_config, Hook):
+            self.register_hook(grad_clip_config)
+        elif isinstance(grad_clip_config, dict):
+            self.register_hook(OptimizerStepperHook(**grad_clip_config))
+        else:
+            raise TypeError(
+                "OptimizerStepperHook should be a Hook object or dict, not {}".
+                format(type(grad_clip_config)))
+
         self.register_hook(CheckpointSaverHook(**checkpoint_config))
         self.register_hook(IterTimerHook())
         if log_config is not None:
