@@ -1,7 +1,7 @@
 import os.path as osp
 
 import pytest
-from mmcv import Config
+from mmcv import Config, FileNotFoundError
 
 
 def test_empty():
@@ -20,8 +20,10 @@ def test_fromfile():
         assert cfg.filename == cfg_file
         assert cfg.text == open(cfg_file, 'r').read()
 
+    with pytest.raises(FileNotFoundError):
+        Config.fromfile('no_such_file.py')
     with pytest.raises(ValueError):
-        Config.fromfile('a/b/c.d.py')
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
 
 
 def test_dict():
@@ -49,12 +51,18 @@ def test_dict():
         assert cfg.item2.a == 0
         assert cfg.item3 == cfg_dict['item3']
         assert cfg.item4 == cfg_dict['item4']
+        with pytest.raises(AttributeError):
+            cfg.not_exist
         # field in cfg, cfg[field], cfg.get()
         for name in ['item1', 'item2', 'item3', 'item4']:
             assert name in cfg
             assert cfg[name] == cfg_dict[name]
             assert cfg.get(name) == cfg_dict[name]
+            assert cfg.get('not_exist') is None
             assert cfg.get('not_exist', 0) == 0
+            with pytest.raises(KeyError):
+                cfg['not_exist']
+        assert 'item1' in cfg
         assert 'not_exist' not in cfg
         # cfg.update()
         cfg.update(dict(item1=0))

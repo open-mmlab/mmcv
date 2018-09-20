@@ -6,6 +6,26 @@ from importlib import import_module
 
 from addict import Dict
 
+from .path import check_file_exist
+
+
+class ConfigDict(Dict):
+
+    def __missing__(self, name):
+        raise KeyError(name)
+
+    def __getattr__(self, name):
+        try:
+            value = super(ConfigDict, self).__getattr__(name)
+        except KeyError:
+            ex = AttributeError("'{}' object has no attribute '{}'".format(
+                self.__class__.__name__, name))
+        except Exception as e:
+            ex = e
+        else:
+            return value
+        raise ex
+
 
 def add_args(parser, cfg, prefix=''):
     for k, v in cfg.items():
@@ -55,6 +75,7 @@ class Config(object):
     @staticmethod
     def fromfile(filename):
         filename = osp.abspath(osp.expanduser(filename))
+        check_file_exist(filename)
         if filename.endswith('.py'):
             sys.path.append(osp.dirname(filename))
             module_name = osp.basename(filename)[:-3]
@@ -93,7 +114,7 @@ class Config(object):
             raise TypeError('cfg_dict must be a dict, but got {}'.format(
                 type(cfg_dict)))
 
-        super(Config, self).__setattr__('_cfg_dict', Dict(cfg_dict))
+        super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
         if filename:
             with open(filename, 'r') as f:
@@ -110,7 +131,7 @@ class Config(object):
         return self._text
 
     def __repr__(self):
-        return 'Config [path: {}]: {}'.format(self.filename,
+        return 'Config (path: {}): {}'.format(self.filename,
                                               self._cfg_dict.__repr__())
 
     def __len__(self):
@@ -124,12 +145,12 @@ class Config(object):
 
     def __setattr__(self, name, value):
         if isinstance(value, dict):
-            value = Dict(value)
+            value = ConfigDict(value)
         self._cfg_dict.__setattr__(name, value)
 
     def __setitem__(self, name, value):
         if isinstance(value, dict):
-            value = Dict(value)
+            value = ConfigDict(value)
         self._cfg_dict.__setitem__(name, value)
 
     def __iter__(self):
