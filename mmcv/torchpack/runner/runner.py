@@ -182,12 +182,12 @@ class Runner(object):
         if not inserted:
             self._hooks.insert(0, hook)
 
-    def build_hook(self, hook, args):
-        assert issubclass(hook, Hook), '"hook" must be a Hook object'
-        if isinstance(args, dict):
-            self.register_hook(hook(**args))
-        elif isinstance(args, Hook):
-            self.register_hook(args)
+    def build_hook(self, args, hook_type=None):
+        if isinstance(args, Hook):
+            return args
+        elif isinstance(args, dict):
+            assert issubclass(hook_type, Hook)
+            return hook_type(**args)
         else:
             raise TypeError('"args" must be either a Hook object'
                             ' or dict, not {}'.format(type(args)))
@@ -356,8 +356,8 @@ class Runner(object):
         if checkpoint_config is None:
             checkpoint_config = {}
         self.register_lr_hooks(lr_config)
-        self.build_hook(OptimizerHook, optimizer_config)
-        self.build_hook(CheckpointHook, checkpoint_config)
+        self.register_hook(self.build_hook(optimizer_config, OptimizerHook))
+        self.register_hook(self.build_hook(checkpoint_config, CheckpointHook))
         self.register_hook(IterTimerHook())
         if log_config is not None:
             self.register_logger_hooks(log_config)
