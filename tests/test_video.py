@@ -58,11 +58,11 @@ class TestVideo(object):
         v = mmcv.VideoReader(self.video_path)
         img = v.read()
         assert int(round(img.mean())) == 94
-        img = v.get_frame(64)
+        img = v.get_frame(63)
         assert int(round(img.mean())) == 94
-        img = v[65]
-        assert int(round(img.mean())) == 205
         img = v[64]
+        assert int(round(img.mean())) == 205
+        img = v[63]
         assert int(round(img.mean())) == 94
         img = v.read()
         assert int(round(img.mean())) == 205
@@ -82,7 +82,7 @@ class TestVideo(object):
         for _ in range(10):
             v.read()
         assert v.position == 10
-        v.get_frame(100)
+        v.get_frame(99)
         assert v.position == 100
 
     def test_iterator(self):
