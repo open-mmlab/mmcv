@@ -2,7 +2,7 @@ from .hook import Hook
 from ..utils import master_only
 
 
-class CheckpointSaverHook(Hook):
+class CheckpointHook(Hook):
 
     def __init__(self,
                  interval=-1,
