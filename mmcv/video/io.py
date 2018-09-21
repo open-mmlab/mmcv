@@ -146,7 +146,7 @@ class VideoReader(object):
                     self._set_real_position(self._position)
                 ret, img = self._vcap.read()
                 if ret:
-                    self._cache.put(pos, img)
+                    self._cache.put(self._position, img)
         else:
             ret, img = self._vcap.read()
         if ret:
