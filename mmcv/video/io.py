@@ -136,9 +136,9 @@ class VideoReader(object):
         Returns:
             ndarray or None: Return the frame if successful, otherwise None.
         """
-        pos = self._position + 1
+        # pos = self._position
         if self._cache:
-            img = self._cache.get(pos)
+            img = self._cache.get(self._position)
             if img is not None:
                 ret = True
             else:
@@ -150,34 +150,34 @@ class VideoReader(object):
         else:
             ret, img = self._vcap.read()
         if ret:
-            self._position = pos
+            self._position += 1
         return img
 
     def get_frame(self, frame_id):
         """Get frame by index.
 
         Args:
-            frame_id (int): Index of the expected frame, 1-based.
+            frame_id (int): Index of the expected frame, 0-based.
 
         Returns:
             ndarray or None: Return the frame if successful, otherwise None.
         """
-        if frame_id <= 0 or frame_id > self._frame_cnt:
-            raise ValueError('"frame_id" must be between 1 and {}'.format(
+        if frame_id < 0 or frame_id >= self._frame_cnt:
+            raise ValueError('"frame_id" must be between 0 and {}'.format(
                 self._frame_cnt))
-        if frame_id == self._position + 1:
+        if frame_id == self._position:
             return self.read()
         if self._cache:
             img = self._cache.get(frame_id)
             if img is not None:
-                self._position = frame_id
+                self._position = frame_id + 1
                 return img
-        self._set_real_position(frame_id - 1)
+        self._set_real_position(frame_id)
         ret, img = self._vcap.read()
         if ret:
-            self._position += 1
             if self._cache:
                 self._cache.put(self._position, img)
+            self._position += 1            
         return img
 
     def current_frame(self):
@@ -189,7 +189,7 @@ class VideoReader(object):
         """
         if self._position == 0:
             return None
-        return self._cache.get(self._position)
+        return self._cache.get(self._position - 1)
 
     def cvt2frames(self,
                    frame_dir,
