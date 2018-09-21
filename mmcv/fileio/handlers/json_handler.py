@@ -1,9 +1,9 @@
 import json
 
-from .base import BaseFileProcessor
+from .base import BaseFileHandler
 
 
-class JsonProcessor(BaseFileProcessor):
+class JsonHandler(BaseFileHandler):
 
     @staticmethod
     def load_from_path(filepath):

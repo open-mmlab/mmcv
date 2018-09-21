@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseFileProcessor(object):
+class BaseFileHandler(object):
 
     __metaclass__ = ABCMeta
 

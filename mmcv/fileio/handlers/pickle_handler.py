@@ -1,9 +1,9 @@
 from six.moves import cPickle as pickle
 
-from .base import BaseFileProcessor
+from .base import BaseFileHandler
 
 
-class PickleProcessor(BaseFileProcessor):
+class PickleHandler(BaseFileHandler):
 
     @staticmethod
     def load_from_path(filepath, **kwargs):
@@ -30,4 +30,3 @@ class PickleProcessor(BaseFileProcessor):
     def dump_to_fileobj(obj, file, **kwargs):
         kwargs.setdefault('protocol', 2)
         pickle.dump(obj, file, **kwargs)
-    

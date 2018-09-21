@@ -6,7 +6,7 @@ import mmcv
 import pytest
 
 
-def _test_processor(file_format, test_obj, str_checker, mode='r+'):
+def _test_handler(file_format, test_obj, str_checker, mode='r+'):
     # dump to a string
     dump_str = mmcv.dump(test_obj, file_format=file_format)
     str_checker(dump_str)
@@ -49,7 +49,7 @@ def test_json():
             '[{"a": "abc", "b": 1}, 2, "c"]', '[{"b": 1, "a": "abc"}, 2, "c"]'
         ]
 
-    _test_processor('json', obj_for_test, json_checker)
+    _test_handler('json', obj_for_test, json_checker)
 
 
 def test_yaml():
@@ -59,7 +59,7 @@ def test_yaml():
             '- {a: abc, b: 1}\n- 2\n- c\n', '- {b: 1, a: abc}\n- 2\n- c\n'
         ]
 
-    _test_processor('yaml', obj_for_test, yaml_checker)
+    _test_handler('yaml', obj_for_test, yaml_checker)
 
 
 def test_pickle():
@@ -68,7 +68,7 @@ def test_pickle():
         import pickle
         assert pickle.loads(dump_str) == obj_for_test
 
-    _test_processor('pickle', obj_for_test, pickle_checker, mode='rb+')
+    _test_handler('pickle', obj_for_test, pickle_checker, mode='rb+')
 
 
 def test_exception():

@@ -4,10 +4,10 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-from .base import BaseFileProcessor
+from .base import BaseFileHandler
 
 
-class YamlProcessor(BaseFileProcessor):
+class YamlHandler(BaseFileHandler):
 
     @staticmethod
     def load_from_path(filepath, **kwargs):
