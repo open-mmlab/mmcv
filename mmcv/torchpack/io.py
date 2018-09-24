@@ -4,7 +4,6 @@ from collections import OrderedDict
 
 import mmcv
 import torch
-from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils import model_zoo
 
 
@@ -102,7 +101,7 @@ def load_checkpoint(model,
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
     # load state_dict
-    if isinstance(model, (DataParallel, DistributedDataParallel)):
+    if hasattr(model, 'module'):
         load_state_dict(model.module, state_dict, strict, logger)
     else:
         load_state_dict(model, state_dict, strict, logger)
@@ -144,7 +143,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))
-    if isinstance(model, (DataParallel, DistributedDataParallel)):
+    if hasattr(model, 'module'):
         model = model.module
 
     checkpoint = {

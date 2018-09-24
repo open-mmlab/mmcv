@@ -4,7 +4,6 @@ import time
 
 import mmcv
 import torch
-from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from .log_buffer import LogBuffer
 from .. import hooks
@@ -42,7 +41,7 @@ class Runner(object):
             raise TypeError('"work_dir" must be a str or None')
 
         # get model name from the model class
-        if isinstance(self.model, (DataParallel, DistributedDataParallel)):
+        if hasattr(self.model, 'module'):
             self._model_name = self.model.module.__class__.__name__
         else:
             self._model_name = self.model.__class__.__name__
