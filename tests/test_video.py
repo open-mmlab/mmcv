@@ -69,6 +69,12 @@ class TestVideo(object):
         with pytest.raises(ValueError):
             v.get_frame(self.num_frames + 1)
 
+    def test_slice(self):
+        v = mmcv.VideoReader(self.video_path)
+        imgs = v[-105:-103]
+        assert int(round(imgs[0].mean())) == 94
+        assert int(round(imgs[1].mean())) == 205
+
     def test_current_frame(self):
         v = mmcv.VideoReader(self.video_path)
         assert v.current_frame() is None

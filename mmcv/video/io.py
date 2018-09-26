@@ -163,8 +163,8 @@ class VideoReader(object):
             ndarray or None: Return the frame if successful, otherwise None.
         """
         if frame_id < 0 or frame_id >= self._frame_cnt:
-            raise ValueError('"frame_id" must be between 0 and {}'.format(
-                self._frame_cnt))
+            raise IndexError('"frame_id" must be between 0 and {}'.format(
+                self._frame_cnt - 1))
         if frame_id == self._position:
             return self.read()
         if self._cache:
@@ -240,7 +240,7 @@ class VideoReader(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            raise RuntimeError('slice has not been supported yet')
+            return [self.get_frame(i) for i in range(*index.indices(self.frame_cnt))]
         return self.get_frame(index)
 
     def __iter__(self):
