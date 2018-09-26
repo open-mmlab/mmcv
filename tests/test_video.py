@@ -66,7 +66,7 @@ class TestVideo(object):
         assert int(round(img.mean())) == 94
         img = v.read()
         assert int(round(img.mean())) == 205
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             v.get_frame(self.num_frames + 1)
 
     def test_slice(self):
