@@ -62,12 +62,18 @@ class TestVideo(object):
         assert int(round(img.mean())) == 94
         img = v[64]
         assert int(round(img.mean())) == 205
+        img = v[-104]
+        assert int(round(img.mean())) == 205
         img = v[63]
+        assert int(round(img.mean())) == 94
+        img = v[-105]
         assert int(round(img.mean())) == 94
         img = v.read()
         assert int(round(img.mean())) == 205
         with pytest.raises(IndexError):
             v.get_frame(self.num_frames + 1)
+        with pytest.raises(IndexError):
+            v[-self.num_frames - 1]
 
     def test_slice(self):
         v = mmcv.VideoReader(self.video_path)

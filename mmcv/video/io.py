@@ -241,6 +241,11 @@ class VideoReader(object):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return [self.get_frame(i) for i in range(*index.indices(self.frame_cnt))]
+        # support negative indexing
+        if index < 0:
+            index += self.frame_cnt
+            if index < 0:
+                raise IndexError('index out of range')
         return self.get_frame(index)
 
     def __iter__(self):
