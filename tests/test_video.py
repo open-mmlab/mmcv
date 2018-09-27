@@ -74,6 +74,27 @@ class TestVideo(object):
         imgs = v[-105:-103]
         assert int(round(imgs[0].mean())) == 94
         assert int(round(imgs[1].mean())) == 205
+        assert len(imgs) == 2
+        imgs = v[63:65]
+        assert int(round(imgs[0].mean())) == 94
+        assert int(round(imgs[1].mean())) == 205
+        assert len(imgs) == 2
+        imgs = v[64:62:-1]
+        assert int(round(imgs[0].mean())) == 205
+        assert int(round(imgs[1].mean())) == 94
+        assert len(imgs) == 2
+        imgs = v[:5]
+        assert len(imgs) == 5
+        for img in imgs:
+            assert int(round(img.mean())) == 94
+        imgs = v[165:]
+        assert len(imgs) == 3
+        for img in imgs:
+            assert int(round(img.mean())) == 0
+        imgs = v[-3:]
+        assert len(imgs) == 3
+        for img in imgs:
+            assert int(round(img.mean())) == 0
 
     def test_current_frame(self):
         v = mmcv.VideoReader(self.video_path)
