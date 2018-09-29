@@ -62,12 +62,45 @@ class TestVideo(object):
         assert int(round(img.mean())) == 94
         img = v[64]
         assert int(round(img.mean())) == 205
+        img = v[-104]
+        assert int(round(img.mean())) == 205
         img = v[63]
+        assert int(round(img.mean())) == 94
+        img = v[-105]
         assert int(round(img.mean())) == 94
         img = v.read()
         assert int(round(img.mean())) == 205
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             v.get_frame(self.num_frames + 1)
+        with pytest.raises(IndexError):
+            v[-self.num_frames - 1]
+
+    def test_slice(self):
+        v = mmcv.VideoReader(self.video_path)
+        imgs = v[-105:-103]
+        assert int(round(imgs[0].mean())) == 94
+        assert int(round(imgs[1].mean())) == 205
+        assert len(imgs) == 2
+        imgs = v[63:65]
+        assert int(round(imgs[0].mean())) == 94
+        assert int(round(imgs[1].mean())) == 205
+        assert len(imgs) == 2
+        imgs = v[64:62:-1]
+        assert int(round(imgs[0].mean())) == 205
+        assert int(round(imgs[1].mean())) == 94
+        assert len(imgs) == 2
+        imgs = v[:5]
+        assert len(imgs) == 5
+        for img in imgs:
+            assert int(round(img.mean())) == 94
+        imgs = v[165:]
+        assert len(imgs) == 3
+        for img in imgs:
+            assert int(round(img.mean())) == 0
+        imgs = v[-3:]
+        assert len(imgs) == 3
+        for img in imgs:
+            assert int(round(img.mean())) == 0
 
     def test_current_frame(self):
         v = mmcv.VideoReader(self.video_path)
