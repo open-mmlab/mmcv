@@ -8,23 +8,24 @@ batch_size = 64
 
 # optimizer and learning rate
 optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=5e-4)
-lr_policy = dict(policy='step', step=2)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(policy='step', step=2)
 
 # runtime settings
 work_dir = './demo'
 gpus = range(2)
+dist_params = dict(backend='gloo')  # gloo is much slower than nccl
 data_workers = 2  # data workers per gpu
-checkpoint_cfg = dict(interval=1)  # save checkpoint at every epoch
+checkpoint_config = dict(interval=1)  # save checkpoint at every epoch
 workflow = [('train', 1), ('val', 1)]
-max_epoch = 6
+total_epochs = 6
 resume_from = None
 load_from = None
 
 # logging settings
 log_level = 'INFO'
-log_cfg = dict(
-    # log at every 50 iterations
-    interval=50,
+log_config = dict(
+    interval=50,  # log at every 50 iterations
     hooks=[
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook', log_dir=work_dir + '/log'),
