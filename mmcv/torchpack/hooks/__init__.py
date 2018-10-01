@@ -6,10 +6,10 @@ from .optimizer_stepper import OptimizerHook
 from .iter_timer import IterTimerHook
 from .sampler_seed import DistSamplerSeedHook
 from .logger import (LoggerHook, TextLoggerHook, PaviLoggerHook,
-                     pavi_hook_connect, TensorboardLoggerHook)
+                     TensorboardLoggerHook)
 
 __all__ = [
     'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook', 'OptimizerHook',
     'IterTimerHook', 'DistSamplerSeedHook', 'LoggerHook', 'TextLoggerHook',
-    'PaviLoggerHook', 'pavi_hook_connect', 'TensorboardLoggerHook'
+    'PaviLoggerHook', 'TensorboardLoggerHook'
 ]
