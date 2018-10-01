@@ -2,8 +2,6 @@ import numpy as np
 
 from .colorspace import bgr2rgb, rgb2bgr
 
-__all__ = ['imnorm', 'imdenorm']
-
 
 def imnorm(img, mean, std, to_rgb=True):
     img = img.astype(np.float32)

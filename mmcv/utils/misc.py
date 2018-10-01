@@ -37,9 +37,20 @@ def iter_cast(inputs, dst_type, return_type=None):
         return return_type(out_iterable)
 
 
-list_cast = functools.partial(iter_cast, return_type=list)
+def list_cast(inputs, dst_type):
+    """Cast elements of an iterable object into a list of some type.
 
-tuple_cast = functools.partial(iter_cast, return_type=tuple)
+    A partial method of :func:`iter_cast`.
+    """
+    return iter_cast(inputs, dst_type, return_type=list)
+
+
+def tuple_cast(inputs, dst_type):
+    """Cast elements of an iterable object into a tuple of some type.
+
+    A partial method of :func:`iter_cast`.
+    """
+    return iter_cast(inputs, dst_type, return_type=tuple)
 
 
 def is_seq_of(seq, expected_type, seq_type=None):
@@ -66,9 +77,20 @@ def is_seq_of(seq, expected_type, seq_type=None):
     return True
 
 
-is_list_of = functools.partial(is_seq_of, seq_type=list)
+def is_list_of(seq, expected_type):
+    """Check whether it is a list of some type.
 
-is_tuple_of = functools.partial(is_seq_of, seq_type=tuple)
+    A partial method of :func:`is_seq_of`.
+    """
+    return is_seq_of(seq, expected_type, seq_type=list)
+
+
+def is_tuple_of(seq, expected_type):
+    """Check whether it is a tuple of some type.
+
+    A partial method of :func:`is_seq_of`.
+    """
+    return is_seq_of(seq, expected_type, seq_type=tuple)
 
 
 def slice_list(in_list, lens):
@@ -161,30 +183,29 @@ def _check_executable(cmd):
         return True
 
 
-requires_package = functools.partial(
-    check_prerequisites, checker=_check_py_package)
+def requires_package(prerequisites):
+    """A decorator to check if some python packages are installed.
 
-requires_package.__doc__ = """A decorator to check if some python packages are installed.
+    Example:
+        >>> @requires_package('numpy')
+        >>> func(arg1, args):
+        >>>     return numpy.zeros(1)
+        array([0.])
+        >>> @requires_package(['numpy', 'non_package'])
+        >>> func(arg1, args):
+        >>>     return numpy.zeros(1)
+        ImportError
+    """
+    return check_prerequisites(prerequisites, checker=_check_py_package)
 
-Example:
-    >>> @requires_package('numpy')
-    >>> func(arg1, args):
-    >>>     return numpy.zeros(1)
-    array([0.])
-    >>> @requires_package(['numpy', 'non_package'])
-    >>> func(arg1, args):
-    >>>     return numpy.zeros(1)
-    ImportError
-"""
 
-requires_executable = functools.partial(
-    check_prerequisites, checker=_check_executable)
+def requires_executable(prerequisites):
+    """A decorator to check if some executable files are installed.
 
-requires_executable.__doc__ = """A decorator to check if some executable files are installed.
-
-Example:
-    >>> @requires_executable('ffmpeg')
-    >>> func(arg1, args):
-    >>>     print(1)
-    1
-"""
+    Example:
+        >>> @requires_executable('ffmpeg')
+        >>> func(arg1, args):
+        >>>     print(1)
+        1
+    """
+    return check_prerequisites(prerequisites, checker=_check_executable)

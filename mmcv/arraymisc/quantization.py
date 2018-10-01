@@ -1,7 +1,5 @@
 import numpy as np
 
-__all__ = ['quantize', 'dequantize']
-
 
 def quantize(arr, min_val, max_val, levels, dtype=np.int64):
     """Quantize an array of (-inf, inf) to [0, levels-1].

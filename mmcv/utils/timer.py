@@ -12,6 +12,7 @@ class Timer(object):
     """A flexible Timer class.
 
     :Example:
+
     >>> import time
     >>> import mmcv
     >>> with mmcv.Timer():
@@ -94,6 +95,7 @@ def check_time(timer_id):
     be registered when the method is called for the first time.
 
     :Example:
+
     >>> import time
     >>> import mmcv
     >>> for i in range(1, 6):

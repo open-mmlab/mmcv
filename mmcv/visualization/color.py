@@ -27,7 +27,7 @@ def color_val(color):
         color (:obj:`Color`/str/tuple/int/ndarray): Color inputs
 
     Returns:
-        tuple: A tuple of 3 integers indicating BGR channels.
+        tuple[int]: A tuple of 3 integers indicating BGR channels.
     """
     if is_str(color):
         return Color[color].value

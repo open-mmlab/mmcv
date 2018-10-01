@@ -1,13 +1,24 @@
-from collections import OrderedDict
 import os.path as osp
+from collections import OrderedDict
 
 import cv2
 
 from mmcv.utils import (scandir, check_file_exist, mkdir_or_exist,
                         track_progress)
-from . import (CAP_PROP_FRAME_WIDTH, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FPS,
-               CAP_PROP_FRAME_COUNT, CAP_PROP_FOURCC, CAP_PROP_POS_FRAMES,
-               VideoWriter_fourcc)
+from mmcv.opencv_info import USE_OPENCV2
+
+if not USE_OPENCV2:
+    from cv2 import (CAP_PROP_FRAME_WIDTH, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FPS,
+                     CAP_PROP_FRAME_COUNT, CAP_PROP_FOURCC,
+                     CAP_PROP_POS_FRAMES, VideoWriter_fourcc)
+else:
+    from cv2.cv import CV_CAP_PROP_FRAME_WIDTH as CAP_PROP_FRAME_WIDTH
+    from cv2.cv import CV_CAP_PROP_FRAME_HEIGHT as CAP_PROP_FRAME_HEIGHT
+    from cv2.cv import CV_CAP_PROP_FPS as CAP_PROP_FPS
+    from cv2.cv import CV_CAP_PROP_FRAME_COUNT as CAP_PROP_FRAME_COUNT
+    from cv2.cv import CV_CAP_PROP_FOURCC as CAP_PROP_FOURCC
+    from cv2.cv import CV_CAP_PROP_POS_FRAMES as CAP_PROP_POS_FRAMES
+    from cv2.cv import CV_FOURCC as VideoWriter_fourcc
 
 
 class Cache(object):
@@ -50,6 +61,7 @@ class VideoReader(object):
     cache.
 
     :Example:
+
     >>> import mmcv
     >>> v = mmcv.VideoReader('sample.mp4')
     >>> len(v)  # get the total frame number with `len()`
@@ -131,7 +143,7 @@ class VideoReader(object):
         """Read the next frame.
 
         If the next frame have been decoded before and in the cache, then
-        return it directly, otherwise decode and return it, put it in the cache.
+        return it directly, otherwise decode, cache and return it.
 
         Returns:
             ndarray or None: Return the frame if successful, otherwise None.
@@ -163,8 +175,9 @@ class VideoReader(object):
             ndarray or None: Return the frame if successful, otherwise None.
         """
         if frame_id < 0 or frame_id >= self._frame_cnt:
-            raise IndexError('"frame_id" must be between 0 and {}'.format(
-                self._frame_cnt - 1))
+            raise IndexError(
+                '"frame_id" must be between 0 and {}'.format(self._frame_cnt -
+                                                             1))
         if frame_id == self._position:
             return self.read()
         if self._cache:
@@ -177,7 +190,7 @@ class VideoReader(object):
         if ret:
             if self._cache:
                 self._cache.put(self._position, img)
-            self._position += 1            
+            self._position += 1
         return img
 
     def current_frame(self):
@@ -203,7 +216,8 @@ class VideoReader(object):
         Args:
             frame_dir (str): Output directory to store all the frame images.
             file_start (int): Filenames will start from the specified number.
-            filename_tmpl (str): Filename template with the index as the variable.
+            filename_tmpl (str): Filename template with the index as the
+                placeholder.
             start (int): The starting frame index.
             max_num (int): Maximum number of frames to be written.
             show_progress (bool): Whether to show a progress bar.
@@ -240,7 +254,10 @@ class VideoReader(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return [self.get_frame(i) for i in range(*index.indices(self.frame_cnt))]
+            return [
+                self.get_frame(i)
+                for i in range(*index.indices(self.frame_cnt))
+            ]
         # support negative indexing
         if index < 0:
             index += self.frame_cnt

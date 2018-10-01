@@ -12,8 +12,11 @@ def convert_video(in_file, out_file, print_cmd=False, pre_options='',
     """Convert a video with ffmpeg.
 
     This provides a general api to ffmpeg, the executed command is::
-        ffmpeg -y <pre_options> -i <in_file> <options> <out_file>
+
+        `ffmpeg -y <pre_options> -i <in_file> <options> <out_file>`
+
     Options(kwargs) are mapped to ffmpeg commands with the following rules:
+
     - key=val: "-key val"
     - key=True: "-key"
     - key=False: ""

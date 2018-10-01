@@ -1,3 +1,4 @@
+# flake8: noqa
 from .arraymisc import *
 from .utils import *
 from .fileio import *

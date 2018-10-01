@@ -19,8 +19,6 @@ imread_flags = {
     'unchanged': IMREAD_UNCHANGED
 }
 
-__all__ = ['imread', 'imwrite', 'imfrombytes']
-
 
 def imread(img_or_path, flag='color'):
     """Read an image.
