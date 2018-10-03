@@ -107,7 +107,7 @@ def imshow_det_bboxes(img,
         scores = bboxes[:, -1]
         inds = scores > score_thr
         bboxes = bboxes[inds, :]
-        labels = labels[inds, :]
+        labels = labels[inds]
 
     bbox_color = color_val(bbox_color)
     text_color = color_val(text_color)
@@ -120,7 +120,7 @@ def imshow_det_bboxes(img,
             img, left_top, right_bottom, bbox_color, thickness=thickness)
         label_text = class_names[
             label] if class_names is not None else 'cls {}'.format(label)
-        if bbox.shape[1] > 4:
+        if len(bbox) > 4:
             label_text += '|{:.02f}'.format(bbox[-1])
         cv2.putText(img, label_text, (bbox_int[0], bbox_int[1] - 2),
                     cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
