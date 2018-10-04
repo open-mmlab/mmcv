@@ -83,7 +83,8 @@ def test_exception():
 
 def test_register_handler():
 
-    class TxtHandler(mmcv.BaseFileHandler):
+    @mmcv.register_handler('txt')
+    class TxtHandler1(mmcv.BaseFileHandler):
 
         def load_from_fileobj(self, file):
             return file.read()
@@ -94,9 +95,18 @@ def test_register_handler():
         def dump_to_str(self, obj, **kwargs):
             return str(obj)
 
-    txt_handler = TxtHandler()
-    mmcv.register_handler(txt_handler, 'txt')
-    mmcv.register_handler(txt_handler, ['txt1', 'txt2'])
+    @mmcv.register_handler(['txt1', 'txt2'])
+    class TxtHandler2(mmcv.BaseFileHandler):
+
+        def load_from_fileobj(self, file):
+            return file.read()
+
+        def dump_to_fileobj(self, obj, file):
+            file.write('\n')
+            file.write(str(obj))
+
+        def dump_to_str(self, obj, **kwargs):
+            return str(obj)
 
     content = mmcv.load(osp.join(osp.dirname(__file__), 'data/filelist.txt'))
     assert content == '1.jpg\n2.jpg\n3.jpg\n4.jpg\n5.jpg'
@@ -105,7 +115,7 @@ def test_register_handler():
     with open(tmp_filename, 'r') as f:
         written = f.read()
     os.remove(tmp_filename)
-    assert written == content
+    assert written == '\n' + content
 
 
 def test_list_from_file():

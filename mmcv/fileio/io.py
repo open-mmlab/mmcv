@@ -1,3 +1,5 @@
+import functools
+
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 from ..utils import is_str, is_list_of
 
@@ -76,7 +78,7 @@ def dump(obj, file=None, file_format=None, **kwargs):
         raise TypeError('"file" must be a filename str or a file-object')
 
 
-def register_handler(handler, file_formats):
+def _register_handler(handler, file_formats):
     """Register a handler for some file extensions.
 
     Args:
@@ -94,3 +96,12 @@ def register_handler(handler, file_formats):
         raise TypeError('file_formats must be a str or a list of str')
     for ext in file_formats:
         file_handlers[ext] = handler
+
+
+def register_handler(file_formats, **kwargs):
+
+    def wrap(cls):
+        _register_handler(cls(**kwargs), file_formats)
+        return cls
+
+    return wrap
