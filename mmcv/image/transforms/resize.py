@@ -3,7 +3,7 @@ from __future__ import division
 import cv2
 
 
-def scale_size(size, scale):
+def _scale_size(size, scale):
     """Rescale a size by a ratio.
 
     Args:
@@ -99,37 +99,9 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         raise TypeError(
             'Scale must be a number or tuple of int, but got {}'.format(
                 type(scale)))
-    new_size = scale_size((w, h), scale_factor)
+    new_size = _scale_size((w, h), scale_factor)
     rescaled_img = imresize(img, new_size, interpolation=interpolation)
     if return_scale:
         return rescaled_img, scale_factor
     else:
         return rescaled_img
-
-
-def limit_size(img, max_edge, return_scale=False, interpolation='bilinear'):
-    """Limit the size of an image.
-
-    If the long edge of the image is greater than max_edge, resize the image.
-
-    Args:
-        img (ndarray): The input image.
-        max_edge (int): Maximum value of the long edge.
-        return_scale (bool): Whether to return scale besides the resized image.
-        interpolation (str): Same as :func:`resize`.
-
-    Returns:
-        tuple or ndarray: (resized_img, scale_factor) or resized_img.
-    """
-    h, w = img.shape[:2]
-    if max(h, w) > max_edge:
-        scale = float(max_edge) / max(h, w)
-        new_size = scale_size((w, h), scale)
-        resized_img = imresize(img, new_size, interpolation=interpolation)
-    else:
-        scale = 1.0
-        resized_img = img
-    if return_scale:
-        return resized_img, scale
-    else:
-        return resized_img

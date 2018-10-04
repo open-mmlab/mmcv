@@ -110,10 +110,6 @@ class TestImage(object):
                 computed_hsv[i, j, :] = [h, s, v]
         assert_array_almost_equal(out_img, computed_hsv, decimal=2)
 
-    def test_scale_size(self):
-        assert mmcv.scale_size((300, 200), 0.5) == (150, 100)
-        assert mmcv.scale_size((11, 22), 0.7) == (8, 15)
-
     def test_imresize(self):
         resized_img = mmcv.imresize(self.img, (1000, 600))
         assert resized_img.shape == (600, 1000, 3)
@@ -157,26 +153,6 @@ class TestImage(object):
             mmcv.imrescale(self.img, -0.5)
         with pytest.raises(TypeError):
             mmcv.imrescale(self.img, [100, 100])
-
-    def test_limit_size(self):
-        # limit to 800
-        resized_img = mmcv.limit_size(self.img, 800)
-        assert resized_img.shape == (300, 400, 3)
-        resized_img, scale = mmcv.limit_size(self.img, 800, True)
-        assert resized_img.shape == (300, 400, 3) and scale == 1
-
-        # limit to 200
-        resized_img = mmcv.limit_size(self.img, 200)
-        assert resized_img.shape == (150, 200, 3)
-        resized_img, scale = mmcv.limit_size(self.img, 200, True)
-        assert resized_img.shape == (150, 200, 3) and scale == 0.5
-
-        # test with img rather than img path
-        img = mmcv.imread(self.img)
-        resized_img = mmcv.limit_size(img, 200)
-        assert resized_img.shape == (150, 200, 3)
-        resized_img, scale = mmcv.limit_size(img, 200, True)
-        assert resized_img.shape == (150, 200, 3) and scale == 0.5
 
     def test_imflip(self):
         # test horizontal flip (color image)
