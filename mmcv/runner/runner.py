@@ -8,8 +8,8 @@ import torch
 from . import hooks
 from .log_buffer import LogBuffer
 from .hooks import (Hook, LrUpdaterHook, CheckpointHook, IterTimerHook,
-                    OptimizerHook)
-from .io import load_checkpoint, save_checkpoint
+                    OptimizerHook, lr_updater)
+from .checkpoint import load_checkpoint, save_checkpoint
 from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
 
 
@@ -331,7 +331,7 @@ class Runner(object):
             self.register_hook(lr_config)
         elif isinstance(lr_config, dict):
             assert 'policy' in lr_config
-            from ..hooks import lr_updater
+            # from .hooks import lr_updater
             hook_name = lr_config['policy'].title() + 'LrUpdaterHook'
             if not hasattr(lr_updater, hook_name):
                 raise ValueError('"{}" does not exist'.format(hook_name))

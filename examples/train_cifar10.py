@@ -8,7 +8,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn.functional as F
 from mmcv import Config
-from mmcv.torchpack import Runner, DistSamplerSeedHook
+from mmcv.runner import Runner, DistSamplerSeedHook
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler

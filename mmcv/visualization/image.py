@@ -83,7 +83,8 @@ def imshow_det_bboxes(img,
 
     Args:
         img (str or ndarray): The image to be displayed.
-        bboxes (ndarray): Bounding boxes (with scores), shaped (n, 4) or (n, 5).
+        bboxes (ndarray): Bounding boxes (with scores), shaped (n, 4) or
+            (n, 5).
         labels (ndarray): Labels of bboxes.
         class_names (list[str]): Names of each classes.
         score_thr (float): Minimum score of bboxes to be shown.

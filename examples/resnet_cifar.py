@@ -1,4 +1,5 @@
-# copied from https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
+# copied from
+# https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
 
 import torch.nn as nn
 import torch.nn.functional as F
