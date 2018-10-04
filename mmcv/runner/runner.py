@@ -5,13 +5,12 @@ import time
 import mmcv
 import torch
 
+from . import hooks
 from .log_buffer import LogBuffer
-from .. import hooks
-from ..hooks import (Hook, LrUpdaterHook, CheckpointHook, IterTimerHook,
-                     OptimizerHook)
-from ..io import load_checkpoint, save_checkpoint
-from ..utils import (get_dist_info, get_host_info, get_time_str,
-                     add_file_handler, obj_from_dict)
+from .hooks import (Hook, LrUpdaterHook, CheckpointHook, IterTimerHook,
+                    OptimizerHook)
+from .io import load_checkpoint, save_checkpoint
+from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
 
 
 class Runner(object):
@@ -128,6 +127,19 @@ class Runner(object):
                 'but got {}'.format(type(optimizer)))
         return optimizer
 
+    def _add_file_handler(self,
+                          logger,
+                          filename=None,
+                          mode='w',
+                          level=logging.INFO):
+        # TODO: move this method out of runner
+        file_handler = logging.FileHandler(filename, mode)
+        file_handler.setFormatter(
+            logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        file_handler.setLevel(level)
+        logger.addHandler(file_handler)
+        return logger
+
     def init_logger(self, log_dir=None, level=logging.INFO):
         """Init the logger.
 
@@ -145,7 +157,7 @@ class Runner(object):
         if log_dir:
             filename = '{}_{}.log'.format(get_time_str(), self.rank)
             log_file = osp.join(log_dir, filename)
-            add_file_handler(logger, log_file, level=level)
+            self._add_file_handler(logger, log_file, level=level)
         return logger
 
     def current_lr(self):

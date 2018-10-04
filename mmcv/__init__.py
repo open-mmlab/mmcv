@@ -7,3 +7,4 @@ from .image import *
 from .video import *
 from .visualization import *
 from .version import __version__
+# runner is not imported here, so mmcv may be used without PyTorch

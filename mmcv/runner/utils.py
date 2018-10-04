@@ -38,14 +38,6 @@ def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def add_file_handler(logger, filename=None, mode='w', level=logging.INFO):
-    file_handler = logging.FileHandler(filename, mode)
-    file_handler.setFormatter(
-        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    logger.addHandler(file_handler)
-    return logger
-
-
 def obj_from_dict(info, parrent=None, default_args=None):
     """Initialize an object from dict.
 

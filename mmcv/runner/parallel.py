@@ -3,7 +3,7 @@ import multiprocessing
 import torch
 
 import mmcv
-from .io import load_checkpoint
+from .checkpoint import load_checkpoint
 
 
 def worker_func(model_cls, model_kwargs, checkpoint, dataset, data_func,
