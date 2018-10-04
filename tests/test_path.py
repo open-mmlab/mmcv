@@ -8,7 +8,7 @@ import pytest
 def test_check_file_exist():
     mmcv.check_file_exist(__file__)
     if sys.version_info > (3, 3):
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError):  # noqa
             mmcv.check_file_exist('no_such_file.txt')
     else:
         with pytest.raises(IOError):
