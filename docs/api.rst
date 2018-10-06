@@ -16,7 +16,6 @@ video
 --------------
 .. automodule:: mmcv.video
     :members:
-    :exclude-members: VideoWriter_fourcc
 
 arraymisc
 --------------

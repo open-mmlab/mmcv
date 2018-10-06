@@ -381,6 +381,7 @@ class Runner(object):
         """Register default hooks for training.
 
         Default hooks include:
+
         - LrUpdaterHook
         - OptimizerStepperHook
         - CheckpointSaverHook
