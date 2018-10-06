@@ -4,13 +4,10 @@ from ...utils import master_only
 
 class TensorboardLoggerHook(LoggerHook):
 
-    def __init__(self,
-                 log_dir,
-                 interval=10,
-                 reset_meter=True,
-                 ignore_last=True):
-        super(TensorboardLoggerHook, self).__init__(interval, reset_meter,
-                                                    ignore_last)
+    def __init__(self, log_dir, interval=10, ignore_last=True,
+                 reset_flag=True):
+        super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
+                                                    reset_flag)
         self.log_dir = log_dir
 
     @master_only
