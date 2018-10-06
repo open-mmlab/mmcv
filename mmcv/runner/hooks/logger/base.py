@@ -4,7 +4,14 @@ from ..hook import Hook
 
 
 class LoggerHook(Hook):
-    """Base class for logger hooks."""
+    """Base class for logger hooks.
+
+    Args:
+        interval (int): Logging interval (every k iterations).
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+    """
 
     __metaclass__ = ABCMeta
 

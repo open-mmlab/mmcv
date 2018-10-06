@@ -145,12 +145,11 @@ class PaviLoggerHook(LoggerHook):
                  instance_id=None,
                  config_file=None,
                  interval=10,
-                 reset_meter=True,
-                 ignore_last=True):
+                 ignore_last=True,
+                 reset_flag=True):
         self.pavi = PaviClient(url, username, password, instance_id)
         self.config_file = config_file
-        super(PaviLoggerHook, self).__init__(interval, reset_meter,
-                                             ignore_last)
+        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag)
 
     def before_run(self, runner):
         super(PaviLoggerHook, self).before_run(runner)
