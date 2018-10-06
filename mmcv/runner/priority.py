@@ -2,13 +2,33 @@ from enum import Enum
 
 
 class Priority(Enum):
+    """Hook priority levels.
+
+    +------------+------------+
+    | Level      | Value      |
+    +============+============+
+    | HIGHEST    | 0          |
+    +------------+------------+
+    | VERY_HIGH  | 10         |
+    +------------+------------+
+    | HIGH       | 30         |
+    +------------+------------+
+    | NORMAL     | 50         |
+    +------------+------------+
+    | LOW        | 70         |
+    +------------+------------+
+    | VERY_LOW   | 90         |
+    +------------+------------+
+    | LOWEST     | 100        |
+    +------------+------------+
+    """
 
     HIGHEST = 0
-    VERY_HIGH = 20
-    HIGH = 40
+    VERY_HIGH = 10
+    HIGH = 30
     NORMAL = 50
-    LOW = 60
-    VERY_LOW = 80
+    LOW = 70
+    VERY_LOW = 90
     LOWEST = 100
 
 

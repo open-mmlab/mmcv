@@ -3,7 +3,7 @@
 ### Config
 
 `Config` class is used for manipulating config and config files. It supports
-loading configs from multiple file formats including python scripts, json file and yaml file.
+loading configs from multiple file formats including **python**, **json** and **yaml**.
 It provides dict-like apis to get and set values.
 
 Here is an example of the config file `test.py`.

@@ -1,4 +1,4 @@
-# Introduction
+## Introduction
 
 `mmcv` is a foundational python library for computer vision research and supports many
 research projects in MMLAB, such as [mmdetection](https://github.com/open-mmlab/mmdetection).
@@ -16,7 +16,7 @@ It provides the following functionalities.
 See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
 
 
-## Installation
+### Installation
 
 Try and start with
 
