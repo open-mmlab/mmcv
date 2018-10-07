@@ -4,12 +4,15 @@ import pytest
 from mmcv import Config, FileNotFoundError
 
 
-def test_empty():
+def test_construct():
     cfg = Config()
     assert cfg.filename is None
     assert cfg.text == ''
     assert len(cfg) == 0
     assert cfg._cfg_dict == {}
+
+    with pytest.raises(TypeError):
+        Config([0, 1])
 
 
 def test_fromfile():
@@ -24,6 +27,8 @@ def test_fromfile():
         Config.fromfile('no_such_file.py')
     with pytest.raises(ValueError):
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
+    with pytest.raises(IOError):
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
 
 
 def test_dict():

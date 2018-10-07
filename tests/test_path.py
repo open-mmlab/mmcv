@@ -1,8 +1,21 @@
 import os.path as osp
 import sys
+from pathlib import Path
 
 import mmcv
 import pytest
+
+
+def test_is_filepath():
+    assert mmcv.is_filepath(__file__)
+    assert mmcv.is_filepath('abc')
+    assert mmcv.is_filepath(Path('/etc'))
+    assert not mmcv.is_filepath(0)
+
+
+def test_fopen():
+    assert hasattr(mmcv.fopen(__file__), 'read')
+    assert hasattr(Path(__file__), 'read')
 
 
 def test_check_file_exist():

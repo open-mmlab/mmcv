@@ -40,7 +40,7 @@ def mkdir_or_exist(dir_name, mode=0o777):
         os.makedirs(dir_name, mode=mode, exist_ok=True)
     else:
         if not osp.isdir(dir_name):
-            os.makedirs(dir_name, mode=0o777)
+            os.makedirs(dir_name, mode=mode)
 
 
 def symlink(src, dst, overwrite=True, **kwargs):

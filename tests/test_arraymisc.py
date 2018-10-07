@@ -2,6 +2,7 @@ from __future__ import division
 
 import mmcv
 import numpy as np
+import pytest
 
 
 def test_quantize():
@@ -21,6 +22,13 @@ def test_quantize():
     assert qarr.shape == arr.shape
     assert qarr.dtype == np.dtype('uint8')
 
+    with pytest.raises(ValueError):
+        mmcv.quantize(arr, -1, 1, levels=0)
+    with pytest.raises(ValueError):
+        mmcv.quantize(arr, -1, 1, levels=10.0)
+    with pytest.raises(ValueError):
+        mmcv.quantize(arr, 2, 1, levels)
+
 
 def test_dequantize():
     levels = 20
@@ -36,6 +44,13 @@ def test_dequantize():
     arr = mmcv.dequantize(qarr, -1, 1, levels, dtype=np.float32)
     assert arr.shape == qarr.shape
     assert arr.dtype == np.dtype('float32')
+
+    with pytest.raises(ValueError):
+        mmcv.dequantize(arr, -1, 1, levels=0)
+    with pytest.raises(ValueError):
+        mmcv.dequantize(arr, -1, 1, levels=10.0)
+    with pytest.raises(ValueError):
+        mmcv.dequantize(arr, 2, 1, levels)
 
 
 def test_joint():
