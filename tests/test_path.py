@@ -15,7 +15,7 @@ def test_is_filepath():
 
 def test_fopen():
     assert hasattr(mmcv.fopen(__file__), 'read')
-    assert hasattr(Path(__file__), 'read')
+    assert hasattr(mmcv.fopen(Path(__file__)), 'read')
 
 
 def test_check_file_exist():
