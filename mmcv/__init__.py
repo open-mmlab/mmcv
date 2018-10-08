@@ -8,6 +8,6 @@ from .video import *
 from .visualization import *
 from .version import __version__
 # The following modules are not imported to this level, so mmcv may be used
-# without PyTorch：
+# without PyTorch.
 # - runner
 # - parallel
