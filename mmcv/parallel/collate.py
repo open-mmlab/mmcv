@@ -1,6 +1,7 @@
 import collections
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
 
 from .data_container import DataContainer
