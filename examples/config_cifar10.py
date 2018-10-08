@@ -14,7 +14,7 @@ lr_config = dict(policy='step', step=2)
 # runtime settings
 work_dir = './demo'
 gpus = range(2)
-dist_params = dict(backend='gloo')  # gloo is much slower than nccl
+dist_params = dict(backend='nccl')
 data_workers = 2  # data workers per gpu
 checkpoint_config = dict(interval=1)  # save checkpoint at every epoch
 workflow = [('train', 1), ('val', 1)]
@@ -28,5 +28,5 @@ log_config = dict(
     interval=50,  # log at every 50 iterations
     hooks=[
         dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook', log_dir=work_dir + '/log'),
+        # dict(type='TensorboardLoggerHook'),
     ])

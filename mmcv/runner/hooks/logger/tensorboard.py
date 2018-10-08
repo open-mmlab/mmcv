@@ -1,10 +1,15 @@
+import os.path as osp
+
 from .base import LoggerHook
 from ...utils import master_only
 
 
 class TensorboardLoggerHook(LoggerHook):
 
-    def __init__(self, log_dir, interval=10, ignore_last=True,
+    def __init__(self,
+                 log_dir=None,
+                 interval=10,
+                 ignore_last=True,
                  reset_flag=True):
         super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
                                                     reset_flag)
@@ -18,6 +23,8 @@ class TensorboardLoggerHook(LoggerHook):
             raise ImportError('Please install tensorflow and tensorboardX '
                               'to use TensorboardLoggerHook.')
         else:
+            if self.log_dir is None:
+                self.log_dir = osp.join(runner.work_dir, 'tf_logs')
             self.writer = SummaryWriter(self.log_dir)
 
     @master_only
