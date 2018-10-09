@@ -16,15 +16,10 @@ def conv3x3(in_planes, out_planes, dilation=1, bias=False):
         bias=bias)
 
 
-def make_vgg_layer(inplanes,
-                   planes,
-                   num_blocks,
-                   dilation=1,
-                   with_bn=False):
+def make_vgg_layer(inplanes, planes, num_blocks, dilation=1, with_bn=False):
     layers = []
     for _ in range(num_blocks):
-        layers.append(
-            conv3x3(inplanes, planes, dilation, not with_bn))
+        layers.append(conv3x3(inplanes, planes, dilation, not with_bn))
         if with_bn:
             layers.append(nn.BatchNorm2d(planes))
         layers.append(nn.ReLU(inplace=True))
@@ -89,11 +84,11 @@ class VGG(nn.Module):
             dilation = dilations[i]
             planes = 64 * 2**i if i < 4 else 512
             vgg_layer = make_vgg_layer(
-                    self.inplanes,
-                    planes,
-                    num_blocks,
-                    dilation=dilation,
-                    with_bn=with_bn)
+                self.inplanes,
+                planes,
+                num_blocks,
+                dilation=dilation,
+                with_bn=with_bn)
             self.inplanes = planes
             layer_name = 'layer{}'.format(i + 1)
             self.add_module(layer_name, vgg_layer)
@@ -118,9 +113,7 @@ class VGG(nn.Module):
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     nn.init.kaiming_normal_(
-                            m.weight,
-                            mode='fan_out',
-                            nonlinearity='relu')
+                        m.weight, mode='fan_out', nonlinearity='relu')
                     if m.bias is not None:
                         nn.init.constant_(m.bias, 0)
                 elif isinstance(m, nn.BatchNorm2d):

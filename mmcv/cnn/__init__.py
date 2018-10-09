@@ -4,7 +4,6 @@ from .resnet import ResNet, make_res_layer
 from .weight_init import xavier_init, normal_init, uniform_init, kaiming_init
 
 __all__ = [
-    'AlexNet', 'VGG', 'make_vgg_layer',
-    'ResNet', 'make_res_layer', 'xavier_init', 'normal_init', 'uniform_init',
-    'kaiming_init'
+    'AlexNet', 'VGG', 'make_vgg_layer', 'ResNet', 'make_res_layer',
+    'xavier_init', 'normal_init', 'uniform_init', 'kaiming_init'
 ]
