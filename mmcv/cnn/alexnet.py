@@ -1,5 +1,4 @@
 import logging
-import math
 
 import torch.nn as nn
 
@@ -40,7 +39,7 @@ class AlexNet(nn.Module):
                 nn.ReLU(inplace=True),
                 nn.Dropout(),
                 nn.Linear(4096, 4096),
-                nn.ReLU(inplace=True), # caffe has dropout
+                nn.ReLU(inplace=True),
                 nn.Linear(4096, num_classes),
             )
 
