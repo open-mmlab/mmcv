@@ -1,5 +1,4 @@
 import logging
-import math
 
 import torch.nn as nn
 
@@ -118,7 +117,10 @@ class VGG(nn.Module):
         elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                    nn.init.kaiming_normal_(
+                            m.weight,
+                            mode='fan_out',
+                            nonlinearity='relu')
                     if m.bias is not None:
                         nn.init.constant_(m.bias, 0)
                 elif isinstance(m, nn.BatchNorm2d):
@@ -131,6 +133,7 @@ class VGG(nn.Module):
             raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
+        outs = []
         for i, layer_name in enumerate(self.vgg_layers):
             vgg_layer = getattr(self, layer_name)
             x = vgg_layer(x)
