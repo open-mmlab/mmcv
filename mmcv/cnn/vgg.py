@@ -2,6 +2,7 @@ import logging
 
 import torch.nn as nn
 
+from .weight_init import constant_init, normal_init, kaiming_init
 from ..runner import load_checkpoint
 
 
@@ -112,16 +113,11 @@ class VGG(nn.Module):
         elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(
-                        m.weight, mode='fan_out', nonlinearity='relu')
-                    if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
+                    kaiming_init(m)
                 elif isinstance(m, nn.BatchNorm2d):
-                    nn.init.constant_(m.weight, 1)
-                    nn.init.constant_(m.bias, 0)
+                    constant_init(m, 1)
                 elif isinstance(m, nn.Linear):
-                    nn.init.normal_(m.weight, 0, 0.01)
-                    nn.init.constant_(m.bias, 0)
+                    normal_init(m, std=0.01)
         else:
             raise TypeError('pretrained must be a str or None')
 

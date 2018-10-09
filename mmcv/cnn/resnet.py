@@ -4,6 +4,7 @@ import math
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 
+from .weight_init import constant_init, kaiming_init
 from ..runner import load_checkpoint
 
 
@@ -268,11 +269,9 @@ class ResNet(nn.Module):
         elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
-                    n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                    nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
+                    kaiming_init(m)
                 elif isinstance(m, nn.BatchNorm2d):
-                    nn.init.constant_(m.weight, 1)
-                    nn.init.constant_(m.bias, 0)
+                    constant_init(m, 1)
         else:
             raise TypeError('pretrained must be a str or None')
 

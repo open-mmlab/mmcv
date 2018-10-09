@@ -1,6 +1,12 @@
 import torch.nn as nn
 
 
+def constant_init(module, val, bias=0):
+    nn.init.constant_(module.weight, val)
+    if hasattr(module, 'bias'):
+        nn.init.constant_(module.bias, bias)
+
+
 def xavier_init(module, gain=1, bias=0, distribution='normal'):
     assert distribution in ['uniform', 'normal']
     if distribution == 'uniform':
