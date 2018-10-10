@@ -1,5 +1,4 @@
 import logging
-import math
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
