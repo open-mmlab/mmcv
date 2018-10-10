@@ -113,7 +113,7 @@ class PaviClient(object):
                             break
                         else:
                             self._print_log(
-                                'unexpected status code: %d, err msg: {}'.
+                                'unexpected status code: {}, err msg: {}'.
                                 format(status_code, response.reason),
                                 level=logging.ERROR)
                             retry += 1
@@ -171,4 +171,4 @@ class PaviLoggerHook(LoggerHook):
         log_outs = runner.log_buffer.output.copy()
         log_outs.pop('time', None)
         log_outs.pop('data_time', None)
-        self.pavi.log(runner.mode, runner.iter, log_outs)
+        self.pavi.log(runner.mode, runner.iter + 1, log_outs)
