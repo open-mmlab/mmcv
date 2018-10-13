@@ -116,18 +116,18 @@ mmcv.imflip(img, direction='vertical')
 import mmcv
 import numpy as np
 
-img = mmcv.read_img('tests/data/color.jpg')
+img = mmcv.imread('tests/data/color.jpg')
 
 # crop the region (10, 10, 100, 120)
 bboxes = np.array([10, 10, 100, 120])
-patch = mmcv.crop_img(img, bboxes)
+patch = mmcv.imcrop(img, bboxes)
 
 # crop two regions (10, 10, 100, 120) and (0, 0, 50, 50)
 bboxes = np.array([[10, 10, 100, 120], [0, 0, 50, 50]])
-patches = mmcv.crop_img(img, bboxes)
+patches = mmcv.imcrop(img, bboxes)
 
 # crop two regions, and rescale the patches by 1.2x
-patches = mmcv.crop_img(img, bboxes, scale_ratio=1.2)
+patches = mmcv.imcrop(img, bboxes, scale_ratio=1.2)
 ```
 
 ### Padding
@@ -135,13 +135,13 @@ There are two methods `impad` and `impad_to_multiple` to pad an image to the
 specific size with given values.
 
 ```python
-img = mmcv.read_img('tests/data/color.jpg')
+img = mmcv.imread('tests/data/color.jpg')
 
 # pad the image to (1000, 1200) with all zeros
-img_ = mmcv.pad_img(img, (1000, 1200), pad_val=0)
+img_ = mmcv.impad(img, (1000, 1200), pad_val=0)
 
 # pad the image to (1000, 1200) with different values for three channels.
-img_ = mmcv.pad_img(img, (1000, 1200), pad_val=[100, 50, 200])
+img_ = mmcv.impad(img, (1000, 1200), pad_val=[100, 50, 200])
 
 # pad an image so that each edge is a multiple of some value.
 img_ = mmcv.impad_to_multiple(img, 32)
