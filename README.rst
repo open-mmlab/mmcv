@@ -24,7 +24,7 @@ It provides the following functionalities.
 - Video processing
 - Image and annotation visualization
 - Useful utilities (progress bar, timer, ...)
-- PyTorch runner with hooking machanism
+- PyTorch runner with hooking mechanism
 - Various CNN architectures
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
