@@ -17,8 +17,8 @@ class TextLoggerHook(LoggerHook):
         if 'time' in runner.log_buffer.output:
             tot_time_sec = runner.log_buffer.output['time'] + \
                 runner.log_buffer.output['data_time']
-            eta_sec = tot_time_sec*(len(runner.data_loader)*runner.max_epochs - \
-                                      runner._iter)
+            eta_sec = tot_time_sec * \
+                (len(runner.data_loader) * runner.max_epochs - runner._iter)
             eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
             log_str += ('eta: {}, '.format(eta_str))
             log_str += (
