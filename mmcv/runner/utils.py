@@ -13,7 +13,7 @@ def get_host_info():
 
 
 def get_dist_info():
-    if dist._initialized:
+    if dist.is_initialized():
         rank = dist.get_rank()
         world_size = dist.get_world_size()
     else:

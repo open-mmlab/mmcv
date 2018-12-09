@@ -33,7 +33,7 @@ class MMDistributedDataParallel(nn.Module):
             self._dist_broadcast_coalesced(module_states,
                                            self.broadcast_bucket_size)
         if self.broadcast_buffers:
-            buffers = [b.data for b in self.module._all_buffers()]
+            buffers = [b.data for b in self.module.buffers()]
             if len(buffers) > 0:
                 self._dist_broadcast_coalesced(buffers,
                                                self.broadcast_bucket_size)
