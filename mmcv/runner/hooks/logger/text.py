@@ -20,7 +20,7 @@ class TextLoggerHook(LoggerHook):
             log_str = 'Epoch({}) [{}][{}]\t'.format(runner.mode, runner.epoch,
                                                     runner.inner_iter + 1)
         if 'time' in runner.log_buffer.output:
-            self.time_sec_tot += (runner.log_buffer.output['time'] * 
+            self.time_sec_tot += (runner.log_buffer.output['time'] *
                                   self.interval)
             time_sec_avg = self.time_sec_tot / (runner.iter + 1)
             eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
