@@ -69,7 +69,7 @@ def load_checkpoint(model,
 
     Args:
         model (Module): Module to load checkpoint.
-        filename (str): Either a filepath or URL or modelzoll://xxxxxxx.
+        filename (str): Either a filepath or URL or modelzoo://xxxxxxx.
         map_location (str): Same as :func:`torch.load`.
         strict (bool): Whether to allow different params for the model and
             checkpoint.
@@ -83,6 +83,10 @@ def load_checkpoint(model,
         from torchvision.models.resnet import model_urls
         model_name = filename[11:]
         checkpoint = model_zoo.load_url(model_urls[model_name])
+    elif filename.startswith('open-mmlab://'):
+        from .urls import open_mmlab_model_urls
+        model_name = filename[13:]
+        checkpoint = model_zoo.load_url(open_mmlab_model_urls[model_name])
     elif filename.startswith(('http://', 'https://')):
         checkpoint = model_zoo.load_url(filename)
     else:

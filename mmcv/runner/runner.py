@@ -262,6 +262,9 @@ class Runner(object):
             self.call_hook('after_train_iter')
             self._iter += 1
 
+        print('**max cached: {}\n'.format(torch.cuda.max_memory_cached()))
+        print('**max allocated: {}\n'.format(torch.cuda.max_memory_allocated()))
+
         self.call_hook('after_train_epoch')
         self._epoch += 1
 
