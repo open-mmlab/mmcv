@@ -1,8 +1,8 @@
-from importlib import import_module
-import pkgutil
 import os.path as osp
+import pkgutil
 import time
 from collections import OrderedDict
+from importlib import import_module
 
 import mmcv
 import torch
