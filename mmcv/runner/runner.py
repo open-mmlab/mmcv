@@ -27,6 +27,8 @@ class Runner(object):
         work_dir (str, optional): The working directory to save checkpoints
             and logs.
         log_level (int): Logging level.
+        logger (:obj:`logging.Logger`): Custom logger. If `None`, use the
+            default logger.
     """
 
     def __init__(self,
@@ -34,7 +36,8 @@ class Runner(object):
                  batch_processor,
                  optimizer=None,
                  work_dir=None,
-                 log_level=logging.INFO):
+                 log_level=logging.INFO,
+                 logger=None):
         assert callable(batch_processor)
         self.model = model
         if optimizer is not None:
@@ -59,7 +62,10 @@ class Runner(object):
             self._model_name = self.model.__class__.__name__
 
         self._rank, self._world_size = get_dist_info()
-        self.logger = self.init_logger(work_dir, log_level)
+        if logger is None:
+            self.logger = self.init_logger(work_dir, log_level)
+        else:
+            self.logger = logger
         self.log_buffer = LogBuffer()
 
         self.mode = None
