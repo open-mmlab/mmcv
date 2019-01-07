@@ -27,7 +27,8 @@ class Runner(object):
         work_dir (str, optional): The working directory to save checkpoints
             and logs.
         log_level (int): Logging level.
-        logger: Custom logger. If `None`, use default logger.
+        logger (:obj:`logging.Logger`): Custom logger. If `None`, use the
+            default logger.
     """
 
     def __init__(self,
