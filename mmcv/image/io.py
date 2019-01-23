@@ -67,7 +67,7 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         img (ndarray): Image array to be written.
         file_path (str): Image file path.
         params (None or list): Same as opencv's :func:`imwrite` interface.
-        auto_mkdir (bool): If the parrent folder of `file_path` does not exist,
+        auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
 
     Returns:
