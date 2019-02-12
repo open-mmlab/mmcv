@@ -36,7 +36,7 @@ def collate(batch, samples_per_gpu=1):
                 assert isinstance(batch[i].data, torch.Tensor)
                 # TODO: handle tensors other than 3d
                 assert batch[i].dim() == 3
-                c, h, w = batch[0].size()
+                c, h, w = batch[i].size()
                 for sample in batch[i:i + samples_per_gpu]:
                     assert c == sample.size(0)
                     h = max(h, sample.size(1))
