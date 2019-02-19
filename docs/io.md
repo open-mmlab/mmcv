@@ -25,7 +25,7 @@ mmcv.dump(data, 'out.pkl')
 
 # dump data to a file with a file-like object
 with open('test.yaml', 'w') as f:
-    data = mmcv.dump(data, f, format='yaml')
+    data = mmcv.dump(data, f, file_format='yaml')
 ```
 
 It is also very convenient to extend the api to support more file formats.
