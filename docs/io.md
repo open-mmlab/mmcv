@@ -15,10 +15,10 @@ data = mmcv.load('test.yaml')
 data = mmcv.load('test.pkl')
 # load data from a file-like object
 with open('test.json', 'r') as f:
-    data = mmcv.load(f)
+    data = mmcv.load(f, file_format='json')
 
 # dump data to a string
-json_str = mmcv.dump(data, format='json')
+json_str = mmcv.dump(data, file_format='json')
 
 # dump data to a file with a filename (infer format from file extension)
 mmcv.dump(data, 'out.pkl')
