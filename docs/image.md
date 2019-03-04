@@ -1,7 +1,6 @@
 ## Image
 
-This module provides some image processing methods, which requires `opencv` to
-to be installed.
+This module provides some image processing methods, which requires `opencv` to be installed.
 
 ### Read/Write/Show
 To read or write images files, use `imread` or `imwrite`.
