@@ -56,7 +56,8 @@ def test_yaml():
 
     def yaml_checker(dump_str):
         assert dump_str in [
-            '- {a: abc, b: 1}\n- 2\n- c\n', '- {b: 1, a: abc}\n- 2\n- c\n'
+            '- {a: abc, b: 1}\n- 2\n- c\n', '- {b: 1, a: abc}\n- 2\n- c\n',
+            '- a: abc\n  b: 1\n- 2\n- c\n', '- b: 1\n  a: abc\n- 2\n- c\n'
         ]
 
     _test_handler('yaml', obj_for_test, yaml_checker)
