@@ -171,4 +171,7 @@ class PaviLoggerHook(LoggerHook):
         log_outs = runner.log_buffer.output.copy()
         log_outs.pop('time', None)
         log_outs.pop('data_time', None)
+        for k, v in log_outs.items():
+            if isinstance(v, str):
+                log_outs.pop(k)
         self.pavi.log(runner.mode, runner.iter + 1, log_outs)

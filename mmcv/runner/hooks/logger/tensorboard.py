@@ -33,8 +33,12 @@ class TensorboardLoggerHook(LoggerHook):
             if var in ['time', 'data_time']:
                 continue
             tag = '{}/{}'.format(var, runner.mode)
-            self.writer.add_scalar(tag, runner.log_buffer.output[var],
-                                   runner.iter)
+            record = runner.log_buffer.output[var]
+            if isinstance(record, str):
+                self.writer.add_text(tag, record, runner.iter)
+            else:
+                self.writer.add_scalar(tag, runner.log_buffer.output[var],
+                                       runner.iter)
 
     @master_only
     def after_run(self, runner):

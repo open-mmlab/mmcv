@@ -38,6 +38,8 @@ class TextLoggerHook(LoggerHook):
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue
-            log_items.append('{}: {:.4f}'.format(name, val))
+            if isinstance(val, float):
+                val = '{:.4f}'.format(val)
+            log_items.append('{}: {}'.format(name, val))
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
