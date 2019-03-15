@@ -18,14 +18,14 @@ with open('test.json', 'r') as f:
     data = mmcv.load(f)
 
 # dump data to a string
-json_str = mmcv.dump(data, format='json')
+json_str = mmcv.dump(data, file_format='json')
 
 # dump data to a file with a filename (infer format from file extension)
 mmcv.dump(data, 'out.pkl')
 
 # dump data to a file with a file-like object
 with open('test.yaml', 'w') as f:
-    data = mmcv.dump(data, f, format='yaml')
+    data = mmcv.dump(data, f, file_format='yaml')
 ```
 
 It is also very convenient to extend the api to support more file formats.
