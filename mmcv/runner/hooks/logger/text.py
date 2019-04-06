@@ -1,5 +1,6 @@
-import torch
 import datetime
+
+import torch
 
 from .base import LoggerHook
 
@@ -43,7 +44,7 @@ class TextLoggerHook(LoggerHook):
                 val = '{:.4f}'.format(val)
             log_items.append('{}: {}'.format(name, val))
         # statistic memory
-        if runner.mode == 'train':
+        if runner.mode == 'train' and torch.cuda.is_available():
             mem = torch.cuda.max_memory_allocated()
             mem_mb = int(mem / (1024 * 1024))
             log_items.append('{}: {}'.format('memory', mem_mb))
