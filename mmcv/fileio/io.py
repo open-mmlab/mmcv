@@ -1,4 +1,5 @@
-from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
+from .handlers import (BaseFileHandler, JsonHandler, PickleHandler,
+                       YamlHandler, MatHandler)
 from ..utils import is_str, is_list_of
 
 file_handlers = {
@@ -6,12 +7,13 @@ file_handlers = {
     'yaml': YamlHandler(),
     'yml': YamlHandler(),
     'pickle': PickleHandler(),
-    'pkl': PickleHandler()
+    'pkl': PickleHandler(),
+    'mat': MatHandler()
 }
 
 
 def load(file, file_format=None, **kwargs):
-    """Load data from json/yaml/pickle files.
+    """Load data from json/yaml/pickle/mat files.
 
     This method provides a unified api for loading data from serialized files.
 
@@ -19,8 +21,8 @@ def load(file, file_format=None, **kwargs):
         file (str or file-like object): Filename or a file-like object.
         file_format (str, optional): If not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include "json", "yaml/yml" and
-            "pickle/pkl".
+            Currently supported formats include "json", "yaml/yml",
+            "pickle/pkl" and "mat".
 
     Returns:
         The content from the file.
@@ -41,7 +43,7 @@ def load(file, file_format=None, **kwargs):
 
 
 def dump(obj, file=None, file_format=None, **kwargs):
-    """Dump data to json/yaml/pickle strings or files.
+    """Dump data to strings (json/yaml/pickle) or files (json/yaml/pickle/mat).
 
     This method provides a unified api for dumping data as strings or to files,
     and also supports custom arguments for each file format.
