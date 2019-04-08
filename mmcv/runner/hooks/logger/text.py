@@ -1,6 +1,7 @@
 import datetime
 
 import torch
+import torch.distributed as dist
 
 from .base import LoggerHook
 
@@ -39,8 +40,10 @@ class TextLoggerHook(LoggerHook):
         # statistic memory
         if runner.mode == 'train' and torch.cuda.is_available():
             mem = torch.cuda.max_memory_allocated()
-            mem_mb = int(mem / (1024 * 1024))
-            mem_str = 'memory: {}, '.format(mem_mb)
+            mem_mb = torch.IntTensor([mem / (1024 * 1024)]).cuda()
+            if runner.world_size > 1:
+                dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
+            mem_str = 'memory: {}, '.format(mem_mb.item())
             log_str += mem_str
         log_items = []
         for name, val in runner.log_buffer.output.items():
