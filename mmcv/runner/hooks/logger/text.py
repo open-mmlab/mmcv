@@ -1,5 +1,7 @@
 import datetime
 
+import torch
+
 from .base import LoggerHook
 
 
@@ -34,10 +36,18 @@ class TextLoggerHook(LoggerHook):
             log_str += (
                 'time: {log[time]:.3f}, data_time: {log[data_time]:.3f}, '.
                 format(log=runner.log_buffer.output))
+        # statistic memory
+        if runner.mode == 'train' and torch.cuda.is_available():
+            mem = torch.cuda.max_memory_allocated()
+            mem_mb = int(mem / (1024 * 1024))
+            mem_str = 'memory: {}, '.format(mem_mb)
+            log_str += mem_str
         log_items = []
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue
-            log_items.append('{}: {:.4f}'.format(name, val))
+            if isinstance(val, float):
+                val = '{:.4f}'.format(val)
+            log_items.append('{}: {}'.format(name, val))
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
