@@ -3,6 +3,7 @@ import datetime
 import torch
 import torch.distributed as dist
 
+import mmcv
 from .base import LoggerHook
 
 
@@ -15,6 +16,9 @@ class TextLoggerHook(LoggerHook):
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
         self.start_iter = runner.iter
+        self.dump_log_path = '{}/{}_{}'.format(runner.work_dir,
+                                               mmcv.runner.get_time_str(),
+                                               'train.json')
 
     def log(self, runner):
         if runner.mode == 'train':
@@ -26,6 +30,8 @@ class TextLoggerHook(LoggerHook):
         else:
             log_str = 'Epoch({}) [{}][{}]\t'.format(runner.mode, runner.epoch,
                                                     runner.inner_iter + 1)
+        # runner.mode is still 'train' at validation
+        mode = 'train' if 'time' in runner.log_buffer.output else 'val'
         if 'time' in runner.log_buffer.output:
             self.time_sec_tot += (
                 runner.log_buffer.output['time'] * self.interval)
@@ -37,15 +43,23 @@ class TextLoggerHook(LoggerHook):
             log_str += (
                 'time: {log[time]:.3f}, data_time: {log[data_time]:.3f}, '.
                 format(log=runner.log_buffer.output))
-        # statistic memory
-        if runner.mode == 'train' and torch.cuda.is_available():
-            mem = torch.cuda.max_memory_allocated()
-            mem_mb = torch.tensor([mem / (1024 * 1024)],
-                                  dtype=torch.int,
-                                  device=torch.device('cuda'))
-            if runner.world_size > 1:
-                dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
-            log_str += 'memory: {}, '.format(mem_mb.item())
+        log_dict_iter = dict()
+        log_dict_iter['mode'] = mode
+        log_dict_iter['epoch'] = runner.epoch + 1
+        if mode == 'train':
+            log_dict_iter['iter'] = runner.inner_iter + 1
+            log_dict_iter['lr'] = float(lr_str)
+            log_dict_iter['time'] = runner.log_buffer.output['time']
+            log_dict_iter['data_time'] = runner.log_buffer.output['data_time']
+            # statistic memory
+            if torch.cuda.is_available():
+                mem = torch.cuda.max_memory_allocated()
+                mem_mb = torch.tensor([mem / (1024 * 1024)],
+                                      dtype=torch.int,
+                                      device=torch.device('cuda'))
+                if runner.world_size > 1:
+                    dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
+                log_str += 'memory: {}, '.format(mem_mb.item())
         log_items = []
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
@@ -53,5 +67,11 @@ class TextLoggerHook(LoggerHook):
             if isinstance(val, float):
                 val = '{:.4f}'.format(val)
             log_items.append('{}: {}'.format(name, val))
+            log_dict_iter[name] = val
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
+        if runner.world_size == 1 or (runner.world_size > 1
+                                      and dist.get_rank() == 0):
+            with open(self.dump_log_path, 'a+') as f:
+                mmcv.dump(log_dict_iter, f, file_format='json')
+                f.write('\n')
