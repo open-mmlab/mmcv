@@ -47,11 +47,10 @@ class TextLoggerHook(LoggerHook):
         json_log['epoch'] = runner.epoch + 1
         if mode == 'train':
             json_log['iter'] = runner.inner_iter + 1
-            json_log['lr'] = lr_str
-            json_log['time'] = '{:.3f}'.format(
-                runner.log_buffer.output['time'])
-            json_log['data_time'] = '{:.3f}'.format(
-                runner.log_buffer.output['data_time'])
+            json_log['lr'] = float(lr_str)
+            json_log['time'] = round(runner.log_buffer.output['time'], 4)
+            json_log['data_time'] = round(
+                runner.log_buffer.output['data_time'], 4)
             # statistic memory
             if torch.cuda.is_available():
                 mem = torch.cuda.max_memory_allocated()
@@ -61,14 +60,17 @@ class TextLoggerHook(LoggerHook):
                 if runner.world_size > 1:
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
                 log_str += 'memory: {}, '.format(mem_mb.item())
+                json_log['memory'] = mem_mb.item()
         log_items = []
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue
             if isinstance(val, float):
                 val = '{:.4f}'.format(val)
+                json_log[name] = float(val)
+            else:
+                json_log[name] = val
             log_items.append('{}: {}'.format(name, val))
-            json_log[name] = val
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
         if runner.world_size == 1 or (runner.world_size > 1
