@@ -16,9 +16,8 @@ class TextLoggerHook(LoggerHook):
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
         self.start_iter = runner.iter
-        self.dump_log_path = '{}/{}_{}'.format(runner.work_dir,
-                                               mmcv.runner.get_time_str(),
-                                               'train.json')
+        self.json_log_path = '{}/{}.{}'.format(runner.work_dir,
+                                               runner.timestamp, 'log.json')
 
     def log(self, runner):
         if runner.mode == 'train':
@@ -43,14 +42,16 @@ class TextLoggerHook(LoggerHook):
             log_str += (
                 'time: {log[time]:.3f}, data_time: {log[data_time]:.3f}, '.
                 format(log=runner.log_buffer.output))
-        log_dict_iter = dict()
-        log_dict_iter['mode'] = mode
-        log_dict_iter['epoch'] = runner.epoch + 1
+        json_log = dict()
+        json_log['mode'] = mode
+        json_log['epoch'] = runner.epoch + 1
         if mode == 'train':
-            log_dict_iter['iter'] = runner.inner_iter + 1
-            log_dict_iter['lr'] = float(lr_str)
-            log_dict_iter['time'] = runner.log_buffer.output['time']
-            log_dict_iter['data_time'] = runner.log_buffer.output['data_time']
+            json_log['iter'] = runner.inner_iter + 1
+            json_log['lr'] = lr_str
+            json_log['time'] = '{:.3f}'.format(
+                runner.log_buffer.output['time'])
+            json_log['data_time'] = '{:.3f}'.format(
+                runner.log_buffer.output['data_time'])
             # statistic memory
             if torch.cuda.is_available():
                 mem = torch.cuda.max_memory_allocated()
@@ -67,11 +68,11 @@ class TextLoggerHook(LoggerHook):
             if isinstance(val, float):
                 val = '{:.4f}'.format(val)
             log_items.append('{}: {}'.format(name, val))
-            log_dict_iter[name] = val
+            json_log[name] = val
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
         if runner.world_size == 1 or (runner.world_size > 1
                                       and dist.get_rank() == 0):
-            with open(self.dump_log_path, 'a+') as f:
-                mmcv.dump(log_dict_iter, f, file_format='json')
+            with open(self.json_log_path, 'a+') as f:
+                mmcv.dump(json_log, f, file_format='json')
                 f.write('\n')
