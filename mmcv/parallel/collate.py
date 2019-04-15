@@ -34,21 +34,51 @@ def collate(batch, samples_per_gpu=1):
         elif batch[0].stack:
             for i in range(0, len(batch), samples_per_gpu):
                 assert isinstance(batch[i].data, torch.Tensor)
-                # TODO: handle tensors other than 3d
-                assert batch[i].dim() == 3
-                c, h, w = batch[i].size()
-                for sample in batch[i:i + samples_per_gpu]:
-                    assert c == sample.size(0)
-                    h = max(h, sample.size(1))
-                    w = max(w, sample.size(2))
-                padded_samples = [
-                    F.pad(
-                        sample.data,
-                        (0, w - sample.size(2), 0, h - sample.size(1)),
-                        value=sample.padding_value)
-                    for sample in batch[i:i + samples_per_gpu]
-                ]
-                stacked.append(default_collate(padded_samples))
+                if (batch[i].pad_dim == 'HW'):
+                    ndim = batch[i].dim()
+                    assert ndim > 2
+                    h = batch[i].size(-2)
+                    w = batch[i].size(-1)
+                    for sample in batch[i:i + samples_per_gpu]:
+                        for dim in range(0, ndim-2):
+                            assert batch[i].size(dim) == sample.size(dim)
+                        h = max(h, sample.size(-2))
+                        w = max(w, sample.size(-1))
+                    padded_samples = [
+                        F.pad(
+                            sample.data,
+                            (0, w - sample.size(-1), 0, h - sample.size(-2)),
+                            value=sample.padding_value)
+                        for sample in batch[i:i + samples_per_gpu]
+                    ]
+                    stacked.append(default_collate(padded_samples))
+                
+                elif (batch[i].pad_dim == 'THW'):
+                    ndim = batch[i].dim()
+                    assert ndim > 3
+                    t = batch[i].size(-3)
+                    h = batch[i].size(-2)
+                    w = batch[i].size(-1)
+                    for sample in batch[i: i + samples_per_gpu]:
+                        for dim in range(0, ndim-3):
+                            assert batch[i].size(dim) == sample.size(dim)
+                        t = max(t, sample.size(-3))
+                        h = max(h, sample.size(-2))
+                        w = max(w, sample.size(-1))
+                    padded_samples = [
+                        F.pad(
+                            sample.data,
+                            (0, w - sample.size(-1), 0, h - sample.size(-2), 0, t - sample.size(-3)),
+                            value=sample.padding_value)
+                        for sample in batch[i:i + samples_per_gpu]
+                    ]
+                    stacked.append(default_collate(padded_samples))
+                elif (batch[i].pad_dim == None):
+                    assert batch[i].dim() == 1
+                    stacked.append(default_collate([sample.data for sample in batch[i: i+ samples_per_gpu]]))
+                else:
+                    raise ValueError("pad_dim should be None, 'HW', or 'THW'")
+
         else:
             for i in range(0, len(batch), samples_per_gpu):
                 stacked.append(
