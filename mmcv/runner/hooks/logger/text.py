@@ -46,9 +46,9 @@ class TextLoggerHook(LoggerHook):
             log_str += (
                 'time: {log[time]:.3f}, data_time: {log[data_time]:.3f}, '.
                 format(log=runner.log_buffer.output))
-        mode = 'train' if 'time' in runner.log_buffer.output else 'val'
         # statistic memory
-        if mode == 'train' and torch.cuda.is_available():
+        # training mode if the output contains the key "time"
+        if 'time' in runner.log_buffer.output and torch.cuda.is_available():
             mem_mb = self._get_max_memory(runner)
             log_str += 'memory: {}, '.format(mem_mb.item())
         log_items = []
