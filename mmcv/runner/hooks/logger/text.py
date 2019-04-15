@@ -1,6 +1,7 @@
 import datetime
 
 import torch
+import torch.distributed as dist
 
 from .base import LoggerHook
 
@@ -14,6 +15,15 @@ class TextLoggerHook(LoggerHook):
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
         self.start_iter = runner.iter
+
+    def _get_max_memory(self, runner):
+        mem = torch.cuda.max_memory_allocated()
+        mem_mb = torch.tensor([mem / (1024 * 1024)],
+                              dtype=torch.int,
+                              device=torch.device('cuda'))
+        if runner.world_size > 1:
+            dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
+        return mem_mb
 
     def log(self, runner):
         if runner.mode == 'train':
@@ -37,11 +47,10 @@ class TextLoggerHook(LoggerHook):
                 'time: {log[time]:.3f}, data_time: {log[data_time]:.3f}, '.
                 format(log=runner.log_buffer.output))
         # statistic memory
-        if runner.mode == 'train' and torch.cuda.is_available():
-            mem = torch.cuda.max_memory_allocated()
-            mem_mb = int(mem / (1024 * 1024))
-            mem_str = 'memory: {}, '.format(mem_mb)
-            log_str += mem_str
+        # training mode if the output contains the key "time"
+        if 'time' in runner.log_buffer.output and torch.cuda.is_available():
+            mem_mb = self._get_max_memory(runner)
+            log_str += 'memory: {}, '.format(mem_mb.item())
         log_items = []
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
