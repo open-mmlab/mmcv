@@ -1,4 +1,5 @@
 import datetime
+import os.path as osp
 
 import torch
 import torch.distributed as dist
@@ -16,8 +17,17 @@ class TextLoggerHook(LoggerHook):
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
         self.start_iter = runner.iter
-        self.json_log_path = '{}/{}.{}'.format(runner.work_dir,
-                                               runner.timestamp, 'log.json')
+        self.json_log_path = osp.join(runner.work_dir,
+                                      '{}.log.json'.format(runner.timestamp))
+
+    def _get_max_memory(self, runner):
+        mem = torch.cuda.max_memory_allocated()
+        mem_mb = torch.tensor([mem / (1024 * 1024)],
+                              dtype=torch.int,
+                              device=torch.device('cuda'))
+        if runner.world_size > 1:
+            dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
+        return mem_mb
 
     def log(self, runner):
         if runner.mode == 'train':
@@ -29,7 +39,6 @@ class TextLoggerHook(LoggerHook):
         else:
             log_str = 'Epoch({}) [{}][{}]\t'.format(runner.mode, runner.epoch,
                                                     runner.inner_iter + 1)
-        # runner.mode is still 'train' at validation
         mode = 'train' if 'time' in runner.log_buffer.output else 'val'
         if 'time' in runner.log_buffer.output:
             self.time_sec_tot += (
@@ -53,12 +62,7 @@ class TextLoggerHook(LoggerHook):
                 runner.log_buffer.output['data_time'], 4)
             # statistic memory
             if torch.cuda.is_available():
-                mem = torch.cuda.max_memory_allocated()
-                mem_mb = torch.tensor([mem / (1024 * 1024)],
-                                      dtype=torch.int,
-                                      device=torch.device('cuda'))
-                if runner.world_size > 1:
-                    dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
+                mem_mb = self._get_max_memory(runner)
                 log_str += 'memory: {}, '.format(mem_mb.item())
                 json_log['memory'] = mem_mb.item()
         log_items = []
@@ -73,8 +77,7 @@ class TextLoggerHook(LoggerHook):
             log_items.append('{}: {}'.format(name, val))
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
-        if runner.world_size == 1 or (runner.world_size > 1
-                                      and dist.get_rank() == 0):
+        if runner.rank == 0:
             with open(self.json_log_path, 'a+') as f:
                 mmcv.dump(json_log, f, file_format='json')
                 f.write('\n')
