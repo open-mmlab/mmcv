@@ -10,7 +10,7 @@ def iminvert(img):
     Returns:
         ndarray: The inverted image.
     """
-    return 255 * np.ones_like(img) - img
+    return np.full_like(img, 255) - img
 
 
 def bgr2gray(img, keepdim=False):
