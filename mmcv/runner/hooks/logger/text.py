@@ -68,21 +68,20 @@ class TextLoggerHook(LoggerHook):
         # dump log in json format
         json_log = OrderedDict()
         for k, v in log_dict.items():
-            if isinstance(v, list):
-                # round float up to 5 bits
-                v = [round(item, 5) for item in v if isinstance(item, float)]
-                if len(v) == 1:
-                    v = v[0]
-                else:
-                    v = ','.join(v)
-            elif isinstance(v, float):
-                v = round(v, 5)
-            json_log[k] = v
+            json_log[k] = self._round_float(v)
         # only append log at last line
         if runner.rank == 0:
             with open(self.json_log_path, 'a+') as f:
                 mmcv.dump(json_log, f, file_format='json')
                 f.write('\n')
+
+    def _round_float(self, items):
+        if isinstance(items, list):
+            return [self._round_float(item) for item in items]
+        elif isinstance(items, float):
+            return round(items, 5)
+        else:
+            return items
 
     def log(self, runner):
         log_dict = OrderedDict()
