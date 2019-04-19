@@ -16,10 +16,10 @@ def check_image_valid(img_bytes, flag='color'):
 def write_cache(env, cache):
     with env.begin(write=True) as txn:
         for k, v in cache.items():
-            txn.put(str(k).encode(), str(v).encode())
+            txn.put(str(k).encode(), v)
 
 
-def create_rawimage_dataset(output_path, img_file_list, image_tmpl='image_{}', flag='color', check_valid=True):
+def create_rawimage_dataset(output_path, img_file_list, image_tmpl=None, flag='color', check_valid=True):
     """ Create LMDB dataset from a bunch of raw image (within a same video)
 
     Args:
@@ -43,14 +43,14 @@ def create_rawimage_dataset(output_path, img_file_list, image_tmpl='image_{}', f
                 print('{} is not a valid image'.format(img_path))
                 continue
 
-        img_key = image_tmpl.format(cnt)
+        img_key = osp.splitext(osp.basename(img_path))[0] if image_tmpl is None else image_tmpl.format(cnt)
         cache[img_key] = img_bytes
         if cnt % 1000 == 0:
             write_cache(env, cache)
             cache = {}
             print("{} / {} images written.".format(cnt, num_samples))
         cnt += 1
-    cache['num_samples'] = cnt - 1
+    cache['num_samples'] = str(cnt - 1).encode()
     write_cache(env, cache)
     print('Create dataset with {} samples'.format(num_samples))
 
