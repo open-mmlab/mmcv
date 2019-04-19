@@ -34,8 +34,8 @@ class TextLoggerHook(LoggerHook):
         if runner.mode == 'train':
             lr_str = ', '.join(['{:.5f}'.format(lr) for lr in log_dict['lr']])
             log_str = 'Epoch [{}][{}/{}]\tlr: {}, '.format(
-                log_dict['epoch'], log_dict['iter'],
-                len(runner.data_loader), lr_str)
+                log_dict['epoch'], log_dict['iter'], len(runner.data_loader),
+                lr_str)
             if 'time' in log_dict.keys():
                 self.time_sec_tot += (log_dict['time'] * self.interval)
                 time_sec_avg = self.time_sec_tot / (
@@ -70,7 +70,7 @@ class TextLoggerHook(LoggerHook):
         for k, v in log_dict.items():
             if isinstance(v, list):
                 # round float up to 5 bits
-                v = [round(vv, 5) for vv in v if isinstance(vv, float)]
+                v = [round(item, 5) for item in v if isinstance(item, float)]
                 if len(v) == 1:
                     v = v[0]
                 else:
