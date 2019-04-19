@@ -31,27 +31,28 @@ class TextLoggerHook(LoggerHook):
         return mem_mb.item()
 
     def _log_info(self, log_dict, runner):
-        if log_dict['mode'] == 'train':
+        if runner.mode == 'train':
             lr_str = ', '.join(['{:.5f}'.format(lr) for lr in log_dict['lr']])
             log_str = 'Epoch [{}][{}/{}]\tlr: {}, '.format(
-                log_dict['epoch'], log_dict['iter'], len(runner.data_loader),
-                lr_str)
-            self.time_sec_tot += (
-                runner.log_buffer.output['time'] * self.interval)
-            time_sec_avg = self.time_sec_tot / (
-                runner.iter - self.start_iter + 1)
-            eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
-            eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
-            log_str += 'eta: {}, '.format(eta_str)
-            log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
-                log_dict['time'], log_dict['data_time']))
-            log_str += 'memory: {}, '.format(log_dict['memory'])
+                log_dict['epoch'], log_dict['iter'],
+                len(runner.data_loader), lr_str)
+            if 'time' in log_dict.keys():
+                self.time_sec_tot += (log_dict['time'] * self.interval)
+                time_sec_avg = self.time_sec_tot / (
+                    runner.iter - self.start_iter + 1)
+                eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
+                eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
+                log_str += 'eta: {}, '.format(eta_str)
+                log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
+                    log_dict['time'], log_dict['data_time']))
+                log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
             log_str = 'Epoch({}) [{}][{}]\t'.format(
-                log_dict['mode'], log_dict['epoch'], log_dict['iter'])
+                log_dict['mode'], log_dict['epoch'] - 1, log_dict['iter'])
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
+            # these items have been in log_str
             if name in [
                     'mode', 'Epoch', 'iter', 'lr', 'time', 'data_time',
                     'memory', 'epoch'
@@ -64,17 +65,20 @@ class TextLoggerHook(LoggerHook):
         runner.logger.info(log_str)
 
     def _dump_log(self, log_dict, runner):
+        # dump log in json format
         json_log = OrderedDict()
         for k, v in log_dict.items():
             if isinstance(v, list):
-                vs = [round(vv, 5) for vv in v]
-                if len(vs) == 1:
-                    v = vs[0]
+                # round float up to 5 bits
+                v = [round(vv, 5) for vv in v if isinstance(vv, float)]
+                if len(v) == 1:
+                    v = v[0]
                 else:
-                    v = ','.join(vs)
+                    v = ','.join(v)
             elif isinstance(v, float):
                 v = round(v, 5)
             json_log[k] = v
+        # only append log at last line
         if runner.rank == 0:
             with open(self.json_log_path, 'a+') as f:
                 mmcv.dump(json_log, f, file_format='json')
