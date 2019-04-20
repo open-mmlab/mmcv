@@ -290,5 +290,5 @@ class TestImage(object):
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                        dtype=np.uint8)
         img_r = np.array([[255, 127, 0], [254, 128, 1], [253, 126, 2]],
-                        dtype=np.uint8)
+                         dtype=np.uint8)
         assert_array_equal(mmcv.iminvert(img), img_r)
