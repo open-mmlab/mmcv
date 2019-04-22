@@ -1,4 +1,6 @@
 import sys
+from io import open  # for Python 2 (identical to builtin in Python 3)
+
 from setuptools import find_packages, setup
 
 install_requires = [
@@ -11,14 +13,14 @@ if sys.version_info < (3, 4):
 
 
 def readme():
-    with open('README.rst') as f:
+    with open('README.rst', encoding='utf-8') as f:
         content = f.read()
     return content
 
 
 def get_version():
     version_file = 'mmcv/version.py'
-    with open(version_file, 'r') as f:
+    with open(version_file, 'r', encoding='utf-8') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
