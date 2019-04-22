@@ -3,6 +3,12 @@ import functools
 import itertools
 import subprocess
 from importlib import import_module
+# ABCs from collections will be deprecated in python 3.8+,
+# while collections.abc is not available in python 2.7
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc
 
 import six
 
@@ -24,7 +30,7 @@ def iter_cast(inputs, dst_type, return_type=None):
     Returns:
         iterator or specified type: The converted object.
     """
-    if not isinstance(inputs, collections.Iterable):
+    if not isinstance(inputs, collections_abc.Iterable):
         raise TypeError('inputs must be an iterable object')
     if not isinstance(dst_type, type):
         raise TypeError('"dst_type" must be a valid type')
@@ -65,7 +71,7 @@ def is_seq_of(seq, expected_type, seq_type=None):
         bool: Whether the sequence is valid.
     """
     if seq_type is None:
-        exp_seq_type = collections.Sequence
+        exp_seq_type = collections_abc.Sequence
     else:
         assert isinstance(seq_type, type)
         exp_seq_type = seq_type
