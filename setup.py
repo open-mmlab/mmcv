@@ -48,7 +48,6 @@ setup(
     url='https://github.com/open-mmlab/mmcv',
     author='Kai Chen',
     author_email='chenkaidev@gmail.com',
-    license='GPLv3',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=install_requires,
