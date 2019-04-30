@@ -89,7 +89,8 @@ class TextLoggerHook(LoggerHook):
         log_dict['mode'] = mode
         log_dict['epoch'] = runner.epoch + 1
         log_dict['iter'] = runner.inner_iter + 1
-        log_dict['lr'] = runner.current_lr()[0]  # only record base lr
+        # only record lr of the first param group
+        log_dict['lr'] = runner.current_lr()[0]
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
