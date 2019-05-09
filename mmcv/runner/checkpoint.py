@@ -107,8 +107,9 @@ def load_checkpoint(model,
                 torchvision.models.__path__):
             if not ispkg:
                 _zoo = import_module('torchvision.models.{}'.format(name))
-                _urls = getattr(_zoo, 'model_urls')
-                model_urls.update(_urls)
+                if hasattr(_zoo, 'model_urls'):
+                    _urls = getattr(_zoo, 'model_urls')
+                    model_urls.update(_urls)
         model_name = filename[11:]
         checkpoint = model_zoo.load_url(model_urls[model_name])
     elif filename.startswith('open-mmlab://'):
