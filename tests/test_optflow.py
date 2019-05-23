@@ -4,6 +4,7 @@ import os
 import os.path as osp
 import tempfile
 
+import time
 import mmcv
 import numpy as np
 import pytest
@@ -138,6 +139,48 @@ def test_flow2rgb():
                    [0., 0., 0.]]],
                  dtype=np.float32))
     # yapf: enable
+
+
+def test_flow_warp():
+
+    def np_flow_warp(flow, img):
+        output = np.zeros_like(img, dtype=img.dtype)
+        height = flow.shape[0]
+        width = flow.shape[1]
+
+        grid = np.indices((height, width)).swapaxes(0, 1).swapaxes(1, 2)
+        dx = grid[:,:,0] + flow[:,:,1]
+        dy = grid[:,:,1] + flow[:,:,0]
+        sx = np.floor(dx).astype(int)
+        sy = np.floor(dy).astype(int)
+        valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
+
+        output[valid, :] = img[dx[valid].round().astype(int), dy[valid].round().astype(int), :]
+
+        return output
+
+    dim = 500
+    a = np.random.randn(dim, dim, 3)* 10 + 125 
+    b = np.random.randn(dim, dim, 2) + 2 + 0.2
+    # b = np.floor(b)
+
+    st_time = time.time()
+    c = mmcv.flow_warp(a, b, interpolate_mode=1)
+    c_time = time.time() - st_time
+
+    st_time = time.time()
+    d = np_flow_warp(b, a)
+    py_time = time.time() - st_time
+
+    error = np.mean(np.abs(d-c))
+    error_max = np.max(np.abs(d-c))
+    
+    print('Test Optical Flow Warp Module:')
+    print('C Runtime:', c_time, 'Py Runtime', py_time)
+    print('C FPS:', 1 / c_time, 'Py FPS:', 1 / py_time)
+    print('Faster by:', py_time / c_time)
+    print('Error Mean:', error, 'Error Max:', error_max)
+
 
 
 def test_make_color_wheel():
