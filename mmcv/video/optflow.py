@@ -157,8 +157,9 @@ def flow_warp(img, flow, ignore_label=0, interpolate_mode=1):
     assert flow.shape[0] == img.shape[0] and flow.shape[1] == img.shape[1]
 
     img_double = img.astype(np.float)
-    
-    out = flow_warp_func(img_double, flow, 
+
+    out = flow_warp_func(img_double,
+                         flow,
                          ignore_label=ignore_label,
                          interpolate_mode=interpolate_mode)
 
