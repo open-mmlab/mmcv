@@ -147,9 +147,8 @@ def flow_warp(img, flow, ignore_label=0, interpolate_mode=1):
         img (ndarray, double): Image to be warped.
         flow (ndarray, double): Optical Flow.
         ignore_label (int): The missing pixels will be set with ignore_label.
-        interpolate_mode (int): 
-            0 -> Bilinear Interpolation. 
-            1 -> Nearest Neighbor.
+        interpolate_mode (int): 0 -> Bilinear Interpolation;
+                                1 -> Nearest Neighbor.
 
     Returns:
         ndarray: Warped Image with the same shape of img
