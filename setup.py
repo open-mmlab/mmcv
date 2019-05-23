@@ -1,7 +1,12 @@
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
 
-from setuptools import find_packages, setup
+import numpy
+
+from Cython.Distutils import build_ext
+from Cython.Build import cythonize
+
+from setuptools import find_packages, setup, Extension
 
 install_requires = [
     'numpy>=1.11.1', 'pyyaml', 'six', 'addict', 'requests', 'opencv-python'
@@ -24,6 +29,15 @@ def get_version():
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
+
+EXT_MODULES = [
+                Extension(
+                    name='mmcv._ext',
+                    sources=['./mmcv/video/optflow_warp/flow_warp.cpp', './mmcv/video/optflow_warp/flow_warp_module.pyx'],
+                    include_dirs=[numpy.get_include(), './mmcv/video/optflow_warp/'],
+                    language="c++",
+                ),
+]
 
 setup(
     name='mmcv',
@@ -51,4 +65,6 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=install_requires,
+    ext_modules=EXT_MODULES,
+    cmdclass={'build_ext': build_ext},
     zip_safe=False)
