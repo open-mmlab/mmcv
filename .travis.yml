@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get install -y ffmpeg
 
 install:
-  - pip install opencv-python pyyaml codecov flake8
+  - pip install opencv-python pyyaml codecov flake8 Cython
 
 cache:
   pip: true
