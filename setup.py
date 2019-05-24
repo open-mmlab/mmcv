@@ -1,11 +1,10 @@
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
 
-from setuptools import find_packages, setup, Extension
+from setuptools import Extension, find_packages, setup
 
 import numpy
 from Cython.Distutils import build_ext
-
 
 install_requires = [
     'numpy>=1.11.1', 'pyyaml', 'six', 'addict', 'requests', 'opencv-python',
@@ -42,31 +41,32 @@ EXT_MODULES = [
     ),
 ]
 
-setup(name='mmcv',
-      version=get_version(),
-      description='Open MMLab Computer Vision Foundation',
-      long_description=readme(),
-      keywords='computer vision',
-      packages=find_packages(),
-      classifiers=[
-          'Development Status :: 4 - Beta',
-          'License :: OSI Approved :: Apache Software License',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.4',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Topic :: Utilities',
-      ],
-      url='https://github.com/open-mmlab/mmcv',
-      author='Kai Chen',
-      author_email='chenkaidev@gmail.com',
-      setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
-      install_requires=install_requires,
-      ext_modules=EXT_MODULES,
-      cmdclass={'build_ext': build_ext},
-      zip_safe=False)
+setup(
+    name='mmcv',
+    version=get_version(),
+    description='Open MMLab Computer Vision Foundation',
+    long_description=readme(),
+    keywords='computer vision',
+    packages=find_packages(),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: Utilities',
+    ],
+    url='https://github.com/open-mmlab/mmcv',
+    author='Kai Chen',
+    author_email='chenkaidev@gmail.com',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+    install_requires=install_requires,
+    ext_modules=EXT_MODULES,
+    cmdclass={'build_ext': build_ext},
+    zip_safe=False)

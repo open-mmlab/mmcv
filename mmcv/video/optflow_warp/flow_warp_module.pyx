@@ -11,10 +11,10 @@ cdef extern from "flow_warp.hpp":
 cdef extern from "flow_warp.hpp":
     void getWarpLabel(double* img, double* flow1, double* flow2, double* out, const int height, const int width, const int channels, const int ignoreLabel, const int interpolateMode, const double threshold)
  
-def flow_warp_func(np.ndarray[double, ndim=3, mode="c"] img_array not None,
-                   np.ndarray[double, ndim=3, mode="c"] flow_array not None,
-                   int ignore_label=0,
-                   int interpolate_mode=1):
+def flow_warp_c(np.ndarray[double, ndim=3, mode="c"] img_array not None,
+                np.ndarray[double, ndim=3, mode="c"] flow_array not None,
+                int ignore_label=0,
+                int interpolate_mode=1):
 
     out_array = np.zeros_like(img_array)
 
@@ -28,6 +28,3 @@ def flow_warp_func(np.ndarray[double, ndim=3, mode="c"] img_array not None,
              interpolate_mode)
 
     return out_array
-
-
-

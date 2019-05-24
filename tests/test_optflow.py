@@ -164,13 +164,22 @@ def test_flow_warp():
     dim = 500
     a = np.random.randn(dim, dim, 3) * 10 + 125
     b = np.random.randn(dim, dim, 2) + 2 + 0.2
-    # b = np.floor(b)
 
-    c = mmcv.flow_warp(a, b, interpolate_mode=1)
+    c = mmcv.flow_warp(a, b, interpolate_mode='nearest')
 
     d = np_flow_warp(b, a)
 
+    simple_a = np.zeros((5, 5, 3))
+    simple_a[2, 2, 0] = 1
+    simple_b = np.ones((5, 5, 2))
+
+    simple_res_c = np.zeros((5, 5, 3))
+    simple_res_c[1, 1, 0] = 1
+
+    res_c = mmcv.flow_warp(a, b, interpolate_mode='bilinear')
+
     assert_array_equal(c, d)
+    assert_array_equal(res_c, simple_res_c)
 
 
 def test_make_color_wheel():

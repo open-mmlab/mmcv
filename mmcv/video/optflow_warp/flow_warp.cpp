@@ -1,4 +1,3 @@
-
 #include <flow_warp.hpp>
 
 void flowWarp(double* img, double* flow1, double* out, const int height,

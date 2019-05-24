@@ -3,7 +3,7 @@ import numpy as np
 from mmcv.arraymisc import quantize, dequantize
 from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
-from mmcv._ext import flow_warp_func
+from mmcv._ext import flow_warp_c
 
 
 def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
@@ -140,28 +140,31 @@ def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
     return flow
 
 
-def flow_warp(img, flow, ignore_label=0, interpolate_mode=1):
+def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     """Use flow to warp img
 
     Args:
-        img (ndarray, double): Image to be warped.
+        img (ndarray, float): Image to be warped.
         flow (ndarray, double): Optical Flow.
-        ignore_label (int): The missing pixels will be set with ignore_label.
-        interpolate_mode (int): 0 -> Bilinear Interpolation;
-                                1 -> Nearest Neighbor.
+        filling_value (int): The missing pixels will be set with filling_value.
+        interpolate_mode (int): bilinear -> Bilinear Interpolation;
+                                nearest -> Nearest Neighbor.
 
     Returns:
         ndarray: Warped Image with the same shape of img
     """
+    interpolate_mode_dict = {'bilinear': 0, 'nearest': 1}
     assert len(img.shape) == 3
     assert len(flow.shape) == 3 and flow.shape[2] == 2
-    assert flow.shape[0] == img.shape[0] and flow.shape[1] == img.shape[1]
+    assert flow.shape[:2] == img.shape[:2]
+    assert interpolate_mode in interpolate_mode_dict.keys()
 
-    img_double = img.astype(np.float)
+    interpolate_mode = interpolate_mode_dict[interpolate_mode]
+    img_float = img.astype(np.float)
 
-    out = flow_warp_func(img_double,
-                         flow,
-                         ignore_label=ignore_label,
-                         interpolate_mode=interpolate_mode)
+    out = flow_warp_c(img_float,
+                      flow,
+                      ignore_label=filling_value,
+                      interpolate_mode=interpolate_mode)
 
     return out
