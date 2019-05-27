@@ -176,7 +176,7 @@ def test_flow_warp():
     simple_res_c = np.zeros((5, 5, 3))
     simple_res_c[1, 1, 0] = 1
 
-    res_c = mmcv.flow_warp(a, b, interpolate_mode='bilinear')
+    res_c = mmcv.flow_warp(simple_a, simple_b, interpolate_mode='bilinear')
 
     assert_array_equal(c, d)
     assert_array_equal(res_c, simple_res_c)

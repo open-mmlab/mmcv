@@ -1,7 +1,7 @@
 #include <flow_warp.hpp>
 
-void flowWarp(double* img, double* flow1, double* out, const int height,
-              const int width, const int channels, const int ignoreLabel = 0,
+void flowWarp(double* img, double* flow, double* out, const int height,
+              const int width, const int channels, const int filling_value = 0,
               const int interpolateMode = 0) {
   for (int h = 0; h < height; h++) {
     for (int w = 0; w < width; w++) {
@@ -9,12 +9,12 @@ void flowWarp(double* img, double* flow1, double* out, const int height,
       int offset_img = offset_cur * channels;
       int offset_flow = offset_cur * 2;
       double x, y;
-      x = h + flow1[offset_flow + 1];
-      y = w + flow1[offset_flow];
+      x = h + flow[offset_flow + 1];
+      y = w + flow[offset_flow];
 
       if (x < 0 || x >= height - 1 || y < 0 || y >= width - 1) {
         for (int k = 0; k < channels; k++) {
-          out[offset_img + k] = ignoreLabel;
+          out[offset_img + k] = filling_value;
         }
         continue;
       }

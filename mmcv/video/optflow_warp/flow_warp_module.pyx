@@ -6,14 +6,11 @@ cimport numpy as np
 np.import_array()
 
 cdef extern from "flow_warp.hpp":
-    void flowWarp(double* img, double* flow1, double* out, const int height, const int width, const int channels, const int ignoreLabel, const int interpolateMode)
+    void flowWarp(double* img, double* flow1, double* out, const int height, const int width, const int channels, const int filling_value, const int interpolateMode)
 
-cdef extern from "flow_warp.hpp":
-    void getWarpLabel(double* img, double* flow1, double* flow2, double* out, const int height, const int width, const int channels, const int ignoreLabel, const int interpolateMode, const double threshold)
- 
 def flow_warp_c(np.ndarray[double, ndim=3, mode="c"] img_array not None,
                 np.ndarray[double, ndim=3, mode="c"] flow_array not None,
-                int ignore_label=0,
+                int filling_value=0,
                 int interpolate_mode=1):
 
     out_array = np.zeros_like(img_array)
@@ -24,7 +21,7 @@ def flow_warp_c(np.ndarray[double, ndim=3, mode="c"] img_array not None,
              out_array.shape[0],
              out_array.shape[1],
              out_array.shape[2],
-             ignore_label,
+             filling_value,
              interpolate_mode)
 
     return out_array

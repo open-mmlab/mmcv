@@ -145,13 +145,13 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
 
     Args:
         img (ndarray, float): Image to be warped.
-        flow (ndarray, double): Optical Flow.
+        flow (ndarray, float): Optical Flow.
         filling_value (int): The missing pixels will be set with filling_value.
         interpolate_mode (int): bilinear -> Bilinear Interpolation;
                                 nearest -> Nearest Neighbor.
 
     Returns:
-        ndarray: Warped Image with the same shape of img
+        ndarray: Warped image with the same shape of img
     """
     interpolate_mode_dict = {'bilinear': 0, 'nearest': 1}
     assert len(img.shape) == 3
@@ -160,10 +160,10 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     assert interpolate_mode in interpolate_mode_dict.keys()
 
     interpolate_mode = interpolate_mode_dict[interpolate_mode]
-    img_float = img.astype(np.float)
+    img_float = img.astype(np.float64)
 
     out = flow_warp_c(img_float,
-                      flow,
+                      flow.astype(np.float64),
                       ignore_label=filling_value,
                       interpolate_mode=interpolate_mode)
 

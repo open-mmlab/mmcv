@@ -5,12 +5,8 @@
 using namespace std;
 
 void flowWarp(double* img, double* flow1, double* out, const int height,
-              const int width, const int channels, const int ignoreLabel,
+              const int width, const int channels, const int filling_value,
               const int interpolateMode);
-
-// void getWarpLabel(double* img, double* flow1, double* flow2, double* out,
-// const int height, const int width, const int channels, const int ignoreLabel,
-// const int interpolateMode, const double threshold);
 
 void BilinearInterpolate(const double* img, int width, int height, int channels,
                          double x, double y, double* out);
