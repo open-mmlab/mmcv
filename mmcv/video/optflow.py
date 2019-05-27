@@ -164,7 +164,7 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
 
     out = flow_warp_c(img_float,
                       flow.astype(np.float64),
-                      ignore_label=filling_value,
+                      filling_value=filling_value,
                       interpolate_mode=interpolate_mode)
 
     return out
