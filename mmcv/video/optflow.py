@@ -144,10 +144,10 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     """Use flow to warp img
 
     Args:
-        img (ndarray, float): Image to be warped.
+        img (ndarray, float or uint8): Image to be warped.
         flow (ndarray, float): Optical Flow.
         filling_value (int): The missing pixels will be set with filling_value.
-        interpolate_mode (int): bilinear -> Bilinear Interpolation;
+        interpolate_mode (str): bilinear -> Bilinear Interpolation;
                                 nearest -> Nearest Neighbor.
 
     Returns:
