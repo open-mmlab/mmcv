@@ -243,11 +243,13 @@ class Runner(object):
         else:
             meta.update(epoch=self.epoch + 1, iter=self.iter)
 
-        filename = osp.join(out_dir, filename_tmpl.format(self.epoch + 1))
-        linkname = osp.join(out_dir, 'latest.pth')
+        filename = filename_tmpl.format(self.epoch + 1)
+        filepath = osp.join(out_dir, filename)
+        linkpath = osp.join(out_dir, 'latest.pth')
         optimizer = self.optimizer if save_optimizer else None
-        save_checkpoint(self.model, filename, optimizer=optimizer, meta=meta)
-        mmcv.symlink(filename, linkname)
+        save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
+        # use relative symlink
+        mmcv.symlink(filename, linkpath)
 
     def train(self, data_loader, **kwargs):
         self.model.train()
