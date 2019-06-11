@@ -89,14 +89,14 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 def load_url_dist(url):
     rank, world_size = get_dist_info()
-    rank = os.environ.get('LOCAL_RANK', rank)
+    rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        model_zoo.load_url(url)
+        checkpoint = model_zoo.load_url(url)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            model_zoo.load_url(url)
-
+            checkpoint = model_zoo.load_url(url)
+    return checkpoint
 
 def load_checkpoint(model,
                     filename,
