@@ -32,12 +32,12 @@ class DataContainer(object):
     """
 
     def __init__(self, data, stack=False, padding_value=0,
-                 cpu_only=False, pad_dim='HW'):
+                 cpu_only=False, pad_dim=2):
         self._data = data
         self._cpu_only = cpu_only
         self._stack = stack
         self._padding_value = padding_value
-        assert pad_dim in [None, 'HW', 'THW']
+        assert pad_dim in [None, 1, 2, 3]
         self._pad_dim = pad_dim
 
     def __repr__(self):
