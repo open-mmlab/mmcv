@@ -3,6 +3,7 @@ import numpy as np
 from mmcv.arraymisc import quantize, dequantize
 from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
+from mmcv._ext import flow_warp_c
 
 
 def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
@@ -137,3 +138,33 @@ def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
         dy *= dx.shape[0]
     flow = np.dstack((dx, dy))
     return flow
+
+
+def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
+    """Use flow to warp img
+
+    Args:
+        img (ndarray, float or uint8): Image to be warped.
+        flow (ndarray, float): Optical Flow.
+        filling_value (int): The missing pixels will be set with filling_value.
+        interpolate_mode (str): bilinear -> Bilinear Interpolation;
+                                nearest -> Nearest Neighbor.
+
+    Returns:
+        ndarray: Warped image with the same shape of img
+    """
+    interpolate_mode_dict = {'bilinear': 0, 'nearest': 1}
+    assert len(img.shape) == 3
+    assert len(flow.shape) == 3 and flow.shape[2] == 2
+    assert flow.shape[:2] == img.shape[:2]
+    assert interpolate_mode in interpolate_mode_dict.keys()
+
+    interpolate_mode = interpolate_mode_dict[interpolate_mode]
+    img_float = img.astype(np.float64)
+
+    out = flow_warp_c(img_float,
+                      flow.astype(np.float64),
+                      filling_value=filling_value,
+                      interpolate_mode=interpolate_mode)
+
+    return out

@@ -1,11 +1,11 @@
 import os.path as osp
 import sys
 from argparse import ArgumentParser
-from collections import Iterable
 from importlib import import_module
 
 from addict import Dict
 
+from .misc import collections_abc
 from .path import check_file_exist
 
 
@@ -39,7 +39,7 @@ def add_args(parser, cfg, prefix=''):
             parser.add_argument('--' + prefix + k, action='store_true')
         elif isinstance(v, dict):
             add_args(parser, v, k + '.')
-        elif isinstance(v, Iterable):
+        elif isinstance(v, collections_abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
             print('connot parse key {} of type {}'.format(prefix + k, type(v)))

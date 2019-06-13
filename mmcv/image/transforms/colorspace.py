@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def iminvert(img):
     """Invert (negate) an image
     Args:
@@ -9,7 +10,8 @@ def iminvert(img):
     Returns:
         ndarray: The inverted image.
     """
-    return 255 * np.ones_like(img) - img
+    return np.full_like(img, 255) - img
+
 
 def bgr2gray(img, keepdim=False):
     """Convert a BGR image to grayscale image.
@@ -69,3 +71,7 @@ rgb2bgr = convert_color_factory('rgb', 'bgr')
 bgr2hsv = convert_color_factory('bgr', 'hsv')
 
 hsv2bgr = convert_color_factory('hsv', 'bgr')
+
+bgr2hls = convert_color_factory('bgr', 'hls')
+
+hls2bgr = convert_color_factory('hls', 'bgr')
