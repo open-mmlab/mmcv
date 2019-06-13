@@ -1,7 +1,7 @@
-import collections
 import sys
 from multiprocessing import Pool
 
+from .misc import collections_abc
 from .timer import Timer
 
 
@@ -76,11 +76,11 @@ def track_progress(func, tasks, bar_width=50, **kwargs):
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections.Iterable)
+        assert isinstance(tasks[0], collections_abc.Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections.Iterable):
+    elif isinstance(tasks, collections_abc.Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
@@ -141,11 +141,11 @@ def track_parallel_progress(func,
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections.Iterable)
+        assert isinstance(tasks[0], collections_abc.Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections.Iterable):
+    elif isinstance(tasks, collections_abc.Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(

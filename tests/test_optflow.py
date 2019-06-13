@@ -3,6 +3,7 @@
 import os
 import os.path as osp
 import tempfile
+import time
 
 import mmcv
 import numpy as np
@@ -22,18 +23,18 @@ def test_flowread():
     assert_array_equal(flow, flow_same)
 
     # read quantized flow concatenated vertically
-    flow = mmcv.flowread(
-        osp.join(osp.dirname(__file__), 'data/optflow_concat0.jpg'),
-        quantize=True,
-        denorm=True)
+    flow = mmcv.flowread(osp.join(osp.dirname(__file__),
+                                  'data/optflow_concat0.jpg'),
+                         quantize=True,
+                         denorm=True)
     assert flow.shape == flow_shape
 
     # read quantized flow concatenated horizontally
-    flow = mmcv.flowread(
-        osp.join(osp.dirname(__file__), 'data/optflow_concat1.jpg'),
-        quantize=True,
-        concat_axis=1,
-        denorm=True)
+    flow = mmcv.flowread(osp.join(osp.dirname(__file__),
+                                  'data/optflow_concat1.jpg'),
+                         quantize=True,
+                         concat_axis=1,
+                         denorm=True)
     assert flow.shape == flow_shape
 
     # test exceptions
@@ -61,8 +62,10 @@ def test_flowwrite():
     # write to two .jpg files
     tmp_filename = osp.join(tempfile.gettempdir(), 'mmcv_test_flow.jpg')
     for concat_axis in range(2):
-        mmcv.flowwrite(
-            flow, tmp_filename, quantize=True, concat_axis=concat_axis)
+        mmcv.flowwrite(flow,
+                       tmp_filename,
+                       quantize=True,
+                       concat_axis=concat_axis)
         shape = (200, 100) if concat_axis == 0 else (100, 200)
         assert osp.isfile(tmp_filename)
         assert mmcv.imread(tmp_filename, flag='unchanged').shape == shape
@@ -117,16 +120,16 @@ def test_dequantize_flow():
     ref = np.zeros_like(flow, dtype=np.float32)
     for i in range(ref.shape[0]):
         for j in range(ref.shape[1]):
-            ref[i, j,
-                0] = (float(dx[i, j] + 0.5) * 2 * max_val / 255 - max_val) * w
-            ref[i, j,
-                1] = (float(dy[i, j] + 0.5) * 2 * max_val / 255 - max_val) * h
+            ref[i, j, 0] = (float(dx[i, j] + 0.5) * 2 * max_val / 255 -
+                            max_val) * w
+            ref[i, j, 1] = (float(dy[i, j] + 0.5) * 2 * max_val / 255 -
+                            max_val) * h
     assert_array_almost_equal(flow, ref)
 
 
 def test_flow2rgb():
-    flow = np.array(
-        [[[0, 0], [0.5, 0.5], [1, 1], [2, 1], [3, np.inf]]], dtype=np.float32)
+    flow = np.array([[[0, 0], [0.5, 0.5], [1, 1], [2, 1], [3, np.inf]]],
+                    dtype=np.float32)
     flow_img = mmcv.flow2rgb(flow)
     # yapf: disable
     assert_array_almost_equal(
@@ -138,6 +141,45 @@ def test_flow2rgb():
                    [0., 0., 0.]]],
                  dtype=np.float32))
     # yapf: enable
+
+
+def test_flow_warp():
+    def np_flow_warp(flow, img):
+        output = np.zeros_like(img, dtype=img.dtype)
+        height = flow.shape[0]
+        width = flow.shape[1]
+
+        grid = np.indices((height, width)).swapaxes(0, 1).swapaxes(1, 2)
+        dx = grid[:, :, 0] + flow[:, :, 1]
+        dy = grid[:, :, 1] + flow[:, :, 0]
+        sx = np.floor(dx).astype(int)
+        sy = np.floor(dy).astype(int)
+        valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
+
+        output[valid, :] = img[dx[valid].round().astype(int), dy[valid].round(
+        ).astype(int), :]
+
+        return output
+
+    dim = 500
+    a = np.random.randn(dim, dim, 3) * 10 + 125
+    b = np.random.randn(dim, dim, 2) + 2 + 0.2
+
+    c = mmcv.flow_warp(a, b, interpolate_mode='nearest')
+
+    d = np_flow_warp(b, a)
+
+    simple_a = np.zeros((5, 5, 3))
+    simple_a[2, 2, 0] = 1
+    simple_b = np.ones((5, 5, 2))
+
+    simple_res_c = np.zeros((5, 5, 3))
+    simple_res_c[1, 1, 0] = 1
+
+    res_c = mmcv.flow_warp(simple_a, simple_b, interpolate_mode='bilinear')
+
+    assert_array_equal(c, d)
+    assert_array_equal(res_c, simple_res_c)
 
 
 def test_make_color_wheel():

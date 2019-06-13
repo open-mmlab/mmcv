@@ -80,7 +80,7 @@ class VideoReader(object):
         # get basic info
         self._width = int(self._vcap.get(CAP_PROP_FRAME_WIDTH))
         self._height = int(self._vcap.get(CAP_PROP_FRAME_HEIGHT))
-        self._fps = int(round(self._vcap.get(CAP_PROP_FPS)))
+        self._fps = self._vcap.get(CAP_PROP_FPS)
         self._frame_cnt = int(self._vcap.get(CAP_PROP_FRAME_COUNT))
         self._fourcc = self._vcap.get(CAP_PROP_FOURCC)
 
@@ -111,7 +111,7 @@ class VideoReader(object):
 
     @property
     def fps(self):
-        """int: FPS of the video."""
+        """float: FPS of the video."""
         return self._fps
 
     @property
@@ -298,7 +298,7 @@ def frames2video(frame_dir,
     Args:
         frame_dir (str): The directory containing video frames.
         video_file (str): Output filename.
-        fps (int): FPS of the output video.
+        fps (float): FPS of the output video.
         fourcc (str): Fourcc of the output video, this should be compatible
             with the output file type.
         filename_tmpl (str): Filename template with the index as the variable.
