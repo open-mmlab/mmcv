@@ -29,16 +29,17 @@ class DataContainer(object):
     - copy to GPU, pad all tensors to the same size and stack them
     - copy to GPU without stacking
     - leave the objects as is and pass it to the model
+    - pad_dims specifies the number of last few dimensions to do padding
     """
 
     def __init__(self, data, stack=False, padding_value=0,
-                 cpu_only=False, pad_dim=2):
+                 cpu_only=False, pad_dims=2):
         self._data = data
         self._cpu_only = cpu_only
         self._stack = stack
         self._padding_value = padding_value
-        assert pad_dim in [None, 1, 2, 3]
-        self._pad_dim = pad_dim
+        assert pad_dims in [None, 1, 2, 3]
+        self._pad_dims = pad_dims
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, repr(self.data))
@@ -67,8 +68,8 @@ class DataContainer(object):
         return self._padding_value
 
     @property
-    def pad_dim(self):
-        return self._pad_dim
+    def pad_dims(self):
+        return self._pad_dims
 
     @assert_tensor_type
     def size(self, *args, **kwargs):
