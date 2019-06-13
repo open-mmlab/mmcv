@@ -31,7 +31,8 @@ class DataContainer(object):
     - leave the objects as is and pass it to the model
     """
 
-    def __init__(self, data, stack=False, padding_value=0, cpu_only=False, pad_dim='HW'):
+    def __init__(self, data, stack=False, padding_value=0,
+                 cpu_only=False, pad_dim='HW'):
         self._data = data
         self._cpu_only = cpu_only
         self._stack = stack
