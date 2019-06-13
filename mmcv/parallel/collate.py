@@ -74,7 +74,7 @@ def collate(batch, samples_per_gpu=1):
                     ]
                     stacked.append(default_collate(padded_samples))
                 elif (batch[i].pad_dim == None):
-                    assert batch[i].dim() == 1
+                    # assert batch[i].dim() == 1
                     stacked.append(default_collate([sample.data for sample in batch[i: i+ samples_per_gpu]]))
                 else:
                     raise ValueError("pad_dim should be None, 'HW', or 'THW'")
