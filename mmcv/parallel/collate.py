@@ -49,12 +49,12 @@ def collate(batch, samples_per_gpu=1):
                                     max_shape[dim - 1], sample.size(-dim))
                     padded_samples = []
                     for sample in batch[i:i + samples_per_gpu]:
-                        pad_shape = [0 for _ in range(batch[i].pad_dims * 2)]
+                        pad = [0 for _ in range(batch[i].pad_dims * 2)]
                         for dim in range(1, batch[i].pad_dims + 1):
-                            pad_shape[2 * dim - 1] = max_shape[dim - 1] - sample.size(-dim)
+                            pad[2*dim-1] = max_shape[dim-1] - sample.size(-dim)
                         padded_samples.append(F.pad(
                             sample.data,
-                            pad_shape,
+                            pad,
                             value=sample.padding_value))
                     stacked.append(default_collate(padded_samples))
                 elif (batch[i].pad_dims is None):
