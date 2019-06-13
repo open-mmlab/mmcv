@@ -38,7 +38,7 @@ def collate(batch, samples_per_gpu=1):
                 if batch[i].pad_dim is not None:
                     ndim = batch[i].dim()
                     assert ndim > batch[i].pad_dim
-                    pad_shape = (0, ) * (2 * batch[i].pad_dim)
+                    pad_shape = [0 for _ in range(2 * batch[i].pad_dim)]
                     for dim in range(1, batch[i].pad_dim + 1):
                         pad_shape[2 * dim - 1] = batch[i].size(-dim)
                     for sample in batch[i: i + samples_per_gpu]:
@@ -47,6 +47,8 @@ def collate(batch, samples_per_gpu=1):
                         for dim in range(1, batch[i].pad_dim + 1):
                             pad_shape[2 * dim - 1] = max(
                                     pad_shape[2 * dim - 1], sample.size(-dim))
+                    for dim in range(1, batch[i].pad_dim + 1):
+                        pad_shape[2 * dim - 1] -= sample.size(-dim)
                     padded_samples = [
                         F.pad(
                             sample.data,
@@ -55,6 +57,10 @@ def collate(batch, samples_per_gpu=1):
                         for sample in batch[i:i + samples_per_gpu]
                     ]
                     stacked.append(default_collate(padded_samples))
+                elif (batch[i].pad_dim is None):
+                    stacked.append(default_collate([
+                        sample.data for sample in batch[i: i + samples_per_gpu]
+                        ]))
                 else:
                     raise ValueError(
                             'pad_dim should be either None or integers (1-3)')
