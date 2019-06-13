@@ -38,24 +38,24 @@ def collate(batch, samples_per_gpu=1):
                 if batch[i].pad_dims is not None:
                     ndim = batch[i].dim()
                     assert ndim > batch[i].pad_dims
-                    pad_shape = [0 for _ in range(2 * batch[i].pad_dims)]
+                    max_shape = [0 for _ in range(batch[i].pad_dims)]
                     for dim in range(1, batch[i].pad_dims + 1):
-                        pad_shape[2 * dim - 1] = batch[i].size(-dim)
+                        max_shape[dim - 1] = batch[i].size(-dim)
                     for sample in batch[i: i + samples_per_gpu]:
                         for dim in range(0, ndim - batch[i].pad_dims):
                             assert batch[i].size(dim) == sample.size(dim)
                         for dim in range(1, batch[i].pad_dims + 1):
-                            pad_shape[2 * dim - 1] = max(
-                                    pad_shape[2 * dim - 1], sample.size(-dim))
-                    for dim in range(1, batch[i].pad_dims + 1):
-                        pad_shape[2 * dim - 1] -= sample.size(-dim)
-                    padded_samples = [
-                        F.pad(
+                            max_shape[dim - 1] = max(
+                                    max_shape[dim - 1], sample.size(-dim))
+                    padded_samples = []
+                    for sample in batch[i:i + samples_per_gpu]:
+                        pad_shape = [0 for _ in range(batch[i].pad_dims * 2)]
+                        for dim in range(1, batch[i].pad_dims + 1):
+                            pad_shape[2 * dim - 1] = max_shape[dim - 1] - sample.size(-dim)
+                        padded_samples.append(F.pad(
                             sample.data,
                             pad_shape,
-                            value=sample.padding_value)
-                        for sample in batch[i:i + samples_per_gpu]
-                    ]
+                            value=sample.padding_value))
                     stacked.append(default_collate(padded_samples))
                 elif (batch[i].pad_dims is None):
                     stacked.append(default_collate([
