@@ -110,6 +110,37 @@ class TestImage(object):
                 computed_hsv[i, j, :] = [h, s, v]
         assert_array_almost_equal(out_img, computed_hsv, decimal=2)
 
+    def test_bgr2hls(self):
+        in_img = np.random.rand(10, 10, 3).astype(np.float32)
+        out_img = mmcv.bgr2hls(in_img)
+        argmax = in_img.argmax(axis=2)
+        computed_hls = np.empty_like(in_img, dtype=in_img.dtype)
+        for i in range(in_img.shape[0]):
+            for j in range(in_img.shape[1]):
+                b = in_img[i, j, 0]
+                g = in_img[i, j, 1]
+                r = in_img[i, j, 2]
+                maxc = max(r, g, b)
+                minc = min(r, g, b)
+                _l = (minc + maxc) / 2.0
+                if minc == maxc:
+                    h = 0.0
+                    s = 0.0
+                if _l <= 0.5:
+                    s = (maxc - minc) / (maxc + minc)
+                else:
+                    s = (maxc - minc) / (2.0 - maxc - minc)
+                if argmax[i, j] == 2:
+                    h = 60 * (g - b) / (maxc - minc)
+                elif argmax[i, j] == 1:
+                    h = 60 * (2.0 + (b - r) / (maxc - minc))
+                else:
+                    h = 60 * (4.0 + (r - g) / (maxc - minc))
+                if h < 0:
+                    h += 360
+                computed_hls[i, j, :] = [h, _l, s]
+        assert_array_almost_equal(out_img, computed_hls, decimal=2)
+
     def test_imresize(self):
         resized_img = mmcv.imresize(self.img, (1000, 600))
         assert resized_img.shape == (600, 1000, 3)
@@ -285,3 +316,10 @@ class TestImage(object):
 
         with pytest.raises(ValueError):
             mmcv.imrotate(img, 90, center=(0, 0), auto_bound=True)
+
+    def test_iminvert(self):
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img_r = np.array([[255, 127, 0], [254, 128, 1], [253, 126, 2]],
+                         dtype=np.uint8)
+        assert_array_equal(mmcv.iminvert(img), img_r)

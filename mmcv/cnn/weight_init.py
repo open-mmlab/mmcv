@@ -30,6 +30,7 @@ def uniform_init(module, a=0, b=1, bias=0):
 
 
 def kaiming_init(module,
+                 a=0,
                  mode='fan_out',
                  nonlinearity='relu',
                  bias=0,
@@ -37,9 +38,20 @@ def kaiming_init(module,
     assert distribution in ['uniform', 'normal']
     if distribution == 'uniform':
         nn.init.kaiming_uniform_(
-            module.weight, mode=mode, nonlinearity=nonlinearity)
+            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
     else:
         nn.init.kaiming_normal_(
-            module.weight, mode=mode, nonlinearity=nonlinearity)
+            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
+
+
+def caffe2_xavier_init(module, bias=0):
+    # `XavierFill` in Caffe2 corresponds to `kaiming_uniform_` in PyTorch
+    # Acknowledgment to FAIR's internal code
+    kaiming_init(
+        module,
+        a=1,
+        mode='fan_in',
+        nonlinearity='leaky_relu',
+        distribution='uniform')
