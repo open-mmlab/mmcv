@@ -32,8 +32,12 @@ class DataContainer(object):
     - pad_dims specifies the number of last few dimensions to do padding
     """
 
-    def __init__(self, data, stack=False, padding_value=0,
-                 cpu_only=False, pad_dims=2):
+    def __init__(self,
+                 data,
+                 stack=False,
+                 padding_value=0,
+                 cpu_only=False,
+                 pad_dims=2):
         self._data = data
         self._cpu_only = cpu_only
         self._stack = stack

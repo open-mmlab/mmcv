@@ -57,7 +57,7 @@ def collate(batch, samples_per_gpu=1):
                             F.pad(
                                 sample.data, pad, value=sample.padding_value))
                     stacked.append(default_collate(padded_samples))
-                elif (batch[i].pad_dims is None):
+                elif batch[i].pad_dims is None:
                     stacked.append(
                         default_collate([
                             sample.data
