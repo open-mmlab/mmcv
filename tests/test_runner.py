@@ -10,7 +10,7 @@ def test_save_checkpoint():
         import torch
         import torch.nn as nn
     except ImportError:
-        warnings.warn('Skipping test_save_checkpoint in the absense of pytorch')
+        warnings.warn('Skipping test_save_checkpoint in the absense of torch')
         return
 
     model = nn.Linear(1, 1)
