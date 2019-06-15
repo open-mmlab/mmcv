@@ -88,6 +88,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def load_url_dist(url):
+    """ In distributed setting, this function only download checkpoint at
+    local rank 0 """
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
@@ -97,6 +99,7 @@ def load_url_dist(url):
         if rank > 0:
             checkpoint = model_zoo.load_url(url)
     return checkpoint
+
 
 def load_checkpoint(model,
                     filename,
