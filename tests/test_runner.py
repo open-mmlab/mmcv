@@ -2,8 +2,6 @@ import os.path as osp
 import tempfile
 import warnings
 
-import mmcv.runner
-
 
 def test_save_checkpoint():
     try:
@@ -12,6 +10,8 @@ def test_save_checkpoint():
     except ImportError:
         warnings.warn('Skipping test_save_checkpoint in the absense of torch')
         return
+
+    import mmcv.runner
 
     model = nn.Linear(1, 1)
     runner = mmcv.runner.Runner(
