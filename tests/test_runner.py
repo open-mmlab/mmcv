@@ -1,12 +1,18 @@
 import os.path as osp
 import tempfile
+import warnings
 
 import mmcv.runner
-import torch
-import torch.nn as nn
 
 
 def test_save_checkpoint():
+    try:
+        import torch
+        import torch.nn as nn
+    except ImportError:
+        warnings.warn('Skipping test_save_checkpoint in the absense of pytorch')
+        return
+
     model = nn.Linear(1, 1)
     runner = mmcv.runner.Runner(
         model=model,
