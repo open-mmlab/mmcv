@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# custom
+mmcv/video/optflow_warp/flow_warp_module.cpp
+
