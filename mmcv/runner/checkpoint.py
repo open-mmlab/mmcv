@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 import pkgutil
 import time
@@ -7,6 +8,8 @@ from importlib import import_module
 import mmcv
 import torch
 from torch.utils import model_zoo
+
+from .utils import get_dist_info
 
 
 open_mmlab_model_urls = {
@@ -84,6 +87,20 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
+def load_url_dist(url):
+    """ In distributed setting, this function only download checkpoint at
+    local rank 0 """
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    if rank == 0:
+        checkpoint = model_zoo.load_url(url)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            checkpoint = model_zoo.load_url(url)
+    return checkpoint
+
+
 def load_checkpoint(model,
                     filename,
                     map_location=None,
@@ -114,12 +131,12 @@ def load_checkpoint(model,
                     _urls = getattr(_zoo, 'model_urls')
                     model_urls.update(_urls)
         model_name = filename[11:]
-        checkpoint = model_zoo.load_url(model_urls[model_name])
+        checkpoint = load_url_dist(model_urls[model_name])
     elif filename.startswith('open-mmlab://'):
         model_name = filename[13:]
-        checkpoint = model_zoo.load_url(open_mmlab_model_urls[model_name])
+        checkpoint = load_url_dist(open_mmlab_model_urls[model_name])
     elif filename.startswith(('http://', 'https://')):
-        checkpoint = model_zoo.load_url(filename)
+        checkpoint = load_url_dist(filename)
     else:
         if not osp.isfile(filename):
             raise IOError('{} is not a checkpoint file'.format(filename))
