@@ -1,4 +1,4 @@
-mmcv
+MMCV
 ====
 
 .. image:: https://travis-ci.com/open-mmlab/mmcv.svg?branch=master
@@ -14,8 +14,9 @@ mmcv
 Introduction
 ------------
 
-`mmcv` is a foundational python library for computer vision research and supports many
-research projects in MMLAB, such as `mmdetection <https://github.com/open-mmlab/mmdetection>`_.
+MMCV is a foundational python library for computer vision research and supports many
+research projects in MMLAB, such as `MMDetection <https://github.com/open-mmlab/mmdetection>`_
+and `MMAction <https://github.com/open-mmlab/mmaction>`_.
 
 It provides the following functionalities.
 
