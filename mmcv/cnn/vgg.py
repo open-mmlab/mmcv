@@ -16,7 +16,11 @@ def conv3x3(in_planes, out_planes, dilation=1):
         dilation=dilation)
 
 
-def make_vgg_layer(inplanes, planes, num_blocks, dilation=1, with_bn=False,
+def make_vgg_layer(inplanes,
+                   planes,
+                   num_blocks,
+                   dilation=1,
+                   with_bn=False,
                    ceil_mode=False):
     layers = []
     for _ in range(num_blocks):
@@ -103,6 +107,7 @@ class VGG(nn.Module):
             start_idx = end_idx
         if not with_last_pool:
             vgg_layers.pop(-1)
+            self.range_sub_modules[-1][1] -= 1
         self.module_name = 'features'
         self.add_module(self.module_name, nn.Sequential(*vgg_layers))
 
