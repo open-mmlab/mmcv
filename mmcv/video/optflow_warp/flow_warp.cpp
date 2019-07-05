@@ -38,8 +38,8 @@ void BilinearInterpolate(const double* img, int width, int height, int channels,
 
   double dx, dy, s;
 
-  dx = __max(__min(x - xx, double(1)), double(0));
-  dy = __max(__min(y - yy, double(1)), double(0));
+  dx = __max__(__min__(x - xx, double(1)), double(0));
+  dy = __max__(__min__(y - yy, double(1)), double(0));
 
   for (m = 0; m <= 1; m++)
     for (n = 0; n <= 1; n++) {
@@ -60,8 +60,8 @@ void NNInterpolate(const double* img, int width, int height, int channels,
 
   double dx, dy;
 
-  dx = __max(__min(x - xx, double(1)), double(0));
-  dy = __max(__min(y - yy, double(1)), double(0));
+  dx = __max__(__min__(x - xx, double(1)), double(0));
+  dy = __max__(__min__(y - yy, double(1)), double(0));
 
   m = (dx < 0.5) ? 0 : 1;
   n = (dy < 0.5) ? 0 : 1;
