@@ -1,6 +1,6 @@
-#include <flow_warp.hpp>
+#include "flow_warp.hpp"
 
-void flowWarp(double* img, double* flow, double* out, const int height,
+void FlowWarp(double* img, double* flow, double* out, const int height,
               const int width, const int channels, const int filling_value = 0,
               const int interpolateMode = 0) {
   for (int h = 0; h < height; h++) {
