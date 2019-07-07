@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void flowWarp(double* img, double* flow1, double* out, const int height,
+void FlowWarp(double* img, double* flow1, double* out, const int height,
               const int width, const int channels, const int filling_value,
               const int interpolateMode);
 
