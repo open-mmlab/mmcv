@@ -24,7 +24,7 @@ __version__ = locals()['__version__']
 # -- Project information -----------------------------------------------------
 
 project = 'mmcv'
-copyright = '2018, Kai Chen'
+copyright = '2018-2019, Kai Chen'
 author = 'Kai Chen'
 
 # The short X.Y version
@@ -45,6 +45,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'recommonmark',
 ]
 
 autodoc_mock_imports = ['cv2', 'torch', 'enum', 'pathlib']
@@ -55,9 +56,10 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
-
-source_parsers = {'.md': 'recommonmark.parser.CommonMarkParser'}
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 # The master toctree document.
 master_doc = 'index'
