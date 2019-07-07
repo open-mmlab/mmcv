@@ -36,7 +36,7 @@ EXT_MODULES = [
             './mmcv/video/optflow_warp/flow_warp.cpp',
             './mmcv/video/optflow_warp/flow_warp_module.pyx'
         ],
-        include_dirs=[numpy.get_include(), './mmcv/video/optflow_warp/'],
+        include_dirs=[numpy.get_include()],
         language="c++",
     ),
 ]
