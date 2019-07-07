@@ -70,10 +70,10 @@ mmcv.resize_video('test.mp4', 'resized2.mp4', ratio=2)
 - Visualization
 - Flow warpping
 
-We provide two ways to dump optical flow files: uncompressed and compressed.
-The uncompressed way just dump the optical flow as floating numbers. It is
+We provide two options to dump optical flow files: uncompressed and compressed.
+The uncompressed way just dumps the floating numbers to a binary file. It is
 lossless but the dumped file has a larger size.
-The compressed way will quantize the optical flow to 0-255 and dump it as a
+The compressed way quantizes the optical flow to 0-255 and dumps it as a
 jpeg image. The flow of x-dim and y-dim will be concatenated into a single image.
 
 ```python
@@ -81,9 +81,10 @@ flow = np.random.rand(800, 600, 2).astype(np.float32)
 # dump the flow to a flo file (~3.7M)
 mmcv.flowwrite(flow, 'uncompressed.flo')
 # dump the flow to a jpeg file (~230K)
+# the shape of the dumped image is (800, 1200)
 mmcv.flowwrite(flow, 'compressed.jpg', quantize=True, concat_axis=1)
 
-# read the flow file
+# read the flow file, the shape of loaded flow is (800, 600, 2) for both ways
 flow = mmcv.flowread('uncompressed.flo')
 flow = mmcv.flowread('compressed.jpg', quantize=True, concat_axis=1)
 ```
