@@ -2,11 +2,13 @@ import os
 import os.path as osp
 import pkgutil
 import time
+import warnings
 from collections import OrderedDict
 from importlib import import_module
 
 import mmcv
 import torch
+import torchvision
 from torch.utils import model_zoo
 
 from .utils import get_dist_info
@@ -85,7 +87,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         if strict:
             raise RuntimeError(err_msg)
         elif logger is not None:
-            logger.warn(err_msg)
+            logger.warning(err_msg)
         else:
             print(err_msg)
 
@@ -102,6 +104,18 @@ def load_url_dist(url):
         if rank > 0:
             checkpoint = model_zoo.load_url(url)
     return checkpoint
+
+
+def get_torchvision_models():
+    model_urls = dict()
+    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
+        if ispkg:
+            continue
+        _zoo = import_module('torchvision.models.{}'.format(name))
+        if hasattr(_zoo, 'model_urls'):
+            _urls = getattr(_zoo, 'model_urls')
+            model_urls.update(_urls)
+    return model_urls
 
 
 def load_checkpoint(model,
@@ -124,16 +138,14 @@ def load_checkpoint(model,
     """
     # load checkpoint from modelzoo or file or url
     if filename.startswith('modelzoo://'):
-        import torchvision
-        model_urls = dict()
-        for _, name, ispkg in pkgutil.walk_packages(
-                torchvision.models.__path__):
-            if not ispkg:
-                _zoo = import_module('torchvision.models.{}'.format(name))
-                if hasattr(_zoo, 'model_urls'):
-                    _urls = getattr(_zoo, 'model_urls')
-                    model_urls.update(_urls)
+        warnings.warn('The URL scheme of "modelzoo://" is deprecated, please '
+                      'use "torchvision://" instead')
+        model_urls = get_torchvision_models()
         model_name = filename[11:]
+        checkpoint = load_url_dist(model_urls[model_name])
+    elif filename.startswith('torchvision://'):
+        model_urls = get_torchvision_models()
+        model_name = filename[14:]
         checkpoint = load_url_dist(model_urls[model_name])
     elif filename.startswith('open-mmlab://'):
         model_name = filename[13:]
