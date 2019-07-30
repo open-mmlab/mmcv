@@ -1,5 +1,4 @@
 from __future__ import print_function
-
 import logging
 import os
 import os.path as osp
@@ -10,8 +9,8 @@ from threading import Thread
 import requests
 from six.moves.queue import Empty, Queue
 
+from ...utils import get_host_info, master_only
 from .base import LoggerHook
-from ...utils import master_only, get_host_info
 
 
 class PaviClient(object):

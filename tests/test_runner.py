@@ -14,10 +14,7 @@ def test_save_checkpoint():
     import mmcv.runner
 
     model = nn.Linear(1, 1)
-    runner = mmcv.runner.Runner(
-        model=model,
-        batch_processor=lambda x: x
-    )
+    runner = mmcv.runner.Runner(model=model, batch_processor=lambda x: x)
 
     with tempfile.TemporaryDirectory() as root:
         runner.save_checkpoint(root)

@@ -1,8 +1,8 @@
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from torch._utils import (_flatten_dense_tensors, _unflatten_dense_tensors,
-                          _take_tensors)
+from torch._utils import (_flatten_dense_tensors, _take_tensors,
+                          _unflatten_dense_tensors)
 
 from .scatter_gather import scatter_kwargs
 

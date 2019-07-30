@@ -11,8 +11,8 @@ class ProgressBar(object):
     def __init__(self, task_num=0, bar_width=50, start=True):
         self.task_num = task_num
         max_bar_width = self._get_max_bar_width()
-        self.bar_width = (bar_width
-                          if bar_width <= max_bar_width else max_bar_width)
+        self.bar_width = (
+            bar_width if bar_width <= max_bar_width else max_bar_width)
         self.completed = 0
         if start:
             self.start()

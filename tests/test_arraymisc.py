@@ -1,8 +1,9 @@
 from __future__ import division
 
-import mmcv
 import numpy as np
 import pytest
+
+import mmcv
 
 
 def test_quantize():

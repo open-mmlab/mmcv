@@ -46,8 +46,9 @@ class TextLoggerHook(LoggerHook):
                     log_dict['time'], log_dict['data_time']))
                 log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
-            log_str = 'Epoch({}) [{}][{}]\t'.format(
-                log_dict['mode'], log_dict['epoch'] - 1, log_dict['iter'])
+            log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
+                                                    log_dict['epoch'] - 1,
+                                                    log_dict['iter'])
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack

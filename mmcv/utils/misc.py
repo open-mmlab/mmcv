@@ -3,6 +3,9 @@ import functools
 import itertools
 import subprocess
 from importlib import import_module
+
+import six
+
 # ABCs from collections will be deprecated in python 3.8+,
 # while collections.abc is not available in python 2.7
 try:
@@ -10,7 +13,6 @@ try:
 except ImportError:
     import collections as collections_abc
 
-import six
 
 
 def is_str(x):

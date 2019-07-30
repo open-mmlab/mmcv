@@ -1,10 +1,12 @@
 import yaml
+
+from .base import BaseFileHandler
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
 
-from .base import BaseFileHandler
 
 
 class YamlHandler(BaseFileHandler):

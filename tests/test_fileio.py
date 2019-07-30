@@ -2,8 +2,9 @@ import os
 import os.path as osp
 import tempfile
 
-import mmcv
 import pytest
+
+import mmcv
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):

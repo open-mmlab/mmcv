@@ -3,10 +3,11 @@ import os.path as osp
 import tempfile
 
 import cv2
-import mmcv
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+import mmcv
 
 
 class TestImage(object):
@@ -57,8 +58,9 @@ class TestImage(object):
     def test_bgr2gray(self):
         in_img = np.random.rand(10, 10, 3).astype(np.float32)
         out_img = mmcv.bgr2gray(in_img)
-        computed_gray = (in_img[:, :, 0] * 0.114 + in_img[:, :, 1] * 0.587 +
-                         in_img[:, :, 2] * 0.299)
+        computed_gray = (
+            in_img[:, :, 0] * 0.114 + in_img[:, :, 1] * 0.587 +
+            in_img[:, :, 2] * 0.299)
         assert_array_almost_equal(out_img, computed_gray, decimal=4)
         out_img_3d = mmcv.bgr2gray(in_img, True)
         assert out_img_3d.shape == (10, 10, 1)
