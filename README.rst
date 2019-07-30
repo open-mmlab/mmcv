@@ -47,4 +47,4 @@ or install from source
 
     git clone https://github.com/open-mmlab/mmcv.git
     cd mmcv
-    pip install .  # (add "-e" if you want to develop or modify the codes)
+    pip install -e .
