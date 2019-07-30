@@ -2,8 +2,8 @@ import logging
 
 import torch.nn as nn
 
-from .weight_init import constant_init, normal_init, kaiming_init
 from ..runner import load_checkpoint
+from .weight_init import constant_init, kaiming_init, normal_init
 
 
 def conv3x3(in_planes, out_planes, dilation=1):

@@ -2,14 +2,14 @@ import logging
 import os.path as osp
 import time
 
-import mmcv
 import torch
 
+import mmcv
 from . import hooks
-from .log_buffer import LogBuffer
-from .hooks import (Hook, LrUpdaterHook, CheckpointHook, IterTimerHook,
-                    OptimizerHook, lr_updater)
 from .checkpoint import load_checkpoint, save_checkpoint
+from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
+                    OptimizerHook, lr_updater)
+from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
 
@@ -139,8 +139,8 @@ class Runner(object):
             <class 'torch.optim.sgd.SGD'>
         """
         if isinstance(optimizer, dict):
-            optimizer = obj_from_dict(
-                optimizer, torch.optim, dict(params=self.model.parameters()))
+            optimizer = obj_from_dict(optimizer, torch.optim,
+                                      dict(params=self.model.parameters()))
         elif not isinstance(optimizer, torch.optim.Optimizer):
             raise TypeError(
                 'optimizer must be either an Optimizer object or a dict, '

@@ -1,5 +1,6 @@
-import mmcv
 import pytest
+
+import mmcv
 
 
 def test_iter_cast():

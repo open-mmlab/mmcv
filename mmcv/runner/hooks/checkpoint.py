@@ -1,5 +1,5 @@
-from .hook import Hook
 from ..utils import master_only
+from .hook import Hook
 
 
 class CheckpointHook(Hook):

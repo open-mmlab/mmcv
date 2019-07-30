@@ -50,7 +50,7 @@ def dequantize(arr, min_val, max_val, levels, dtype=np.float64):
             'min_val ({}) must be smaller than max_val ({})'.format(
                 min_val, max_val))
 
-    dequantized_arr = (arr + 0.5).astype(dtype) * (
-        max_val - min_val) / levels + min_val
+    dequantized_arr = (arr + 0.5).astype(dtype) * (max_val -
+                                                   min_val) / levels + min_val
 
     return dequantized_arr

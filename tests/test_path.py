@@ -2,8 +2,9 @@ import os.path as osp
 import sys
 from pathlib import Path
 
-import mmcv
 import pytest
+
+import mmcv
 
 
 def test_is_filepath():

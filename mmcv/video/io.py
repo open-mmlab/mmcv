@@ -3,9 +3,9 @@ from collections import OrderedDict
 
 import cv2
 
-from mmcv.utils import (scandir, check_file_exist, mkdir_or_exist,
-                        track_progress)
 from mmcv.opencv_info import USE_OPENCV2
+from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
+                        track_progress)
 
 if not USE_OPENCV2:
     from cv2 import (CAP_PROP_FRAME_WIDTH, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FPS,

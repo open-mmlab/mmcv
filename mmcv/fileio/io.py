@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from ..utils import is_list_of, is_str
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
-from ..utils import is_str, is_list_of
 
 file_handlers = {
     'json': JsonHandler(),

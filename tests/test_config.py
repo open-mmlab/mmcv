@@ -1,6 +1,7 @@
 import os.path as osp
 
 import pytest
+
 from mmcv import Config, FileNotFoundError
 
 
