@@ -139,7 +139,7 @@ class ExpLrUpdaterHook(LrUpdaterHook):
 
 class PolyLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, power=1., min_lr=0.,  **kwargs):
+    def __init__(self, power=1., min_lr=0., **kwargs):
         self.power = power
         self.min_lr = min_lr
         super(PolyLrUpdaterHook, self).__init__(**kwargs)
