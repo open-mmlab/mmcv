@@ -3,6 +3,7 @@ sudo: required
 language: python
 
 before_install:
+  - sudo add-apt-repository ppa:mc3man/xerus-media
   - sudo apt-get update
   - sudo apt-get install -y ffmpeg
 
