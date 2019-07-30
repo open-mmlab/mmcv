@@ -14,7 +14,6 @@ except ImportError:
     import collections as collections_abc
 
 
-
 def is_str(x):
     """Whether the input is an string instance."""
     return isinstance(x, six.string_types)
