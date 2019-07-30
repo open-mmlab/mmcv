@@ -3,8 +3,9 @@ import os.path as osp
 import tempfile
 from collections import OrderedDict
 
-import mmcv
 import pytest
+
+import mmcv
 
 
 class TestCache(object):

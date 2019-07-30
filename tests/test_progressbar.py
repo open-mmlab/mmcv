@@ -1,6 +1,12 @@
+import sys
 import time
 
+import pytest
+
 import mmcv
+
+if sys.version_info[0] == 2:
+    pytest.skip('skipping tests for python 2', allow_module_level=True)
 
 
 class TestProgressBar(object):

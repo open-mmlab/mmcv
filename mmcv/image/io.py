@@ -3,8 +3,8 @@ import os.path as osp
 import cv2
 import numpy as np
 
-from mmcv.utils import is_str, check_file_exist, mkdir_or_exist
 from mmcv.opencv_info import USE_OPENCV2
+from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
 
 if not USE_OPENCV2:
     from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED

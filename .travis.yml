@@ -1,14 +1,14 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: python
 
 before_install:
-  - sudo add-apt-repository -y ppa:mc3man/trusty-media
+  - sudo add-apt-repository -y ppa:mc3man/xerus-media
   - sudo apt-get update
   - sudo apt-get install -y ffmpeg
 
 install:
-  - pip install opencv-python pyyaml codecov flake8 Cython
+  - pip install Cython opencv-python pyyaml codecov flake8 yapf isort
 
 cache:
   pip: true
@@ -19,11 +19,14 @@ env:
 
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
-before_script: flake8
+before_script:
+  - flake8
+  - isort -rc --diff mmcv/ tests/ examples/
+  - yapf -r -d mmcv/ tests/ examples/
 
 script: coverage run --source=mmcv setup.py test
 

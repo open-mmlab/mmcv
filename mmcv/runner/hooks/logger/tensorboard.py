@@ -1,7 +1,7 @@
 import os.path as osp
 
-from .base import LoggerHook
 from ...utils import master_only
+from .base import LoggerHook
 
 
 class TensorboardLoggerHook(LoggerHook):

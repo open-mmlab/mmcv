@@ -3,18 +3,18 @@ import os
 from argparse import ArgumentParser
 from collections import OrderedDict
 
+import resnet_cifar
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn.functional as F
-from mmcv import Config
-from mmcv.runner import Runner, DistSamplerSeedHook
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import datasets, transforms
 
-import resnet_cifar
+from mmcv import Config
+from mmcv.runner import DistSamplerSeedHook, Runner
 
 
 def accuracy(output, target, topk=(1, )):
