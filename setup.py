@@ -1,7 +1,9 @@
 import platform
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, find_packages, setup, dist
+
+dist.Distribution().fetch_build_eggs(['Cython'])
 
 import numpy
 from Cython.Distutils import build_ext
