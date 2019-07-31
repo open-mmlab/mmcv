@@ -1,10 +1,12 @@
 import platform
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, find_packages, setup, dist
 
-import numpy
-from Cython.Distutils import build_ext
+dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
+
+import numpy  # noqa: E402
+from Cython.Distutils import build_ext  # noqa: E402
 
 install_requires = [
     'numpy>=1.11.1', 'pyyaml', 'six', 'addict', 'requests', 'opencv-python',
