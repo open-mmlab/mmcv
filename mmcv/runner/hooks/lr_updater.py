@@ -1,5 +1,4 @@
 from __future__ import division
-
 from math import cos, pi
 
 from .hook import Hook
@@ -139,8 +138,9 @@ class ExpLrUpdaterHook(LrUpdaterHook):
 
 class PolyLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, power=1., **kwargs):
+    def __init__(self, power=1., min_lr=0., **kwargs):
         self.power = power
+        self.min_lr = min_lr
         super(PolyLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
@@ -150,7 +150,8 @@ class PolyLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        return base_lr * (1 - progress / max_progress)**self.power
+        coeff = (1 - progress / max_progress)**self.power
+        return (base_lr - self.min_lr) * coeff + self.min_lr
 
 
 class InvLrUpdaterHook(LrUpdaterHook):

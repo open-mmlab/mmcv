@@ -1,9 +1,9 @@
 import numpy as np
 
-from mmcv.arraymisc import quantize, dequantize
+from mmcv._ext import flow_warp_c
+from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
-from mmcv._ext import flow_warp_c
 
 
 def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
@@ -162,9 +162,10 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     interpolate_mode = interpolate_mode_dict[interpolate_mode]
     img_float = img.astype(np.float64)
 
-    out = flow_warp_c(img_float,
-                      flow.astype(np.float64),
-                      filling_value=filling_value,
-                      interpolate_mode=interpolate_mode)
+    out = flow_warp_c(
+        img_float,
+        flow.astype(np.float64),
+        filling_value=filling_value,
+        interpolate_mode=interpolate_mode)
 
     return out

@@ -1,6 +1,6 @@
+import platform
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
-
 from setuptools import Extension, find_packages, setup
 
 import numpy
@@ -29,6 +29,13 @@ def get_version():
     return locals()['__version__']
 
 
+if platform.system() == 'Darwin':
+    extra_compile_args = ['-stdlib=libc++']
+    extra_link_args = ['-stdlib=libc++']
+else:
+    extra_compile_args = []
+    extra_link_args = []
+
 EXT_MODULES = [
     Extension(
         name='mmcv._ext',
@@ -37,7 +44,9 @@ EXT_MODULES = [
             './mmcv/video/optflow_warp/flow_warp_module.pyx'
         ],
         include_dirs=[numpy.get_include()],
-        language="c++",
+        language='c++',
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
     ),
 ]
 

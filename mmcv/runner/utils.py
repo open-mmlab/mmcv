@@ -4,9 +4,10 @@ import time
 from getpass import getuser
 from socket import gethostname
 
-import mmcv
 import torch
 import torch.distributed as dist
+
+import mmcv
 
 
 def get_host_info():

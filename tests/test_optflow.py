@@ -5,10 +5,11 @@ import os.path as osp
 import tempfile
 import time
 
-import mmcv
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+import mmcv
 
 
 def test_flowread():
@@ -23,18 +24,18 @@ def test_flowread():
     assert_array_equal(flow, flow_same)
 
     # read quantized flow concatenated vertically
-    flow = mmcv.flowread(osp.join(osp.dirname(__file__),
-                                  'data/optflow_concat0.jpg'),
-                         quantize=True,
-                         denorm=True)
+    flow = mmcv.flowread(
+        osp.join(osp.dirname(__file__), 'data/optflow_concat0.jpg'),
+        quantize=True,
+        denorm=True)
     assert flow.shape == flow_shape
 
     # read quantized flow concatenated horizontally
-    flow = mmcv.flowread(osp.join(osp.dirname(__file__),
-                                  'data/optflow_concat1.jpg'),
-                         quantize=True,
-                         concat_axis=1,
-                         denorm=True)
+    flow = mmcv.flowread(
+        osp.join(osp.dirname(__file__), 'data/optflow_concat1.jpg'),
+        quantize=True,
+        concat_axis=1,
+        denorm=True)
     assert flow.shape == flow_shape
 
     # test exceptions
@@ -62,10 +63,8 @@ def test_flowwrite():
     # write to two .jpg files
     tmp_filename = osp.join(tempfile.gettempdir(), 'mmcv_test_flow.jpg')
     for concat_axis in range(2):
-        mmcv.flowwrite(flow,
-                       tmp_filename,
-                       quantize=True,
-                       concat_axis=concat_axis)
+        mmcv.flowwrite(
+            flow, tmp_filename, quantize=True, concat_axis=concat_axis)
         shape = (200, 100) if concat_axis == 0 else (100, 200)
         assert osp.isfile(tmp_filename)
         assert mmcv.imread(tmp_filename, flag='unchanged').shape == shape
@@ -144,6 +143,7 @@ def test_flow2rgb():
 
 
 def test_flow_warp():
+
     def np_flow_warp(flow, img):
         output = np.zeros_like(img, dtype=img.dtype)
         height = flow.shape[0]
