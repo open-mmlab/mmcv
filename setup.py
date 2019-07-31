@@ -5,8 +5,8 @@ from setuptools import Extension, find_packages, setup, dist
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
-import numpy
-from Cython.Distutils import build_ext
+import numpy  # noqa: E402
+from Cython.Distutils import build_ext  # noqa: E402
 
 install_requires = [
     'numpy>=1.11.1', 'pyyaml', 'six', 'addict', 'requests', 'opencv-python',
