@@ -93,7 +93,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         table = AsciiTable(table_data)
         err_msg.append(mismatch_info + table.table)
 
-    if len(err_msg) > 0:
+    rank, _ = get_dist_info()
+    if len(err_msg) > 0 and rank == 0:
         err_msg.insert(
             0, 'The model and loaded state dict do not match exactly\n')
         err_msg = '\n'.join(err_msg)
