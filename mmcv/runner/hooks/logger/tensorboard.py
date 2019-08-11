@@ -1,5 +1,7 @@
 import os.path as osp
 
+import torch
+
 from ...utils import master_only
 from .base import LoggerHook
 
@@ -17,13 +19,20 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        try:
-            from torch.utils.tensorboard import SummaryWriter
-        except ModuleNotFoundError:
-            raise ImportError(
-                'Please run "pip install future tensorboard" to install the '
-                'dependencies to use torch.utils.tensorboard '
-                '(applicable to PyTorch 1.1 or higher)')
+        if torch.__version__ >= '1.1':
+            try:
+                from torch.utils.tensorboard import SummaryWriter
+            except ImportError:
+                raise ImportError(
+                    'Please run "pip install future tensorboard" to install '
+                    'the dependencies to use torch.utils.tensorboard '
+                    '(applicable to PyTorch 1.1 or higher)')
+        else:
+            try:
+                from tensorboardX import SummaryWriter
+            except ImportError:
+                raise ImportError('Please install tensorboardX to use '
+                                  'TensorboardLoggerHook.')
         if self.log_dir is None:
             self.log_dir = osp.join(runner.work_dir, 'tf_logs')
         self.writer = SummaryWriter(self.log_dir)
