@@ -175,17 +175,16 @@ def track_parallel_progress(func,
 
 
 def track_iter_progress(tasks, bar_width=50, **kwargs):
-    """Track the progress of tasks execution with a progress bar.
+    """Track the progress of tasks iteration or enumeration with a progress bar.
 
-    Tasks are done with a simple for-loop.
+    Tasks are yielded with a simple for-loop.
 
     Args:
-        func (callable): The function to be applied to each task.
         tasks (list or tuple[Iterable, int]): A list of tasks or
             (tasks, total num).
         bar_width (int): Width of progress bar.
 
-    Returns:
+    Yields:
         list: The task results.
     """
     if isinstance(tasks, tuple):

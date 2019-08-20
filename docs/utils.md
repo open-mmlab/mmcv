@@ -54,7 +54,7 @@ mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 
 ![progress](_static/parallel_progress.gif)
 
-What is more, if you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
+If you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
 is a good choice. It will display a progress bar to tell the progress and ETA.
 
 ```python
