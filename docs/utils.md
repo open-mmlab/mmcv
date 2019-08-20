@@ -54,6 +54,25 @@ mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 
 ![progress](_static/parallel_progress.gif)
 
+If you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
+is a good choice. It will display a progress bar to tell the progress and ETA.
+
+```python
+import mmcv
+
+tasks = [item_1, item_2, ..., item_n]
+
+for task in mmcv.track_iter_progress(tasks):
+    # do something like print
+    print(task)
+
+for i, task in enumerate(mmcv.track_iter_progress(tasks)):
+    # do something like print
+    print(i)
+    print(task)
+```
+
+
 
 ### Timer
 

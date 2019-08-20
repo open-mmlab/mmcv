@@ -142,7 +142,7 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
             patch = img[y1:y2 + 1, x1:x2 + 1, ...]
         else:
             _x1, _y1, _x2, _y2 = tuple(scaled_bboxes[i, :])
-            if chn == 2:
+            if chn == 1:
                 patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1)
             else:
                 patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1, chn)
