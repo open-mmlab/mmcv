@@ -96,7 +96,7 @@ def test_track_iter_progress(capsys):
 def test_track_enum_progress(capsys):
     ret = []
     count = []
-    for i, num in mmcv.track_enum_progress([1, 2, 3], bar_width=3):
+    for i, num in enumerate(mmcv.track_iter_progress([1, 2, 3], bar_width=3)):
         ret.append(sleep_1s(num))
         count.append(i)
     out, _ = capsys.readouterr()
