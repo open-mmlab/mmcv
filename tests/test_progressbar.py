@@ -81,6 +81,33 @@ def test_track_progress_iterator(capsys):
     assert ret == [1, 2, 3]
 
 
+def test_track_iter_progress(capsys):
+    ret = []
+    for num in mmcv.track_iter_progress([1, 2, 3], bar_width=3):
+        ret.append(sleep_1s(num))
+    out, _ = capsys.readouterr()
+    assert out == ('[   ] 0/3, elapsed: 0s, ETA:'
+                   '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
+                   '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
+                   '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+    assert ret == [1, 2, 3]
+
+
+def test_track_enum_progress(capsys):
+    ret = []
+    count = []
+    for i, num in enumerate(mmcv.track_iter_progress([1, 2, 3], bar_width=3)):
+        ret.append(sleep_1s(num))
+        count.append(i)
+    out, _ = capsys.readouterr()
+    assert out == ('[   ] 0/3, elapsed: 0s, ETA:'
+                   '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
+                   '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
+                   '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+    assert ret == [1, 2, 3]
+    assert count == [0, 1, 2]
+
+
 def test_track_parallel_progress_list(capsys):
 
     results = mmcv.track_parallel_progress(

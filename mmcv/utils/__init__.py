@@ -4,7 +4,8 @@ from .misc import (is_str, iter_cast, list_cast, tuple_cast, is_seq_of,
                    check_prerequisites, requires_package, requires_executable)
 from .path import (is_filepath, fopen, check_file_exist, mkdir_or_exist,
                    symlink, scandir, FileNotFoundError)
-from .progressbar import ProgressBar, track_progress, track_parallel_progress
+from .progressbar import (ProgressBar, track_progress, track_parallel_progress,
+                          track_iter_progress)
 from .timer import Timer, TimerError, check_time
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     'check_prerequisites', 'requires_package', 'requires_executable',
     'is_filepath', 'fopen', 'check_file_exist', 'mkdir_or_exist', 'symlink',
     'scandir', 'FileNotFoundError', 'ProgressBar', 'track_progress',
-    'track_parallel_progress', 'Timer', 'TimerError', 'check_time'
+    'track_iter_progress', 'track_parallel_progress', 'Timer', 'TimerError',
+    'check_time'
 ]

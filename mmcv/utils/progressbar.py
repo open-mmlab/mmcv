@@ -172,3 +172,34 @@ def track_parallel_progress(func,
     pool.close()
     pool.join()
     return results
+
+
+def track_iter_progress(tasks, bar_width=50, **kwargs):
+    """Track the progress of tasks iteration or enumeration with a progress bar.
+
+    Tasks are yielded with a simple for-loop.
+
+    Args:
+        tasks (list or tuple[Iterable, int]): A list of tasks or
+            (tasks, total num).
+        bar_width (int): Width of progress bar.
+
+    Yields:
+        list: The task results.
+    """
+    if isinstance(tasks, tuple):
+        assert len(tasks) == 2
+        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[1], int)
+        task_num = tasks[1]
+        tasks = tasks[0]
+    elif isinstance(tasks, collections_abc.Iterable):
+        task_num = len(tasks)
+    else:
+        raise TypeError(
+            '"tasks" must be an iterable object or a (iterator, int) tuple')
+    prog_bar = ProgressBar(task_num, bar_width)
+    for task in tasks:
+        yield task
+        prog_bar.update()
+    sys.stdout.write('\n')
