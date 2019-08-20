@@ -14,6 +14,6 @@ __all__ = [
     'check_prerequisites', 'requires_package', 'requires_executable',
     'is_filepath', 'fopen', 'check_file_exist', 'mkdir_or_exist', 'symlink',
     'scandir', 'FileNotFoundError', 'ProgressBar', 'track_progress',
-    'track_iter_progress', 'track_enum_progress',
-    'track_parallel_progress', 'Timer', 'TimerError', 'check_time'
+    'track_iter_progress', 'track_enum_progress', 'track_parallel_progress',
+    'Timer', 'TimerError', 'check_time'
 ]
