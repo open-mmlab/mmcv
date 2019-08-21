@@ -5,15 +5,15 @@ try:
 except ImportError:
     from io import StringIO
 
+import pytest
+
+import mmcv
+
 
 def reset_string_io(io):
     io.truncate(0)
     io.seek(0)
 
-
-import pytest
-
-import mmcv
 
 if sys.version_info[0] == 2:
     pytest.skip('skipping tests for python 2', allow_module_level=True)
@@ -63,10 +63,9 @@ class TestProgressBar(object):
         time.sleep(1)
         reset_string_io(out)
         prog_bar.update()
-        assert out.getvalue() == (
-            '\r[{}] 1/10, 1.0 task/s, elapsed: 1s, ETA:     9s'.format('>' * 2 +
-                                                                       ' ' *
-                                                                       18))
+        assert out.getvalue() == ('\r[{}] 1/10, 1.0 task/s, '
+                                  'elapsed: 1s, ETA:     9s'.format('>' * 2 +
+                                                                    ' ' * 18))
 
 
 def sleep_1s(num):
