@@ -20,6 +20,7 @@ if sys.version_info[0] == 2:
 
 
 class TestProgressBar(object):
+
     def test_start(self):
         out = StringIO()
         bar_width = 20
@@ -38,10 +39,8 @@ class TestProgressBar(object):
         assert out.getvalue() == '[{}] 0/10, elapsed: 0s, ETA:'.format(
             ' ' * bar_width)
         reset_string_io(out)
-        prog_bar = mmcv.ProgressBar(10,
-                                    bar_width=bar_width,
-                                    start=False,
-                                    file=out)
+        prog_bar = mmcv.ProgressBar(
+            10, bar_width=bar_width, start=False, file=out)
         assert out.getvalue() == ''
         reset_string_io(out)
         prog_bar.start()
@@ -86,9 +85,8 @@ def test_track_progress_list():
 
 def test_track_progress_iterator():
     out = StringIO()
-    ret = mmcv.track_progress(sleep_1s, ((i for i in [1, 2, 3]), 3),
-                              bar_width=3,
-                              file=out)
+    ret = mmcv.track_progress(
+        sleep_1s, ((i for i in [1, 2, 3]), 3), bar_width=3, file=out)
     assert out.getvalue() == (
         '[   ] 0/3, elapsed: 0s, ETA:'
         '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
@@ -129,10 +127,8 @@ def test_track_enum_progress():
 
 def test_track_parallel_progress_list():
     out = StringIO()
-    results = mmcv.track_parallel_progress(sleep_1s, [1, 2, 3, 4],
-                                           2,
-                                           bar_width=4,
-                                           file=out)
+    results = mmcv.track_parallel_progress(
+        sleep_1s, [1, 2, 3, 4], 2, bar_width=4, file=out)
     assert out.getvalue() == (
         '[    ] 0/4, elapsed: 0s, ETA:'
         '\r[>   ] 1/4, 1.0 task/s, elapsed: 1s, ETA:     3s'
@@ -144,11 +140,8 @@ def test_track_parallel_progress_list():
 
 def test_track_parallel_progress_iterator():
     out = StringIO()
-    results = mmcv.track_parallel_progress(sleep_1s,
-                                           ((i for i in [1, 2, 3, 4]), 4),
-                                           2,
-                                           bar_width=4,
-                                           file=out)
+    results = mmcv.track_parallel_progress(
+        sleep_1s, ((i for i in [1, 2, 3, 4]), 4), 2, bar_width=4, file=out)
     assert out.getvalue() == (
         '[    ] 0/4, elapsed: 0s, ETA:'
         '\r[>   ] 1/4, 1.0 task/s, elapsed: 1s, ETA:     3s'
