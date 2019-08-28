@@ -1,5 +1,6 @@
 from __future__ import division
-from math import cos, pi
+
+from math import cos, pi, floor
 
 from .hook import Hook
 
@@ -49,7 +50,7 @@ class LrUpdaterHook(Hook):
             k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
             warmup_lr = [_lr * (1 - k) for _lr in self.regular_lr]
         elif self.warmup == 'exp':
-            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+            k = self.warmup_ratio ** (1 - cur_iters / self.warmup_iters)
             warmup_lr = [_lr * k for _lr in self.regular_lr]
         return warmup_lr
 
@@ -115,14 +116,14 @@ class StepLrUpdaterHook(LrUpdaterHook):
         progress = runner.epoch if self.by_epoch else runner.iter
 
         if isinstance(self.step, int):
-            return base_lr * (self.gamma**(progress // self.step))
+            return base_lr * (self.gamma ** (progress // self.step))
 
         exp = len(self.step)
         for i, s in enumerate(self.step):
             if progress < s:
                 exp = i
                 break
-        return base_lr * self.gamma**exp
+        return base_lr * self.gamma ** exp
 
 
 class ExpLrUpdaterHook(LrUpdaterHook):
@@ -133,7 +134,7 @@ class ExpLrUpdaterHook(LrUpdaterHook):
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
-        return base_lr * self.gamma**progress
+        return base_lr * self.gamma ** progress
 
 
 class PolyLrUpdaterHook(LrUpdaterHook):
@@ -150,7 +151,7 @@ class PolyLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        coeff = (1 - progress / max_progress)**self.power
+        coeff = (1 - progress / max_progress) ** self.power
         return (base_lr - self.min_lr) * coeff + self.min_lr
 
 
@@ -163,7 +164,7 @@ class InvLrUpdaterHook(LrUpdaterHook):
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
-        return base_lr * (1 + self.gamma * progress)**(-self.power)
+        return base_lr * (1 + self.gamma * progress) ** (-self.power)
 
 
 class CosineLrUpdaterHook(LrUpdaterHook):
@@ -180,4 +181,108 @@ class CosineLrUpdaterHook(LrUpdaterHook):
             progress = runner.iter
             max_progress = runner.max_iters
         return self.target_lr + 0.5 * (base_lr - self.target_lr) * \
-            (1 + cos(pi * (progress / max_progress)))
+               (1 + cos(pi * (progress / max_progress)))
+
+
+class CyclicLrUpdaterHook(LrUpdaterHook):
+
+    def __init__(self,
+                 max_lr,
+                 final_cycle_lr=None,
+                 step_size_up=2000,
+                 step_size_down=None,
+                 mode='triangular',
+                 gamma=1.,
+                 cycle_momentum=True,
+                 max_momentum=0.9,
+                 scale_fn=None,
+                 scale_mode='cycle',
+                 debug=False,
+                 **kwargs):
+        super().__init__(**kwargs)
+        if self.by_epoch:
+            Warning("It's unusual that policy CyclicLR updated each epoch."
+                    "Consider specifying 'by_epoch = False' in lr_config to update lr/momentum at each iteration.")
+
+        self.max_lr = max_lr
+        self.final_cycle_lr = final_cycle_lr
+        self.gamma = gamma
+        self.cycle_momentum = cycle_momentum is True
+        self.max_momentum = max_momentum
+
+        step_size_up = float(step_size_up)
+        step_size_down = float(step_size_down) if step_size_down is not None else step_size_up
+        self.total_size = step_size_up + step_size_down
+        self.step_ratio = step_size_up / self.total_size
+
+        self.mode = mode
+        modes = ('triangular', 'triangular2', 'exp_range')
+        if mode not in modes \
+                and scale_fn is None:
+            raise ValueError('mode {} is invalid and scale_fn is None.\n Valid modes are {}'.format(mode, modes))
+        if scale_fn is None:
+            if self.mode == 'triangular':
+                self.scale_fn = self._triangular_scale_fn
+                self.scale_mode = 'cycle'
+            elif self.mode == 'triangular2':
+                self.scale_fn = self._triangular2_scale_fn
+                self.scale_mode = 'cycle'
+            elif self.mode == 'exp_range':
+                self.scale_fn = self._exp_range_scale_fn
+                self.scale_mode = 'iterations'
+        else:
+            self.scale_fn = scale_fn
+            self.scale_mode = scale_mode
+
+        self.debug = debug
+        self._init_2_needed = True
+
+    def _init_2(self, runner, base_lr):
+        self.max_progress = runner.max_epochs if self.by_epoch else runner.max_iters
+        self.total_cycle = floor(1 + self.max_progress / self.total_size)
+        self._init_2_needed = False
+
+    def _triangular_scale_fn(self, x):
+        return 1.
+
+    def _triangular2_scale_fn(self, x):
+        return 1 / (2. ** (x - 1))
+
+    def _exp_range_scale_fn(self, x):
+        return self.gamma ** (x)
+
+    def get_lr(self, runner, base_lr):
+
+        if self._init_2_needed: self._init_2(runner, base_lr)
+
+        progress = runner.epoch if self.by_epoch else runner.iter
+        cycle = floor(1 + progress / self.total_size)
+
+        if (self.final_cycle_lr is not None) and (self.total_cycle > 1) and (cycle >= self.total_cycle):
+            if self.debug: print('1-CyclicLrUpdaterHook, iter:{},lr:{}'.format(progress, self.final_cycle_lr))
+            return self.final_cycle_lr
+
+        x = 1. + progress / self.total_size - cycle
+        if x <= self.step_ratio:
+            scale_factor = x / self.step_ratio
+        else:
+            scale_factor = (x - 1) / (self.step_ratio - 1)
+
+        base_height = (self.max_lr - base_lr) * scale_factor
+
+        if self.scale_mode == 'cycle':
+            lr = base_lr + base_height * self.scale_fn(cycle)
+        else:
+            lr = base_lr + base_height * self.scale_fn(progress)
+
+        if self.cycle_momentum:
+            base_height = (self.max_momentum - runner.optimizer.defaults['momentum']) * scale_factor
+            if self.scale_mode == 'cycle':
+                momentum = self.max_momentum - base_height * self.scale_fn(cycle)
+            else:
+                momentum = self.max_momentum - base_height * self.scale_fn(progress)
+            for param_group in runner.optimizer.param_groups:
+                param_group['momentum'] = momentum
+            if self.debug: print('CyclicLrUpdaterHook,iter:{},lr:{},momentum:{}'.format(progress, lr, momentum))
+
+        return lr
