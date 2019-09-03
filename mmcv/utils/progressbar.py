@@ -8,12 +8,13 @@ from .timer import Timer
 class ProgressBar(object):
     """A progress bar which can print the progress"""
 
-    def __init__(self, task_num=0, bar_width=50, start=True):
+    def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):
         self.task_num = task_num
         max_bar_width = self._get_max_bar_width()
         self.bar_width = (
             bar_width if bar_width <= max_bar_width else max_bar_width)
         self.completed = 0
+        self.file = file
         if start:
             self.start()
 
@@ -33,11 +34,11 @@ class ProgressBar(object):
 
     def start(self):
         if self.task_num > 0:
-            sys.stdout.write('[{}] 0/{}, elapsed: 0s, ETA:'.format(
+            self.file.write('[{}] 0/{}, elapsed: 0s, ETA:'.format(
                 ' ' * self.bar_width, self.task_num))
         else:
-            sys.stdout.write('completed: 0, elapsed: 0s')
-        sys.stdout.flush()
+            self.file.write('completed: 0, elapsed: 0s')
+        self.file.flush()
         self.timer = Timer()
 
     def update(self):
@@ -49,18 +50,18 @@ class ProgressBar(object):
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
             mark_width = int(self.bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (self.bar_width - mark_width)
-            sys.stdout.write(
+            self.file.write(
                 '\r[{}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s'.format(
                     bar_chars, self.completed, self.task_num, fps,
                     int(elapsed + 0.5), eta))
         else:
-            sys.stdout.write(
+            self.file.write(
                 'completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
                     self.completed, int(elapsed + 0.5), fps))
-        sys.stdout.flush()
+        self.file.flush()
 
 
-def track_progress(func, tasks, bar_width=50, **kwargs):
+def track_progress(func, tasks, bar_width=50, file=sys.stdout, **kwargs):
     """Track the progress of tasks execution with a progress bar.
 
     Tasks are done with a simple for-loop.
@@ -85,12 +86,12 @@ def track_progress(func, tasks, bar_width=50, **kwargs):
     else:
         raise TypeError(
             '"tasks" must be an iterable object or a (iterator, int) tuple')
-    prog_bar = ProgressBar(task_num, bar_width)
+    prog_bar = ProgressBar(task_num, bar_width, file=file)
     results = []
     for task in tasks:
         results.append(func(task, **kwargs))
         prog_bar.update()
-    sys.stdout.write('\n')
+    prog_bar.file.write('\n')
     return results
 
 
@@ -113,7 +114,8 @@ def track_parallel_progress(func,
                             bar_width=50,
                             chunksize=1,
                             skip_first=False,
-                            keep_order=True):
+                            keep_order=True,
+                            file=sys.stdout):
     """Track the progress of parallel task execution with a progress bar.
 
     The built-in :mod:`multiprocessing` module is used for process pools and
@@ -153,7 +155,7 @@ def track_parallel_progress(func,
     pool = init_pool(nproc, initializer, initargs)
     start = not skip_first
     task_num -= nproc * chunksize * int(skip_first)
-    prog_bar = ProgressBar(task_num, bar_width, start)
+    prog_bar = ProgressBar(task_num, bar_width, start, file=file)
     results = []
     if keep_order:
         gen = pool.imap(func, tasks, chunksize)
@@ -168,13 +170,13 @@ def track_parallel_progress(func,
                 prog_bar.start()
                 continue
         prog_bar.update()
-    sys.stdout.write('\n')
+    prog_bar.file.write('\n')
     pool.close()
     pool.join()
     return results
 
 
-def track_iter_progress(tasks, bar_width=50, **kwargs):
+def track_iter_progress(tasks, bar_width=50, file=sys.stdout, **kwargs):
     """Track the progress of tasks iteration or enumeration with a progress bar.
 
     Tasks are yielded with a simple for-loop.
@@ -198,8 +200,8 @@ def track_iter_progress(tasks, bar_width=50, **kwargs):
     else:
         raise TypeError(
             '"tasks" must be an iterable object or a (iterator, int) tuple')
-    prog_bar = ProgressBar(task_num, bar_width)
+    prog_bar = ProgressBar(task_num, bar_width, file=file)
     for task in tasks:
         yield task
         prog_bar.update()
-    sys.stdout.write('\n')
+    prog_bar.file.write('\n')
