@@ -77,3 +77,24 @@ def scandir(dir_path, suffix=None):
         return _scandir_py35(dir_path, suffix)
     else:
         return _scandir_py(dir_path, suffix)
+
+
+def find_vcs_root(path, markers=('.git', )):
+    """Finds the root directory (including itself) of specified markers.
+
+    Args:
+        path (str): Path of directory or file.
+        markers (list[str], optional): List of file or directory names.
+
+    Returns:
+        The directory contained one of the markers or None if not found.
+    """
+    if osp.isfile(path):
+        path = osp.dirname(path)
+
+    prev, cur = None, osp.abspath(osp.expanduser(path))
+    while cur != prev:
+        if any(osp.exists(osp.join(cur, marker)) for marker in markers):
+            return cur
+        prev, cur = cur, osp.split(cur)[0]
+    return None
