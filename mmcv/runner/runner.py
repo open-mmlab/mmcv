@@ -8,7 +8,7 @@ import mmcv
 from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
 from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
-                    OptimizerHook, lr_updater)
+                    OptimizerHook, lr_updater, momentum_updater)
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
@@ -374,6 +374,19 @@ class Runner(object):
         else:
             raise TypeError('"lr_config" must be either a LrUpdaterHook object'
                             ' or dict, not {}'.format(type(lr_config)))
+    def register_momentum_hooks(self, momentum_config):
+        if isinstance(momentum_config, LrUpdaterHook):
+            self.register_hook(momentum_config)
+        elif isinstance(momentum_config, dict):
+            assert 'policy' in momentum_config
+            hook_name = momentum_config['policy'].title() + 'MomentumUpdaterHook'
+            if not hasattr(lr_updater, hook_name):
+                raise ValueError('"{}" does not exist'.format(hook_name))
+            hook_cls = getattr(momentum_updater, hook_name)
+            self.register_hook(hook_cls(**momentum_config))
+        else:
+            raise TypeError('"momentum_config" must be either a MomentumUpdaterHook object'
+                            ' or dict, not {}'.format(type(momentum_config)))
 
     def register_logger_hooks(self, log_config):
         log_interval = log_config['interval']
@@ -384,6 +397,7 @@ class Runner(object):
 
     def register_training_hooks(self,
                                 lr_config,
+                                momentum_config=None,
                                 optimizer_config=None,
                                 checkpoint_config=None,
                                 log_config=None):
@@ -392,6 +406,7 @@ class Runner(object):
         Default hooks include:
 
         - LrUpdaterHook
+        - MomentumUpdaterHook
         - OptimizerStepperHook
         - CheckpointSaverHook
         - IterTimerHook
@@ -401,7 +416,10 @@ class Runner(object):
             optimizer_config = {}
         if checkpoint_config is None:
             checkpoint_config = {}
+
         self.register_lr_hooks(lr_config)
+        if momentum_config is not None:
+            self.register_momentum_hooks(momentum_config)
         self.register_hook(self.build_hook(optimizer_config, OptimizerHook))
         self.register_hook(self.build_hook(checkpoint_config, CheckpointHook))
         self.register_hook(IterTimerHook())

@@ -1,0 +1,110 @@
+from __future__ import division
+from math import cos, pi
+
+from .hook import Hook
+
+
+class MomentumUpdaterHook(Hook):
+
+    def __init__(self,
+                 by_epoch=True,
+                 warmup=None,
+                 warmup_iters=0,
+                 warmup_ratio=0.9,
+                 **kwargs):
+        # validate the "warmup" argument
+        if warmup is not None:
+            if warmup not in ['constant', 'linear', 'exp']:
+                raise ValueError(
+                    '"{}" is not a supported type for warming up, valid types'
+                    ' are "constant" and "linear"'.format(warmup))
+        if warmup is not None:
+            assert warmup_iters > 0, \
+                '"warmup_iters" must be a positive integer'
+            assert 0 < warmup_ratio <= 1.0, \
+                '"warmup_momentum" must be in range (0,1]'
+
+        self.by_epoch = by_epoch
+        self.warmup = warmup
+        self.warmup_iters = warmup_iters
+        self.warmup_ratio = warmup_ratio
+
+        self.base_momentum = []  # initial momentum for all param groups
+        self.regular_momentum = []  # expected momentum if no warming up is performed
+
+    def _set_momentum(self, runner, momentum_groups):
+        for param_group, mom in zip(runner.optimizer.param_groups, momentum_groups):
+            if 'momentum' in param_group.keys():
+                param_group['momentum'] = mom
+            elif 'betas' in param_group.keys():
+                param_group['betas'][0] = mom
+
+    def get_momentum(self, runner, base_momentum):
+        raise NotImplementedError
+
+    def get_regular_momentum(self, runner):
+        return [self.get_momentum(runner, _base_momentum) for _base_momentum in self.base_momentum]
+
+    def get_warmup_momentum(self, cur_iters):
+        if self.warmup == 'constant':
+            warmup_momentum = [_momentum / self.warmup_ratio for _momentum in self.regular_momentum]
+        elif self.warmup == 'linear':
+            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
+            warmup_momentum = [_momentum / (1 - k) for _momentum in self.regular_mom]
+        elif self.warmup == 'exp':
+            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+            warmup_momentum = [_momentum / k for _momentum in self.regular_mom]
+        return warmup_momentum
+
+    def before_run(self, runner):
+        # NOTE: when resuming from a checkpoint, if 'initial_momentum' is not saved,
+        # it will be set according to the optimizer params
+        for group in runner.optimizer.param_groups:
+            if 'momentum' in group.keys():
+                group.setdefault('initial_momentum', group['momentum'])
+            else:
+                group.setdefault('initial_momentum', group['betas'][0])
+        self.base_momentum = [
+            group['initial_momentum'] for group in runner.optimizer.param_groups
+        ]
+
+    def before_train_epoch(self, runner):
+        if not self.by_epoch:
+            return
+        self.regular_mom = self.get_regular_momentum(runner)
+        self._set_momentum(runner, self.regular_mom)
+
+    def before_train_iter(self, runner):
+        cur_iter = runner.iter
+        if not self.by_epoch:
+            self.regular_mom = self.get_regular_momentum(runner)
+            if self.warmup is None or cur_iter >= self.warmup_iters:
+                self._set_momentum(runner, self.regular_mom)
+            else:
+                warmup_momentum = self.get_warmup_momentum(cur_iter)
+                self._set_momentum(runner, warmup_momentum)
+        elif self.by_epoch:
+            if self.warmup is None or cur_iter > self.warmup_iters:
+                return
+            elif cur_iter == self.warmup_iters:
+                self._set_momentum(runner, self.regular_mom)
+            else:
+                warmup_momentum = self.get_warmup_momentum(cur_iter)
+                self._set_momentum(runner, warmup_momentum)
+
+
+class CosineMomentumUpdaterHook(MomentumUpdaterHook):
+
+    def __init__(self, target_momentum=0.95, **kwargs):
+        self.target_momentum = target_momentum
+        super(CosineMomentumUpdaterHook, self).__init__(**kwargs)
+
+    def get_momentum(self, runner, base_momentum):
+        if self.by_epoch:
+            progress = runner.epoch
+            max_progress = runner.max_epochs
+        else:
+            progress = runner.iter
+            max_progress = runner.max_iters
+        return self.target_momentum + 0.5 * (base_momentum - self.target_momentum) * \
+            (1 + cos(pi * (progress / max_progress)))
