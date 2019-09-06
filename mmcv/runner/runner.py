@@ -8,7 +8,7 @@ import mmcv
 from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
 from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
-                    OptimizerHook, lr_updater, momentum_updater)
+                    OptimizerHook, lr_updater, momentum_updater, MomentumUpdaterHook)
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
@@ -190,6 +190,20 @@ class Runner(object):
             raise RuntimeError(
                 'lr is not applicable because optimizer does not exist.')
         return [group['lr'] for group in self.optimizer.param_groups]
+    
+    def current_momentum(self):
+        """Get current momentums.
+
+        Returns:
+            list: Current momentum of all param groups.
+        """
+        if self.optimizer is None:
+            raise RuntimeError(
+                'lr is not applicable because optimizer does not exist.')
+        if 'momentum' in self.optimizer.param_groups[0].keys():
+            return [group['momentum'] for group in self.optimizer.param_groups]
+        else:
+            return [group['betas'][0] for group in self.optimizer.param_groups]
 
     def register_hook(self, hook, priority='NORMAL'):
         """Register a hook into the hook list.
@@ -374,13 +388,14 @@ class Runner(object):
         else:
             raise TypeError('"lr_config" must be either a LrUpdaterHook object'
                             ' or dict, not {}'.format(type(lr_config)))
+            
     def register_momentum_hooks(self, momentum_config):
-        if isinstance(momentum_config, LrUpdaterHook):
+        if isinstance(momentum_config, MomentumUpdaterHook):
             self.register_hook(momentum_config)
         elif isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
             hook_name = momentum_config['policy'].title() + 'MomentumUpdaterHook'
-            if not hasattr(lr_updater, hook_name):
+            if not hasattr(momentum_updater, hook_name):
                 raise ValueError('"{}" does not exist'.format(hook_name))
             hook_cls = getattr(momentum_updater, hook_name)
             self.register_hook(hook_cls(**momentum_config))
@@ -397,10 +412,10 @@ class Runner(object):
 
     def register_training_hooks(self,
                                 lr_config,
-                                momentum_config=None,
                                 optimizer_config=None,
                                 checkpoint_config=None,
-                                log_config=None):
+                                log_config=None,
+                                momentum_config=None):
         """Register default hooks for training.
 
         Default hooks include:

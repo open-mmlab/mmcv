@@ -37,7 +37,7 @@ class MomentumUpdaterHook(Hook):
             if 'momentum' in param_group.keys():
                 param_group['momentum'] = mom
             elif 'betas' in param_group.keys():
-                param_group['betas'][0] = mom
+                param_group['betas'] = (mom, param_group['betas'][1])
 
     def get_momentum(self, runner, base_momentum):
         raise NotImplementedError
