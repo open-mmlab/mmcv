@@ -2,7 +2,7 @@ from __future__ import division
 from math import cos, pi
 
 from .hook import Hook
-
+from .lr_updater import annealing_cos
 
 class MomentumUpdaterHook(Hook):
 
@@ -108,3 +108,57 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
             max_progress = runner.max_iters
         return self.target_momentum + 0.5 * (base_momentum - self.target_momentum) * \
             (1 + cos(pi * (progress / max_progress)))
+
+
+class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
+
+    def __init__(self,
+                 by_epoch=False,
+                 target_ratio=[0.85/0.95, 1],
+                 cyclic_times=1,
+                 step_ratio_up=0.4,
+                 **kwargs):
+        if isinstance(target_ratio, float):
+            target_ratio = [target_ratio, target_ratio / 1e5]
+        elif isinstance(target_ratio, list):
+            target_ratio = (target_ratio + target_ratio[0] / 1e5
+                         if len(target_ratio) == 1 else target_ratio)
+
+        assert len(target_ratio) == 2, \
+            '"target_ratio" must be list of two floats'
+        assert 0 <= step_ratio_up < 1.0, \
+            '"step_ratio_up" must be in range [0,1)'
+
+        self.target_ratio = target_ratio
+        self.cyclic_times = cyclic_times
+        self.step_ratio_up = step_ratio_up
+        self.momentum_phases = [] # init momentum_phases
+        # currently only support by_epoch=False
+        assert not by_epoch, \
+            'currently only support "by_epoch" = False'
+        super(CyclicMomentumUpdaterHook, self).__init__(by_epoch, **kwargs)
+
+    def before_run(self, runner):
+        super(CyclicMomentumUpdaterHook, self).before_run(runner)
+        # initiate momentum_phases
+        # total momentum_phases are separated as up and down
+        max_iter_per_phase = runner.max_iter // self.cyclic_times
+        iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
+        self.momentum_phases.append([0, iter_up_phase,
+                                    max_iter_per_phase,
+                                    1, self.target_ratio[0]])
+        self.momentum_phases.append([iter_up_phase,
+                                     max_iter_per_phase - iter_up_phase,
+                                     max_iter_per_phase,
+                                     self.target_ratio[0],
+                                     self.target_ratio[1]])
+
+    def get_momentum(self, runner, base_momentum):
+        curr_iter = runner.iter
+        for (start_iter, end_iter,
+             max_iter_per_phase, start_ratio, end_ratio) in self.momentum_phases:
+            curr_iter %= max_iter_per_phase
+            if start_iter <= curr_iter < end_iter:
+                progress = curr_iter - start_iter
+                return annealing_cos(base_momentum*start_ratio, base_momentum*end_ratio,
+                                     progress / (end_iter - start_iter))

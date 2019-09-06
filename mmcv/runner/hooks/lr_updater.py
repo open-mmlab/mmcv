@@ -181,3 +181,61 @@ class CosineLrUpdaterHook(LrUpdaterHook):
             max_progress = runner.max_iters
         return self.target_lr + 0.5 * (base_lr - self.target_lr) * \
             (1 + cos(pi * (progress / max_progress)))
+
+
+class CyclicLrUpdaterHook(LrUpdaterHook):
+
+    def __init__(self,
+                 by_epoch=False,
+                 target_ratio=[10, 1e-4],
+                 cyclic_times=1,
+                 step_ratio_up=0.4,
+                 **kwargs):
+        if isinstance(target_ratio, float):
+            target_ratio = [target_ratio, target_ratio / 1e5]
+        elif isinstance(target_ratio, list):
+            target_ratio = (target_ratio + target_ratio[0] / 1e5
+                         if len(target_ratio) == 1 else target_ratio)
+
+        assert len(target_ratio) == 2, \
+            '"target_ratio" must be list of two floats'
+        assert 0 <= step_ratio_up < 1.0, \
+            '"step_ratio_up" must be in range [0,1)'
+
+        self.target_ratio = target_ratio
+        self.cyclic_times = cyclic_times
+        self.step_ratio_up = step_ratio_up
+        self.lr_phases = [] # init lr_phases
+        # currently only support by_epoch=False
+        assert not by_epoch, \
+            'currently only support "by_epoch" = False'
+        super(CyclicLrUpdaterHook, self).__init__(by_epoch, **kwargs)
+
+    def before_run(self, runner):
+        super(CyclicLrUpdaterHook, self).before_run(runner)
+        # initiate lr_phases
+        # total lr_phases are separated as up and down
+        max_iter_per_phase = runner.max_iter // self.cyclic_times
+        iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
+        self.lr_phases.append([0, iter_up_phase,
+                               max_iter_per_phase,
+                               1,
+                               self.target_ratio[0]])
+        self.lr_phases.append([iter_up_phase, max_iter_per_phase - iter_up_phase,
+                               max_iter_per_phase, self.target_ratio[0], self.target_ratio[1]])
+
+    def get_lr(self, runner, base_lr):
+        curr_iter = runner.iter
+        for (start_iter, end_iter,
+             max_iter_per_phase, start_ratio, end_ratio) in self.lr_phases:
+            curr_iter %= max_iter_per_phase
+            if start_iter <= curr_iter < end_iter:
+                progress = curr_iter - start_iter
+                return annealing_cos(base_lr*start_ratio, base_lr*end_ratio,
+                                     progress / (end_iter - start_iter))
+
+
+def annealing_cos(start, end, pct):
+    "Cosine anneal from `start` to `end` as pct goes from 0.0 to 1.0."
+    cos_out = cos(pi * pct) + 1
+    return end + 0.5 * (start - end) * cos_out
