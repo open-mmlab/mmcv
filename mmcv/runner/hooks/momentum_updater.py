@@ -148,7 +148,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
                                     max_iter_per_phase,
                                     1, self.target_ratio[0]])
         self.momentum_phases.append([iter_up_phase,
-                                     max_iter_per_phase - iter_up_phase,
+                                     max_iter_per_phase,
                                      max_iter_per_phase,
                                      self.target_ratio[0],
                                      self.target_ratio[1]])

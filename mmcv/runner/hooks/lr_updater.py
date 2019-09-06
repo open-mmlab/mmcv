@@ -221,7 +221,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                                max_iter_per_phase,
                                1,
                                self.target_ratio[0]])
-        self.lr_phases.append([iter_up_phase, max_iter_per_phase - iter_up_phase,
+        self.lr_phases.append([iter_up_phase, max_iter_per_phase,
                                max_iter_per_phase, self.target_ratio[0], self.target_ratio[1]])
 
     def get_lr(self, runner, base_lr):
