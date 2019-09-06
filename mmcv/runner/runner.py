@@ -269,7 +269,7 @@ class Runner(object):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(data_loader)
+        #self._max_iters = self._max_epochs * len(data_loader)
         self.call_hook('before_train_epoch')
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
@@ -345,6 +345,7 @@ class Runner(object):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
+        self._max_iters = self._max_epochs * len(data_loaders[0])
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)

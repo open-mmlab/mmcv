@@ -142,7 +142,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         super(CyclicMomentumUpdaterHook, self).before_run(runner)
         # initiate momentum_phases
         # total momentum_phases are separated as up and down
-        max_iter_per_phase = runner.max_iter // self.cyclic_times
+        max_iter_per_phase = runner.max_iters // self.cyclic_times
         iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
         self.momentum_phases.append([0, iter_up_phase,
                                     max_iter_per_phase,
