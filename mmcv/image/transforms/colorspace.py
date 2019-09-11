@@ -6,6 +6,7 @@ def solarize(img, thresh):
     """Solarize an image
     Args:
         img (ndarray): Image to be solarized.
+        thresh (int): Threshold for solarizing (0 - 255).
 
     Returns:
         ndarray: The solarized image.
@@ -18,6 +19,7 @@ def posterize(img, bits):
     """Posterize an image
     Args:
         img (ndarray): Image to be posterized.
+        bits (int): Number of bits (1 to 8) to use for posterizing.
 
     Returns:
         ndarray: The posterized image.
