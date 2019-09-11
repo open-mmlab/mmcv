@@ -2,6 +2,31 @@ import cv2
 import numpy as np
 
 
+def solarize(img, thresh):
+    """Solarize an image
+    Args:
+        img (ndarray): Image to be solarized.
+
+    Returns:
+        ndarray: The solarized image.
+    """
+    img = np.where(img < thresh, img, 255 - img)
+    return img
+
+
+def posterize(img, bits):
+    """Posterize an image
+    Args:
+        img (ndarray): Image to be posterized.
+
+    Returns:
+        ndarray: The posterized image.
+    """
+    shift = 8 - bits
+    img = np.left_shift(np.right_shift(img, shift), shift)
+    return img
+
+
 def iminvert(img):
     """Invert (negate) an image
     Args:
