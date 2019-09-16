@@ -45,7 +45,7 @@ Supported conversion methods:
 ```python
 img = mmcv.imread('tests/data/color.jpg')
 img1 = mmcv.bgr2rgb(img)
-img2 = mmcv.rgb2gray(img1)
+img2 = mmcv.bgr2gray(img1)
 img3 = mmcv.bgr2hsv(img)
 ```
 
