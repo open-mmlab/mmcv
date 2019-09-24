@@ -14,7 +14,7 @@ else:
 
 
 def is_filepath(x):
-    if is_str(x) or isinstance(x, Path):
+    if os.path.isfile(x) or isinstance(x, Path):
         return True
     else:
         return False
