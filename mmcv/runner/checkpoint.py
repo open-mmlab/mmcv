@@ -57,6 +57,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     """
     unexpected_keys = []
     shape_mismatch_pairs = []
+    matching_keys = []
 
     own_state = module.state_dict()
     for name, param in state_dict.items():
@@ -71,6 +72,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
                 [name, own_state[name].size(),
                  param.size()])
             continue
+        matching_keys.append(name)
         own_state[name].copy_(param)
 
     all_missing_keys = set(own_state.keys()) - set(state_dict.keys())
@@ -81,10 +83,12 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     err_msg = []
     if unexpected_keys:
-        err_msg.append('unexpected key in source state_dict: {}\n'.format(
+        err_msg.append('{} unexpected keys in source state_dict: {}\n'.format(
+            len(unexpected_keys),
             ', '.join(unexpected_keys)))
     if missing_keys:
-        err_msg.append('missing keys in source state_dict: {}\n'.format(
+        err_msg.append('{} missing keys in source state_dict: {}\n'.format(
+            len(missing_keys),
             ', '.join(missing_keys)))
     if shape_mismatch_pairs:
         mismatch_info = 'these keys have mismatched shape:\n'
@@ -97,6 +101,9 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     if len(err_msg) > 0 and rank == 0:
         err_msg.insert(
             0, 'The model and loaded state dict do not match exactly\n')
+        err_msg.insert(
+            1, 'There were {} matching keys with matching shapes'.format(
+                len(matching_keys)))
         err_msg = '\n'.join(err_msg)
         if strict:
             raise RuntimeError(err_msg)
