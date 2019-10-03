@@ -84,12 +84,10 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     err_msg = []
     if unexpected_keys:
         err_msg.append('{} unexpected keys in source state_dict: {}\n'.format(
-            len(unexpected_keys),
-            ', '.join(unexpected_keys)))
+            len(unexpected_keys), ', '.join(unexpected_keys)))
     if missing_keys:
         err_msg.append('{} missing keys in source state_dict: {}\n'.format(
-            len(missing_keys),
-            ', '.join(missing_keys)))
+            len(missing_keys), ', '.join(missing_keys)))
     if shape_mismatch_pairs:
         mismatch_info = 'these keys have mismatched shape:\n'
         header = ['key', 'expected shape', 'loaded shape']
