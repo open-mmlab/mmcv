@@ -325,3 +325,23 @@ class TestImage(object):
         img_r = np.array([[255, 127, 0], [254, 128, 1], [253, 126, 2]],
                          dtype=np.uint8)
         assert_array_equal(mmcv.iminvert(img), img_r)
+
+    def test_solarize(self):
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img_r = np.array([[0, 127, 0], [1, 127, 1], [2, 126, 2]],
+                         dtype=np.uint8)
+        assert_array_equal(mmcv.solarize(img), img_r)
+        img_r = np.array([[0, 127, 0], [1, 128, 1], [2, 126, 2]],
+                         dtype=np.uint8)
+        assert_array_equal(mmcv.solarize(img, 100), img_r)
+
+    def test_posterize(self):
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img_r = np.array([[0, 128, 128], [0, 0, 128], [0, 128, 128]],
+                         dtype=np.uint8)
+        assert_array_equal(mmcv.posterize(img, 1), img_r)
+        img_r = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
+                         dtype=np.uint8)
+        assert_array_equal(mmcv.posterize(img, 3), img_r)
