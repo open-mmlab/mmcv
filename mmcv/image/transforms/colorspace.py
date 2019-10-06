@@ -2,21 +2,23 @@ import cv2
 import numpy as np
 
 
-def solarize(img, thresh):
-    """Solarize an image
+def solarize(img, thr=128):
+    """Solarize an image (invert all pixel values above a threshold)
+
     Args:
         img (ndarray): Image to be solarized.
-        thresh (int): Threshold for solarizing (0 - 255).
+        thr (int): Threshold for solarizing (0 - 255).
 
     Returns:
         ndarray: The solarized image.
     """
-    img = np.where(img < thresh, img, 255 - img)
+    img = np.where(img < thr, img, 255 - img)
     return img
 
 
 def posterize(img, bits):
-    """Posterize an image
+    """Posterize an image (reduce the number of bits for each color channel)
+
     Args:
         img (ndarray): Image to be posterized.
         bits (int): Number of bits (1 to 8) to use for posterizing.
