@@ -339,9 +339,9 @@ class TestImage(object):
     def test_posterize(self):
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                        dtype=np.uint8)
-        img_r = np.array([[0, 128, 254], [0, 126, 254], [2, 128, 252]],
+        img_r = np.array([[0, 128, 128], [0, 0, 128], [0, 128, 128]],
                          dtype=np.uint8)
         assert_array_equal(mmcv.posterize(img, 1), img_r)
-        img_r = np.array([[0, 128, 248], [0, 120, 248], [2, 128, 248]],
+        img_r = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
                          dtype=np.uint8)
         assert_array_equal(mmcv.posterize(img, 3), img_r)
