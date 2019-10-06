@@ -80,7 +80,7 @@ def gray2bgr(img):
     """Convert a grayscale image to BGR image.
 
     Args:
-        img (ndarray or str): The input image.
+        img (ndarray): The input image.
 
     Returns:
         ndarray: The converted BGR image.
@@ -94,7 +94,7 @@ def gray2rgb(img):
     """Convert a grayscale image to RGB image.
 
     Args:
-        img (ndarray or str): The input image.
+        img (ndarray): The input image.
 
     Returns:
         ndarray: The converted BGR image.
