@@ -66,9 +66,27 @@ class TestImage(object):
         assert out_img_3d.shape == (10, 10, 1)
         assert_array_almost_equal(out_img_3d[..., 0], out_img, decimal=4)
 
+    def test_rgb2gray(self):
+        in_img = np.random.rand(10, 10, 3).astype(np.float32)
+        out_img = mmcv.rgb2gray(in_img)
+        computed_gray = (
+            in_img[:, :, 0] * 0.299 + in_img[:, :, 1] * 0.587 +
+            in_img[:, :, 2] * 0.114)
+        assert_array_almost_equal(out_img, computed_gray, decimal=4)
+        out_img_3d = mmcv.rgb2gray(in_img, True)
+        assert out_img_3d.shape == (10, 10, 1)
+        assert_array_almost_equal(out_img_3d[..., 0], out_img, decimal=4)
+
     def test_gray2bgr(self):
         in_img = np.random.rand(10, 10).astype(np.float32)
         out_img = mmcv.gray2bgr(in_img)
+        assert out_img.shape == (10, 10, 3)
+        for i in range(3):
+            assert_array_almost_equal(out_img[..., i], in_img, decimal=4)
+
+    def test_gray2rgb(self):
+        in_img = np.random.rand(10, 10).astype(np.float32)
+        out_img = mmcv.gray2rgb(in_img)
         assert out_img.shape == (10, 10, 3)
         for i in range(3):
             assert_array_almost_equal(out_img[..., i], in_img, decimal=4)
