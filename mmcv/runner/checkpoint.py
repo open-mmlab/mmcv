@@ -136,7 +136,8 @@ def load_checkpoint(model,
                     filename,
                     map_location=None,
                     strict=False,
-                    logger=None):
+                    logger=None,
+                    use_module_load_state_dict=True):
     """Load checkpoint from a file or URI.
 
     Args:
@@ -182,10 +183,18 @@ def load_checkpoint(model,
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
     # load state_dict
-    if hasattr(model, 'module'):
-        load_state_dict(model.module, state_dict, strict, logger)
+    if use_module_load_state_dict:
+        strict = False if strict is None else strict
+        if hasattr(model, "module"):
+            model.module.load_state_dict(state_dict, strict=True)
+        else:
+            model.load_state_dict(state_dict, strict=True)
     else:
-        load_state_dict(model, state_dict, strict, logger)
+        strict = True if strict is None else strict
+        if hasattr(model, "module"):
+            load_state_dict(model.module, state_dict, strict, logger)
+        else:
+            load_state_dict(model, state_dict, strict, logger)
     return checkpoint
 
 
