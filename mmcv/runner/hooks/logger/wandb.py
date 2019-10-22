@@ -6,14 +6,20 @@ import wandb
 
 
 class WandbLoggerHook(LoggerHook):
-    @master_only
-    def __init__(self, interval=10, ignore_last=True, reset_flag=False):
-        super(WandbLoggerHook, self).__init__(interval, ignore_last, reset_flag)
-        self.interval = interval
-        self.ignore_last = ignore_last
-        self.reset_flag = reset_flag
+    def __init__(self,
+                 log_dir=None,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=True):
+        super(WandbLoggerHook, self).__init__(interval, ignore_last,
+                                                    reset_flag)
+        self.log_dir = log_dir
 
-        wandb.init()  # need to initialize wandb before run
+        self.init_wandb()
+
+    @master_only
+    def init_wandb(self):
+        wandb.init()
 
     @master_only
     def log(self, runner):
