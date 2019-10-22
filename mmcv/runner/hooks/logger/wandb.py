@@ -6,8 +6,9 @@ import wandb
 
 
 class WandbLoggerHook(LoggerHook):
+    @master_only
     def __init__(self, interval=10, ignore_last=True, reset_flag=False):
-        super().__init__(WandbLoggerHook, self).__init__(interval, ignore_last, reset_flag)
+        super(WandbLoggerHook, self).__init__(interval, ignore_last, reset_flag)
         self.interval = interval
         self.ignore_last = ignore_last
         self.reset_flag = reset_flag
