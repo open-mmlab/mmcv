@@ -12,7 +12,7 @@ class WandbLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=True):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
-                                                    reset_flag)
+                                              reset_flag)
         self.log_dir = log_dir
 
         self.init_wandb()

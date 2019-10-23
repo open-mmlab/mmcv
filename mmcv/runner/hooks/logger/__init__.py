@@ -5,5 +5,6 @@ from .text import TextLoggerHook
 from .wandb import WandbLoggerHook
 
 __all__ = [
-    'LoggerHook', 'TextLoggerHook', 'PaviLoggerHook', 'TensorboardLoggerHook', 'WandbLoggerHook'
+    'LoggerHook', 'TextLoggerHook', 'PaviLoggerHook', 'TensorboardLoggerHook',
+    'WandbLoggerHook'
 ]

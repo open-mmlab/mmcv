@@ -12,5 +12,6 @@ from .logger import (LoggerHook, TextLoggerHook, PaviLoggerHook,
 __all__ = [
     'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook', 'OptimizerHook',
     'IterTimerHook', 'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook',
-    'TextLoggerHook', 'PaviLoggerHook', 'TensorboardLoggerHook', 'WandbLoggerHook'
+    'TextLoggerHook', 'PaviLoggerHook', 'TensorboardLoggerHook',
+    'WandbLoggerHook'
 ]
