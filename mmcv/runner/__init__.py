@@ -18,4 +18,5 @@ __all__ = [
     'WandbLoggerHook', 'load_state_dict', 'load_checkpoint', 'weights_to_cpu',
     'save_checkpoint', 'parallel_test', 'Priority', 'get_priority',
     'get_host_info', 'get_dist_info', 'master_only', 'get_time_str',
-    'obj_from_dict']
+    'obj_from_dict'
+]

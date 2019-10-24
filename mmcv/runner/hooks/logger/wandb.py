@@ -6,6 +6,7 @@ import wandb
 
 
 class WandbLoggerHook(LoggerHook):
+
     def __init__(self,
                  log_dir=None,
                  interval=10,
