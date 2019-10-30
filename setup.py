@@ -1,17 +1,45 @@
 import platform
+import re
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
-from setuptools import Extension, find_packages, setup, dist
+from setuptools import Extension, dist, find_packages, setup
+
+from pkg_resources import DistributionNotFound, get_distribution
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # noqa: E402
 from Cython.Distutils import build_ext  # noqa: E402
 
+
+def choose_requirement(main, secondary):
+    """If some version version of main requirement installed, return main,
+    else return secondary.
+
+    """
+    try:
+        name = re.split(r"[!<>=]", main)[0]
+        get_distribution(name)
+    except DistributionNotFound:
+        return secondary
+
+    return str(main)
+
+
 install_requires = [
-    'numpy>=1.11.1', 'pyyaml', 'six', 'addict', 'requests', 'opencv-python',
-    'Cython'
+    'numpy>=1.11.1',
+    'pyyaml',
+    'six',
+    'addict',
+    'requests',
 ]
+# If first not installed install second package
+CHOOSE_INSTALL_REQUIRES = [('opencv-python>=4.1.1',
+                            'opencv-python-headless>=4.1.1')]
+
+for main, secondary in CHOOSE_INSTALL_REQUIRES:
+    install_requires.append(choose_requirement(main, secondary))
+
 if sys.version_info < (3, 3):
     install_requires.append('backports.shutil_get_terminal_size')
 if sys.version_info < (3, 4):
