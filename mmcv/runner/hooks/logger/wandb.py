@@ -1,8 +1,6 @@
 from ...utils import master_only
 from .base import LoggerHook
-
 import numbers
-import wandb
 
 
 class WandbLoggerHook(LoggerHook):
@@ -14,13 +12,21 @@ class WandbLoggerHook(LoggerHook):
                  reset_flag=True):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag)
-        self.log_dir = log_dir
+        self.import_wandb()
 
-        self.init_wandb()
+    def import_wandb(self):
+        try:
+            import wandb
+        except ImportError:
+            raise ImportError(
+                'Please run "pip install wandb" to install wandb')
+        self.wandb = wandb
 
     @master_only
-    def init_wandb(self):
-        wandb.init()
+    def before_run(self, runner):
+        if self.wandb is None:
+            self.import_wandb()
+        self.wandb.init()
 
     @master_only
     def log(self, runner):
@@ -32,8 +38,9 @@ class WandbLoggerHook(LoggerHook):
             runner.log_buffer.output[var]
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
-        wandb.log(metrics, step=runner.iter)
+        if metrics:
+            self.wandb.log(metrics, step=runner.iter)
 
     @master_only
     def after_run(self, runner):
-        wandb.join()
+        self.wandb.join()
