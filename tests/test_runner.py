@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 def test_save_checkpoint():
     try:
         import torch
-        import torch.nn as nn
+        from torch import nn
     except ImportError:
         warnings.warn('Skipping test_save_checkpoint in the absense of torch')
         return
@@ -48,7 +48,8 @@ def test_wandb_hook():
 
     model = nn.Linear(1, 1)
     runner = mmcv.runner.Runner(
-        model=model, batch_processor=lambda model, x, **kwargs: {'log_vars': {"accuracy": 0.98}, 'num_samples': 5})
+        model=model, batch_processor=lambda model, x, **kwargs:
+        {'log_vars': {"accuracy": 0.98}, 'num_samples': 5})
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     wandb_mock.init.assert_called()
