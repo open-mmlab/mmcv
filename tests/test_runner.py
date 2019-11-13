@@ -43,13 +43,17 @@ def test_wandb_hook():
     wandb_mock = MagicMock()
     hook = mmcv.runner.hooks.WandbLoggerHook()
     hook.wandb = wandb_mock
-    loader = DataLoader(
-        torch.ones((5, 5)))
+    loader = DataLoader(torch.ones((5, 5)))
 
     model = nn.Linear(1, 1)
     runner = mmcv.runner.Runner(
-        model=model, batch_processor=lambda model, x, **kwargs:
-        {'log_vars': {"accuracy": 0.98}, 'num_samples': 5})
+        model=model,
+        batch_processor=lambda model, x, **kwargs: {
+            'log_vars': {
+                "accuracy": 0.98
+            },
+            'num_samples': 5
+        })
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     wandb_mock.init.assert_called()
