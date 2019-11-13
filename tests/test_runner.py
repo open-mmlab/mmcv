@@ -1,7 +1,7 @@
 import os.path as osp
 import tempfile
 import warnings
-from unittest.mock import MagicMock
+from mock import MagicMock
 
 
 def test_save_checkpoint():
