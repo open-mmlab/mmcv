@@ -12,17 +12,17 @@ import numpy  # noqa: E402
 from Cython.Distutils import build_ext  # noqa: E402
 
 
-def choose_requirement(main, secondary):
-    """If some version of main requirement installed, return main,
+def choose_requirement(primary, secondary):
+    """If some version of primary requirement installed, return primary,
     else return secondary.
     """
     try:
-        name = re.split(r'[!<>=]', main)[0]
+        name = re.split(r'[!<>=]', primary)[0]
         get_distribution(name)
     except DistributionNotFound:
         return secondary
 
-    return str(main)
+    return str(primary)
 
 
 install_requires = [
@@ -33,7 +33,7 @@ install_requires = [
     'requests',
 ]
 # If first not installed install second package
-CHOOSE_INSTALL_REQUIRES = [('opencv-python>=3', 'opencv-python-headless>=3')]
+CHOOSE_INSTALL_REQUIRES = [('opencv-python-headless>=3', 'opencv-python>=3')]
 
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
