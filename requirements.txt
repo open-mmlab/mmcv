@@ -1,6 +1,0 @@
-addict
-numpy>=1.11.1
-pyyaml
-six
-requests
-opencv-python
