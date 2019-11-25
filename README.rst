@@ -48,3 +48,7 @@ or install from source
     git clone https://github.com/open-mmlab/mmcv.git
     cd mmcv
     pip install -e .
+
+Note: If you would like to use :code:`opencv-python-headless` instead of :code:`opencv-python`,
+e.g., in a minimum container environment or servers without GUI,
+you can first install it before installing MMCV to skip the installation of :code:`opencv-python`.
