@@ -296,7 +296,9 @@ class Runner(object):
 
         self.call_hook('after_val_epoch')
 
-    def resume(self, checkpoint, resume_optimizer=True,
+    def resume(self,
+               checkpoint,
+               resume_optimizer=True,
                map_location='default'):
         if map_location == 'default':
             device_id = torch.cuda.current_device()

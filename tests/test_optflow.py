@@ -119,10 +119,10 @@ def test_dequantize_flow():
     ref = np.zeros_like(flow, dtype=np.float32)
     for i in range(ref.shape[0]):
         for j in range(ref.shape[1]):
-            ref[i, j, 0] = (float(dx[i, j] + 0.5) * 2 * max_val / 255 -
-                            max_val) * w
-            ref[i, j, 1] = (float(dy[i, j] + 0.5) * 2 * max_val / 255 -
-                            max_val) * h
+            ref[i, j,
+                0] = (float(dx[i, j] + 0.5) * 2 * max_val / 255 - max_val) * w
+            ref[i, j,
+                1] = (float(dy[i, j] + 0.5) * 2 * max_val / 255 - max_val) * h
     assert_array_almost_equal(flow, ref)
 
 
@@ -156,8 +156,8 @@ def test_flow_warp():
         sy = np.floor(dy).astype(int)
         valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
 
-        output[valid, :] = img[dx[valid].round().astype(int), dy[valid].round(
-        ).astype(int), :]
+        output[valid, :] = img[dx[valid].round().astype(int),
+                               dy[valid].round().astype(int), :]
 
         return output
 
