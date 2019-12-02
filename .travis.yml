@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get install -y ffmpeg
 
 install:
-  - rm -rf .eggs && pip install -e . codecov flake8 yapf isort
+  - rm -rf .eggs && pip install -e . codecov flake8 yapf isort mock
 
 cache:
   pip: true
