@@ -137,10 +137,10 @@ def concat_list(in_list):
 
 
 def check_prerequisites(
-    prerequisites,
-    checker,
-    msg_tmpl='Prerequisites "{}" are required in method "{}" but not '
-    'found, please install them first.'):
+        prerequisites,
+        checker,
+        msg_tmpl='Prerequisites "{}" are required in method "{}" but not '
+        'found, please install them first.'):  # yapf: disable
     """A decorator factory to check if prerequisites are satisfied.
 
     Args:
