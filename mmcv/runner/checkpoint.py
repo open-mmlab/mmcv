@@ -12,7 +12,7 @@ from terminaltables import AsciiTable
 from torch.utils import model_zoo
 
 import mmcv
-from .utils import get_dist_info
+from .dist_utils import get_dist_info
 
 open_mmlab_model_urls = {
     'vgg16_caffe': 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/pretrain/third_party/vgg16_caffe-292e1171.pth',  # noqa: E501
