@@ -7,11 +7,12 @@ import torch
 import mmcv
 from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
+from .dist_utils import get_dist_info
 from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
                     OptimizerHook, lr_updater)
 from .log_buffer import LogBuffer
 from .priority import get_priority
-from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
+from .utils import get_host_info, get_time_str, obj_from_dict
 
 
 class Runner(object):

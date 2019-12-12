@@ -1,4 +1,4 @@
-from ...utils import master_only
+from ...dist_utils import master_only
 from .base import LoggerHook
 import numbers
 
