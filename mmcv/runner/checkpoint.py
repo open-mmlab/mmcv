@@ -56,42 +56,36 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             message. If not specified, print function will be used.
     """
     unexpected_keys = []
-    shape_mismatch_pairs = []
+    all_missing_keys = []
+    err_msg = []
+       
+    metadata = getattr(state_dict, '_metadata', None)
+    state_dict = state_dict.copy()
+    if metadata is not None:
+        state_dict._metadata = metadata
 
-    own_state = module.state_dict()
-    for name, param in state_dict.items():
-        if name not in own_state:
-            unexpected_keys.append(name)
-            continue
-        if isinstance(param, torch.nn.Parameter):
-            # backwards compatibility for serialized parameters
-            param = param.data
-        if param.size() != own_state[name].size():
-            shape_mismatch_pairs.append(
-                [name, own_state[name].size(),
-                 param.size()])
-            continue
-        own_state[name].copy_(param)
+    def load(module, prefix=''):
+        local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
+        module._load_from_state_dict(
+            state_dict, prefix, local_metadata, True, all_missing_keys, unexpected_keys, err_msg)
+        for name, child in module._modules.items():
+            if child is not None:
+                load(child, prefix + name + '.')
 
-    all_missing_keys = set(own_state.keys()) - set(state_dict.keys())
+    load(module)
+    load = None  # break load->load reference cycle
+
     # ignore "num_batches_tracked" of BN layers
     missing_keys = [
         key for key in all_missing_keys if 'num_batches_tracked' not in key
     ]
 
-    err_msg = []
     if unexpected_keys:
         err_msg.append('unexpected key in source state_dict: {}\n'.format(
             ', '.join(unexpected_keys)))
     if missing_keys:
         err_msg.append('missing keys in source state_dict: {}\n'.format(
             ', '.join(missing_keys)))
-    if shape_mismatch_pairs:
-        mismatch_info = 'these keys have mismatched shape:\n'
-        header = ['key', 'expected shape', 'loaded shape']
-        table_data = [header] + shape_mismatch_pairs
-        table = AsciiTable(table_data)
-        err_msg.append(mismatch_info + table.table)
 
     rank, _ = get_dist_info()
     if len(err_msg) > 0 and rank == 0:
