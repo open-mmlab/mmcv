@@ -8,7 +8,6 @@ from importlib import import_module
 
 import torch
 import torchvision
-from terminaltables import AsciiTable
 from torch.utils import model_zoo
 
 import mmcv
@@ -58,16 +57,19 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     unexpected_keys = []
     all_missing_keys = []
     err_msg = []
-       
+
     metadata = getattr(state_dict, '_metadata', None)
     state_dict = state_dict.copy()
     if metadata is not None:
         state_dict._metadata = metadata
 
+    # use _load_from_state_dict to enable checkpoint version control
     def load(module, prefix=''):
-        local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
-        module._load_from_state_dict(
-            state_dict, prefix, local_metadata, True, all_missing_keys, unexpected_keys, err_msg)
+        local_metadata = {} if metadata is None else metadata.get(
+            prefix[:-1], {})
+        module._load_from_state_dict(state_dict, prefix, local_metadata, True,
+                                     all_missing_keys, unexpected_keys,
+                                     err_msg)
         for name, child in module._modules.items():
             if child is not None:
                 load(child, prefix + name + '.')

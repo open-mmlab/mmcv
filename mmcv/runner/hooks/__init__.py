@@ -1,13 +1,13 @@
-from .hook import Hook
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
-from .lr_updater import LrUpdaterHook
-from .optimizer import OptimizerHook
+from .hook import Hook
 from .iter_timer import IterTimerHook
-from .sampler_seed import DistSamplerSeedHook
+from .logger import (LoggerHook, PaviLoggerHook, TensorboardLoggerHook,
+                     TextLoggerHook, WandbLoggerHook)
+from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
-from .logger import (LoggerHook, TextLoggerHook, PaviLoggerHook,
-                     TensorboardLoggerHook, WandbLoggerHook)
+from .optimizer import OptimizerHook
+from .sampler_seed import DistSamplerSeedHook
 
 __all__ = [
     'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook', 'OptimizerHook',
