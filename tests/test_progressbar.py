@@ -1,14 +1,14 @@
 import sys
 import time
+
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
 
+import pytest  # isort:skip
 
-import pytest
-
-import mmcv
+import mmcv  # isort:skip
 
 
 def reset_string_io(io):
