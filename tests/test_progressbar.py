@@ -1,14 +1,16 @@
 import sys
 import time
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+   
 
 import pytest
 
 import mmcv
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+
 
 
 def reset_string_io(io):
