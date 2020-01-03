@@ -4,13 +4,11 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-   
+
 
 import pytest
 
 import mmcv
-
-
 
 
 def reset_string_io(io):
