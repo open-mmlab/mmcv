@@ -1,6 +1,7 @@
 import os.path as osp
 import tempfile
 import warnings
+
 from mock import MagicMock
 
 

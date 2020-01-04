@@ -1,6 +1,7 @@
+import numbers
+
 from ...dist_utils import master_only
 from .base import LoggerHook
-import numbers
 
 
 class WandbLoggerHook(LoggerHook):
