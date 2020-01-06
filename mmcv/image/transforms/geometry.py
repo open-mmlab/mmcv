@@ -153,8 +153,8 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
             y_start = 0 if _y1 >= 0 else -_y1
             w = x2 - x1 + 1
             h = y2 - y1 + 1
-            patch[y_start:y_start + h, x_start:x_start +
-                  w, ...] = img[y1:y1 + h, x1:x1 + w, ...]
+            patch[y_start:y_start + h, x_start:x_start + w,
+                  ...] = img[y1:y1 + h, x1:x1 + w, ...]
         patches.append(patch)
 
     if bboxes.ndim == 1:

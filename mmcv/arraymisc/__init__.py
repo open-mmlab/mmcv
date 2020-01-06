@@ -1,3 +1,3 @@
-from .quantization import quantize, dequantize
+from .quantization import dequantize, quantize
 
 __all__ = ['quantize', 'dequantize']

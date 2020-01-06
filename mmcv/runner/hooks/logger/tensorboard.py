@@ -2,7 +2,7 @@ import os.path as osp
 
 import torch
 
-from ...utils import master_only
+from ...dist_utils import master_only
 from .base import LoggerHook
 
 

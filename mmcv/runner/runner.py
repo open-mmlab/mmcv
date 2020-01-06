@@ -7,11 +7,12 @@ import torch
 import mmcv
 from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
+from .dist_utils import get_dist_info
 from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
                     OptimizerHook, lr_updater, momentum_updater, MomentumUpdaterHook)
 from .log_buffer import LogBuffer
 from .priority import get_priority
-from .utils import get_dist_info, get_host_info, get_time_str, obj_from_dict
+from .utils import get_host_info, get_time_str, obj_from_dict
 
 
 class Runner(object):
@@ -251,7 +252,8 @@ class Runner(object):
                         out_dir,
                         filename_tmpl='epoch_{}.pth',
                         save_optimizer=True,
-                        meta=None):
+                        meta=None,
+                        create_symlink=True):
         if meta is None:
             meta = dict(epoch=self.epoch + 1, iter=self.iter)
         else:
@@ -259,11 +261,12 @@ class Runner(object):
 
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
-        linkpath = osp.join(out_dir, 'latest.pth')
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
-        # use relative symlink
-        mmcv.symlink(filename, linkpath)
+        # in some environments, `os.symlink` is not supported, you may need to
+        # set `create_symlink` to False
+        if create_symlink:
+            mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
 
     def train(self, data_loader, **kwargs):
         self.model.train()
@@ -310,7 +313,9 @@ class Runner(object):
 
         self.call_hook('after_val_epoch')
 
-    def resume(self, checkpoint, resume_optimizer=True,
+    def resume(self,
+               checkpoint,
+               resume_optimizer=True,
                map_location='default'):
         if map_location == 'default':
             device_id = torch.cuda.current_device()
