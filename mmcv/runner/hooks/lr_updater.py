@@ -194,8 +194,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         if isinstance(target_ratio, float):
             target_ratio = [target_ratio, target_ratio / 1e5]
         elif isinstance(target_ratio, list):
-            target_ratio = (target_ratio + target_ratio[0] / 1e5
-                         if len(target_ratio) == 1 else target_ratio)
+            target_ratio = (
+                target_ratio + target_ratio[0] / 1e5
+                if len(target_ratio) == 1 else target_ratio)
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list of two floats'
@@ -205,7 +206,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         self.target_ratio = target_ratio
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
-        self.lr_phases = [] # init lr_phases
+        self.lr_phases = []  # init lr_phases
         # currently only support by_epoch=False
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
@@ -217,21 +218,22 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         # total lr_phases are separated as up and down
         max_iter_per_phase = runner.max_iters // self.cyclic_times
         iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
-        self.lr_phases.append([0, iter_up_phase,
-                               max_iter_per_phase,
-                               1,
-                               self.target_ratio[0]])
-        self.lr_phases.append([iter_up_phase, max_iter_per_phase,
-                               max_iter_per_phase, self.target_ratio[0], self.target_ratio[1]])
+        self.lr_phases.append(
+            [0, iter_up_phase, max_iter_per_phase, 1, self.target_ratio[0]])
+        self.lr_phases.append([
+            iter_up_phase, max_iter_per_phase, max_iter_per_phase,
+            self.target_ratio[0], self.target_ratio[1]
+        ])
 
     def get_lr(self, runner, base_lr):
         curr_iter = runner.iter
-        for (start_iter, end_iter,
-             max_iter_per_phase, start_ratio, end_ratio) in self.lr_phases:
+        for (start_iter, end_iter, max_iter_per_phase, start_ratio,
+             end_ratio) in self.lr_phases:
             curr_iter %= max_iter_per_phase
             if start_iter <= curr_iter < end_iter:
                 progress = curr_iter - start_iter
-                return annealing_cos(base_lr*start_ratio, base_lr*end_ratio,
+                return annealing_cos(base_lr * start_ratio,
+                                     base_lr * end_ratio,
                                      progress / (end_iter - start_iter))
 
 

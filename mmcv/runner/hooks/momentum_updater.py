@@ -4,6 +4,7 @@ from math import cos, pi
 from .hook import Hook
 from .lr_updater import annealing_cos
 
+
 class MomentumUpdaterHook(Hook):
 
     def __init__(self,
@@ -30,10 +31,12 @@ class MomentumUpdaterHook(Hook):
         self.warmup_ratio = warmup_ratio
 
         self.base_momentum = []  # initial momentum for all param groups
-        self.regular_momentum = []  # expected momentum if no warming up is performed
+        self.regular_momentum = [
+        ]  # expected momentum if no warming up is performed
 
     def _set_momentum(self, runner, momentum_groups):
-        for param_group, mom in zip(runner.optimizer.param_groups, momentum_groups):
+        for param_group, mom in zip(runner.optimizer.param_groups,
+                                    momentum_groups):
             if 'momentum' in param_group.keys():
                 param_group['momentum'] = mom
             elif 'betas' in param_group.keys():
@@ -43,21 +46,30 @@ class MomentumUpdaterHook(Hook):
         raise NotImplementedError
 
     def get_regular_momentum(self, runner):
-        return [self.get_momentum(runner, _base_momentum) for _base_momentum in self.base_momentum]
+        return [
+            self.get_momentum(runner, _base_momentum)
+            for _base_momentum in self.base_momentum
+        ]
 
     def get_warmup_momentum(self, cur_iters):
         if self.warmup == 'constant':
-            warmup_momentum = [_momentum / self.warmup_ratio for _momentum in self.regular_momentum]
+            warmup_momentum = [
+                _momentum / self.warmup_ratio
+                for _momentum in self.regular_momentum
+            ]
         elif self.warmup == 'linear':
             k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
-            warmup_momentum = [_momentum / (1 - k) for _momentum in self.regular_mom]
+            warmup_momentum = [
+                _momentum / (1 - k) for _momentum in self.regular_mom
+            ]
         elif self.warmup == 'exp':
             k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
             warmup_momentum = [_momentum / k for _momentum in self.regular_mom]
         return warmup_momentum
 
     def before_run(self, runner):
-        # NOTE: when resuming from a checkpoint, if 'initial_momentum' is not saved,
+        # NOTE: when resuming from a checkpoint,
+        # if 'initial_momentum' is not saved,
         # it will be set according to the optimizer params
         for group in runner.optimizer.param_groups:
             if 'momentum' in group.keys():
@@ -65,7 +77,8 @@ class MomentumUpdaterHook(Hook):
             else:
                 group.setdefault('initial_momentum', group['betas'][0])
         self.base_momentum = [
-            group['initial_momentum'] for group in runner.optimizer.param_groups
+            group['initial_momentum']
+            for group in runner.optimizer.param_groups
         ]
 
     def before_train_epoch(self, runner):
@@ -106,23 +119,25 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        return self.target_momentum + 0.5 * (base_momentum - self.target_momentum) * \
-            (1 + cos(pi * (progress / max_progress)))
+        return (self.target_momentum + 0.5 *
+                (base_momentum - self.target_momentum) *
+                (1 + cos(pi * (progress / max_progress))))
 
 
 class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self,
                  by_epoch=False,
-                 target_ratio=[0.85/0.95, 1],
+                 target_ratio=[0.85 / 0.95, 1],
                  cyclic_times=1,
                  step_ratio_up=0.4,
                  **kwargs):
         if isinstance(target_ratio, float):
             target_ratio = [target_ratio, target_ratio / 1e5]
         elif isinstance(target_ratio, list):
-            target_ratio = (target_ratio + target_ratio[0] / 1e5
-                         if len(target_ratio) == 1 else target_ratio)
+            target_ratio = (
+                target_ratio + target_ratio[0] / 1e5
+                if len(target_ratio) == 1 else target_ratio)
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list of two floats'
@@ -132,7 +147,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         self.target_ratio = target_ratio
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
-        self.momentum_phases = [] # init momentum_phases
+        self.momentum_phases = []  # init momentum_phases
         # currently only support by_epoch=False
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
@@ -144,21 +159,20 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         # total momentum_phases are separated as up and down
         max_iter_per_phase = runner.max_iters // self.cyclic_times
         iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
-        self.momentum_phases.append([0, iter_up_phase,
-                                    max_iter_per_phase,
-                                    1, self.target_ratio[0]])
-        self.momentum_phases.append([iter_up_phase,
-                                     max_iter_per_phase,
-                                     max_iter_per_phase,
-                                     self.target_ratio[0],
-                                     self.target_ratio[1]])
+        self.momentum_phases.append(
+            [0, iter_up_phase, max_iter_per_phase, 1, self.target_ratio[0]])
+        self.momentum_phases.append([
+            iter_up_phase, max_iter_per_phase, max_iter_per_phase,
+            self.target_ratio[0], self.target_ratio[1]
+        ])
 
     def get_momentum(self, runner, base_momentum):
         curr_iter = runner.iter
-        for (start_iter, end_iter,
-             max_iter_per_phase, start_ratio, end_ratio) in self.momentum_phases:
+        for (start_iter, end_iter, max_iter_per_phase, start_ratio,
+             end_ratio) in self.momentum_phases:
             curr_iter %= max_iter_per_phase
             if start_iter <= curr_iter < end_iter:
                 progress = curr_iter - start_iter
-                return annealing_cos(base_momentum*start_ratio, base_momentum*end_ratio,
+                return annealing_cos(base_momentum * start_ratio,
+                                     base_momentum * end_ratio,
                                      progress / (end_iter - start_iter))

@@ -9,7 +9,8 @@ from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
-                    OptimizerHook, lr_updater, momentum_updater, MomentumUpdaterHook)
+                    OptimizerHook, lr_updater, momentum_updater,
+                    MomentumUpdaterHook)
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_host_info, get_time_str, obj_from_dict
@@ -191,7 +192,7 @@ class Runner(object):
             raise RuntimeError(
                 'lr is not applicable because optimizer does not exist.')
         return [group['lr'] for group in self.optimizer.param_groups]
-    
+
     def current_momentum(self):
         """Get current momentums.
 
@@ -272,7 +273,7 @@ class Runner(object):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        #self._max_iters = self._max_epochs * len(data_loader)
+        # self._max_iters = self._max_epochs * len(data_loader)
         self.call_hook('before_train_epoch')
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
@@ -394,20 +395,22 @@ class Runner(object):
         else:
             raise TypeError('"lr_config" must be either a LrUpdaterHook object'
                             ' or dict, not {}'.format(type(lr_config)))
-            
+
     def register_momentum_hooks(self, momentum_config):
         if isinstance(momentum_config, MomentumUpdaterHook):
             self.register_hook(momentum_config)
         elif isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
-            hook_name = momentum_config['policy'].title() + 'MomentumUpdaterHook'
+            hook_name = momentum_config['policy'].title(
+            ) + 'MomentumUpdaterHook'
             if not hasattr(momentum_updater, hook_name):
                 raise ValueError('"{}" does not exist'.format(hook_name))
             hook_cls = getattr(momentum_updater, hook_name)
             self.register_hook(hook_cls(**momentum_config))
         else:
-            raise TypeError('"momentum_config" must be either a MomentumUpdaterHook object'
-                            ' or dict, not {}'.format(type(momentum_config)))
+            raise TypeError(
+                '"momentum_config" must be either a MomentumUpdaterHook object'
+                ' or dict, not {}'.format(type(momentum_config)))
 
     def register_logger_hooks(self, log_config):
         log_interval = log_config['interval']
