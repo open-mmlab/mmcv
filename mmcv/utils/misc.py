@@ -110,8 +110,11 @@ def slice_list(in_list, lens):
     Returns:
         list: A list of sliced list.
     """
+    if isinstance(lens, int):
+        assert len(in_list) % lens == 0
+        lens = [lens] * int(len(in_list) / lens)
     if not isinstance(lens, list):
-        raise TypeError('"indices" must be a list of integers')
+        raise TypeError('"indices" must be an integer or a list of integers')
     elif sum(lens) != len(in_list):
         raise ValueError(
             'sum of lens and list length does not match: {} != {}'.format(
@@ -140,7 +143,7 @@ def check_prerequisites(
         prerequisites,
         checker,
         msg_tmpl='Prerequisites "{}" are required in method "{}" but not '
-        'found, please install them first.'):
+        'found, please install them first.'):  # yapf: disable
     """A decorator factory to check if prerequisites are satisfied.
 
     Args:

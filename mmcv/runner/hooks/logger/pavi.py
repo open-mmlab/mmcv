@@ -9,7 +9,8 @@ from threading import Thread
 import requests
 from six.moves.queue import Empty, Queue
 
-from ...utils import get_host_info, master_only
+from ...dist_utils import master_only
+from ...utils import get_host_info
 from .base import LoggerHook
 
 
