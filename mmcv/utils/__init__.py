@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .config import Config, ConfigDict
 from .misc import (check_prerequisites, concat_list, is_list_of, is_seq_of,
                    is_str, is_tuple_of, iter_cast, list_cast,

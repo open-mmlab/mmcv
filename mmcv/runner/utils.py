@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import sys
 import time
 from getpass import getuser

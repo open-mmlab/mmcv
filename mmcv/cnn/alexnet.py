@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import logging
 
 import torch.nn as nn

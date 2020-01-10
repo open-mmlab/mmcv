@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .base import LoggerHook
 from .pavi import PaviLoggerHook
 from .tensorboard import TensorboardLoggerHook

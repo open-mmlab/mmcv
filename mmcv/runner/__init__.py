@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .checkpoint import (load_checkpoint, load_state_dict, save_checkpoint,
                          weights_to_cpu)
 from .dist_utils import get_dist_info, init_dist, master_only

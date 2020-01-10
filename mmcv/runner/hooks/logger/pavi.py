@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from __future__ import print_function
 import logging
 import os

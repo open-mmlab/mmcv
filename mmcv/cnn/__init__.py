@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .alexnet import AlexNet
 from .resnet import ResNet, make_res_layer
 from .vgg import VGG, make_vgg_layer
