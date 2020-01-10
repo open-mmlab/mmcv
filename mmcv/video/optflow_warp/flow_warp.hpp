@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) Open-MMLab. All rights reserved.
 #include <math.h>
 #include <string.h>
 
