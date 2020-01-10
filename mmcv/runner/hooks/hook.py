@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 class Hook(object):
 
     def before_run(self, runner):

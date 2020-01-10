@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 #include "flow_warp.hpp"
 
 void FlowWarp(double* img, double* flow, double* out, const int height,

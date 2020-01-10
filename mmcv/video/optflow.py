@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import numpy as np
 
 from mmcv._ext import flow_warp_c

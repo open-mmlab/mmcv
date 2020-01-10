@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import collections
 import functools
 import itertools

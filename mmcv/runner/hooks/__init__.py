@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .hook import Hook

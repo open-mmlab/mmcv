@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import numpy as np
 
 from .colorspace import bgr2rgb, rgb2bgr

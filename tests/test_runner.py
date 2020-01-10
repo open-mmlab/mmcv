@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
 import tempfile
 import warnings

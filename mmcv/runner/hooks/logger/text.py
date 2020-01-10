@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import datetime
 import os.path as osp
 from collections import OrderedDict

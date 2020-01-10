@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 
 from ...dist_utils import master_only

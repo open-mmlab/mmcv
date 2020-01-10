@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os
 import os.path as osp
 import subprocess

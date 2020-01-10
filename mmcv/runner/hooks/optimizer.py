@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from torch.nn.utils import clip_grad
 
 from .hook import Hook

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .io import imfrombytes, imread, imwrite
 from .transforms import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
                          gray2rgb, hls2bgr, hsv2bgr, imcrop, imdenormalize,
