@@ -180,7 +180,7 @@ def impad(img, shape, pad_val=0):
     if len(shape) < len(img.shape):
         shape = shape + (img.shape[-1], )
     assert len(shape) == len(img.shape)
-    for i in range(len(shape) - 1):
+    for i in range(len(shape)):
         assert shape[i] >= img.shape[i]
     pad = np.empty(shape, dtype=img.dtype)
     pad[...] = pad_val

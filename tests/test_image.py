@@ -281,6 +281,16 @@ class TestImage(object):
             self.assert_img_equal(patches[i], ref_patch)
 
     def test_impad(self):
+        # grayscale image
+        img = np.random.rand(10, 10).astype(np.float32)
+        padded_img = mmcv.impad(img, (15, 12), 0)
+        assert_array_equal(img, padded_img[:10, :10])
+        assert_array_equal(
+            np.zeros((5, 12), dtype='float32'), padded_img[10:, :])
+        assert_array_equal(
+            np.zeros((15, 2), dtype='float32'), padded_img[:, 10:])
+
+        # RGB image
         img = np.random.rand(10, 10, 3).astype(np.float32)
         padded_img = mmcv.impad(img, (15, 12), 0)
         assert_array_equal(img, padded_img[:10, :10, :])
