@@ -49,8 +49,9 @@ class ProgressBar(object):
         if self.task_num > 0:
             percentage = self.completed / float(self.task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
-            msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s'.format(
-                self.completed, self.task_num, fps, int(elapsed + 0.5), eta)
+            msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s' \
+                .format(self.completed, self.task_num, fps,
+                        int(elapsed + 0.5), eta)
             bar_width = max(2, int(self.bar_width - len(msg)) + 2)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
