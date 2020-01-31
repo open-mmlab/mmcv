@@ -9,17 +9,13 @@ from .timer import Timer
 class ProgressBar(object):
     """A progress bar which can print the progress"""
 
-    def __init__(self, task_num=0, bar_width=79, start=True, file=sys.stdout):
+    def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):
         self.task_num = task_num
-        self._bar_width = bar_width
+        self.bar_width = bar_width
         self.completed = 0
         self.file = file
         if start:
             self.start()
-
-    @property
-    def bar_width(self):
-        return min(self._bar_width, self.terminal_width)
 
     @property
     def terminal_width(self):
@@ -50,9 +46,13 @@ class ProgressBar(object):
             percentage = self.completed / float(self.task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
             msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s' \
-                .format(self.completed, self.task_num, fps,
-                        int(elapsed + 0.5), eta)
-            bar_width = max(2, int(self.bar_width - len(msg)) + 2)
+                  ''.format(self.completed, self.task_num, fps,
+                            int(elapsed + 0.5), eta)
+
+            bar_width = min(self.bar_width,
+                            int(self.terminal_width - len(msg)) + 2)
+            bar_width = min(int(self.terminal_width * 0.6), bar_width)
+            bar_width = max(2, bar_width)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
             self.file.write(msg.format(bar_chars))
