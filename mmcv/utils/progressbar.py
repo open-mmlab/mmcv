@@ -50,8 +50,8 @@ class ProgressBar(object):
                             int(elapsed + 0.5), eta)
 
             bar_width = min(self.bar_width,
-                            int(self.terminal_width - len(msg)) + 2)
-            bar_width = min(int(self.terminal_width * 0.6), bar_width)
+                            int(self.terminal_width - len(msg)) + 2,
+                            int(self.terminal_width * 0.6))
             bar_width = max(2, bar_width)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
