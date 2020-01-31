@@ -41,7 +41,10 @@ class TextLoggerHook(LoggerHook):
                 time_sec_avg = self.time_sec_tot / (
                     runner.iter - self.start_iter + 1)
                 eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
-                eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
+                if eta_sec < 0:
+                    eta_str = 'soon'
+                else:
+                    eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
                 log_str += 'eta: {}, '.format(eta_str)
                 log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
                     log_dict['time'], log_dict['data_time']))
