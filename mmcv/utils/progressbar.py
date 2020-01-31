@@ -11,26 +11,27 @@ class ProgressBar(object):
 
     def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):
         self.task_num = task_num
-        max_bar_width = self._get_max_bar_width()
-        self.bar_width = (
-            bar_width if bar_width <= max_bar_width else max_bar_width)
+        self._bar_width = bar_width
         self.completed = 0
         self.file = file
         if start:
             self.start()
 
-    def _get_max_bar_width(self):
+    @property
+    def bar_width(self):
+        if self._bar_width <= self.max_bar_width:
+            return self._bar_width
+        return self.max_bar_width
+
+    @property
+    def max_bar_width(self):
         if sys.version_info > (3, 3):
             from shutil import get_terminal_size
         else:
             from backports.shutil_get_terminal_size import get_terminal_size
         terminal_width, _ = get_terminal_size()
         max_bar_width = min(int(terminal_width * 0.6), terminal_width - 50)
-        if max_bar_width < 10:
-            print('terminal width is too small ({}), please consider '
-                  'widen the terminal for better progressbar '
-                  'visualization'.format(terminal_width))
-            max_bar_width = 10
+        max_bar_width = max(max_bar_width, 2)
         return max_bar_width
 
     def start(self):
