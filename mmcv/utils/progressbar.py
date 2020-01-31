@@ -9,7 +9,7 @@ from .timer import Timer
 class ProgressBar(object):
     """A progress bar which can print the progress"""
 
-    def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):
+    def __init__(self, task_num=0, bar_width=79, start=True, file=sys.stdout):
         self.task_num = task_num
         self._bar_width = bar_width
         self.completed = 0
@@ -19,20 +19,16 @@ class ProgressBar(object):
 
     @property
     def bar_width(self):
-        if self._bar_width <= self.max_bar_width:
-            return self._bar_width
-        return self.max_bar_width
+        return min(self._bar_width, self.terminal_width)
 
     @property
-    def max_bar_width(self):
+    def terminal_width(self):
         if sys.version_info > (3, 3):
             from shutil import get_terminal_size
         else:
             from backports.shutil_get_terminal_size import get_terminal_size
-        terminal_width, _ = get_terminal_size()
-        max_bar_width = min(int(terminal_width * 0.6), terminal_width - 50)
-        max_bar_width = max(max_bar_width, 2)
-        return max_bar_width
+        width, _ = get_terminal_size()
+        return width
 
     def start(self):
         if self.task_num > 0:
@@ -53,12 +49,12 @@ class ProgressBar(object):
         if self.task_num > 0:
             percentage = self.completed / float(self.task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
-            mark_width = int(self.bar_width * percentage)
-            bar_chars = '>' * mark_width + ' ' * (self.bar_width - mark_width)
-            self.file.write(
-                '\r[{}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s'.format(
-                    bar_chars, self.completed, self.task_num, fps,
-                    int(elapsed + 0.5), eta))
+            msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s'.format(
+                self.completed, self.task_num, fps, int(elapsed + 0.5), eta)
+            bar_width = max(2, int(self.bar_width - len(msg)) + 2)
+            mark_width = int(bar_width * percentage)
+            bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
+            self.file.write(msg.format(bar_chars))
         else:
             self.file.write(
                 'completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
