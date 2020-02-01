@@ -1,6 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import sys
+import os
 import time
+from unittest.mock import patch
 
 try:
     from StringIO import StringIO
@@ -67,6 +69,27 @@ class TestProgressBar(object):
         assert out.getvalue() == ('\r[{}] 1/10, 1.0 task/s, '
                                   'elapsed: 1s, ETA:     9s'.format('>' * 2 +
                                                                     ' ' * 18))
+
+    def test_adaptive_length(self):
+        with patch.dict('os.environ', {'COLUMNS': '80'}):
+            out = StringIO()
+            bar_width = 20
+            # without total task num
+            prog_bar = mmcv.ProgressBar(10, bar_width=bar_width, file=out)
+            time.sleep(1)
+            reset_string_io(out)
+            prog_bar.update()
+            assert len(out.getvalue()) == 66
+
+            os.environ['COLUMNS'] = '30'
+            reset_string_io(out)
+            prog_bar.update()
+            assert len(out.getvalue()) == 48
+
+            os.environ['COLUMNS'] = '60'
+            reset_string_io(out)
+            prog_bar.update()
+            assert len(out.getvalue()) == 60
 
 
 def sleep_1s(num):
