@@ -2,14 +2,13 @@ import platform
 import re
 import sys
 from io import open  # for Python 2 (identical to builtin in Python 3)
-from setuptools import Extension, dist, find_packages, setup
-
 from pkg_resources import DistributionNotFound, get_distribution
-
-dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
+from setuptools import Extension, dist, find_packages, setup
 
 import numpy  # noqa: E402
 from Cython.Distutils import build_ext  # noqa: E402
+
+dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 
 def choose_requirement(primary, secondary):

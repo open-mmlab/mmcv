@@ -1,6 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import sys
 import os
+import sys
 import time
 
 try:
