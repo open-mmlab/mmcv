@@ -78,7 +78,6 @@ class TestProgressBar(object):
         with patch.dict('os.environ', {'COLUMNS': '80'}):
             out = StringIO()
             bar_width = 20
-            # without total task num
             prog_bar = mmcv.ProgressBar(10, bar_width=bar_width, file=out)
             time.sleep(1)
             reset_string_io(out)
