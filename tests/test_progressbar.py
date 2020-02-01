@@ -2,7 +2,11 @@
 import sys
 import os
 import time
-from unittest.mock import patch
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 try:
     from StringIO import StringIO
