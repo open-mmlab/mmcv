@@ -76,11 +76,10 @@ def bbox_clip(bboxes, img_shape):
         ndarray: Clipped bboxes.
     """
     assert bboxes.shape[-1] % 4 == 0
-    clipped_bboxes = np.empty_like(bboxes, dtype=bboxes.dtype)
-    clipped_bboxes[..., 0::2] = np.maximum(
-        np.minimum(bboxes[..., 0::2], img_shape[1] - 1), 0)
-    clipped_bboxes[..., 1::2] = np.maximum(
-        np.minimum(bboxes[..., 1::2], img_shape[0] - 1), 0)
+    cmin = np.empty_like(bboxes[..., :1], dtype=bboxes.dtype)
+    cmin[..., 0::2] = img_shape[1] - 1
+    cmin[..., 1::2] = img_shape[0] - 1
+    clipped_bboxes = np.maximum(np.minimum(bboxes, cmin), 0)
     return clipped_bboxes
 
 
