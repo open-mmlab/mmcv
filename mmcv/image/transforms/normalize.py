@@ -15,7 +15,9 @@ def imnormalize(img, mean, std, to_rgb=True):
 
 
 def imdenormalize(img, mean, std, to_bgr=True):
-    img = (img * std) + mean
+    mean = mean.reshape(1, 3).astype(np.float64)
+    std = std.reshape(1, 3).astype(np.float64)
+    img = cv2.add(cv2.multiply(img, std), mean)
     if to_bgr:
         img = rgb2bgr(img)
     return img
