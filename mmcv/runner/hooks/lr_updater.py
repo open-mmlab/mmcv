@@ -168,8 +168,9 @@ class InvLrUpdaterHook(LrUpdaterHook):
 
 class CosineLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, target_lr=0, **kwargs):
+    def __init__(self, target_lr=0, as_ratio=False, **kwargs):
         self.target_lr = target_lr
+        self.as_ratio = as_ratio
         super(CosineLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
@@ -179,8 +180,13 @@ class CosineLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        return self.target_lr + 0.5 * (base_lr - self.target_lr) * \
-            (1 + cos(pi * (progress / max_progress)))
+        if self.as_ratio:
+            target_lr = base_lr * self.target_lr
+            return target_lr + 0.5 * (base_lr - target_lr) * \
+                (1 + cos(pi * (progress / max_progress)))
+        else:
+            return self.target_lr + 0.5 * (base_lr - self.target_lr) * \
+                (1 + cos(pi * (progress / max_progress)))
 
 
 class CyclicLrUpdaterHook(LrUpdaterHook):
