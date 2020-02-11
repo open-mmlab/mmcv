@@ -31,6 +31,8 @@ class Runner(object):
         log_level (int): Logging level.
         logger (:obj:`logging.Logger`): Custom logger. If `None`, use the
             default logger.
+        env_info (dict): A dict contains infomations about the environment
+            where runner runs.
     """
 
     def __init__(self,
@@ -39,7 +41,8 @@ class Runner(object):
                  optimizer=None,
                  work_dir=None,
                  log_level=logging.INFO,
-                 logger=None):
+                 logger=None,
+                 env_info=None):
         assert callable(batch_processor)
         self.model = model
         if optimizer is not None:
@@ -70,6 +73,7 @@ class Runner(object):
         else:
             self.logger = logger
         self.log_buffer = LogBuffer()
+        self.env_info = env_info
 
         self.mode = None
         self._hooks = []
