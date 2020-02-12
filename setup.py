@@ -25,12 +25,9 @@ def choose_requirement(primary, secondary):
 
 
 install_requires = [
-    'numpy>=1.11.1',
-    'pyyaml',
-    'six',
-    'addict',
-    'requests',
+    line.strip() for line in open('requirements.txt', 'r').readlines()
 ]
+
 # If first not installed install second package
 CHOOSE_INSTALL_REQUIRES = [('opencv-python-headless>=3', 'opencv-python>=3')]
 
