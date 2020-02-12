@@ -21,6 +21,8 @@ class TextLoggerHook(LoggerHook):
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
                                       '{}.log.json'.format(runner.timestamp))
+        if runner.meta is not None:
+            self._dump_log(runner.meta, runner)
 
     def _get_max_memory(self, runner):
         mem = torch.cuda.max_memory_allocated()
