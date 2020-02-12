@@ -31,6 +31,8 @@ class Runner(object):
         log_level (int): Logging level.
         logger (:obj:`logging.Logger`): Custom logger. If `None`, use the
             default logger.
+        meta (dict | None): A dict records some import information such as
+            environment info and seed, which will be logged in logger hook.
     """
 
     def __init__(self,
@@ -39,7 +41,8 @@ class Runner(object):
                  optimizer=None,
                  work_dir=None,
                  log_level=logging.INFO,
-                 logger=None):
+                 logger=None,
+                 meta=None):
         assert callable(batch_processor)
         self.model = model
         if optimizer is not None:
@@ -70,6 +73,10 @@ class Runner(object):
         else:
             self.logger = logger
         self.log_buffer = LogBuffer()
+
+        if meta is not None:
+            assert isinstance(meta, dict), '"meta" must be a dict or None'
+        self.meta = meta
 
         self.mode = None
         self._hooks = []
