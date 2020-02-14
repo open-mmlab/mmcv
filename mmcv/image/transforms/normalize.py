@@ -18,12 +18,8 @@ def imdenormalize(img, mean, std, to_bgr=True):
     assert img.dtype != np.uint8
     mean = mean.reshape(1, -1).astype(np.float64)
     std = std.reshape(1, -1).astype(np.float64)
-    print(img[0, 0])
     img = cv2.multiply(img, std)  # make a copy
-    print(img[0, 0])
-
     cv2.add(img, mean, img)  # inplace
-    print(img[0, 0])
     if to_bgr:
         cv2.cvtColor(img, cv2.COLOR_RGB2BGR, img)  # inplace
     print(img[0, 0])
