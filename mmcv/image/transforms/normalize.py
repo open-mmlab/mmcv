@@ -4,7 +4,7 @@ import numpy as np
 
 
 def imnormalize(img, mean, std, to_rgb=True):
-    img = np.float32(img)
+    img = np.float32(img) if img.dtype != np.float32 else img.copy()
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
