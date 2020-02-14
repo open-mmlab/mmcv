@@ -11,8 +11,8 @@ def imnormalize(img, mean, std, to_rgb=True):
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
         img = bgr2rgb(img)
-    img = cv2.subtract(img, mean)  # make a copy
-    cv2.multiply(img, stdinv, img)  # inplace
+    cv2.subtract(img, mean, img)
+    cv2.multiply(img, stdinv, img)
     return img
 
 
