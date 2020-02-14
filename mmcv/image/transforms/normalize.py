@@ -22,5 +22,4 @@ def imdenormalize(img, mean, std, to_bgr=True):
     cv2.add(img, mean, img)  # inplace
     if to_bgr:
         cv2.cvtColor(img, cv2.COLOR_RGB2BGR, img)  # inplace
-    print(img[0, 0])
     return img
