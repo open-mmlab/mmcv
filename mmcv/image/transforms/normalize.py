@@ -10,7 +10,7 @@ def imnormalize(img, mean, std, to_rgb=True):
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
-        img = bgr2rgb(img)
+        cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
     cv2.subtract(img, mean, img)
     cv2.multiply(img, stdinv, img)
     return img
