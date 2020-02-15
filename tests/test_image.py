@@ -67,10 +67,14 @@ class TestImage(object):
         assert np.allclose(img, baseline)
 
     def test_imdenormalize(self):
-        img = (self.img[:, :, ::-1] - self.mean) / self.std
-        baseline = (img * self.std + self.mean)[:, :, ::-1]
-        img = mmcv.imdenormalize(img, self.mean, self.std)
-        assert np.allclose(img, baseline)
+        rgbimg = self.img[:, :, ::-1]
+        normalizedimg = (rgbimg - self.mean) / self.std
+        rgbbaseline = (normalizedimg * self.std + self.mean)
+        bgrbaseline = baseline[:, :, ::-1]
+        img = mmcv.imdenormalize(normalizedimg, self.mean, self.std)
+        assert np.allclose(img, bgrbaseline)
+        img = mmcv.imdenormalize(normalizedimg, self.mean, self.std, to_bgr=False)
+        assert np.allclose(img, rgbbaseline)
 
     def test_bgr2gray(self):
         in_img = np.random.rand(10, 10, 3).astype(np.float32)
