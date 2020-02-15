@@ -67,8 +67,8 @@ class TestImage(object):
         assert np.allclose(img, baseline)
 
     def test_imdenormalize(self):
-        baseline = (self.img * self.std + self.mean)[:, :, ::-1]
         img = (self.img[:, :, ::-1] - self.mean) / self.std
+        baseline = (self.img * self.std + self.mean)[:, :, ::-1]
         img = mmcv.imdenormalize(img, self.mean, self.std)
         assert np.allclose(img, baseline)
 
