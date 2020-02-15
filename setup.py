@@ -24,20 +24,17 @@ def choose_requirement(primary, secondary):
     return str(primary)
 
 
-install_requires = [
-    line.strip() for line in open('requirements.txt', 'r').readlines()
-]
+install_requires = ['addict', 'numpy', 'pyyaml', 'six']
+
+if sys.version_info < (3, ):
+    install_requires.extend(
+        ['backports.shutil_get_terminal_size', 'enum34', 'pathlib'])
 
 # If first not installed install second package
 CHOOSE_INSTALL_REQUIRES = [('opencv-python-headless>=3', 'opencv-python>=3')]
 
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
-
-if sys.version_info < (3, 3):
-    install_requires.append('backports.shutil_get_terminal_size')
-if sys.version_info < (3, 4):
-    install_requires.extend(['enum34', 'pathlib'])
 
 
 def readme():
@@ -88,7 +85,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
