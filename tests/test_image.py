@@ -20,6 +20,8 @@ class TestImage(object):
         cls.gray_img_path = osp.join(
             osp.dirname(__file__), 'data/grayscale.jpg')
         cls.img = cv2.imread(cls.img_path)
+        cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
+        cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape
@@ -55,6 +57,23 @@ class TestImage(object):
         rewrite_img = mmcv.imread(out_file)
         os.remove(out_file)
         self.assert_img_equal(img, rewrite_img)
+
+    def test_imnormalize(self):
+        rgbimg = self.img[:, :, ::-1]
+        baseline = (rgbimg - self.mean) / self.std
+        img = mmcv.imnormalize(self.img, self.mean, self.std)
+        assert np.allclose(img, baseline)
+        img = mmcv.imnormalize(rgbimg, self.mean, self.std, to_rgb=False)
+        assert np.allclose(img, baseline)
+
+    def test_imdenormalize(self):
+        normimg = (self.img[:, :, ::-1] - self.mean) / self.std
+        rgbbaseline = (normimg * self.std + self.mean)
+        bgrbaseline = rgbbaseline[:, :, ::-1]
+        img = mmcv.imdenormalize(normimg, self.mean, self.std)
+        assert np.allclose(img, bgrbaseline)
+        img = mmcv.imdenormalize(normimg, self.mean, self.std, to_bgr=False)
+        assert np.allclose(img, rgbbaseline)
 
     def test_bgr2gray(self):
         in_img = np.random.rand(10, 10, 3).astype(np.float32)
