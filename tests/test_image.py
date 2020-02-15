@@ -59,10 +59,11 @@ class TestImage(object):
         self.assert_img_equal(img, rewrite_img)
 
     def test_imnormalize(self):
-        baseline = (self.img[:, :, ::-1] - self.mean) / self.std
+        rgbimg = self.img[:, :, ::-1]
+        baseline = (rgbimg - self.mean) / self.std
         img = mmcv.imnormalize(self.img, self.mean, self.std)
         assert np.allclose(img, baseline)
-        img = mmcv.imnormalize(self.img[:, :, ::-1], self.mean, self.std, to_rgb=False)
+        img = mmcv.imnormalize(rgbimg, self.mean, self.std, to_rgb=False)
         assert np.allclose(img, baseline)
 
     def test_imdenormalize(self):
