@@ -31,24 +31,80 @@ class TestImage(object):
         assert np.sum(diff <= 1) / float(area) > ratio_thr
 
     def test_imread(self):
-        img = mmcv.imread(self.img_path)
-        assert img.shape == (300, 400, 3)
-        img = mmcv.imread(self.img_path, 'grayscale')
-        assert img.shape == (300, 400)
-        img = mmcv.imread(self.gray_img_path)
-        assert img.shape == (300, 400, 3)
-        img = mmcv.imread(self.gray_img_path, 'unchanged')
-        assert img.shape == (300, 400)
-        img = mmcv.imread(img)
-        assert_array_equal(img, mmcv.imread(img))
+        # backend cv2
+        mmcv.usebackend('cv2')
+
+        img_cv2_color_bgr = mmcv.imread(self.img_path)
+        assert img_cv2_color_bgr.shape == (300, 400, 3)
+        img_cv2_color_rgb = mmcv.imread(self.img_path, channel_order='rgb')
+        assert img_cv2_color_rgb.shape == (300, 400, 3)
+        assert_array_equal(img_cv2_color_rgb[:, :, ::-1], img_cv2_color_bgr)
+        img_cv2_grayscale1 = mmcv.imread(self.img_path, 'grayscale')
+        assert img_cv2_grayscale1.shape == (300, 400)
+        img_cv2_grayscale2 = mmcv.imread(self.gray_img_path)
+        assert img_cv2_grayscale2.shape == (300, 400, 3)
+        img_cv2_unchanged = mmcv.imread(self.gray_img_path, 'unchanged')
+        assert img_cv2_unchanged.shape == (300, 400)
+        img_cv2_unchanged = mmcv.imread(img_cv2_unchanged)
+        assert_array_equal(img_cv2_unchanged, mmcv.imread(img_cv2_unchanged))
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
+        # backend turbojpeg
+        mmcv.usebackend('turbojpeg')
+
+        img_turbojpeg_color_bgr = mmcv.imread(self.img_path)
+        assert img_turbojpeg_color_bgr.shape == (300, 400, 3)
+        assert_array_equal(img_turbojpeg_color_bgr, img_cv2_color_bgr)
+
+        img_turbojpeg_color_rgb = mmcv.imread(
+            self.img_path, channel_order='rgb')
+        assert img_turbojpeg_color_rgb.shape == (300, 400, 3)
+        assert_array_equal(img_turbojpeg_color_rgb, img_cv2_color_rgb)
+
+        with pytest.raises(ValueError):
+            mmcv.imread(self.img_path, channel_order='unsupport_order')
+
+        img_turbojpeg_grayscale1 = mmcv.imread(self.img_path, flag='grayscale')
+        assert img_turbojpeg_grayscale1.shape == (300, 400)
+        assert_array_equal(img_turbojpeg_grayscale1, img_cv2_grayscale1)
+
+        img_turbojpeg_grayscale2 = mmcv.imread(self.gray_img_path)
+        assert img_turbojpeg_grayscale2.shape == (300, 400, 3)
+        assert_array_equal(img_turbojpeg_grayscale2, img_cv2_grayscale2)
+
+        img_turbojpeg_grayscale2 = mmcv.imread(img_turbojpeg_grayscale2)
+        assert_array_equal(img_turbojpeg_grayscale2,
+                           mmcv.imread(img_turbojpeg_grayscale2))
+
+        with pytest.raises(ValueError):
+            mmcv.imread(self.gray_img_path, 'unchanged')
+
+        with pytest.raises(TypeError):
+            mmcv.imread(1)
+
+        with pytest.raises(AssertionError):
+            mmcv.usebackend('unsupport_backend')
+
+        mmcv.usebackend('cv2')
+
     def test_imfrombytes(self):
+        # backend cv2
+        mmcv.usebackend('cv2')
         with open(self.img_path, 'rb') as f:
             img_bytes = f.read()
-        img = mmcv.imfrombytes(img_bytes)
-        assert img.shape == (300, 400, 3)
+        img_cv2 = mmcv.imfrombytes(img_bytes)
+        assert img_cv2.shape == (300, 400, 3)
+
+        # backend turbojpeg
+        mmcv.usebackend('turbojpeg')
+        with open(self.img_path, 'rb') as f:
+            img_bytes = f.read()
+        img_turbojpeg = mmcv.imfrombytes(img_bytes)
+        assert img_turbojpeg.shape == (300, 400, 3)
+        assert_array_equal(img_cv2, img_turbojpeg)
+
+        mmcv.usebackend('cv2')
 
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
