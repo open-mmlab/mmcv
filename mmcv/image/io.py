@@ -82,6 +82,8 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
                                   _jpegflag(flag, channel_order))
+                if img.shape[-1] == 1:
+                    img = img[:, :, 0]
             return img
         else:
             flag = imread_flags[flag] if is_str(flag) else flag
@@ -107,6 +109,8 @@ def imfrombytes(content, flag='color', channel_order='bgr'):
     """
     if imread_backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
+        if img.shape[-1] == 1:
+            img = img[:, :, 0]
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)
