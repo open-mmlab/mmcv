@@ -35,7 +35,7 @@ def usebackend(backend):
 
     Args:
         backend (str): The image decoding backend type. Options are "cv2" and
-            "turbojpeg".
+            "turbojpeg" (see https://github.com/lilohuang/PyTurboJPEG).
     """
     assert backend in supported_backends
     global imread_backend
