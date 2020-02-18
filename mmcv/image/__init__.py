@@ -2,7 +2,7 @@
 from .io import imfrombytes, imread, imwrite, supported_backends, use_backend
 from .transforms import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
                          gray2rgb, hls2bgr, hsv2bgr, imcrop, imdenormalize,
-                         imflip, imflip_, iminvert, imnormalize, impad,
+                         imflip, imflip_, iminvert, imnormalize, imnormalize_, impad,
                          impad_to_multiple, imrescale, imresize, imresize_like,
                          imrotate, posterize, rgb2bgr, rgb2gray, solarize)
 
@@ -11,6 +11,6 @@ __all__ = [
     'rgb2gray', 'gray2bgr', 'gray2rgb', 'bgr2rgb', 'rgb2bgr', 'bgr2hsv',
     'hsv2bgr', 'bgr2hls', 'hls2bgr', 'iminvert', 'imflip', 'imflip_',
     'imrotate', 'imcrop', 'impad', 'impad_to_multiple', 'imnormalize',
-    'imdenormalize', 'imresize', 'imresize_like', 'imrescale', 'use_backend',
+    'imnormalize_', 'imdenormalize', 'imresize', 'imresize_like', 'imrescale', 'use_backend',
     'supported_backends'
 ]
