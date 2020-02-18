@@ -32,7 +32,7 @@ class TestImage(object):
 
     def test_imread(self):
         # backend cv2
-        mmcv.usebackend('cv2')
+        mmcv.use_backend('cv2')
 
         img_cv2_color_bgr = mmcv.imread(self.img_path)
         assert img_cv2_color_bgr.shape == (300, 400, 3)
@@ -51,7 +51,7 @@ class TestImage(object):
             mmcv.imread(1)
 
         # backend turbojpeg
-        mmcv.usebackend('turbojpeg')
+        mmcv.use_backend('turbojpeg')
 
         img_turbojpeg_color_bgr = mmcv.imread(self.img_path)
         assert img_turbojpeg_color_bgr.shape == (300, 400, 3)
@@ -84,27 +84,27 @@ class TestImage(object):
             mmcv.imread(1)
 
         with pytest.raises(AssertionError):
-            mmcv.usebackend('unsupport_backend')
+            mmcv.use_backend('unsupport_backend')
 
-        mmcv.usebackend('cv2')
+        mmcv.use_backend('cv2')
 
     def test_imfrombytes(self):
         # backend cv2
-        mmcv.usebackend('cv2')
+        mmcv.use_backend('cv2')
         with open(self.img_path, 'rb') as f:
             img_bytes = f.read()
         img_cv2 = mmcv.imfrombytes(img_bytes)
         assert img_cv2.shape == (300, 400, 3)
 
         # backend turbojpeg
-        mmcv.usebackend('turbojpeg')
+        mmcv.use_backend('turbojpeg')
         with open(self.img_path, 'rb') as f:
             img_bytes = f.read()
         img_turbojpeg = mmcv.imfrombytes(img_bytes)
         assert img_turbojpeg.shape == (300, 400, 3)
         assert_array_equal(img_cv2, img_turbojpeg)
 
-        mmcv.usebackend('cv2')
+        mmcv.use_backend('cv2')
 
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)

@@ -30,8 +30,8 @@ imread_flags = {
 imread_backend = 'cv2'
 
 
-def usebackend(backend):
-    """Select a backend for imread
+def use_backend(backend):
+    """Select a backend for image decoding.
 
     Args:
         backend (str): The image decoding backend type. Options are "cv2" and
@@ -76,9 +76,9 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
+        check_file_exist(img_or_path,
+                         'img file does not exist: {}'.format(img_or_path))
         if imread_backend == 'turbojpeg':
-            check_file_exist(img_or_path,
-                             'img file does not exist: {}'.format(img_or_path))
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
                                   _jpegflag(flag, channel_order))
@@ -87,8 +87,6 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
             return img
         else:
             flag = imread_flags[flag] if is_str(flag) else flag
-            check_file_exist(img_or_path,
-                             'img file does not exist: {}'.format(img_or_path))
             img = cv2.imread(img_or_path, flag)
             if flag == IMREAD_COLOR and channel_order == 'rgb':
                 cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
