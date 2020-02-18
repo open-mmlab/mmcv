@@ -313,6 +313,38 @@ class TestImage(object):
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
 
+    def test_imflip_(self):
+        # test horizontal flip (color image)
+        img = np.random.rand(80, 60, 3)
+        h, w, c = img.shape
+        flipped_img = mmcv.imflip_(img.copy())
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[i, w - 1 - j, k]
+        # test vertical flip (color image)
+        flipped_img = mmcv.imflip_(img.copy(), direction='vertical')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+        # test horizontal flip (grayscale image)
+        img = np.random.rand(80, 60)
+        h, w = img.shape
+        flipped_img = mmcv.imflip_(img.copy())
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[i, w - 1 - j]
+        # test vertical flip (grayscale image)
+        flipped_img = mmcv.imflip_(img.copy(), direction='vertical')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[h - 1 - i, j]
+
     def test_imcrop(self):
         # yapf: disable
         bboxes = np.array([[100, 100, 199, 199],  # center
