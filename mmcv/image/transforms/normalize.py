@@ -5,6 +5,10 @@ import numpy as np
 
 def imnormalize(img, mean, std, to_rgb=True):
     img = np.float32(img) if img.dtype != np.float32 else img.copy()
+    return imnormalize_(img, mean, std, to_rgb)
+
+
+def imnormalize_(img, mean, std, to_rgb=True):
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
