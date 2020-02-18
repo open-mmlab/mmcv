@@ -34,8 +34,9 @@ def use_backend(backend):
     """Select a backend for image decoding.
 
     Args:
-        backend (str): The image decoding backend type. Options are "cv2" and
-            "turbojpeg" (see https://github.com/lilohuang/PyTurboJPEG).
+        backend (str): The image decoding backend type. Options are `cv2` and
+            `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
+            `turbojpeg` is faster but it only supports `.jpeg` file format.
     """
     assert backend in supported_backends
     global imread_backend
@@ -69,6 +70,8 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
             as is.
         flag (str): Flags specifying the color type of a loaded image,
             candidates are `color`, `grayscale` and `unchanged`.
+            Note that the `turbojpeg` backened does not support `unchanged`.
+        channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
 
     Returns:
         ndarray: Loaded image array.
