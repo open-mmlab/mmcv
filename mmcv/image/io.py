@@ -42,6 +42,8 @@ def use_backend(backend):
     global imread_backend
     imread_backend = backend
     if imread_backend == 'turbojpeg':
+        if TurboJPEG is None:
+            raise ValueError('`PyTurboJPEG` is not installed')
         global jpeg
         if jpeg is None:
             jpeg = TurboJPEG()
