@@ -321,6 +321,7 @@ class TestImage(object):
         flipped_img = mmcv.imflip_(img_for_flip)
         assert flipped_img.shape == img.shape
         assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
         for i in range(h):
             for j in range(w):
                 for k in range(c):
@@ -332,6 +333,7 @@ class TestImage(object):
         flipped_img = mmcv.imflip_(img_for_flip, direction='vertical')
         assert flipped_img.shape == img.shape
         assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
         for i in range(h):
             for j in range(w):
                 for k in range(c):
@@ -345,6 +347,7 @@ class TestImage(object):
         flipped_img = mmcv.imflip_(img_for_flip)
         assert flipped_img.shape == img.shape
         assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[i, w - 1 - j]
@@ -355,6 +358,7 @@ class TestImage(object):
         flipped_img = mmcv.imflip_(img_for_flip, direction='vertical')
         assert flipped_img.shape == img.shape
         assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
