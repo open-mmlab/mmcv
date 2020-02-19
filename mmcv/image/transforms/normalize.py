@@ -9,6 +9,8 @@ def imnormalize(img, mean, std, to_rgb=True):
 
 
 def imnormalize_(img, mean, std, to_rgb=True):
+    # cv2 inplace normalization doesn't accept uint8
+    assert img.dtype != np.uint8
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
