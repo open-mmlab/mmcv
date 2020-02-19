@@ -23,7 +23,7 @@ def imflip(img, direction='horizontal'):
 
 
 def imflip_(img, direction='horizontal'):
-    """Flip an image horizontally or vertically by cv2 inplace flip.
+    """Inplace flip an image horizontally or vertically.(overwrite img!)
     Args:
         img (ndarray): Image to be flipped.
         direction (str): The flip direction, either "horizontal" or "vertical".
