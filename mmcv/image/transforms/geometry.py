@@ -22,6 +22,22 @@ def imflip(img, direction='horizontal'):
         return np.flip(img, axis=0)
 
 
+def imflip_(img, direction='horizontal'):
+    """Inplace flip an image horizontally or vertically.
+    Args:
+        img (ndarray): Image to be flipped.
+        direction (str): The flip direction, either "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The flipped image(inplace).
+    """
+    assert direction in ['horizontal', 'vertical']
+    if direction == 'horizontal':
+        return cv2.flip(img, 1, img)
+    else:
+        return cv2.flip(img, 0, img)
+
+
 def imrotate(img,
              angle,
              center=None,
