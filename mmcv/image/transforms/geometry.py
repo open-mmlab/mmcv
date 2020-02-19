@@ -23,7 +23,7 @@ def imflip(img, direction='horizontal'):
 
 
 def imflip_(img, direction='horizontal'):
-    """Inplace flip an image horizontally or vertically.(overwrite img!)
+    """Inplace flip an image horizontally or vertically.
     Args:
         img (ndarray): Image to be flipped.
         direction (str): The flip direction, either "horizontal" or "vertical".
