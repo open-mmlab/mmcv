@@ -4,7 +4,35 @@ import numpy as np
 
 
 def imnormalize(img, mean, std, to_rgb=True):
+    """Normalize an image with mean and std.
+
+    Args:
+        img (ndarray): Image to be normalized.
+        mean (ndarray): The mean to be used for normalize.
+        std (ndarray): The std to be used for normalize.
+        to_rgb (bool): Whether to convert to rgb.
+
+    Returns:
+        ndarray: The normalized image.
+    """
     img = np.float32(img) if img.dtype != np.float32 else img.copy()
+    return imnormalize_(img, mean, std, to_rgb)
+
+
+def imnormalize_(img, mean, std, to_rgb=True):
+    """Inplace normalize an image with mean and std.
+
+    Args:
+        img (ndarray): Image to be normalized.
+        mean (ndarray): The mean to be used for normalize.
+        std (ndarray): The std to be used for normalize.
+        to_rgb (bool): Whether to convert to rgb.
+
+    Returns:
+        ndarray: The normalized image.
+    """
+    # cv2 inplace normalization does not accept uint8
+    assert img.dtype != np.uint8
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
