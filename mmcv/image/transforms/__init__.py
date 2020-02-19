@@ -11,6 +11,6 @@ __all__ = [
     'solarize', 'posterize', 'bgr2gray', 'rgb2gray', 'gray2bgr', 'gray2rgb',
     'bgr2rgb', 'rgb2bgr', 'bgr2hsv', 'hsv2bgr', 'bgr2hls', 'hls2bgr',
     'iminvert', 'imflip', 'imflip_', 'imrotate', 'imcrop', 'impad',
-    'impad_to_multiple', 'imnormalize', 'imnormalize', 'imdenormalize', 'imresize',
-    'imresize_like', 'imrescale'
+    'impad_to_multiple', 'imnormalize', 'imnormalize_', 'imdenormalize',
+    'imresize', 'imresize_like', 'imrescale'
 ]
