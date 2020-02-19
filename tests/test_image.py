@@ -119,8 +119,10 @@ class TestImage(object):
         baseline = (rgbimg - self.mean) / self.std
         img = mmcv.imnormalize(self.img, self.mean, self.std)
         assert np.allclose(img, baseline)
+        assert id(img) != id(self.img)
         img = mmcv.imnormalize(rgbimg, self.mean, self.std, to_rgb=False)
         assert np.allclose(img, baseline)
+        assert id(img) != id(rgbimg)
 
     def test_imnormalize_(self):
         img_for_normalize = np.float32(self.img.copy())
