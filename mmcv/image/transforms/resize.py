@@ -68,6 +68,29 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
     h, w = dst_img.shape[:2]
     return imresize(img, (w, h), return_scale, interpolation)
 
+def imrescale_size(img, scale, return_scale=False):
+    h, w = img.shape[:2]
+    if isinstance(scale, (float, int)):
+        if scale <= 0:
+            raise ValueError(
+                'Invalid scale {}, must be positive.'.format(scale))
+        scale_factor = scale
+    elif isinstance(scale, tuple):
+        max_long_edge = max(scale)
+        max_short_edge = min(scale)
+        scale_factor = min(max_long_edge / max(h, w),
+                           max_short_edge / min(h, w))
+    else:
+        raise TypeError(
+            'Scale must be a number or tuple of int, but got {}'.format(
+                type(scale)))
+
+    new_size = _scale_size((w, h), scale_factor)
+
+    if return_scale:
+        return new_size, scale_factor
+    else:
+        return new_size
 
 def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
     """Resize image while keeping the aspect ratio.
@@ -86,21 +109,7 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
-    if isinstance(scale, (float, int)):
-        if scale <= 0:
-            raise ValueError(
-                'Invalid scale {}, must be positive.'.format(scale))
-        scale_factor = scale
-    elif isinstance(scale, tuple):
-        max_long_edge = max(scale)
-        max_short_edge = min(scale)
-        scale_factor = min(max_long_edge / max(h, w),
-                           max_short_edge / min(h, w))
-    else:
-        raise TypeError(
-            'Scale must be a number or tuple of int, but got {}'.format(
-                type(scale)))
-    new_size = _scale_size((w, h), scale_factor)
+    new_size, scale_factor = imrescale_size(img, scale, return_scale=True)
     rescaled_img = imresize(img, new_size, interpolation=interpolation)
     if return_scale:
         return rescaled_img, scale_factor
