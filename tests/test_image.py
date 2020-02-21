@@ -258,6 +258,10 @@ class TestImage(object):
                                                       True)
         assert (resized_img.shape == (600, 1000, 3) and w_scale == 2.5
                 and h_scale == 2.0)
+        resized_img_dst = np.empty((600, 1000, 3), dtype=self.img.dtype)
+        resized_img = mmcv.imresize(self.img, (1000, 600), out=resized_img_dst)
+        assert id(resized_img_dst) == id(resized_img)
+        assert_array_equal(resized_img_dst, resized_img)
         for mode in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
             resized_img = mmcv.imresize(
                 self.img, (1000, 600), interpolation=mode)
