@@ -37,10 +37,10 @@ def imresize(img,
     Args:
         img (ndarray): The input image.
         size (tuple): Target (w, h).
-        out (ndarray): The output destination.
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
+        out (ndarray): The output destination.
 
     Returns:
         tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
