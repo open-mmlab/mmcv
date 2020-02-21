@@ -29,9 +29,9 @@ interp_codes = {
 
 def imresize(img,
              size,
-             out=None,
              return_scale=False,
-             interpolation='bilinear'):
+             interpolation='bilinear',
+             out=None):
     """Resize image to a given size.
 
     Args:
