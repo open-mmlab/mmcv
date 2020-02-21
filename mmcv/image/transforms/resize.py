@@ -27,12 +27,17 @@ interp_codes = {
 }
 
 
-def imresize(img, size, return_scale=False, interpolation='bilinear'):
+def imresize(img,
+             size,
+             out=None,
+             return_scale=False,
+             interpolation='bilinear'):
     """Resize image to a given size.
 
     Args:
         img (ndarray): The input image.
         size (tuple): Target (w, h).
+        out (ndarray): The output destination.
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
@@ -43,7 +48,7 @@ def imresize(img, size, return_scale=False, interpolation='bilinear'):
     """
     h, w = img.shape[:2]
     resized_img = cv2.resize(
-        img, size, interpolation=interp_codes[interpolation])
+        img, size, dst=out, interpolation=interp_codes[interpolation])
     if not return_scale:
         return resized_img
     else:
@@ -68,8 +73,9 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
     h, w = dst_img.shape[:2]
     return imresize(img, (w, h), return_scale, interpolation)
 
-def imrescale_size(img, scale, return_scale=False):
-    h, w = img.shape[:2]
+
+def imrescale_size(old_size, scale, return_scale=False):
+    w, h = old_size
     if isinstance(scale, (float, int)):
         if scale <= 0:
             raise ValueError(
@@ -92,6 +98,7 @@ def imrescale_size(img, scale, return_scale=False):
     else:
         return new_size
 
+
 def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
     """Resize image while keeping the aspect ratio.
 
@@ -109,7 +116,7 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
-    new_size, scale_factor = imrescale_size(img, scale, return_scale=True)
+    new_size, scale_factor = imrescale_size((w, h), scale, return_scale=True)
     rescaled_img = imresize(img, new_size, interpolation=interpolation)
     if return_scale:
         return rescaled_img, scale_factor
