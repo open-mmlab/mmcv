@@ -3,9 +3,9 @@ import os.path as osp
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
+from shutil import get_terminal_size
 
 from addict import Dict
-from shutil import get_terminal_size
 
 from .misc import collections_abc
 from .path import check_file_exist
@@ -134,15 +134,18 @@ class Config(object):
                 text_str += f.read()
                 text_str += '=' * width + '\n'
                 text_str += 'Override config: \n'
-            child_cfg_dict, cfg_dict = cfg_dict, Config.file2dict(base_filename)
+            # swap name
+            child_cfg_dict, cfg_dict = cfg_dict, Config.file2dict(
+                base_filename)
 
             def merge_a_into_b(a, b):
                 # merge dict a into dict b. values in a will overwrite b.
                 for k, v in a.items():
                     if isinstance(v, dict) and k in b:
                         assert isinstance(
-                            b[k], dict
-                        ), "Cannot inherit key '{}' from base!".format(k)
+                            b[k],
+                            dict), "Cannot inherit key '{}' from base!".format(
+                                k)
                         merge_a_into_b(v, b[k])
                     else:
                         b[k] = v
