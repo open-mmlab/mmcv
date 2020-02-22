@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from importlib import import_module
 
 from addict import Dict
+from shutil import get_terminal_size
 
 from .misc import collections_abc
 from .path import check_file_exist
@@ -74,7 +75,7 @@ class Config(object):
     """
 
     @staticmethod
-    def fromfile(filename):
+    def file2dict(filename):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
@@ -95,6 +96,11 @@ class Config(object):
             cfg_dict = mmcv.load(filename)
         else:
             raise IOError('Only py/yml/yaml/json type are supported now!')
+        return cfg_dict
+
+    @staticmethod
+    def fromfile(filename):
+        cfg_dict = Config.file2dict(filename)
         return Config(cfg_dict, filename=filename)
 
     @staticmethod
@@ -117,13 +123,38 @@ class Config(object):
             raise TypeError('cfg_dict must be a dict, but got {}'.format(
                 type(cfg_dict)))
 
+        text_str = ''
+
+        if '_base_' in cfg_dict:
+            base_filename = cfg_dict.pop('_base_')
+            with open(base_filename, 'r') as f:
+                width, _ = get_terminal_size()
+                text_str += '=' * width + '\n'
+                text_str += 'Base config: \n'
+                text_str += f.read()
+                text_str += '=' * width + '\n'
+                text_str += 'Override config: \n'
+            child_cfg_dict, cfg_dict = cfg_dict, Config.file2dict(base_filename)
+
+            def merge_a_into_b(a, b):
+                # merge dict a into dict b. values in a will overwrite b.
+                for k, v in a.items():
+                    if isinstance(v, dict) and k in b:
+                        assert isinstance(
+                            b[k], dict
+                        ), "Cannot inherit key '{}' from base!".format(k)
+                        merge_a_into_b(v, b[k])
+                    else:
+                        b[k] = v
+
+            merge_a_into_b(child_cfg_dict, cfg_dict)
+
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
         if filename:
             with open(filename, 'r') as f:
-                super(Config, self).__setattr__('_text', f.read())
-        else:
-            super(Config, self).__setattr__('_text', '')
+                text_str += f.read()
+        super(Config, self).__setattr__('_text', text_str)
 
     @property
     def filename(self):
