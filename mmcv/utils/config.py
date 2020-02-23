@@ -39,11 +39,11 @@ def add_args(parser, cfg, prefix=''):
         elif isinstance(v, bool):
             parser.add_argument('--' + prefix + k, action='store_true')
         elif isinstance(v, dict):
-            add_args(parser, v, k + '.')
+            add_args(parser, v, prefix + k + '.')
         elif isinstance(v, collections_abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
-            print('connot parse key {} of type {}'.format(prefix + k, type(v)))
+            print('cannot parse key {} of type {}'.format(prefix + k, type(v)))
     return parser
 
 
@@ -74,7 +74,7 @@ class Config(object):
     """
 
     @staticmethod
-    def file2dict(filename):
+    def _file2dict(filename):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
@@ -95,12 +95,56 @@ class Config(object):
             cfg_dict = mmcv.load(filename)
         else:
             raise IOError('Only py/yml/yaml/json type are supported now!')
-        return cfg_dict
+
+        cfg_text = filename + '\n'
+        with open(filename, 'r') as f:
+            cfg_text += f.read()
+
+        if '_base_' in cfg_dict:
+            cfg_dir = osp.dirname(filename)
+            base_filename = cfg_dict.pop('_base_')
+            base_filename = base_filename if isinstance(
+                base_filename, list) else [base_filename]
+
+            # files in _base_ will be merged sequentially first,
+            # then merge into current cfg_dict
+            cfg_dict_list = list()
+            cfg_text_list = list()
+            for f in base_filename:
+                _cfg_dict, _cfg_text = Config._file2dict(osp.join(cfg_dir, f))
+                cfg_dict_list.append(_cfg_dict)
+                cfg_text_list.append(_cfg_text)
+
+            cfg_dict_list.append(cfg_dict)
+            cfg_text_list.append(cfg_text)
+            # rename cfg_dict to be the first
+            cfg_dict = cfg_dict_list.pop(0)
+
+            def merge_a_into_b(a, b):
+                # merge dict a into dict b. values in a will overwrite b.
+                for k, v in a.items():
+                    if isinstance(v, dict) and k in b:
+                        assert isinstance(
+                            b[k],
+                            dict), "Cannot inherit key '{}' from base!".format(
+                                k)
+                        merge_a_into_b(v, b[k])
+                    else:
+                        b[k] = v
+
+            # merge cfg_dict
+            for c in cfg_dict_list:
+                merge_a_into_b(c, cfg_dict)
+
+            # merge cfg_text
+            cfg_text = '\n'.join(cfg_text_list)
+
+        return cfg_dict, cfg_text
 
     @staticmethod
     def fromfile(filename):
-        cfg_dict = Config.file2dict(filename)
-        return Config(cfg_dict, filename=filename)
+        cfg_dict, cfg_text = Config._file2dict(filename)
+        return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod
     def auto_argparser(description=None):
@@ -115,47 +159,23 @@ class Config(object):
         add_args(parser, cfg)
         return parser, cfg
 
-    def __init__(self, cfg_dict=None, filename=None):
+    def __init__(self, cfg_dict=None, cfg_text=None, filename=None):
         if cfg_dict is None:
             cfg_dict = dict()
         elif not isinstance(cfg_dict, dict):
             raise TypeError('cfg_dict must be a dict, but got {}'.format(
                 type(cfg_dict)))
 
-        text_str = ''
-
-        if '_base_' in cfg_dict:
-            base_filename = cfg_dict.pop('_base_')
-            with open(base_filename, 'r') as f:
-                text_str += '=' * 80 + '\n'
-                text_str += 'Base config: \n'
-                text_str += f.read()
-                text_str += '=' * 80 + '\n'
-                text_str += 'Override config: \n'
-            # swap name
-            child_cfg_dict, cfg_dict = cfg_dict, Config.file2dict(
-                base_filename)
-
-            def merge_a_into_b(a, b):
-                # merge dict a into dict b. values in a will overwrite b.
-                for k, v in a.items():
-                    if isinstance(v, dict) and k in b:
-                        assert isinstance(
-                            b[k],
-                            dict), "Cannot inherit key '{}' from base!".format(
-                                k)
-                        merge_a_into_b(v, b[k])
-                    else:
-                        b[k] = v
-
-            merge_a_into_b(child_cfg_dict, cfg_dict)
-
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
-        if filename:
+        if cfg_text:
+            text = cfg_text
+        elif filename:
             with open(filename, 'r') as f:
-                text_str += f.read()
-        super(Config, self).__setattr__('_text', text_str)
+                text = f.read()
+        else:
+            text = ''
+        super(Config, self).__setattr__('_text', text)
 
     @property
     def filename(self):
@@ -190,3 +210,23 @@ class Config(object):
 
     def __iter__(self):
         return iter(self._cfg_dict)
+
+    def merge_from_list(self, cfg_list):
+        """ Merge list into cfg_dict
+        Merge config (keys, values) in a list (e.g., from command line) into
+        this CfgNode. For example, `cfg_list = ['FOO.BAR', 0.5]`.
+
+        Args:
+            cfg_list (list): list of configs to merge from.
+        """
+        assert len(cfg_list) % 2 == 0
+        for full_key, v in zip(cfg_list[0::2], cfg_list[1::2]):
+            d = self._cfg_dict
+            key_list = full_key.split(".")
+            for subkey in key_list[:-1]:
+                assert subkey in d
+                d = d[subkey]
+            subkey = key_list[-1]
+            # casting to the same type
+            v = type(d[subkey])(v)
+            d[subkey] = v
