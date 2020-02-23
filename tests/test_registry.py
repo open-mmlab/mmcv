@@ -27,8 +27,14 @@ def test_registry():
     with pytest.raises(KeyError):
         CATS.register_module(Munchkin)
 
-    CATS.register_module(Munchkin)
+    CATS.register_module(Munchkin, force=True)
     assert len(CATS) == 2
+
+    with pytest.raises(KeyError):
+
+        @CATS.register_module()
+        class BritishShorthair:
+            pass
 
     @CATS.register_module(force=True)
     class BritishShorthair:
@@ -40,6 +46,10 @@ def test_registry():
 
     assert repr(
         CATS) == "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])"
+
+    # the registered module should be a class
+    with pytest.raises(TypeError):
+        CATS.register_module(0)
 
 
 def test_build_from_cfg():
