@@ -24,6 +24,18 @@ def test_registry():
     assert len(CATS) == 2
     assert CATS.get('Munchkin') is Munchkin
 
+    with pytest.raises(KeyError):
+        CATS.register_module(Munchkin)
+
+    CATS.register_module(Munchkin)
+    assert len(CATS) == 2
+
+    @CATS.register_module(force=True)
+    class BritishShorthair:
+        pass
+
+    assert len(CATS) == 2
+
     assert CATS.get('PersianCat') is None
 
     assert repr(
@@ -67,22 +79,27 @@ def test_build_from_cfg():
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
+    # non-registered class
     with pytest.raises(KeyError):
         cfg = dict(type='VGG')
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
+    # cfg['type'] should be a str or class
     with pytest.raises(TypeError):
         cfg = dict(type=1000)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
+    # cfg should contain the key "type"
     with pytest.raises(TypeError):
         cfg = dict(depth=50, stages=4)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
+    # incorrect registry type
     with pytest.raises(TypeError):
         dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, 'BACKBONES')
 
+    # incorrect default_args type
     with pytest.raises(TypeError):
         dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=0)
