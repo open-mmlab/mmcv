@@ -44,8 +44,11 @@ def test_registry():
 
     assert CATS.get('PersianCat') is None
 
-    assert repr(
-        CATS) == "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])"
+    # The order of dict keys are not preserved in python 3.5
+    assert repr(CATS) in [
+        "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])",
+        "Registry(name=cat, items=['Munchkin', 'BritishShorthair'])"
+    ]
 
     # the registered module should be a class
     with pytest.raises(TypeError):
