@@ -9,6 +9,7 @@ before_install:
   - pip install -U git+git://github.com/lilohuang/PyTurboJPEG.git
 
 install:
+  - pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
   - rm -rf .eggs && pip install -e . codecov flake8 yapf isort mock
 
 cache:
