@@ -3,7 +3,6 @@ import os.path as osp
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
-from shutil import get_terminal_size
 
 from addict import Dict
 
@@ -128,11 +127,10 @@ class Config(object):
         if '_base_' in cfg_dict:
             base_filename = cfg_dict.pop('_base_')
             with open(base_filename, 'r') as f:
-                width, _ = get_terminal_size()
-                text_str += '=' * width + '\n'
+                text_str += '=' * 80 + '\n'
                 text_str += 'Base config: \n'
                 text_str += f.read()
-                text_str += '=' * width + '\n'
+                text_str += '=' * 80 + '\n'
                 text_str += 'Override config: \n'
             # swap name
             child_cfg_dict, cfg_dict = cfg_dict, Config.file2dict(
