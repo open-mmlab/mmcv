@@ -23,7 +23,8 @@ def test_fromfile():
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
-        assert cfg.text == open(cfg_file, 'r').read()
+        assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
+            open(cfg_file, 'r').read()
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
@@ -31,6 +32,40 @@ def test_fromfile():
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
     with pytest.raises(IOError):
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
+
+
+def test_base_merge():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/d.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    base_cfg_file = osp.join(osp.dirname(__file__), 'data/config/base.py')
+    merge_text = osp.abspath(osp.expanduser(base_cfg_file)) + '\n' + \
+        open(base_cfg_file, 'r').read()
+    merge_text += '\n' + osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
+                  open(cfg_file, 'r').read()
+    assert cfg.text == merge_text
+    assert cfg.item1 == [2, 3]
+    assert cfg.item2.a == 1
+    assert cfg.item3 is False
+    assert cfg.item4 == 'test_base'
+
+    with pytest.raises(TypeError):
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/e.py'))
+
+
+def test_merge_from_list():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg = Config.fromfile(cfg_file)
+    input_list = ['item1', '[2, 3]', 'item2.a', '1', 'item3', 'False']
+    cfg.merge_from_list(input_list)
+    assert cfg.item1 == [2, 3]
+    assert cfg.item2.a == 1
+    assert cfg.item3 is False
+    with pytest.raises(KeyError):
+        cfg.merge_from_list(['item2.b', '1'])
+    with pytest.raises(ValueError):
+        cfg.merge_from_list(['item1'])
 
 
 def test_dict():
@@ -46,6 +81,7 @@ def test_dict():
         assert set(cfg.keys()) == set(cfg_dict.keys())
         assert set(cfg._cfg_dict.keys()) == set(cfg_dict.keys())
         # cfg.values()
+        print(cfg)
         for value in cfg.values():
             assert value in cfg_dict.values()
         # cfg.items()

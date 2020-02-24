@@ -2,6 +2,7 @@
 import os.path as osp
 import sys
 from argparse import ArgumentParser
+from ast import literal_eval
 from importlib import import_module
 
 from addict import Dict
@@ -117,17 +118,16 @@ class Config(object):
 
             cfg_dict_list.append(cfg_dict)
             cfg_text_list.append(cfg_text)
-            # rename cfg_dict to be the first
+            # rename cfg_dict to be the first, to overwrite base
             cfg_dict = cfg_dict_list.pop(0)
 
             def merge_a_into_b(a, b):
                 # merge dict a into dict b. values in a will overwrite b.
                 for k, v in a.items():
                     if isinstance(v, dict) and k in b:
-                        assert isinstance(
-                            b[k],
-                            dict), "Cannot inherit key '{}' from base!".format(
-                                k)
+                        if not isinstance(b[k], dict):
+                            raise TypeError(
+                                'Cannot inherit key {} from base!'.format(k))
                         merge_a_into_b(v, b[k])
                     else:
                         b[k] = v
@@ -219,14 +219,29 @@ class Config(object):
         Args:
             cfg_list (list): list of configs to merge from.
         """
+
+        def _decode(src, dst):
+            if not isinstance(src, str):
+                # Try to interpret `value` as a:
+                #   string, number, tuple, list, dict, boolean, or None
+                dst = literal_eval(dst)
+            if not isinstance(dst, type(src)):
+                raise TypeError('{} cannot be cast to {}'.format(
+                    type(dst), type(src)))
+            return dst
+
+        if len(cfg_list) % 2:
+            raise ValueError('Length: {} is not even'.format(cfg_list))
         assert len(cfg_list) % 2 == 0
         for full_key, v in zip(cfg_list[0::2], cfg_list[1::2]):
             d = self._cfg_dict
-            key_list = full_key.split(".")
+            key_list = full_key.split('.')
             for subkey in key_list[:-1]:
-                assert subkey in d
+                if subkey not in d:
+                    raise KeyError('{} not in {}'.format(
+                        full_key, self._cfg_dict))
                 d = d[subkey]
             subkey = key_list[-1]
             # casting to the same type
-            v = type(d[subkey])(v)
+            v = _decode(d[subkey], v)
             d[subkey] = v
