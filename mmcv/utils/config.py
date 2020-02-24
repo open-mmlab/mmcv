@@ -232,7 +232,6 @@ class Config(object):
 
         if len(cfg_list) % 2:
             raise ValueError('Length: {} is not even'.format(cfg_list))
-        assert len(cfg_list) % 2 == 0
         for full_key, v in zip(cfg_list[0::2], cfg_list[1::2]):
             d = self._cfg_dict
             key_list = full_key.split('.')

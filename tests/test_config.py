@@ -16,6 +16,14 @@ def test_construct():
     with pytest.raises(TypeError):
         Config([0, 1])
 
+    cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
+    for filename in ['a.py', 'b.json', 'c.yaml']:
+        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
+        cfg = Config(cfg_dict, filename=cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        assert cfg.text == open(cfg_file, 'r').read()
+
 
 def test_fromfile():
     for filename in ['a.py', 'b.json', 'c.yaml']:
@@ -34,7 +42,7 @@ def test_fromfile():
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
 
 
-def test_base_merge():
+def test_merge_from_base():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/d.py')
     cfg = Config.fromfile(cfg_file)
     assert isinstance(cfg, Config)
@@ -63,9 +71,11 @@ def test_merge_from_list():
     assert cfg.item2.a == 1
     assert cfg.item3 is False
     with pytest.raises(KeyError):
-        cfg.merge_from_list(['item2.b', '1'])
+        cfg.merge_from_list(['item4.a', '1'])
     with pytest.raises(ValueError):
         cfg.merge_from_list(['item1'])
+    with pytest.raises(TypeError):
+        cfg.merge_from_list(['item1', '1'])
 
 
 def test_dict():
@@ -81,7 +91,6 @@ def test_dict():
         assert set(cfg.keys()) == set(cfg_dict.keys())
         assert set(cfg._cfg_dict.keys()) == set(cfg_dict.keys())
         # cfg.values()
-        print(cfg)
         for value in cfg.values():
             assert value in cfg_dict.values()
         # cfg.items()
