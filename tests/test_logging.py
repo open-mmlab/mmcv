@@ -3,6 +3,8 @@ import re
 import tempfile
 from unittest.mock import patch
 
+import pytest
+
 from mmcv import get_logger, print_log
 
 
@@ -82,3 +84,8 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
+
+
+def test_print_log_exception():
+    with pytest.raises(TypeError):
+        print_log('welcome', logger=0)
