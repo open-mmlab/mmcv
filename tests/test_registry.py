@@ -32,7 +32,7 @@ def test_registry():
 
     with pytest.raises(KeyError):
 
-        @CATS.register_module()
+        @CATS.register_module
         class BritishShorthair:
             pass
 
