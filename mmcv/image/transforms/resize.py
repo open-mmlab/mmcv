@@ -74,7 +74,7 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
     return imresize(img, (w, h), return_scale, interpolation)
 
 
-def imrescale_size(old_size, scale, return_scale=False):
+def rescale_size(old_size, scale, return_scale=False):
     w, h = old_size
     if isinstance(scale, (float, int)):
         if scale <= 0:
@@ -116,7 +116,7 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
-    new_size, scale_factor = imrescale_size((w, h), scale, return_scale=True)
+    new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
     rescaled_img = imresize(img, new_size, interpolation=interpolation)
     if return_scale:
         return rescaled_img, scale_factor

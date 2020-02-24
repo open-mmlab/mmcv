@@ -4,8 +4,8 @@ from .transforms import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
                          gray2rgb, hls2bgr, hsv2bgr, imcrop, imdenormalize,
                          imflip, imflip_, iminvert, imnormalize, imnormalize_,
                          impad, impad_to_multiple, imrescale, imresize,
-                         imresize_like, imrotate, posterize, rgb2bgr, rgb2gray,
-                         solarize, imrescale_size)
+                         imresize_like, imrotate, posterize, rescale_size,
+                         rgb2bgr, rgb2gray, solarize)
 
 __all__ = [
     'solarize', 'posterize', 'imread', 'imwrite', 'imfrombytes', 'bgr2gray',
@@ -13,5 +13,5 @@ __all__ = [
     'hsv2bgr', 'bgr2hls', 'hls2bgr', 'iminvert', 'imflip', 'imflip_',
     'imrotate', 'imcrop', 'impad', 'impad_to_multiple', 'imnormalize',
     'imnormalize_', 'imdenormalize', 'imresize', 'imresize_like', 'imrescale',
-    'use_backend', 'supported_backends', 'imrescale_size'
+    'use_backend', 'supported_backends', 'rescale_size'
 ]

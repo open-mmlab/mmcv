@@ -273,6 +273,34 @@ class TestImage(object):
         resized_img = mmcv.imresize_like(self.img, a)
         assert resized_img.shape == (100, 200, 3)
 
+    def test_rescale_size(self):
+        new_size, scale_factor = mmcv.rescale_size((400, 300), 1.5, True)
+        assert new_size == (600, 450) and scale_factor == 1.5
+        new_size, scale_factor = mmcv.rescale_size((400, 300), 0.934, True)
+        assert new_size == (374, 280) and scale_factor == 0.934
+
+        new_size = mmcv.rescale_size((400, 300), 1.5)
+        assert new_size == (600, 450)
+        new_size = mmcv.rescale_size((400, 300), 0.934)
+        assert new_size == (374, 280)
+
+        new_size, scale_factor = mmcv.rescale_size((400, 300), (1000, 600),
+                                                   True)
+        assert new_size == (800, 600) and scale_factor == 2.0
+        new_size, scale_factor = mmcv.rescale_size((400, 300), (180, 200),
+                                                   True)
+        assert new_size == (200, 150) and scale_factor == 0.5
+
+        new_size = mmcv.rescale_size((400, 300), (1000, 600))
+        assert new_size == (800, 600)
+        new_size = mmcv.rescale_size((400, 300), (180, 200))
+        assert new_size == (200, 150)
+
+        with pytest.raises(ValueError):
+            mmcv.rescale_size((400, 300), -0.5)
+        with pytest.raises(TypeError):
+            mmcv.rescale_size()((400, 300), [100, 100])
+
     def test_imrescale(self):
         # rescale by a certain factor
         resized_img = mmcv.imrescale(self.img, 1.5)
