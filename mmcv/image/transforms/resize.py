@@ -75,6 +75,20 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
 
 
 def rescale_size(old_size, scale, return_scale=False):
+    """Calculate the new size to be rescaled to.
+
+    Args:
+        old_size (tuple[int]): The old size of image.
+        scale (float or tuple[int]): The scaling factor or maximum size.
+            If it is a float number, then the image will be rescaled by this
+            factor, else if it is a tuple of 2 integers, then the image will
+            be rescaled as large as possible within the scale.
+        return_scale (bool): Whether to return the scaling factor besides the
+            rescaled image size.
+
+    Returns:
+        tuple[int]: The new rescaled image size.
+    """
     w, h = old_size
     if isinstance(scale, (float, int)):
         if scale <= 0:
