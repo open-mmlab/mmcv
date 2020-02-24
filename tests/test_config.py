@@ -71,7 +71,7 @@ def test_merge_from_list():
     assert cfg.item2.a == 1
     assert cfg.item3 is False
     with pytest.raises(KeyError):
-        cfg.merge_from_list(['item4.a', '1'])
+        cfg.merge_from_list(['itemx.a', '1'])
     with pytest.raises(ValueError):
         cfg.merge_from_list(['item1'])
     with pytest.raises(TypeError):
