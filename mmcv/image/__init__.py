@@ -1,11 +1,12 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from .io import imfrombytes, imread, imwrite, supported_backends, use_backend
-from .transforms import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
-                         gray2rgb, hls2bgr, hsv2bgr, imcrop, imdenormalize,
-                         imflip, imflip_, iminvert, imnormalize, imnormalize_,
-                         impad, impad_to_multiple, imrescale, imresize,
-                         imresize_like, imrotate, posterize, rescale_size,
+from .colorspace import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
+                         gray2rgb, hls2bgr, hsv2bgr, iminvert, posterize,
                          rgb2bgr, rgb2gray, solarize)
+from .geometry import (imcrop, imflip, imflip_, impad, impad_to_multiple,
+                       imrotate)
+from .io import imfrombytes, imread, imwrite, supported_backends, use_backend
+from .normalize import imdenormalize, imnormalize, imnormalize_
+from .resize import imrescale, imresize, imresize_like, rescale_size
 
 __all__ = [
     'solarize', 'posterize', 'imread', 'imwrite', 'imfrombytes', 'bgr2gray',
