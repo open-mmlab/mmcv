@@ -1,14 +1,17 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import json
 import os.path as osp
 import sys
 from argparse import ArgumentParser
-from ast import literal_eval
 from importlib import import_module
 
 from addict import Dict
 
 from .misc import collections_abc
 from .path import check_file_exist
+
+BASE_KEY = '_base_'
+DELETE_KEY = '_delete_'
 
 
 class ConfigDict(Dict):
@@ -121,25 +124,26 @@ class Config(object):
             # rename cfg_dict to be the first, to overwrite base
             cfg_dict = cfg_dict_list.pop(0)
 
-            def merge_a_into_b(a, b):
-                # merge dict a into dict b. values in a will overwrite b.
-                for k, v in a.items():
-                    if isinstance(v, dict) and k in b:
-                        if not isinstance(b[k], dict):
-                            raise TypeError(
-                                'Cannot inherit key {} from base!'.format(k))
-                        merge_a_into_b(v, b[k])
-                    else:
-                        b[k] = v
-
             # merge cfg_dict
             for c in cfg_dict_list:
-                merge_a_into_b(c, cfg_dict)
+                Config._merge_a_into_b(c, cfg_dict)
 
             # merge cfg_text
             cfg_text = '\n'.join(cfg_text_list)
 
         return cfg_dict, cfg_text
+
+    @staticmethod
+    def _merge_a_into_b(a, b):
+        # merge dict a into dict b. values in a will overwrite b.
+        for k, v in a.items():
+            if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
+                if not isinstance(b[k], dict):
+                    raise TypeError(
+                        'Cannot inherit key {} from base!'.format(k))
+                Config._merge_a_into_b(v, b[k])
+            else:
+                b[k] = v
 
     @staticmethod
     def fromfile(filename):
@@ -211,36 +215,28 @@ class Config(object):
     def __iter__(self):
         return iter(self._cfg_dict)
 
-    def merge_from_list(self, cfg_list):
+    def dump(self):
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+        format_text = json.dumps(cfg_dict, indent=2)
+        return format_text
+
+    def merge_from_options(self, options):
         """ Merge list into cfg_dict
-        Merge config (keys, values) in a list (e.g., from command line) into
-        this CfgNode. For example, `cfg_list = ['FOO.BAR', 0.5]`.
+        Merge the dict parsed by MultipleKVAction into this cfg.
+        E.g., `options = ['model.backbone.depth', 50]`.
 
         Args:
-            cfg_list (list): list of configs to merge from.
+            options (dict): dict of configs to merge from.
         """
-
-        def _decode(src, dst):
-            if not isinstance(src, str):
-                # Try to interpret `value` as a:
-                #   string, number, tuple, list, dict, boolean, or None
-                dst = literal_eval(dst)
-            if not isinstance(dst, type(src)):
-                raise TypeError('{} cannot be cast to {}'.format(
-                    type(dst), type(src)))
-            return dst
-
-        if len(cfg_list) % 2:
-            raise ValueError('Length: {} is not even'.format(cfg_list))
-        for full_key, v in zip(cfg_list[0::2], cfg_list[1::2]):
-            d = self._cfg_dict
+        option_cfg_dict = {}
+        for full_key, v in options.items():
+            d = option_cfg_dict
             key_list = full_key.split('.')
             for subkey in key_list[:-1]:
-                if subkey not in d:
-                    raise KeyError('{} not in {}'.format(
-                        full_key, self._cfg_dict))
+                d[subkey] = ConfigDict()
                 d = d[subkey]
             subkey = key_list[-1]
-            # casting to the same type
-            v = _decode(d[subkey], v)
             d[subkey] = v
+
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+        Config._merge_a_into_b(option_cfg_dict, cfg_dict)

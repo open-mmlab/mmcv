@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import json
 import os.path as osp
 
 import pytest
@@ -17,12 +18,14 @@ def test_construct():
         Config([0, 1])
 
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
+    format_text = json.dumps(cfg_dict, indent=2)
     for filename in ['a.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
         cfg = Config(cfg_dict, filename=cfg_file)
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
         assert cfg.text == open(cfg_file, 'r').read()
+        assert cfg.dump() == format_text
 
 
 def test_fromfile():
@@ -62,20 +65,48 @@ def test_merge_from_base():
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/e.py'))
 
 
-def test_merge_from_list():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+def test_merge_from_multiple_bases():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/l.py')
     cfg = Config.fromfile(cfg_file)
-    input_list = ['item1', '[2, 3]', 'item2.a', '1', 'item3', 'False']
-    cfg.merge_from_list(input_list)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2.a == 0
+    assert cfg.item3 is False
+    assert cfg.item4 == 'test'
+
+
+def test_merge_recursive_bases():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/f.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    # cfg.field
     assert cfg.item1 == [2, 3]
     assert cfg.item2.a == 1
     assert cfg.item3 is False
-    with pytest.raises(KeyError):
-        cfg.merge_from_list(['itemx.a', '1'])
-    with pytest.raises(ValueError):
-        cfg.merge_from_list(['item1'])
-    with pytest.raises(TypeError):
-        cfg.merge_from_list(['item1', '1'])
+    assert cfg.item4 == 'test_recursive_bases'
+
+
+def test_merge_from_options():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg = Config.fromfile(cfg_file)
+    input_options = {'item2.a': 1, 'item3': False}
+    cfg.merge_from_options(input_options)
+    assert cfg.item2 == dict(a=1)
+    assert cfg.item3 is False
+
+
+def test_merge_delete():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/delete.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2 == dict(b=0)
+    assert cfg.item3 is True
+    assert cfg.item4 == 'test'
+    assert '_delete_' not in cfg.item2
 
 
 def test_dict():
