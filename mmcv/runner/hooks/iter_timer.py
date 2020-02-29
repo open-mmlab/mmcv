@@ -1,9 +1,10 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import time
 
-from .hook import Hook
+from .hook import HOOKS, Hook
 
 
+@HOOKS.register_module
 class IterTimerHook(Hook):
 
     def before_epoch(self, runner):
