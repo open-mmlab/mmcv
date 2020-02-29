@@ -8,11 +8,10 @@ from .base import LoggerHook
 class WandbLoggerHook(LoggerHook):
 
     def __init__(self,
-                 log_dir=None,
+                 init_kwargs=dict(),
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
-                 init_kwargs=dict()):
+                 reset_flag=True):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag)
         self.import_wandb()
