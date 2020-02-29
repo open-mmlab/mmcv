@@ -30,8 +30,6 @@ class PaviLoggerHook(LoggerHook):
             self.init_kwargs = dict()
         if 'task' not in self.init_kwargs.keys():
             self.init_kwargs['task'] = self.run_name
-        if 'taskid' not in self.init_kwargs.keys():
-            self.init_kwargs['taskid'] = self.init_kwargs['task']
         if 'model' not in self.init_kwargs.keys():
             self.init_kwargs['model'] = runner._model_name
 
