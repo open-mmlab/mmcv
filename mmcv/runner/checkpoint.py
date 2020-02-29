@@ -247,3 +247,5 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         checkpoint['optimizer'] = optimizer.state_dict()
 
     torch.save(checkpoint, filename)
+
+    return checkpoint
