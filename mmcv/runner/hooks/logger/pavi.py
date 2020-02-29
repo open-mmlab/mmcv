@@ -6,7 +6,7 @@ from .base import LoggerHook
 class PaviLoggerHook(LoggerHook):
 
     def __init__(self,
-                 init_kwargs=dict(),
+                 init_kwargs=None,
                  interval=10,
                  ignore_last=True,
                  reset_flag=True):
@@ -19,7 +19,10 @@ class PaviLoggerHook(LoggerHook):
             from pavi import SummaryWriter
         except ImportError:
             raise ImportError('Please run "pip install pavi" to install pavi.')
-        self.writer = SummaryWriter(**self.init_kwargs)
+        if self.init_kwargs:
+            self.writer = SummaryWriter(**self.init_kwargs)
+        else:
+            self.writer = SummaryWriter()
 
     @master_only
     def log(self, runner):

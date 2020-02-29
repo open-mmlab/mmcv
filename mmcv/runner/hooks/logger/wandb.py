@@ -8,7 +8,7 @@ from .base import LoggerHook
 class WandbLoggerHook(LoggerHook):
 
     def __init__(self,
-                 init_kwargs=dict(),
+                 init_kwargs=None,
                  interval=10,
                  ignore_last=True,
                  reset_flag=True):
@@ -29,7 +29,10 @@ class WandbLoggerHook(LoggerHook):
     def before_run(self, runner):
         if self.wandb is None:
             self.import_wandb()
-        self.wandb.init(**self.init_kwargs)
+        if self.init_kwargs:
+            self.wandb.init(**self.init_kwargs)
+        else:
+            self.wandb.init()
 
     @master_only
     def log(self, runner):
