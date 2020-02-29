@@ -11,10 +11,12 @@ class WandbLoggerHook(LoggerHook):
                  log_dir=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
+                 reset_flag=True,
+                 init_kwargs=dict()):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag)
         self.import_wandb()
+        self.init_kwargs = init_kwargs
 
     def import_wandb(self):
         try:
@@ -28,7 +30,7 @@ class WandbLoggerHook(LoggerHook):
     def before_run(self, runner):
         if self.wandb is None:
             self.import_wandb()
-        self.wandb.init()
+        self.wandb.init(**self.init_kwargs)
 
     @master_only
     def log(self, runner):
@@ -37,7 +39,6 @@ class WandbLoggerHook(LoggerHook):
             if var in ['time', 'data_time']:
                 continue
             tag = '{}/{}'.format(var, runner.mode)
-            runner.log_buffer.output[var]
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
         if metrics:
