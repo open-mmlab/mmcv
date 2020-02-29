@@ -1,4 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+from mmcv.utils import Registry
+
+HOOKS = Registry('hook')
+
+
 class Hook(object):
 
     def before_run(self, runner):

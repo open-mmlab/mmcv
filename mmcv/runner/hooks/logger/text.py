@@ -7,9 +7,11 @@ import torch
 import torch.distributed as dist
 
 import mmcv
+from ..hook import HOOKS
 from .base import LoggerHook
 
 
+@HOOKS.register_module
 class TextLoggerHook(LoggerHook):
 
     def __init__(self, interval=10, ignore_last=True, reset_flag=False):
