@@ -3,10 +3,12 @@ import os.path as osp
 
 import torch
 
-from ...dist_utils import master_only
+from mmcv.runner import master_only
+from ..hook import HOOKS
 from .base import LoggerHook
 
 
+@HOOKS.register_module
 class TensorboardLoggerHook(LoggerHook):
 
     def __init__(self,
