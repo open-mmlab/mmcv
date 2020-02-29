@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import os.path as osp
 from ...dist_utils import master_only
 from .base import LoggerHook
 
@@ -28,10 +29,8 @@ class PaviLoggerHook(LoggerHook):
 
         if not self.init_kwargs:
             self.init_kwargs = dict()
-        if 'task' not in self.init_kwargs.keys():
-            self.init_kwargs['task'] = self.run_name
-        if 'model' not in self.init_kwargs.keys():
-            self.init_kwargs['model'] = runner._model_name
+        self.init_kwargs['task'] = self.run_name
+        self.init_kwargs['model'] = runner._model_name
 
         self.writer = SummaryWriter(**self.init_kwargs)
 
@@ -41,9 +40,10 @@ class PaviLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner):
         if self.add_last_ckpt:
-            self.writer.add_torch_snapshot(
+            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+            self.writer.add_snapshot_file(
                 tag=self.run_name,
-                snapshot=runner.checkpoint,
+                snapshot_file_path=ckpt_path,
                 iteration=runner.iter)
 
     @master_only

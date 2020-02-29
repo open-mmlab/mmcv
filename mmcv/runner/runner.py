@@ -256,7 +256,7 @@ class Runner(object):
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
         optimizer = self.optimizer if save_optimizer else None
-        self.checkpoint = save_checkpoint(
+        save_checkpoint(
             self.model, filepath, optimizer=optimizer, meta=meta)
         # in some environments, `os.symlink` is not supported, you may need to
         # set `create_symlink` to False
