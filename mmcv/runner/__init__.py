@@ -2,7 +2,7 @@
 from .checkpoint import (_load_checkpoint, load_checkpoint, load_state_dict,
                          save_checkpoint, weights_to_cpu)
 from .dist_utils import get_dist_info, init_dist, master_only
-from .hooks import (CheckpointHook, ClosureHook, DistSamplerSeedHook, HOOKS,
+from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistSamplerSeedHook,
                     Hook, IterTimerHook, LoggerHook, LrUpdaterHook,
                     OptimizerHook, PaviLoggerHook, TensorboardLoggerHook,
                     TextLoggerHook, WandbLoggerHook)
