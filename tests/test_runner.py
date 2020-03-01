@@ -53,7 +53,7 @@ def test_wandb_hook():
         model=model,
         batch_processor=lambda model, x, **kwargs: {
             'log_vars': {
-                "accuracy": 0.98
+                'accuracy': 0.98
             },
             'num_samples': 5
         })
