@@ -1,9 +1,34 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import numbers
 import os.path as osp
+
+import numpy as np
+import torch
 
 from mmcv.runner import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
+
+
+def is_scalar(val, include_np=True, include_torch=True):
+    """Tell the input variable is a scalar or not.
+
+    Args:
+        val: Input variable.
+        include_np (bool): Whether include 0-d np.ndarray as a scalar.
+        include_torch (bool): Whether include 0-d torch.Tensor as a scalar.
+
+    Returns:
+        bool: True or False.
+    """
+    if isinstance(val, numbers.Number):
+        return True
+    elif include_np and isinstance(val, np.ndarray) and val.ndim == 0:
+        return True
+    elif include_torch and isinstance(val, torch.Tensor) and len(val) == 1:
+        return True
+    else:
+        return False
 
 
 @HOOKS.register_module
@@ -41,6 +66,15 @@ class PaviLoggerHook(LoggerHook):
             self.writer.add_graph(runner.model)
 
     @master_only
+    def log(self, runner):
+        tags = {}
+        for tag, val in runner.log_buffer.output.items():
+            if tag not in ['time', 'data_time'] and is_scalar(val):
+                tags[tag] = val
+        if tags:
+            self.writer.add_scalars(runner.mode, tags, runner.iter)
+
+    @master_only
     def after_run(self, runner):
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
@@ -48,13 +82,3 @@ class PaviLoggerHook(LoggerHook):
                 tag=self.run_name,
                 snapshot_file_path=ckpt_path,
                 iteration=runner.iter)
-
-    @master_only
-    def log(self, runner):
-        tags = {}
-        for tag, val in runner.log_buffer.output.items():
-            if tag in ['time', 'data_time']:
-                continue
-            tags[tag] = val
-        if tags:
-            self.writer.add_scalars(runner.mode, tags, runner.iter)
