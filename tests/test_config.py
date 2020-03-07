@@ -76,6 +76,9 @@ def test_merge_from_multiple_bases():
     assert cfg.item3 is False
     assert cfg.item4 == 'test'
 
+    with pytest.raises(KeyError):
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/m.py'))
+
 
 def test_merge_recursive_bases():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/f.py')
@@ -89,7 +92,7 @@ def test_merge_recursive_bases():
     assert cfg.item4 == 'test_recursive_bases'
 
 
-def test_merge_from_options():
+def test_merge_from_dict():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item2.a': 1, 'item3': False}

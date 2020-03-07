@@ -110,8 +110,6 @@ class Config(object):
             base_filename = base_filename if isinstance(
                 base_filename, list) else [base_filename]
 
-            # files in _base_ will be merged sequentially first,
-            # then merge into current cfg_dict
             cfg_dict_list = list()
             cfg_text_list = list()
             for f in base_filename:
@@ -119,16 +117,17 @@ class Config(object):
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
-            cfg_dict_list.append(cfg_dict)
-            cfg_text_list.append(cfg_text)
-            # rename cfg_dict to be the first, to overwrite base
-            cfg_dict = cfg_dict_list.pop(0)
-
-            # merge cfg_dict
+            base_cfg_dict = dict()
             for c in cfg_dict_list:
-                Config._merge_a_into_b(c, cfg_dict)
+                if len(base_cfg_dict.keys() & c.keys()) > 0:
+                    raise KeyError('Duplicate key is not allowed among bases')
+                base_cfg_dict.update(c)
+
+            Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            cfg_dict = base_cfg_dict
 
             # merge cfg_text
+            cfg_text_list.append(cfg_text)
             cfg_text = '\n'.join(cfg_text_list)
 
         return cfg_dict, cfg_text
@@ -223,7 +222,10 @@ class Config(object):
     def merge_from_options(self, options):
         """ Merge list into cfg_dict
         Merge the dict parsed by MultipleKVAction into this cfg.
-        E.g., `options = ['model.backbone.depth', 50]`.
+        Example,
+            >>> options = {'model.backbone.depth': 50}
+            >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
+            >>> cfg.merge_from_options(options)
 
         Args:
             options (dict): dict of configs to merge from.
