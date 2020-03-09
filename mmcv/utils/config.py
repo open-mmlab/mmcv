@@ -94,6 +94,8 @@ class Config(object):
                 for name, value in mod.__dict__.items()
                 if not name.startswith('__')
             }
+            # delete imported module
+            del sys.modules[module_name]
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
