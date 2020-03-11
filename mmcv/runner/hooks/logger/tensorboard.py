@@ -22,7 +22,7 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if torch.__version__ >= '1.1' and torch.__version__ != 'parrots':
+        if torch.__version__ >= '1.1' and '.' in torch.__version__:
             try:
                 from torch.utils.tensorboard import SummaryWriter
             except ImportError:
