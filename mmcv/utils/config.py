@@ -1,6 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+import shutil
 import sys
+import tempfile
 from argparse import ArgumentParser
 from importlib import import_module
 
@@ -78,18 +80,17 @@ class Config(object):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
-            module_name = osp.basename(filename)[:-3]
-            if '.' in module_name:
-                raise ValueError('Dots are not allowed in config file path.')
-            config_dir = osp.dirname(filename)
-            sys.path.insert(0, config_dir)
-            mod = import_module(module_name)
-            sys.path.pop(0)
-            cfg_dict = {
-                name: value
-                for name, value in mod.__dict__.items()
-                if not name.startswith('__')
-            }
+            with tempfile.TemporaryDirectory() as temp_config_dir:
+                shutil.copyfile(filename,
+                                osp.join(temp_config_dir, '_tempconfig.py'))
+                sys.path.insert(0, temp_config_dir)
+                mod = import_module('_tempconfig')
+                sys.path.pop(0)
+                cfg_dict = {
+                    name: value
+                    for name, value in mod.__dict__.items()
+                    if not name.startswith('__')
+                }
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
