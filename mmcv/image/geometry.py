@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from __future__ import division
 
 import cv2
@@ -19,6 +20,22 @@ def imflip(img, direction='horizontal'):
         return np.flip(img, axis=1)
     else:
         return np.flip(img, axis=0)
+
+
+def imflip_(img, direction='horizontal'):
+    """Inplace flip an image horizontally or vertically.
+    Args:
+        img (ndarray): Image to be flipped.
+        direction (str): The flip direction, either "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The flipped image(inplace).
+    """
+    assert direction in ['horizontal', 'vertical']
+    if direction == 'horizontal':
+        return cv2.flip(img, 1, img)
+    else:
+        return cv2.flip(img, 0, img)
 
 
 def imrotate(img,
@@ -75,11 +92,10 @@ def bbox_clip(bboxes, img_shape):
         ndarray: Clipped bboxes.
     """
     assert bboxes.shape[-1] % 4 == 0
-    clipped_bboxes = np.empty_like(bboxes, dtype=bboxes.dtype)
-    clipped_bboxes[..., 0::2] = np.maximum(
-        np.minimum(bboxes[..., 0::2], img_shape[1] - 1), 0)
-    clipped_bboxes[..., 1::2] = np.maximum(
-        np.minimum(bboxes[..., 1::2], img_shape[0] - 1), 0)
+    cmin = np.empty(bboxes.shape[-1], dtype=bboxes.dtype)
+    cmin[0::2] = img_shape[1] - 1
+    cmin[1::2] = img_shape[0] - 1
+    clipped_bboxes = np.maximum(np.minimum(bboxes, cmin), 0)
     return clipped_bboxes
 
 
@@ -142,7 +158,7 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
             patch = img[y1:y2 + 1, x1:x2 + 1, ...]
         else:
             _x1, _y1, _x2, _y2 = tuple(scaled_bboxes[i, :])
-            if chn == 2:
+            if chn == 1:
                 patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1)
             else:
                 patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1, chn)
@@ -153,8 +169,8 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
             y_start = 0 if _y1 >= 0 else -_y1
             w = x2 - x1 + 1
             h = y2 - y1 + 1
-            patch[y_start:y_start + h, x_start:x_start +
-                  w, ...] = img[y1:y1 + h, x1:x1 + w, ...]
+            patch[y_start:y_start + h, x_start:x_start + w,
+                  ...] = img[y1:y1 + h, x1:x1 + w, ...]
         patches.append(patch)
 
     if bboxes.ndim == 1:
@@ -179,7 +195,7 @@ def impad(img, shape, pad_val=0):
     if len(shape) < len(img.shape):
         shape = shape + (img.shape[-1], )
     assert len(shape) == len(img.shape)
-    for i in range(len(shape) - 1):
+    for i in range(len(shape)):
         assert shape[i] >= img.shape[i]
     pad = np.empty(shape, dtype=img.dtype)
     pad[...] = pad_val

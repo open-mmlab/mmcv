@@ -1,7 +1,9 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import time
 
-import mmcv
 import pytest
+
+import mmcv
 
 
 def test_timer_init():

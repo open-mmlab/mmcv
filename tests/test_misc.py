@@ -1,5 +1,7 @@
-import mmcv
+# Copyright (c) Open-MMLab. All rights reserved.
 import pytest
+
+import mmcv
 
 
 def test_iter_cast():

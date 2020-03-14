@@ -1,11 +1,14 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+import shutil
 import sys
+import tempfile
 from argparse import ArgumentParser
-from collections import Iterable
 from importlib import import_module
 
 from addict import Dict
 
+from .misc import collections_abc
 from .path import check_file_exist
 
 
@@ -39,7 +42,7 @@ def add_args(parser, cfg, prefix=''):
             parser.add_argument('--' + prefix + k, action='store_true')
         elif isinstance(v, dict):
             add_args(parser, v, k + '.')
-        elif isinstance(v, Iterable):
+        elif isinstance(v, collections_abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
             print('connot parse key {} of type {}'.format(prefix + k, type(v)))
@@ -77,18 +80,17 @@ class Config(object):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
-            module_name = osp.basename(filename)[:-3]
-            if '.' in module_name:
-                raise ValueError('Dots are not allowed in config file path.')
-            config_dir = osp.dirname(filename)
-            sys.path.insert(0, config_dir)
-            mod = import_module(module_name)
-            sys.path.pop(0)
-            cfg_dict = {
-                name: value
-                for name, value in mod.__dict__.items()
-                if not name.startswith('__')
-            }
+            with tempfile.TemporaryDirectory() as temp_config_dir:
+                shutil.copyfile(filename,
+                                osp.join(temp_config_dir, '_tempconfig.py'))
+                sys.path.insert(0, temp_config_dir)
+                mod = import_module('_tempconfig')
+                sys.path.pop(0)
+                cfg_dict = {
+                    name: value
+                    for name, value in mod.__dict__.items()
+                    if not name.startswith('__')
+                }
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
@@ -103,7 +105,7 @@ class Config(object):
         partial_parser = ArgumentParser(description=description)
         partial_parser.add_argument('config', help='config file path')
         cfg_file = partial_parser.parse_known_args()[0].config
-        cfg = Config.from_file(cfg_file)
+        cfg = Config.fromfile(cfg_file)
         parser = ArgumentParser(description=description)
         parser.add_argument('config', help='config file path')
         add_args(parser, cfg)

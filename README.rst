@@ -1,4 +1,4 @@
-mmcv
+MMCV
 ====
 
 .. image:: https://travis-ci.com/open-mmlab/mmcv.svg?branch=master
@@ -14,8 +14,9 @@ mmcv
 Introduction
 ------------
 
-`mmcv` is a foundational python library for computer vision research and supports many
-research projects in MMLAB, such as `mmdetection <https://github.com/open-mmlab/mmdetection>`_.
+MMCV is a foundational python library for computer vision research and supports many
+research projects in MMLAB, such as `MMDetection <https://github.com/open-mmlab/mmdetection>`_
+and `MMAction <https://github.com/open-mmlab/mmaction>`_.
 
 It provides the following functionalities.
 
@@ -28,6 +29,8 @@ It provides the following functionalities.
 - Various CNN architectures
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
+
+Note: MMCV currently supports both Python 2.7 and 3.5+, but we plan to remove the support for Python 2. Please migrate to Python 3 as soon as possible.
 
 
 Installation
@@ -46,4 +49,8 @@ or install from source
 
     git clone https://github.com/open-mmlab/mmcv.git
     cd mmcv
-    pip install .  # (add "-e" if you want to develop or modify the codes)
+    pip install -e .
+
+Note: If you would like to use :code:`opencv-python-headless` instead of :code:`opencv-python`,
+e.g., in a minimum container environment or servers without GUI,
+you can first install it before installing MMCV to skip the installation of :code:`opencv-python`.

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import cv2
 import numpy as np
 
@@ -14,7 +15,16 @@ def imshow(img, win_name='', wait_time=0):
         wait_time (int): Value of waitKey param.
     """
     cv2.imshow(win_name, imread(img))
-    cv2.waitKey(wait_time)
+    if wait_time == 0:  # prevent from hangning if windows was closed
+        while True:
+            ret = cv2.waitKey(1)
+
+            closed = cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1
+            # if user closed window or if some key pressed
+            if closed or ret != -1:
+                break
+    else:
+        ret = cv2.waitKey(wait_time)
 
 
 def imshow_bboxes(img,

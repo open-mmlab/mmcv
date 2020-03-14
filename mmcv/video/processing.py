@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os
 import os.path as osp
 import subprocess
@@ -7,7 +8,10 @@ from mmcv.utils import requires_executable
 
 
 @requires_executable('ffmpeg')
-def convert_video(in_file, out_file, print_cmd=False, pre_options='',
+def convert_video(in_file,
+                  out_file,
+                  print_cmd=False,
+                  pre_options='',
                   **kwargs):
     """Convert a video with ffmpeg.
 

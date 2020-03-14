@@ -1,6 +1,8 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
 
 import pytest
+
 from mmcv import Config, FileNotFoundError
 
 
@@ -16,7 +18,7 @@ def test_construct():
 
 
 def test_fromfile():
-    for filename in ['a.py', 'b.json', 'c.yaml']:
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
@@ -25,8 +27,6 @@ def test_fromfile():
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
-    with pytest.raises(ValueError):
-        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
     with pytest.raises(IOError):
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
 

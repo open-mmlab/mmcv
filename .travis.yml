@@ -1,14 +1,16 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: python
 
 before_install:
-  - sudo add-apt-repository -y ppa:mc3man/trusty-media
+  - sudo add-apt-repository -y ppa:mc3man/xerus-media
   - sudo apt-get update
-  - sudo apt-get install -y ffmpeg
+  - sudo apt-get install -y ffmpeg libjpeg-turbo*
+  - pip install -U git+git://github.com/lilohuang/PyTurboJPEG.git
 
 install:
-  - pip install opencv-python pyyaml codecov flake8
+  - pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+  - rm -rf .eggs && pip install -e . codecov flake8 yapf isort mock
 
 cache:
   pip: true
@@ -18,12 +20,14 @@ env:
     - COLUMNS=80
 
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
-before_script: flake8
+before_script:
+  - flake8
+  - isort -rc --diff mmcv/ tests/ examples/
+  - yapf -r -d mmcv/ tests/ examples/
 
 script: coverage run --source=mmcv setup.py test
 

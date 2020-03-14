@@ -1,6 +1,8 @@
-import mmcv
+# Copyright (c) Open-MMLab. All rights reserved.
 import numpy as np
 import pytest
+
+import mmcv
 
 
 def test_color():

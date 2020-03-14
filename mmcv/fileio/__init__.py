@@ -1,6 +1,7 @@
-from .io import load, dump, register_handler
+# Copyright (c) Open-MMLab. All rights reserved.
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
-from .parse import list_from_file, dict_from_file
+from .io import dump, load, register_handler
+from .parse import dict_from_file, list_from_file
 
 __all__ = [
     'load', 'dump', 'register_handler', 'BaseFileHandler', 'JsonHandler',
