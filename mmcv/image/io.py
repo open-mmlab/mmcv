@@ -62,7 +62,7 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     """Read an image.
 
     Args:
-        img_or_path (ndarray or str): Either a numpy array or str or
+        img_or_path (ndarray or str or Path): Either a numpy array or str or
             pathlib.Path. If it is a numpy array (loaded image), then
             it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
