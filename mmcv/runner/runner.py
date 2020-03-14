@@ -83,6 +83,7 @@ class Runner(object):
         self._inner_iter = 0
         self._max_epochs = 0
         self._max_iters = 0
+        self.epoch_len = None
 
     @property
     def model_name(self):
@@ -336,6 +337,15 @@ class Runner(object):
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
         self.logger.info('workflow: %s, max: %d epochs', workflow, max_epochs)
+
+        # set epoch length, in case we use warmup_byepoch
+        # only one tuple in can be with mode 'train'
+        for i, flow in enumerate(workflow):
+            mode, epochs = flow
+            if mode == 'train':
+                self.epoch_len = len(data_loaders[i])
+                break
+
         self.call_hook('before_run')
 
         while self.epoch < max_epochs:
