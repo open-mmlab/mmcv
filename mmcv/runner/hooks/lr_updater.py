@@ -12,12 +12,13 @@ class LrUpdaterHook(Hook):
         by_epoch (bool): LR changes epoch by epoch
         warmup (string): Type of warmup used. It can be None(use no warmup),
             'constant', 'linear' or 'exp'
-        warmup_iters (int): The number of iterations or epochs that warmup lasts
+        warmup_iters (int): The number of iterations or epochs that warmup
+            lasts
         warmup_ratio (float): LR used at the beginning of warmup equals to
             warmup_ratio * initial_lr
-        warmup_by_epoch (bool): When warmup_by_epoch == True, warmup_iters means
-            the number of epochs that warmup lasts, otherwise means the number
-            of iteration that warmup lasts
+        warmup_by_epoch (bool): When warmup_by_epoch == True, warmup_iters
+            means the number of epochs that warmup lasts, otherwise means the
+            number of iteration that warmup lasts
     """
 
     def __init__(self,
@@ -50,7 +51,6 @@ class LrUpdaterHook(Hook):
             self.warmup_iters = None
         else:
             self.warmup_epochs = None
-
 
         self.base_lr = []  # initial lr for all param groups
         self.regular_lr = []  # expected lr if no warming up is performed
