@@ -58,6 +58,6 @@ def test_wandb_hook():
         })
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
-    hook.wandb.init.assert_called()
+    hook.wandb.init.assert_called_with()
     hook.wandb.log.assert_called_with({'accuracy/val': 0.98}, step=5)
-    hook.wandb.join.assert_called()
+    hook.wandb.join.assert_called_with()
