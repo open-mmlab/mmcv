@@ -83,7 +83,6 @@ class Runner(object):
         self._inner_iter = 0
         self._max_epochs = 0
         self._max_iters = 0
-        self.epoch_len = None
         self.active_loader = None
 
     @property
@@ -340,7 +339,6 @@ class Runner(object):
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
         self.logger.info('workflow: %s, max: %d epochs', workflow, max_epochs)
-
         self.call_hook('before_run')
 
         while self.epoch < max_epochs:
