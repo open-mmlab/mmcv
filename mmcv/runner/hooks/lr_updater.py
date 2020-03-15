@@ -6,6 +6,19 @@ from .hook import HOOKS, Hook
 
 
 class LrUpdaterHook(Hook):
+    """ LR Scheduler in MMCV
+
+    Args:
+        by_epoch (bool): LR changes epoch by epoch
+        warmup (string): Type of warmup used. It can be None(use no warmup),
+            'constant', 'linear' or 'exp'
+        warmup_iters (int): The number of iterations or epochs that warmup lasts
+        warmup_ratio (float): LR used at the beginning of warmup equals to
+            warmup_ratio * initial_lr
+        warmup_by_epoch (bool): When warmup_by_epoch == True, warmup_iters means
+            the number of epochs that warmup lasts, otherwise means the number
+            of iteration that warmup lasts
+    """
 
     def __init__(self,
                  by_epoch=True,
@@ -35,6 +48,8 @@ class LrUpdaterHook(Hook):
         if self.warmup_by_epoch:
             self.warmup_epochs = self.warmup_iters
             self.warmup_iters = None
+        else:
+            self.warmup_epochs = None
 
 
         self.base_lr = []  # initial lr for all param groups
