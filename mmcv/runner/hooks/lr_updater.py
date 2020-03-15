@@ -6,7 +6,7 @@ from .hook import HOOKS, Hook
 
 
 class LrUpdaterHook(Hook):
-    """ LR Scheduler in MMCV
+    """LR Scheduler in MMCV
 
     Args:
         by_epoch (bool): LR changes epoch by epoch
