@@ -94,7 +94,7 @@ def test_merge_from_dict():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item2.a': 1, 'item3': False}
-    cfg.merge_from_options(input_options)
+    cfg.merge_from_dict(input_options)
     assert cfg.item2 == dict(a=1)
     assert cfg.item3 is False
 

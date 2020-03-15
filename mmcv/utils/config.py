@@ -222,13 +222,14 @@ class Config(object):
         format_text = json.dumps(cfg_dict, indent=2)
         return format_text
 
-    def merge_from_options(self, options):
+    def merge_from_dict(self, options):
         """ Merge list into cfg_dict
+
         Merge the dict parsed by MultipleKVAction into this cfg.
         Example,
             >>> options = {'model.backbone.depth': 50}
             >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
-            >>> cfg.merge_from_options(options)
+            >>> cfg.merge_from_dict(options)
 
         Args:
             options (dict): dict of configs to merge from.
