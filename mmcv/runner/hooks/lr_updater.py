@@ -74,7 +74,7 @@ class LrUpdaterHook(Hook):
         if not self.by_epoch:
             return
         if self.warmup_by_epoch:
-            epoch_len = len(runner.active_loader)
+            epoch_len = len(runner.data_loader)
             self.warmup_iters = self.warmup_epochs * epoch_len
 
         self.regular_lr = self.get_regular_lr(runner)

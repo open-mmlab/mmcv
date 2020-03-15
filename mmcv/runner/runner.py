@@ -83,7 +83,6 @@ class Runner(object):
         self._inner_iter = 0
         self._max_epochs = 0
         self._max_iters = 0
-        self.active_loader = None
 
     @property
     def model_name(self):
@@ -255,7 +254,6 @@ class Runner(object):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self.active_loader = data_loader
         self._max_iters = self._max_epochs * len(data_loader)
         self.call_hook('before_train_epoch')
         for i, data_batch in enumerate(data_loader):
@@ -279,7 +277,6 @@ class Runner(object):
         self.model.eval()
         self.mode = 'val'
         self.data_loader = data_loader
-        self.active_loader = data_loader
         self.call_hook('before_val_epoch')
 
         for i, data_batch in enumerate(data_loader):
