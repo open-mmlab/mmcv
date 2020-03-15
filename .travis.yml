@@ -1,16 +1,15 @@
-dist: xenial
+dist: bionic
 sudo: required
 language: python
 
 before_install:
-  - sudo add-apt-repository -y ppa:mc3man/xerus-media
   - sudo apt-get update
-  - sudo apt-get install -y ffmpeg libjpeg-turbo*
+  - sudo apt-get install -y ffmpeg libturbojpeg
   - pip install -U git+git://github.com/lilohuang/PyTurboJPEG.git
 
 install:
   - pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
-  - rm -rf .eggs && pip install -e . codecov flake8 yapf isort mock
+  - rm -rf .eggs && pip install -e .
 
 cache:
   pip: true
@@ -26,6 +25,7 @@ python:
   - "3.8"
 
 before_script:
+  - pip install codecov flake8 yapf isort
   - flake8
   - isort -rc --diff mmcv/ tests/ examples/
   - yapf -r -d mmcv/ tests/ examples/
@@ -42,7 +42,7 @@ deploy:
   on:
     branch: master
     tags: true
-    python: "3.6"
+    python: "3.7"
     distributions: sdist bdist_wheel
     skip_cleanup: true
     skip_upload_docs: true
