@@ -1,18 +1,13 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+from pathlib import Path
 
 import cv2
 import numpy as np
+from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
 
-from mmcv.opencv_info import USE_OPENCV2
 from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
 
-if not USE_OPENCV2:
-    from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
-else:
-    from cv2 import CV_LOAD_IMAGE_COLOR as IMREAD_COLOR
-    from cv2 import CV_LOAD_IMAGE_GRAYSCALE as IMREAD_GRAYSCALE
-    from cv2 import CV_LOAD_IMAGE_UNCHANGED as IMREAD_UNCHANGED
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
 except ImportError:
@@ -67,9 +62,9 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     """Read an image.
 
     Args:
-        img_or_path (ndarray or str): Either a numpy array or image path.
-            If it is a numpy array (loaded image), then it will be returned
-            as is.
+        img_or_path (ndarray or str or Path): Either a numpy array or str or
+            pathlib.Path. If it is a numpy array (loaded image), then
+            it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
             candidates are `color`, `grayscale` and `unchanged`.
             Note that the `turbojpeg` backened does not support `unchanged`.
@@ -78,6 +73,9 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     Returns:
         ndarray: Loaded image array.
     """
+    if isinstance(img_or_path, Path):
+        img_or_path = str(img_or_path)
+
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
@@ -97,7 +95,8 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                 cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
             return img
     else:
-        raise TypeError('"img" must be a numpy array or a filename')
+        raise TypeError('"img" must be a numpy array or a str or '
+                        'a pathlib.Path object')
 
 
 def imfrombytes(content, flag='color', channel_order='bgr'):

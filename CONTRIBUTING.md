@@ -1,4 +1,4 @@
-# Contributing to mmcv
+# Contributing to MMCV
 
 All kinds of contributions are welcome, including but not limited to the following.
 
@@ -7,7 +7,7 @@ All kinds of contributions are welcome, including but not limited to the followi
 
 ## Workflow
 
-1. fork and pull the latest mmcv
+1. fork and pull the latest MMCV
 2. checkout a new branch (do not use master branch for PRs)
 3. commit your changes
 4. create a PR
@@ -24,7 +24,25 @@ We use the following tools for linting and formatting:
 - [yapf](https://github.com/google/yapf): formatter
 - [isort](https://github.com/timothycrosley/isort): sort imports
 
-Style configurations of yapf and isort can be found in [.style.yapf](.style.yapf) and [.isort.cfg](.isort.cfg).
+Style configurations of yapf and isort can be found in [setup.cfg](./setup.cfg).
+
+We use [pre-commit hook](https://pre-commit.com/) that checks and formats for `flake8`, `yapf`, `isort`, `trailing whitespaces`,
+ fixes `end-of-files`, sorts `requirments.txt` automatically on every commit.
+The config for a pre-commit hook is stored in [.pre-commit-config](./.pre-commit-config.yaml).
+
+After you clone the repository, you will need to install initialize pre-commit hook.
+
+```
+pip install -U pre-commit
+```
+
+From the repository folder
+```
+pre-commit install
+```
+
+After this on every commit check code linters and formatter will be enforced.
+
 
 >Before you create a PR, make sure that your code lints and is formatted by yapf.
 

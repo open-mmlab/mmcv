@@ -2,6 +2,7 @@
 import os
 import os.path as osp
 import tempfile
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -17,8 +18,10 @@ class TestImage(object):
     def setup_class(cls):
         # the test img resolution is 400x300
         cls.img_path = osp.join(osp.dirname(__file__), 'data/color.jpg')
+        cls.img_path_obj = Path(cls.img_path)
         cls.gray_img_path = osp.join(
             osp.dirname(__file__), 'data/grayscale.jpg')
+        cls.gray_img_path_obj = Path(cls.gray_img_path)
         cls.img = cv2.imread(cls.img_path)
         cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
         cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
@@ -47,6 +50,18 @@ class TestImage(object):
         assert img_cv2_unchanged.shape == (300, 400)
         img_cv2_unchanged = mmcv.imread(img_cv2_unchanged)
         assert_array_equal(img_cv2_unchanged, mmcv.imread(img_cv2_unchanged))
+
+        img_cv2_color_bgr = mmcv.imread(self.img_path_obj)
+        assert img_cv2_color_bgr.shape == (300, 400, 3)
+        img_cv2_color_rgb = mmcv.imread(self.img_path_obj, channel_order='rgb')
+        assert img_cv2_color_rgb.shape == (300, 400, 3)
+        assert_array_equal(img_cv2_color_rgb[:, :, ::-1], img_cv2_color_bgr)
+        img_cv2_grayscale1 = mmcv.imread(self.img_path_obj, 'grayscale')
+        assert img_cv2_grayscale1.shape == (300, 400)
+        img_cv2_grayscale2 = mmcv.imread(self.gray_img_path_obj)
+        assert img_cv2_grayscale2.shape == (300, 400, 3)
+        img_cv2_unchanged = mmcv.imread(self.gray_img_path_obj, 'unchanged')
+        assert img_cv2_unchanged.shape == (300, 400)
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
@@ -258,6 +273,11 @@ class TestImage(object):
                                                       True)
         assert (resized_img.shape == (600, 1000, 3) and w_scale == 2.5
                 and h_scale == 2.0)
+        resized_img_dst = np.empty((600, 1000, 3), dtype=self.img.dtype)
+        resized_img = mmcv.imresize(self.img, (1000, 600), out=resized_img_dst)
+        assert id(resized_img_dst) == id(resized_img)
+        assert_array_equal(resized_img_dst,
+                           mmcv.imresize(self.img, (1000, 600)))
         for mode in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
             resized_img = mmcv.imresize(
                 self.img, (1000, 600), interpolation=mode)
@@ -267,6 +287,34 @@ class TestImage(object):
         a = np.zeros((100, 200, 3))
         resized_img = mmcv.imresize_like(self.img, a)
         assert resized_img.shape == (100, 200, 3)
+
+    def test_rescale_size(self):
+        new_size, scale_factor = mmcv.rescale_size((400, 300), 1.5, True)
+        assert new_size == (600, 450) and scale_factor == 1.5
+        new_size, scale_factor = mmcv.rescale_size((400, 300), 0.934, True)
+        assert new_size == (374, 280) and scale_factor == 0.934
+
+        new_size = mmcv.rescale_size((400, 300), 1.5)
+        assert new_size == (600, 450)
+        new_size = mmcv.rescale_size((400, 300), 0.934)
+        assert new_size == (374, 280)
+
+        new_size, scale_factor = mmcv.rescale_size((400, 300), (1000, 600),
+                                                   True)
+        assert new_size == (800, 600) and scale_factor == 2.0
+        new_size, scale_factor = mmcv.rescale_size((400, 300), (180, 200),
+                                                   True)
+        assert new_size == (200, 150) and scale_factor == 0.5
+
+        new_size = mmcv.rescale_size((400, 300), (1000, 600))
+        assert new_size == (800, 600)
+        new_size = mmcv.rescale_size((400, 300), (180, 200))
+        assert new_size == (200, 150)
+
+        with pytest.raises(ValueError):
+            mmcv.rescale_size((400, 300), -0.5)
+        with pytest.raises(TypeError):
+            mmcv.rescale_size()((400, 300), [100, 100])
 
     def test_imrescale(self):
         # rescale by a certain factor
