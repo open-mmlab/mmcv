@@ -5,11 +5,11 @@ import shutil
 import sys
 import tempfile
 from argparse import ArgumentParser
+from collections import abc
 from importlib import import_module
 
 from addict import Dict
 
-from .misc import collections_abc
 from .path import check_file_exist
 
 BASE_KEY = '_base_'
@@ -46,7 +46,7 @@ def add_args(parser, cfg, prefix=''):
             parser.add_argument('--' + prefix + k, action='store_true')
         elif isinstance(v, dict):
             add_args(parser, v, prefix + k + '.')
-        elif isinstance(v, collections_abc.Iterable):
+        elif isinstance(v, abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
             print('cannot parse key {} of type {}'.format(prefix + k, type(v)))

@@ -4,7 +4,7 @@ import os.path as osp
 
 import pytest
 
-from mmcv import Config, FileNotFoundError
+from mmcv import Config
 
 
 def test_construct():

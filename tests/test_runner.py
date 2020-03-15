@@ -3,8 +3,7 @@ import os.path as osp
 import sys
 import tempfile
 import warnings
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 sys.modules['wandb'] = MagicMock()
 

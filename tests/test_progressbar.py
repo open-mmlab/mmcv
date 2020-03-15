@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os
-import sys
 import time
 
 try:
@@ -13,18 +12,12 @@ try:
 except ImportError:
     from io import StringIO
 
-import pytest  # isort:skip
-
 import mmcv  # isort:skip
 
 
 def reset_string_io(io):
     io.truncate(0)
     io.seek(0)
-
-
-if sys.version_info[0] == 2:
-    pytest.skip('skipping tests for python 2', allow_module_level=True)
 
 
 class TestProgressBar(object):
