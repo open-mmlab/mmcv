@@ -1,5 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from six.moves import cPickle as pickle
+import pickle
 
 from .base import BaseFileHandler
 

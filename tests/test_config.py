@@ -1,10 +1,11 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import json
 import os.path as osp
+import sys
 
 import pytest
 
-from mmcv import Config, FileNotFoundError
+from mmcv import Config
 
 
 def test_construct():
@@ -25,7 +26,11 @@ def test_construct():
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
         assert cfg.text == open(cfg_file, 'r').read()
-        assert cfg.dump() == format_text
+        if sys.version_info >= (3, 6):
+            assert cfg.dump() == format_text
+        else:
+            loaded = json.loads(cfg.dump())
+            assert set(loaded.keys()) == set(cfg_dict)
 
 
 def test_fromfile():
