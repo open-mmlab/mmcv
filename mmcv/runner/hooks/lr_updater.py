@@ -6,12 +6,27 @@ from .hook import HOOKS, Hook
 
 
 class LrUpdaterHook(Hook):
+    """LR Scheduler in MMCV
+
+    Args:
+        by_epoch (bool): LR changes epoch by epoch
+        warmup (string): Type of warmup used. It can be None(use no warmup),
+            'constant', 'linear' or 'exp'
+        warmup_iters (int): The number of iterations or epochs that warmup
+            lasts
+        warmup_ratio (float): LR used at the beginning of warmup equals to
+            warmup_ratio * initial_lr
+        warmup_by_epoch (bool): When warmup_by_epoch == True, warmup_iters
+            means the number of epochs that warmup lasts, otherwise means the
+            number of iteration that warmup lasts
+    """
 
     def __init__(self,
                  by_epoch=True,
                  warmup=None,
                  warmup_iters=0,
                  warmup_ratio=0.1,
+                 warmup_by_epoch=False,
                  **kwargs):
         # validate the "warmup" argument
         if warmup is not None:
@@ -29,6 +44,13 @@ class LrUpdaterHook(Hook):
         self.warmup = warmup
         self.warmup_iters = warmup_iters
         self.warmup_ratio = warmup_ratio
+        self.warmup_by_epoch = warmup_by_epoch
+
+        if self.warmup_by_epoch:
+            self.warmup_epochs = self.warmup_iters
+            self.warmup_iters = None
+        else:
+            self.warmup_epochs = None
 
         self.base_lr = []  # initial lr for all param groups
         self.regular_lr = []  # expected lr if no warming up is performed
@@ -66,6 +88,10 @@ class LrUpdaterHook(Hook):
     def before_train_epoch(self, runner):
         if not self.by_epoch:
             return
+        if self.warmup_by_epoch:
+            epoch_len = len(runner.data_loader)
+            self.warmup_iters = self.warmup_epochs * epoch_len
+
         self.regular_lr = self.get_regular_lr(runner)
         self._set_lr(runner, self.regular_lr)
 

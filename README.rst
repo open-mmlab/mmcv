@@ -30,7 +30,7 @@ It provides the following functionalities.
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
 
-Note: MMCV currently supports both Python 2.7 and 3.5+, but we plan to remove the support for Python 2. Please migrate to Python 3 as soon as possible.
+Note: MMCV requires Python 3.5+.
 
 
 Installation

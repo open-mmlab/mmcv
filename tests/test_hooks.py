@@ -1,8 +1,7 @@
 import os.path as osp
 import sys
 import warnings
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 import mmcv.runner
 

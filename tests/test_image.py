@@ -2,6 +2,7 @@
 import os
 import os.path as osp
 import tempfile
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -17,8 +18,10 @@ class TestImage(object):
     def setup_class(cls):
         # the test img resolution is 400x300
         cls.img_path = osp.join(osp.dirname(__file__), 'data/color.jpg')
+        cls.img_path_obj = Path(cls.img_path)
         cls.gray_img_path = osp.join(
             osp.dirname(__file__), 'data/grayscale.jpg')
+        cls.gray_img_path_obj = Path(cls.gray_img_path)
         cls.img = cv2.imread(cls.img_path)
         cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
         cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
@@ -47,6 +50,18 @@ class TestImage(object):
         assert img_cv2_unchanged.shape == (300, 400)
         img_cv2_unchanged = mmcv.imread(img_cv2_unchanged)
         assert_array_equal(img_cv2_unchanged, mmcv.imread(img_cv2_unchanged))
+
+        img_cv2_color_bgr = mmcv.imread(self.img_path_obj)
+        assert img_cv2_color_bgr.shape == (300, 400, 3)
+        img_cv2_color_rgb = mmcv.imread(self.img_path_obj, channel_order='rgb')
+        assert img_cv2_color_rgb.shape == (300, 400, 3)
+        assert_array_equal(img_cv2_color_rgb[:, :, ::-1], img_cv2_color_bgr)
+        img_cv2_grayscale1 = mmcv.imread(self.img_path_obj, 'grayscale')
+        assert img_cv2_grayscale1.shape == (300, 400)
+        img_cv2_grayscale2 = mmcv.imread(self.gray_img_path_obj)
+        assert img_cv2_grayscale2.shape == (300, 400, 3)
+        img_cv2_unchanged = mmcv.imread(self.gray_img_path_obj, 'unchanged')
+        assert img_cv2_unchanged.shape == (300, 400)
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
