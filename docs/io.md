@@ -55,7 +55,7 @@ class TxtHandler1(mmcv.BaseFileHandler):
 Here is an example of `PickleHandler`.
 
 ```python
-from six.moves import cPickle as pickle
+import pickle
 
 class PickleHandler(mmcv.BaseFileHandler):
 

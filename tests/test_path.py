@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
-import sys
 from pathlib import Path
 
 import pytest
@@ -22,12 +21,8 @@ def test_fopen():
 
 def test_check_file_exist():
     mmcv.check_file_exist(__file__)
-    if sys.version_info > (3, 3):
-        with pytest.raises(FileNotFoundError):  # noqa
-            mmcv.check_file_exist('no_such_file.txt')
-    else:
-        with pytest.raises(IOError):
-            mmcv.check_file_exist('no_such_file.txt')
+    with pytest.raises(FileNotFoundError):
+        mmcv.check_file_exist('no_such_file.txt')
 
 
 def test_scandir():
@@ -43,4 +38,4 @@ def test_scandir():
     ])
     assert set(mmcv.scandir(folder, '.png')) == set()
     with pytest.raises(TypeError):
-        mmcv.scandir(folder, 111)
+        list(mmcv.scandir(folder, 111))

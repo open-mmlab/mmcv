@@ -1,8 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import sys
+from collections.abc import Iterable
 from multiprocessing import Pool
+from shutil import get_terminal_size
 
-from .misc import collections_abc
 from .timer import Timer
 
 
@@ -19,10 +20,6 @@ class ProgressBar(object):
 
     @property
     def terminal_width(self):
-        if sys.version_info > (3, 3):
-            from shutil import get_terminal_size
-        else:
-            from backports.shutil_get_terminal_size import get_terminal_size
         width, _ = get_terminal_size()
         return width
 
@@ -79,11 +76,11 @@ def track_progress(func, tasks, bar_width=50, file=sys.stdout, **kwargs):
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
@@ -145,11 +142,11 @@ def track_parallel_progress(func,
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
@@ -193,11 +190,11 @@ def track_iter_progress(tasks, bar_width=50, file=sys.stdout, **kwargs):
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
