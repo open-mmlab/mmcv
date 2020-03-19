@@ -38,17 +38,41 @@ def symlink(src, dst, overwrite=True, **kwargs):
     os.symlink(src, dst, **kwargs)
 
 
-def scandir(dir_path, suffix=None):
+def scandir(dir_path, suffix=None, recursive=False, fullpath=False):
+    """Recursively scan a directory to find the interested files.
+
+    Args:
+        dir_path (str): Path of directory.
+        suffix (str | tuple(str)): File suffix that we are interested in.
+            Default: None.
+        recursive (bool): If set to True, recursively scan the directory.
+            Default: False.
+        fullpath: (bool): If set to True, return the full pathes; otherwise,
+            return file names. Default: False.
+    """
+
     if (suffix is not None) and not isinstance(suffix, (str, tuple)):
         raise TypeError('"suffix" must be a string or tuple of strings')
-    for entry in os.scandir(dir_path):
-        if not entry.is_file():
-            continue
-        filename = entry.name
-        if suffix is None:
-            yield filename
-        elif filename.endswith(suffix):
-            yield filename
+    with os.scandir(dir_path) as it:
+        for entry in it:
+            if not entry.name.startswith('.') and entry.is_file():
+                if fullpath:
+                    filename = entry.path
+                else:
+                    filename = entry.name
+                if suffix is None:
+                    yield filename
+                elif filename.endswith(suffix):
+                    yield filename
+            else:
+                if recursive:
+                    yield from scandir(
+                        entry,
+                        suffix=suffix,
+                        recursive=recursive,
+                        fullpath=fullpath)
+                else:
+                    continue
 
 
 def find_vcs_root(path, markers=('.git', )):
