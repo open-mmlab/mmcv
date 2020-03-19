@@ -38,17 +38,45 @@ def symlink(src, dst, overwrite=True, **kwargs):
     os.symlink(src, dst, **kwargs)
 
 
-def scandir(dir_path, suffix=None):
+def scandir(dir_path, suffix=None, recursive=False):
+    """Scan a directory to find the interested files.
+
+    Args:
+        dir_path (str | obj:`Path`): Path of the directory.
+        suffix (str | tuple(str), optional): File suffix that we are
+            interested in. Default: None.
+        recursive (bool, optional): If set to True, recursively scan the
+            directory. Default: False.
+
+    Returns:
+        A generator for all the interested files with relative pathes.
+    """
+    if isinstance(dir_path, (str, Path)):
+        dir_path = str(dir_path)
+    else:
+        raise TypeError('"dir_path" must be a string or Path object')
+
     if (suffix is not None) and not isinstance(suffix, (str, tuple)):
         raise TypeError('"suffix" must be a string or tuple of strings')
-    for entry in os.scandir(dir_path):
-        if not entry.is_file():
-            continue
-        filename = entry.name
-        if suffix is None:
-            yield filename
-        elif filename.endswith(suffix):
-            yield filename
+
+    root = dir_path
+
+    def _scandir(dir_path, suffix, recursive):
+        for entry in os.scandir(dir_path):
+            if not entry.name.startswith('.') and entry.is_file():
+                rel_path = osp.relpath(entry.path, root)
+                if suffix is None:
+                    yield rel_path
+                elif rel_path.endswith(suffix):
+                    yield rel_path
+            else:
+                if recursive:
+                    yield from _scandir(
+                        entry.path, suffix=suffix, recursive=recursive)
+                else:
+                    continue
+
+    return _scandir(dir_path, suffix=suffix, recursive=recursive)
 
 
 def find_vcs_root(path, markers=('.git', )):
