@@ -53,26 +53,26 @@ def scandir(dir_path, suffix=None, recursive=False, fullpath=False):
 
     if (suffix is not None) and not isinstance(suffix, (str, tuple)):
         raise TypeError('"suffix" must be a string or tuple of strings')
-    with os.scandir(dir_path) as it:
-        for entry in it:
-            if not entry.name.startswith('.') and entry.is_file():
-                if fullpath:
-                    filename = entry.path
-                else:
-                    filename = entry.name
-                if suffix is None:
-                    yield filename
-                elif filename.endswith(suffix):
-                    yield filename
+
+    for entry in os.scandir(dir_path):
+        if not entry.name.startswith('.') and entry.is_file():
+            if fullpath:
+                filename = entry.path
             else:
-                if recursive:
-                    yield from scandir(
-                        entry,
-                        suffix=suffix,
-                        recursive=recursive,
-                        fullpath=fullpath)
-                else:
-                    continue
+                filename = entry.name
+            if suffix is None:
+                yield filename
+            elif filename.endswith(suffix):
+                yield filename
+        else:
+            if recursive:
+                yield from scandir(
+                    entry,
+                    suffix=suffix,
+                    recursive=recursive,
+                    fullpath=fullpath)
+            else:
+                continue
 
 
 def find_vcs_root(path, markers=('.git', )):
