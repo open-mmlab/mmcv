@@ -39,24 +39,29 @@ def symlink(src, dst, overwrite=True, **kwargs):
 
 
 def scandir(dir_path, suffix=None, recursive=False):
-    """Recursively scan a directory to find the interested files.
+    """Scan a directory to find the interested files.
 
     Args:
-        dir_path (str): Path of directory.
-        suffix (str | tuple(str)): File suffix that we are interested in.
-            Default: None.
-        recursive (bool): If set to True, recursively scan the directory.
-            Default: False.
+        dir_path (str | obj:`Path`): Path of the directory.
+        suffix (str | tuple(str), optional): File suffix that we are
+            interested in. Default: None.
+        recursive (bool, optional): If set to True, recursively scan the
+            directory. Default: False.
 
     Returns:
         A generator for all the interested files with relative pathes.
     """
+    if is_str(dir_path) or isinstance(dir_path, Path):
+        dir_path = str(dir_path)
+    else:
+        raise TypeError('"dir_path" must be a string or Path object')
 
     if (suffix is not None) and not isinstance(suffix, (str, tuple)):
         raise TypeError('"suffix" must be a string or tuple of strings')
+
     root = dir_path
 
-    def _recursive_scandir(dir_path, suffix, recursive):
+    def _scandir(dir_path, suffix, recursive):
         for entry in os.scandir(dir_path):
             if not entry.name.startswith('.') and entry.is_file():
                 rel_path = osp.relpath(entry.path, root)
@@ -66,12 +71,12 @@ def scandir(dir_path, suffix=None, recursive=False):
                     yield rel_path
             else:
                 if recursive:
-                    yield from _recursive_scandir(
+                    yield from _scandir(
                         entry.path, suffix=suffix, recursive=recursive)
                 else:
                     continue
 
-    return _recursive_scandir(dir_path, suffix=suffix, recursive=recursive)
+    return _scandir(dir_path, suffix=suffix, recursive=recursive)
 
 
 def find_vcs_root(path, markers=('.git', )):
