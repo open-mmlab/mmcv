@@ -28,7 +28,10 @@ def test_check_file_exist():
 def test_scandir():
     folder = osp.join(osp.dirname(__file__), 'data/for_scan')
     filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json']
-
+    filenames_recursive = [
+        'a.bin', '1.txt', '2.txt', '1.json', '2.json', 'sub/1.json',
+        'sub/1.txt'
+    ]
     assert set(mmcv.scandir(folder)) == set(filenames)
     assert set(mmcv.scandir(folder, '.txt')) == set(
         [filename for filename in filenames if filename.endswith('.txt')])
@@ -37,5 +40,7 @@ def test_scandir():
         if filename.endswith(('.txt', '.json'))
     ])
     assert set(mmcv.scandir(folder, '.png')) == set()
+    assert set(mmcv.scandir(folder,
+                            recursive=True)) == set(filenames_recursive)
     with pytest.raises(TypeError):
         list(mmcv.scandir(folder, 111))
