@@ -51,7 +51,7 @@ def scandir(dir_path, suffix=None, recursive=False):
     Returns:
         A generator for all the interested files with relative pathes.
     """
-    if is_str(dir_path) or isinstance(dir_path, Path):
+    if isinstance(dir_path, (str, Path)):
         dir_path = str(dir_path)
     else:
         raise TypeError('"dir_path" must be a string or Path object')
