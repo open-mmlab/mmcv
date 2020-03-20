@@ -59,7 +59,7 @@ def _jpegflag(flag='color', channel_order='bgr'):
         raise ValueError('flag must be "color" or "grayscale"')
 
 
-def imread(img_or_path, flag='color', channel_order='bgr', size_hint=(-1, 256)):
+def imread(img_or_path, flag='color', channel_order='bgr', size_hint=None):
     """Read an image.
 
     Args:
