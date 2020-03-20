@@ -109,7 +109,7 @@ def imread(img_or_path, flag='color', channel_order='bgr', size_hint=(-1, 256)):
                         'a pathlib.Path object')
 
 
-def imfrombytes(content, flag='color', channel_order='bgr', size_hint=(-1, 256)):
+def imfrombytes(content, flag='color', channel_order='bgr', size_hint=None):
     """Read an image from bytes.
 
     Args:
@@ -130,7 +130,6 @@ def imfrombytes(content, flag='color', channel_order='bgr', size_hint=(-1, 256))
         img = jpeg.decode(content,
                           _jpegflag(flag, channel_order),
                           scaling_factor)
-        # img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
