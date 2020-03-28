@@ -1,8 +1,11 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+import sys
 import tempfile
 import warnings
+from unittest.mock import MagicMock
 
-from mock import MagicMock
+sys.modules['wandb'] = MagicMock()
 
 
 def test_save_checkpoint():
@@ -26,7 +29,7 @@ def test_save_checkpoint():
 
         assert osp.exists(latest_path)
         assert osp.exists(epoch1_path)
-        assert osp.realpath(latest_path) == epoch1_path
+        assert osp.realpath(latest_path) == osp.realpath(epoch1_path)
 
         torch.load(latest_path)
 
@@ -41,9 +44,7 @@ def test_wandb_hook():
         return
 
     import mmcv.runner
-    wandb_mock = MagicMock()
     hook = mmcv.runner.hooks.WandbLoggerHook()
-    hook.wandb = wandb_mock
     loader = DataLoader(torch.ones((5, 5)))
 
     model = nn.Linear(1, 1)
@@ -51,12 +52,12 @@ def test_wandb_hook():
         model=model,
         batch_processor=lambda model, x, **kwargs: {
             'log_vars': {
-                "accuracy": 0.98
+                'accuracy': 0.98
             },
             'num_samples': 5
         })
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
-    wandb_mock.init.assert_called()
-    wandb_mock.log.assert_called_with({'accuracy/val': 0.98}, step=5)
-    wandb_mock.join.assert_called()
+    hook.wandb.init.assert_called_with()
+    hook.wandb.log.assert_called_with({'accuracy/val': 0.98}, step=5)
+    hook.wandb.join.assert_called_with()

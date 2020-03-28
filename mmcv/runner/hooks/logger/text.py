@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import datetime
 import os.path as osp
 from collections import OrderedDict
@@ -6,9 +7,11 @@ import torch
 import torch.distributed as dist
 
 import mmcv
+from ..hook import HOOKS
 from .base import LoggerHook
 
 
+@HOOKS.register_module
 class TextLoggerHook(LoggerHook):
 
     def __init__(self, interval=10, ignore_last=True, reset_flag=False):
@@ -20,6 +23,8 @@ class TextLoggerHook(LoggerHook):
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
                                       '{}.log.json'.format(runner.timestamp))
+        if runner.meta is not None:
+            self._dump_log(runner.meta, runner)
 
     def _get_max_memory(self, runner):
         mem = torch.cuda.max_memory_allocated()

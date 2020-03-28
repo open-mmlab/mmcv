@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from torch.nn.parallel import DataParallel
 
 from .scatter_gather import scatter_kwargs

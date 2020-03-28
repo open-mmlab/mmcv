@@ -1,16 +1,9 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os
 import os.path as osp
-import sys
 from pathlib import Path
 
-import six
-
 from .misc import is_str
-
-if sys.version_info <= (3, 3):
-    FileNotFoundError = IOError
-else:
-    FileNotFoundError = FileNotFoundError
 
 
 def is_filepath(x):
@@ -36,11 +29,7 @@ def mkdir_or_exist(dir_name, mode=0o777):
     if dir_name == '':
         return
     dir_name = osp.expanduser(dir_name)
-    if six.PY3:
-        os.makedirs(dir_name, mode=mode, exist_ok=True)
-    else:
-        if not osp.isdir(dir_name):
-            os.makedirs(dir_name, mode=mode)
+    os.makedirs(dir_name, mode=mode, exist_ok=True)
 
 
 def symlink(src, dst, overwrite=True, **kwargs):
@@ -49,34 +38,45 @@ def symlink(src, dst, overwrite=True, **kwargs):
     os.symlink(src, dst, **kwargs)
 
 
-def _scandir_py35(dir_path, suffix=None):
-    for entry in os.scandir(dir_path):
-        if not entry.is_file():
-            continue
-        filename = entry.name
-        if suffix is None:
-            yield filename
-        elif filename.endswith(suffix):
-            yield filename
+def scandir(dir_path, suffix=None, recursive=False):
+    """Scan a directory to find the interested files.
 
+    Args:
+        dir_path (str | obj:`Path`): Path of the directory.
+        suffix (str | tuple(str), optional): File suffix that we are
+            interested in. Default: None.
+        recursive (bool, optional): If set to True, recursively scan the
+            directory. Default: False.
 
-def _scandir_py(dir_path, suffix=None):
-    for filename in os.listdir(dir_path):
-        if not osp.isfile(osp.join(dir_path, filename)):
-            continue
-        if suffix is None:
-            yield filename
-        elif filename.endswith(suffix):
-            yield filename
-
-
-def scandir(dir_path, suffix=None):
-    if suffix is not None and not isinstance(suffix, (str, tuple)):
-        raise TypeError('"suffix" must be a string or tuple of strings')
-    if sys.version_info >= (3, 5):
-        return _scandir_py35(dir_path, suffix)
+    Returns:
+        A generator for all the interested files with relative pathes.
+    """
+    if isinstance(dir_path, (str, Path)):
+        dir_path = str(dir_path)
     else:
-        return _scandir_py(dir_path, suffix)
+        raise TypeError('"dir_path" must be a string or Path object')
+
+    if (suffix is not None) and not isinstance(suffix, (str, tuple)):
+        raise TypeError('"suffix" must be a string or tuple of strings')
+
+    root = dir_path
+
+    def _scandir(dir_path, suffix, recursive):
+        for entry in os.scandir(dir_path):
+            if not entry.name.startswith('.') and entry.is_file():
+                rel_path = osp.relpath(entry.path, root)
+                if suffix is None:
+                    yield rel_path
+                elif rel_path.endswith(suffix):
+                    yield rel_path
+            else:
+                if recursive:
+                    yield from _scandir(
+                        entry.path, suffix=suffix, recursive=recursive)
+                else:
+                    continue
+
+    return _scandir(dir_path, suffix=suffix, recursive=recursive)
 
 
 def find_vcs_root(path, markers=('.git', )):

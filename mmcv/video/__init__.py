@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from .io import Cache, VideoReader, frames2video
 from .optflow import (dequantize_flow, flow_warp, flowread, flowwrite,
                       quantize_flow)

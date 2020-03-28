@@ -26,7 +26,7 @@ To show an image file or a loaded image
 
 ```python
 mmcv.imshow('tests/data/color.jpg')
-# this is equivalent to 
+# this is equivalent to
 
 for i in range(10):
     img = np.random.randint(256, size=(100, 100, 3), dtype=np.uint8)

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from enum import Enum
 
 

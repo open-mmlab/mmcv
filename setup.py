@@ -1,15 +1,12 @@
 import platform
 import re
-import sys
-from io import open  # for Python 2 (identical to builtin in Python 3)
-from setuptools import Extension, dist, find_packages, setup
-
 from pkg_resources import DistributionNotFound, get_distribution
+from setuptools import Extension, dist, find_packages, setup
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
-import numpy  # noqa: E402
-from Cython.Distutils import build_ext  # noqa: E402
+import numpy  # NOQA: E402  # isort:skip
+from Cython.Distutils import build_ext  # NOQA: E402  # isort:skip
 
 
 def choose_requirement(primary, secondary):
@@ -25,23 +22,13 @@ def choose_requirement(primary, secondary):
     return str(primary)
 
 
-install_requires = [
-    'numpy>=1.11.1',
-    'pyyaml',
-    'six',
-    'addict',
-    'requests',
-]
+install_requires = ['addict', 'numpy', 'pyyaml']
+
 # If first not installed install second package
 CHOOSE_INSTALL_REQUIRES = [('opencv-python-headless>=3', 'opencv-python>=3')]
 
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
-
-if sys.version_info < (3, 3):
-    install_requires.append('backports.shutil_get_terminal_size')
-if sys.version_info < (3, 4):
-    install_requires.extend(['enum34', 'pathlib'])
 
 
 def readme():
@@ -89,13 +76,11 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Utilities',
     ],
     url='https://github.com/open-mmlab/mmcv',

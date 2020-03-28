@@ -1,8 +1,11 @@
+# Copyright (c) Open-MMLab. All rights reserved.
+import json
 import os.path as osp
+import sys
 
 import pytest
 
-from mmcv import Config, FileNotFoundError
+from mmcv import Config
 
 
 def test_construct():
@@ -15,21 +18,101 @@ def test_construct():
     with pytest.raises(TypeError):
         Config([0, 1])
 
+    cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
+    format_text = json.dumps(cfg_dict, indent=2)
+    for filename in ['a.py', 'b.json', 'c.yaml']:
+        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
+        cfg = Config(cfg_dict, filename=cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        assert cfg.text == open(cfg_file, 'r').read()
+        if sys.version_info >= (3, 6):
+            assert cfg.dump() == format_text
+        else:
+            loaded = json.loads(cfg.dump())
+            assert set(loaded.keys()) == set(cfg_dict)
+
 
 def test_fromfile():
-    for filename in ['a.py', 'b.json', 'c.yaml']:
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
-        assert cfg.text == open(cfg_file, 'r').read()
+        assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
+            open(cfg_file, 'r').read()
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
-    with pytest.raises(ValueError):
-        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
     with pytest.raises(IOError):
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
+
+
+def test_merge_from_base():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/d.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    base_cfg_file = osp.join(osp.dirname(__file__), 'data/config/base.py')
+    merge_text = osp.abspath(osp.expanduser(base_cfg_file)) + '\n' + \
+        open(base_cfg_file, 'r').read()
+    merge_text += '\n' + osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
+                  open(cfg_file, 'r').read()
+    assert cfg.text == merge_text
+    assert cfg.item1 == [2, 3]
+    assert cfg.item2.a == 1
+    assert cfg.item3 is False
+    assert cfg.item4 == 'test_base'
+
+    with pytest.raises(TypeError):
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/e.py'))
+
+
+def test_merge_from_multiple_bases():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/l.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2.a == 0
+    assert cfg.item3 is False
+    assert cfg.item4 == 'test'
+
+    with pytest.raises(KeyError):
+        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/m.py'))
+
+
+def test_merge_recursive_bases():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/f.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    # cfg.field
+    assert cfg.item1 == [2, 3]
+    assert cfg.item2.a == 1
+    assert cfg.item3 is False
+    assert cfg.item4 == 'test_recursive_bases'
+
+
+def test_merge_from_dict():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg = Config.fromfile(cfg_file)
+    input_options = {'item2.a': 1, 'item3': False}
+    cfg.merge_from_dict(input_options)
+    assert cfg.item2 == dict(a=1)
+    assert cfg.item3 is False
+
+
+def test_merge_delete():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/delete.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2 == dict(b=0)
+    assert cfg.item3 is True
+    assert cfg.item4 == 'test'
+    assert '_delete_' not in cfg.item2
 
 
 def test_dict():

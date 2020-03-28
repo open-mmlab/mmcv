@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 # flake8: noqa
 
 import os

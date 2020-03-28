@@ -1,7 +1,7 @@
 from __future__ import division
 from math import cos, pi
 
-from .hook import Hook
+from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos
 
 
@@ -106,6 +106,7 @@ class MomentumUpdaterHook(Hook):
                 self._set_momentum(runner, warmup_momentum)
 
 
+@HOOKS.register_module
 class CosineMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self, target_momentum=0.95, **kwargs):
@@ -124,6 +125,7 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
                 (1 + cos(pi * (progress / max_progress))))
 
 
+@HOOKS.register_module
 class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self,

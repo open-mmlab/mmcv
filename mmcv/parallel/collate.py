@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import collections
 
 import torch
@@ -20,7 +21,7 @@ def collate(batch, samples_per_gpu=1):
     """
 
     if not isinstance(batch, collections.Sequence):
-        raise TypeError("{} is not supported.".format(batch.dtype))
+        raise TypeError('{} is not supported.'.format(batch.dtype))
 
     if isinstance(batch[0], DataContainer):
         assert len(batch) % samples_per_gpu == 0

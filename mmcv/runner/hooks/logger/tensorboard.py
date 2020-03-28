@@ -1,11 +1,14 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
 
 import torch
 
-from ...dist_utils import master_only
+from mmcv.runner import master_only
+from ..hook import HOOKS
 from .base import LoggerHook
 
 
+@HOOKS.register_module
 class TensorboardLoggerHook(LoggerHook):
 
     def __init__(self,
@@ -19,7 +22,7 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if torch.__version__ >= '1.1':
+        if torch.__version__ >= '1.1' and '.' in torch.__version__:
             try:
                 from torch.utils.tensorboard import SummaryWriter
             except ImportError:

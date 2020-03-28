@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import json
 
 from .base import BaseFileHandler
