@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os
 import os.path as osp
+import shutil
 import tempfile
 from collections import OrderedDict
 
@@ -162,7 +163,7 @@ class TestVideo(object):
             filename = '{}/{:03d}.JPEG'.format(frame_dir, i)
             assert osp.isfile(filename)
             os.remove(filename)
-        os.removedirs(frame_dir)
+        shutil.rmtree(frame_dir)
 
     def test_frames2video(self):
         v = mmcv.VideoReader(self.video_path)
@@ -193,7 +194,7 @@ class TestVideo(object):
         for i in range(self.num_frames):
             filename = '{}/{:06d}.jpg'.format(frame_dir, i)
             os.remove(filename)
-        os.removedirs(frame_dir)
+        shutil.rmtree(frame_dir)
         os.remove(out_filename)
 
     def test_cut_concat_video(self):
