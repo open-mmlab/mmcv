@@ -1,8 +1,8 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 # flake8: noqa
 from .arraymisc import *
 from .fileio import *
 from .image import *
-from .opencv_info import *
 from .utils import *
 from .version import __version__
 from .video import *

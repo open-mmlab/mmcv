@@ -1,12 +1,19 @@
+# Copyright (c) Open-MMLab. All rights reserved.
+import json
 import os.path as osp
+import shutil
 import sys
+import tempfile
 from argparse import ArgumentParser
+from collections import abc
 from importlib import import_module
 
 from addict import Dict
 
-from .misc import collections_abc
 from .path import check_file_exist
+
+BASE_KEY = '_base_'
+DELETE_KEY = '_delete_'
 
 
 class ConfigDict(Dict):
@@ -38,11 +45,11 @@ def add_args(parser, cfg, prefix=''):
         elif isinstance(v, bool):
             parser.add_argument('--' + prefix + k, action='store_true')
         elif isinstance(v, dict):
-            add_args(parser, v, k + '.')
-        elif isinstance(v, collections_abc.Iterable):
+            add_args(parser, v, prefix + k + '.')
+        elif isinstance(v, abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
-            print('connot parse key {} of type {}'.format(prefix + k, type(v)))
+            print('cannot parse key {} of type {}'.format(prefix + k, type(v)))
     return parser
 
 
@@ -73,28 +80,77 @@ class Config(object):
     """
 
     @staticmethod
-    def fromfile(filename):
+    def _file2dict(filename):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
-            module_name = osp.basename(filename)[:-3]
-            if '.' in module_name:
-                raise ValueError('Dots are not allowed in config file path.')
-            config_dir = osp.dirname(filename)
-            sys.path.insert(0, config_dir)
-            mod = import_module(module_name)
-            sys.path.pop(0)
-            cfg_dict = {
-                name: value
-                for name, value in mod.__dict__.items()
-                if not name.startswith('__')
-            }
+            with tempfile.TemporaryDirectory() as temp_config_dir:
+                shutil.copyfile(filename,
+                                osp.join(temp_config_dir, '_tempconfig.py'))
+                sys.path.insert(0, temp_config_dir)
+                mod = import_module('_tempconfig')
+                sys.path.pop(0)
+                cfg_dict = {
+                    name: value
+                    for name, value in mod.__dict__.items()
+                    if not name.startswith('__')
+                }
+                # delete imported module
+                del sys.modules['_tempconfig']
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
         else:
             raise IOError('Only py/yml/yaml/json type are supported now!')
-        return Config(cfg_dict, filename=filename)
+
+        cfg_text = filename + '\n'
+        with open(filename, 'r') as f:
+            cfg_text += f.read()
+
+        if '_base_' in cfg_dict:
+            cfg_dir = osp.dirname(filename)
+            base_filename = cfg_dict.pop('_base_')
+            base_filename = base_filename if isinstance(
+                base_filename, list) else [base_filename]
+
+            cfg_dict_list = list()
+            cfg_text_list = list()
+            for f in base_filename:
+                _cfg_dict, _cfg_text = Config._file2dict(osp.join(cfg_dir, f))
+                cfg_dict_list.append(_cfg_dict)
+                cfg_text_list.append(_cfg_text)
+
+            base_cfg_dict = dict()
+            for c in cfg_dict_list:
+                if len(base_cfg_dict.keys() & c.keys()) > 0:
+                    raise KeyError('Duplicate key is not allowed among bases')
+                base_cfg_dict.update(c)
+
+            Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            cfg_dict = base_cfg_dict
+
+            # merge cfg_text
+            cfg_text_list.append(cfg_text)
+            cfg_text = '\n'.join(cfg_text_list)
+
+        return cfg_dict, cfg_text
+
+    @staticmethod
+    def _merge_a_into_b(a, b):
+        # merge dict a into dict b. values in a will overwrite b.
+        for k, v in a.items():
+            if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
+                if not isinstance(b[k], dict):
+                    raise TypeError(
+                        'Cannot inherit key {} from base!'.format(k))
+                Config._merge_a_into_b(v, b[k])
+            else:
+                b[k] = v
+
+    @staticmethod
+    def fromfile(filename):
+        cfg_dict, cfg_text = Config._file2dict(filename)
+        return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod
     def auto_argparser(description=None):
@@ -109,7 +165,7 @@ class Config(object):
         add_args(parser, cfg)
         return parser, cfg
 
-    def __init__(self, cfg_dict=None, filename=None):
+    def __init__(self, cfg_dict=None, cfg_text=None, filename=None):
         if cfg_dict is None:
             cfg_dict = dict()
         elif not isinstance(cfg_dict, dict):
@@ -118,11 +174,14 @@ class Config(object):
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
-        if filename:
+        if cfg_text:
+            text = cfg_text
+        elif filename:
             with open(filename, 'r') as f:
-                super(Config, self).__setattr__('_text', f.read())
+                text = f.read()
         else:
-            super(Config, self).__setattr__('_text', '')
+            text = ''
+        super(Config, self).__setattr__('_text', text)
 
     @property
     def filename(self):
@@ -157,3 +216,33 @@ class Config(object):
 
     def __iter__(self):
         return iter(self._cfg_dict)
+
+    def dump(self):
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+        format_text = json.dumps(cfg_dict, indent=2)
+        return format_text
+
+    def merge_from_dict(self, options):
+        """ Merge list into cfg_dict
+
+        Merge the dict parsed by MultipleKVAction into this cfg.
+        Example,
+            >>> options = {'model.backbone.depth': 50}
+            >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
+            >>> cfg.merge_from_dict(options)
+
+        Args:
+            options (dict): dict of configs to merge from.
+        """
+        option_cfg_dict = {}
+        for full_key, v in options.items():
+            d = option_cfg_dict
+            key_list = full_key.split('.')
+            for subkey in key_list[:-1]:
+                d[subkey] = ConfigDict()
+                d = d[subkey]
+            subkey = key_list[-1]
+            d[subkey] = v
+
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+        Config._merge_a_into_b(option_cfg_dict, cfg_dict)

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import logging
 
 import torch.nn as nn
@@ -8,7 +9,7 @@ from .weight_init import constant_init, kaiming_init
 
 
 def conv3x3(in_planes, out_planes, stride=1, dilation=1):
-    "3x3 convolution with padding"
+    """3x3 convolution with padding"""
     return nn.Conv2d(
         in_planes,
         out_planes,

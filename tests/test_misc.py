@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import pytest
 
 import mmcv
@@ -51,7 +52,7 @@ def test_requires_package(capsys):
     def func_b():
         pass
 
-    @mmcv.requires_package('six')
+    @mmcv.requires_package('numpy')
     def func_c():
         return 1
 

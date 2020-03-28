@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import logging
 import os.path as osp
 import time
@@ -5,11 +6,9 @@ import time
 import torch
 
 import mmcv
-from . import hooks
 from .checkpoint import load_checkpoint, save_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import (CheckpointHook, Hook, IterTimerHook, LrUpdaterHook,
-                    OptimizerHook, lr_updater)
+from .hooks import HOOKS, Hook, IterTimerHook
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_host_info, get_time_str, obj_from_dict
@@ -30,6 +29,8 @@ class Runner(object):
         log_level (int): Logging level.
         logger (:obj:`logging.Logger`): Custom logger. If `None`, use the
             default logger.
+        meta (dict | None): A dict records some import information such as
+            environment info and seed, which will be logged in logger hook.
     """
 
     def __init__(self,
@@ -38,7 +39,8 @@ class Runner(object):
                  optimizer=None,
                  work_dir=None,
                  log_level=logging.INFO,
-                 logger=None):
+                 logger=None,
+                 meta=None):
         assert callable(batch_processor)
         self.model = model
         if optimizer is not None:
@@ -69,6 +71,10 @@ class Runner(object):
         else:
             self.logger = logger
         self.log_buffer = LogBuffer()
+
+        if meta is not None:
+            assert isinstance(meta, dict), '"meta" must be a dict or None'
+        self.meta = meta
 
         self.mode = None
         self._hooks = []
@@ -215,16 +221,6 @@ class Runner(object):
         if not inserted:
             self._hooks.insert(0, hook)
 
-    def build_hook(self, args, hook_type=None):
-        if isinstance(args, Hook):
-            return args
-        elif isinstance(args, dict):
-            assert issubclass(hook_type, Hook)
-            return hook_type(**args)
-        else:
-            raise TypeError('"args" must be either a Hook object'
-                            ' or dict, not {}'.format(type(args)))
-
     def call_hook(self, fn_name):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
@@ -365,26 +361,41 @@ class Runner(object):
         time.sleep(1)  # wait for some hooks like loggers to finish
         self.call_hook('after_run')
 
-    def register_lr_hooks(self, lr_config):
-        if isinstance(lr_config, LrUpdaterHook):
-            self.register_hook(lr_config)
-        elif isinstance(lr_config, dict):
+    def register_lr_hook(self, lr_config):
+        if isinstance(lr_config, dict):
             assert 'policy' in lr_config
-            # from .hooks import lr_updater
-            hook_name = lr_config['policy'].title() + 'LrUpdaterHook'
-            if not hasattr(lr_updater, hook_name):
-                raise ValueError('"{}" does not exist'.format(hook_name))
-            hook_cls = getattr(lr_updater, hook_name)
-            self.register_hook(hook_cls(**lr_config))
+            hook_type = lr_config.pop('policy').title() + 'LrUpdaterHook'
+            lr_config['type'] = hook_type
+            hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
-            raise TypeError('"lr_config" must be either a LrUpdaterHook object'
-                            ' or dict, not {}'.format(type(lr_config)))
+            hook = lr_config
+        self.register_hook(hook)
+
+    def register_optimizer_hook(self, optimizer_config):
+        if optimizer_config is None:
+            return
+        if isinstance(optimizer_config, dict):
+            optimizer_config.setdefault('type', 'OptimizerHook')
+            hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
+        else:
+            hook = optimizer_config
+        self.register_hook(hook)
+
+    def register_checkpoint_hook(self, checkpoint_config):
+        if checkpoint_config is None:
+            return
+        if isinstance(checkpoint_config, dict):
+            checkpoint_config.setdefault('type', 'CheckpointHook')
+            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
+        else:
+            hook = checkpoint_config
+        self.register_hook(hook)
 
     def register_logger_hooks(self, log_config):
         log_interval = log_config['interval']
         for info in log_config['hooks']:
-            logger_hook = obj_from_dict(
-                info, hooks, default_args=dict(interval=log_interval))
+            logger_hook = mmcv.build_from_cfg(
+                info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
     def register_training_hooks(self,
@@ -402,13 +413,8 @@ class Runner(object):
         - IterTimerHook
         - LoggerHook(s)
         """
-        if optimizer_config is None:
-            optimizer_config = {}
-        if checkpoint_config is None:
-            checkpoint_config = {}
-        self.register_lr_hooks(lr_config)
-        self.register_hook(self.build_hook(optimizer_config, OptimizerHook))
-        self.register_hook(self.build_hook(checkpoint_config, CheckpointHook))
+        self.register_lr_hook(lr_config)
+        self.register_optimizer_hook(optimizer_config)
+        self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())
-        if log_config is not None:
-            self.register_logger_hooks(log_config)
+        self.register_logger_hooks(log_config)

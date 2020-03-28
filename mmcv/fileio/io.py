@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from pathlib import Path
 
 from ..utils import is_list_of, is_str

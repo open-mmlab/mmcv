@@ -1,8 +1,10 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import torch
 
-from .hook import Hook
+from .hook import HOOKS, Hook
 
 
+@HOOKS.register_module
 class EmptyCacheHook(Hook):
 
     def __init__(self, before_epoch=False, after_epoch=True, after_iter=False):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -14,6 +13,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 
 version_file = '../mmcv/version.py'
@@ -48,7 +48,9 @@ extensions = [
     'recommonmark',
 ]
 
-autodoc_mock_imports = ['cv2', 'torch', 'enum', 'pathlib', 'mmcv._ext']
+autodoc_mock_imports = [
+    'cv2', 'numpy', 'torch', 'enum', 'pathlib', 'mmcv._ext'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

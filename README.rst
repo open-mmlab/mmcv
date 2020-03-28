@@ -30,6 +30,8 @@ It provides the following functionalities.
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
 
+Note: MMCV requires Python 3.5+.
+
 
 Installation
 ------------
