@@ -182,6 +182,6 @@ def test_pretty_text():
     with tempfile.TemporaryDirectory() as temp_config_dir:
         text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
         with open(text_cfg_filename, 'w') as f:
-            f.write(cfg.pretty_text())
+            f.write(cfg.pretty_text)
         text_cfg = Config.fromfile(text_cfg_filename)
     assert text_cfg._cfg_dict == cfg._cfg_dict

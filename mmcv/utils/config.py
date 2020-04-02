@@ -191,7 +191,10 @@ class Config(object):
     def text(self):
         return self._text
 
-    def pretty_text(self, indent=4):
+    @property
+    def pretty_text(self):
+
+        indent = 4
 
         def _indent(s_, num_spaces):
             s = s_.split('\n')
