@@ -191,6 +191,63 @@ class Config(object):
     def text(self):
         return self._text
 
+    @property
+    def pretty_text(self):
+
+        def _indent(s_, num_spaces):
+            s = s_.split('\n')
+            if len(s) == 1:
+                return s_
+            first = s.pop(0)
+            s = [(num_spaces * ' ') + line for line in s]
+            s = '\n'.join(s)
+            s = first + '\n' + s
+            return s
+
+        def _format_basic_type(k, v):
+            if isinstance(v, str):
+                v_str = "'{}'".format(v)
+            else:
+                v_str = str(v)
+            attr_str = '{}={}'.format(str(k), v_str)
+            attr_str = _indent(attr_str, 2)
+
+            return attr_str
+
+        def _format_list(k, v):
+            # check if all items in the list are dict
+            if all(isinstance(_, dict) for _ in v):
+                v_str = '[\n'
+                v_str += '\n'.join(
+                    'dict({}),'.format(_indent(_format_dict(v_), 2))
+                    for v_ in v).rstrip(',')
+                attr_str = '{}={}'.format(str(k), v_str)
+                attr_str = _indent(attr_str, 2) + ']'
+            else:
+                attr_str = _format_basic_type(k, v)
+            return attr_str
+
+        def _format_dict(d):
+            r = ''
+            s = []
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    v_str = '\n' + _format_dict(v)
+                    attr_str = '{}=dict({}'.format(str(k), v_str)
+                    attr_str = _indent(attr_str, 2) + ')'
+                elif isinstance(v, list):
+                    attr_str = _format_list(k, v)
+                else:
+                    attr_str = _format_basic_type(k, v)
+                s.append(attr_str)
+            r += '\n'.join(s)
+            return r
+
+        cfg_dict = self._cfg_dict.to_dict()
+        text = _format_dict(cfg_dict)
+
+        return text
+
     def __repr__(self):
         return 'Config (path: {}): {}'.format(self.filename,
                                               self._cfg_dict.__repr__())
