@@ -191,8 +191,7 @@ class Config(object):
     def text(self):
         return self._text
 
-    @property
-    def pretty_text(self):
+    def pretty_text(self, indent=4):
 
         def _indent(s_, num_spaces):
             s = s_.split('\n')
@@ -204,13 +203,13 @@ class Config(object):
             s = first + '\n' + s
             return s
 
-        def _format_basic_type(k, v, end=''):
+        def _format_basic_types(k, v, end=''):
             if isinstance(v, str):
                 v_str = "'{}'".format(v)
             else:
                 v_str = str(v)
             attr_str = '{}={}{}'.format(str(k), v_str, end)
-            attr_str = _indent(attr_str, 2)
+            attr_str = _indent(attr_str, indent)
 
             return attr_str
 
@@ -219,12 +218,12 @@ class Config(object):
             if all(isinstance(_, dict) for _ in v):
                 v_str = '[\n'
                 v_str += '\n'.join(
-                    'dict({}),'.format(_indent(_format_dict(v_), 2))
+                    'dict({}),'.format(_indent(_format_dict(v_), indent))
                     for v_ in v).rstrip(',')
                 attr_str = '{}={}'.format(str(k), v_str)
-                attr_str = _indent(attr_str, 2) + ']'
+                attr_str = _indent(attr_str, indent) + ']'
             else:
-                attr_str = _format_basic_type(k, v)
+                attr_str = _format_basic_types(k, v)
             return attr_str
 
         def _format_dict(d, outest_level=False):
@@ -234,14 +233,14 @@ class Config(object):
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
                     attr_str = '{}=dict({}'.format(str(k), v_str)
-                    attr_str = _indent(attr_str, 2) + ')'
+                    attr_str = _indent(attr_str, indent) + ')'
                 elif isinstance(v, list):
                     attr_str = _format_list(k, v)
                 else:
                     if not outest_level and idx < len(d) - 1:
-                        attr_str = _format_basic_type(k, v, ',')
+                        attr_str = _format_basic_types(k, v, ',')
                     else:
-                        attr_str = _format_basic_type(k, v)
+                        attr_str = _format_basic_types(k, v)
 
                 s.append(attr_str)
             r += '\n'.join(s)
