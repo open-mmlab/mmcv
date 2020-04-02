@@ -204,12 +204,12 @@ class Config(object):
             s = first + '\n' + s
             return s
 
-        def _format_basic_type(k, v):
+        def _format_basic_type(k, v, end=''):
             if isinstance(v, str):
                 v_str = "'{}'".format(v)
             else:
                 v_str = str(v)
-            attr_str = '{}={}'.format(str(k), v_str)
+            attr_str = '{}={}{}'.format(str(k), v_str, end)
             attr_str = _indent(attr_str, 2)
 
             return attr_str
@@ -227,10 +227,10 @@ class Config(object):
                 attr_str = _format_basic_type(k, v)
             return attr_str
 
-        def _format_dict(d):
+        def _format_dict(d, outest_level=False):
             r = ''
             s = []
-            for k, v in d.items():
+            for idx, (k, v) in enumerate(d.items()):
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
                     attr_str = '{}=dict({}'.format(str(k), v_str)
@@ -238,13 +238,17 @@ class Config(object):
                 elif isinstance(v, list):
                     attr_str = _format_list(k, v)
                 else:
-                    attr_str = _format_basic_type(k, v)
+                    if not outest_level and idx < len(d) - 1:
+                        attr_str = _format_basic_type(k, v, ',')
+                    else:
+                        attr_str = _format_basic_type(k, v)
+
                 s.append(attr_str)
             r += '\n'.join(s)
             return r
 
         cfg_dict = self._cfg_dict.to_dict()
-        text = _format_dict(cfg_dict)
+        text = _format_dict(cfg_dict, outest_level=True)
 
         return text
 

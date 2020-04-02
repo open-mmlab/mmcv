@@ -2,6 +2,7 @@
 import json
 import os.path as osp
 import sys
+import tempfile
 
 import pytest
 
@@ -78,6 +79,8 @@ def test_merge_from_multiple_bases():
     assert cfg.item2.a == 0
     assert cfg.item3 is False
     assert cfg.item4 == 'test'
+    assert cfg.item5 == dict(a=0, b=1)
+    assert cfg.item6 == [dict(a=0), dict(b=1)]
 
     with pytest.raises(KeyError):
         Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/m.py'))
@@ -171,3 +174,14 @@ def test_setattr():
     assert cfg.item2.a == 0
     assert cfg._cfg_dict['item5'] == {'a': {'b': None}}
     assert cfg.item5.a.b is None
+
+
+def test_pretty_text():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/l.py')
+    cfg = Config.fromfile(cfg_file)
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
+        with open(text_cfg_filename, 'w') as f:
+            f.write(cfg.pretty_text)
+        text_cfg = Config.fromfile(text_cfg_filename)
+    assert text_cfg._cfg_dict == cfg._cfg_dict
