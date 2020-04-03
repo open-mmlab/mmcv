@@ -36,7 +36,7 @@ class MlflowLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner):
         if self.experiment_name is not None:
-            self.mlflow.set_experiment(experiment_name)
+            self.mlflow.set_experiment(self.experiment_name)
 
     @master_only
     def log(self, runner):
