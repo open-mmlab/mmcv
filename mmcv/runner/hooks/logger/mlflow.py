@@ -20,7 +20,7 @@ class MlflowLoggerHook(LoggerHook):
         super(MlflowLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag)
         self.import_mlflow()
-        self._mlflow_client  = self.mlflow.MlflowClient(tracking_uri)
+        self._mlflow_client = self.mlflow.tracking.MlflowClient(tracking_uri)
         self.experiment_name = experiment_name
         self.tags = tags
         self.log_model = log_model
