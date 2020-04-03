@@ -48,13 +48,11 @@ class MlflowLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        metrics = {}
         for var, val in runner.log_buffer.output.items():
             if var in ['time', 'data_time']:
                 continue
             tag = '{}/{}'.format(var, runner.mode)
-            metrics[tag] = val
-            self._mlflow_client.log_metric(self._run_id, step=runner.iter)
+            self._mlflow_client.log_metric(self._run_id, tag, val, step=runner.iter)
 
     @master_only
     def after_run(self, runner):
