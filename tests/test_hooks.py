@@ -50,7 +50,7 @@ def test_pavi_hook():
 
 
 @only_if_torch_available
-@pytest.mark.parametrize('log_model')
+@pytest.mark.parametrize('log_model', (True, False))
 def test_mlflow_hook(log_model):
     sys.modules['mlflow'] = MagicMock()
     sys.modules['mlflow.pytorch'] = MagicMock()
