@@ -7,7 +7,7 @@ from .base import LoggerHook
 
 
 @HOOKS.register_module
-class MLflowLoggerHook(LoggerHook):
+class MlflowLoggerHook(LoggerHook):
 
     def __init__(self,
                  experiment_name,
@@ -17,10 +17,10 @@ class MLflowLoggerHook(LoggerHook):
                  interval=10,
                  ignore_last=True,
                  reset_flag=True):
-        super(MLflowLoggerHook, self).__init__(interval, ignore_last,
+        super(MlflowLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag)
         self.import_mlflow()
-        self._mlflow_client  = self.mlflow.MLflowClient(tracking_uri)
+        self._mlflow_client  = self.mlflow.MlflowClient(tracking_uri)
         self.experiment_name = experiment_name
         self.tags = tags
         self.log_model = log_model
