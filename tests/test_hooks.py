@@ -50,7 +50,8 @@ def test_pavi_hook():
 
 
 @only_if_torch_available
-def test_mlflow_hook():
+@pytest.mark.parametrize('log_model')
+def test_mlflow_hook(log_model):
     sys.modules['mlflow'] = MagicMock()
     sys.modules['mlflow.pytorch'] = MagicMock()
 
@@ -68,12 +69,17 @@ def test_mlflow_hook():
         })
 
     hook = mmcv.runner.hooks.MlflowLoggerHook(
-        experiment_name='test', log_model=False)
+        experiment_name='test', log_model=log_model)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
 
     hook.mlflow.set_experiment.assert_called_with('test')
     hook.mlflow.log_metrics.assert_called_with({'accuracy/val': 0.98}, step=5)
+    if log_model:
+        hook.mlflow_pytorch.log_model.assert_called_with(
+            runner.model, 'models')
+    else:
+        assert not hook.mlflow_pytorch.log_model.called
 
 
 @only_if_torch_available
