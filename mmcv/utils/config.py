@@ -206,12 +206,12 @@ class Config(object):
             s = first + '\n' + s
             return s
 
-        def _format_basic_types(k, v, end=''):
+        def _format_basic_types(k, v):
             if isinstance(v, str):
                 v_str = "'{}'".format(v)
             else:
                 v_str = str(v)
-            attr_str = '{}={}{}'.format(str(k), v_str, end)
+            attr_str = '{}={}'.format(str(k), v_str)
             attr_str = _indent(attr_str, indent)
 
             return attr_str
@@ -233,17 +233,16 @@ class Config(object):
             r = ''
             s = []
             for idx, (k, v) in enumerate(d.items()):
+                is_last = idx >= len(d) - 1
+                end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
                     attr_str = '{}=dict({}'.format(str(k), v_str)
-                    attr_str = _indent(attr_str, indent) + ')'
+                    attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
-                    attr_str = _format_list(k, v)
+                    attr_str = _format_list(k, v) + end
                 else:
-                    if not outest_level and idx < len(d) - 1:
-                        attr_str = _format_basic_types(k, v, ',')
-                    else:
-                        attr_str = _format_basic_types(k, v)
+                    attr_str = _format_basic_types(k, v) + end
 
                 s.append(attr_str)
             r += '\n'.join(s)
