@@ -52,6 +52,7 @@ def test_pavi_hook():
 @only_if_torch_available
 def test_mlflow_hook():
     sys.modules['mlflow'] = MagicMock()
+    sys.modules['mlflow.pytorch'] = MagicMock()
 
     model = nn.Linear(1, 1)
     loader = DataLoader(torch.ones((5, 5)))
