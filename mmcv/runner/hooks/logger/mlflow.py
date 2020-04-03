@@ -1,6 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import numbers
-
 from mmcv.runner import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -11,13 +9,34 @@ class MlflowLoggerHook(LoggerHook):
 
     def __init__(self,
                  experiment_name=None,
-                 tags = None,
+                 tags=None,
                  log_model=True,
                  interval=10,
                  ignore_last=True,
                  reset_flag=True):
+        """Class to log metrics and (optionally) a trained model to MLflow.
+
+        It requires `MLflow`_ to be installed.
+
+        Args:
+            experiment_name (str, optional): Name of the experiment to be used.
+                Default None.
+                If not None, set the active experiment.
+                If experiment does not exist, an experiment with provided name
+                will be created.
+            tags (dict of str: str, optional): Tags for the current run.
+                Default None.
+                If not None, set tags for the current run.
+            log_model (bool, optional): Wheter to log an MLflow artifact.
+                Default True.
+                If True, log runner.model as an MLflow artifact
+                for the current run.
+
+        .. _MLflow:
+            https://www.mlflow.org/docs/latest/index.html
+        """
         super(MlflowLoggerHook, self).__init__(interval, ignore_last,
-                                              reset_flag)
+                                               reset_flag)
         self.import_mlflow()
         self.experiment_name = experiment_name
         self.tags = tags
@@ -37,6 +56,8 @@ class MlflowLoggerHook(LoggerHook):
     def before_run(self, runner):
         if self.experiment_name is not None:
             self.mlflow.set_experiment(self.experiment_name)
+        if self.tags is not None:
+            self.mlflow.set_tags(self.tags)
 
     @master_only
     def log(self, runner):
@@ -51,4 +72,4 @@ class MlflowLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner):
         if self.log_model:
-            self.mlflow_pytorch.log_model(runner.model, "models")
+            self.mlflow_pytorch.log_model(runner.model, 'models')
