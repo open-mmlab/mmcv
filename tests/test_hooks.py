@@ -3,17 +3,25 @@ import sys
 import warnings
 from unittest.mock import MagicMock
 
+import pytest
+
 import mmcv.runner
 
+try:
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+    torch_available = True
+except ImportError:
+    warnings.warn('torch is not available')
+    torch_available = False
 
+only_if_torch_available = pytest.mark.skipif(
+    torch_available, reason='torch is not available')
+
+
+@only_if_torch_available
 def test_pavi_hook():
-    try:
-        import torch
-        import torch.nn as nn
-        from torch.utils.data import DataLoader
-    except ImportError:
-        warnings.warn('Skipping test_pavi_hook in the absense of torch')
-        return
     sys.modules['pavi'] = MagicMock()
 
     model = nn.Linear(1, 1)
@@ -40,3 +48,50 @@ def test_pavi_hook():
         tag='data',
         snapshot_file_path=osp.join(work_dir, 'latest.pth'),
         iteration=5)
+
+
+@only_if_torch_available
+def test_mlflow_hook():
+    sys.modules['mlflow'] = MagicMock()
+
+    model = nn.Linear(1, 1)
+    loader = DataLoader(torch.ones((5, 5)))
+    work_dir = osp.join(osp.dirname(osp.abspath(__file__)), 'data')
+    runner = mmcv.runner.Runner(
+        model=model,
+        work_dir=work_dir,
+        batch_processor=lambda model, x, **kwargs: {
+            'log_vars': {
+                'accuracy': 0.98
+            },
+            'num_samples': 5
+        })
+
+    hook = mmcv.runner.hooks.MlflowLoggerHook(
+        experiment_name='test', log_model=False)
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+
+    hook.mlflow.set_experiment.assert_called_with('test')
+    hook.mlflow.log_metrics.assert_called_with({'accuracy/val': 0.98}, step=5)
+
+
+@only_if_torch_available
+def test_wandb_hook():
+    hook = mmcv.runner.hooks.WandbLoggerHook()
+    loader = DataLoader(torch.ones((5, 5)))
+
+    model = nn.Linear(1, 1)
+    runner = mmcv.runner.Runner(
+        model=model,
+        batch_processor=lambda model, x, **kwargs: {
+            'log_vars': {
+                'accuracy': 0.98
+            },
+            'num_samples': 5
+        })
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    hook.wandb.init.assert_called_with()
+    hook.wandb.log.assert_called_with({'accuracy/val': 0.98}, step=5)
+    hook.wandb.join.assert_called_with()
