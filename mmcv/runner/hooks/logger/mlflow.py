@@ -28,10 +28,12 @@ class MlflowLoggerHook(LoggerHook):
     def import_mlflow(self):
         try:
             import mlflow
+            import mlflow.pytorch as mlflow_pytorch
         except ImportError:
             raise ImportError(
                 'Please run "pip install mlflow" to install mlflow')
         self.mlflow = mlflow
+        self.mlflow_pytorch = mlflow_pytorch
 
     @master_only
     def before_run(self, runner):
@@ -57,5 +59,5 @@ class MlflowLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner):
         if self.log_model:
-            self.mlflow.pytorch.log_model(runner.model, "models")
+            self.mlflow_pytorch.log_model(runner.model, "models")
         self._mlflow_client.set_terminated(self._run_id)
