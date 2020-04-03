@@ -11,13 +11,12 @@ try:
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader
-    torch_available = True
 except ImportError:
     warnings.warn('torch is not available')
-    torch_available = False
+    torch = None
 
 only_if_torch_available = pytest.mark.skipif(
-    torch_available, reason='torch is not available')
+    torch is None, reason='torch is not available')
 
 
 @only_if_torch_available
