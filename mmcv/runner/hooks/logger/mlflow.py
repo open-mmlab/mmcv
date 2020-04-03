@@ -43,8 +43,11 @@ class MlflowLoggerHook(LoggerHook):
         else:
             runner.logger.warning(f'Experiment with name {self.experiment_name} not found. Creating it.')
             self._experiment_id = self._mlflow_client.create_experiment(name=self.experiment_name)
-        
-        run = self._mlflow_client.create_run(experiment_id=self._experiment_id, tags=self.tags)
+
+        if mlflow.active_run():
+            run = self._mlflow_client.get_run(mlflow.active_run())
+        else:
+            run = self._mlflow_client.create_run(experiment_id=self._experiment_id, tags=self.tags)
         
         self._run_id = run.info.run_id
 
