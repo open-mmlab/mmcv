@@ -1,11 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
-import sys
 import tempfile
 import warnings
-from unittest.mock import MagicMock
-
-sys.modules['wandb'] = MagicMock()
 
 
 def test_save_checkpoint():

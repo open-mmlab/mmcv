@@ -84,6 +84,8 @@ def test_mlflow_hook(log_model):
 
 @only_if_torch_available
 def test_wandb_hook():
+    sys.modules['wandb'] = MagicMock()
+
     hook = mmcv.runner.hooks.WandbLoggerHook()
     loader = DataLoader(torch.ones((5, 5)))
 
