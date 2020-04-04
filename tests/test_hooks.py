@@ -63,7 +63,8 @@ def test_mlflow_hook(log_model):
         work_dir=work_dir,
         batch_processor=lambda model, x, **kwargs: {
             'log_vars': {
-                'accuracy': 0.98
+                'accuracy': 0.98,
+                'NotLoggable': 'FOO BAR'
             },
             'num_samples': 5
         })
