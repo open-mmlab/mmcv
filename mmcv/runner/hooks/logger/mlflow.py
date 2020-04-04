@@ -1,4 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import numbers
+
 from mmcv.runner import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -66,7 +68,8 @@ class MlflowLoggerHook(LoggerHook):
             if var in ['time', 'data_time']:
                 continue
             tag = '{}/{}'.format(var, runner.mode)
-            metrics[tag] = val
+            if isinstance(val, numbers.Number):
+                metrics[tag] = val
         self.mlflow.log_metrics(metrics, step=runner.iter)
 
     @master_only
