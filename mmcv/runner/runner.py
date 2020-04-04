@@ -408,7 +408,7 @@ class Runner(object):
         self.register_hook(hook)
 
     def register_momentum_hooks(self, momentum_config):
-        if momentum_config is not None:
+        if momentum_config is None:
             return
         if isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
