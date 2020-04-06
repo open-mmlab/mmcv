@@ -46,7 +46,6 @@ def test_registry():
     assert CATS.get('PersianCat') is None
     assert 'PersianCat' not in CATS
 
-
     # The order of dict keys are not preserved in python 3.5
     assert repr(CATS) in [
         "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])",
