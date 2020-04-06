@@ -42,6 +42,12 @@ class Registry(object):
         """
         return self._module_dict.get(key, None)
 
+    def __contains__(self, key):
+        if self.get(key) is None:
+            return False
+        else:
+            return True
+
     def _register_module(self, module_class, force=False):
         if not inspect.isclass(module_class):
             raise TypeError('module must be a class, but got {}'.format(
