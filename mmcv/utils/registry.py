@@ -43,7 +43,7 @@ class Registry(object):
         return self._module_dict.get(key, None)
 
     def __contains__(self, key):
-        return not self.get(key) is None
+        return self.get(key) is not None
 
     def _register_module(self, module_class, force=False):
         if not inspect.isclass(module_class):

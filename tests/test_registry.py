@@ -44,7 +44,7 @@ def test_registry():
     assert len(CATS) == 2
 
     assert CATS.get('PersianCat') is None
-    assert not 'PersianCat' in CATS
+    assert 'PersianCat' not in CATS
 
 
     # The order of dict keys are not preserved in python 3.5
