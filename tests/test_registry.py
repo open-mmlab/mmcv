@@ -23,6 +23,7 @@ def test_registry():
     CATS.register_module(Munchkin)
     assert len(CATS) == 2
     assert CATS.get('Munchkin') is Munchkin
+    assert 'Munchkin' in CATS
 
     with pytest.raises(KeyError):
         CATS.register_module(Munchkin)
@@ -43,6 +44,8 @@ def test_registry():
     assert len(CATS) == 2
 
     assert CATS.get('PersianCat') is None
+    assert not 'PersianCat' in CATS
+
 
     # The order of dict keys are not preserved in python 3.5
     assert repr(CATS) in [
