@@ -18,6 +18,9 @@ class Registry(object):
     def __len__(self):
         return len(self._module_dict)
 
+    def __contains__(self, key):
+        return self.get(key) is not None
+
     def __repr__(self):
         format_str = self.__class__.__name__ + '(name={}, items={})'.format(
             self._name, list(self._module_dict.keys()))
@@ -41,9 +44,6 @@ class Registry(object):
             class: The corresponding class.
         """
         return self._module_dict.get(key, None)
-
-    def __contains__(self, key):
-        return self.get(key) is not None
 
     def _register_module(self, module_class, force=False):
         if not inspect.isclass(module_class):
