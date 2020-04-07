@@ -38,7 +38,3 @@ class CheckpointHook(Hook):
                     os.remove(ckpt_path)
                 else:
                     break
-
-
-
-
