@@ -3,6 +3,7 @@ from ..dist_utils import master_only
 from .hook import HOOKS, Hook
 import os
 
+
 @HOOKS.register_module
 class CheckpointHook(Hook):
 
@@ -27,13 +28,14 @@ class CheckpointHook(Hook):
             self.out_dir = runner.work_dir
         runner.save_checkpoint(
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
-        
+
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
             filename_tmpl = self.args.get('filename_tmpl', 'epoch_{}.pth')
             current_epoch = runner.epoch + 1
-            for epoch in range(current_epoch-self.max_keep_ckpts, 0, -1):
-                ckpt_path = os.path.join(self.out_dir, filename_tmpl.format(epoch))
+            for epoch in range(current_epoch - self.max_keep_ckpts, 0, -1):
+                ckpt_path = os.path.join(self.out_dir,
+                                         filename_tmpl.format(epoch))
                 if os.path.exists(ckpt_path):
                     os.remove(ckpt_path)
                 else:
