@@ -18,6 +18,9 @@ class Registry(object):
     def __len__(self):
         return len(self._module_dict)
 
+    def __contains__(self, key):
+        return self.get(key) is not None
+
     def __repr__(self):
         format_str = self.__class__.__name__ + '(name={}, items={})'.format(
             self._name, list(self._module_dict.keys()))
