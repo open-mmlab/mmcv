@@ -49,9 +49,11 @@ class TensorboardLoggerHook(LoggerHook):
             record = runner.log_buffer.output[var]
             if isinstance(record, str):
                 self.writer.add_text(tag, record, runner.iter)
+            elif isinstance(record, torch.Tensor):  # logs images
+                if len(record.shape) == 4:
+                    self.writer.add_image(tag, record, runner.iter)
             else:
-                self.writer.add_scalar(tag, runner.log_buffer.output[var],
-                                       runner.iter)
+                self.writer.add_scalar(tag, record, runner.iter)
 
     @master_only
     def after_run(self, runner):
