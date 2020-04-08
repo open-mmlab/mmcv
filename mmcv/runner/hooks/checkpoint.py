@@ -1,7 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import os
+
 from ..dist_utils import master_only
 from .hook import HOOKS, Hook
-import os
 
 
 @HOOKS.register_module
