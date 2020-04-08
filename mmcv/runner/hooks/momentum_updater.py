@@ -109,8 +109,9 @@ class MomentumUpdaterHook(Hook):
 @HOOKS.register_module
 class CosineMomentumUpdaterHook(MomentumUpdaterHook):
 
-    def __init__(self, target_momentum=0.95, **kwargs):
-        self.target_momentum = target_momentum
+    def __init__(self, target=0.95, as_ratio=False, **kwargs):
+        self.target = target
+        self.as_ratio = as_ratio
         super(CosineMomentumUpdaterHook, self).__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
@@ -120,9 +121,12 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        return (self.target_momentum + 0.5 *
-                (base_momentum - self.target_momentum) *
-                (1 + cos(pi * (progress / max_progress))))
+        if self.as_ratio:
+            target_momentum = base_momentum * self.target
+        else:
+            target_momentum = self.target
+        return annealing_cos(
+            base_momentum, target_momentum, progress / max_progress)
 
 
 @HOOKS.register_module
@@ -137,9 +141,8 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         if isinstance(target_ratio, float):
             target_ratio = [target_ratio, target_ratio / 1e5]
         elif isinstance(target_ratio, list):
-            target_ratio = (
-                target_ratio + target_ratio[0] / 1e5
-                if len(target_ratio) == 1 else target_ratio)
+            target_ratio = [target_ratio[0] + target_ratio[0] / 1e5] \
+                if len(target_ratio) == 1 else target_ratio
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list of two floats'

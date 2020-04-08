@@ -201,8 +201,8 @@ class InvLrUpdaterHook(LrUpdaterHook):
 @HOOKS.register_module
 class CosineLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, target_lr=0, as_ratio=False, **kwargs):
-        self.target_lr = target_lr
+    def __init__(self, target=0, as_ratio=False, **kwargs):
+        self.target = target
         self.as_ratio = as_ratio
         super(CosineLrUpdaterHook, self).__init__(**kwargs)
 
@@ -214,12 +214,10 @@ class CosineLrUpdaterHook(LrUpdaterHook):
             progress = runner.iter
             max_progress = runner.max_iters
         if self.as_ratio:
-            target_lr = base_lr * self.target_lr
-            return target_lr + 0.5 * (base_lr - target_lr) * \
-                (1 + cos(pi * (progress / max_progress)))
+            target_lr = base_lr * self.target
         else:
-            return self.target_lr + 0.5 * (base_lr - self.target_lr) * \
-                (1 + cos(pi * (progress / max_progress)))
+            target_lr = self.target
+        return annealing_cos(base_lr, target_lr, progress / max_progress)
 
 
 class CyclicLrUpdaterHook(LrUpdaterHook):
@@ -233,9 +231,8 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         if isinstance(target_ratio, float):
             target_ratio = [target_ratio, target_ratio / 1e5]
         elif isinstance(target_ratio, list):
-            target_ratio = (
-                target_ratio + target_ratio[0] / 1e5
-                if len(target_ratio) == 1 else target_ratio)
+            target_ratio = [target_ratio[0] + target_ratio[0] / 1e5] \
+                if len(target_ratio) == 1 else target_ratio
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list of two floats'
@@ -246,7 +243,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
         self.lr_phases = []  # init lr_phases
-        # currently only support by_epoch=False
+
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
         super(CyclicLrUpdaterHook, self).__init__(by_epoch, **kwargs)
@@ -276,7 +273,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                                      progress / (end_iter - start_iter))
 
 
-def annealing_cos(start, end, pct):
-    'Cosine anneal from `start` to `end` as pct goes from 0.0 to 1.0.'
-    cos_out = cos(pi * pct) + 1
+def annealing_cos(start, end, factor):
+    """Cosine anneal from `start` to `end` as pct goes from 0.0 to 1.0."""
+    cos_out = cos(pi * factor) + 1
     return end + 0.5 * (start - end) * cos_out
