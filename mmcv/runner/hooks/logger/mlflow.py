@@ -10,7 +10,7 @@ from .base import LoggerHook
 class MlflowLoggerHook(LoggerHook):
 
     def __init__(self,
-                 experiment_name=None,
+                 exp_name=None,
                  tags=None,
                  log_model=True,
                  interval=10,
@@ -21,7 +21,7 @@ class MlflowLoggerHook(LoggerHook):
         It requires `MLflow`_ to be installed.
 
         Args:
-            experiment_name (str, optional): Name of the experiment to be used.
+            exp_name (str, optional): Name of the experiment to be used.
                 Default None.
                 If not None, set the active experiment.
                 If experiment does not exist, an experiment with provided name
@@ -40,7 +40,7 @@ class MlflowLoggerHook(LoggerHook):
         super(MlflowLoggerHook, self).__init__(interval, ignore_last,
                                                reset_flag)
         self.import_mlflow()
-        self.experiment_name = experiment_name
+        self.exp_name = exp_name
         self.tags = tags
         self.log_model = log_model
 
@@ -56,8 +56,8 @@ class MlflowLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if self.experiment_name is not None:
-            self.mlflow.set_experiment(self.experiment_name)
+        if self.exp_name is not None:
+            self.mlflow.set_experiment(self.exp_name)
         if self.tags is not None:
             self.mlflow.set_tags(self.tags)
 
