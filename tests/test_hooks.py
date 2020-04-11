@@ -1,25 +1,15 @@
 import os.path as osp
 import sys
-import warnings
 from unittest.mock import MagicMock
 
 import pytest
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 
 import mmcv.runner
 
-try:
-    import torch
-    import torch.nn as nn
-    from torch.utils.data import DataLoader
-except ImportError:
-    warnings.warn('torch is not available')
-    torch = None
 
-only_if_torch_available = pytest.mark.skipif(
-    torch is None, reason='torch is not available')
-
-
-@only_if_torch_available
 def test_pavi_hook():
     sys.modules['pavi'] = MagicMock()
 
@@ -49,7 +39,6 @@ def test_pavi_hook():
         iteration=5)
 
 
-@only_if_torch_available
 @pytest.mark.parametrize('log_model', (True, False))
 def test_mlflow_hook(log_model):
     sys.modules['mlflow'] = MagicMock()
@@ -69,7 +58,7 @@ def test_mlflow_hook(log_model):
         })
 
     hook = mmcv.runner.hooks.MlflowLoggerHook(
-        experiment_name='test', log_model=log_model)
+        exp_name='test', log_model=log_model)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
 
@@ -82,7 +71,6 @@ def test_mlflow_hook(log_model):
         assert not hook.mlflow_pytorch.log_model.called
 
 
-@only_if_torch_available
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
 
