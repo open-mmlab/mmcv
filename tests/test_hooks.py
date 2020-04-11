@@ -44,13 +44,14 @@ def test_pavi_hook():
 
 def test_momentum_runner_hook():
     """
-    pytest tests/test_hooks.py -m test_runner_hook
+    xdoctest -m tests/test_hooks.py test_momentum_runner_hook
     """
     try:
         import torch
         from torch.utils.data import DataLoader
     except ImportError:
-        warnings.warn('Skipping test_momentum_runner_hook in the absense of torch')
+        warnings.warn(
+            'Skipping test_momentum_runner_hook in the absense of torch')
         return
 
     loader = DataLoader(torch.ones((10, 2)))
@@ -74,7 +75,8 @@ def test_momentum_runner_hook():
     runner.register_hook(mmcv.runner.hooks.IterTimerHook())
 
     runner.run([loader], [('train', 1)], 1)
-    log_path = osp.join(runner.work_dir, '{}.log.json'.format(runner.timestamp))
+    log_path = osp.join(runner.work_dir,
+                        '{}.log.json'.format(runner.timestamp))
     import json
     with open(log_path, 'r') as f:
         log_jsons = f.readlines()
@@ -88,6 +90,55 @@ def test_momentum_runner_hook():
     assert log_jsons[7]['lr'] == 0.11
 
 
+def test_cosine_runner_hook():
+    """
+    xdoctest -m tests/test_hooks.py test_cosine_runner_hook
+    """
+    try:
+        import torch
+        from torch.utils.data import DataLoader
+    except ImportError:
+        warnings.warn(
+            'Skipping test_momentum_runner_hook in the absense of torch')
+        return
+
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner()
+
+    # add momentum scheduler
+    hook = mmcv.runner.hooks.momentum_updater.CosineMomentumUpdaterHook(
+        target=0.99 / 0.95,
+        by_epoch=False,
+        as_ratio=True,
+        warmup_iters=2,
+        warmup_ratio=0.9 / 0.95)
+    runner.register_hook(hook)
+
+    # add momentum LR scheduler
+    hook = mmcv.runner.hooks.lr_updater.CosineLrUpdaterHook(
+        target=0,
+        by_epoch=False,
+        as_ratio=True,
+        warmup_iters=2,
+        warmup_ratio=0.9)
+    runner.register_hook(hook)
+    runner.register_hook(mmcv.runner.hooks.IterTimerHook())
+
+    runner.run([loader], [('train', 1)], 1)
+    log_path = osp.join(runner.work_dir,
+                        '{}.log.json'.format(runner.timestamp))
+    import json
+    with open(log_path, 'r') as f:
+        log_jsons = f.readlines()
+    log_jsons = [json.loads(l) for l in log_jsons]
+    assert log_jsons[0]['momentum'] == 0.95
+    assert log_jsons[5]['momentum'] == 0.97
+    assert log_jsons[9]['momentum'] == 0.98902
+    assert log_jsons[0]['lr'] == 0.02
+    assert log_jsons[5]['lr'] == 0.01
+    assert log_jsons[9]['lr'] == 0.00049
+
+
 def _build_demo_runner():
     import torch
     import torch.nn as nn
@@ -96,15 +147,14 @@ def _build_demo_runner():
     optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.95)
 
     log_config = dict(
-        interval=1,
-        hooks=[
+        interval=1, hooks=[
             dict(type='TextLoggerHook'),
         ])
 
     runner = mmcv.runner.Runner(
         model=model,
         work_dir=work_dir,
-        batch_processor=lambda model, x, **kwargs: {'loss': model(x)-0},
+        batch_processor=lambda model, x, **kwargs: {'loss': model(x) - 0},
         optimizer=optimizer)
 
     runner.register_logger_hooks(log_config)

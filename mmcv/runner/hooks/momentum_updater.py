@@ -1,5 +1,4 @@
 from __future__ import division
-from math import cos, pi
 
 from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos
@@ -125,8 +124,8 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
             target_momentum = base_momentum * self.target
         else:
             target_momentum = self.target
-        return annealing_cos(
-            base_momentum, target_momentum, progress / max_progress)
+        return annealing_cos(base_momentum, target_momentum,
+                             progress / max_progress)
 
 
 @HOOKS.register_module
