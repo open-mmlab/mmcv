@@ -157,5 +157,6 @@ def _build_demo_runner():
         batch_processor=lambda model, x, **kwargs: {'loss': model(x) - 0},
         optimizer=optimizer)
 
-    runner.register_logger_hooks(log_config)
+    runner.register_logger_hooks(log_config)()
+    runner.register_hook
     return runner

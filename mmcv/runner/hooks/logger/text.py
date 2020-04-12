@@ -50,7 +50,9 @@ class TextLoggerHook(LoggerHook):
                 log_str += 'eta: {}, '.format(eta_str)
                 log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
                     log_dict['time'], log_dict['data_time']))
-                log_str += 'memory: {}, '.format(log_dict['memory'])
+                # statistic memory
+                if torch.cuda.is_available():
+                    log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
             log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
                                                     log_dict['epoch'] - 1,
@@ -106,7 +108,7 @@ class TextLoggerHook(LoggerHook):
             for hook in runner._hooks:
                 if isinstance(hook, MomentumUpdaterHook):
                     print_momentum = True
-                # only record momentum of the first param group in training
+            # only record momentum of the first param group in training
             if print_momentum:
                 log_dict['momentum'] = runner.current_momentum()[0]
 
