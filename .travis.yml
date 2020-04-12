@@ -26,8 +26,8 @@ python:
 
 before_script:
   - pip install codecov flake8 yapf isort
-  - flake8
-  - isort -rc --diff mmcv/ tests/ examples/
+  - flake8 .
+  - isort -rc --check-only --diff mmcv/ tests/ examples/
   - yapf -r -d mmcv/ tests/ examples/
 
 script: coverage run --source=mmcv setup.py test
