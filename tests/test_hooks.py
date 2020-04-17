@@ -1,19 +1,16 @@
 import os.path as osp
 import sys
-import warnings
 from unittest.mock import MagicMock
+
+import pytest
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 
 import mmcv.runner
 
 
 def test_pavi_hook():
-    try:
-        import torch
-        import torch.nn as nn
-        from torch.utils.data import DataLoader
-    except ImportError:
-        warnings.warn('Skipping test_pavi_hook in the absense of torch')
-        return
     sys.modules['pavi'] = MagicMock()
 
     model = nn.Linear(1, 1)
@@ -46,16 +43,9 @@ def test_momentum_runner_hook():
     """
     xdoctest -m tests/test_hooks.py test_momentum_runner_hook
     """
-    try:
-        import torch
-        from torch.utils.data import DataLoader
-    except ImportError:
-        warnings.warn(
-            'Skipping test_momentum_runner_hook in the absense of torch')
-        return
 
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner()
+    runner = _build_model_runner()
 
     # add momentum scheduler
     hook = mmcv.runner.hooks.momentum_updater.CyclicMomentumUpdaterHook(
@@ -94,16 +84,9 @@ def test_cosine_runner_hook():
     """
     xdoctest -m tests/test_hooks.py test_cosine_runner_hook
     """
-    try:
-        import torch
-        from torch.utils.data import DataLoader
-    except ImportError:
-        warnings.warn(
-            'Skipping test_momentum_runner_hook in the absense of torch')
-        return
 
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner()
+    runner = _build_model_runner()
 
     # add momentum scheduler
     hook = mmcv.runner.hooks.momentum_updater.CosineMomentumUpdaterHook(
@@ -139,7 +122,61 @@ def test_cosine_runner_hook():
     assert log_jsons[9]['lr'] == 0.00049
 
 
-def _build_demo_runner():
+@pytest.mark.parametrize('log_model', (True, False))
+def test_mlflow_hook(log_model):
+    sys.modules['mlflow'] = MagicMock()
+    sys.modules['mlflow.pytorch'] = MagicMock()
+
+    model = nn.Linear(1, 1)
+    loader = DataLoader(torch.ones((5, 5)))
+    work_dir = osp.join(osp.dirname(osp.abspath(__file__)), 'data')
+    runner = mmcv.runner.Runner(
+        model=model,
+        work_dir=work_dir,
+        batch_processor=lambda model, x, **kwargs: {
+            'log_vars': {
+                'accuracy': 0.98
+            },
+            'num_samples': 5
+        })
+
+    hook = mmcv.runner.hooks.MlflowLoggerHook(
+        exp_name='test', log_model=log_model)
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+
+    hook.mlflow.set_experiment.assert_called_with('test')
+    hook.mlflow.log_metrics.assert_called_with({'accuracy/val': 0.98}, step=5)
+    if log_model:
+        hook.mlflow_pytorch.log_model.assert_called_with(
+            runner.model, 'models')
+    else:
+        assert not hook.mlflow_pytorch.log_model.called
+
+
+def test_wandb_hook():
+    sys.modules['wandb'] = MagicMock()
+
+    hook = mmcv.runner.hooks.WandbLoggerHook()
+    loader = DataLoader(torch.ones((5, 5)))
+
+    model = nn.Linear(1, 1)
+    runner = mmcv.runner.Runner(
+        model=model,
+        batch_processor=lambda model, x, **kwargs: {
+            'log_vars': {
+                'accuracy': 0.98
+            },
+            'num_samples': 5
+        })
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    hook.wandb.init.assert_called_with()
+    hook.wandb.log.assert_called_with({'accuracy/val': 0.98}, step=5)
+    hook.wandb.join.assert_called_with()
+
+
+def _build_model_runner():
     import torch
     import torch.nn as nn
     model = nn.Linear(2, 1)
@@ -157,6 +194,5 @@ def _build_demo_runner():
         batch_processor=lambda model, x, **kwargs: {'loss': model(x) - 0},
         optimizer=optimizer)
 
-    runner.register_logger_hooks(log_config)()
-    runner.register_hook
+    runner.register_logger_hooks(log_config)
     return runner
