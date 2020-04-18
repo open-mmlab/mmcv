@@ -8,7 +8,6 @@ import torch.distributed as dist
 
 import mmcv
 from ..hook import HOOKS
-from ..momentum_updater import MomentumUpdaterHook
 from .base import LoggerHook
 
 
@@ -103,11 +102,6 @@ class TextLoggerHook(LoggerHook):
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
-
-            for hook in runner._hooks:
-                if isinstance(hook, MomentumUpdaterHook):
-                    log_dict['momentum'] = runner.current_momentum()[0]
-                    break
 
             # statistic memory
             if torch.cuda.is_available():

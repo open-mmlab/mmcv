@@ -1,4 +1,3 @@
-# Copyright (c) Open-MMLab. All rights reserved.
 """
 Tests the hooks with runners.
 
@@ -9,7 +8,7 @@ CommandLine:
 """
 import os.path as osp
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 import torch
@@ -44,7 +43,7 @@ def test_momentum_runner_hook():
     """
     xdoctest -m tests/test_hooks.py test_momentum_runner_hook
     """
-
+    sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner()
 
@@ -65,27 +64,35 @@ def test_momentum_runner_hook():
     runner.register_hook(hook)
     runner.register_hook(mmcv.runner.hooks.IterTimerHook())
 
+    # add pavi hook
+    hook = mmcv.runner.hooks.PaviLoggerHook(
+        interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
-    log_path = osp.join(runner.work_dir,
-                        '{}.log.json'.format(runner.timestamp))
-    import json
-    with open(log_path, 'r') as f:
-        log_jsons = f.readlines()
-    log_jsons = [json.loads(l) for l in log_jsons]
 
-    assert log_jsons[0]['momentum'] == 0.95
-    assert log_jsons[4]['momentum'] == 0.85
-    assert log_jsons[7]['momentum'] == 0.9
-    assert log_jsons[0]['lr'] == 0.02
-    assert log_jsons[4]['lr'] == 0.2
-    assert log_jsons[7]['lr'] == 0.11
+    assert hasattr(hook, 'writer')
+    calls = [
+        call('train', {
+            'learning_rate': 0.01999999999999999,
+            'momentum': 0.95
+        }, 0),
+        call('train', {
+            'learning_rate': 0.2,
+            'momentum': 0.85
+        }, 4),
+        call('train', {
+            'learning_rate': 0.155,
+            'momentum': 0.875
+        }, 6),
+    ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
 def test_cosine_runner_hook():
     """
     xdoctest -m tests/test_hooks.py test_cosine_runner_hook
     """
-
+    sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner()
 
@@ -104,19 +111,28 @@ def test_cosine_runner_hook():
     runner.register_hook(hook)
     runner.register_hook(mmcv.runner.hooks.IterTimerHook())
 
+    # add pavi hook
+    hook = mmcv.runner.hooks.PaviLoggerHook(
+        interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
-    log_path = osp.join(runner.work_dir,
-                        '{}.log.json'.format(runner.timestamp))
-    import json
-    with open(log_path, 'r') as f:
-        log_jsons = f.readlines()
-    log_jsons = [json.loads(l) for l in log_jsons]
-    assert log_jsons[0]['momentum'] == 0.95
-    assert log_jsons[5]['momentum'] == 0.97
-    assert log_jsons[9]['momentum'] == 0.98902
-    assert log_jsons[0]['lr'] == 0.02
-    assert log_jsons[5]['lr'] == 0.01
-    assert log_jsons[9]['lr'] == 0.00049
+
+    assert hasattr(hook, 'writer')
+    calls = [
+        call('train', {
+            'learning_rate': 0.02,
+            'momentum': 0.95
+        }, 0),
+        call('train', {
+            'learning_rate': 0.01,
+            'momentum': 0.97
+        }, 5),
+        call('train', {
+            'learning_rate': 0.0004894348370484647,
+            'momentum': 0.9890211303259032
+        }, 9)
+    ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
 @pytest.mark.parametrize('log_model', (True, False))
