@@ -104,13 +104,10 @@ class TextLoggerHook(LoggerHook):
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
 
-            print_momentum = False
             for hook in runner._hooks:
                 if isinstance(hook, MomentumUpdaterHook):
-                    print_momentum = True
-            # only record momentum of the first param group in training
-            if print_momentum:
-                log_dict['momentum'] = runner.current_momentum()[0]
+                    log_dict['momentum'] = runner.current_momentum()[0]
+                    break
 
             # statistic memory
             if torch.cuda.is_available():

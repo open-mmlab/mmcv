@@ -199,12 +199,13 @@ class InvLrUpdaterHook(LrUpdaterHook):
 
 
 @HOOKS.register_module
-class CosineLrUpdaterHook(LrUpdaterHook):
+class CosineAnealingLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, target=0, as_ratio=False, **kwargs):
-        self.target = target
-        self.as_ratio = as_ratio
-        super(CosineLrUpdaterHook, self).__init__(**kwargs)
+    def __init__(self, min_lr=None, min_lr_ratio=None, **kwargs):
+        assert (min_lr is None) ^ (min_lr_ratio is None)
+        self.min_lr = min_lr
+        self.min_lr_ratio = min_lr_ratio
+        super(CosineAnealingLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
@@ -213,14 +214,32 @@ class CosineLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        if self.as_ratio:
-            target_lr = base_lr * self.target
+        if self.min_lr_ratio is not None:
+            target_lr = base_lr * self.min_lr_ratio
         else:
-            target_lr = self.target
+            target_lr = self.min_lr
         return annealing_cos(base_lr, target_lr, progress / max_progress)
 
 
 class CyclicLrUpdaterHook(LrUpdaterHook):
+    """Cyclic LR Scheduler
+
+    Implemet the cyclical learning rate policy (CLR) described in
+    https://arxiv.org/pdf/1506.01186.pdf
+
+    Different from the original paper, we use cosine anealing rather than
+    triangular policy inside a cycle. This improves the performance in the
+    3D detection area.
+
+    Attributes:
+        target_ratio (list[float]): Relative ratio of the highest LR and the
+            lowest LR to the initial LR.
+        cyclic_times (int): Number of cycles during training
+        step_ratio_up (float): The ratio of the increasing process of LR in
+            the total cycle.
+        by_epoch (bool): Whether to update LR by epoch.
+
+    """
 
     def __init__(self,
                  by_epoch=False,

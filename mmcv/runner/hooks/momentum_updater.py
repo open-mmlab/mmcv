@@ -1,5 +1,3 @@
-from __future__ import division
-
 from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos
 
@@ -106,12 +104,13 @@ class MomentumUpdaterHook(Hook):
 
 
 @HOOKS.register_module
-class CosineMomentumUpdaterHook(MomentumUpdaterHook):
+class CosineAnealingMomentumUpdaterHook(MomentumUpdaterHook):
 
-    def __init__(self, target=0.95, as_ratio=False, **kwargs):
-        self.target = target
-        self.as_ratio = as_ratio
-        super(CosineMomentumUpdaterHook, self).__init__(**kwargs)
+    def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
+        assert (min_momentum is None) ^ (min_momentum_ratio is None)
+        self.min_momentum = min_momentum
+        self.min_momentum_ratio = min_momentum_ratio
+        super(CosineAnealingMomentumUpdaterHook, self).__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
         if self.by_epoch:
@@ -120,16 +119,33 @@ class CosineMomentumUpdaterHook(MomentumUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
-        if self.as_ratio:
-            target_momentum = base_momentum * self.target
+        if self.min_momentum_ratio is not None:
+            target_momentum = base_momentum * self.min_momentum_ratio
         else:
-            target_momentum = self.target
+            target_momentum = self.min_momentum
         return annealing_cos(base_momentum, target_momentum,
                              progress / max_progress)
 
 
 @HOOKS.register_module
 class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
+    """Cyclic momentum Scheduler
+
+    Implemet the cyclical momentum scheduler policy described in
+    https://arxiv.org/pdf/1708.07120.pdf
+
+    This momentum scheduler usually used together with the CyclicLRUpdater
+    to improve the performance in the 3D detection area.
+
+    Attributes:
+        target_ratio (list[float]): Relative ratio of the lowest momentum and
+            the highest momentum to the initial momentum.
+        cyclic_times (int): Number of cycles during training
+        step_ratio_up (float): The ratio of the increasing process of momentum
+            in  the total cycle.
+        by_epoch (bool): Whether to update momentum by epoch.
+
+    """
 
     def __init__(self,
                  by_epoch=False,

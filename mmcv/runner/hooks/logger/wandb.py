@@ -45,6 +45,8 @@ class WandbLoggerHook(LoggerHook):
             tag = '{}/{}'.format(var, runner.mode)
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
+        metrics['learning_rate'] = runner.current_lr()[0]
+        metrics['momentum'] = runner.current_momentum()[0]
         if metrics:
             self.wandb.log(metrics, step=runner.iter)
 
