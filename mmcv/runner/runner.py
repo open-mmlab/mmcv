@@ -348,7 +348,8 @@ class Runner(object):
 
         self._max_epochs = max_epochs
         for i, flow in enumerate(workflow):
-            if flow == 'train':
+            mode, epochs = flow
+            if mode == 'train':
                 self._max_iters = self._max_epochs * len(data_loaders[i])
                 break
 
