@@ -347,7 +347,11 @@ class Runner(object):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
-        self._max_iters = self._max_epochs * len(data_loaders[0])
+        for i, flow in enumerate(workflow):
+            if flow == 'train':
+                self._max_iters = self._max_epochs * len(data_loaders[i])
+                break
+
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
