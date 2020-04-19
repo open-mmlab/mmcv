@@ -70,6 +70,7 @@ def test_momentum_runner_hook():
     runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
 
+    # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
     calls = [
         call('train', {
@@ -117,6 +118,7 @@ def test_cosine_runner_hook():
     runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
 
+    # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
     calls = [
         call('train', {
