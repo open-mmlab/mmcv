@@ -50,7 +50,7 @@ def test_momentum_runner_hook():
     # add momentum scheduler
     hook = mmcv.runner.hooks.momentum_updater.CyclicMomentumUpdaterHook(
         by_epoch=False,
-        target_ratio=[0.85 / 0.95, 1],
+        target_ratio=(0.85 / 0.95, 1),
         cyclic_times=1,
         step_ratio_up=0.4)
     runner.register_hook(hook)
@@ -58,7 +58,7 @@ def test_momentum_runner_hook():
     # add momentum LR scheduler
     hook = mmcv.runner.hooks.lr_updater.CyclicLrUpdaterHook(
         by_epoch=False,
-        target_ratio=[10, 1],
+        target_ratio=(10, 1),
         cyclic_times=1,
         step_ratio_up=0.4)
     runner.register_hook(hook)

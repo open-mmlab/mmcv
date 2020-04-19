@@ -138,7 +138,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
     to improve the performance in the 3D detection area.
 
     Attributes:
-        target_ratio (list[float]): Relative ratio of the lowest momentum and
+        target_ratio (tuple[float]): Relative ratio of the lowest momentum and
             the highest momentum to the initial momentum.
         cyclic_times (int): Number of cycles during training
         step_ratio_up (float): The ratio of the increasing process of momentum
@@ -149,18 +149,21 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self,
                  by_epoch=False,
-                 target_ratio=[0.85 / 0.95, 1],
+                 target_ratio=(0.85 / 0.95, 1),
                  cyclic_times=1,
                  step_ratio_up=0.4,
                  **kwargs):
         if isinstance(target_ratio, float):
-            target_ratio = [target_ratio, target_ratio / 1e5]
-        elif isinstance(target_ratio, list):
-            target_ratio = [target_ratio[0] + target_ratio[0] / 1e5] \
+            target_ratio = (target_ratio, target_ratio / 1e5)
+        elif isinstance(target_ratio, tuple):
+            target_ratio = (target_ratio[0], target_ratio[0] / 1e5) \
                 if len(target_ratio) == 1 else target_ratio
+        else:
+            raise ValueError('target_ratio should be either float '
+                             'or tuple, got {}'.format(type(target_ratio)))
 
         assert len(target_ratio) == 2, \
-            '"target_ratio" must be list of two floats'
+            '"target_ratio" must be list or tuple of two floats'
         assert 0 <= step_ratio_up < 1.0, \
             '"step_ratio_up" must be in range [0,1)'
 
