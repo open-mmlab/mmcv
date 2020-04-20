@@ -198,6 +198,21 @@ class Runner(object):
                 'lr is not applicable because optimizer does not exist.')
         return [group['lr'] for group in self.optimizer.param_groups]
 
+    def current_momentum(self):
+        """Get current momentums.
+
+        Returns:
+            list: Current momentum of all param groups.
+        """
+        if self.optimizer is None:
+            raise RuntimeError(
+                'lr is not applicable because optimizer does not exist.')
+        return [
+            group['momentum']
+            if 'momentum' in group.keys() else group['betas'][0]
+            for group in self.optimizer.param_groups
+        ]
+
     def register_hook(self, hook, priority='NORMAL'):
         """Register a hook into the hook list.
 
@@ -254,7 +269,7 @@ class Runner(object):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(data_loader)
+
         self.call_hook('before_train_epoch')
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
@@ -332,6 +347,12 @@ class Runner(object):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
+        for i, flow in enumerate(workflow):
+            mode, epochs = flow
+            if mode == 'train':
+                self._max_iters = self._max_epochs * len(data_loaders[i])
+                break
+
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
@@ -391,6 +412,19 @@ class Runner(object):
             hook = checkpoint_config
         self.register_hook(hook)
 
+    def register_momentum_hooks(self, momentum_config):
+        if momentum_config is None:
+            return
+        if isinstance(momentum_config, dict):
+            assert 'policy' in momentum_config
+            hook_type = momentum_config.pop(
+                'policy').title() + 'MomentumUpdaterHook'
+            momentum_config['type'] = hook_type
+            hook = mmcv.build_from_cfg(momentum_config, HOOKS)
+        else:
+            hook = momentum_config
+        self.register_hook(hook)
+
     def register_logger_hooks(self, log_config):
         log_interval = log_config['interval']
         for info in log_config['hooks']:
@@ -402,18 +436,21 @@ class Runner(object):
                                 lr_config,
                                 optimizer_config=None,
                                 checkpoint_config=None,
-                                log_config=None):
+                                log_config=None,
+                                momentum_config=None):
         """Register default hooks for training.
 
         Default hooks include:
 
         - LrUpdaterHook
+        - MomentumUpdaterHook
         - OptimizerStepperHook
         - CheckpointSaverHook
         - IterTimerHook
         - LoggerHook(s)
         """
         self.register_lr_hook(lr_config)
+        self.register_momentum_hooks(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())

@@ -49,7 +49,9 @@ class TextLoggerHook(LoggerHook):
                 log_str += 'eta: {}, '.format(eta_str)
                 log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
                     log_dict['time'], log_dict['data_time']))
-                log_str += 'memory: {}, '.format(log_dict['memory'])
+                # statistic memory
+                if torch.cuda.is_available():
+                    log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
             log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
                                                     log_dict['epoch'] - 1,
@@ -100,6 +102,7 @@ class TextLoggerHook(LoggerHook):
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
+
             # statistic memory
             if torch.cuda.is_available():
                 log_dict['memory'] = self._get_max_memory(runner)
