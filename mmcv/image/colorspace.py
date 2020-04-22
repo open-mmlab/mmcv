@@ -1,46 +1,21 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import cv2
-import numpy as np
 
 
-def solarize(img, thr=128):
-    """Solarize an image (invert all pixel values above a threshold)
-
-    Args:
-        img (ndarray): Image to be solarized.
-        thr (int): Threshold for solarizing (0 - 255).
-
-    Returns:
-        ndarray: The solarized image.
-    """
-    img = np.where(img < thr, img, 255 - img)
-    return img
-
-
-def posterize(img, bits):
-    """Posterize an image (reduce the number of bits for each color channel)
+def imconvert(img, src, dst):
+    """Convert an image from the src colorspace to dst colorspace.
 
     Args:
-        img (ndarray): Image to be posterized.
-        bits (int): Number of bits (1 to 8) to use for posterizing.
+        img (ndarray): The input image.
+        src (str): The source colorspace, e.g., 'rgb', 'hsv'.
+        dst (str): The destination colorspace, e.g., 'rgb', 'hsv'.
 
     Returns:
-        ndarray: The posterized image.
+        ndarray: The converted image.
     """
-    shift = 8 - bits
-    img = np.left_shift(np.right_shift(img, shift), shift)
-    return img
-
-
-def iminvert(img):
-    """Invert (negate) an image
-    Args:
-        img (ndarray): Image to be inverted.
-
-    Returns:
-        ndarray: The inverted image.
-    """
-    return np.full_like(img, 255) - img
+    code = getattr(cv2, 'COLOR_{}2{}'.format(src.upper(), dst.upper()))
+    out_img = cv2.cvtColor(img, code)
+    return out_img
 
 
 def bgr2gray(img, keepdim=False):
