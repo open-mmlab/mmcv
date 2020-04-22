@@ -537,8 +537,8 @@ class TestPhotometric:
         # the test img resolution is 400x300
         cls.img_path = osp.join(osp.dirname(__file__), 'data/color.jpg')
         cls.img = cv2.imread(cls.img_path)
-        cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
-        cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
+        cls.mean = np.array([123.675, 116.28, 103.53], dtype=np.float32)
+        cls.std = np.array([58.395, 57.12, 57.375], dtype=np.float32)
 
     def test_imnormalize(self):
         rgbimg = self.img[:, :, ::-1]
@@ -551,8 +551,8 @@ class TestPhotometric:
         assert id(img) != id(rgbimg)
 
     def test_imnormalize_(self):
-        img_for_normalize = np.float32(self.img.copy())
-        rgbimg_for_normalize = np.float32(self.img[:, :, ::-1].copy())
+        img_for_normalize = np.float32(self.img)
+        rgbimg_for_normalize = np.float32(self.img[:, :, ::-1])
         baseline = (rgbimg_for_normalize - self.mean) / self.std
         img = mmcv.imnormalize_(img_for_normalize, self.mean, self.std)
         assert np.allclose(img_for_normalize, baseline)

@@ -7,7 +7,7 @@ def _scale_size(size, scale):
     """Rescale a size by a ratio.
 
     Args:
-        size (tuple): w, h.
+        size (tuple[int]): (w, h).
         scale (float): Scaling factor.
 
     Returns:
@@ -35,14 +35,14 @@ def imresize(img,
 
     Args:
         img (ndarray): The input image.
-        size (tuple): Target (w, h).
+        size (tuple[int]): Target size (w, h).
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
         out (ndarray): The output destination.
 
     Returns:
-        tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
+        tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = img.shape[:2]
@@ -77,8 +77,8 @@ def rescale_size(old_size, scale, return_scale=False):
     """Calculate the new size to be rescaled to.
 
     Args:
-        old_size (tuple[int]): The old size of image.
-        scale (float or tuple[int]): The scaling factor or maximum size.
+        old_size (tuple[int]): The old size (w, h) of image.
+        scale (float | tuple[int]): The scaling factor or maximum size.
             If it is a float number, then the image will be rescaled by this
             factor, else if it is a tuple of 2 integers, then the image will
             be rescaled as large as possible within the scale.
@@ -117,7 +117,7 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
 
     Args:
         img (ndarray): The input image.
-        scale (float or tuple[int]): The scaling factor or maximum size.
+        scale (float | tuple[int]): The scaling factor or maximum size.
             If it is a float number, then the image will be rescaled by this
             factor, else if it is a tuple of 2 integers, then the image will
             be rescaled as large as possible within the scale.
@@ -156,12 +156,13 @@ def imflip(img, direction='horizontal'):
 
 def imflip_(img, direction='horizontal'):
     """Inplace flip an image horizontally or vertically.
+
     Args:
         img (ndarray): Image to be flipped.
         direction (str): The flip direction, either "horizontal" or "vertical".
 
     Returns:
-        ndarray: The flipped image(inplace).
+        ndarray: The flipped image (inplace).
     """
     assert direction in ['horizontal', 'vertical']
     if direction == 'horizontal':
@@ -182,8 +183,9 @@ def imrotate(img,
         img (ndarray): Image to be rotated.
         angle (float): Rotation angle in degrees, positive values mean
             clockwise rotation.
-        center (tuple): Center of the rotation in the source image, by default
-            it is the center of the image.
+        center (tuple[float], optional): Center point (w, h) of the rotation in
+            the source image. If not specified, the center of the image will be
+            used.
         scale (float): Isotropic scale factor.
         border_value (int): Border value.
         auto_bound (bool): Whether to adjust the image size to cover the whole
@@ -218,7 +220,7 @@ def bbox_clip(bboxes, img_shape):
 
     Args:
         bboxes (ndarray): Shape (..., 4*k)
-        img_shape (tuple): (height, width) of the image.
+        img_shape (tuple[int]): (height, width) of the image.
 
     Returns:
         ndarray: Clipped bboxes.
@@ -237,7 +239,7 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
     Args:
         bboxes (ndarray): Shape(..., 4).
         scale (float): Scaling factor.
-        clip_shape (tuple, optional): If specified, bboxes that exceed the
+        clip_shape (tuple[int], optional): If specified, bboxes that exceed the
             boundary will be clipped according to the given shape (h, w).
 
     Returns:
@@ -267,11 +269,11 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
         scale (float, optional): Scale ratio of bboxes, the default value
             1.0 means no padding.
-        pad_fill (number or list): Value to be filled for padding, None for
-            no padding.
+        pad_fill (Number | list[Number]): Value to be filled for padding.
+            Default: None, which means no padding.
 
     Returns:
-        list or ndarray: The cropped image patches.
+        list[ndarray] | ndarray: The cropped image patches.
     """
     chn = 1 if img.ndim == 2 else img.shape[2]
     if pad_fill is not None:
@@ -316,8 +318,9 @@ def impad(img, shape, pad_val=0):
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple): Expected padding shape.
-        pad_val (number or sequence): Values to be filled in padding areas.
+        shape (tuple[int]): Expected padding shape (h, w).
+        pad_val (Number | Sequence[Number]): Values to be filled in padding
+            areas. Default: 0.
 
     Returns:
         ndarray: The padded image.
@@ -341,7 +344,7 @@ def impad_to_multiple(img, divisor, pad_val=0):
     Args:
         img (ndarray): Image to be padded.
         divisor (int): Padded image edges will be multiple to divisor.
-        pad_val (number or sequence): Same as :func:`impad`.
+        pad_val (Number | Sequence[Number]): Same as :func:`impad`.
 
     Returns:
         ndarray: The padded image.
