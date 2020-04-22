@@ -7,7 +7,6 @@ from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistSamplerSeedHook,
                     OptimizerHook, PaviLoggerHook, TensorboardLoggerHook,
                     TextLoggerHook, WandbLoggerHook)
 from .log_buffer import LogBuffer
-from .parallel_test import parallel_test
 from .priority import Priority, get_priority
 from .runner import Runner
 from .utils import get_host_info, get_time_str, obj_from_dict
@@ -17,7 +16,7 @@ __all__ = [
     'LrUpdaterHook', 'OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook',
     'LoggerHook', 'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
     'WandbLoggerHook', '_load_checkpoint', 'load_state_dict',
-    'load_checkpoint', 'weights_to_cpu', 'save_checkpoint', 'parallel_test',
-    'Priority', 'get_priority', 'get_host_info', 'get_time_str',
-    'obj_from_dict', 'init_dist', 'get_dist_info', 'master_only'
+    'load_checkpoint', 'weights_to_cpu', 'save_checkpoint', 'Priority',
+    'get_priority', 'get_host_info', 'get_time_str', 'obj_from_dict',
+    'init_dist', 'get_dist_info', 'master_only'
 ]
