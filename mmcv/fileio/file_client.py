@@ -168,20 +168,21 @@ class FileClient(object):
 
     def __init__(self, backend='disk', **kwargs):
         if backend not in self._backends:
-            raise ValueError(f'Backend {backend} is not supported. '
-                             f'Currently supported ones are '
-                             f'{list(self._backends.keys())}')
+            raise ValueError(
+                'Backend {} is not supported. Currently supported ones are {}'.
+                format(backend, list(self._backends.keys())))
         self.backend = backend
         self.client = self._backends[backend](**kwargs)
 
     @classmethod
     def register_backend(cls, name, backend):
         if not inspect.isclass(backend):
-            raise TypeError(
-                f'backend should be a class but got {type(backend)}')
+            raise TypeError('backend should be a class but got {}'.format(
+                type(backend)))
         if not issubclass(backend, BaseStorageBackend):
             raise TypeError(
-                f'backend {backend} is not a subclass of BaseStorageBackend')
+                'backend {} is not a subclass of BaseStorageBackend'.format(
+                    backend))
 
         cls._backends[name] = backend
 
