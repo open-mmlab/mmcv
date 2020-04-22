@@ -12,7 +12,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 import mmcv
 
 
-class TestImage(object):
+class TestIO:
 
     @classmethod
     def setup_class(cls):
@@ -23,8 +23,6 @@ class TestImage(object):
             osp.dirname(__file__), 'data/grayscale.jpg')
         cls.gray_img_path_obj = Path(cls.gray_img_path)
         cls.img = cv2.imread(cls.img_path)
-        cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
-        cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape
@@ -129,36 +127,8 @@ class TestImage(object):
         os.remove(out_file)
         self.assert_img_equal(img, rewrite_img)
 
-    def test_imnormalize(self):
-        rgbimg = self.img[:, :, ::-1]
-        baseline = (rgbimg - self.mean) / self.std
-        img = mmcv.imnormalize(self.img, self.mean, self.std)
-        assert np.allclose(img, baseline)
-        assert id(img) != id(self.img)
-        img = mmcv.imnormalize(rgbimg, self.mean, self.std, to_rgb=False)
-        assert np.allclose(img, baseline)
-        assert id(img) != id(rgbimg)
 
-    def test_imnormalize_(self):
-        img_for_normalize = np.float32(self.img.copy())
-        rgbimg_for_normalize = np.float32(self.img[:, :, ::-1].copy())
-        baseline = (rgbimg_for_normalize - self.mean) / self.std
-        img = mmcv.imnormalize_(img_for_normalize, self.mean, self.std)
-        assert np.allclose(img_for_normalize, baseline)
-        assert id(img) == id(img_for_normalize)
-        img = mmcv.imnormalize_(
-            rgbimg_for_normalize, self.mean, self.std, to_rgb=False)
-        assert np.allclose(img, baseline)
-        assert id(img) == id(rgbimg_for_normalize)
-
-    def test_imdenormalize(self):
-        normimg = (self.img[:, :, ::-1] - self.mean) / self.std
-        rgbbaseline = (normimg * self.std + self.mean)
-        bgrbaseline = rgbbaseline[:, :, ::-1]
-        img = mmcv.imdenormalize(normimg, self.mean, self.std)
-        assert np.allclose(img, bgrbaseline)
-        img = mmcv.imdenormalize(normimg, self.mean, self.std, to_bgr=False)
-        assert np.allclose(img, rgbbaseline)
+class TestColorSpace:
 
     def test_bgr2gray(self):
         in_img = np.random.rand(10, 10, 3).astype(np.float32)
@@ -265,6 +235,29 @@ class TestImage(object):
                     h += 360
                 computed_hls[i, j, :] = [h, _l, s]
         assert_array_almost_equal(out_img, computed_hls, decimal=2)
+
+    @pytest.mark.parametrize('src,dst,ref',
+                             [('bgr', 'gray', cv2.COLOR_BGR2GRAY),
+                              ('rgb', 'gray', cv2.COLOR_RGB2GRAY),
+                              ('bgr', 'rgb', cv2.COLOR_BGR2RGB),
+                              ('rgb', 'bgr', cv2.COLOR_RGB2BGR),
+                              ('bgr', 'hsv', cv2.COLOR_BGR2HSV),
+                              ('hsv', 'bgr', cv2.COLOR_HSV2BGR),
+                              ('bgr', 'hls', cv2.COLOR_BGR2HLS),
+                              ('hls', 'bgr', cv2.COLOR_HLS2BGR)])
+    def test_imconvert(self, src, dst, ref):
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        assert_array_equal(
+            mmcv.imconvert(img, src, dst), cv2.cvtColor(img, ref))
+
+
+class TestGeometric:
+
+    @classmethod
+    def setup_class(cls):
+        # the test img resolution is 400x300
+        cls.img_path = osp.join(osp.dirname(__file__), 'data/color.jpg')
+        cls.img = cv2.imread(cls.img_path)
 
     def test_imresize(self):
         resized_img = mmcv.imresize(self.img, (1000, 600))
@@ -441,32 +434,32 @@ class TestImage(object):
         assert patch.shape == (100, 100, 3)
         patch_path = osp.join(osp.dirname(__file__), 'data/patches')
         ref_patch = np.load(patch_path + '/0.npy')
-        self.assert_img_equal(patch, ref_patch)
+        assert_array_equal(patch, ref_patch)
         assert isinstance(patches, list) and len(patches) == 1
-        self.assert_img_equal(patches[0], ref_patch)
+        assert_array_equal(patches[0], ref_patch)
 
         # crop with no scaling and padding
         patches = mmcv.imcrop(self.img, bboxes)
         assert len(patches) == bboxes.shape[0]
         for i in range(len(patches)):
             ref_patch = np.load(patch_path + '/{}.npy'.format(i))
-            self.assert_img_equal(patches[i], ref_patch)
+            assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and no padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2)
         for i in range(len(patches)):
             ref_patch = np.load(patch_path + '/scale_{}.npy'.format(i))
-            self.assert_img_equal(patches[i], ref_patch)
+            assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=[255, 255, 0])
         for i in range(len(patches)):
             ref_patch = np.load(patch_path + '/pad_{}.npy'.format(i))
-            self.assert_img_equal(patches[i], ref_patch)
+            assert_array_equal(patches[i], ref_patch)
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=0)
         for i in range(len(patches)):
             ref_patch = np.load(patch_path + '/pad0_{}.npy'.format(i))
-            self.assert_img_equal(patches[i], ref_patch)
+            assert_array_equal(patches[i], ref_patch)
 
     def test_impad(self):
         # grayscale image
@@ -535,6 +528,48 @@ class TestImage(object):
 
         with pytest.raises(ValueError):
             mmcv.imrotate(img, 90, center=(0, 0), auto_bound=True)
+
+
+class TestPhotometric:
+
+    @classmethod
+    def setup_class(cls):
+        # the test img resolution is 400x300
+        cls.img_path = osp.join(osp.dirname(__file__), 'data/color.jpg')
+        cls.img = cv2.imread(cls.img_path)
+        cls.mean = np.float32(np.array([123.675, 116.28, 103.53]))
+        cls.std = np.float32(np.array([58.395, 57.12, 57.375]))
+
+    def test_imnormalize(self):
+        rgbimg = self.img[:, :, ::-1]
+        baseline = (rgbimg - self.mean) / self.std
+        img = mmcv.imnormalize(self.img, self.mean, self.std)
+        assert np.allclose(img, baseline)
+        assert id(img) != id(self.img)
+        img = mmcv.imnormalize(rgbimg, self.mean, self.std, to_rgb=False)
+        assert np.allclose(img, baseline)
+        assert id(img) != id(rgbimg)
+
+    def test_imnormalize_(self):
+        img_for_normalize = np.float32(self.img.copy())
+        rgbimg_for_normalize = np.float32(self.img[:, :, ::-1].copy())
+        baseline = (rgbimg_for_normalize - self.mean) / self.std
+        img = mmcv.imnormalize_(img_for_normalize, self.mean, self.std)
+        assert np.allclose(img_for_normalize, baseline)
+        assert id(img) == id(img_for_normalize)
+        img = mmcv.imnormalize_(
+            rgbimg_for_normalize, self.mean, self.std, to_rgb=False)
+        assert np.allclose(img, baseline)
+        assert id(img) == id(rgbimg_for_normalize)
+
+    def test_imdenormalize(self):
+        normimg = (self.img[:, :, ::-1] - self.mean) / self.std
+        rgbbaseline = (normimg * self.std + self.mean)
+        bgrbaseline = rgbbaseline[:, :, ::-1]
+        img = mmcv.imdenormalize(normimg, self.mean, self.std)
+        assert np.allclose(img, bgrbaseline)
+        img = mmcv.imdenormalize(normimg, self.mean, self.std, to_bgr=False)
+        assert np.allclose(img, rgbbaseline)
 
     def test_iminvert(self):
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
