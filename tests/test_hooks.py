@@ -191,7 +191,6 @@ def test_wandb_hook():
 
 def _build_demo_runner():
     model = nn.Linear(2, 1)
-    # work_dir = osp.join(osp.dirname(osp.abspath(__file__)), 'data')
     optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.95)
 
     log_config = dict(
