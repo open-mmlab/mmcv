@@ -30,9 +30,11 @@ before_script:
   - isort -rc --check-only --diff mmcv/ tests/ examples/
   - yapf -r -d mmcv/ tests/ examples/
 
-script: coverage run --source=mmcv setup.py test
+script: coverage run --branch --source=mmcv -m pytest tests/
 
-after_success: codecov
+after_success:
+  - coverage report -m
+  - codecov
 
 deploy:
   provider: pypi
@@ -43,6 +45,6 @@ deploy:
     branch: master
     tags: true
     python: "3.7"
-    distributions: sdist bdist_wheel
+    distributions: sdist  # bdist_wheel is not supported due to the cpp extension
     skip_cleanup: true
     skip_upload_docs: true
