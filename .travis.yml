@@ -34,7 +34,7 @@ script: coverage run --branch --source=mmcv -m pytest tests/
 
 after_success:
   - coverage report -m
-  - codecov
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.7" ]]; then codecov; fi
 
 deploy:
   provider: pypi
