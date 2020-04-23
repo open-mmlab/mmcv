@@ -206,10 +206,10 @@ class Runner(object):
         """
         if self.optimizer is None:
             raise RuntimeError(
-                'lr is not applicable because optimizer does not exist.')
+                'momentum is not applicable because optimizer does not exist.')
         return [
-            group['momentum']
-            if 'momentum' in group.keys() else group['betas'][0]
+            group['momentum'] if 'momentum' in group.keys() else
+            group['betas'][0] if 'betas' in group.keys() else 0
             for group in self.optimizer.param_groups
         ]
 
