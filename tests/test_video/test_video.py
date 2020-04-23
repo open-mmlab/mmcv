@@ -43,7 +43,7 @@ class TestVideo(object):
 
     @classmethod
     def setup_class(cls):
-        cls.video_path = osp.join(osp.dirname(__file__), 'data/test.mp4')
+        cls.video_path = osp.join(osp.dirname(__file__), '../data/test.mp4')
         cls.num_frames = 168
 
     def test_load(self):
