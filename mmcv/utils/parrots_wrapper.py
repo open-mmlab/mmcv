@@ -49,7 +49,7 @@ def _get_batchnorm():
 CUDA_HOME = _get_cuda_home()
 _ConvNd = _get_conv()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_batchnorm()
-_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd = _get_pool()
+_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 
 
 class SyncBatchNorm(SyncBatchNorm_):
