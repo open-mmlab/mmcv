@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import logging
 import os.path as osp
 import tempfile
 import warnings
@@ -15,7 +16,8 @@ def test_save_checkpoint():
     import mmcv.runner
 
     model = nn.Linear(1, 1)
-    runner = mmcv.runner.Runner(model=model, batch_processor=lambda x: x)
+    runner = mmcv.runner.Runner(
+        model=model, batch_processor=lambda x: x, logger=logging.getLogger())
 
     with tempfile.TemporaryDirectory() as root:
         runner.save_checkpoint(root)
