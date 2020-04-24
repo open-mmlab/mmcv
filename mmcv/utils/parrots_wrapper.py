@@ -32,7 +32,7 @@ def _get_pool():
     else:
         from torch.nn.modules.pooling import (_AdaptiveAvgPoolNd,
             _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd)
-    return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd
+    return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd
 
 
 def _get_batchnorm():
