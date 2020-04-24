@@ -5,6 +5,63 @@
 `Config` class is used for manipulating config and config files. It supports
 loading configs from multiple file formats including **python**, **json** and **yaml**.
 It provides dict-like apis to get and set values.
+For **python** format config, inheritance is supported. To reuse fields in other config files,
+specify `_base_='./config_a.py'` or a list of configs `_base_=['./config_a.py', './config_b.py']`.
+Sometimes, you may set `_delete_=True` to ignore some of fields in base configs.
+For example, to change the backbone of Mask R-CNN with the following config.
+```python
+model = dict(
+    type='MaskRCNN',
+    pretrained='torchvision://resnet50',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
+    neck=dict(...),
+    rpn_head=dict(...),
+    roi_head=dict(...))
+```
+`ResNet` and `HRNet` use different keywords to construct.
+```python
+_base_ = '../mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py'
+model = dict(
+    pretrained='open-mmlab://msra/hrnetv2_w32',
+    backbone=dict(
+        _delete_=True,
+        type='HRNet',
+        extra=dict(
+            stage1=dict(
+                num_modules=1,
+                num_branches=1,
+                block='BOTTLENECK',
+                num_blocks=(4, ),
+                num_channels=(64, )),
+            stage2=dict(
+                num_modules=1,
+                num_branches=2,
+                block='BASIC',
+                num_blocks=(4, 4),
+                num_channels=(32, 64)),
+            stage3=dict(
+                num_modules=4,
+                num_branches=3,
+                block='BASIC',
+                num_blocks=(4, 4, 4),
+                num_channels=(32, 64, 128)),
+            stage4=dict(
+                num_modules=3,
+                num_branches=4,
+                block='BASIC',
+                num_blocks=(4, 4, 4, 4),
+                num_channels=(32, 64, 128, 256)))),
+    neck=dict(...))
+```
+The `_delete_=True` would delete all keys in original backbone before merge new keys.
 
 Here is an example of the config file `test.py`.
 
