@@ -14,8 +14,8 @@ class MomentumUpdaterHook(Hook):
         if warmup is not None:
             if warmup not in ['constant', 'linear', 'exp']:
                 raise ValueError(
-                    '"{}" is not a supported type for warming up, valid types'
-                    ' are "constant" and "linear"'.format(warmup))
+                    f'"{warmup}" is not a supported type for warming up, valid'
+                    ' types are "constant" and "linear"')
         if warmup is not None:
             assert warmup_iters > 0, \
                 '"warmup_iters" must be a positive integer'
@@ -160,7 +160,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
                 if len(target_ratio) == 1 else target_ratio
         else:
             raise ValueError('target_ratio should be either float '
-                             'or tuple, got {}'.format(type(target_ratio)))
+                             f'or tuple, got {type(target_ratio)}')
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list or tuple of two floats'

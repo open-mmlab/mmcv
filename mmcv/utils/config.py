@@ -25,8 +25,8 @@ class ConfigDict(Dict):
         try:
             value = super(ConfigDict, self).__getattr__(name)
         except KeyError:
-            ex = AttributeError("'{}' object has no attribute '{}'".format(
-                self.__class__.__name__, name))
+            ex = AttributeError(f"'{self.__class__.__name__}' object has no "
+                                f"attribute '{name}'")
         except Exception as e:
             ex = e
         else:
@@ -49,7 +49,7 @@ def add_args(parser, cfg, prefix=''):
         elif isinstance(v, abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
-            print('cannot parse key {} of type {}'.format(prefix + k, type(v)))
+            print(f'cannot parse key {prefix + k} of type {type(v)}')
     return parser
 
 
@@ -142,9 +142,9 @@ class Config(object):
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
                     raise TypeError(
-                        '{}={} cannot be inherited from base because {} is a '
-                        'dict in the child config. You may set `{}=True` to '
-                        'ignore the base config'.format(k, v, k, DELETE_KEY))
+                        f'{k}={v} cannot be inherited from base because {k} '
+                        'is a dict in the child config. You may '
+                        f'set `{DELETE_KEY}=True` to ignore the base config')
                 Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
@@ -171,8 +171,8 @@ class Config(object):
         if cfg_dict is None:
             cfg_dict = dict()
         elif not isinstance(cfg_dict, dict):
-            raise TypeError('cfg_dict must be a dict, but got {}'.format(
-                type(cfg_dict)))
+            raise TypeError('cfg_dict must be a dict, but '
+                            f'got {type(cfg_dict)}')
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
@@ -210,10 +210,10 @@ class Config(object):
 
         def _format_basic_types(k, v):
             if isinstance(v, str):
-                v_str = "'{}'".format(v)
+                v_str = f"'{v}'"
             else:
                 v_str = str(v)
-            attr_str = '{}={}'.format(str(k), v_str)
+            attr_str = f'{str(k)}={v_str}'
             attr_str = _indent(attr_str, indent)
 
             return attr_str
@@ -223,9 +223,9 @@ class Config(object):
             if all(isinstance(_, dict) for _ in v):
                 v_str = '[\n'
                 v_str += '\n'.join(
-                    'dict({}),'.format(_indent(_format_dict(v_), indent))
+                    f'dict({_indent(_format_dict(v_), indent)}),'
                     for v_ in v).rstrip(',')
-                attr_str = '{}={}'.format(str(k), v_str)
+                attr_str = f'{str(k)}={v_str}'
                 attr_str = _indent(attr_str, indent) + ']'
             else:
                 attr_str = _format_basic_types(k, v)
@@ -239,7 +239,7 @@ class Config(object):
                 end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
-                    attr_str = '{}=dict({}'.format(str(k), v_str)
+                    attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
                     attr_str = _format_list(k, v) + end
@@ -256,8 +256,7 @@ class Config(object):
         return text
 
     def __repr__(self):
-        return 'Config (path: {}): {}'.format(self.filename,
-                                              self._cfg_dict.__repr__())
+        return f'Config (path: {self.filename}): {self._cfg_dict.__repr__()}'
 
     def __len__(self):
         return len(self._cfg_dict)

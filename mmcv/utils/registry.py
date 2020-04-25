@@ -22,8 +22,9 @@ class Registry(object):
         return self.get(key) is not None
 
     def __repr__(self):
-        format_str = self.__class__.__name__ + '(name={}, items={})'.format(
-            self._name, list(self._module_dict.keys()))
+        format_str = self.__class__.__name__ + \
+                     f'(name={self._name}, ' \
+                     f'items={list(self._module_dict.keys())})'
         return format_str
 
     @property
@@ -47,12 +48,12 @@ class Registry(object):
 
     def _register_module(self, module_class, force=False):
         if not inspect.isclass(module_class):
-            raise TypeError('module must be a class, but got {}'.format(
-                type(module_class)))
+            raise TypeError('module must be a class, '
+                            f'but got {type(module_class)}')
         module_name = module_class.__name__
         if not force and module_name in self._module_dict:
-            raise KeyError('{} is already registered in {}'.format(
-                module_name, self.name))
+            raise KeyError(f'{module_name} is already registered '
+                           f'in {self.name}')
         self._module_dict[module_name] = module_class
 
     def register_module(self, cls=None, force=False):
@@ -99,26 +100,24 @@ def build_from_cfg(cfg, registry, default_args=None):
     if not (isinstance(cfg, dict) and 'type' in cfg):
         raise TypeError('cfg must be a dict containing the key "type"')
     if not isinstance(registry, Registry):
-        raise TypeError(
-            'registry must be an mmcv.Registry object, but got {}'.format(
-                type(registry)))
+        raise TypeError('registry must be an mmcv.Registry object, '
+                        f'but got {type(registry)}')
     if not (isinstance(default_args, dict) or default_args is None):
-        raise TypeError(
-            'default_args must be a dict or None, but got {}'.format(
-                type(default_args)))
+        raise TypeError('default_args must be a dict or None, '
+                        f'but got {type(default_args)}')
 
     args = cfg.copy()
     obj_type = args.pop('type')
     if is_str(obj_type):
         obj_cls = registry.get(obj_type)
         if obj_cls is None:
-            raise KeyError('{} is not in the {} registry'.format(
-                obj_type, registry.name))
+            raise KeyError(
+                f'{obj_type} is not in the {registry.name} registry')
     elif inspect.isclass(obj_type):
         obj_cls = obj_type
     else:
-        raise TypeError('type must be a str or valid type, but got {}'.format(
-            type(obj_type)))
+        raise TypeError(
+            f'type must be a str or valid type, but got {type(obj_type)}')
 
     if default_args is not None:
         for name, value in default_args.items():
