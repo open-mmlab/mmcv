@@ -5,7 +5,7 @@
 `Config` class is used for manipulating config and config files. It supports
 loading configs from multiple file formats including **python**, **json** and **yaml**.
 It provides dict-like apis to get and set values.
-For **python** format config, inheritance is supported. To reuse fields in other config files,
+For all format configs, inheritance is supported. To reuse fields in other config files,
 specify `_base_='./config_a.py'` or a list of configs `_base_=['./config_a.py', './config_b.py']`.
 Sometimes, you may set `_delete_=True` to ignore some of fields in base configs.
 For example, to change the backbone of Mask R-CNN with the following config.
