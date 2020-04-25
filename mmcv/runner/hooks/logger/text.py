@@ -37,7 +37,7 @@ class TextLoggerHook(LoggerHook):
 
     def _log_info(self, log_dict, runner):
         if 'exp_name' in runner.meta:
-            log_str = f"Exp name: {runner.meta['exp_name']}\t"
+            log_str = f"Exp name: {runner.meta['exp_name']}\t "
         else:
             log_str = ''
         if runner.mode == 'train':
@@ -58,8 +58,8 @@ class TextLoggerHook(LoggerHook):
                     log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
             log_str += 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
-                                                    log_dict['epoch'] - 1,
-                                                    log_dict['iter'])
+                                                     log_dict['epoch'] - 1,
+                                                     log_dict['iter'])
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
