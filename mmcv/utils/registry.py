@@ -48,7 +48,7 @@ class Registry(object):
 
     def _register_module(self, module_class, force=False):
         if not inspect.isclass(module_class):
-            raise TypeError(f'module must be a class, '
+            raise TypeError('module must be a class, '
                             f'but got {type(module_class)}')
         module_name = module_class.__name__
         if not force and module_name in self._module_dict:

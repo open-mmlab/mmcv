@@ -160,7 +160,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
                 if len(target_ratio) == 1 else target_ratio
         else:
             raise ValueError('target_ratio should be either float '
-                             f'or tuple, got {target_ratio}')
+                             f'or tuple, got {type(target_ratio)}')
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list or tuple of two floats'

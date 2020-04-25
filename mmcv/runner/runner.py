@@ -366,7 +366,7 @@ class Runner(object):
                     if not hasattr(self, mode):
                         raise ValueError(
                             f'runner has no method named "{mode}" to run an '
-                            f'epoch')
+                            'epoch')
                     epoch_runner = getattr(self, mode)
                 elif callable(mode):  # custom train()
                     epoch_runner = mode

@@ -26,7 +26,7 @@ class ProgressBar(object):
     def start(self):
         if self.task_num > 0:
             self.file.write(f'[{" " * self.bar_width}] 0/{self.task_num}, '
-                            f'elapsed: 0s, ETA:')
+                            'elapsed: 0s, ETA:')
         else:
             self.file.write('completed: 0, elapsed: 0s')
         self.file.flush()
