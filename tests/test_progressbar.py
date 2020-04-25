@@ -61,7 +61,7 @@ class TestProgressBar(object):
         time.sleep(1)
         reset_string_io(out)
         prog_bar.update()
-        assert out.getvalue() == f'\r[{" > " * 2 + " " * 18}] 1/10, 1.0 ' \
+        assert out.getvalue() == f'\r[{">" * 2 + " " * 18}] 1/10, 1.0 ' \
                                  'task/s, elapsed: 1s, ETA:     9s'
 
     def test_adaptive_length(self):
