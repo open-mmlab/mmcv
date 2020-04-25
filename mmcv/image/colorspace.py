@@ -88,7 +88,7 @@ def convert_color_factory(src, dst):
         out_img = cv2.cvtColor(img, code)
         return out_img
 
-    convert_color.__doc__ = f"""Convert a {src.upper()} image to {dst.upper()} 
+    convert_color.__doc__ = f"""Convert a {src.upper()} image to {dst.upper()}
         image.
 
     Args:
