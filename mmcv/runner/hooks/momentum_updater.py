@@ -14,8 +14,8 @@ class MomentumUpdaterHook(Hook):
         if warmup is not None:
             if warmup not in ['constant', 'linear', 'exp']:
                 raise ValueError(
-                    f'"{warmup}" is not a supported type for warming up, valid types'
-                    ' are "constant" and "linear"')
+                    f'"{warmup}" is not a supported type for warming up, valid'
+                    ' types are "constant" and "linear"')
         if warmup is not None:
             assert warmup_iters > 0, \
                 '"warmup_iters" must be a positive integer'

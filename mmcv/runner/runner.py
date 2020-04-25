@@ -206,12 +206,16 @@ class Runner(object):
         """
         if self.optimizer is None:
             raise RuntimeError(
-                'lr is not applicable because optimizer does not exist.')
-        return [
-            group['momentum']
-            if 'momentum' in group.keys() else group['betas'][0]
-            for group in self.optimizer.param_groups
-        ]
+                'momentum is not applicable because optimizer does not exist.')
+        momentums = []
+        for group in self.optimizer.param_groups:
+            if 'momentum' in group.keys():
+                momentums.append(group['momentum'])
+            elif 'betas' in group.keys():
+                momentums.append(group['betas'][0])
+            else:
+                momentums.append(0)
+        return momentums
 
     def register_hook(self, hook, priority='NORMAL'):
         """Register a hook into the hook list.

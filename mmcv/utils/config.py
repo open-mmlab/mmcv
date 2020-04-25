@@ -4,7 +4,7 @@ import os.path as osp
 import shutil
 import sys
 import tempfile
-from argparse import ArgumentParser
+from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
 
@@ -107,9 +107,9 @@ class Config(object):
         with open(filename, 'r') as f:
             cfg_text += f.read()
 
-        if '_base_' in cfg_dict:
+        if BASE_KEY in cfg_dict:
             cfg_dir = osp.dirname(filename)
-            base_filename = cfg_dict.pop('_base_')
+            base_filename = cfg_dict.pop(BASE_KEY)
             base_filename = base_filename if isinstance(
                 base_filename, list) else [base_filename]
 
@@ -137,11 +137,14 @@ class Config(object):
 
     @staticmethod
     def _merge_a_into_b(a, b):
-        # merge dict a into dict b. values in a will overwrite b.
+        # merge dict `a` into dict `b`. values in `a` will overwrite `b`.
         for k, v in a.items():
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
-                    raise TypeError(f'Cannot inherit key {k} from base!')
+                    raise TypeError(
+                        f'{k}={v} cannot be inherited from base because {k} '
+                        'is a dict in the child config. You may '
+                        f'set `{DELETE_KEY}=True` to ignore the base config')
                 Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
@@ -287,9 +290,13 @@ class Config(object):
 
         Merge the dict parsed by MultipleKVAction into this cfg.
         Example,
-            >>> options = {'model.backbone.depth': 50}
+            >>> options = {'model.backbone.depth': 50,
+            ...            'model.backbone.with_cp':True}
             >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
             >>> cfg.merge_from_dict(options)
+            >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+            >>> assert cfg_dict == dict(
+            ...     model=dict(backbone=dict(depth=50, with_cp=True)))
 
         Args:
             options (dict): dict of configs to merge from.
@@ -299,10 +306,42 @@ class Config(object):
             d = option_cfg_dict
             key_list = full_key.split('.')
             for subkey in key_list[:-1]:
-                d[subkey] = ConfigDict()
+                d.setdefault(subkey, ConfigDict())
                 d = d[subkey]
             subkey = key_list[-1]
             d[subkey] = v
 
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
         Config._merge_a_into_b(option_cfg_dict, cfg_dict)
+
+
+class DictAction(Action):
+    """
+    argparse action to split an argument into KEY=VALUE form
+    on the first = and append to a dictionary. List options should
+    be passed as comma separated values, i.e KEY=V1,V2,V3
+    """
+
+    @staticmethod
+    def _parse_int_float_bool(val):
+        try:
+            return int(val)
+        except ValueError:
+            pass
+        try:
+            return float(val)
+        except ValueError:
+            pass
+        if val.lower() in ['true', 'false']:
+            return True if val.lower() == 'true' else False
+        return val
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        options = {}
+        for kv in values:
+            key, val = kv.split('=', maxsplit=1)
+            val = [self._parse_int_float_bool(v) for v in val.split(',')]
+            if len(val) == 1:
+                val = val[0]
+            options[key] = val
+        setattr(namespace, self.dest, options)
