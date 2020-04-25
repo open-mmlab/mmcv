@@ -82,7 +82,7 @@ def resize_video(in_file,
             options['vf'] = f'scale={size[0]}:{size[1]}'
         else:
             options['vf'] = f'scale=w={size[0]}:h={size[1]}:' \
-                            'force_original_aspect_ratio =decrease'
+                            'force_original_aspect_ratio=decrease'
     else:
         if not isinstance(ratio, tuple):
             ratio = (ratio, ratio)
