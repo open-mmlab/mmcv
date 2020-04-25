@@ -92,7 +92,7 @@ def rescale_size(old_size, scale, return_scale=False):
     if isinstance(scale, (float, int)):
         if scale <= 0:
             raise ValueError(
-                'Invalid scale {}, must be positive.'.format(scale))
+                f'Invalid scale {scale}, must be positive.')
         scale_factor = scale
     elif isinstance(scale, tuple):
         max_long_edge = max(scale)
@@ -101,8 +101,7 @@ def rescale_size(old_size, scale, return_scale=False):
                            max_short_edge / min(h, w))
     else:
         raise TypeError(
-            'Scale must be a number or tuple of int, but got {}'.format(
-                type(scale)))
+            f'Scale must be a number or tuple of int, but got {type(scale)}')
 
     new_size = _scale_size((w, h), scale_factor)
 

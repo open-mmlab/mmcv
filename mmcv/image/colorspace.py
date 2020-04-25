@@ -13,7 +13,7 @@ def imconvert(img, src, dst):
     Returns:
         ndarray: The converted image.
     """
-    code = getattr(cv2, 'COLOR_{}2{}'.format(src.upper(), dst.upper()))
+    code = getattr(cv2, f'COLOR_{src.upper()}2{dst.upper()}')
     out_img = cv2.cvtColor(img, code)
     return out_img
 
@@ -82,20 +82,21 @@ def gray2rgb(img):
 
 def convert_color_factory(src, dst):
 
-    code = getattr(cv2, 'COLOR_{}2{}'.format(src.upper(), dst.upper()))
+    code = getattr(cv2, f'COLOR_{src.upper()}2{dst.upper()}')
 
     def convert_color(img):
         out_img = cv2.cvtColor(img, code)
         return out_img
 
-    convert_color.__doc__ = """Convert a {0} image to {1} image.
+    convert_color.__doc__ = f"""Convert a {src.upper()} image to {dst.upper()} 
+        image.
 
     Args:
         img (ndarray or str): The input image.
 
     Returns:
-        ndarray: The converted {1} image.
-    """.format(src.upper(), dst.upper())
+        ndarray: The converted {dst.upper()} image.
+    """
 
     return convert_color
 

@@ -22,7 +22,7 @@ class TextLoggerHook(LoggerHook):
         super(TextLoggerHook, self).before_run(runner)
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
-                                      '{}.log.json'.format(runner.timestamp))
+                                      f'{runner.timestamp}.log.json')
         if runner.meta is not None:
             self._dump_log(runner.meta, runner)
 
@@ -37,25 +37,24 @@ class TextLoggerHook(LoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.mode == 'train':
-            log_str = 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
-                log_dict['epoch'], log_dict['iter'], len(runner.data_loader),
-                log_dict['lr'])
+            log_str = f'Epoch [{log_dict["epoch"]}]' \
+                      f'[{log_dict["iter"]}/{len(runner.data_loader)}]\t' \
+                      f'lr: {log_dict["lr"]:.5f}, '
             if 'time' in log_dict.keys():
                 self.time_sec_tot += (log_dict['time'] * self.interval)
                 time_sec_avg = self.time_sec_tot / (
                     runner.iter - self.start_iter + 1)
                 eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
                 eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
-                log_str += 'eta: {}, '.format(eta_str)
-                log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
-                    log_dict['time'], log_dict['data_time']))
+                log_str += f'eta: {eta_str}, '
+                log_str += f'time: {log_dict["time"]:.3f}, ' \
+                           f'data_time: {log_dict["data_time"]:.3f}, '
                 # statistic memory
                 if torch.cuda.is_available():
-                    log_str += 'memory: {}, '.format(log_dict['memory'])
+                    log_str += f'memory: {log_dict["memory"]}, '
         else:
-            log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
-                                                    log_dict['epoch'] - 1,
-                                                    log_dict['iter'])
+            log_str = 'Epoch({log_dict["mode"]}) ' \
+                      f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
@@ -66,8 +65,8 @@ class TextLoggerHook(LoggerHook):
             ]:
                 continue
             if isinstance(val, float):
-                val = '{:.4f}'.format(val)
-            log_items.append('{}: {}'.format(name, val))
+                val = f'{val:.4f}'
+            log_items.append(f'{name}: {val}')
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
 
