@@ -36,7 +36,7 @@ class TextLoggerHook(LoggerHook):
         return mem_mb.item()
 
     def _log_info(self, log_dict, runner):
-        if 'exp_name' in runner.meta:
+        if runner.meta is not None and 'exp_name' in runner.meta:
             log_str = f"Exp name: {runner.meta['exp_name']}\t"
         else:
             log_str = ''
