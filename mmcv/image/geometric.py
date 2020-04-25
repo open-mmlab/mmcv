@@ -91,8 +91,7 @@ def rescale_size(old_size, scale, return_scale=False):
     w, h = old_size
     if isinstance(scale, (float, int)):
         if scale <= 0:
-            raise ValueError(
-                f'Invalid scale {scale}, must be positive.')
+            raise ValueError(f'Invalid scale {scale}, must be positive.')
         scale_factor = scale
     elif isinstance(scale, tuple):
         max_long_edge = max(scale)

@@ -22,7 +22,7 @@ class TestCache(object):
     def test_put(self):
         cache = mmcv.Cache(3)
         for i in range(1, 4):
-            cache.put('k{}'.format(i), i)
+            cache.put(f'k{i}', i)
             assert cache.size == i
         assert cache._cache == OrderedDict([('k1', 1), ('k2', 2), ('k3', 3)])
         cache.put('k4', 4)
@@ -139,7 +139,7 @@ class TestVideo(object):
         v.cvt2frames(frame_dir)
         assert osp.isdir(frame_dir)
         for i in range(self.num_frames):
-            filename = '{}/{:06d}.jpg'.format(frame_dir, i)
+            filename = f'{frame_dir}/{i:06d}.jpg'
             assert osp.isfile(filename)
             os.remove(filename)
 
@@ -147,7 +147,7 @@ class TestVideo(object):
         v.cvt2frames(frame_dir, show_progress=False)
         assert osp.isdir(frame_dir)
         for i in range(self.num_frames):
-            filename = '{}/{:06d}.jpg'.format(frame_dir, i)
+            filename = f'{frame_dir}/{i:06d}.jpg'
             assert osp.isfile(filename)
             os.remove(filename)
 
@@ -160,7 +160,7 @@ class TestVideo(object):
             max_num=20)
         assert osp.isdir(frame_dir)
         for i in range(100, 120):
-            filename = '{}/{:03d}.JPEG'.format(frame_dir, i)
+            filename = f'{frame_dir}/{i:03d}.JPEG'
             assert osp.isfile(filename)
             os.remove(filename)
         shutil.rmtree(frame_dir)
@@ -171,7 +171,7 @@ class TestVideo(object):
         v.cvt2frames(frame_dir)
         assert osp.isdir(frame_dir)
         for i in range(self.num_frames):
-            filename = '{}/{:06d}.jpg'.format(frame_dir, i)
+            filename = f'{frame_dir}/{i:06d}.jpg'
             assert osp.isfile(filename)
 
         out_filename = osp.join(tempfile.gettempdir(), 'mmcv_test.avi')
@@ -192,7 +192,7 @@ class TestVideo(object):
         assert len(v) == 40
 
         for i in range(self.num_frames):
-            filename = '{}/{:06d}.jpg'.format(frame_dir, i)
+            filename = f'{frame_dir}/{i:06d}.jpg'
             os.remove(filename)
         shutil.rmtree(frame_dir)
         os.remove(out_filename)

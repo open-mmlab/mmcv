@@ -11,8 +11,7 @@ def assert_tensor_type(func):
         if not isinstance(args[0].data, torch.Tensor):
             raise AttributeError(
                 f'{args[0].__class__.__name__} has no attribute '
-                f'{func.__name__} for type {args[0].datatype}'
-            )
+                f'{func.__name__} for type {args[0].datatype}')
         return func(*args, **kwargs)
 
     return wrapper
