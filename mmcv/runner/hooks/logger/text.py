@@ -37,7 +37,7 @@ class TextLoggerHook(LoggerHook):
 
     def _log_info(self, log_dict, runner):
         if 'exp_name' in runner.meta:
-            log_str = f"Exp name: {runner.meta['exp_name']}\t "
+            log_str = f"Exp name: {runner.meta['exp_name']}\t"
         else:
             log_str = ''
         if runner.mode == 'train':
