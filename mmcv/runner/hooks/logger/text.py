@@ -36,8 +36,12 @@ class TextLoggerHook(LoggerHook):
         return mem_mb.item()
 
     def _log_info(self, log_dict, runner):
+        if 'exp_name' in runner.meta:
+            log_str = f'Exp name: {runner.meta['exp_name']}\t'
+        else:
+            log_str = ''
         if runner.mode == 'train':
-            log_str = 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
+            log_str += 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
                 log_dict['epoch'], log_dict['iter'], len(runner.data_loader),
                 log_dict['lr'])
             if 'time' in log_dict.keys():
@@ -53,7 +57,7 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
-            log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
+            log_str += 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
                                                     log_dict['epoch'] - 1,
                                                     log_dict['iter'])
         log_items = []
