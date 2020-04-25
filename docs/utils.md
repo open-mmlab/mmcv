@@ -18,16 +18,16 @@ d = 'string'
 To load and use configs
 
 ```python
-cfg = Config.fromfile('test.py')
-assert cfg.a == 1
-assert cfg.b.b1 == [0, 1, 2]
-cfg.c = None
-assert cfg.c == None
+Config.fromfile('test.py')
+dict(a=1,
+     b=dict(b1=[0, 1, 2], b2=None),
+     c=(1, 2),
+     d='string')
 ```
 
 For all format configs, inheritance is supported. To reuse fields in other config files,
 specify `_base_='./config_a.py'` or a list of configs `_base_=['./config_a.py', './config_b.py']`.
-Here is an example of config inheritance.
+Here is 3 examples of config inheritance.
 
 `config_a.py`
 ```python
@@ -42,7 +42,21 @@ d = 'string'
 ```
 The `config_b.py` would be the same as `test.py`.
 
+`config_c.py`
+```python
+_base_ = './config_a.py'
+b = dict(b2=1)
+c = (1, 2)
+```
+
 You may also set `_delete_=True` to ignore keys in base configs.
+
+`config_d.py`
+```python
+_base_ = './config_a.py'
+b = dict(_delete_=True, b2=None, b3=0.1)
+c = (1, 2)
+```
 
 `config_c.py`
 ```python
