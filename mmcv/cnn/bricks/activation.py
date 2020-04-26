@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-activation_cfg = {
+ACTIVATION_CONFIG = {
     'ReLU': nn.ReLU,
     'LeakyReLU': nn.LeakyReLU,
     'PReLU': nn.PReLU,
@@ -26,12 +26,10 @@ def build_activation_layer(cfg):
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in activation_cfg:
+    if layer_type not in ACTIVATION_CONFIG:
         raise KeyError(f'Unrecognized activation type {layer_type}')
     else:
-        activation = activation_cfg[layer_type]
-        if activation is None:
-            raise NotImplementedError
+        activation = ACTIVATION_CONFIG[layer_type]
 
     layer = activation(**cfg_)
     return layer

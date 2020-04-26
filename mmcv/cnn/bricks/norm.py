@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-norm_cfg = {
+NORM_CONFIG = {
     # layer_type: (abbreviation, module)
     'BN': ('bn', nn.BatchNorm2d),
     'BN1d': ('bn', nn.BatchNorm1d),
@@ -33,12 +33,10 @@ def build_norm_layer(cfg, num_features, postfix=''):
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in norm_cfg:
+    if layer_type not in NORM_CONFIG:
         raise KeyError(f'Unrecognized norm type {layer_type}')
     else:
-        abbr, norm_layer = norm_cfg[layer_type]
-        if norm_layer is None:
-            raise NotImplementedError
+        abbr, norm_layer = NORM_CONFIG[layer_type]
 
     assert isinstance(postfix, (int, str))
     name = abbr + str(postfix)

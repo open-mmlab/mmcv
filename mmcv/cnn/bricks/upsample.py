@@ -38,7 +38,7 @@ class PixelShufflePack(nn.Module):
         return x
 
 
-upsample_cfg = {
+UPSAMPLE_CONFIG = {
     'nearest': nn.Upsample,
     'bilinear': nn.Upsample,
     'deconv': nn.ConvTranspose2d,
@@ -62,12 +62,12 @@ def build_upsample_layer(cfg):
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in upsample_cfg:
-        raise KeyError('Unrecognized upsample type {}'.format(layer_type))
+    if layer_type not in UPSAMPLE_CONFIG:
+        raise KeyError(f'Unrecognized upsample type {layer_type}')
     else:
-        upsample = upsample_cfg[layer_type]
-        if upsample is None:
-            raise NotImplementedError
+        upsample = UPSAMPLE_CONFIG[layer_type]
 
+    if upsample is nn.Upsample:
+        cfg_['mode'] = layer_type
     layer = upsample(**cfg_)
     return layer

@@ -1,6 +1,6 @@
 from torch import nn as nn
 
-conv_cfg = {
+CONV_CONFIG = {
     'Conv': nn.Conv2d,
     'Conv1d': nn.Conv1d,
     'Conv2d': nn.Conv2d,
@@ -30,10 +30,10 @@ def build_conv_layer(cfg, *args, **kwargs):
         cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in conv_cfg:
+    if layer_type not in CONV_CONFIG:
         raise KeyError(f'Unrecognized norm type {layer_type}')
     else:
-        conv_layer = conv_cfg[layer_type]
+        conv_layer = CONV_CONFIG[layer_type]
 
     layer = conv_layer(*args, **kwargs, **cfg_)
 
