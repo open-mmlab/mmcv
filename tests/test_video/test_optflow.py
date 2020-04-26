@@ -1,10 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-# flake8: noqa
-
 import os
 import os.path as osp
 import tempfile
-import time
 
 import numpy as np
 import pytest
@@ -14,10 +11,11 @@ import mmcv
 
 
 def test_flowread():
+    data_dir = osp.join(osp.dirname(__file__), '../data')
     flow_shape = (60, 80, 2)
 
     # read .flo file
-    flow = mmcv.flowread(osp.join(osp.dirname(__file__), 'data/optflow.flo'))
+    flow = mmcv.flowread(osp.join(data_dir, 'optflow.flo'))
     assert flow.shape == flow_shape
 
     # pseudo read
@@ -26,21 +24,19 @@ def test_flowread():
 
     # read quantized flow concatenated vertically
     flow = mmcv.flowread(
-        osp.join(osp.dirname(__file__), 'data/optflow_concat0.jpg'),
-        quantize=True,
-        denorm=True)
+        osp.join(data_dir, 'optflow_concat0.jpg'), quantize=True, denorm=True)
     assert flow.shape == flow_shape
 
     # read quantized flow concatenated horizontally
     flow = mmcv.flowread(
-        osp.join(osp.dirname(__file__), 'data/optflow_concat1.jpg'),
+        osp.join(data_dir, 'optflow_concat1.jpg'),
         quantize=True,
         concat_axis=1,
         denorm=True)
     assert flow.shape == flow_shape
 
     # test exceptions
-    notflow_file = osp.join(osp.dirname(__file__), 'data/color.jpg')
+    notflow_file = osp.join(data_dir, 'color.jpg')
     with pytest.raises(TypeError):
         mmcv.flowread(1)
     with pytest.raises(IOError):
@@ -188,74 +184,74 @@ def test_make_color_wheel():
     color_wheel = mmcv.make_color_wheel([2, 2, 2, 2, 2, 2])
     # yapf: disable
     assert_array_equal(default_color_wheel, np.array(
-        [[1.       , 0.        , 0.        ],
-        [1.        , 0.06666667, 0.        ],
-        [1.        , 0.13333334, 0.        ],
-        [1.        , 0.2       , 0.        ],
-        [1.        , 0.26666668, 0.        ],
-        [1.        , 0.33333334, 0.        ],
-        [1.        , 0.4       , 0.        ],
-        [1.        , 0.46666667, 0.        ],
-        [1.        , 0.53333336, 0.        ],
-        [1.        , 0.6       , 0.        ],
-        [1.        , 0.6666667 , 0.        ],
-        [1.        , 0.73333335, 0.        ],
-        [1.        , 0.8       , 0.        ],
-        [1.        , 0.8666667 , 0.        ],
-        [1.        , 0.93333334, 0.        ],
-        [1.        , 1.        , 0.        ],
-        [0.8333333 , 1.        , 0.        ],
-        [0.6666667 , 1.        , 0.        ],
-        [0.5       , 1.        , 0.        ],
-        [0.33333334, 1.        , 0.        ],
-        [0.16666667, 1.        , 0.        ],
-        [0.        , 1.        , 0.        ],
-        [0.        , 1.        , 0.25      ],
-        [0.        , 1.        , 0.5       ],
-        [0.        , 1.        , 0.75      ],
-        [0.        , 1.        , 1.        ],
-        [0.        , 0.90909094, 1.        ],
-        [0.        , 0.8181818 , 1.        ],
-        [0.        , 0.72727275, 1.        ],
-        [0.        , 0.6363636 , 1.        ],
-        [0.        , 0.54545456, 1.        ],
-        [0.        , 0.45454547, 1.        ],
-        [0.        , 0.36363637, 1.        ],
-        [0.        , 0.27272728, 1.        ],
-        [0.        , 0.18181819, 1.        ],
-        [0.        , 0.09090909, 1.        ],
-        [0.        , 0.        , 1.        ],
-        [0.07692308, 0.        , 1.        ],
-        [0.15384616, 0.        , 1.        ],
-        [0.23076923, 0.        , 1.        ],
-        [0.30769232, 0.        , 1.        ],
-        [0.3846154 , 0.        , 1.        ],
-        [0.46153846, 0.        , 1.        ],
-        [0.53846157, 0.        , 1.        ],
-        [0.61538464, 0.        , 1.        ],
-        [0.6923077 , 0.        , 1.        ],
-        [0.7692308 , 0.        , 1.        ],
-        [0.84615386, 0.        , 1.        ],
-        [0.9230769 , 0.        , 1.        ],
-        [1.        , 0.        , 1.        ],
-        [1.        , 0.        , 0.8333333 ],
-        [1.        , 0.        , 0.6666667 ],
-        [1.        , 0.        , 0.5       ],
-        [1.        , 0.        , 0.33333334],
-        [1.        , 0.        , 0.16666667]], dtype=np.float32))
+        [[1.       , 0.        , 0.        ],  # noqa
+        [1.        , 0.06666667, 0.        ],  # noqa
+        [1.        , 0.13333334, 0.        ],  # noqa
+        [1.        , 0.2       , 0.        ],  # noqa
+        [1.        , 0.26666668, 0.        ],  # noqa
+        [1.        , 0.33333334, 0.        ],  # noqa
+        [1.        , 0.4       , 0.        ],  # noqa
+        [1.        , 0.46666667, 0.        ],  # noqa
+        [1.        , 0.53333336, 0.        ],  # noqa
+        [1.        , 0.6       , 0.        ],  # noqa
+        [1.        , 0.6666667 , 0.        ],  # noqa
+        [1.        , 0.73333335, 0.        ],  # noqa
+        [1.        , 0.8       , 0.        ],  # noqa
+        [1.        , 0.8666667 , 0.        ],  # noqa
+        [1.        , 0.93333334, 0.        ],  # noqa
+        [1.        , 1.        , 0.        ],  # noqa
+        [0.8333333 , 1.        , 0.        ],  # noqa
+        [0.6666667 , 1.        , 0.        ],  # noqa
+        [0.5       , 1.        , 0.        ],  # noqa
+        [0.33333334, 1.        , 0.        ],  # noqa
+        [0.16666667, 1.        , 0.        ],  # noqa
+        [0.        , 1.        , 0.        ],  # noqa
+        [0.        , 1.        , 0.25      ],  # noqa
+        [0.        , 1.        , 0.5       ],  # noqa
+        [0.        , 1.        , 0.75      ],  # noqa
+        [0.        , 1.        , 1.        ],  # noqa
+        [0.        , 0.90909094, 1.        ],  # noqa
+        [0.        , 0.8181818 , 1.        ],  # noqa
+        [0.        , 0.72727275, 1.        ],  # noqa
+        [0.        , 0.6363636 , 1.        ],  # noqa
+        [0.        , 0.54545456, 1.        ],  # noqa
+        [0.        , 0.45454547, 1.        ],  # noqa
+        [0.        , 0.36363637, 1.        ],  # noqa
+        [0.        , 0.27272728, 1.        ],  # noqa
+        [0.        , 0.18181819, 1.        ],  # noqa
+        [0.        , 0.09090909, 1.        ],  # noqa
+        [0.        , 0.        , 1.        ],  # noqa
+        [0.07692308, 0.        , 1.        ],  # noqa
+        [0.15384616, 0.        , 1.        ],  # noqa
+        [0.23076923, 0.        , 1.        ],  # noqa
+        [0.30769232, 0.        , 1.        ],  # noqa
+        [0.3846154 , 0.        , 1.        ],  # noqa
+        [0.46153846, 0.        , 1.        ],  # noqa
+        [0.53846157, 0.        , 1.        ],  # noqa
+        [0.61538464, 0.        , 1.        ],  # noqa
+        [0.6923077 , 0.        , 1.        ],  # noqa
+        [0.7692308 , 0.        , 1.        ],  # noqa
+        [0.84615386, 0.        , 1.        ],  # noqa
+        [0.9230769 , 0.        , 1.        ],  # noqa
+        [1.        , 0.        , 1.        ],  # noqa
+        [1.        , 0.        , 0.8333333 ],  # noqa
+        [1.        , 0.        , 0.6666667 ],  # noqa
+        [1.        , 0.        , 0.5       ],  # noqa
+        [1.        , 0.        , 0.33333334],  # noqa
+        [1.        , 0.        , 0.16666667]], dtype=np.float32))  # noqa
 
     assert_array_equal(
         color_wheel,
-        np.array([[1., 0. , 0. ],
-                 [1. , 0.5, 0. ],
-                 [1. , 1. , 0. ],
-                 [0.5, 1. , 0. ],
-                 [0. , 1. , 0. ],
-                 [0. , 1. , 0.5],
-                 [0. , 1. , 1. ],
-                 [0. , 0.5, 1. ],
-                 [0. , 0. , 1. ],
-                 [0.5, 0. , 1. ],
-                 [1. , 0. , 1. ],
-                 [1. , 0. , 0.5]], dtype=np.float32))
+        np.array([[1., 0. , 0. ],  # noqa
+                 [1. , 0.5, 0. ],  # noqa
+                 [1. , 1. , 0. ],  # noqa
+                 [0.5, 1. , 0. ],  # noqa
+                 [0. , 1. , 0. ],  # noqa
+                 [0. , 1. , 0.5],  # noqa
+                 [0. , 1. , 1. ],  # noqa
+                 [0. , 0.5, 1. ],  # noqa
+                 [0. , 0. , 1. ],  # noqa
+                 [0.5, 0. , 1. ],  # noqa
+                 [1. , 0. , 1. ],  # noqa
+                 [1. , 0. , 0.5]], dtype=np.float32))  # noqa
     # yapf: enable
