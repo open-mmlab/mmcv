@@ -22,25 +22,22 @@ def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
     """
     if isinstance(flow_or_path, np.ndarray):
         if (flow_or_path.ndim != 3) or (flow_or_path.shape[-1] != 2):
-            raise ValueError('Invalid flow with shape {}'.format(
-                flow_or_path.shape))
+            raise ValueError(f'Invalid flow with shape {flow_or_path.shape}')
         return flow_or_path
     elif not is_str(flow_or_path):
-        raise TypeError(
-            '"flow_or_path" must be a filename or numpy array, not {}'.format(
-                type(flow_or_path)))
+        raise TypeError(f'"flow_or_path" must be a filename or numpy array, '
+                        f'not {type(flow_or_path)}')
 
     if not quantize:
         with open(flow_or_path, 'rb') as f:
             try:
                 header = f.read(4).decode('utf-8')
             except Exception:
-                raise IOError('Invalid flow file: {}'.format(flow_or_path))
+                raise IOError(f'Invalid flow file: {flow_or_path}')
             else:
                 if header != 'PIEH':
-                    raise IOError(
-                        'Invalid flow file: {}, header does not contain PIEH'.
-                        format(flow_or_path))
+                    raise IOError(f'Invalid flow file: {flow_or_path}, '
+                                  'header does not contain PIEH')
 
             w = np.fromfile(f, np.int32, 1).squeeze()
             h = np.fromfile(f, np.int32, 1).squeeze()
@@ -50,8 +47,8 @@ def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
         cat_flow = imread(flow_or_path, flag='unchanged')
         if cat_flow.ndim != 2:
             raise IOError(
-                '{} is not a valid quantized flow file, its dimension is {}.'.
-                format(flow_or_path, cat_flow.ndim))
+                f'{flow_or_path} is not a valid quantized flow file, '
+                f'its dimension is {cat_flow.ndim}.')
         assert cat_flow.shape[concat_axis] % 2 == 0
         dx, dy = np.split(cat_flow, 2, axis=concat_axis)
         flow = dequantize_flow(dx, dy, *args, **kwargs)

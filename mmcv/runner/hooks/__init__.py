@@ -7,6 +7,7 @@ from .logger import (LoggerHook, MlflowLoggerHook, PaviLoggerHook,
                      TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
+from .momentum_updater import MomentumUpdaterHook
 from .optimizer import OptimizerHook
 from .sampler_seed import DistSamplerSeedHook
 
@@ -14,5 +15,5 @@ __all__ = [
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
     'OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook', 'EmptyCacheHook',
     'LoggerHook', 'MlflowLoggerHook', 'PaviLoggerHook', 'TextLoggerHook',
-    'TensorboardLoggerHook', 'WandbLoggerHook'
+    'TensorboardLoggerHook', 'WandbLoggerHook', 'MomentumUpdaterHook'
 ]

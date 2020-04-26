@@ -67,9 +67,11 @@ class MlflowLoggerHook(LoggerHook):
         for var, val in runner.log_buffer.output.items():
             if var in ['time', 'data_time']:
                 continue
-            tag = '{}/{}'.format(var, runner.mode)
+            tag = f'{var}/{runner.mode}'
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
+        metrics['learning_rate'] = runner.current_lr()[0]
+        metrics['momentum'] = runner.current_momentum()[0]
         self.mlflow.log_metrics(metrics, step=runner.iter)
 
     @master_only

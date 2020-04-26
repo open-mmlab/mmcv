@@ -45,13 +45,17 @@ class TensorboardLoggerHook(LoggerHook):
         for var in runner.log_buffer.output:
             if var in ['time', 'data_time']:
                 continue
-            tag = '{}/{}'.format(var, runner.mode)
+            tag = f'{var}/{runner.mode}'
             record = runner.log_buffer.output[var]
             if isinstance(record, str):
                 self.writer.add_text(tag, record, runner.iter)
             else:
                 self.writer.add_scalar(tag, runner.log_buffer.output[var],
                                        runner.iter)
+        self.writer.add_scalar('learning_rate',
+                               runner.current_lr()[0], runner.iter)
+        self.writer.add_scalar('momentum',
+                               runner.current_momentum()[0], runner.iter)
 
     @master_only
     def after_run(self, runner):

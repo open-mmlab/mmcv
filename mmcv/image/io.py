@@ -80,7 +80,7 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
         return img_or_path
     elif is_str(img_or_path):
         check_file_exist(img_or_path,
-                         'img file does not exist: {}'.format(img_or_path))
+                         f'img file does not exist: {img_or_path}')
         if imread_backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
