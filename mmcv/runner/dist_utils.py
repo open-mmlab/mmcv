@@ -18,7 +18,7 @@ def init_dist(launcher, backend='nccl', **kwargs):
     elif launcher == 'slurm':
         _init_dist_slurm(backend, **kwargs)
     else:
-        raise ValueError('Invalid launcher type: {}'.format(launcher))
+        raise ValueError(f'Invalid launcher type: {launcher}')
 
 
 def _init_dist_pytorch(backend, **kwargs):
@@ -40,7 +40,7 @@ def _init_dist_slurm(backend, port=29500, **kwargs):
     num_gpus = torch.cuda.device_count()
     torch.cuda.set_device(proc_id % num_gpus)
     addr = subprocess.getoutput(
-        'scontrol show hostname {} | head -n1'.format(node_list))
+        f'scontrol show hostname {node_list} | head -n1')
     os.environ['MASTER_PORT'] = str(port)
     os.environ['MASTER_ADDR'] = addr
     os.environ['WORLD_SIZE'] = str(ntasks)

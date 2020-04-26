@@ -151,7 +151,7 @@ class Runner(object):
         elif not isinstance(optimizer, torch.optim.Optimizer):
             raise TypeError(
                 'optimizer must be either an Optimizer object or a dict, '
-                'but got {}'.format(type(optimizer)))
+                f'but got {type(optimizer)}')
         return optimizer
 
     def _add_file_handler(self,
@@ -182,7 +182,7 @@ class Runner(object):
             format='%(asctime)s - %(levelname)s - %(message)s', level=level)
         logger = logging.getLogger(__name__)
         if log_dir and self.rank == 0:
-            filename = '{}.log'.format(self.timestamp)
+            filename = f'{self.timestamp}.log'
             log_file = osp.join(log_dir, filename)
             self._add_file_handler(logger, log_file, level=level)
         return logger
@@ -206,12 +206,16 @@ class Runner(object):
         """
         if self.optimizer is None:
             raise RuntimeError(
-                'lr is not applicable because optimizer does not exist.')
-        return [
-            group['momentum']
-            if 'momentum' in group.keys() else group['betas'][0]
-            for group in self.optimizer.param_groups
-        ]
+                'momentum is not applicable because optimizer does not exist.')
+        momentums = []
+        for group in self.optimizer.param_groups:
+            if 'momentum' in group.keys():
+                momentums.append(group['momentum'])
+            elif 'betas' in group.keys():
+                momentums.append(group['betas'][0])
+            else:
+                momentums.append(0)
+        return momentums
 
     def register_hook(self, hook, priority='NORMAL'):
         """Register a hook into the hook list.
@@ -365,15 +369,14 @@ class Runner(object):
                 if isinstance(mode, str):  # self.train()
                     if not hasattr(self, mode):
                         raise ValueError(
-                            'runner has no method named "{}" to run an epoch'.
-                            format(mode))
+                            f'runner has no method named "{mode}" to run an '
+                            'epoch')
                     epoch_runner = getattr(self, mode)
                 elif callable(mode):  # custom train()
                     epoch_runner = mode
                 else:
                     raise TypeError('mode in workflow must be a str or '
-                                    'callable function, not {}'.format(
-                                        type(mode)))
+                                    f'callable function, not {type(mode)}')
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= max_epochs:
                         return

@@ -19,13 +19,12 @@ env:
     - COLUMNS=80
 
 python:
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
 
 before_script:
-  - pip install codecov flake8 yapf isort
+  - pip install codecov flake8 yapf isort lmdb
   - flake8 .
   - isort -rc --check-only --diff mmcv/ tests/ examples/
   - yapf -r -d mmcv/ tests/ examples/
