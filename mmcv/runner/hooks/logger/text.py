@@ -7,7 +7,6 @@ import torch
 import torch.distributed as dist
 
 import mmcv
-from mmcv.utils import print_log
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -47,7 +46,7 @@ class TextLoggerHook(LoggerHook):
                     runner,
                     self.interval_exp_name)) or self.end_of_epoch(runner):
                 exp_info = 'Exp name: {}\t'.format(runner.meta['exp_name'])
-                print_log(exp_info, logger='root')
+                runner.logger.info(exp_info)
 
         if runner.mode == 'train':
             log_str = 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
