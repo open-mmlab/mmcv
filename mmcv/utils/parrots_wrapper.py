@@ -17,7 +17,7 @@ def get_build_config():
         return torch.__config__.show()
 
 
-def _get_conv():
+def _get_conv_bases():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.conv import _ConvNd, _ConvTransposeMixin
     else:
@@ -25,7 +25,7 @@ def _get_conv():
     return _ConvNd, _ConvTransposeMixin
 
 
-def _get_pool():
+def _get_pool_bases():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.pool import (_AdaptiveAvgPoolNd,
             _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd)            
@@ -35,7 +35,7 @@ def _get_pool():
     return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd
 
 
-def _get_batchnorm():
+def _get_batchnorm_bases():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.batchnorm import _BatchNorm, _InstanceNorm
         SyncBatchNorm_ = torch.nn.SyncBatchNorm2d
@@ -47,9 +47,9 @@ def _get_batchnorm():
 
 
 CUDA_HOME = _get_cuda_home()
-_ConvNd = _get_conv()
-_BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_batchnorm()
-_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd = _get_pool()
+_ConvNd, _ConvTransposeMixin = _get_conv_bases()
+_BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_batchnorm_bases()
+_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd = _get_pool_bases()
 
 
 class SyncBatchNorm(SyncBatchNorm_):
