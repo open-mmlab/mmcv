@@ -7,6 +7,7 @@ import torch
 import torch.distributed as dist
 
 import mmcv
+from mmcv.utils import print_log
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -14,9 +15,14 @@ from .base import LoggerHook
 @HOOKS.register_module
 class TextLoggerHook(LoggerHook):
 
-    def __init__(self, interval=10, ignore_last=True, reset_flag=False):
+    def __init__(self,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=False,
+                 interval_exp_name=1000):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag)
         self.time_sec_tot = 0
+        self.interval_exp_name = interval_exp_name
 
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
@@ -37,11 +43,14 @@ class TextLoggerHook(LoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.meta is not None and 'exp_name' in runner.meta:
-            log_str = 'Exp name: {}\t'.format(runner.meta['exp_name'])
-        else:
-            log_str = ''
+            if (self.every_n_inner_iters(
+                    runner,
+                    self.interval_exp_name)) or self.end_of_epoch(runner):
+                exp_info = 'Exp name: {}\t'.format(runner.meta['exp_name'])
+                print_log(exp_info, logger='root')
+
         if runner.mode == 'train':
-            log_str += 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
+            log_str = 'Epoch [{}][{}/{}]\tlr: {:.5f}, '.format(
                 log_dict['epoch'], log_dict['iter'], len(runner.data_loader),
                 log_dict['lr'])
             if 'time' in log_dict.keys():
@@ -57,9 +66,9 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += 'memory: {}, '.format(log_dict['memory'])
         else:
-            log_str += 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
-                                                     log_dict['epoch'] - 1,
-                                                     log_dict['iter'])
+            log_str = 'Epoch({}) [{}][{}]\t'.format(log_dict['mode'],
+                                                    log_dict['epoch'] - 1,
+                                                    log_dict['iter'])
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
