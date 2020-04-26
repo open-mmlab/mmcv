@@ -28,11 +28,11 @@ def _get_conv_bases():
 def _get_pool_bases():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.pool import (_AdaptiveAvgPoolNd,
-            _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd)            
+            _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd)            
     else:
         from torch.nn.modules.pooling import (_AdaptiveAvgPoolNd,
-            _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd)
-    return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd
+            _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd)
+    return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd
 
 
 def _get_batchnorm_bases():
@@ -49,7 +49,7 @@ def _get_batchnorm_bases():
 CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv_bases()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_batchnorm_bases()
-_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,  _AvgPoolNd, _MaxPoolNd = _get_pool_bases()
+_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool_bases()
 
 
 class SyncBatchNorm(SyncBatchNorm_):
