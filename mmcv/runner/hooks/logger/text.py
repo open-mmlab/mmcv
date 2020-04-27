@@ -45,7 +45,7 @@ class TextLoggerHook(LoggerHook):
             if (self.every_n_inner_iters(
                     runner,
                     self.interval_exp_name)) or self.end_of_epoch(runner):
-                exp_info = 'Exp name: {}\t'.format(runner.meta['exp_name'])
+                exp_info = f"Exp name: {runner.meta['exp_name']}\t"
                 runner.logger.info(exp_info)
 
         if runner.mode == 'train':
