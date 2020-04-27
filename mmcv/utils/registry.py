@@ -51,9 +51,7 @@ class Registry(object):
         if not inspect.isclass(module_class):
             raise TypeError('module must be a class, '
                             f'but got {type(module_class)}')
-        if not (module_name is None or isinstance(module_name, str)):
-            raise TypeError('module_name must be a str, '
-                            f'but got {type(module_name)}')
+
         if module_name is None:
             module_name = module_class.__name__
         if not force and module_name in self._module_dict:
@@ -96,11 +94,11 @@ class Registry(object):
             >>> backbones.register_module(ResNet)
 
         Args:
-            cls (type): Module class to be registered.
             name (str | None): The module name to be registered. If not
                 specified, the class name will be used.
             force (bool, optional): Whether to override an existing class with
                 the same name. Default: False.
+            module (type): Module class to be registered.
         """
         # NOTE: This is a walkaround to be compatible with the old api,
         # while it may introduce unexpected bugs.
