@@ -86,11 +86,11 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     ]
 
     if unexpected_keys:
-        err_msg.append('unexpected key in source state_dict: {}\n'.format(
-            ', '.join(unexpected_keys)))
+        err_msg.append('unexpected key in source '
+                       f'state_dict: {", ".join(unexpected_keys)}\n')
     if missing_keys:
-        err_msg.append('missing keys in source state_dict: {}\n'.format(
-            ', '.join(missing_keys)))
+        err_msg.append(
+            f'missing keys in source state_dict: {", ".join(missing_keys)}\n')
 
     rank, _ = get_dist_info()
     if len(err_msg) > 0 and rank == 0:
@@ -124,7 +124,7 @@ def get_torchvision_models():
     for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
         if ispkg:
             continue
-        _zoo = import_module('torchvision.models.{}'.format(name))
+        _zoo = import_module(f'torchvision.models.{name}')
         if hasattr(_zoo, 'model_urls'):
             _urls = getattr(_zoo, 'model_urls')
             model_urls.update(_urls)
@@ -160,7 +160,7 @@ def _load_checkpoint(filename, map_location=None):
         checkpoint = load_url_dist(filename)
     else:
         if not osp.isfile(filename):
-            raise IOError('{} is not a checkpoint file'.format(filename))
+            raise IOError(f'{filename} is not a checkpoint file')
         checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -191,7 +191,7 @@ def load_checkpoint(model,
         state_dict = checkpoint['state_dict']
     else:
         raise RuntimeError(
-            'No state_dict found in checkpoint file {}'.format(filename))
+            f'No state_dict found in checkpoint file {filename}')
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
@@ -233,8 +233,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     if meta is None:
         meta = {}
     elif not isinstance(meta, dict):
-        raise TypeError('meta must be a dict or None, but got {}'.format(
-            type(meta)))
+        raise TypeError(f'meta must be a dict or None, but got {type(meta)}')
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))

@@ -48,4 +48,4 @@ def color_val(color):
         color = color.astype(np.uint8)
         return tuple(color)
     else:
-        raise TypeError('Invalid type for color: {}'.format(type(color)))
+        raise TypeError(f'Invalid type for color: {type(color)}')

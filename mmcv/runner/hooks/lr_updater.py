@@ -32,8 +32,8 @@ class LrUpdaterHook(Hook):
         if warmup is not None:
             if warmup not in ['constant', 'linear', 'exp']:
                 raise ValueError(
-                    '"{}" is not a supported type for warming up, valid types'
-                    ' are "constant" and "linear"'.format(warmup))
+                    f'"{warmup}" is not a supported type for warming up, valid'
+                    ' types are "constant" and "linear"')
         if warmup is not None:
             assert warmup_iters > 0, \
                 '"warmup_iters" must be a positive integer'
@@ -221,6 +221,7 @@ class CosineAnealingLrUpdaterHook(LrUpdaterHook):
         return annealing_cos(base_lr, target_lr, progress / max_progress)
 
 
+@HOOKS.register_module
 class CyclicLrUpdaterHook(LrUpdaterHook):
     """Cyclic LR Scheduler
 
@@ -254,7 +255,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                 if len(target_ratio) == 1 else target_ratio
         else:
             raise ValueError('target_ratio should be either float '
-                             'or tuple, got {}'.format(type(target_ratio)))
+                             f'or tuple, got {type(target_ratio)}')
 
         assert len(target_ratio) == 2, \
             '"target_ratio" must be list or tuple of two floats'

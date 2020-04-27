@@ -38,20 +38,22 @@ def use_backend(backend):
     imread_backend = backend
     if imread_backend == 'turbojpeg':
         if TurboJPEG is None:
-            raise ValueError('`PyTurboJPEG` is not installed')
+            raise ImportError('`PyTurboJPEG` is not installed')
         global jpeg
         if jpeg is None:
             jpeg = TurboJPEG()
 
 
 def _jpegflag(flag='color', channel_order='bgr'):
+    channel_order = channel_order.lower()
+    if channel_order not in ['rgb', 'bgr']:
+        raise ValueError('channel order must be either "rgb" or "bgr"')
+
     if flag == 'color':
         if channel_order == 'bgr':
             return TJPF_BGR
         elif channel_order == 'rgb':
             return TJCS_RGB
-        else:
-            raise ValueError('channel order must be "rgb" or "bgr"')
     elif flag == 'grayscale':
         return TJPF_GRAY
     else:
@@ -80,7 +82,7 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
         return img_or_path
     elif is_str(img_or_path):
         check_file_exist(img_or_path,
-                         'img file does not exist: {}'.format(img_or_path))
+                         f'img file does not exist: {img_or_path}')
         if imread_backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
