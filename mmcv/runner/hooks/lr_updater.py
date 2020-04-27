@@ -221,6 +221,7 @@ class CosineAnealingLrUpdaterHook(LrUpdaterHook):
         return annealing_cos(base_lr, target_lr, progress / max_progress)
 
 
+@HOOKS.register_module
 class CyclicLrUpdaterHook(LrUpdaterHook):
     """Cyclic LR Scheduler
 
