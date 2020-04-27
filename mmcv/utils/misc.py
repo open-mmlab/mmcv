@@ -1,23 +1,17 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import collections
 import functools
 import itertools
 import subprocess
+from collections import abc
 from importlib import import_module
-
-import six
-
-# ABCs from collections will be deprecated in python 3.8+,
-# while collections.abc is not available in python 2.7
-try:
-    import collections.abc as collections_abc
-except ImportError:
-    import collections as collections_abc
 
 
 def is_str(x):
-    """Whether the input is an string instance."""
-    return isinstance(x, six.string_types)
+    """Whether the input is an string instance.
+
+    Note: This method is deprecated since python 2 is no longer supported.
+    """
+    return isinstance(x, str)
 
 
 def iter_cast(inputs, dst_type, return_type=None):
@@ -32,12 +26,12 @@ def iter_cast(inputs, dst_type, return_type=None):
     Returns:
         iterator or specified type: The converted object.
     """
-    if not isinstance(inputs, collections_abc.Iterable):
+    if not isinstance(inputs, abc.Iterable):
         raise TypeError('inputs must be an iterable object')
     if not isinstance(dst_type, type):
         raise TypeError('"dst_type" must be a valid type')
 
-    out_iterable = six.moves.map(dst_type, inputs)
+    out_iterable = map(dst_type, inputs)
 
     if return_type is None:
         return out_iterable
@@ -73,7 +67,7 @@ def is_seq_of(seq, expected_type, seq_type=None):
         bool: Whether the sequence is valid.
     """
     if seq_type is None:
-        exp_seq_type = collections_abc.Sequence
+        exp_seq_type = abc.Sequence
     else:
         assert isinstance(seq_type, type)
         exp_seq_type = seq_type
@@ -117,9 +111,8 @@ def slice_list(in_list, lens):
     if not isinstance(lens, list):
         raise TypeError('"indices" must be an integer or a list of integers')
     elif sum(lens) != len(in_list):
-        raise ValueError(
-            'sum of lens and list length does not match: {} != {}'.format(
-                sum(lens), len(in_list)))
+        raise ValueError('sum of lens and list length does not '
+                         f'match: {sum(lens)} != {len(in_list)}')
     out_list = []
     idx = 0
     for i in range(len(lens)):
@@ -188,7 +181,7 @@ def _check_py_package(package):
 
 
 def _check_executable(cmd):
-    if subprocess.call('which {}'.format(cmd), shell=True) != 0:
+    if subprocess.call(f'which {cmd}', shell=True) != 0:
         return False
     else:
         return True

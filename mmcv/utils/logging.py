@@ -90,4 +90,4 @@ def print_log(msg, logger=None, level=logging.INFO):
     else:
         raise TypeError(
             'logger should be either a logging.Logger object, str, '
-            '"silent" or None, but got {}'.format(type(logger)))
+            f'"silent" or None, but got {type(logger)}')

@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
-import sys
 from pathlib import Path
 
 import pytest
@@ -22,19 +21,15 @@ def test_fopen():
 
 def test_check_file_exist():
     mmcv.check_file_exist(__file__)
-    if sys.version_info > (3, 3):
-        with pytest.raises(FileNotFoundError):  # noqa
-            mmcv.check_file_exist('no_such_file.txt')
-    else:
-        with pytest.raises(IOError):
-            mmcv.check_file_exist('no_such_file.txt')
+    with pytest.raises(FileNotFoundError):
+        mmcv.check_file_exist('no_such_file.txt')
 
 
 def test_scandir():
     folder = osp.join(osp.dirname(__file__), 'data/for_scan')
     filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json']
-
     assert set(mmcv.scandir(folder)) == set(filenames)
+    assert set(mmcv.scandir(Path(folder))) == set(filenames)
     assert set(mmcv.scandir(folder, '.txt')) == set(
         [filename for filename in filenames if filename.endswith('.txt')])
     assert set(mmcv.scandir(folder, ('.json', '.txt'))) == set([
@@ -42,5 +37,20 @@ def test_scandir():
         if filename.endswith(('.txt', '.json'))
     ])
     assert set(mmcv.scandir(folder, '.png')) == set()
+
+    filenames_recursive = [
+        'a.bin', '1.txt', '2.txt', '1.json', '2.json', 'sub/1.json',
+        'sub/1.txt'
+    ]
+    assert set(mmcv.scandir(folder,
+                            recursive=True)) == set(filenames_recursive)
+    assert set(mmcv.scandir(Path(folder),
+                            recursive=True)) == set(filenames_recursive)
+    assert set(mmcv.scandir(folder, '.txt', recursive=True)) == set([
+        filename for filename in filenames_recursive
+        if filename.endswith('.txt')
+    ])
     with pytest.raises(TypeError):
-        mmcv.scandir(folder, 111)
+        list(mmcv.scandir(123))
+    with pytest.raises(TypeError):
+        list(mmcv.scandir(folder, 111))

@@ -1,8 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import sys
+from collections.abc import Iterable
 from multiprocessing import Pool
+from shutil import get_terminal_size
 
-from .misc import collections_abc
 from .timer import Timer
 
 
@@ -19,17 +20,13 @@ class ProgressBar(object):
 
     @property
     def terminal_width(self):
-        if sys.version_info > (3, 3):
-            from shutil import get_terminal_size
-        else:
-            from backports.shutil_get_terminal_size import get_terminal_size
         width, _ = get_terminal_size()
         return width
 
     def start(self):
         if self.task_num > 0:
-            self.file.write('[{}] 0/{}, elapsed: 0s, ETA:'.format(
-                ' ' * self.bar_width, self.task_num))
+            self.file.write(f'[{" " * self.bar_width}] 0/{self.task_num}, '
+                            'elapsed: 0s, ETA:')
         else:
             self.file.write('completed: 0, elapsed: 0s')
         self.file.flush()
@@ -45,9 +42,9 @@ class ProgressBar(object):
         if self.task_num > 0:
             percentage = self.completed / float(self.task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
-            msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s' \
-                  ''.format(self.completed, self.task_num, fps,
-                            int(elapsed + 0.5), eta)
+            msg = f'\r[{{}}] {self.completed}/{self.task_num}, ' \
+                  f'{fps:.1f} task/s, elapsed: {int(elapsed + 0.5)}s, ' \
+                  f'ETA: {eta:5}s'
 
             bar_width = min(self.bar_width,
                             int(self.terminal_width - len(msg)) + 2,
@@ -58,8 +55,8 @@ class ProgressBar(object):
             self.file.write(msg.format(bar_chars))
         else:
             self.file.write(
-                'completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
-                    self.completed, int(elapsed + 0.5), fps))
+                f'completed: {self.completed}, elapsed: {int(elapsed + 0.5)}s,'
+                f' {fps:.1f} tasks/s')
         self.file.flush()
 
 
@@ -79,11 +76,11 @@ def track_progress(func, tasks, bar_width=50, file=sys.stdout, **kwargs):
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
@@ -145,11 +142,11 @@ def track_parallel_progress(func,
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(
@@ -193,11 +190,11 @@ def track_iter_progress(tasks, bar_width=50, file=sys.stdout, **kwargs):
     """
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
-        assert isinstance(tasks[0], collections_abc.Iterable)
+        assert isinstance(tasks[0], Iterable)
         assert isinstance(tasks[1], int)
         task_num = tasks[1]
         tasks = tasks[0]
-    elif isinstance(tasks, collections_abc.Iterable):
+    elif isinstance(tasks, Iterable):
         task_num = len(tasks)
     else:
         raise TypeError(

@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -37,20 +38,22 @@ def use_backend(backend):
     imread_backend = backend
     if imread_backend == 'turbojpeg':
         if TurboJPEG is None:
-            raise ValueError('`PyTurboJPEG` is not installed')
+            raise ImportError('`PyTurboJPEG` is not installed')
         global jpeg
         if jpeg is None:
             jpeg = TurboJPEG()
 
 
 def _jpegflag(flag='color', channel_order='bgr'):
+    channel_order = channel_order.lower()
+    if channel_order not in ['rgb', 'bgr']:
+        raise ValueError('channel order must be either "rgb" or "bgr"')
+
     if flag == 'color':
         if channel_order == 'bgr':
             return TJPF_BGR
         elif channel_order == 'rgb':
             return TJCS_RGB
-        else:
-            raise ValueError('channel order must be "rgb" or "bgr"')
     elif flag == 'grayscale':
         return TJPF_GRAY
     else:
@@ -61,9 +64,9 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     """Read an image.
 
     Args:
-        img_or_path (ndarray or str): Either a numpy array or image path.
-            If it is a numpy array (loaded image), then it will be returned
-            as is.
+        img_or_path (ndarray or str or Path): Either a numpy array or str or
+            pathlib.Path. If it is a numpy array (loaded image), then
+            it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
             candidates are `color`, `grayscale` and `unchanged`.
             Note that the `turbojpeg` backened does not support `unchanged`.
@@ -72,11 +75,14 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     Returns:
         ndarray: Loaded image array.
     """
+    if isinstance(img_or_path, Path):
+        img_or_path = str(img_or_path)
+
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
         check_file_exist(img_or_path,
-                         'img file does not exist: {}'.format(img_or_path))
+                         f'img file does not exist: {img_or_path}')
         if imread_backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
@@ -91,7 +97,8 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                 cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
             return img
     else:
-        raise TypeError('"img" must be a numpy array or a filename')
+        raise TypeError('"img" must be a numpy array or a str or '
+                        'a pathlib.Path object')
 
 
 def imfrombytes(content, flag='color', channel_order='bgr'):
