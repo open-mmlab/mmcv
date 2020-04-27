@@ -249,3 +249,4 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     # immediately flush buffer
     with open(filename, 'wb') as f:
         torch.save(checkpoint, f)
+        f.flush()
