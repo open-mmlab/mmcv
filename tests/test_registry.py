@@ -73,6 +73,7 @@ def test_registry():
     with pytest.raises(TypeError):
         CATS.register_module(0)
 
+    # test old APIs
     with pytest.warns(DeprecationWarning):
         CATS.register_module(SphynxCat)
 

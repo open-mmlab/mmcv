@@ -109,7 +109,8 @@ class Registry(object):
 
         # use it as a normal method: x.register_module(module=SomeClass)
         if module is not None:
-            self._register_module(module, name, force=force)
+            self._register_module(
+                module_class=module, module_name=name, force=force)
             return
 
         # raise the error ahead of time
