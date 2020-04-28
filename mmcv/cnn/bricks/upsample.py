@@ -2,17 +2,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..weight_init import xavier_init
+from .registry import UPSAMPLE_LAYERS
+
+UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
+UPSAMPLE_LAYERS.register_module('bilinear', module=nn.Upsample)
+UPSAMPLE_LAYERS.register_module('deconv', module=nn.ConvTranspose2d)
 
 
+@UPSAMPLE_LAYERS.register_module(name='pixel_shuffle')
 class PixelShufflePack(nn.Module):
-    """ Pixel Shuffle upsample layer
+    """Pixel Shuffle upsample layer.
+
     Args:
-        in_channels (int): Number of input channels
-        out_channels (int): Number of output channels
-        scale_factor (int): Upsample ratio
-        upsample_kernel (int): Kernel size of Conv layer to expand the channels
-    Returns:
-        upsampled feature map
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        scale_factor (int): Upsample ratio.
+        upsample_kernel (int): Kernel size of the conv layer to expand the
+            channels.
     """
 
     def __init__(self, in_channels, out_channels, scale_factor,
@@ -38,14 +44,6 @@ class PixelShufflePack(nn.Module):
         return x
 
 
-UPSAMPLE_CONFIG = {
-    'nearest': nn.Upsample,
-    'bilinear': nn.Upsample,
-    'deconv': nn.ConvTranspose2d,
-    'pixel_shuffle': PixelShufflePack
-}
-
-
 def build_upsample_layer(cfg):
     """Build upsample layer.
 
@@ -58,14 +56,18 @@ def build_upsample_layer(cfg):
     Returns:
         nn.Module: Created upsample layer.
     """
-    assert isinstance(cfg, dict) and 'type' in cfg
+    if not isinstance(cfg, dict):
+        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
+    if 'type' not in cfg:
+        raise KeyError(
+            f'the cfg dict must contain the key "type", but got {cfg}')
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in UPSAMPLE_CONFIG:
+    if layer_type not in UPSAMPLE_LAYERS:
         raise KeyError(f'Unrecognized upsample type {layer_type}')
     else:
-        upsample = UPSAMPLE_CONFIG[layer_type]
+        upsample = UPSAMPLE_LAYERS.get(layer_type)
 
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type

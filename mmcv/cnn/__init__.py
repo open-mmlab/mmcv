@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from .alexnet import AlexNet
-from .bricks import (ACTIVATION_CONFIG, CONV_CONFIG, NORM_CONFIG,
-                     PADDING_CONFIG, UPSAMPLE_CONFIG, ConvModule,
+from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
+                     PADDING_LAYERS, UPSAMPLE_LAYERS, ConvModule,
                      build_activation_layer, build_conv_layer,
                      build_norm_layer, build_padding_layer,
                      build_upsample_layer)
@@ -16,6 +16,6 @@ __all__ = [
     'constant_init', 'xavier_init', 'normal_init', 'uniform_init',
     'kaiming_init', 'caffe2_xavier_init', 'bias_init_with_prob', 'ConvModule',
     'build_activation_layer', 'build_conv_layer', 'build_norm_layer',
-    'build_padding_layer', 'build_upsample_layer', 'ACTIVATION_CONFIG',
-    'CONV_CONFIG', 'NORM_CONFIG', 'PADDING_CONFIG', 'UPSAMPLE_CONFIG'
+    'build_padding_layer', 'build_upsample_layer', 'ACTIVATION_LAYERS',
+    'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS', 'UPSAMPLE_LAYERS'
 ]

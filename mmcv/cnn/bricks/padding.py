@@ -1,10 +1,10 @@
 import torch.nn as nn
 
-PADDING_CONFIG = {
-    'zero': nn.ZeroPad2d,
-    'reflect': nn.ReflectionPad2d,
-    'replicate': nn.ReplicationPad2d,
-}
+from .registry import PADDING_LAYERS
+
+PADDING_LAYERS.register_module('zero', module=nn.ZeroPad2d)
+PADDING_LAYERS.register_module('reflect', module=nn.ReflectionPad2d)
+PADDING_LAYERS.register_module('replicate', module=nn.ReplicationPad2d)
 
 
 def build_padding_layer(cfg, *args, **kwargs):
@@ -18,14 +18,17 @@ def build_padding_layer(cfg, *args, **kwargs):
     Returns:
         nn.Module: Created padding layer.
     """
+    if not isinstance(cfg, dict):
+        raise TypeError('cfg must be a dict')
+    if 'type' not in cfg:
+        raise KeyError('the cfg dict must contain the key "type"')
 
-    assert isinstance(cfg, dict) and 'type' in cfg
     cfg_ = cfg.copy()
     padding_type = cfg_.pop('type')
-    if padding_type not in PADDING_CONFIG:
+    if padding_type not in PADDING_LAYERS:
         raise KeyError(f'Unrecognized padding type {padding_type}.')
     else:
-        padding_layer = PADDING_CONFIG[padding_type]
+        padding_layer = PADDING_LAYERS.get(padding_type)
 
     layer = padding_layer(*args, **kwargs, **cfg_)
 

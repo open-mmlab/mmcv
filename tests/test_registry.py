@@ -179,16 +179,16 @@ def test_build_from_cfg():
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # cfg should contain the key "type"
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         cfg = dict(depth=50, stages=4)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # incorrect registry type
     with pytest.raises(TypeError):
-        dict(type='ResNet', depth=50)
+        cfg = dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, 'BACKBONES')
 
     # incorrect default_args type
     with pytest.raises(TypeError):
-        dict(type='ResNet', depth=50)
+        cfg = dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=0)
