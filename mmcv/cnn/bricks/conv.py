@@ -2,9 +2,9 @@ from torch import nn as nn
 
 from .registry import CONV_LAYERS
 
-CONV_LAYERS.register_module(module=nn.Conv1d)
-CONV_LAYERS.register_module(module=nn.Conv2d)
-CONV_LAYERS.register_module(module=nn.Conv3d)
+CONV_LAYERS.register_module('Conv1d', module=nn.Conv1d)
+CONV_LAYERS.register_module('Conv2d', module=nn.Conv2d)
+CONV_LAYERS.register_module('Conv3d', module=nn.Conv3d)
 CONV_LAYERS.register_module('Conv', module=nn.Conv2d)
 
 

@@ -13,6 +13,9 @@ UPSAMPLE_LAYERS.register_module('deconv', module=nn.ConvTranspose2d)
 class PixelShufflePack(nn.Module):
     """Pixel Shuffle upsample layer.
 
+    This module packs `F.pixel_shuffle()` and a nn.Conv2d module together to
+    achieve a simple upsampling with pixel shuffle.
+
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
@@ -50,7 +53,8 @@ def build_upsample_layer(cfg):
     Args:
         cfg (dict): The upsample layer config, which should contain:
             - type (str): Layer type.
-            - upsample ratio (int): Upsample ratio.
+            - scale_factor (int): Upsample ratio, which is not applicable to
+                deconv.
             - layer args: Args needed to instantiate a upsample layer.
 
     Returns:
