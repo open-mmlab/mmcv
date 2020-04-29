@@ -98,14 +98,15 @@ class TextLoggerHook(LoggerHook):
         log_dict['iter'] = runner.inner_iter + 1
         # only record lr of the first param group
         log_dict['lr'] = runner.current_lr()[0]
-        memory = None
-        if torch.cuda.is_available():
-            memory = self._get_max_memory(runner)
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
 
             # statistic memory
+            if torch.cuda.is_available():
+                memory = self._get_max_memory(runner)
+            else:
+                memory = None
             if memory is not None:
                 log_dict['memory'] = memory
         for name, val in runner.log_buffer.output.items():
