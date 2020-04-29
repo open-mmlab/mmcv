@@ -120,6 +120,20 @@ def test_merge_delete():
     assert '_delete_' not in cfg.item2
 
 
+def test_merge_intermediate_variable():
+
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/i_child.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2 == dict(a=0)
+    assert cfg.item3 is True
+    assert cfg.item4 == 'test'
+    assert cfg.item_cfg == dict(b=2)
+    assert cfg.item5 == dict(cfg=dict(b=1))
+    assert cfg.item6 == dict(cfg=dict(b=2))
+
+
 def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
