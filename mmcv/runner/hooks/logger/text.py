@@ -13,10 +13,29 @@ from .base import LoggerHook
 
 @HOOKS.register_module
 class TextLoggerHook(LoggerHook):
+    """Logger hook in text.
 
-    def __init__(self, interval=10, ignore_last=True, reset_flag=False):
+    In this logger hook, the information will be printed on terminal and
+    saved in json file.
+
+    Args:
+        interval (int): Logging interval (every k iterations).
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+        interval_exp_name (int): Logging interval for experiment name. This
+            feature is to help users conveniently get the experiment
+            information from screen or log file. Default: 1000.
+    """
+
+    def __init__(self,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=False,
+                 interval_exp_name=1000):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag)
         self.time_sec_tot = 0
+        self.interval_exp_name = interval_exp_name
 
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
@@ -36,6 +55,13 @@ class TextLoggerHook(LoggerHook):
         return mem_mb.item()
 
     def _log_info(self, log_dict, runner):
+        if runner.meta is not None and 'exp_name' in runner.meta:
+            if (self.every_n_inner_iters(
+                    runner,
+                    self.interval_exp_name)) or self.end_of_epoch(runner):
+                exp_info = f"Exp name: {runner.meta['exp_name']}"
+                runner.logger.info(exp_info)
+
         if runner.mode == 'train':
             log_str = f'Epoch [{log_dict["epoch"]}]' \
                       f'[{log_dict["iter"]}/{len(runner.data_loader)}]\t' \
