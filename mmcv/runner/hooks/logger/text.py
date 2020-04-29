@@ -104,11 +104,7 @@ class TextLoggerHook(LoggerHook):
 
             # statistic memory
             if torch.cuda.is_available():
-                memory = self._get_max_memory(runner)
-            else:
-                memory = None
-            if memory is not None:
-                log_dict['memory'] = memory
+                log_dict['memory'] = self._get_max_memory(runner)
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue
