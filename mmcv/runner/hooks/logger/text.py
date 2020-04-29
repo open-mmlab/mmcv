@@ -53,7 +53,7 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
-            log_str = 'Epoch({log_dict["mode"]}) ' \
+            log_str = f'Epoch({log_dict["mode"]}) ' \
                       f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
