@@ -37,16 +37,14 @@ class TestProgressBar(object):
         # with total task num
         reset_string_io(out)
         prog_bar = mmcv.ProgressBar(10, bar_width=bar_width, file=out)
-        assert out.getvalue() == '[{}] 0/10, elapsed: 0s, ETA:'.format(
-            ' ' * bar_width)
+        assert out.getvalue() == f'[{" " * bar_width}] 0/10, elapsed: 0s, ETA:'
         reset_string_io(out)
         prog_bar = mmcv.ProgressBar(
             10, bar_width=bar_width, start=False, file=out)
         assert out.getvalue() == ''
         reset_string_io(out)
         prog_bar.start()
-        assert out.getvalue() == '[{}] 0/10, elapsed: 0s, ETA:'.format(
-            ' ' * bar_width)
+        assert out.getvalue() == f'[{" " * bar_width}] 0/10, elapsed: 0s, ETA:'
 
     def test_update(self):
         out = StringIO()
@@ -63,9 +61,8 @@ class TestProgressBar(object):
         time.sleep(1)
         reset_string_io(out)
         prog_bar.update()
-        assert out.getvalue() == ('\r[{}] 1/10, 1.0 task/s, '
-                                  'elapsed: 1s, ETA:     9s'.format('>' * 2 +
-                                                                    ' ' * 18))
+        assert out.getvalue() == f'\r[{">" * 2 + " " * 18}] 1/10, 1.0 ' \
+                                 'task/s, elapsed: 1s, ETA:     9s'
 
     def test_adaptive_length(self):
         with patch.dict('os.environ', {'COLUMNS': '80'}):

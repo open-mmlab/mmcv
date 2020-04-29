@@ -166,8 +166,7 @@ class VideoReader(object):
         """
         if frame_id < 0 or frame_id >= self._frame_cnt:
             raise IndexError(
-                '"frame_id" must be between 0 and {}'.format(self._frame_cnt -
-                                                             1))
+                f'"frame_id" must be between 0 and {self._frame_cnt - 1}')
         if frame_id == self._position:
             return self.read()
         if self._cache:

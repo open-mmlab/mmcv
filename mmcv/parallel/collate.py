@@ -21,7 +21,7 @@ def collate(batch, samples_per_gpu=1):
     """
 
     if not isinstance(batch, collections.Sequence):
-        raise TypeError('{} is not supported.'.format(batch.dtype))
+        raise TypeError(f'{batch.dtype} is not supported.')
 
     if isinstance(batch[0], DataContainer):
         assert len(batch) % samples_per_gpu == 0
