@@ -15,8 +15,8 @@ from .base import LoggerHook
 class TextLoggerHook(LoggerHook):
     """Logger hook in text.
 
-    In this logger hook, the information will be saved and represented with
-    text format.
+    In this logger hook, the information will be printed on terminal and
+    saved in json file.
 
     Args:
         interval (int): Logging interval (every k iterations).
