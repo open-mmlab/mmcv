@@ -126,7 +126,7 @@ class Config(object):
                     raise KeyError('Duplicate key is not allowed among bases')
                 base_cfg_dict.update(c)
 
-            Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            base_cfg_dict = Config._merge_a_into_b(cfg_dict, base_cfg_dict)
             cfg_dict = base_cfg_dict
 
             # merge cfg_text
@@ -137,7 +137,10 @@ class Config(object):
 
     @staticmethod
     def _merge_a_into_b(a, b):
-        # merge dict `a` into dict `b`. values in `a` will overwrite `b`.
+        # merge dict `a` into dict `b` (non-inplace). values in `a` will
+        # overwrite `b`.
+        # copy first to avoid inplace modification
+        b = b.copy()
         for k, v in a.items():
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
@@ -145,9 +148,10 @@ class Config(object):
                         f'{k}={v} cannot be inherited from base because {k} '
                         'is a dict in the child config. You may '
                         f'set `{DELETE_KEY}=True` to ignore the base config')
-                Config._merge_a_into_b(v, b[k])
+                b[k] = Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
+        return b
 
     @staticmethod
     def fromfile(filename):
@@ -312,7 +316,8 @@ class Config(object):
             d[subkey] = v
 
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        Config._merge_a_into_b(option_cfg_dict, cfg_dict)
+        super(Config, self).__setattr__(
+            '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
 
 
 class DictAction(Action):
