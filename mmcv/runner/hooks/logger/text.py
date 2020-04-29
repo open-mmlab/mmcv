@@ -13,6 +13,20 @@ from .base import LoggerHook
 
 @HOOKS.register_module
 class TextLoggerHook(LoggerHook):
+    """Logger hook in text.
+
+    In this logger hook, the information will be saved and represented with
+    text format.
+
+    Args:
+        interval (int): Logging interval (every k iterations).
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+        interval_exp_name (int): Logging interval for experiment name. This
+            feature is to help users conveniently get the experiment
+            information from screen or log file. Default: 1000.
+    """
 
     def __init__(self,
                  interval=10,
@@ -45,7 +59,7 @@ class TextLoggerHook(LoggerHook):
             if (self.every_n_inner_iters(
                     runner,
                     self.interval_exp_name)) or self.end_of_epoch(runner):
-                exp_info = f"Exp name: {runner.meta['exp_name']}\t"
+                exp_info = f"Exp name: {runner.meta['exp_name']}"
                 runner.logger.info(exp_info)
 
         if runner.mode == 'train':
