@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from .colorspace import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
                          gray2rgb, hls2bgr, hsv2bgr, imconvert, rgb2bgr,
-                         rgb2gray)
+                         rgb2gray, rgb2ycbcr)
 from .geometric import (imcrop, imflip, imflip_, impad, impad_to_multiple,
                         imrescale, imresize, imresize_like, imrotate,
                         rescale_size)
@@ -15,5 +15,5 @@ __all__ = [
     'imresize', 'imresize_like', 'rescale_size', 'imcrop', 'imflip', 'imflip_',
     'impad', 'impad_to_multiple', 'imrotate', 'imfrombytes', 'imread',
     'imwrite', 'supported_backends', 'use_backend', 'imdenormalize',
-    'imnormalize', 'imnormalize_', 'iminvert', 'posterize', 'solarize'
+    'imnormalize', 'imnormalize_', 'iminvert', 'posterize', 'solarize', 'rgb2ycbcr'
 ]

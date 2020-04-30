@@ -89,6 +89,23 @@ def test_bgr2hsv():
     assert_array_almost_equal(out_img, computed_hsv, decimal=2)
 
 
+def test_rgb2ycbcr():
+    # float32
+    in_img = np.random.rand(10, 10, 3).astype(np.float32)
+    out_img = mmcv.rgb2ycbcr(in_img)
+    computed_ycbcr = np.empty_like(in_img, dtype=in_img.dtype)
+    for i in range(in_img.shape[0]):
+        for j in range(in_img.shape[1]):
+            r = in_img[i, j, 0]
+            g = in_img[i, j, 1]
+            b = in_img[i, j, 2]
+            y = 16 + r * 65.481 / 255 + g * 128.553 / 255 + b * 24.966 / 255
+            cb = 128 - r * 37.797 / 255 - g * 74.203 / 255 + b * 112.0 / 255
+            cr = 128 + r * 112.0 / 255 - g * 93.786 / 255 - b * 18.214 / 255
+            computed_ycbcr[i, j, :] = [y, cb, cr]
+    assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
+
+
 def test_bgr2hls():
     in_img = np.random.rand(10, 10, 3).astype(np.float32)
     out_img = mmcv.bgr2hls(in_img)

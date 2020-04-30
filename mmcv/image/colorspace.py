@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import cv2
+import numpy as np
 
 
 def imconvert(img, src, dst):
@@ -73,11 +74,97 @@ def gray2rgb(img):
         img (ndarray): The input image.
 
     Returns:
-        ndarray: The converted BGR image.
+        ndarray: The converted RGB image.
     """
     img = img[..., None] if img.ndim == 2 else img
     out_img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
     return out_img
+
+
+def rgb2ycbcr(img, return_y=False):
+    """Convert a RGB image to YCbCr image.
+
+    This function produces the same results as Matlab's rgb2ycbcr function.
+
+    Args:
+        img (ndarray): The input image. It accepts:
+            1. np.uint8 type with range [0, 255];
+            2. np.float type with range [0, 1].
+        return_y (bool): Whether to only return Y channel. Default: False.
+
+    Returns:
+        ndarray: The converted YCbCr image.
+    """
+    img_type = img.dtype
+    img.astype(np.float32)
+    if img_type == np.float:
+        pass
+    elif img_type == np.uint8:
+        img /= 255.
+    else:
+        raise TypeError('The img type should be np.float or np.uint8, '
+                        f'but got {img_type}')
+
+    if return_y:
+        out_img = np.dot(img, [65.481, 128.553, 24.966]) + 16.0
+    else:
+        out_img = np.matmul(
+            img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786],
+                  [24.966, 112.0, -18.214]]) + [16, 128, 128]
+    if img_type == np.uint8:
+        out_img = out_img.round()
+    else:
+        out_img /= 255.
+    return out_img.astype(img_type)
+
+
+# # TODO
+# def bgr2ycbcr(img, only_y=True):
+#     """bgr version of rgb2ycbcr
+#     only_y: only return Y channel
+#     Input:
+#         uint8, [0, 255]
+#         float, [0, 1]
+#     """
+#     in_img_type = img.dtype
+#     img.astype(np.float32)
+#     if in_img_type != np.uint8:
+#         img *= 255.
+#     # convert
+#     if only_y:
+#         rlt = np.dot(img, [24.966, 128.553, 65.481]) / 255.0 + 16.0
+#     else:
+#         rlt = np.matmul(img,
+#                         [[24.966, 112.0, -18.214], [128.553, -74.203, -93.786],
+#                          [65.481, -37.797, 112.0]]) / 255.0 + [16, 128, 128]
+#     if in_img_type == np.uint8:
+#         rlt = rlt.round()
+#     else:
+#         rlt /= 255.
+#     return rlt.astype(in_img_type)
+
+# # TODO
+# def ycbcr2rgb(img):
+#     """same as matlab ycbcr2rgb
+#     Input:
+#         uint8, [0, 255]
+#         float, [0, 1]
+#     """
+#     in_img_type = img.dtype
+#     img.astype(np.float32)
+#     if in_img_type != np.uint8:
+#         img *= 255.
+#     # convert
+#     rlt = np.matmul(img, [[0.00456621, 0.00456621, 0.00456621],
+#                           [0, -0.00153632, 0.00791071],
+#                           [0.00625893, -0.00318811, 0]]) * 255.0 + [
+#                               -222.921, 135.576, -276.836
+#                           ]  # noqa:E126
+#     if in_img_type == np.uint8:
+#         rlt = rlt.round()
+#     else:
+#         rlt /= 255.
+#     return rlt.astype(in_img_type)
 
 
 def convert_color_factory(src, dst):
