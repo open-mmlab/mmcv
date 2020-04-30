@@ -28,10 +28,12 @@ def _get_conv():
 def _get_pool():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.pool import (_AdaptiveAvgPoolNd,
-            _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd)            
+                                             _AdaptiveMaxPoolNd, _AvgPoolNd,
+                                             _MaxPoolNd)
     else:
         from torch.nn.modules.pooling import (_AdaptiveAvgPoolNd,
-            _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd)
+                                              _AdaptiveMaxPoolNd, _AvgPoolNd,
+                                              _MaxPoolNd)
     return _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd
 
 
