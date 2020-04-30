@@ -111,9 +111,8 @@ def slice_list(in_list, lens):
     if not isinstance(lens, list):
         raise TypeError('"indices" must be an integer or a list of integers')
     elif sum(lens) != len(in_list):
-        raise ValueError(
-            'sum of lens and list length does not match: {} != {}'.format(
-                sum(lens), len(in_list)))
+        raise ValueError('sum of lens and list length does not '
+                         f'match: {sum(lens)} != {len(in_list)}')
     out_list = []
     idx = 0
     for i in range(len(lens)):
@@ -182,7 +181,7 @@ def _check_py_package(package):
 
 
 def _check_executable(cmd):
-    if subprocess.call('which {}'.format(cmd), shell=True) != 0:
+    if subprocess.call(f'which {cmd}', shell=True) != 0:
         return False
     else:
         return True

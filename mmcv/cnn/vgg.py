@@ -73,7 +73,7 @@ class VGG(nn.Module):
                  with_last_pool=True):
         super(VGG, self).__init__()
         if depth not in self.arch_settings:
-            raise KeyError('invalid depth {} for vgg'.format(depth))
+            raise KeyError(f'invalid depth {depth} for vgg')
         assert num_stages >= 1 and num_stages <= 5
         stage_blocks = self.arch_settings[depth]
         self.stage_blocks = stage_blocks[:num_stages]

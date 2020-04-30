@@ -130,9 +130,9 @@ def imshow_det_bboxes(img,
         cv2.rectangle(
             img, left_top, right_bottom, bbox_color, thickness=thickness)
         label_text = class_names[
-            label] if class_names is not None else 'cls {}'.format(label)
+            label] if class_names is not None else f'cls {label}'
         if len(bbox) > 4:
-            label_text += '|{:.02f}'.format(bbox[-1])
+            label_text += f'|{bbox[-1]:.02f}'
         cv2.putText(img, label_text, (bbox_int[0], bbox_int[1] - 2),
                     cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
 
