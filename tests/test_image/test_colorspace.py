@@ -218,6 +218,11 @@ def test_bgr2ycbcr():
 
 
 def test_ycbcr2rgb():
+    with pytest.raises(TypeError):
+        # The img type should be np.float32 or np.uint8
+        in_img = np.random.rand(10, 10, 3).astype(np.uint64)
+        mmcv.ycbcr2rgb(in_img)
+
     # float32
     in_img = np.random.rand(10, 10, 3).astype(np.float32)
     out_img = mmcv.ycbcr2rgb(in_img)
