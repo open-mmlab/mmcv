@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from .alexnet import AlexNet
 from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
-                     PADDING_LAYERS, UPSAMPLE_LAYERS, ConvModule,
+                     PADDING_LAYERS, UPSAMPLE_LAYERS, ConvModule, Scale,
                      build_activation_layer, build_conv_layer,
                      build_norm_layer, build_padding_layer,
                      build_upsample_layer)
@@ -17,5 +17,5 @@ __all__ = [
     'kaiming_init', 'caffe2_xavier_init', 'bias_init_with_prob', 'ConvModule',
     'build_activation_layer', 'build_conv_layer', 'build_norm_layer',
     'build_padding_layer', 'build_upsample_layer', 'ACTIVATION_LAYERS',
-    'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS', 'UPSAMPLE_LAYERS'
+    'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS', 'UPSAMPLE_LAYERS', 'Scale'
 ]
