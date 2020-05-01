@@ -134,6 +134,17 @@ def test_merge_intermediate_variable():
     assert cfg.item6 == dict(cfg=dict(b=2))
 
 
+def test_fromfile_in_config():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/code.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.cfg.item1 == [1, 2]
+    assert cfg.cfg.item2 == dict(a=0)
+    assert cfg.cfg.item3 is True
+    assert cfg.cfg.item4 == 'test'
+    assert cfg.item5 == 1
+
+
 def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
