@@ -103,7 +103,7 @@ class MomentumUpdaterHook(Hook):
                 self._set_momentum(runner, warmup_momentum)
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class CosineAnealingMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
@@ -127,7 +127,7 @@ class CosineAnealingMomentumUpdaterHook(MomentumUpdaterHook):
                              progress / max_progress)
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
     """Cyclic momentum Scheduler
 

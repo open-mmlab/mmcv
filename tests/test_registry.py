@@ -9,7 +9,7 @@ def test_registry():
     assert CATS.module_dict == {}
     assert len(CATS) == 0
 
-    @CATS.register_module
+    @CATS.register_module()
     class BritishShorthair:
         pass
 
@@ -124,14 +124,14 @@ def test_registry():
 def test_build_from_cfg():
     BACKBONES = mmcv.Registry('backbone')
 
-    @BACKBONES.register_module
+    @BACKBONES.register_module()
     class ResNet:
 
         def __init__(self, depth, stages=4):
             self.depth = depth
             self.stages = stages
 
-    @BACKBONES.register_module
+    @BACKBONES.register_module()
     class ResNeXt:
 
         def __init__(self, depth, stages=4):
