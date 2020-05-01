@@ -114,7 +114,7 @@ class LrUpdaterHook(Hook):
                 self._set_lr(runner, warmup_lr)
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class FixedLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, **kwargs):
@@ -124,7 +124,7 @@ class FixedLrUpdaterHook(LrUpdaterHook):
         return base_lr
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class StepLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, step, gamma=0.1, **kwargs):
@@ -154,7 +154,7 @@ class StepLrUpdaterHook(LrUpdaterHook):
         return base_lr * self.gamma**exp
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class ExpLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, gamma, **kwargs):
@@ -166,7 +166,7 @@ class ExpLrUpdaterHook(LrUpdaterHook):
         return base_lr * self.gamma**progress
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class PolyLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, power=1., min_lr=0., **kwargs):
@@ -185,7 +185,7 @@ class PolyLrUpdaterHook(LrUpdaterHook):
         return (base_lr - self.min_lr) * coeff + self.min_lr
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class InvLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, gamma, power=1., **kwargs):
@@ -198,7 +198,7 @@ class InvLrUpdaterHook(LrUpdaterHook):
         return base_lr * (1 + self.gamma * progress)**(-self.power)
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class CosineAnealingLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, min_lr=None, min_lr_ratio=None, **kwargs):
@@ -221,7 +221,7 @@ class CosineAnealingLrUpdaterHook(LrUpdaterHook):
         return annealing_cos(base_lr, target_lr, progress / max_progress)
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class CyclicLrUpdaterHook(LrUpdaterHook):
     """Cyclic LR Scheduler
 

@@ -6,7 +6,7 @@ from ..hook import HOOKS
 from .base import LoggerHook
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class WandbLoggerHook(LoggerHook):
 
     def __init__(self,

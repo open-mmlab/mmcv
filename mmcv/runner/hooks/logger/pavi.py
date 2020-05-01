@@ -31,7 +31,7 @@ def is_scalar(val, include_np=True, include_torch=True):
         return False
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
 
     def __init__(self,
