@@ -389,6 +389,11 @@ class Runner(object):
         if isinstance(lr_config, dict):
             assert 'policy' in lr_config
             policy_type = lr_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of Lr updater updater.
+            # Since this is not applicable for `CosineAnealingLrUpdater`,
+            # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
             hook_type = policy_type + 'LrUpdaterHook'
@@ -424,6 +429,11 @@ class Runner(object):
         if isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
             policy_type = momentum_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of momentum updater.
+            # Since this is not applicable for `CosineAnealingMomentumUpdater`,
+            # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
             hook_type = policy_type + 'MomentumUpdaterHook'
