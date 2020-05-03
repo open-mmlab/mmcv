@@ -117,6 +117,7 @@ def test_convert_output_type_range():
     assert out_img.dtype == np.float32
     assert np.absolute(out_img).mean() < 1
     # np.uint8
+    in_img = (np.random.rand(10, 10, 3) * 255).astype(np.float32)
     out_img = _convert_output_type_range(in_img, np.uint8)
     assert out_img.dtype == np.uint8
     assert np.absolute(out_img).mean() > 1
