@@ -5,6 +5,8 @@ import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import mmcv
+from mmcv.image.colorspace import (_convert_input_type_range,
+                                   _convert_output_type_range)
 
 
 def test_bgr2gray():
@@ -87,6 +89,39 @@ def test_bgr2hsv():
     assert_array_almost_equal(out_img, computed_hsv, decimal=2)
 
 
+def test_convert_input_type_range():
+    with pytest.raises(TypeError):
+        # The img type should be np.float32 or np.uint8
+        in_img = np.random.rand(10, 10, 3).astype(np.uint64)
+        _convert_input_type_range(in_img)
+    # np.float32
+    in_img = np.random.rand(10, 10, 3).astype(np.float32)
+    out_img = _convert_input_type_range(in_img)
+    assert out_img.dtype == np.float32
+    assert np.absolute(out_img).mean() < 1
+    # np.uint8
+    in_img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
+    out_img = _convert_input_type_range(in_img)
+    assert out_img.dtype == np.float32
+    assert np.absolute(out_img).mean() < 1
+
+
+def test_convert_output_type_range():
+    with pytest.raises(TypeError):
+        # The dst_type should be np.float32 or np.uint8
+        in_img = np.random.rand(10, 10, 3).astype(np.float32)
+        _convert_output_type_range(in_img, np.uint64)
+    # np.float32
+    in_img = (np.random.rand(10, 10, 3) * 255).astype(np.float32)
+    out_img = _convert_output_type_range(in_img, np.float32)
+    assert out_img.dtype == np.float32
+    assert np.absolute(out_img).mean() < 1
+    # np.uint8
+    out_img = _convert_output_type_range(in_img, np.uint8)
+    assert out_img.dtype == np.uint8
+    assert np.absolute(out_img).mean() > 1
+
+
 def test_rgb2ycbcr():
     with pytest.raises(TypeError):
         # The img type should be np.float32 or np.uint8
@@ -106,8 +141,8 @@ def test_rgb2ycbcr():
             computed_ycbcr[i, j, :] = [y, cb, cr]
     computed_ycbcr /= 255.
     assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
-    # return_y=True
-    out_img = mmcv.rgb2ycbcr(in_img, return_y=True)
+    # y_only=True
+    out_img = mmcv.rgb2ycbcr(in_img, y_only=True)
     computed_y = np.empty_like(out_img, dtype=out_img.dtype)
     for i in range(in_img.shape[0]):
         for j in range(in_img.shape[1]):
@@ -131,9 +166,9 @@ def test_rgb2ycbcr():
             y, cb, cr = y.round(), cb.round(), cr.round()
             computed_ycbcr[i, j, :] = [y, cb, cr]
     assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
-    # return_y=True
+    # y_only=True
     in_img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
-    out_img = mmcv.rgb2ycbcr(in_img, return_y=True)
+    out_img = mmcv.rgb2ycbcr(in_img, y_only=True)
     computed_y = np.empty_like(out_img, dtype=out_img.dtype)
     in_img = in_img / 255.
     for i in range(in_img.shape[0]):
@@ -159,9 +194,9 @@ def test_bgr2ycbcr():
             computed_ycbcr[i, j, :] = [y, cb, cr]
     computed_ycbcr /= 255.
     assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
-    # return_y=True
+    # y_only=True
     in_img = np.random.rand(10, 10, 3).astype(np.float32)
-    out_img = mmcv.bgr2ycbcr(in_img, return_y=True)
+    out_img = mmcv.bgr2ycbcr(in_img, y_only=True)
     computed_y = np.empty_like(out_img, dtype=out_img.dtype)
     for i in range(in_img.shape[0]):
         for j in range(in_img.shape[1]):
@@ -185,9 +220,9 @@ def test_bgr2ycbcr():
             y, cb, cr = y.round(), cb.round(), cr.round()
             computed_ycbcr[i, j, :] = [y, cb, cr]
     assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
-    # return_y = True
+    # y_only = True
     in_img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
-    out_img = mmcv.bgr2ycbcr(in_img, return_y=True)
+    out_img = mmcv.bgr2ycbcr(in_img, y_only=True)
     computed_y = np.empty_like(out_img, dtype=out_img.dtype)
     in_img = in_img / 255.
     for i in range(in_img.shape[0]):
