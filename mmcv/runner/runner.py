@@ -418,7 +418,7 @@ class Runner(object):
             hook = checkpoint_config
         self.register_hook(hook)
 
-    def register_momentum_hooks(self, momentum_config):
+    def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
             return
         if isinstance(momentum_config, dict):
@@ -458,7 +458,7 @@ class Runner(object):
         - LoggerHook(s)
         """
         self.register_lr_hook(lr_config)
-        self.register_momentum_hooks(momentum_config)
+        self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())

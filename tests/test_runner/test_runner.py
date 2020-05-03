@@ -92,3 +92,33 @@ def test_build_lr_momentum_hook():
         step=[8, 11])
     runner.register_lr_hook(lr_config)
     assert len(runner.hooks) == 5
+
+    # test policy that is already title
+    mom_config = dict(
+        policy='CosineAnealing',
+        min_momentum_ratio=0.99 / 0.95,
+        by_epoch=False,
+        warmup_iters=2,
+        warmup_ratio=0.9 / 0.95)
+    runner.register_momentum_hook(mom_config)
+    assert len(runner.hooks) == 6
+
+    # test policy that is already title
+    mom_config = dict(
+        policy='Cyclic',
+        by_epoch=False,
+        target_ratio=(0.85 / 0.95, 1),
+        cyclic_times=1,
+        step_ratio_up=0.4)
+    runner.register_momentum_hook(mom_config)
+    assert len(runner.hooks) == 7
+
+    # test policy that is already title
+    mom_config = dict(
+        policy='cyclic',
+        by_epoch=False,
+        target_ratio=(0.85 / 0.95, 1),
+        cyclic_times=1,
+        step_ratio_up=0.4)
+    runner.register_momentum_hook(mom_config)
+    assert len(runner.hooks) == 8
