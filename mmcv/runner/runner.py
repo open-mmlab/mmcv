@@ -388,7 +388,10 @@ class Runner(object):
     def register_lr_hook(self, lr_config):
         if isinstance(lr_config, dict):
             assert 'policy' in lr_config
-            hook_type = lr_config.pop('policy').title() + 'LrUpdaterHook'
+            policy_type = lr_config.pop('policy')
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'LrUpdaterHook'
             lr_config['type'] = hook_type
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
@@ -420,8 +423,10 @@ class Runner(object):
             return
         if isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
-            hook_type = momentum_config.pop(
-                'policy').title() + 'MomentumUpdaterHook'
+            policy_type = momentum_config.pop('policy')
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'MomentumUpdaterHook'
             momentum_config['type'] = hook_type
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:

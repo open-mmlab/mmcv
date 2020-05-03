@@ -104,13 +104,13 @@ class MomentumUpdaterHook(Hook):
 
 
 @HOOKS.register_module()
-class CosineMomentumUpdaterHook(MomentumUpdaterHook):
+class CosineAnealingMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
         assert (min_momentum is None) ^ (min_momentum_ratio is None)
         self.min_momentum = min_momentum
         self.min_momentum_ratio = min_momentum_ratio
-        super(CosineMomentumUpdaterHook, self).__init__(**kwargs)
+        super(CosineAnealingMomentumUpdaterHook, self).__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
         if self.by_epoch:

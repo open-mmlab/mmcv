@@ -104,7 +104,7 @@ def test_cosine_runner_hook():
 
     # add momentum scheduler
     hook = mmcv.runner.hooks.momentum_updater \
-        .CosineMomentumUpdaterHook(
+        .CosineAnealingMomentumUpdaterHook(
             min_momentum_ratio=0.99 / 0.95,
             by_epoch=False,
             warmup_iters=2,
@@ -112,7 +112,7 @@ def test_cosine_runner_hook():
     runner.register_hook(hook)
 
     # add momentum LR scheduler
-    hook = mmcv.runner.hooks.lr_updater.CosineLrUpdaterHook(
+    hook = mmcv.runner.hooks.lr_updater.CosineAnealingLrUpdaterHook(
         by_epoch=False, min_lr_ratio=0, warmup_iters=2, warmup_ratio=0.9)
     runner.register_hook(hook)
     runner.register_hook(mmcv.runner.hooks.IterTimerHook())

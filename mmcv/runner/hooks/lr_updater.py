@@ -199,13 +199,13 @@ class InvLrUpdaterHook(LrUpdaterHook):
 
 
 @HOOKS.register_module()
-class CosineLrUpdaterHook(LrUpdaterHook):
+class CosineAnealingLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, min_lr=None, min_lr_ratio=None, **kwargs):
         assert (min_lr is None) ^ (min_lr_ratio is None)
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
-        super(CosineLrUpdaterHook, self).__init__(**kwargs)
+        super(CosineAnealingLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
