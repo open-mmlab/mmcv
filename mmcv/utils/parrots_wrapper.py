@@ -57,9 +57,7 @@ _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 class SyncBatchNorm(SyncBatchNorm_):
 
     def _specify_ddp_gpu_num(self, gpu_size):
-        if torch.__version__ == 'parrots':
-            pass
-        else:
+        if torch.__version__ != 'parrots':
             super()._specify_ddp_gpu_num(gpu_size)
 
     def _check_input_dim(self, input):
