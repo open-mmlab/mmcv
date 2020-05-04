@@ -16,7 +16,7 @@ layer = build_norm_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
 ```
 
 - `build_conv_layer`: Supported types are Conv1d, Conv2d, Conv3d, Conv (alias for Conv2d).
-- `build_norm_layer`: Supported types are BN1d, BN2d, BN3d, BN (alias for BN2d), SyncBN, GN, LN, IN1d, IN2d, IN3d, IN.
+- `build_norm_layer`: Supported types are BN1d, BN2d, BN3d, BN (alias for BN2d), SyncBN, GN, LN, IN1d, IN2d, IN3d, IN (alias for IN2d).
 - `build_activation_layer`: Supported types are ReLU, LeakyReLU, PReLU, RReLU, ReLU6, ELU, Sigmoid, Tanh.
 - `build_upsample_layer`: Supported types are nearest, bilinear, deconv, pixel_shuffle.
 - `build_padding_layer`: Supported types are zero, reflect, replicate.
@@ -68,7 +68,7 @@ conv = ConvModule(
 
 ### Weight initialization
 
-We warp some initialization methods which accept a module as argument.
+We wrap some initialization methods which accept a module as argument.
 
 - `constant_init`
 - `xavier_init`
