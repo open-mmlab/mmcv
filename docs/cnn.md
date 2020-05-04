@@ -9,6 +9,8 @@ but do not want to modify the code from time to time.
 Here we provide some layer building methods to construct layers from a dict,
 which can be written in configs or specified via command line arguments.
 
+#### Usage
+
 A simplest example is
 ```python
 cfg = dict(type='Conv3d')
@@ -21,28 +23,31 @@ layer = build_norm_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
 - `build_upsample_layer`: Supported types are nearest, bilinear, deconv, pixel_shuffle.
 - `build_padding_layer`: Supported types are zero, reflect, replicate.
 
+#### Extension
+
 We also allow extending the building methods with custom layers and operators.
-Just write and register your own module.
 
-```python
-from mmcv.cnn import UPSAMPLE_LAYERS
+1. Write and register your own module.
 
-@UPSAMPLE_LAYERS.register_module()
-class MyUpsample:
+    ```python
+    from mmcv.cnn import UPSAMPLE_LAYERS
 
-    def __init__(self, scale_factor):
-        pass
+    @UPSAMPLE_LAYERS.register_module()
+    class MyUpsample:
 
-    def forward(self, x):
-        pass
-```
+        def __init__(self, scale_factor):
+            pass
 
-Make sure `MyUpsample` is imported before you use it.
+        def forward(self, x):
+            pass
+    ```
 
-```python
-cfg = dict(type='MyUpsample', scale_factor=2)
-layer = build_upsample_layer(cfg)
-```
+2. Import `MyUpsample` somewhere (e.g., in `__init__.py`) and then use it.
+
+    ```python
+    cfg = dict(type='MyUpsample', scale_factor=2)
+    layer = build_upsample_layer(cfg)
+    ```
 
 ### Module bundles
 
