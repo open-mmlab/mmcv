@@ -32,6 +32,11 @@ utils
 .. automodule:: mmcv.utils
     :members:
 
+cnn
+--------------
+.. automodule:: mmcv.cnn
+    :members:
+
 runner
 --------------
 .. automodule:: mmcv.runner
