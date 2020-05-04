@@ -151,9 +151,10 @@ class Config(object):
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
                     raise TypeError(
-                        f'{k}={v} cannot be inherited from base because {k} '
-                        'is a dict in the child config. You may '
-                        f'set `{DELETE_KEY}=True` to ignore the base config')
+                        f'{k}={v} in child config cannot inherit from base '
+                        f'because {k} is a dict in the child config but is of '
+                        f'type {type(b[k])} in base config. You may set '
+                        f'`{DELETE_KEY}=True` to ignore the base config')
                 b[k] = Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
