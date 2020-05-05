@@ -260,6 +260,11 @@ class Runner(object):
         else:
             meta.update(epoch=self.epoch + 1, iter=self.iter)
 
+        for hook in self.hooks:
+            hook_meta = getattr(hook, 'meta', None)
+            if hook_meta:
+                meta['hooks'][hook.__class__.__name__] = hook_meta
+
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
         optimizer = self.optimizer if save_optimizer else None
@@ -329,6 +334,13 @@ class Runner(object):
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
+
+        hooks_meta = checkpoint['meta'].get('hooks', {})
+        for hook in self.hooks:
+            name = hook.__class__.__name__
+            if name in hooks_meta:
+                hook.meta = hooks_meta[name]
+
         if 'optimizer' in checkpoint and resume_optimizer:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
