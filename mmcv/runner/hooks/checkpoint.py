@@ -21,7 +21,7 @@ class CheckpointHook(Hook):
         self.args = kwargs
 
     @master_only
-    def after_train_epoch(self, runner):
+    def after_epoch(self, runner):
         if not self.every_n_epochs(runner, self.interval):
             return
 
