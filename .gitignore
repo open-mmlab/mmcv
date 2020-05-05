@@ -108,4 +108,5 @@ venv.bak/
 .vscode/
 
 # custom
+.DS_Store
 mmcv/video/optflow_warp/flow_warp_module.cpp

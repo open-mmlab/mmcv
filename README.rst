@@ -1,6 +1,9 @@
 MMCV
 ====
 
+.. image:: https://img.shields.io/pypi/v/mmcv
+  :target: https://pypi.org/project/mmcv
+
 .. image:: https://travis-ci.com/open-mmlab/mmcv.svg?branch=master
   :target: https://travis-ci.com/open-mmlab/mmcv
 

@@ -49,7 +49,7 @@ extensions = [
 ]
 
 autodoc_mock_imports = [
-    'cv2', 'numpy', 'torch', 'enum', 'pathlib', 'mmcv._ext'
+    'cv2', 'enum', 'pathlib', 'mmcv._ext', 'pytorch', 'torchvision'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
