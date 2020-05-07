@@ -5,9 +5,11 @@ import torch.nn as nn
 from mmcv.cnn.bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                              PADDING_LAYERS, build_activation_layer,
                              build_conv_layer, build_norm_layer,
-                             build_padding_layer, build_upsample_layer)
+                             build_padding_layer, build_upsample_layer,
+                             is_norm)
 from mmcv.cnn.bricks.norm import infer_abbr
 from mmcv.cnn.bricks.upsample import PixelShufflePack
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 
 def test_build_conv_layer():
@@ -243,3 +245,35 @@ def test_pixel_shuffle_pack():
     assert pixel_shuffle.upsample_conv.kernel_size == (3, 3)
     x_out = pixel_shuffle(x_in)
     assert x_out.shape == (2, 3, 20, 20)
+
+
+def test_is_norm():
+    norm_set1 = [
+        nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.InstanceNorm1d,
+        nn.InstanceNorm2d, nn.InstanceNorm3d, nn.LayerNorm
+    ]
+    norm_set2 = [nn.GroupNorm]
+    for norm_type in norm_set1:
+        layer = norm_type(3)
+        assert is_norm(layer)
+        assert not is_norm(layer, exclude=(norm_type, ))
+    for norm_type in norm_set2:
+        layer = norm_type(3, 6)
+        assert is_norm(layer)
+        assert not is_norm(layer, exclude=(norm_type, ))
+
+    class MyNorm(nn.BatchNorm2d):
+        pass
+
+    layer = MyNorm(3)
+    assert is_norm(layer)
+    assert not is_norm(layer, exclude=_BatchNorm)
+    assert not is_norm(layer, exclude=(_BatchNorm, ))
+
+    with pytest.raises(TypeError):
+        layer = nn.BatchNorm1d(3)
+        is_norm(layer, exclude='BN')
+
+    with pytest.raises(TypeError):
+        layer = nn.BatchNorm1d(3)
+        is_norm(layer, exclude=('BN', ))

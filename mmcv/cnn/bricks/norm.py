@@ -123,15 +123,19 @@ def is_norm(layer, exclude=None):
 
     Args:
         layer (nn.Module): The layer to be checked.
-        exclude (tuple[type]): Types to be excluded.
+        exclude (type | tuple[type]): Types to be excluded.
 
     Returns:
         bool: Whether the layer is a norm layer.
     """
-    if not (exclude is None or is_tuple_of(exclude, type)):
-        raise TypeError(
-            f'"exclude" must be either None or a tuple of classes, '
-            f'but got {type(exclude)}')
+    if exclude is not None:
+        if not isinstance(exclude, tuple):
+            exclude = (exclude, )
+        if not is_tuple_of(exclude, type):
+            raise TypeError(
+                f'"exclude" must be either None or type or a tuple of types, '
+                f'but got {type(exclude)}: {exclude}')
+
     if exclude and isinstance(layer, exclude):
         return False
 
