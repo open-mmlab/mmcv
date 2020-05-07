@@ -270,6 +270,9 @@ def test_is_norm():
     assert not is_norm(layer, exclude=_BatchNorm)
     assert not is_norm(layer, exclude=(_BatchNorm, ))
 
+    layer = nn.Conv2d(3, 8, 1)
+    assert not is_norm(layer)
+
     with pytest.raises(TypeError):
         layer = nn.BatchNorm1d(3)
         is_norm(layer, exclude='BN')
