@@ -1,16 +1,16 @@
 import inspect
 
 import torch.nn as nn
-from torch.nn.modules.batchnorm import _BatchNorm
-from torch.nn.modules.instancenorm import _InstanceNorm
 
+from mmcv.utils import is_tuple_of
+from mmcv.utils.parrots_wrapper import SyncBatchNorm, _BatchNorm, _InstanceNorm
 from .registry import NORM_LAYERS
 
 NORM_LAYERS.register_module('BN', module=nn.BatchNorm2d)
 NORM_LAYERS.register_module('BN1d', module=nn.BatchNorm1d)
 NORM_LAYERS.register_module('BN2d', module=nn.BatchNorm2d)
 NORM_LAYERS.register_module('BN3d', module=nn.BatchNorm3d)
-NORM_LAYERS.register_module('SyncBN', module=nn.SyncBatchNorm)
+NORM_LAYERS.register_module('SyncBN', module=SyncBatchNorm)
 NORM_LAYERS.register_module('GN', module=nn.GroupNorm)
 NORM_LAYERS.register_module('LN', module=nn.LayerNorm)
 NORM_LAYERS.register_module('IN', module=nn.InstanceNorm2d)
@@ -116,3 +116,31 @@ def build_norm_layer(cfg, num_features, postfix=''):
         param.requires_grad = requires_grad
 
     return name, layer
+
+
+def is_norm(layer, exclude=None):
+    """Check if a layer is a normalization layer.
+
+    Args:
+        layer (nn.Module): The layer to be checked.
+        exclude (type | tuple[type]): Types to be excluded.
+
+    Returns:
+        bool: Whether the layer is a norm layer.
+    """
+    if exclude is not None:
+        if not isinstance(exclude, tuple):
+            exclude = (exclude, )
+        if not is_tuple_of(exclude, type):
+            raise TypeError(
+                f'"exclude" must be either None or type or a tuple of types, '
+                f'but got {type(exclude)}: {exclude}')
+
+    if exclude and isinstance(layer, exclude):
+        return False
+
+    all_norm_bases = (_BatchNorm, _InstanceNorm, nn.GroupNorm, nn.LayerNorm)
+    if isinstance(layer, all_norm_bases):
+        return True
+    else:
+        return False
