@@ -14,6 +14,7 @@ class ProgressBar(object):
         self.task_num = task_num
         self.bar_width = bar_width
         self.completed = 0
+        self.progress_time = 0
         self.file = file
         if start:
             self.start()
@@ -32,19 +33,23 @@ class ProgressBar(object):
         self.file.flush()
         self.timer = Timer()
 
-    def update(self):
-        self.completed += 1
-        elapsed = self.timer.since_start()
-        if elapsed > 0:
-            fps = self.completed / elapsed
+    def update(self, completed=1, elapsed_time=None):
+        # sometimes elapsed time may not be computed from the start
+        self.completed += completed
+        if elapsed_time is None:
+            self.progress_time = self.timer.since_start()
+        else:
+            self.progress_time += elapsed_time
+        if self.progress_time > 0:
+            fps = self.completed / self.progress_time
         else:
             fps = float('inf')
         if self.task_num > 0:
             percentage = self.completed / float(self.task_num)
-            eta = int(elapsed * (1 - percentage) / percentage + 0.5)
+            eta = int(self.progress_time * (1 - percentage) / percentage + 0.5)
             msg = f'\r[{{}}] {self.completed}/{self.task_num}, ' \
-                  f'{fps:.1f} task/s, elapsed: {int(elapsed + 0.5)}s, ' \
-                  f'ETA: {eta:5}s'
+                  f'{fps:.1f} task/s, elapsed: ' \
+                  f'{int(self.progress_time+ 0.5)}s, ETA: {eta:5}s'
 
             bar_width = min(self.bar_width,
                             int(self.terminal_width - len(msg)) + 2,
@@ -55,8 +60,8 @@ class ProgressBar(object):
             self.file.write(msg.format(bar_chars))
         else:
             self.file.write(
-                f'completed: {self.completed}, elapsed: {int(elapsed + 0.5)}s,'
-                f' {fps:.1f} tasks/s')
+                f'completed: {self.completed}, elapsed: '
+                f'{int(self.progress_time + 0.5)}s, {fps:.1f} tasks/s')
         self.file.flush()
 
 
