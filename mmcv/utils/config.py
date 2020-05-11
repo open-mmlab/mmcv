@@ -298,15 +298,13 @@ class Config(object):
             else:
                 with open(file, 'w') as f:
                     f.write(self.pretty_text)
-        elif self.filename.endswith(('.yml', '.yaml', '.json')):
+        else:
             import mmcv
             if file is None:
                 file_format = self.filename.split('.')[-1]
                 return mmcv.dump(cfg_dict, file_format=file_format)
             else:
                 mmcv.dump(cfg_dict, file)
-        else:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
 
     def merge_from_dict(self, options):
         """Merge list into cfg_dict
