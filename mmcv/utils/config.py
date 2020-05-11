@@ -1,5 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import json
 import os.path as osp
 import shutil
 import sys
@@ -291,10 +290,21 @@ class Config(object):
     def __iter__(self):
         return iter(self._cfg_dict)
 
-    def dump(self):
-        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        format_text = json.dumps(cfg_dict, indent=2)
-        return format_text
+    def dump(self, file=None):
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
+        if self.filename.endswith('.py'):
+            if file is None:
+                return self.pretty_text
+            else:
+                with open(file, 'w') as f:
+                    f.write(self.pretty_text)
+        else:
+            import mmcv
+            if file is None:
+                file_format = self.filename.split('.')[-1]
+                return mmcv.dump(cfg_dict, file_format=file_format)
+            else:
+                mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
         """Merge list into cfg_dict
