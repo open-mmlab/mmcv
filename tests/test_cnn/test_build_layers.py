@@ -226,6 +226,22 @@ def test_upsample_layer():
     layer = build_upsample_layer(cfg)
     assert isinstance(layer, nn.ConvTranspose2d)
 
+    cfg = dict(type='deconv')
+    kwargs = dict(in_channels=3, out_channels=3, kernel_size=3, stride=2)
+    layer = build_upsample_layer(cfg, **kwargs)
+    assert isinstance(layer, nn.ConvTranspose2d)
+    assert layer.in_channels == kwargs['in_channels']
+    assert layer.out_channels == kwargs['out_channels']
+    assert layer.kernel_size == (kwargs['kernel_size'], kwargs['kernel_size'])
+    assert layer.stride == (kwargs['stride'], kwargs['stride'])
+
+    layer = build_upsample_layer(cfg, 3, 3, 3, 2)
+    assert isinstance(layer, nn.ConvTranspose2d)
+    assert layer.in_channels == kwargs['in_channels']
+    assert layer.out_channels == kwargs['out_channels']
+    assert layer.kernel_size == (kwargs['kernel_size'], kwargs['kernel_size'])
+    assert layer.stride == (kwargs['stride'], kwargs['stride'])
+
     cfg = dict(
         type='pixel_shuffle',
         in_channels=3,

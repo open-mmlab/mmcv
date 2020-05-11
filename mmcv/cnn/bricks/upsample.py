@@ -47,7 +47,7 @@ class PixelShufflePack(nn.Module):
         return x
 
 
-def build_upsample_layer(cfg):
+def build_upsample_layer(cfg, *args, **kwargs):
     """Build upsample layer.
 
     Args:
@@ -56,6 +56,10 @@ def build_upsample_layer(cfg):
             - scale_factor (int): Upsample ratio, which is not applicable to
                 deconv.
             - layer args: Args needed to instantiate a upsample layer.
+        args (argument list): Arguments passed to the `__init__`
+            method of the corresponding conv layer.
+        kwargs (keyword arguments): Keyword arguments passed to the `__init__`
+            method of the corresponding conv layer.
 
     Returns:
         nn.Module: Created upsample layer.
@@ -75,5 +79,5 @@ def build_upsample_layer(cfg):
 
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type
-    layer = upsample(**cfg_)
+    layer = upsample(*args, **kwargs, **cfg_)
     return layer
