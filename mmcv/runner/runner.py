@@ -364,6 +364,7 @@ class Runner(object):
         self.call_hook('before_run')
 
         while self.epoch < max_epochs:
+            self.call_hook('true_before_epoch')
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
@@ -381,6 +382,7 @@ class Runner(object):
                     if mode == 'train' and self.epoch >= max_epochs:
                         return
                     epoch_runner(data_loaders[i], **kwargs)
+            self.call_hook('true_after_epoch')
 
         time.sleep(1)  # wait for some hooks like loggers to finish
         self.call_hook('after_run')

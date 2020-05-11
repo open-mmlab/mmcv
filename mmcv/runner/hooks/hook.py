@@ -24,6 +24,12 @@ class Hook(object):
     def after_iter(self, runner):
         pass
 
+    def true_before_epoch(self, runner):
+        pass
+
+    def true_after_epoch(self, runner):
+        pass
+
     def before_train_epoch(self, runner):
         self.before_epoch(runner)
 
