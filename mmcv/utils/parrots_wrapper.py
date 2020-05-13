@@ -63,7 +63,7 @@ def _get_norm():
 
 CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
-BuildExtension, CppExtension, CUDAExtension = _get_extension
+BuildExtension, CppExtension, CUDAExtension = _get_extension()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_norm()
 _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 
