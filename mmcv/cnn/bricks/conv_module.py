@@ -150,14 +150,16 @@ class ConvModule(nn.Module):
         return getattr(self, self.norm_name)
 
     def init_weights(self):
-        if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
-            nonlinearity = 'leaky_relu'
-            a = self.act_cfg.get('negative_slope', 0.01)
-        else:
-            nonlinearity = 'relu'
-            a = 0
-
-        kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)
+        # If convolution layer has its `init_weights` method,
+        # it should have initialized weights when building it.
+        if not hasattr(self.conv, 'init_weights'):
+            if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
+                nonlinearity = 'leaky_relu'
+                a = self.act_cfg.get('negative_slope', 0.01)
+            else:
+                nonlinearity = 'relu'
+                a = 0
+            kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
