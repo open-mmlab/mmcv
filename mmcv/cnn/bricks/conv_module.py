@@ -150,14 +150,22 @@ class ConvModule(nn.Module):
         return getattr(self, self.norm_name)
 
     def init_weights(self):
-        if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
-            nonlinearity = 'leaky_relu'
-            a = self.act_cfg.get('negative_slope', 0.01)
-        else:
-            nonlinearity = 'relu'
-            a = 0
-
-        kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)
+        # 1. It is mainly for customized conv layers with their own
+        #    initialization manners, and we do not want ConvModule to
+        #    overrides the initialization.
+        # 2. For customized conv layers without their own initialization
+        #    manners, they will be initialized by this method with default
+        #    `kaiming_init`.
+        # 3. For PyTorch's conv layers, they will be initialized anyway by
+        #    their own `reset_parameters` methods.
+        if not hasattr(self.conv, 'init_weights'):
+            if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
+                nonlinearity = 'leaky_relu'
+                a = self.act_cfg.get('negative_slope', 0.01)
+            else:
+                nonlinearity = 'relu'
+                a = 0
+            kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
