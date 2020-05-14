@@ -1,1 +1,1 @@
-include mmcv/video/optflow_warp/*.hpp
+include mmcv/video/optflow_warp/*.hpp mmcv/video/optflow_warp/*.pyx

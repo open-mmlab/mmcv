@@ -15,6 +15,6 @@ jobs:
       - name: Build MMCV
         run: python setup.py sdist
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.pypi_password }}
+        run: |
+          pip install twine
+          twine upload dist/* -u __token__ -p ${{ secrets.pypi_password }}
