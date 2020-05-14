@@ -5,6 +5,7 @@ on: push
 jobs:
   build-n-publish:
     runs-on: ubuntu-18.04
+    if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -14,7 +15,6 @@ jobs:
       - name: Build MMCV
         run: python setup.py sdist
       - name: Publish distribution to PyPI
-        if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.pypi_password }}
