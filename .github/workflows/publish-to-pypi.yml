@@ -5,7 +5,7 @@ on: push
 jobs:
   build-n-publish:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.ref, 'refs/tags')
+    # if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -13,8 +13,10 @@ jobs:
         with:
           python-version: 3.7
       - name: Build MMCV
-        run: python setup.py sdist
+        run: |
+          echo "__version__ = 0.5.2dev0" > mmcv/version.py
+          python setup.py sdist
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.pypi_password }}
+        run: |
+          pip install twine
+          twine upload dist/* -u __token__ -p ${{ secrets.pypi_password }}
