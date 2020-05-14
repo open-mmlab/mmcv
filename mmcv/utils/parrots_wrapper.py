@@ -1,3 +1,5 @@
+from functools import partial
+
 import torch
 
 
@@ -25,6 +27,17 @@ def _get_conv():
     return _ConvNd, _ConvTransposeMixin
 
 
+def _get_extension():
+    if torch.__version__ == 'parrots':
+        from parrots.utils.build_extension import BuildExtension, Extension
+        CppExtension = partial(Extension, cuda=False)
+        CUDAExtension = partial(Extension, cuda=True)
+    else:
+        from torch.utils.cpp_extension import (BuildExtension, CppExtension,
+                                               CUDAExtension)
+    return BuildExtension, CppExtension, CUDAExtension
+
+
 def _get_pool():
     if torch.__version__ == 'parrots':
         from parrots.nn.modules.pool import (_AdaptiveAvgPoolNd,
@@ -50,6 +63,7 @@ def _get_norm():
 
 CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
+BuildExtension, CppExtension, CUDAExtension = _get_extension()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_norm()
 _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 
