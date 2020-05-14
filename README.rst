@@ -4,8 +4,8 @@ MMCV
 .. image:: https://img.shields.io/pypi/v/mmcv
   :target: https://pypi.org/project/mmcv
 
-.. image:: https://travis-ci.com/open-mmlab/mmcv.svg?branch=master
-  :target: https://travis-ci.com/open-mmlab/mmcv
+.. image:: https://github.com/open-mmlab/mmcv/workflows/build/badge.svg
+  :target: https://github.com/open-mmlab/mmcv/actions
 
 .. image:: https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/open-mmlab/mmcv
