@@ -8,6 +8,7 @@ from collections import abc
 from importlib import import_module
 
 from addict import Dict
+from yapf.yapflib.yapf_api import FormatCode
 
 from .path import check_file_exist
 
@@ -262,6 +263,7 @@ class Config(object):
 
         cfg_dict = self._cfg_dict.to_dict()
         text = _format_dict(cfg_dict, outest_level=True)
+        text, _ = FormatCode(text, verify=True)
 
         return text
 
