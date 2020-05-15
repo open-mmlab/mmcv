@@ -22,7 +22,7 @@ def choose_requirement(primary, secondary):
     return str(primary)
 
 
-install_requires = ['addict', 'numpy', 'pyyaml']
+install_requires = ['addict', 'numpy', 'pyyaml', 'yapf']
 
 # If first not installed install second package
 CHOOSE_INSTALL_REQUIRES = [('opencv-python-headless>=3', 'opencv-python>=3')]
