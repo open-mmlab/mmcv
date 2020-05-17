@@ -38,6 +38,13 @@ open_mmlab_model_urls = {
     'bninception_caffe': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/bn_inception_caffe-ed2e8665.pth',  # noqa: E501
     'kin400/i3d_r50_f32s2_k400': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/i3d_r50_f32s2_k400-2c57e077.pth',  # noqa: E501
     'kin400/nl3d_r50_f32s2_k400': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/nl3d_r50_f32s2_k400-fa7e7caa.pth',  # noqa: E501
+    'regnetx_800mf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_800mf-1f4be4c7.pth',  # noqa: E501
+    'regnetx_1.6gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_1.6gf-5791c176.pth',  # noqa: E501
+    'regnetx_3.2gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_3.2gf-c2599b0f.pth',  # noqa: E501
+    'regnetx_4.0gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_4.0gf-a88f671e.pth',  # noqa: E501
+    'regnetx_6.4gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_6.4gf-006af45d.pth',  # noqa: E501
+    'regnetx_8.0gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_8.0gf-3c68abe7.pth',  # noqa: E501
+    'regnetx_12gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_12gf-4c2a3350.pth',  # noqa: E501
 }  # yapf: disable
 
 
