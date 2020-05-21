@@ -40,6 +40,38 @@ class CephBackend(BaseStorageBackend):
         raise NotImplementedError
 
 
+class PetrelBackend(BaseStorageBackend):
+    """Petrel storage backend.
+
+    Args:
+        path_maps (dict|None): path mapping dict from local path to Petrel
+        path, map from `filepath` . Default: None.
+    """
+
+    def __init__(self, path_maps=None):
+        try:
+            import petrel_client
+        except ImportError:
+            raise ImportError('Please install petrel_client to enable '
+                              'PetrelBackend.')
+
+        self._client = petrel_client.client.Client()
+        assert isinstance(path_maps, dict) or path_maps is None
+        self.path_maps = path_maps
+
+    def get(self, filepath):
+        filepath = str(filepath)
+        if self.path_maps is not None:
+            for k, v in self.path_maps.items():
+                filepath = filepath.replace(k, v)
+        value = self._client.Get(filepath)
+        value_buf = memoryview(value)
+        return value_buf
+
+    def get_text(self, filepath):
+        raise NotImplementedError
+
+
 class MemcachedBackend(BaseStorageBackend):
     """Memcached storage backend.
 
@@ -164,6 +196,7 @@ class FileClient(object):
         'ceph': CephBackend,
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
+        'petrel': PetrelBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):
