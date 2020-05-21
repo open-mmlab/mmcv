@@ -45,7 +45,8 @@ class PetrelBackend(BaseStorageBackend):
 
     Args:
         path_maps (dict|None): path mapping dict from local path to Petrel
-        path, map from `filepath` . Default: None.
+            path. When `path_maps={'src': 'dst'}`, `src` in `filepath` will be
+            replaced by `dst`. Default: None.
     """
 
     def __init__(self, path_maps=None):
