@@ -31,7 +31,7 @@ def is_scalar(val, include_np=True, include_torch=True):
         return False
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
 
     def __init__(self,
@@ -71,6 +71,8 @@ class PaviLoggerHook(LoggerHook):
         for tag, val in runner.log_buffer.output.items():
             if tag not in ['time', 'data_time'] and is_scalar(val):
                 tags[tag] = val
+        tags['learning_rate'] = runner.current_lr()[0]
+        tags['momentum'] = runner.current_momentum()[0]
         if tags:
             self.writer.add_scalars(runner.mode, tags, runner.iter)
 

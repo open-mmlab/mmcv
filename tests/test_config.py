@@ -1,12 +1,13 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import argparse
 import json
 import os.path as osp
-import sys
 import tempfile
 
 import pytest
+import yaml
 
-from mmcv import Config
+from mmcv import Config, DictAction
 
 
 def test_construct():
@@ -20,18 +21,44 @@ def test_construct():
         Config([0, 1])
 
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
-    format_text = json.dumps(cfg_dict, indent=2)
-    for filename in ['a.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
-        cfg = Config(cfg_dict, filename=cfg_file)
-        assert isinstance(cfg, Config)
-        assert cfg.filename == cfg_file
-        assert cfg.text == open(cfg_file, 'r').read()
-        if sys.version_info >= (3, 6):
-            assert cfg.dump() == format_text
-        else:
-            loaded = json.loads(cfg.dump())
-            assert set(loaded.keys()) == set(cfg_dict)
+    # test a.py
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == cfg.pretty_text
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'a.py')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
+
+    # test b.json
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/b.json')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == json.dumps(cfg_dict)
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'b.json')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
+
+    # test c.yaml
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/c.yaml')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == yaml.dump(cfg_dict)
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'c.yaml')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
 
 
 def test_fromfile():
@@ -102,9 +129,9 @@ def test_merge_recursive_bases():
 def test_merge_from_dict():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
-    input_options = {'item2.a': 1, 'item3': False}
+    input_options = {'item2.a': 1, 'item2.b': 0.1, 'item3': False}
     cfg.merge_from_dict(input_options)
-    assert cfg.item2 == dict(a=1)
+    assert cfg.item2 == dict(a=1, b=0.1)
     assert cfg.item3 is False
 
 
@@ -117,6 +144,31 @@ def test_merge_delete():
     assert cfg.item3 is True
     assert cfg.item4 == 'test'
     assert '_delete_' not in cfg.item2
+
+
+def test_merge_intermediate_variable():
+
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/i_child.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.item1 == [1, 2]
+    assert cfg.item2 == dict(a=0)
+    assert cfg.item3 is True
+    assert cfg.item4 == 'test'
+    assert cfg.item_cfg == dict(b=2)
+    assert cfg.item5 == dict(cfg=dict(b=1))
+    assert cfg.item6 == dict(cfg=dict(b=2))
+
+
+def test_fromfile_in_config():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/code.py')
+    cfg = Config.fromfile(cfg_file)
+    # cfg.field
+    assert cfg.cfg.item1 == [1, 2]
+    assert cfg.cfg.item2 == dict(a=0)
+    assert cfg.cfg.item3 is True
+    assert cfg.cfg.item4 == 'test'
+    assert cfg.item5 == 1
 
 
 def test_dict():
@@ -186,3 +238,19 @@ def test_pretty_text():
             f.write(cfg.pretty_text)
         text_cfg = Config.fromfile(text_cfg_filename)
     assert text_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_dict_action():
+    parser = argparse.ArgumentParser(description='Train a detector')
+    parser.add_argument(
+        '--options', nargs='+', action=DictAction, help='custom options')
+    args = parser.parse_args(
+        ['--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false'])
+    out_dict = {'item2.a': 1, 'item2.b': 0.1, 'item2.c': 'x', 'item3': False}
+    assert args.options == out_dict
+
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg = Config.fromfile(cfg_file)
+    cfg.merge_from_dict(args.options)
+    assert cfg.item2 == dict(a=1, b=0.1, c='x')
+    assert cfg.item3 is False

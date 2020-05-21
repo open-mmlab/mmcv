@@ -4,7 +4,7 @@ from torch.nn.utils import clip_grad
 from .hook import HOOKS, Hook
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class OptimizerHook(Hook):
 
     def __init__(self, grad_clip=None):

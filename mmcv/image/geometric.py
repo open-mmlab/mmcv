@@ -1,8 +1,138 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from __future__ import division
-
 import cv2
 import numpy as np
+
+
+def _scale_size(size, scale):
+    """Rescale a size by a ratio.
+
+    Args:
+        size (tuple[int]): (w, h).
+        scale (float): Scaling factor.
+
+    Returns:
+        tuple[int]: scaled size.
+    """
+    w, h = size
+    return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
+
+
+interp_codes = {
+    'nearest': cv2.INTER_NEAREST,
+    'bilinear': cv2.INTER_LINEAR,
+    'bicubic': cv2.INTER_CUBIC,
+    'area': cv2.INTER_AREA,
+    'lanczos': cv2.INTER_LANCZOS4
+}
+
+
+def imresize(img,
+             size,
+             return_scale=False,
+             interpolation='bilinear',
+             out=None):
+    """Resize image to a given size.
+
+    Args:
+        img (ndarray): The input image.
+        size (tuple[int]): Target size (w, h).
+        return_scale (bool): Whether to return `w_scale` and `h_scale`.
+        interpolation (str): Interpolation method, accepted values are
+            "nearest", "bilinear", "bicubic", "area", "lanczos".
+        out (ndarray): The output destination.
+
+    Returns:
+        tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
+            `resized_img`.
+    """
+    h, w = img.shape[:2]
+    resized_img = cv2.resize(
+        img, size, dst=out, interpolation=interp_codes[interpolation])
+    if not return_scale:
+        return resized_img
+    else:
+        w_scale = size[0] / w
+        h_scale = size[1] / h
+        return resized_img, w_scale, h_scale
+
+
+def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
+    """Resize image to the same size of a given image.
+
+    Args:
+        img (ndarray): The input image.
+        dst_img (ndarray): The target image.
+        return_scale (bool): Whether to return `w_scale` and `h_scale`.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
+            `resized_img`.
+    """
+    h, w = dst_img.shape[:2]
+    return imresize(img, (w, h), return_scale, interpolation)
+
+
+def rescale_size(old_size, scale, return_scale=False):
+    """Calculate the new size to be rescaled to.
+
+    Args:
+        old_size (tuple[int]): The old size (w, h) of image.
+        scale (float | tuple[int]): The scaling factor or maximum size.
+            If it is a float number, then the image will be rescaled by this
+            factor, else if it is a tuple of 2 integers, then the image will
+            be rescaled as large as possible within the scale.
+        return_scale (bool): Whether to return the scaling factor besides the
+            rescaled image size.
+
+    Returns:
+        tuple[int]: The new rescaled image size.
+    """
+    w, h = old_size
+    if isinstance(scale, (float, int)):
+        if scale <= 0:
+            raise ValueError(f'Invalid scale {scale}, must be positive.')
+        scale_factor = scale
+    elif isinstance(scale, tuple):
+        max_long_edge = max(scale)
+        max_short_edge = min(scale)
+        scale_factor = min(max_long_edge / max(h, w),
+                           max_short_edge / min(h, w))
+    else:
+        raise TypeError(
+            f'Scale must be a number or tuple of int, but got {type(scale)}')
+
+    new_size = _scale_size((w, h), scale_factor)
+
+    if return_scale:
+        return new_size, scale_factor
+    else:
+        return new_size
+
+
+def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
+    """Resize image while keeping the aspect ratio.
+
+    Args:
+        img (ndarray): The input image.
+        scale (float | tuple[int]): The scaling factor or maximum size.
+            If it is a float number, then the image will be rescaled by this
+            factor, else if it is a tuple of 2 integers, then the image will
+            be rescaled as large as possible within the scale.
+        return_scale (bool): Whether to return the scaling factor besides the
+            rescaled image.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The rescaled image.
+    """
+    h, w = img.shape[:2]
+    new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
+    rescaled_img = imresize(img, new_size, interpolation=interpolation)
+    if return_scale:
+        return rescaled_img, scale_factor
+    else:
+        return rescaled_img
 
 
 def imflip(img, direction='horizontal'):
@@ -24,12 +154,13 @@ def imflip(img, direction='horizontal'):
 
 def imflip_(img, direction='horizontal'):
     """Inplace flip an image horizontally or vertically.
+
     Args:
         img (ndarray): Image to be flipped.
         direction (str): The flip direction, either "horizontal" or "vertical".
 
     Returns:
-        ndarray: The flipped image(inplace).
+        ndarray: The flipped image (inplace).
     """
     assert direction in ['horizontal', 'vertical']
     if direction == 'horizontal':
@@ -50,8 +181,9 @@ def imrotate(img,
         img (ndarray): Image to be rotated.
         angle (float): Rotation angle in degrees, positive values mean
             clockwise rotation.
-        center (tuple): Center of the rotation in the source image, by default
-            it is the center of the image.
+        center (tuple[float], optional): Center point (w, h) of the rotation in
+            the source image. If not specified, the center of the image will be
+            used.
         scale (float): Isotropic scale factor.
         border_value (int): Border value.
         auto_bound (bool): Whether to adjust the image size to cover the whole
@@ -86,7 +218,7 @@ def bbox_clip(bboxes, img_shape):
 
     Args:
         bboxes (ndarray): Shape (..., 4*k)
-        img_shape (tuple): (height, width) of the image.
+        img_shape (tuple[int]): (height, width) of the image.
 
     Returns:
         ndarray: Clipped bboxes.
@@ -105,7 +237,7 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
     Args:
         bboxes (ndarray): Shape(..., 4).
         scale (float): Scaling factor.
-        clip_shape (tuple, optional): If specified, bboxes that exceed the
+        clip_shape (tuple[int], optional): If specified, bboxes that exceed the
             boundary will be clipped according to the given shape (h, w).
 
     Returns:
@@ -135,11 +267,11 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
         scale (float, optional): Scale ratio of bboxes, the default value
             1.0 means no padding.
-        pad_fill (number or list): Value to be filled for padding, None for
-            no padding.
+        pad_fill (Number | list[Number]): Value to be filled for padding.
+            Default: None, which means no padding.
 
     Returns:
-        list or ndarray: The cropped image patches.
+        list[ndarray] | ndarray: The cropped image patches.
     """
     chn = 1 if img.ndim == 2 else img.shape[2]
     if pad_fill is not None:
@@ -184,8 +316,9 @@ def impad(img, shape, pad_val=0):
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple): Expected padding shape.
-        pad_val (number or sequence): Values to be filled in padding areas.
+        shape (tuple[int]): Expected padding shape (h, w).
+        pad_val (Number | Sequence[Number]): Values to be filled in padding
+            areas. Default: 0.
 
     Returns:
         ndarray: The padded image.
@@ -209,7 +342,7 @@ def impad_to_multiple(img, divisor, pad_val=0):
     Args:
         img (ndarray): Image to be padded.
         divisor (int): Padded image edges will be multiple to divisor.
-        pad_val (number or sequence): Same as :func:`impad`.
+        pad_val (Number | Sequence[Number]): Same as :func:`impad`.
 
     Returns:
         ndarray: The padded image.

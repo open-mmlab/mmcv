@@ -8,7 +8,7 @@ from ..hook import HOOKS
 from .base import LoggerHook
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class TensorboardLoggerHook(LoggerHook):
 
     def __init__(self,
@@ -22,7 +22,13 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if torch.__version__ >= '1.1' and '.' in torch.__version__:
+        if torch.__version__ < '1.1' or torch.__version__ == 'parrots':
+            try:
+                from tensorboardX import SummaryWriter
+            except ImportError:
+                raise ImportError('Please install tensorboardX to use '
+                                  'TensorboardLoggerHook.')
+        else:
             try:
                 from torch.utils.tensorboard import SummaryWriter
             except ImportError:
@@ -30,12 +36,7 @@ class TensorboardLoggerHook(LoggerHook):
                     'Please run "pip install future tensorboard" to install '
                     'the dependencies to use torch.utils.tensorboard '
                     '(applicable to PyTorch 1.1 or higher)')
-        else:
-            try:
-                from tensorboardX import SummaryWriter
-            except ImportError:
-                raise ImportError('Please install tensorboardX to use '
-                                  'TensorboardLoggerHook.')
+
         if self.log_dir is None:
             self.log_dir = osp.join(runner.work_dir, 'tf_logs')
         self.writer = SummaryWriter(self.log_dir)
@@ -45,13 +46,17 @@ class TensorboardLoggerHook(LoggerHook):
         for var in runner.log_buffer.output:
             if var in ['time', 'data_time']:
                 continue
-            tag = '{}/{}'.format(var, runner.mode)
+            tag = f'{var}/{runner.mode}'
             record = runner.log_buffer.output[var]
             if isinstance(record, str):
                 self.writer.add_text(tag, record, runner.iter)
             else:
                 self.writer.add_scalar(tag, runner.log_buffer.output[var],
                                        runner.iter)
+        self.writer.add_scalar('learning_rate',
+                               runner.current_lr()[0], runner.iter)
+        self.writer.add_scalar('momentum',
+                               runner.current_momentum()[0], runner.iter)
 
     @master_only
     def after_run(self, runner):

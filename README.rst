@@ -1,8 +1,11 @@
 MMCV
 ====
 
-.. image:: https://travis-ci.com/open-mmlab/mmcv.svg?branch=master
-  :target: https://travis-ci.com/open-mmlab/mmcv
+.. image:: https://img.shields.io/pypi/v/mmcv
+  :target: https://pypi.org/project/mmcv
+
+.. image:: https://github.com/open-mmlab/mmcv/workflows/build/badge.svg
+  :target: https://github.com/open-mmlab/mmcv/actions
 
 .. image:: https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/open-mmlab/mmcv
@@ -30,7 +33,7 @@ It provides the following functionalities.
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
 
-Note: MMCV requires Python 3.5+.
+Note: MMCV requires Python 3.6+.
 
 
 Installation

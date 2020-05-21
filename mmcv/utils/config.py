@@ -1,14 +1,14 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import json
 import os.path as osp
 import shutil
 import sys
 import tempfile
-from argparse import ArgumentParser
+from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
 
 from addict import Dict
+from yapf.yapflib.yapf_api import FormatCode
 
 from .path import check_file_exist
 
@@ -25,8 +25,8 @@ class ConfigDict(Dict):
         try:
             value = super(ConfigDict, self).__getattr__(name)
         except KeyError:
-            ex = AttributeError("'{}' object has no attribute '{}'".format(
-                self.__class__.__name__, name))
+            ex = AttributeError(f"'{self.__class__.__name__}' object has no "
+                                f"attribute '{name}'")
         except Exception as e:
             ex = e
         else:
@@ -49,7 +49,7 @@ def add_args(parser, cfg, prefix=''):
         elif isinstance(v, abc.Iterable):
             parser.add_argument('--' + prefix + k, type=type(v[0]), nargs='+')
         else:
-            print('cannot parse key {} of type {}'.format(prefix + k, type(v)))
+            print(f'cannot parse key {prefix + k} of type {type(v)}')
     return parser
 
 
@@ -85,10 +85,14 @@ class Config(object):
         check_file_exist(filename)
         if filename.endswith('.py'):
             with tempfile.TemporaryDirectory() as temp_config_dir:
+                temp_config_file = tempfile.NamedTemporaryFile(
+                    dir=temp_config_dir, suffix='.py')
+                temp_config_name = osp.basename(temp_config_file.name)
                 shutil.copyfile(filename,
-                                osp.join(temp_config_dir, '_tempconfig.py'))
+                                osp.join(temp_config_dir, temp_config_name))
+                temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
-                mod = import_module('_tempconfig')
+                mod = import_module(temp_module_name)
                 sys.path.pop(0)
                 cfg_dict = {
                     name: value
@@ -96,7 +100,9 @@ class Config(object):
                     if not name.startswith('__')
                 }
                 # delete imported module
-                del sys.modules['_tempconfig']
+                del sys.modules[temp_module_name]
+                # close temp file
+                temp_config_file.close()
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
@@ -107,9 +113,9 @@ class Config(object):
         with open(filename, 'r') as f:
             cfg_text += f.read()
 
-        if '_base_' in cfg_dict:
+        if BASE_KEY in cfg_dict:
             cfg_dir = osp.dirname(filename)
-            base_filename = cfg_dict.pop('_base_')
+            base_filename = cfg_dict.pop(BASE_KEY)
             base_filename = base_filename if isinstance(
                 base_filename, list) else [base_filename]
 
@@ -126,7 +132,7 @@ class Config(object):
                     raise KeyError('Duplicate key is not allowed among bases')
                 base_cfg_dict.update(c)
 
-            Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            base_cfg_dict = Config._merge_a_into_b(cfg_dict, base_cfg_dict)
             cfg_dict = base_cfg_dict
 
             # merge cfg_text
@@ -137,15 +143,22 @@ class Config(object):
 
     @staticmethod
     def _merge_a_into_b(a, b):
-        # merge dict a into dict b. values in a will overwrite b.
+        # merge dict `a` into dict `b` (non-inplace). values in `a` will
+        # overwrite `b`.
+        # copy first to avoid inplace modification
+        b = b.copy()
         for k, v in a.items():
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
                     raise TypeError(
-                        'Cannot inherit key {} from base!'.format(k))
-                Config._merge_a_into_b(v, b[k])
+                        f'{k}={v} in child config cannot inherit from base '
+                        f'because {k} is a dict in the child config but is of '
+                        f'type {type(b[k])} in base config. You may set '
+                        f'`{DELETE_KEY}=True` to ignore the base config')
+                b[k] = Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
+        return b
 
     @staticmethod
     def fromfile(filename):
@@ -169,8 +182,8 @@ class Config(object):
         if cfg_dict is None:
             cfg_dict = dict()
         elif not isinstance(cfg_dict, dict):
-            raise TypeError('cfg_dict must be a dict, but got {}'.format(
-                type(cfg_dict)))
+            raise TypeError('cfg_dict must be a dict, but '
+                            f'got {type(cfg_dict)}')
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
@@ -208,10 +221,10 @@ class Config(object):
 
         def _format_basic_types(k, v):
             if isinstance(v, str):
-                v_str = "'{}'".format(v)
+                v_str = f"'{v}'"
             else:
                 v_str = str(v)
-            attr_str = '{}={}'.format(str(k), v_str)
+            attr_str = f'{str(k)}={v_str}'
             attr_str = _indent(attr_str, indent)
 
             return attr_str
@@ -221,9 +234,9 @@ class Config(object):
             if all(isinstance(_, dict) for _ in v):
                 v_str = '[\n'
                 v_str += '\n'.join(
-                    'dict({}),'.format(_indent(_format_dict(v_), indent))
+                    f'dict({_indent(_format_dict(v_), indent)}),'
                     for v_ in v).rstrip(',')
-                attr_str = '{}={}'.format(str(k), v_str)
+                attr_str = f'{str(k)}={v_str}'
                 attr_str = _indent(attr_str, indent) + ']'
             else:
                 attr_str = _format_basic_types(k, v)
@@ -237,7 +250,7 @@ class Config(object):
                 end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
-                    attr_str = '{}=dict({}'.format(str(k), v_str)
+                    attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
                     attr_str = _format_list(k, v) + end
@@ -250,12 +263,17 @@ class Config(object):
 
         cfg_dict = self._cfg_dict.to_dict()
         text = _format_dict(cfg_dict, outest_level=True)
+        # copied from setup.cfg
+        yapf_style = dict(
+            based_on_style='pep8',
+            blank_line_before_nested_class_or_def=True,
+            split_before_expression_after_opening_paren=True)
+        text, _ = FormatCode(text, style_config=yapf_style, verify=True)
 
         return text
 
     def __repr__(self):
-        return 'Config (path: {}): {}'.format(self.filename,
-                                              self._cfg_dict.__repr__())
+        return f'Config (path: {self.filename}): {self._cfg_dict.__repr__()}'
 
     def __len__(self):
         return len(self._cfg_dict)
@@ -279,19 +297,35 @@ class Config(object):
     def __iter__(self):
         return iter(self._cfg_dict)
 
-    def dump(self):
-        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        format_text = json.dumps(cfg_dict, indent=2)
-        return format_text
+    def dump(self, file=None):
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
+        if self.filename.endswith('.py'):
+            if file is None:
+                return self.pretty_text
+            else:
+                with open(file, 'w') as f:
+                    f.write(self.pretty_text)
+        else:
+            import mmcv
+            if file is None:
+                file_format = self.filename.split('.')[-1]
+                return mmcv.dump(cfg_dict, file_format=file_format)
+            else:
+                mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
-        """ Merge list into cfg_dict
+        """Merge list into cfg_dict
 
         Merge the dict parsed by MultipleKVAction into this cfg.
-        Example,
-            >>> options = {'model.backbone.depth': 50}
+
+        Examples:
+            >>> options = {'model.backbone.depth': 50,
+            ...            'model.backbone.with_cp':True}
             >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
             >>> cfg.merge_from_dict(options)
+            >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+            >>> assert cfg_dict == dict(
+            ...     model=dict(backbone=dict(depth=50, with_cp=True)))
 
         Args:
             options (dict): dict of configs to merge from.
@@ -301,10 +335,43 @@ class Config(object):
             d = option_cfg_dict
             key_list = full_key.split('.')
             for subkey in key_list[:-1]:
-                d[subkey] = ConfigDict()
+                d.setdefault(subkey, ConfigDict())
                 d = d[subkey]
             subkey = key_list[-1]
             d[subkey] = v
 
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        Config._merge_a_into_b(option_cfg_dict, cfg_dict)
+        super(Config, self).__setattr__(
+            '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
+
+
+class DictAction(Action):
+    """
+    argparse action to split an argument into KEY=VALUE form
+    on the first = and append to a dictionary. List options should
+    be passed as comma separated values, i.e KEY=V1,V2,V3
+    """
+
+    @staticmethod
+    def _parse_int_float_bool(val):
+        try:
+            return int(val)
+        except ValueError:
+            pass
+        try:
+            return float(val)
+        except ValueError:
+            pass
+        if val.lower() in ['true', 'false']:
+            return True if val.lower() == 'true' else False
+        return val
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        options = {}
+        for kv in values:
+            key, val = kv.split('=', maxsplit=1)
+            val = [self._parse_int_float_bool(v) for v in val.split(',')]
+            if len(val) == 1:
+                val = val[0]
+            options[key] = val
+        setattr(namespace, self.dest, options)

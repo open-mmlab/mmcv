@@ -1,3 +1,4 @@
 addict
 numpy
 pyyaml
+yapf
