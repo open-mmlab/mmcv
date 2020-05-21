@@ -1,4 +1,5 @@
 import inspect
+import warnings
 from abc import ABCMeta, abstractmethod
 
 
@@ -20,18 +21,31 @@ class BaseStorageBackend(metaclass=ABCMeta):
 
 
 class CephBackend(BaseStorageBackend):
-    """Ceph storage backend."""
+    """Ceph storage backend.
 
-    def __init__(self):
+    Args:
+        path_maps (dict|None): path mapping dict from local path to Petrel
+            path. When `path_maps={'src': 'dst'}`, `src` in `filepath` will be
+            replaced by `dst`. Default: None.
+    """
+
+    def __init__(self, path_maps=None):
         try:
             import ceph
+            warnings.warn('Ceph is deprecate in favor of Petrel.',
+                          DeprecationWarning)
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
         self._client = ceph.S3Client()
+        assert isinstance(path_maps, dict) or path_maps is None
+        self.path_maps = path_maps
 
     def get(self, filepath):
         filepath = str(filepath)
+        if self.path_maps is not None:
+            for k, v in self.path_maps.items():
+                filepath = filepath.replace(k, v)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -41,7 +55,7 @@ class CephBackend(BaseStorageBackend):
 
 
 class PetrelBackend(BaseStorageBackend):
-    """Petrel storage backend.
+    """Petrel storage backend (for internal use).
 
     Args:
         path_maps (dict|None): path mapping dict from local path to Petrel

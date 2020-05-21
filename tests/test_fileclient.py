@@ -62,6 +62,10 @@ class TestFileClient(object):
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
+        with pytest.warns(
+                DeprecationWarning,
+                match='Ceph is deprecate in favor of Petrel.'):
+            FileClient('ceph')
         ceph_backend = FileClient('ceph')
 
         # input path is Path object
@@ -79,6 +83,21 @@ class TestFileClient(object):
         img_bytes = ceph_backend.get(str(self.img_path))
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == self.img_shape
+
+        # `path_maps` is either None or dict
+        with pytest.raises(AssertionError):
+            FileClient('ceph', path_maps=1)
+        # test `path_maps`
+        ceph_path = 's3://user/data'
+        ceph_backend = FileClient(
+            'ceph', path_maps={str(self.test_data_dir): ceph_path})
+        ceph_backend.client._client.Get = MagicMock(
+            return_value=ceph_backend.client._client.Get(self.img_path))
+        img_bytes = ceph_backend.get(self.img_path)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+        ceph_backend.client._client.Get.assert_called_with(
+            str(self.img_path).replace(str(self.test_data_dir), ceph_path))
 
     @patch('petrel_client.client.Client', MockS3Client)
     def test_petrel_backend(self):
