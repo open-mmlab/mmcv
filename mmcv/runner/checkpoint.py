@@ -38,6 +38,7 @@ open_mmlab_model_urls = {
     'bninception_caffe': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/bn_inception_caffe-ed2e8665.pth',  # noqa: E501
     'kin400/i3d_r50_f32s2_k400': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/i3d_r50_f32s2_k400-2c57e077.pth',  # noqa: E501
     'kin400/nl3d_r50_f32s2_k400': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/nl3d_r50_f32s2_k400-fa7e7caa.pth',  # noqa: E501
+    'res2net101_v1d_26w_4s': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/res2net101_v1d_26w_4s_mmdetv2-f0a600f9.pth',  # noqa: E501
 }  # yapf: disable
 
 
