@@ -1,4 +1,3 @@
 {
-  "train": "https://localhost/train.pth",
   "test": "https://localhost/test.pth"
 }

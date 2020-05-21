@@ -13,9 +13,23 @@ from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
+from ..utils import mkdir_or_exist, scandir
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
+ENV_XDG_CACHE_HOME = 'XDG_CACHE_HOME'
+DEFAULT_CACHE_DIR = '~/.cache'
+
+
+def _get_mmcv_home():
+    mmcv_home = os.path.expanduser(
+        os.getenv(
+            ENV_MMCV_HOME,
+            os.path.join(
+                os.getenv(ENV_XDG_CACHE_HOME, DEFAULT_CACHE_DIR), 'mmcv')))
+
+    mkdir_or_exist(mmcv_home)
+    return mmcv_home
 
 
 def load_state_dict(module, state_dict, strict=False, logger=None):
@@ -82,17 +96,17 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
-def load_url_dist(url):
+def load_url_dist(url, model_dir=None):
     """ In distributed setting, this function only download checkpoint at
     local rank 0 """
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(url)
+        checkpoint = model_zoo.load_url(url, model_dir=model_dir)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(url)
+            checkpoint = model_zoo.load_url(url, model_dir=model_dir)
     return checkpoint
 
 
@@ -108,18 +122,20 @@ def get_torchvision_models():
     return model_urls
 
 
-def get_openmmlab_models():
-    mmcv_home = osp.abspath(os.environ.get(ENV_MMCV_HOME, mmcv.__path__[0]))
-    open_mmlab_json = osp.join(mmcv_home, 'urls/open_mmlab.json')
-    if ENV_MMCV_HOME in os.environ:
-        warnings.warn(
-            'Using {} for downloading open-mmlab '
-            'models.'.format(open_mmlab_json), UserWarning)
-    if osp.exists(open_mmlab_json):
-        model_urls = load_file(open_mmlab_json)
-    else:
-        raise FileNotFoundError('{} not found.'.format(open_mmlab_json))
-    return model_urls
+def get_external_models():
+    mmcv_home = _get_mmcv_home()
+    default_json_path = osp.join(mmcv.__path__[0], 'urls/open_mmlab.json')
+    default_urls = load_file(default_json_path)
+    external_urls = dict()
+    for json_file in scandir(mmcv_home, suffix='.json'):
+        json_path = osp.join(mmcv_home, json_file)
+        urls = load_file(json_path)
+        assert set(external_urls.keys()).isdisjoint(set(urls.keys())), \
+            'External urls should not have overlapped keys'
+        print(f'Update model urls with: {json_path}')
+        external_urls.update(urls)
+    default_urls.update(external_urls)
+    return default_urls
 
 
 def _load_checkpoint(filename, map_location=None):
@@ -145,9 +161,18 @@ def _load_checkpoint(filename, map_location=None):
         model_name = filename[14:]
         checkpoint = load_url_dist(model_urls[model_name])
     elif filename.startswith('open-mmlab://'):
-        model_urls = get_openmmlab_models()
+        model_urls = get_external_models()
         model_name = filename[13:]
-        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = load_url_dist(
+            model_urls[model_name], model_dir=_get_mmcv_home())
+    elif filename.startswith('local://'):
+        model_urls = get_external_models()
+        model_name = filename[8:]
+        # the local checkpoint path is relative to MMCV_HOME
+        local_dir = osp.join(_get_mmcv_home(),
+                             osp.dirname(model_urls[model_name]))
+        # use local model directory as model_dir
+        checkpoint = load_url_dist(model_urls[model_name], model_dir=local_dir)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
     else:
