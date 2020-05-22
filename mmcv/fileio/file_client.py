@@ -24,27 +24,26 @@ class CephBackend(BaseStorageBackend):
     """Ceph storage backend.
 
     Args:
-        path_maps (dict|None): path mapping dict from local path to Petrel
-            path. When `path_maps={'src': 'dst'}`, `src` in `filepath` will be
-            replaced by `dst`. Default: None.
+        path_mapping (dict|None): path mapping dict from local path to Petrel
+            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
+            be replaced by `dst`. Default: None.
     """
 
-    def __init__(self, path_maps=None):
+    def __init__(self, path_mapping=None):
         try:
             import ceph
-            warnings.warn('Ceph is deprecate in favor of Petrel.',
-                          DeprecationWarning)
+            warnings.warn('Ceph is deprecate in favor of Petrel.')
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
         self._client = ceph.S3Client()
-        assert isinstance(path_maps, dict) or path_maps is None
-        self.path_maps = path_maps
+        assert isinstance(path_mapping, dict) or path_mapping is None
+        self.path_mapping = path_mapping
 
     def get(self, filepath):
         filepath = str(filepath)
-        if self.path_maps is not None:
-            for k, v in self.path_maps.items():
+        if self.path_mapping is not None:
+            for k, v in self.path_mapping.items():
                 filepath = filepath.replace(k, v)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
@@ -58,12 +57,12 @@ class PetrelBackend(BaseStorageBackend):
     """Petrel storage backend (for internal use).
 
     Args:
-        path_maps (dict|None): path mapping dict from local path to Petrel
-            path. When `path_maps={'src': 'dst'}`, `src` in `filepath` will be
-            replaced by `dst`. Default: None.
+        path_mapping (dict|None): path mapping dict from local path to Petrel
+            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
+            be replaced by `dst`. Default: None.
     """
 
-    def __init__(self, path_maps=None):
+    def __init__(self, path_mapping=None):
         try:
             import petrel_client
         except ImportError:
@@ -71,13 +70,13 @@ class PetrelBackend(BaseStorageBackend):
                               'PetrelBackend.')
 
         self._client = petrel_client.client.Client()
-        assert isinstance(path_maps, dict) or path_maps is None
-        self.path_maps = path_maps
+        assert isinstance(path_mapping, dict) or path_mapping is None
+        self.path_mapping = path_mapping
 
     def get(self, filepath):
         filepath = str(filepath)
-        if self.path_maps is not None:
-            for k, v in self.path_maps.items():
+        if self.path_mapping is not None:
+            for k, v in self.path_mapping.items():
                 filepath = filepath.replace(k, v)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
