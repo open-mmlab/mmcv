@@ -64,12 +64,12 @@ class PetrelBackend(BaseStorageBackend):
 
     def __init__(self, path_mapping=None):
         try:
-            import petrel_client
+            from petrel_client import client
         except ImportError:
             raise ImportError('Please install petrel_client to enable '
                               'PetrelBackend.')
 
-        self._client = petrel_client.client.Client()
+        self._client = client.Client()
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
