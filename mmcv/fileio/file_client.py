@@ -1,5 +1,4 @@
 import inspect
-import warnings
 from abc import ABCMeta, abstractmethod
 
 
@@ -21,63 +20,18 @@ class BaseStorageBackend(metaclass=ABCMeta):
 
 
 class CephBackend(BaseStorageBackend):
-    """Ceph storage backend.
+    """Ceph storage backend."""
 
-    Args:
-        path_mapping (dict|None): path mapping dict from local path to Petrel
-            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
-            be replaced by `dst`. Default: None.
-    """
-
-    def __init__(self, path_mapping=None):
+    def __init__(self):
         try:
             import ceph
-            warnings.warn('Ceph is deprecate in favor of Petrel.')
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
         self._client = ceph.S3Client()
-        assert isinstance(path_mapping, dict) or path_mapping is None
-        self.path_mapping = path_mapping
 
     def get(self, filepath):
         filepath = str(filepath)
-        if self.path_mapping is not None:
-            for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
-        value = self._client.Get(filepath)
-        value_buf = memoryview(value)
-        return value_buf
-
-    def get_text(self, filepath):
-        raise NotImplementedError
-
-
-class PetrelBackend(BaseStorageBackend):
-    """Petrel storage backend (for internal use).
-
-    Args:
-        path_mapping (dict|None): path mapping dict from local path to Petrel
-            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
-            be replaced by `dst`. Default: None.
-    """
-
-    def __init__(self, path_mapping=None):
-        try:
-            import petrel_client
-        except ImportError:
-            raise ImportError('Please install petrel_client to enable '
-                              'PetrelBackend.')
-
-        self._client = petrel_client.client.Client()
-        assert isinstance(path_mapping, dict) or path_mapping is None
-        self.path_mapping = path_mapping
-
-    def get(self, filepath):
-        filepath = str(filepath)
-        if self.path_mapping is not None:
-            for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -210,7 +164,6 @@ class FileClient(object):
         'ceph': CephBackend,
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
-        'petrel': PetrelBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):
