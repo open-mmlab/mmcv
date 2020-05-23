@@ -9,7 +9,7 @@ def test_registry():
     assert CATS.module_dict == {}
     assert len(CATS) == 0
 
-    @CATS.register_module
+    @CATS.register_module()
     class BritishShorthair:
         pass
 
@@ -124,14 +124,14 @@ def test_registry():
 def test_build_from_cfg():
     BACKBONES = mmcv.Registry('backbone')
 
-    @BACKBONES.register_module
+    @BACKBONES.register_module()
     class ResNet:
 
         def __init__(self, depth, stages=4):
             self.depth = depth
             self.stages = stages
 
-    @BACKBONES.register_module
+    @BACKBONES.register_module()
     class ResNeXt:
 
         def __init__(self, depth, stages=4):
@@ -179,16 +179,16 @@ def test_build_from_cfg():
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # cfg should contain the key "type"
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         cfg = dict(depth=50, stages=4)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # incorrect registry type
     with pytest.raises(TypeError):
-        dict(type='ResNet', depth=50)
+        cfg = dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, 'BACKBONES')
 
     # incorrect default_args type
     with pytest.raises(TypeError):
-        dict(type='ResNet', depth=50)
+        cfg = dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=0)

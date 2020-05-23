@@ -1,0 +1,52 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install linting dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 isort yapf
+    - name: Lint with flake8
+      run: flake8 --max-complexity 20 .
+    - name: Lint with isort
+      run: isort -rc --check-only --diff mmcv/ tests/ examples/
+    - name: Format with yapf
+      run: yapf -r -d mmcv/ tests/ examples/
+    - name: Build and install
+      run: rm -rf .eggs && pip install -e .
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+    - name: Install unittest dependencies
+      run: |
+        pip install pytest coverage lmdb PyTurboJPEG
+        pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+    - name: Run unittests and generate coverage report
+      run: |
+        coverage run --branch --source=mmcv -m pytest tests/
+        coverage xml
+        coverage report -m
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        env_vars: OS,PYTHON
+        name: codecov-umbrella
+        fail_ci_if_error: true

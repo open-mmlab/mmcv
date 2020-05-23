@@ -8,6 +8,8 @@ import mmcv
 from mmcv import BaseStorageBackend, FileClient
 
 sys.modules['ceph'] = MagicMock()
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 sys.modules['mc'] = MagicMock()
 
 
@@ -61,6 +63,9 @@ class TestFileClient(object):
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
+        with pytest.warns(
+                Warning, match='Ceph is deprecate in favor of Petrel.'):
+            FileClient('ceph')
         ceph_backend = FileClient('ceph')
 
         # input path is Path object
@@ -78,6 +83,56 @@ class TestFileClient(object):
         img_bytes = ceph_backend.get(str(self.img_path))
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == self.img_shape
+
+        # `path_mapping` is either None or dict
+        with pytest.raises(AssertionError):
+            FileClient('ceph', path_mapping=1)
+        # test `path_mapping`
+        ceph_path = 's3://user/data'
+        ceph_backend = FileClient(
+            'ceph', path_mapping={str(self.test_data_dir): ceph_path})
+        ceph_backend.client._client.Get = MagicMock(
+            return_value=ceph_backend.client._client.Get(self.img_path))
+        img_bytes = ceph_backend.get(self.img_path)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+        ceph_backend.client._client.Get.assert_called_with(
+            str(self.img_path).replace(str(self.test_data_dir), ceph_path))
+
+    @patch('petrel_client.client.Client', MockS3Client)
+    def test_petrel_backend(self):
+        petrel_backend = FileClient('petrel')
+
+        # input path is Path object
+        with pytest.raises(NotImplementedError):
+            petrel_backend.get_text(self.text_path)
+        # input path is str
+        with pytest.raises(NotImplementedError):
+            petrel_backend.get_text(str(self.text_path))
+
+        # input path is Path object
+        img_bytes = petrel_backend.get(self.img_path)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+        # input path is str
+        img_bytes = petrel_backend.get(str(self.img_path))
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+
+        # `path_mapping` is either None or dict
+        with pytest.raises(AssertionError):
+            FileClient('petrel', path_mapping=1)
+        # test `path_mapping`
+        petrel_path = 's3://user/data'
+        petrel_backend = FileClient(
+            'petrel', path_mapping={str(self.test_data_dir): petrel_path})
+        petrel_backend.client._client.Get = MagicMock(
+            return_value=petrel_backend.client._client.Get(self.img_path))
+        img_bytes = petrel_backend.get(self.img_path)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+        petrel_backend.client._client.Get.assert_called_with(
+            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
     @patch('mc.pyvector', MagicMock)

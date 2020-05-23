@@ -4,7 +4,7 @@ import time
 from .hook import HOOKS, Hook
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class IterTimerHook(Hook):
 
     def before_epoch(self, runner):

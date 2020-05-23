@@ -388,7 +388,15 @@ class Runner(object):
     def register_lr_hook(self, lr_config):
         if isinstance(lr_config, dict):
             assert 'policy' in lr_config
-            hook_type = lr_config.pop('policy').title() + 'LrUpdaterHook'
+            policy_type = lr_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of Lr updater updater.
+            # Since this is not applicable for `CosineAnealingLrUpdater`,
+            # the string will not be changed if it contains capital letters.
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'LrUpdaterHook'
             lr_config['type'] = hook_type
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
@@ -415,13 +423,20 @@ class Runner(object):
             hook = checkpoint_config
         self.register_hook(hook)
 
-    def register_momentum_hooks(self, momentum_config):
+    def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
             return
         if isinstance(momentum_config, dict):
             assert 'policy' in momentum_config
-            hook_type = momentum_config.pop(
-                'policy').title() + 'MomentumUpdaterHook'
+            policy_type = momentum_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of momentum updater.
+            # Since this is not applicable for `CosineAnealingMomentumUpdater`,
+            # the string will not be changed if it contains capital letters.
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'MomentumUpdaterHook'
             momentum_config['type'] = hook_type
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
@@ -453,7 +468,7 @@ class Runner(object):
         - LoggerHook(s)
         """
         self.register_lr_hook(lr_config)
-        self.register_momentum_hooks(momentum_config)
+        self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())

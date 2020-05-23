@@ -100,6 +100,8 @@ class Registry(object):
                 the same name. Default: False.
             module (type): Module class to be registered.
         """
+        if not isinstance(force, bool):
+            raise TypeError(f'force must be a boolean, but got {type(force)}')
         # NOTE: This is a walkaround to be compatible with the old api,
         # while it may introduce unexpected bugs.
         if isinstance(name, type):
@@ -109,7 +111,7 @@ class Registry(object):
         if module is not None:
             self._register_module(
                 module_class=module, module_name=name, force=force)
-            return
+            return module
 
         # raise the error ahead of time
         if not (name is None or isinstance(name, str)):
@@ -119,6 +121,7 @@ class Registry(object):
         def _register(cls):
             self._register_module(
                 module_class=cls, module_name=name, force=force)
+            return cls
 
         return _register
 
@@ -132,10 +135,13 @@ def build_from_cfg(cfg, registry, default_args=None):
         default_args (dict, optional): Default initialization arguments.
 
     Returns:
-        obj: The constructed object.
+        object: The constructed object.
     """
-    if not (isinstance(cfg, dict) and 'type' in cfg):
-        raise TypeError('cfg must be a dict containing the key "type"')
+    if not isinstance(cfg, dict):
+        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
+    if 'type' not in cfg:
+        raise KeyError(
+            f'the cfg dict must contain the key "type", but got {cfg}')
     if not isinstance(registry, Registry):
         raise TypeError('registry must be an mmcv.Registry object, '
                         f'but got {type(registry)}')

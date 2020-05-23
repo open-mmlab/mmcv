@@ -1,5 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import json
 import os.path as osp
 import shutil
 import sys
@@ -9,6 +8,7 @@ from collections import abc
 from importlib import import_module
 
 from addict import Dict
+from yapf.yapflib.yapf_api import FormatCode
 
 from .path import check_file_exist
 
@@ -85,10 +85,14 @@ class Config(object):
         check_file_exist(filename)
         if filename.endswith('.py'):
             with tempfile.TemporaryDirectory() as temp_config_dir:
+                temp_config_file = tempfile.NamedTemporaryFile(
+                    dir=temp_config_dir, suffix='.py')
+                temp_config_name = osp.basename(temp_config_file.name)
                 shutil.copyfile(filename,
-                                osp.join(temp_config_dir, '_tempconfig.py'))
+                                osp.join(temp_config_dir, temp_config_name))
+                temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
-                mod = import_module('_tempconfig')
+                mod = import_module(temp_module_name)
                 sys.path.pop(0)
                 cfg_dict = {
                     name: value
@@ -96,7 +100,9 @@ class Config(object):
                     if not name.startswith('__')
                 }
                 # delete imported module
-                del sys.modules['_tempconfig']
+                del sys.modules[temp_module_name]
+                # close temp file
+                temp_config_file.close()
         elif filename.endswith(('.yml', '.yaml', '.json')):
             import mmcv
             cfg_dict = mmcv.load(filename)
@@ -126,7 +132,7 @@ class Config(object):
                     raise KeyError('Duplicate key is not allowed among bases')
                 base_cfg_dict.update(c)
 
-            Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            base_cfg_dict = Config._merge_a_into_b(cfg_dict, base_cfg_dict)
             cfg_dict = base_cfg_dict
 
             # merge cfg_text
@@ -137,17 +143,22 @@ class Config(object):
 
     @staticmethod
     def _merge_a_into_b(a, b):
-        # merge dict `a` into dict `b`. values in `a` will overwrite `b`.
+        # merge dict `a` into dict `b` (non-inplace). values in `a` will
+        # overwrite `b`.
+        # copy first to avoid inplace modification
+        b = b.copy()
         for k, v in a.items():
             if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
                 if not isinstance(b[k], dict):
                     raise TypeError(
-                        f'{k}={v} cannot be inherited from base because {k} '
-                        'is a dict in the child config. You may '
-                        f'set `{DELETE_KEY}=True` to ignore the base config')
-                Config._merge_a_into_b(v, b[k])
+                        f'{k}={v} in child config cannot inherit from base '
+                        f'because {k} is a dict in the child config but is of '
+                        f'type {type(b[k])} in base config. You may set '
+                        f'`{DELETE_KEY}=True` to ignore the base config')
+                b[k] = Config._merge_a_into_b(v, b[k])
             else:
                 b[k] = v
+        return b
 
     @staticmethod
     def fromfile(filename):
@@ -252,6 +263,12 @@ class Config(object):
 
         cfg_dict = self._cfg_dict.to_dict()
         text = _format_dict(cfg_dict, outest_level=True)
+        # copied from setup.cfg
+        yapf_style = dict(
+            based_on_style='pep8',
+            blank_line_before_nested_class_or_def=True,
+            split_before_expression_after_opening_paren=True)
+        text, _ = FormatCode(text, style_config=yapf_style, verify=True)
 
         return text
 
@@ -280,16 +297,28 @@ class Config(object):
     def __iter__(self):
         return iter(self._cfg_dict)
 
-    def dump(self):
-        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        format_text = json.dumps(cfg_dict, indent=2)
-        return format_text
+    def dump(self, file=None):
+        cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
+        if self.filename.endswith('.py'):
+            if file is None:
+                return self.pretty_text
+            else:
+                with open(file, 'w') as f:
+                    f.write(self.pretty_text)
+        else:
+            import mmcv
+            if file is None:
+                file_format = self.filename.split('.')[-1]
+                return mmcv.dump(cfg_dict, file_format=file_format)
+            else:
+                mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
-        """ Merge list into cfg_dict
+        """Merge list into cfg_dict
 
         Merge the dict parsed by MultipleKVAction into this cfg.
-        Example,
+
+        Examples:
             >>> options = {'model.backbone.depth': 50,
             ...            'model.backbone.with_cp':True}
             >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
@@ -312,7 +341,8 @@ class Config(object):
             d[subkey] = v
 
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        Config._merge_a_into_b(option_cfg_dict, cfg_dict)
+        super(Config, self).__setattr__(
+            '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
 
 
 class DictAction(Action):
