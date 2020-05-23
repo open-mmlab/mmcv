@@ -126,6 +126,7 @@ def get_external_models():
     mmcv_home = _get_mmcv_home()
     default_json_path = osp.join(mmcv.__path__[0], 'urls/open_mmlab.json')
     default_urls = load_file(default_json_path)
+    assert isinstance(default_urls, dict)
     external_urls = dict()
     for json_file in scandir(mmcv_home, suffix='.json'):
         json_path = osp.join(mmcv_home, json_file)
