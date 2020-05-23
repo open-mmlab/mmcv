@@ -14,7 +14,7 @@ def imnormalize(img, mean, std, to_rgb=True):
     Returns:
         ndarray: The normalized image.
     """
-    img = np.float32(img) if img.dtype != np.float32 else img.copy()
+    img = np.float32(img.copy())
     return imnormalize_(img, mean, std, to_rgb)
 
 
