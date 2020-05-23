@@ -45,6 +45,7 @@ open_mmlab_model_urls = {
     'regnetx_6.4gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_6.4gf-006af45d.pth',  # noqa: E501
     'regnetx_8.0gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_8.0gf-3c68abe7.pth',  # noqa: E501
     'regnetx_12gf': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_12gf-4c2a3350.pth',  # noqa: E501
+    'res2net101_v1d_26w_4s': 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/res2net101_v1d_26w_4s_mmdetv2-f0a600f9.pth',  # noqa: E501
 }  # yapf: disable
 
 
