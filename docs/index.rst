@@ -13,6 +13,7 @@ Contents
    utils.md
    runner.md
    cnn.md
+   model_zoo.md
    api.rst
 
 
