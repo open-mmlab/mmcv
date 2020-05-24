@@ -26,10 +26,15 @@ class EpochBasedRunner(BaseRunner):
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
-            outputs = self.model.train_step(data_batch, self.optimizer,
-                                            **kwargs)
+            if hasattr(self.model, 'train_step'):
+                outputs = self.model.train_step(data_batch, self.optimizer,
+                                                **kwargs)
+            else:
+                outputs = self.batch_processor(
+                    self.model, data_batch, train_mode=True, **kwargs)
             if not isinstance(outputs, dict):
-                raise TypeError('model.train_step() must return a dict')
+                raise TypeError('"batch_processor()" or "model.train_step()"'
+                                ' must return a dict')
             if 'log_vars' in outputs:
                 self.log_buffer.update(outputs['log_vars'],
                                        outputs['num_samples'])
@@ -50,10 +55,15 @@ class EpochBasedRunner(BaseRunner):
             self._inner_iter = i
             self.call_hook('before_val_iter')
             with torch.no_grad():
-                outputs = self.model.val_step(data_batch, self.optimizer,
-                                              **kwargs)
+                if hasattr(self.model, 'val_step'):
+                    outputs = self.model.val_step(data_batch, self.optimizer,
+                                                  **kwargs)
+                else:
+                    outputs = self.batch_processor(
+                        self.model, data_batch, train_mode=False, **kwargs)
             if not isinstance(outputs, dict):
-                raise TypeError('model.val_step() must return a dict')
+                raise TypeError('"batch_processor()" or "model.val_step()"'
+                                ' must return a dict')
             if 'log_vars' in outputs:
                 self.log_buffer.update(outputs['log_vars'],
                                        outputs['num_samples'])
