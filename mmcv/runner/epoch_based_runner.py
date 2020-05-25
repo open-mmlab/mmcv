@@ -26,7 +26,7 @@ class EpochBasedRunner(BaseRunner):
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
-            if hasattr(self.model, 'train_step'):
+            if self.batch_processor is None:
                 outputs = self.model.train_step(data_batch, self.optimizer,
                                                 **kwargs)
             else:
@@ -55,7 +55,7 @@ class EpochBasedRunner(BaseRunner):
             self._inner_iter = i
             self.call_hook('before_val_iter')
             with torch.no_grad():
-                if hasattr(self.model, 'val_step'):
+                if self.batch_processor is None:
                     outputs = self.model.val_step(data_batch, self.optimizer,
                                                   **kwargs)
                 else:
@@ -89,6 +89,12 @@ class EpochBasedRunner(BaseRunner):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
+        for i, flow in enumerate(workflow):
+            mode, epochs = flow
+            if mode == 'train':
+                self._max_iters = self._max_epochs * len(data_loaders[i])
+                break
+
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
@@ -101,13 +107,14 @@ class EpochBasedRunner(BaseRunner):
                 if isinstance(mode, str):  # self.train()
                     if not hasattr(self, mode):
                         raise ValueError(
-                            'runner has no method named "{}" to run an epoch'.
-                            format(mode))
+                            f'runner has no method named "{mode}" to run an '
+                            'epoch')
                     epoch_runner = getattr(self, mode)
                 else:
                     raise TypeError(
                         'mode in workflow must be a str, but got {}'.format(
                             type(mode)))
+
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= max_epochs:
                         return

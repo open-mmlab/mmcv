@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import logging
 import os.path as osp
+import warnings
 from abc import ABCMeta, abstractmethod
 
 import torch
@@ -42,12 +43,17 @@ class BaseRunner(metaclass=ABCMeta):
 
     def __init__(self,
                  model,
-                 batch_processor,
-                 optimizer,
+                 batch_processor=None,
+                 optimizer=None,
                  work_dir=None,
                  logger=None,
                  meta=None):
-        assert callable(batch_processor)
+        if batch_processor is not None:
+            assert callable(batch_processor)
+            warnings.warn('batch_processor is deprecated, please implement '
+                          'train_step() and val_step() in the model instead.')
+        else:
+            assert hasattr(model, 'train_step')
         self.model = model
         self.batch_processor = batch_processor
         self.optimizer = optimizer
@@ -264,26 +270,6 @@ class BaseRunner(metaclass=ABCMeta):
             hook = lr_config
         self.register_hook(hook)
 
-    def register_optimizer_hook(self, optimizer_config):
-        if optimizer_config is None:
-            return
-        if isinstance(optimizer_config, dict):
-            optimizer_config.setdefault('type', 'OptimizerHook')
-            hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
-        else:
-            hook = optimizer_config
-        self.register_hook(hook)
-
-    def register_checkpoint_hook(self, checkpoint_config):
-        if checkpoint_config is None:
-            return
-        if isinstance(checkpoint_config, dict):
-            checkpoint_config.setdefault('type', 'CheckpointHook')
-            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
-        else:
-            hook = checkpoint_config
-        self.register_hook(hook)
-
     def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
             return
@@ -302,6 +288,26 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
             hook = momentum_config
+        self.register_hook(hook)
+
+    def register_optimizer_hook(self, optimizer_config):
+        if optimizer_config is None:
+            return
+        if isinstance(optimizer_config, dict):
+            optimizer_config.setdefault('type', 'OptimizerHook')
+            hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
+        else:
+            hook = optimizer_config
+        self.register_hook(hook)
+
+    def register_checkpoint_hook(self, checkpoint_config):
+        if checkpoint_config is None:
+            return
+        if isinstance(checkpoint_config, dict):
+            checkpoint_config.setdefault('type', 'CheckpointHook')
+            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
+        else:
+            hook = checkpoint_config
         self.register_hook(hook)
 
     def register_logger_hooks(self, log_config):
