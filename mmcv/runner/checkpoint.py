@@ -132,7 +132,8 @@ def get_external_models():
         json_path = osp.join(mmcv_home, json_file)
         urls = load_file(json_path)
         assert set(external_urls.keys()).isdisjoint(set(urls.keys())), \
-            'External urls should not have overlapped keys'
+            'External urls should not have overlapped keys: ' \
+            f'{set(external_urls.keys()).intersection(set(urls.keys()))}'
         print(f'Update model urls with: {json_path}')
         external_urls.update(urls)
     default_urls.update(external_urls)
@@ -143,7 +144,9 @@ def _load_checkpoint(filename, map_location=None):
     """Load checkpoint from somewhere (modelzoo, file, url).
 
     Args:
-        filename (str): Either a filepath or URI.
+        filename (str): Accept local filepath, URL, `torchvision://xxx`,
+            `open-mmlab://xxx`, `local://xxx`. Please refer to
+            `docs/model_zoo.md` for details.
         map_location (str | None): Same as :func:`torch.load`. Default: None.
 
     Returns:
@@ -192,7 +195,9 @@ def load_checkpoint(model,
 
     Args:
         model (Module): Module to load checkpoint.
-        filename (str): Either a filepath or URL or modelzoo://xxxxxxx.
+        filename (str): Accept local filepath, URL, `torchvision://xxx`,
+            `open-mmlab://xxx`, `local://xxx`. Please refer to
+            `docs/model_zoo.md` for details.
         map_location (str): Same as :func:`torch.load`.
         strict (bool): Whether to allow different params for the model and
             checkpoint.

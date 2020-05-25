@@ -43,7 +43,10 @@ def test_get_external_models():
     }
 
     # external urls should not have overlapped keys
-    with pytest.raises(AssertionError):
+    with pytest.raises(
+            AssertionError,
+            match='External urls should not have overlapped keys: '
+            "{'test'}"):
         os.environ.pop(ENV_MMCV_HOME, None)
         mmcv_home = osp.join(osp.dirname(__file__), 'data/urls/b/')
         os.environ[ENV_MMCV_HOME] = mmcv_home
