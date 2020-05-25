@@ -20,10 +20,10 @@ class BaseRunner(metaclass=ABCMeta):
 
     All subclasses should implement the following APIs:
 
-    - `run()`
-    - `train()`
-    - `val()`
-    - `save_checkpoint()`
+    - ``run()``
+    - ``train()``
+    - ``val()``
+    - ``save_checkpoint()``
 
     Args:
         model (:obj:`torch.nn.Module`): The model to be run.
@@ -49,7 +49,9 @@ class BaseRunner(metaclass=ABCMeta):
                  logger=None,
                  meta=None):
         if batch_processor is not None:
-            assert callable(batch_processor)
+            if not callable(batch_processor):
+                raise TypeError('batch_processor must be callable, '
+                                f'but got {type(batch_processor)}')
             warnings.warn('batch_processor is deprecated, please implement '
                           'train_step() and val_step() in the model instead.')
         else:

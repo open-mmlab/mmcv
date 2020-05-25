@@ -2,22 +2,63 @@
 import logging
 import os.path as osp
 import tempfile
-import warnings
+
+import pytest
+import torch
+import torch.nn as nn
+
+from mmcv.runner import EpochBasedRunner
+
+
+class OldStyleModel(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(3, 3, 1)
+
+
+class Model(OldStyleModel):
+
+    def train_step(self):
+        pass
+
+    def val_step(self):
+        pass
+
+
+def test_epoch_based_runner():
+
+    with pytest.warns(UserWarning):
+        # batch_processor is deprecated
+        model = OldStyleModel()
+
+        def batch_processor():
+            pass
+
+        _ = EpochBasedRunner(model, batch_processor)
+
+    with pytest.raises(TypeError):
+        # batch_processor must be callable
+        model = OldStyleModel()
+        _ = EpochBasedRunner(model, batch_processor=0)
+
+    with pytest.raises(AssertionError):
+        # model must implement the method train_step()
+        model = OldStyleModel()
+        _ = EpochBasedRunner(model)
+
+    with pytest.raises(TypeError):
+        # work_dir must be a str or None
+        model = Model()
+        _ = EpochBasedRunner(model, work_dir=1)
+
+    model = Model()
+    _ = EpochBasedRunner(model, work_dir=1)
 
 
 def test_save_checkpoint():
-    try:
-        import torch
-        from torch import nn
-    except ImportError:
-        warnings.warn('Skipping test_save_checkpoint in the absense of torch')
-        return
-
-    import mmcv.runner
-
-    model = nn.Linear(1, 1)
-    runner = mmcv.runner.Runner(
-        model=model, batch_processor=lambda x: x, logger=logging.getLogger())
+    model = Model()
+    runner = EpochBasedRunner(model=model, logger=logging.getLogger())
 
     with tempfile.TemporaryDirectory() as root:
         runner.save_checkpoint(root)
@@ -33,15 +74,8 @@ def test_save_checkpoint():
 
 
 def test_build_lr_momentum_hook():
-    try:
-        from torch import nn
-    except ImportError:
-        warnings.warn('Skipping test_save_checkpoint in the absense of torch')
-        return
-    import mmcv.runner
-    model = nn.Linear(1, 1)
-    runner = mmcv.runner.Runner(
-        model=model, batch_processor=lambda x: x, logger=logging.getLogger())
+    model = Model()
+    runner = EpochBasedRunner(model=model, logger=logging.getLogger())
 
     # test policy that is already title
     lr_config = dict(
