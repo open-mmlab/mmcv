@@ -1,6 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import logging
+import os
 import os.path as osp
+import random
+import string
 import tempfile
 
 import pytest
@@ -52,8 +55,17 @@ def test_epoch_based_runner():
         model = Model()
         _ = EpochBasedRunner(model, work_dir=1)
 
+    # test work_dir
     model = Model()
-    _ = EpochBasedRunner(model, work_dir=1)
+    temp_root = tempfile.gettempdir()
+    dir_name = ''.join(
+        [random.choice(string.ascii_letters) for _ in range(10)])
+    work_dir = osp.join(temp_root, dir_name)
+    _ = EpochBasedRunner(model, work_dir=work_dir)
+    assert osp.isdir(work_dir)
+    _ = EpochBasedRunner(model, work_dir=work_dir)
+    assert osp.isdir(work_dir)
+    os.removedirs(work_dir)
 
 
 def test_save_checkpoint():
