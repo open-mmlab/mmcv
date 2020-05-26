@@ -13,7 +13,7 @@ from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
-from ..utils import mkdir_or_exist, scandir
+from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -124,19 +124,15 @@ def get_torchvision_models():
 
 def get_external_models():
     mmcv_home = _get_mmcv_home()
-    default_json_path = osp.join(mmcv.__path__[0], 'urls/open_mmlab.json')
+    default_json_path = osp.join(mmcv.__path__[0], 'model_zoo/open_mmlab.json')
     default_urls = load_file(default_json_path)
     assert isinstance(default_urls, dict)
-    external_urls = dict()
-    for json_file in scandir(mmcv_home, suffix='.json'):
-        json_path = osp.join(mmcv_home, json_file)
-        urls = load_file(json_path)
-        assert set(external_urls.keys()).isdisjoint(set(urls.keys())), \
-            'External urls should not have overlapped keys: ' \
-            f'{set(external_urls.keys()).intersection(set(urls.keys()))}'
-        print(f'Update model urls with: {json_path}')
-        external_urls.update(urls)
-    default_urls.update(external_urls)
+    external_json_path = osp.join(mmcv_home, 'open_mmlab.json')
+    if osp.exists(external_json_path):
+        external_urls = load_file(external_json_path)
+        assert isinstance(external_urls, dict)
+        default_urls.update(external_urls)
+
     return default_urls
 
 
@@ -145,8 +141,8 @@ def _load_checkpoint(filename, map_location=None):
 
     Args:
         filename (str): Accept local filepath, URL, `torchvision://xxx`,
-            `open-mmlab://xxx`, `local://xxx`. Please refer to
-            `docs/model_zoo.md` for details.
+            `open-mmlab://xxx`. Please refer to `docs/model_zoo.md` for
+            details.
         map_location (str | None): Same as :func:`torch.load`. Default: None.
 
     Returns:
@@ -167,16 +163,15 @@ def _load_checkpoint(filename, map_location=None):
     elif filename.startswith('open-mmlab://'):
         model_urls = get_external_models()
         model_name = filename[13:]
-        checkpoint = load_url_dist(
-            model_urls[model_name], model_dir=_get_mmcv_home())
-    elif filename.startswith('local://'):
-        model_urls = get_external_models()
-        model_name = filename[8:]
-        # the local checkpoint path is relative to MMCV_HOME
-        local_dir = osp.join(_get_mmcv_home(),
-                             osp.dirname(model_urls[model_name]))
-        # use local model directory as model_dir
-        checkpoint = load_url_dist(model_urls[model_name], model_dir=local_dir)
+        model_url = model_urls[model_name]
+        # check if is url
+        if model_url.startswith(('http://', 'https://')):
+            checkpoint = load_url_dist(model_url)
+        else:
+            filename = osp.join(_get_mmcv_home(), model_url)
+            if not osp.isfile(filename):
+                raise IOError(f'{filename} is not a checkpoint file')
+            checkpoint = torch.load(filename, map_location=map_location)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
     else:
@@ -196,8 +191,8 @@ def load_checkpoint(model,
     Args:
         model (Module): Module to load checkpoint.
         filename (str): Accept local filepath, URL, `torchvision://xxx`,
-            `open-mmlab://xxx`, `local://xxx`. Please refer to
-            `docs/model_zoo.md` for details.
+            `open-mmlab://xxx`. Please refer to `docs/model_zoo.md` for
+            details.
         map_location (str): Same as :func:`torch.load`.
         strict (bool): Whether to allow different params for the model and
             checkpoint.
