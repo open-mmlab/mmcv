@@ -8,7 +8,9 @@ import pytest
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     ENV_XDG_CACHE_HOME, _get_mmcv_home,
-                                    _load_checkpoint, get_external_models)
+                                    _load_checkpoint,
+                                    get_deprecated_model_names,
+                                    get_external_models)
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -44,6 +46,18 @@ def test_get_external_models():
     }
 
 
+@patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
+def test_get_deprecated_models():
+    os.environ.pop(ENV_MMCV_HOME, None)
+    mmcv_home = osp.join(osp.dirname(__file__), 'data/model_zoo/mmcv_home/')
+    os.environ[ENV_MMCV_HOME] = mmcv_home
+    dep_urls = get_deprecated_model_names()
+    assert dep_urls == {
+        'train_old': 'train',
+        'test_old': 'test',
+    }
+
+
 def load_url_dist(url):
     return 'url:' + url
 
@@ -70,6 +84,12 @@ def test_load_external_url():
     os.environ.pop(ENV_MMCV_HOME, None)
     os.environ.pop(ENV_XDG_CACHE_HOME, None)
     url = _load_checkpoint('open-mmlab://train')
+    assert url == 'url:https://localhost/train.pth'
+
+    # test open-mmlab:// with deprecated model name
+    os.environ.pop(ENV_MMCV_HOME, None)
+    os.environ.pop(ENV_XDG_CACHE_HOME, None)
+    url = _load_checkpoint('open-mmlab://train_old')
     assert url == 'url:https://localhost/train.pth'
 
     # test open-mmlab:// with user-defined MMCV_HOME
