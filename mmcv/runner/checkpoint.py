@@ -163,6 +163,12 @@ def _load_checkpoint(filename, map_location=None):
     elif filename.startswith('open-mmlab://'):
         model_urls = get_external_models()
         model_name = filename[13:]
+        deprecate_json_path = osp.join(mmcv.__path__[0],
+                                       'model_zoo/deprecate.json')
+        deprecate_urls = load_file(deprecate_json_path)
+        assert isinstance(deprecate_urls, dict)
+        if model_name in deprecate_urls:
+            model_name = deprecate_urls[model_name]
         model_url = model_urls[model_name]
         # check if is url
         if model_url.startswith(('http://', 'https://')):
