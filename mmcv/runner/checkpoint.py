@@ -174,8 +174,8 @@ def _load_checkpoint(filename, map_location=None):
         model_name = filename[13:]
         deprecated_urls = get_deprecated_model_names()
         if model_name in deprecated_urls:
-            warnings.warn(f'{model_name} is deprecated in favor of '
-                          f'{deprecated_urls[model_name]}')
+            warnings.warn(f'open-mmlab://{model_name} is deprecated in favor '
+                          f'of open-mmlab://{deprecated_urls[model_name]}')
             model_name = deprecated_urls[model_name]
         model_url = model_urls[model_name]
         # check if is url
