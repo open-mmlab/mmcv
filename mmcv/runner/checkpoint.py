@@ -138,7 +138,7 @@ def get_external_models():
 
 def get_deprecated_model_names():
     deprecate_json_path = osp.join(mmcv.__path__[0],
-                                   'model_zoo/deprecate.json')
+                                   'model_zoo/deprecated.json')
     deprecate_urls = load_file(deprecate_json_path)
     assert isinstance(deprecate_urls, dict)
 
