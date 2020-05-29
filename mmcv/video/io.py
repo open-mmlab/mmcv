@@ -7,6 +7,7 @@ from cv2 import (CAP_PROP_FOURCC, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT,
                  CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH,
                  CAP_PROP_POS_FRAMES, VideoWriter_fourcc)
 
+from mmcv.image import imresize
 from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
                         track_progress)
 
@@ -61,7 +62,7 @@ class VideoReader(object):
     >>> v[5]  # get the 6th frame
     """
 
-    def __init__(self, filename, cache_capacity=10):
+    def __init__(self, filename, cache_capacity=10, scale_rate=1.0):
         check_file_exist(filename, 'Video file not found: ' + filename)
         self._vcap = cv2.VideoCapture(filename)
         assert cache_capacity > 0
@@ -73,6 +74,10 @@ class VideoReader(object):
         self._fps = self._vcap.get(CAP_PROP_FPS)
         self._frame_cnt = int(self._vcap.get(CAP_PROP_FRAME_COUNT))
         self._fourcc = self._vcap.get(CAP_PROP_FOURCC)
+        self._scale_rate = scale_rate
+        if (scale_rate != 1.0):
+            self._width = int(round(self._width * scale_rate))
+            self._height = int(round(self._height * scale_rate))
 
     @property
     def vcap(self):
@@ -148,9 +153,13 @@ class VideoReader(object):
                     self._set_real_position(self._position)
                 ret, img = self._vcap.read()
                 if ret:
+                    if self._scale_rate != 1.0:
+                        img = imresize(img, (self._width, self._height))
                     self._cache.put(self._position, img)
         else:
             ret, img = self._vcap.read()
+            if self._scale_rate != 1.0:
+                img = imresize(img, (self._width, self._height))
         if ret:
             self._position += 1
         return img
@@ -176,6 +185,8 @@ class VideoReader(object):
                 return img
         self._set_real_position(frame_id)
         ret, img = self._vcap.read()
+        if self._scale_rate != 1.0:
+            img = imresize(img, (self._width, self._height))
         if ret:
             if self._cache:
                 self._cache.put(self._position, img)
