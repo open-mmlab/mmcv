@@ -149,6 +149,7 @@ setup(
     long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
