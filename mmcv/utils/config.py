@@ -224,8 +224,10 @@ class Config(object):
                 v_str = f"'{v}'"
             else:
                 v_str = str(v)
+
             if use_mapping:
-                attr_str = f'{str(k)}: {v_str}'
+                k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                attr_str = f'{k_str}: {v_str}'
             else:
                 attr_str = f'{str(k)}={v_str}'
             attr_str = _indent(attr_str, indent)
@@ -251,19 +253,26 @@ class Config(object):
         def _contain_invalid_identifier(dict_str):
             contain_invalid_identifier = False
             for key_name in dict_str:
-                contain_invalid_identifier |= (not key_name.isidentifier())
+                contain_invalid_identifier |= \
+                    (not str(key_name).isidentifier())
             return contain_invalid_identifier
 
-        def _format_dict(d, use_mapping=False, outest_level=False):
+        def _format_dict(input_dict, outest_level=False):
             r = ''
             s = []
-            for idx, (k, v) in enumerate(d.items()):
-                is_last = idx >= len(d) - 1
+
+            use_mapping = _contain_invalid_identifier(input_dict)
+            if use_mapping:
+                r += '{'
+            for idx, (k, v) in enumerate(input_dict.items()):
+                is_last = idx >= len(input_dict) - 1
                 end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
-                    v_str = '\n' + _format_dict(
-                        v, use_mapping=_contain_invalid_identifier(v))
-                    attr_str = f'{str(k)}=dict({v_str}'
+                    v_str = '\n' + _format_dict(v)
+                    if use_mapping:
+                        attr_str = f'{str(k)}: dict({v_str}'
+                    else:
+                        attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
                     attr_str = _format_list(k, v, use_mapping) + end
@@ -272,6 +281,8 @@ class Config(object):
 
                 s.append(attr_str)
             r += '\n'.join(s)
+            if use_mapping:
+                r += '}'
             return r
 
         cfg_dict = self._cfg_dict.to_dict()
@@ -292,6 +303,8 @@ class Config(object):
         return len(self._cfg_dict)
 
     def __getattr__(self, name):
+        if name == 'pretty_text':
+            return getattr(self, name)
         return getattr(self._cfg_dict, name)
 
     def __getitem__(self, name):
