@@ -303,8 +303,6 @@ class Config(object):
         return len(self._cfg_dict)
 
     def __getattr__(self, name):
-        if name == 'pretty_text':
-            return getattr(self, name)
         return getattr(self._cfg_dict, name)
 
     def __getitem__(self, name):
