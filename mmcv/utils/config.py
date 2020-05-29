@@ -219,43 +219,56 @@ class Config(object):
             s = first + '\n' + s
             return s
 
-        def _format_basic_types(k, v):
+        def _format_basic_types(k, v, use_mapping=False):
             if isinstance(v, str):
                 v_str = f"'{v}'"
             else:
                 v_str = str(v)
-            attr_str = f'{str(k)}={v_str}'
+            if use_mapping:
+                attr_str = f'{str(k)}: {v_str}'
+            else:
+                attr_str = f'{str(k)}={v_str}'
             attr_str = _indent(attr_str, indent)
 
             return attr_str
 
-        def _format_list(k, v):
+        def _format_list(k, v, use_mapping=False):
             # check if all items in the list are dict
             if all(isinstance(_, dict) for _ in v):
                 v_str = '[\n'
                 v_str += '\n'.join(
                     f'dict({_indent(_format_dict(v_), indent)}),'
                     for v_ in v).rstrip(',')
-                attr_str = f'{str(k)}={v_str}'
+                if use_mapping:
+                    attr_str = f'{str(k)}: {v_str}'
+                else:
+                    attr_str = f'{str(k)}={v_str}'
                 attr_str = _indent(attr_str, indent) + ']'
             else:
-                attr_str = _format_basic_types(k, v)
+                attr_str = _format_basic_types(k, v, use_mapping)
             return attr_str
 
-        def _format_dict(d, outest_level=False):
+        def _contain_invalid_identifier(dict_str):
+            contain_invalid_identifier = False
+            for key_name in dict_str:
+                contain_invalid_identifier |= (not key_name.isidentifier())
+            return contain_invalid_identifier
+
+        def _format_dict(d, use_mapping=False, outest_level=False):
             r = ''
             s = []
             for idx, (k, v) in enumerate(d.items()):
                 is_last = idx >= len(d) - 1
                 end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
-                    v_str = '\n' + _format_dict(v)
+                    v_str = '\n' + _format_dict(
+                        v, use_mapping=_contain_invalid_identifier(v))
                     attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
-                    attr_str = _format_list(k, v) + end
+                    attr_str = _format_list(k, v, use_mapping) + end
                 else:
-                    attr_str = _format_basic_types(k, v) + end
+                    attr_str = _format_basic_types(k, v, use_mapping) + end
 
                 s.append(attr_str)
             r += '\n'.join(s)
