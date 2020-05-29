@@ -12,3 +12,5 @@ dict_item4 = dict(
     c={9: 678},
     d={'a': 0},
     f=dict(a='69'))
+dict_item5 = {'x/x': {'a.0': 233}}
+dict_list_item6 = {'x/x': [{'a.0': 1., 'b.0': 2.}, {'c/3': 3.}]}

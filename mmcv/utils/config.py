@@ -242,7 +242,8 @@ class Config(object):
                     f'dict({_indent(_format_dict(v_), indent)}),'
                     for v_ in v).rstrip(',')
                 if use_mapping:
-                    attr_str = f'{str(k)}: {v_str}'
+                    k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                    attr_str = f'{k_str}: {v_str}'
                 else:
                     attr_str = f'{str(k)}={v_str}'
                 attr_str = _indent(attr_str, indent) + ']'
@@ -270,7 +271,8 @@ class Config(object):
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
                     if use_mapping:
-                        attr_str = f'{str(k)}: dict({v_str}'
+                        k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                        attr_str = f'{k_str}: dict({v_str}'
                     else:
                         attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
