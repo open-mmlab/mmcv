@@ -272,7 +272,8 @@ class FileClient(object):
 
         Args:
             name (str): The name of the registered backend.
-            backend (class, optional): The backend class to be registered.
+            backend (class, optional): The backend class to be registered,
+                which must be a subclass of :class:`BaseStorageBackend`.
                 When this method is used as a decorator, backend is None.
                 Defaults to None.
             force (bool, optional): Whether to override the backend if the name
