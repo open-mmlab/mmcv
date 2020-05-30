@@ -241,13 +241,50 @@ class FileClient(object):
 
     @classmethod
     def register_backend(cls, name, backend=None, force=False):
+        """Register a backend to FileClient.
+
+        This method can be used as a normal class method or a decorator.
+
+        .. code-block:: python
+
+            class NewBackend(BaseStorageBackend):
+
+                def get(self, filepath):
+                    return filepath
+
+                def get_text(self, filepath):
+                    return filepath
+
+            FileClient.register_backend('new', NewBackend)
+
+        or
+
+        .. code-block:: python
+
+            @FileClient.register_backend('new')
+            class NewBackend(BaseStorageBackend):
+
+                def get(self, filepath):
+                    return filepath
+
+                def get_text(self, filepath):
+                    return filepath
+
+        Args:
+            name (str): The name of the registered backend.
+            backend (class, optional): The backend class to be registered.
+                When this method is used as a decorator, backend is None.
+                Defaults to None.
+            force (bool, optional): Whether to override the backend if the name
+                has already been registered. Defaults to False.
+        """
         if backend is not None:
             cls._register_backend(name, backend, force=force)
             return
 
-        def _register(in_cls):
-            cls._register_backend(name, in_cls, force=force)
-            return in_cls
+        def _register(backend_cls):
+            cls._register_backend(name, backend_cls, force=force)
+            return backend_cls
 
         return _register
 

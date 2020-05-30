@@ -226,8 +226,8 @@ class TestFileClient(object):
             def get_text(self, filepath):
                 return 'text2'
 
+        # force=False
         with pytest.raises(KeyError):
-            # force=False
             FileClient.register_backend('example', Example2Backend)
 
         FileClient.register_backend('example', Example2Backend, force=True)
@@ -249,6 +249,7 @@ class TestFileClient(object):
         assert example_backend.get_text(self.text_path) == 'text3'
         assert 'example3' in FileClient._backends
 
+        # force=False
         with pytest.raises(KeyError):
 
             @FileClient.register_backend(name='example3')
