@@ -222,15 +222,72 @@ class FileClient(object):
         self.client = self._backends[backend](**kwargs)
 
     @classmethod
-    def register_backend(cls, name, backend):
+    def _register_backend(cls, name, backend, force=False):
+        if not isinstance(name, str):
+            raise TypeError('the backend name should be a string, '
+                            f'but got {type(name)}')
         if not inspect.isclass(backend):
             raise TypeError(
                 f'backend should be a class but got {type(backend)}')
         if not issubclass(backend, BaseStorageBackend):
             raise TypeError(
                 f'backend {backend} is not a subclass of BaseStorageBackend')
+        if not force and name in cls._backends:
+            raise KeyError(
+                f'{name} is already registered as a storage backend, '
+                'add "force=True" if you want to override it')
 
         cls._backends[name] = backend
+
+    @classmethod
+    def register_backend(cls, name, backend=None, force=False):
+        """Register a backend to FileClient.
+
+        This method can be used as a normal class method or a decorator.
+
+        .. code-block:: python
+
+            class NewBackend(BaseStorageBackend):
+
+                def get(self, filepath):
+                    return filepath
+
+                def get_text(self, filepath):
+                    return filepath
+
+            FileClient.register_backend('new', NewBackend)
+
+        or
+
+        .. code-block:: python
+
+            @FileClient.register_backend('new')
+            class NewBackend(BaseStorageBackend):
+
+                def get(self, filepath):
+                    return filepath
+
+                def get_text(self, filepath):
+                    return filepath
+
+        Args:
+            name (str): The name of the registered backend.
+            backend (class, optional): The backend class to be registered,
+                which must be a subclass of :class:`BaseStorageBackend`.
+                When this method is used as a decorator, backend is None.
+                Defaults to None.
+            force (bool, optional): Whether to override the backend if the name
+                has already been registered. Defaults to False.
+        """
+        if backend is not None:
+            cls._register_backend(name, backend, force=force)
+            return
+
+        def _register(backend_cls):
+            cls._register_backend(name, backend_cls, force=force)
+            return backend_cls
+
+        return _register
 
     def get(self, filepath):
         return self.client.get(filepath)
