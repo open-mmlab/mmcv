@@ -131,6 +131,7 @@ install_requires = parse_requirements()
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
 
+
 def get_extensions():
     extensions = []
 
