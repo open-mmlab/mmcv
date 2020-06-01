@@ -139,7 +139,9 @@ class ConvModule(nn.Module):
         # build activation layer
         if self.with_activation:
             act_cfg_ = act_cfg.copy()
-            act_cfg_.setdefault('inplace', inplace)
+            # nn.Tanh has no 'inplace' argument
+            if act_cfg_['type'] != 'Tanh':
+                act_cfg_.setdefault('inplace', inplace)
             self.activate = build_activation_layer(act_cfg_)
 
         # Use msra init by default

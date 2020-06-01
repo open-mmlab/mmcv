@@ -117,6 +117,12 @@ def test_conv_module():
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
+    # tanh
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='Tanh'))
+    assert isinstance(conv.activate, nn.Tanh)
+    output = conv(x)
+    assert output.shape == (1, 8, 256, 256)
+
 
 def test_bias():
     # bias: auto, without norm
