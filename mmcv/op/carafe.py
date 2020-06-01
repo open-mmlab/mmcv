@@ -5,7 +5,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.module import Module
 
-from ..cnn import normal_init, xavier_init, UPSAMPLE_LAYERS
+from ..cnn import UPSAMPLE_LAYERS, normal_init, xavier_init
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('op_ext', [
