@@ -1,0 +1,70 @@
+#include "pytorch_cpp_helper.hpp"
+
+int MaskedIm2colForwardCUDAKernelLauncher(
+    const Tensor bottom_data, const Tensor mask_h_idx,
+    const Tensor mask_w_idx, Tensor top_data,
+    const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w);
+
+int MaskedCol2imForwardLaucher(
+    const Tensor bottom_data, const Tensor mask_h_idx,
+    const Tensor mask_w_idx, Tensor top_data,
+    const int height, const int width, const int channels);
+
+int masked_im2col_forward_cuda(
+    const Tensor im, const Tensor mask_h_idx,
+    const Tensor mask_w_idx, Tensor col,
+    const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w) {
+    // im: (n, ic, h, w), kernel size (kh, kw)
+    // kernel: (oc, ic * kh * kw), col: (kh * kw * ic, ow * oh)
+    return MaskedIm2colForwardCUDAKernelLauncher(
+               im, mask_h_idx, mask_w_idx, col,
+               kernel_h, kernel_w, pad_h, pad_w);
+}
+
+int masked_col2im_forward_cuda(
+    const Tensor col, const Tensor mask_h_idx,
+    const Tensor mask_w_idx, Tensor im,
+    int height, int width, int channels) {
+    // im: (n, ic, h, w), kernel size (kh, kw)
+    // kernel: (oc, ic * kh * kh), col: (kh * kw * ic, ow * oh)
+    return MaskedCol2imForwardLaucher(
+               col, mask_h_idx, mask_w_idx, im,
+               height, width, channels);
+}
+
+int masked_im2col_forward(
+    const Tensor im, const Tensor mask_h_idx, const Tensor mask_w_idx,
+    Tensor col,
+    const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w) {
+
+    if (im.device().is_cuda()) {
+        CHECK_CUDA_INPUT(im);
+        CHECK_CUDA_INPUT(mask_h_idx);
+        CHECK_CUDA_INPUT(mask_w_idx);
+        CHECK_CUDA_INPUT(col);
+        return masked_im2col_forward_cuda(
+                   im, mask_h_idx, mask_w_idx, col,
+                   kernel_h, kernel_w, pad_h, pad_w);
+    }
+    return 0;
+}
+
+int masked_col2im_forward(
+    const Tensor col, const Tensor mask_h_idx, const Tensor mask_w_idx,
+    Tensor im,
+    int height, int width, int channels) {
+
+    if (col.device().is_cuda()) {
+        CHECK_CUDA_INPUT(col);
+        CHECK_CUDA_INPUT(mask_h_idx);
+        CHECK_CUDA_INPUT(mask_w_idx);
+        CHECK_CUDA_INPUT(im);
+        return masked_col2im_forward_cuda(
+                   col, mask_h_idx, mask_w_idx, im,
+                   height, width, channels);
+    }
+    return 0;
+}

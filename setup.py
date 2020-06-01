@@ -1,12 +1,22 @@
+import glob
+import os
 import platform
 import re
+import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
-from setuptools import Extension, dist, find_packages, setup
+from setuptools import dist, find_packages, setup
+
+import torch
+from Cython.Build import cythonize
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # NOQA: E402  # isort:skip
-from Cython.Distutils import build_ext  # NOQA: E402  # isort:skip
+
+if torch.__version__ != 'parrots':
+    from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+else:
+    from parrots.utils.build_extension import BuildExtension, Extension
 
 
 def choose_requirement(primary, secondary):
@@ -121,15 +131,17 @@ install_requires = parse_requirements()
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
 
-if platform.system() == 'Darwin':
-    extra_compile_args = ['-stdlib=libc++']
-    extra_link_args = ['-stdlib=libc++']
-else:
-    extra_compile_args = []
-    extra_link_args = []
+def get_extensions():
+    extensions = []
 
-EXT_MODULES = [
-    Extension(
+    if platform.system() == 'Darwin':
+        extra_compile_args = ['-stdlib=libc++']
+        extra_link_args = ['-stdlib=libc++']
+    else:
+        extra_compile_args = []
+        extra_link_args = []
+
+    ext_flow = setuptools.Extension(
         name='mmcv._ext',
         sources=[
             './mmcv/video/optflow_warp/flow_warp.cpp',
@@ -138,9 +150,42 @@ EXT_MODULES = [
         include_dirs=[numpy.get_include()],
         language='c++',
         extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-    ),
-]
+        extra_link_args=extra_link_args)
+    extensions.extend(cythonize(ext_flow))
+
+    cuda_args = [
+        '-gencode=arch=compute_60,code=sm_60',
+        '-gencode=arch=compute_61,code=sm_61',
+        '-gencode=arch=compute_70,code=sm_70',
+        '-gencode=arch=compute_70,code=compute_70'
+    ]
+
+    if torch.__version__ == 'parrots':
+        op_files = glob.glob('./mmcv/op/csrc/parrots/*')
+        op_header_args = ['-I./mmcv/op/csrc']
+        ext_op = Extension(
+            name='mmcv.op_ext',
+            sources=op_files,
+            extra_compile_args={
+                'nvcc': op_header_args + cuda_args,
+                'cxx': op_header_args,
+            },
+            cuda=True)
+        extensions.append(ext_op)
+    else:
+        op_files = glob.glob('./mmcv/op/csrc/pytorch/*')
+        include_path = os.path.abspath('./mmcv/op/csrc')
+        ext_op = CUDAExtension(
+            name='mmcv.op_ext',
+            sources=op_files,
+            include_dirs=[include_path],
+            extra_compile_args={
+                'nvcc': cuda_args,
+                'cxx': [],
+            })
+        extensions.append(ext_op)
+    return extensions
+
 
 setup(
     name='mmcv',
@@ -167,6 +212,6 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=install_requires,
-    ext_modules=EXT_MODULES,
-    cmdclass={'build_ext': build_ext},
+    ext_modules=get_extensions(),
+    cmdclass={'build_ext': BuildExtension},
     zip_safe=False)
