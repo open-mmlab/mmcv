@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from collections.abc import Sequence, Mapping
+from collections.abc import Mapping, Sequence
+
 import torch
 import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
