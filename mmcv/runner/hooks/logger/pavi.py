@@ -5,7 +5,7 @@ import os.path as osp
 import numpy as np
 import torch
 
-from mmcv.runner import master_only
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
