@@ -54,6 +54,11 @@ class BaseRunner(metaclass=ABCMeta):
                                 f'but got {type(batch_processor)}')
             warnings.warn('batch_processor is deprecated, please implement '
                           'train_step() and val_step() in the model instead.')
+            # raise an error is `batch_processor` is not None and
+            # `model.train_step()` exists.
+            if hasattr(model, 'train_step'):
+                raise RuntimeError('batch_processor and model.train_step() '
+                                   'cannot be both available.')
         else:
             assert hasattr(model, 'train_step')
         self.model = model
