@@ -56,9 +56,10 @@ class BaseRunner(metaclass=ABCMeta):
                           'train_step() and val_step() in the model instead.')
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
-            if hasattr(model, 'train_step'):
-                raise RuntimeError('batch_processor and model.train_step() '
-                                   'cannot be both available.')
+            if hasattr(model, 'train_step') or hasattr(model, 'val_step'):
+                raise RuntimeError(
+                    'batch_processor and model.train_step()/model.val_step() '
+                    'cannot be both available.')
         else:
             assert hasattr(model, 'train_step')
         self.model = model

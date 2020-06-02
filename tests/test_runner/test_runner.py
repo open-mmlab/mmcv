@@ -55,6 +55,15 @@ def test_epoch_based_runner():
         model = Model()
         _ = EpochBasedRunner(model, work_dir=1)
 
+    with pytest.raises(RuntimeError):
+        # batch_processor and train_step() cannot be both set
+
+        def batch_processor():
+            pass
+
+        model = Model()
+        _ = EpochBasedRunner(model, batch_processor)
+
     # test work_dir
     model = Model()
     temp_root = tempfile.gettempdir()
