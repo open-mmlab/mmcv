@@ -9,6 +9,8 @@ from importlib import import_module
 
 import torch
 import torchvision
+from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.optim import Optimizer
 from torch.utils import model_zoo
 
 import mmcv
@@ -59,6 +61,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     # use _load_from_state_dict to enable checkpoint version control
     def load(module, prefix=''):
+        if isinstance(module, (DataParallel, DistributedDataParallel)):
+            module = module.module
         local_metadata = {} if metadata is None else metadata.get(
             prefix[:-1], {})
         module._load_from_state_dict(state_dict, prefix, local_metadata, True,
@@ -269,15 +273,19 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))
-    if hasattr(model, 'module'):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         model = model.module
 
     checkpoint = {
         'meta': meta,
         'state_dict': weights_to_cpu(model.state_dict())
     }
-    if optimizer is not None:
+    if isinstance(optimizer, Optimizer):
         checkpoint['optimizer'] = optimizer.state_dict()
+    elif isinstance(optimizer, dict):
+        checkpoint['optimizer'] = {}
+        for k, optim in optimizer.items():
+            checkpoint['optimizer'][k] = optim.state_dict()
     # immediately flush buffer
     with open(filename, 'wb') as f:
         torch.save(checkpoint, f)

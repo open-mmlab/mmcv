@@ -53,10 +53,22 @@ class TensorboardLoggerHook(LoggerHook):
             else:
                 self.writer.add_scalar(tag, runner.log_buffer.output[var],
                                        runner.iter)
-        self.writer.add_scalar('learning_rate',
-                               runner.current_lr()[0], runner.iter)
-        self.writer.add_scalar('momentum',
-                               runner.current_momentum()[0], runner.iter)
+        # add learning rate
+        if isinstance(runner.current_lr(), dict):
+            for name, value in runner.current_lr().items():
+                self.writer.add_scalar(f'learning_rate/{name}', value[0],
+                                       runner.iter)
+        else:
+            self.writer.add_scalar('learning_rate',
+                                   runner.current_lr()[0], runner.iter)
+        # add momentum
+        if isinstance(runner.current_momentum(), dict):
+            for name, value in runner.current_momentum().items():
+                self.writer.add_scalar(f'momentum/{name}', value[0],
+                                       runner.iter)
+        else:
+            self.writer.add_scalar('momentum',
+                                   runner.current_momentum()[0], runner.iter)
 
     @master_only
     def after_run(self, runner):

@@ -1,5 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from __future__ import division
 from math import cos, pi
 
 from .hook import HOOKS, Hook
@@ -56,14 +55,31 @@ class LrUpdaterHook(Hook):
         self.regular_lr = []  # expected lr if no warming up is performed
 
     def _set_lr(self, runner, lr_groups):
-        for param_group, lr in zip(runner.optimizer.param_groups, lr_groups):
-            param_group['lr'] = lr
+        if isinstance(runner.optimizer, dict):
+            for k, optim in runner.optimizer.items():
+                for param_group, lr in zip(optim.param_groups, lr_groups[k]):
+                    param_group['lr'] = lr
+        else:
+            for param_group, lr in zip(runner.optimizer.param_groups,
+                                       lr_groups):
+                param_group['lr'] = lr
 
     def get_lr(self, runner, base_lr):
         raise NotImplementedError
 
     def get_regular_lr(self, runner):
-        return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
+        if isinstance(runner.optimizer, dict):
+            lr_groups = {}
+            for k in runner.optimizer.keys():
+                _lr_group = [
+                    self.get_lr(runner, _base_lr)
+                    for _base_lr in self.base_lr[k]
+                ]
+                lr_groups.update({k: _lr_group})
+
+            return lr_groups
+        else:
+            return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
 
     def get_warmup_lr(self, cur_iters):
         if self.warmup == 'constant':
@@ -79,11 +95,21 @@ class LrUpdaterHook(Hook):
     def before_run(self, runner):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
         # it will be set according to the optimizer params
-        for group in runner.optimizer.param_groups:
-            group.setdefault('initial_lr', group['lr'])
-        self.base_lr = [
-            group['initial_lr'] for group in runner.optimizer.param_groups
-        ]
+        if isinstance(runner.optimizer, dict):
+            self.base_lr = {}
+            for k, optim in runner.optimizer.items():
+                for group in optim.param_groups:
+                    group.setdefault('initial_lr', group['lr'])
+                _base_lr = [
+                    group['initial_lr'] for group in optim.param_groups
+                ]
+                self.base_lr.update({k: _base_lr})
+        else:
+            for group in runner.optimizer.param_groups:
+                group.setdefault('initial_lr', group['lr'])
+            self.base_lr = [
+                group['initial_lr'] for group in runner.optimizer.param_groups
+            ]
 
     def before_train_epoch(self, runner):
         if not self.by_epoch:
@@ -214,6 +240,7 @@ class CosineAnealingLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
             max_progress = runner.max_iters
+
         if self.min_lr_ratio is not None:
             target_lr = base_lr * self.min_lr_ratio
         else:
@@ -222,10 +249,70 @@ class CosineAnealingLrUpdaterHook(LrUpdaterHook):
 
 
 @HOOKS.register_module()
+class CosineRestartLrUpdaterHook(LrUpdaterHook):
+    """Cosine annealing with restarts learning rate scheme.
+
+    Args:
+        period (list[int]): Period for each cosine anneling cycle.
+        restart_weights (list[float]): Restart weights at each restart
+            iteration. Default: [1].
+        eta_min (float): The mimimum lr. Default: 0.
+    """
+
+    def __init__(self, period, restart_weights=[1], eta_min=0, **kwargs):
+        self.period = period
+        self.eta_min = eta_min
+        self.restart_weights = restart_weights
+        assert (len(self.period) == len(self.restart_weights)
+                ), 'period and restart_weights should have the same length.'
+        super(CosineRestartLrUpdaterHook, self).__init__(**kwargs)
+
+        self.cumulative_period = [
+            sum(self.period[0:i + 1]) for i in range(0, len(self.period))
+        ]
+
+    def get_lr(self, runner, base_lr):
+        if self.by_epoch:
+            progress = runner.epoch
+        else:
+            progress = runner.iter
+
+        idx = get_position_from_periods(progress, self.cumulative_period)
+        current_weight = self.restart_weights[idx]
+        nearest_restart = self.cumulative_period[idx - 1]
+        current_period = self.period[idx]
+
+        alpha = min((progress - nearest_restart) / current_period, 1)
+        return self.eta_min + current_weight * 0.5 * (
+            base_lr - self.eta_min) * (1 + cos(pi * alpha))
+
+
+def get_position_from_periods(iteration, cumulative_period):
+    """Get the position from a period list.
+
+    It will return the index of the right-closest number in the period list.
+    For example, the cumulative_period = [100, 200, 300, 400],
+    if iteration == 50, return 0;
+    if iteration == 210, return 2;
+    if iteration == 300, return 2.
+
+    Args:
+        iteration (int): Current iteration.
+        cumulative_period (list[int]): Cumulative period list.
+
+    Returns:
+        int: The position of the right-closest number in the period list.
+    """
+    for i, period in enumerate(cumulative_period):
+        if iteration <= period:
+            return i
+
+
+@HOOKS.register_module()
 class CyclicLrUpdaterHook(LrUpdaterHook):
     """Cyclic LR Scheduler
 
-    Implemet the cyclical learning rate policy (CLR) described in
+    Implement the cyclical learning rate policy (CLR) described in
     https://arxiv.org/pdf/1506.01186.pdf
 
     Different from the original paper, we use cosine anealing rather than

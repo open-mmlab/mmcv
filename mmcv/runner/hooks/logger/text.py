@@ -123,7 +123,14 @@ class TextLoggerHook(LoggerHook):
         log_dict['epoch'] = runner.epoch + 1
         log_dict['iter'] = runner.inner_iter + 1
         # only record lr of the first param group
-        log_dict['lr'] = runner.current_lr()[0]
+        cur_lr = runner.current_lr()
+        if isinstance(cur_lr, list):
+            log_dict['lr'] = cur_lr[0]
+        else:
+            log_dict['lr'] = {}
+            for k, lr_ in cur_lr.items():
+                log_dict['lr'].update({k: lr_[0]})
+
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
@@ -138,3 +145,49 @@ class TextLoggerHook(LoggerHook):
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
+
+
+@HOOKS.register_module
+class IterTextLoggerHook(TextLoggerHook):
+
+    def _log_info(self, log_dict, runner):
+        log_str = 'Exp Name: {}\t'.format(runner.meta['exp_name'])
+        if runner.mode == 'train':
+            if isinstance(log_dict['lr'], dict):
+                lr_str = ''
+                for k, val in log_dict['lr'].items():
+                    lr_str += '{}: {:.4e} '.format('lr_' + k, val)
+                log_str += 'Epoch [{}][{}/{}]\t{}, '.format(
+                    log_dict['epoch'], log_dict['iter'], runner.max_iters,
+                    lr_str)
+            else:
+                log_str += 'Epoch [{}][{}/{}]\tlr: {:.4e}, '.format(
+                    log_dict['epoch'], log_dict['iter'], runner.max_iters,
+                    log_dict['lr'])
+            if 'time' in log_dict.keys():
+                self.time_sec_tot += (log_dict['time'] * self.interval)
+                time_sec_avg = self.time_sec_tot / (
+                    runner.iter - self.start_iter + 1)
+                eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
+                eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
+                log_str += 'eta: {}, '.format(eta_str)
+                log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
+                    log_dict['time'], log_dict['data_time']))
+                log_str += 'memory: {}, '.format(log_dict['memory'])
+        else:
+            log_str += 'Iter({}) [{}]\t'.format(log_dict['mode'],
+                                                log_dict['iter'])
+        log_items = []
+        for name, val in log_dict.items():
+            # TODO: resolve this hack
+            # these items have been in log_str
+            if name in [
+                    'mode', 'Epoch', 'iter', 'lr', 'time', 'data_time',
+                    'memory', 'epoch'
+            ]:
+                continue
+            if isinstance(val, float):
+                val = '{:.4f}'.format(val)
+            log_items.append('{}: {}'.format(name, val))
+        log_str += ', '.join(log_items)
+        runner.logger.info(log_str)
