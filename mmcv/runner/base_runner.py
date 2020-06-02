@@ -75,9 +75,8 @@ class BaseRunner(metaclass=ABCMeta):
                 f'optimizer must be a torch.optim.Optimizer object '
                 f'or dict or None, but got {type(optimizer)}')
 
-        if not isinstance(logger, logging.Logger):
-            raise TypeError(f'logger must be a logging.Logger object, '
-                            f'but got {type(logger)}')
+        assert logging is not None
+        self.logger = logger
         if meta is not None and not isinstance(meta, dict):
             raise TypeError(
                 f'meta must be a dict or None, but got {type(meta)}')
