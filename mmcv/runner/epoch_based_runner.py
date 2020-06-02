@@ -1,14 +1,21 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import os.path as osp
 import time
+import warnings
 
 import torch
 
 import mmcv
 from .base_runner import BaseRunner
+from .checkpoint import save_checkpoint
 from .utils import get_host_info
 
 
 class EpochBasedRunner(BaseRunner):
+    """Epoch-based Runner.
+
+    This runner train models epoch by epoch.
+    """
 
     def train(self, data_loader, **kwargs):
         self.model.train()
@@ -16,13 +23,19 @@ class EpochBasedRunner(BaseRunner):
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(data_loader)
         self.call_hook('before_train_epoch')
+        time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
-            outputs = self.model.train_step(data_batch, self.optimizer,
-                                            **kwargs)
+            if self.batch_processor is None:
+                outputs = self.model.train_step(data_batch, self.optimizer,
+                                                **kwargs)
+            else:
+                outputs = self.batch_processor(
+                    self.model, data_batch, train_mode=True, **kwargs)
             if not isinstance(outputs, dict):
-                raise TypeError('model.train_step() must return a dict')
+                raise TypeError('"batch_processor()" or "model.train_step()"'
+                                ' must return a dict')
             if 'log_vars' in outputs:
                 self.log_buffer.update(outputs['log_vars'],
                                        outputs['num_samples'])
@@ -38,15 +51,20 @@ class EpochBasedRunner(BaseRunner):
         self.mode = 'val'
         self.data_loader = data_loader
         self.call_hook('before_val_epoch')
-
+        time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(data_loader):
             self._inner_iter = i
             self.call_hook('before_val_iter')
             with torch.no_grad():
-                outputs = self.model.val_step(data_batch, self.optimizer,
-                                              **kwargs)
+                if self.batch_processor is None:
+                    outputs = self.model.val_step(data_batch, self.optimizer,
+                                                  **kwargs)
+                else:
+                    outputs = self.batch_processor(
+                        self.model, data_batch, train_mode=False, **kwargs)
             if not isinstance(outputs, dict):
-                raise TypeError('model.val_step() must return a dict')
+                raise TypeError('"batch_processor()" or "model.val_step()"'
+                                ' must return a dict')
             if 'log_vars' in outputs:
                 self.log_buffer.update(outputs['log_vars'],
                                        outputs['num_samples'])
@@ -72,6 +90,12 @@ class EpochBasedRunner(BaseRunner):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
+        for i, flow in enumerate(workflow):
+            mode, epochs = flow
+            if mode == 'train':
+                self._max_iters = self._max_epochs * len(data_loaders[i])
+                break
+
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
@@ -84,8 +108,8 @@ class EpochBasedRunner(BaseRunner):
                 if isinstance(mode, str):  # self.train()
                     if not hasattr(self, mode):
                         raise ValueError(
-                            'runner has no method named "{}" to run an epoch'.
-                            format(mode))
+                            f'runner has no method named "{mode}" to run an '
+                            'epoch')
                     epoch_runner = getattr(self, mode)
                 else:
                     raise TypeError(
@@ -98,3 +122,47 @@ class EpochBasedRunner(BaseRunner):
 
         time.sleep(1)  # wait for some hooks like loggers to finish
         self.call_hook('after_run')
+
+    def save_checkpoint(self,
+                        out_dir,
+                        filename_tmpl='epoch_{}.pth',
+                        save_optimizer=True,
+                        meta=None,
+                        create_symlink=True):
+        """Save the checkpoint.
+
+        Args:
+            out_dir (str): The directory that checkpoints are saved.
+            filename_tmpl (str, optional): The checkpoint filename template,
+                which contains a placeholder for the epoch number.
+                Defaults to 'epoch_{}.pth'.
+            save_optimizer (bool, optional): Whether to save the optimizer to
+                the checkpoint. Defaults to True.
+            meta (dict, optional): The meta information to be saved in the
+                checkpoint. Defaults to None.
+            create_symlink (bool, optional): Whether to create a symlink
+                "latest.pth" to point to the latest checkpoint.
+                Defaults to True.
+        """
+        if meta is None:
+            meta = dict(epoch=self.epoch + 1, iter=self.iter)
+        else:
+            meta.update(epoch=self.epoch + 1, iter=self.iter)
+
+        filename = filename_tmpl.format(self.epoch + 1)
+        filepath = osp.join(out_dir, filename)
+        optimizer = self.optimizer if save_optimizer else None
+        save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
+        # in some environments, `os.symlink` is not supported, you may need to
+        # set `create_symlink` to False
+        if create_symlink:
+            mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
+
+
+class Runner(EpochBasedRunner):
+    """Deprecated name of EpochBasedRunner"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            'Runner was deprecated, please use DeprecationWarning instead')
+        super().__init__(*args, **kwargs)

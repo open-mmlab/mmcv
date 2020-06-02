@@ -1,27 +1,69 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import logging
 import os.path as osp
+import warnings
 from abc import ABCMeta, abstractmethod
 
 import torch
 from torch.optim import Optimizer
 
 import mmcv
-from .checkpoint import load_checkpoint, save_checkpoint
+from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook, IterTimerHook
 from .log_buffer import LogBuffer
 from .priority import get_priority
+from .utils import get_time_str
 
 
 class BaseRunner(metaclass=ABCMeta):
+    """The base class of Runner, a training helper for PyTorch.
+
+    All subclasses should implement the following APIs:
+
+    - ``run()``
+    - ``train()``
+    - ``val()``
+    - ``save_checkpoint()``
+
+    Args:
+        model (:obj:`torch.nn.Module`): The model to be run.
+        batch_processor (callable): A callable method that process a data
+            batch. The interface of this method should be
+            `batch_processor(model, data, train_mode) -> dict`
+        optimizer (dict or :obj:`torch.optim.Optimizer`): If it is a dict,
+            runner will construct an optimizer according to it.
+        work_dir (str, optional): The working directory to save checkpoints
+            and logs. Defaults to None.
+        logger (:obj:`logging.Logger`): Logger used during training.
+             Defaults to None.
+        meta (dict | None): A dict records some import information such as
+            environment info and seed, which will be logged in logger hook.
+            Defaults to None.
+    """
 
     def __init__(self,
                  model,
+                 batch_processor=None,
                  optimizer=None,
                  work_dir=None,
                  logger=None,
                  meta=None):
+        if batch_processor is not None:
+            if not callable(batch_processor):
+                raise TypeError('batch_processor must be callable, '
+                                f'but got {type(batch_processor)}')
+            warnings.warn('batch_processor is deprecated, please implement '
+                          'train_step() and val_step() in the model instead.')
+            # raise an error is `batch_processor` is not None and
+            # `model.train_step()` exists.
+            if hasattr(model, 'train_step') or hasattr(model, 'val_step'):
+                raise RuntimeError(
+                    'batch_processor and model.train_step()/model.val_step() '
+                    'cannot be both available.')
+        else:
+            assert hasattr(model, 'train_step')
+
         if isinstance(optimizer, dict):
             for name, optim in optimizer.items():
                 if not isinstance(optim, Optimizer):
@@ -41,10 +83,17 @@ class BaseRunner(metaclass=ABCMeta):
                 f'meta must be a dict or None, but got {type(meta)}')
 
         self.model = model
+        self.batch_processor = batch_processor
         self.optimizer = optimizer
-        self._create_work_dir(work_dir)
-        self.logger = logger
-        self.meta = meta
+
+        # create work_dir
+        if mmcv.is_str(work_dir):
+            self.work_dir = osp.abspath(work_dir)
+            mmcv.mkdir_or_exist(self.work_dir)
+        elif work_dir is None:
+            self.work_dir = None
+        else:
+            raise TypeError('"work_dir" must be a str or None')
 
         # get model name from the model class
         if hasattr(self.model, 'module'):
@@ -52,8 +101,11 @@ class BaseRunner(metaclass=ABCMeta):
         else:
             self._model_name = self.model.__class__.__name__
 
-        self._rank, self._world_size = get_dist_info()
+        self.logger = logger
+        self.meta = meta
 
+        self._rank, self._world_size = get_dist_info()
+        self.timestamp = get_time_str()
         self.mode = None
         self._hooks = []
         self._epoch = 0
@@ -61,6 +113,7 @@ class BaseRunner(metaclass=ABCMeta):
         self._inner_iter = 0
         self._max_epochs = 0
         self._max_iters = 0
+        # TODO: Redesign LogBuffer, it is not flexible and elegant enough
         self.log_buffer = LogBuffer()
 
     @property
@@ -121,89 +174,14 @@ class BaseRunner(metaclass=ABCMeta):
     def run(self, data_loaders, workflow, **kwargs):
         pass
 
-    def _create_work_dir(self, work_dir):
-        if isinstance(work_dir, str):
-            self.work_dir = osp.abspath(work_dir)
-            mmcv.mkdir_or_exist(self.work_dir)
-        elif work_dir is None:
-            self.work_dir = None
-        else:
-            raise TypeError('"work_dir" must be a str or None')
-
-    def resume(self, checkpoint):
+    @abstractmethod
+    def save_checkpoint(self,
+                        out_dir,
+                        filename_tmpl,
+                        save_optimizer=True,
+                        meta=None,
+                        create_symlink=True):
         pass
-
-    def register_hook(self, hook, priority='NORMAL'):
-        """Register a hook into the hook list.
-
-        Args:
-            hook (:obj:`Hook`): The hook to be registered.
-            priority (int or str or :obj:`Priority`): Hook priority.
-                Lower value means higher priority.
-        """
-        assert isinstance(hook, Hook)
-        if hasattr(hook, 'priority'):
-            raise ValueError('"priority" is a reserved attribute for hooks')
-        priority = get_priority(priority)
-        hook.priority = priority
-        # insert the hook to a sorted list
-        inserted = False
-        for i in range(len(self._hooks) - 1, -1, -1):
-            if priority >= self._hooks[i].priority:
-                self._hooks.insert(i + 1, hook)
-                inserted = True
-                break
-        if not inserted:
-            self._hooks.insert(0, hook)
-
-    def call_hook(self, fn_name):
-        for hook in self._hooks:
-            getattr(hook, fn_name)(self)
-
-    def register_lr_hook(self, lr_config):
-        if isinstance(lr_config, dict):
-            assert 'policy' in lr_config
-            hook_type = lr_config.pop('policy') + 'LrUpdaterHook'
-            lr_config['type'] = hook_type
-            hook = mmcv.build_from_cfg(lr_config, HOOKS)
-        else:
-            hook = lr_config
-        self.register_hook(hook)
-
-    def register_checkpoint_hook(self, checkpoint_config):
-        if checkpoint_config is None:
-            return
-        if isinstance(checkpoint_config, dict):
-            checkpoint_config.setdefault('type', 'CheckpointHook')
-            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
-        else:
-            hook = checkpoint_config
-        self.register_hook(hook)
-
-    def register_logger_hooks(self, log_config):
-        log_interval = log_config['interval']
-        for info in log_config['hooks']:
-            logger_hook = mmcv.build_from_cfg(
-                info, HOOKS, default_args=dict(interval=log_interval))
-            self.register_hook(logger_hook, priority='VERY_LOW')
-
-    def register_training_hooks(self,
-                                lr_config,
-                                checkpoint_config=None,
-                                log_config=None):
-        """Register default hooks for training.
-
-        Default hooks include:
-
-        - LrUpdaterHook
-        - CheckpointSaverHook
-        - IterTimerHook
-        - LoggerHook(s)
-        """
-        self.register_lr_hook(lr_config)
-        self.register_checkpoint_hook(checkpoint_config)
-        self.register_hook(IterTimerHook())
-        self.register_logger_hooks(log_config)
 
     def current_lr(self):
         """Get current learning rates.
@@ -218,7 +196,8 @@ class BaseRunner(metaclass=ABCMeta):
             for name, optim in self.optimizer.items():
                 lr[name] = [group['lr'] for group in optim.param_groups]
         else:
-            lr = None
+            raise RuntimeError(
+                'lr is not applicable because optimizer does not exist.')
         return lr
 
     def current_momentum(self):
@@ -254,31 +233,154 @@ class BaseRunner(metaclass=ABCMeta):
                 momentums[name] = momentums_per_optim
         return momentums
 
+    def register_hook(self, hook, priority='NORMAL'):
+        """Register a hook into the hook list.
+
+        The hook will be inserted into a priority queue, with the specified
+        priority (See :cls:`Priority` for details of priorities).
+        For hooks with the same priority, they will be triggered in the same
+        order as they are registered.
+
+        Args:
+            hook (:obj:`Hook`): The hook to be registered.
+            priority (int or str or :obj:`Priority`): Hook priority.
+                Lower value means higher priority.
+        """
+        assert isinstance(hook, Hook)
+        if hasattr(hook, 'priority'):
+            raise ValueError('"priority" is a reserved attribute for hooks')
+        priority = get_priority(priority)
+        hook.priority = priority
+        # insert the hook to a sorted list
+        inserted = False
+        for i in range(len(self._hooks) - 1, -1, -1):
+            if priority >= self._hooks[i].priority:
+                self._hooks.insert(i + 1, hook)
+                inserted = True
+                break
+        if not inserted:
+            self._hooks.insert(0, hook)
+
+    def call_hook(self, fn_name):
+        """Call all hooks.
+
+        Args:
+            fn_name (str): The function name in each hook to be called, such as
+                "before_train_epoch".
+        """
+        for hook in self._hooks:
+            getattr(hook, fn_name)(self)
+
     def load_checkpoint(self, filename, map_location='cpu', strict=False):
         self.logger.info('load checkpoint from %s', filename)
         return load_checkpoint(self.model, filename, map_location, strict,
                                self.logger)
 
-    def save_checkpoint(self,
-                        out_dir,
-                        filename_tmpl='epoch_{}.pth',
-                        meta=None,
-                        save_optimizer=True,
-                        create_symlink=True):
-        if meta is None:
-            meta = dict(epoch=self.epoch + 1, iter=self.iter)
-        elif isinstance(meta, dict):
-            meta.update(epoch=self.epoch + 1, iter=self.iter)
+    def resume(self,
+               checkpoint,
+               resume_optimizer=True,
+               map_location='default'):
+        if map_location == 'default':
+            device_id = torch.cuda.current_device()
+            checkpoint = self.load_checkpoint(
+                checkpoint,
+                map_location=lambda storage, loc: storage.cuda(device_id))
         else:
-            raise TypeError(
-                f'meta should be a dict or None, but got {type(meta)}')
-        meta.update(self.meta)
+            checkpoint = self.load_checkpoint(
+                checkpoint, map_location=map_location)
 
-        filename = filename_tmpl.format(self.epoch + 1)
-        filepath = osp.join(out_dir, filename)
-        optimizer = self.optimizer if save_optimizer else None
-        save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
-        # in some environments, `os.symlink` is not supported, you may need to
-        # set `create_symlink` to False
-        if create_symlink:
-            mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
+        self._epoch = checkpoint['meta']['epoch']
+        self._iter = checkpoint['meta']['iter']
+        if 'optimizer' in checkpoint and resume_optimizer:
+            self.optimizer.load_state_dict(checkpoint['optimizer'])
+
+        self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
+
+    def register_lr_hook(self, lr_config):
+        if isinstance(lr_config, dict):
+            assert 'policy' in lr_config
+            policy_type = lr_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of Lr updater updater.
+            # Since this is not applicable for `CosineAnealingLrUpdater`,
+            # the string will not be changed if it contains capital letters.
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'LrUpdaterHook'
+            lr_config['type'] = hook_type
+            hook = mmcv.build_from_cfg(lr_config, HOOKS)
+        else:
+            hook = lr_config
+        self.register_hook(hook)
+
+    def register_momentum_hook(self, momentum_config):
+        if momentum_config is None:
+            return
+        if isinstance(momentum_config, dict):
+            assert 'policy' in momentum_config
+            policy_type = momentum_config.pop('policy')
+            # If the type of policy is all in lower case, e.g., 'cyclic',
+            # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+            # This is for the convenient usage of momentum updater.
+            # Since this is not applicable for `CosineAnealingMomentumUpdater`,
+            # the string will not be changed if it contains capital letters.
+            if policy_type == policy_type.lower():
+                policy_type = policy_type.title()
+            hook_type = policy_type + 'MomentumUpdaterHook'
+            momentum_config['type'] = hook_type
+            hook = mmcv.build_from_cfg(momentum_config, HOOKS)
+        else:
+            hook = momentum_config
+        self.register_hook(hook)
+
+    def register_optimizer_hook(self, optimizer_config):
+        if optimizer_config is None:
+            return
+        if isinstance(optimizer_config, dict):
+            optimizer_config.setdefault('type', 'OptimizerHook')
+            hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
+        else:
+            hook = optimizer_config
+        self.register_hook(hook)
+
+    def register_checkpoint_hook(self, checkpoint_config):
+        if checkpoint_config is None:
+            return
+        if isinstance(checkpoint_config, dict):
+            checkpoint_config.setdefault('type', 'CheckpointHook')
+            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
+        else:
+            hook = checkpoint_config
+        self.register_hook(hook)
+
+    def register_logger_hooks(self, log_config):
+        log_interval = log_config['interval']
+        for info in log_config['hooks']:
+            logger_hook = mmcv.build_from_cfg(
+                info, HOOKS, default_args=dict(interval=log_interval))
+            self.register_hook(logger_hook, priority='VERY_LOW')
+
+    def register_training_hooks(self,
+                                lr_config,
+                                optimizer_config=None,
+                                checkpoint_config=None,
+                                log_config=None,
+                                momentum_config=None):
+        """Register default hooks for training.
+
+        Default hooks include:
+
+        - LrUpdaterHook
+        - MomentumUpdaterHook
+        - OptimizerStepperHook
+        - CheckpointSaverHook
+        - IterTimerHook
+        - LoggerHook(s)
+        """
+        self.register_lr_hook(lr_config)
+        self.register_momentum_hook(momentum_config)
+        self.register_optimizer_hook(optimizer_config)
+        self.register_checkpoint_hook(checkpoint_config)
+        self.register_hook(IterTimerHook())
+        self.register_logger_hooks(log_config)

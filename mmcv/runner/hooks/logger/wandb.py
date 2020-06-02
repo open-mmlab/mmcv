@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 
-from mmcv.runner import master_only
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
