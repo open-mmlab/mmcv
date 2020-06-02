@@ -254,3 +254,15 @@ def test_dict_action():
     cfg.merge_from_dict(args.options)
     assert cfg.item2 == dict(a=1, b=0.1, c='x')
     assert cfg.item3 is False
+
+
+def test_dump_mapping():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg = Config.fromfile(cfg_file)
+
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
+        cfg.dump(text_cfg_filename)
+        text_cfg = Config.fromfile(text_cfg_filename)
+
+    assert text_cfg._cfg_dict == cfg._cfg_dict

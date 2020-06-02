@@ -1,2 +1,3 @@
 include mmcv/video/optflow_warp/*.hpp mmcv/video/optflow_warp/*.pyx
 include requirements.txt
+include mmcv/model_zoo/open_mmlab.json mmcv/model_zoo/deprecated.json
