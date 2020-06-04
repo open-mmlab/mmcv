@@ -64,21 +64,24 @@ class BaseRunner(metaclass=ABCMeta):
         else:
             assert hasattr(model, 'train_step')
 
+        # check the type of `optimizer`
         if isinstance(optimizer, dict):
             for name, optim in optimizer.items():
                 if not isinstance(optim, Optimizer):
                     raise TypeError(
                         f'optimizer must be a dict of torch.optim.Optimizers, '
-                        f'but optimizer[{name}] is a {type(optim)}')
+                        f'but optimizer["{name}"] is a {type(optim)}')
         elif not isinstance(optimizer, Optimizer) and optimizer is not None:
             raise TypeError(
                 f'optimizer must be a torch.optim.Optimizer object '
                 f'or dict or None, but got {type(optimizer)}')
 
+        # check the type of `logger`
         if not isinstance(logger, logging.Logger):
             raise TypeError(f'logger must be a logging.Logger object, '
                             f'but got {type(logger)}')
-        self.logger = logger
+
+        # check the type of `meta`
         if meta is not None and not isinstance(meta, dict):
             raise TypeError(
                 f'meta must be a dict or None, but got {type(meta)}')
@@ -86,6 +89,8 @@ class BaseRunner(metaclass=ABCMeta):
         self.model = model
         self.batch_processor = batch_processor
         self.optimizer = optimizer
+        self.logger = logger
+        self.meta = meta
 
         # create work_dir
         if mmcv.is_str(work_dir):
@@ -101,9 +106,6 @@ class BaseRunner(metaclass=ABCMeta):
             self._model_name = self.model.module.__class__.__name__
         else:
             self._model_name = self.model.__class__.__name__
-
-        self.logger = logger
-        self.meta = meta
 
         self._rank, self._world_size = get_dist_info()
         self.timestamp = get_time_str()
@@ -208,30 +210,27 @@ class BaseRunner(metaclass=ABCMeta):
             list | dict: Current momentum of all param groups.
                 If it has several optimizers, this function will return a dict.
         """
-        if self.optimizer is None:
-            raise RuntimeError(
-                'momentum is not applicable because optimizer does not exist.')
-        elif isinstance(self.optimizer, torch.optim.Optimizer):
+
+        def _get_momentum(optimizer):
             momentums = []
-            for group in self.optimizer.param_groups:
+            for group in optimizer.param_groups:
                 if 'momentum' in group.keys():
                     momentums.append(group['momentum'])
                 elif 'betas' in group.keys():
                     momentums.append(group['betas'][0])
                 else:
                     momentums.append(0)
+            return momentums
+
+        if self.optimizer is None:
+            raise RuntimeError(
+                'momentum is not applicable because optimizer does not exist.')
+        elif isinstance(self.optimizer, torch.optim.Optimizer):
+            momentums = _get_momentum(self.optimizer)
         elif isinstance(self.optimizer, dict):
             momentums = dict()
             for name, optim in self.optimizer.items():
-                momentums_per_optim = []
-                for group in optim.param_groups:
-                    if 'momentum' in group.keys():
-                        momentums_per_optim.append(group['momentum'])
-                    elif 'betas' in group.keys():
-                        momentums_per_optim.append(group['betas'][0])
-                    else:
-                        momentums_per_optim.append(0)
-                momentums[name] = momentums_per_optim
+                momentums[name] = _get_momentum(optim)
         return momentums
 
     def register_hook(self, hook, priority='NORMAL'):
