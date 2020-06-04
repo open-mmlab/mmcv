@@ -27,6 +27,15 @@ def _get_conv():
     return _ConvNd, _ConvTransposeMixin
 
 
+def get_dataloader():
+    if torch.__version__ == 'parrots':
+        from torch.utils.data import DataLoader, PoolDataLoader
+    else:
+        from torch.utils.data import DataLoader
+        PoolDataLoader = DataLoader
+    return {"DataLoader": DataLoader, "PoolDataLoader": PoolDataLoader}
+
+
 def _get_extension():
     if torch.__version__ == 'parrots':
         from parrots.utils.build_extension import BuildExtension, Extension
