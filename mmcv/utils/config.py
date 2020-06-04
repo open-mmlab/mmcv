@@ -14,6 +14,7 @@ from .path import check_file_exist
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
+RESERVED_KEYS = ['filename', 'text', 'pretty_text']
 
 
 class ConfigDict(Dict):
@@ -184,6 +185,9 @@ class Config(object):
         elif not isinstance(cfg_dict, dict):
             raise TypeError('cfg_dict must be a dict, but '
                             f'got {type(cfg_dict)}')
+        for key in cfg_dict:
+            if key in RESERVED_KEYS:
+                raise KeyError(f'{key} is reserved for config file')
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)

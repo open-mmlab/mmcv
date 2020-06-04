@@ -266,3 +266,9 @@ def test_dump_mapping():
         text_cfg = Config.fromfile(text_cfg_filename)
 
     assert text_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_reserved_key():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/g.py')
+    with pytest.raises(KeyError):
+        Config.fromfile(cfg_file)
