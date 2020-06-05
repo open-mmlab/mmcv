@@ -6,10 +6,11 @@ from .misc import (check_prerequisites, concat_list, is_list_of, is_seq_of,
                    requires_executable, requires_package, slice_list,
                    tuple_cast)
 from .parrots_wrapper import (CUDA_HOME, BuildExtension, CppExtension,
-                              CUDAExtension, SyncBatchNorm, _AdaptiveAvgPoolNd,
+                              CUDAExtension, DataLoader, PoolDataLoader,
+                              SyncBatchNorm, _AdaptiveAvgPoolNd,
                               _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
                               _ConvNd, _ConvTransposeMixin, _InstanceNorm,
-                              _MaxPoolNd, get_build_config, get_dataloader)
+                              _MaxPoolNd, get_build_config)
 from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
                    scandir, symlink)
 from .progressbar import (ProgressBar, track_iter_progress,
@@ -28,5 +29,5 @@ __all__ = [
     'CUDA_HOME', 'SyncBatchNorm', '_AdaptiveAvgPoolNd', '_AdaptiveMaxPoolNd',
     '_AvgPoolNd', '_BatchNorm', '_ConvNd', '_ConvTransposeMixin',
     '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
-    'CppExtension', 'CUDAExtension', 'get_dataloader'
+    'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader'
 ]
