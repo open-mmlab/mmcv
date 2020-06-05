@@ -151,32 +151,34 @@ class TextLoggerHook(LoggerHook):
 class IterTextLoggerHook(TextLoggerHook):
 
     def _log_info(self, log_dict, runner):
-        log_str = 'Exp Name: {}\t'.format(runner.meta['exp_name'])
+        if runner.meta is not None and 'exp_name' in runner.meta:
+            if (self.every_n_inner_iters(runner, self.interval_exp_name)):
+                exp_info = f'Exp name: {runner.meta["exp_name"]}'
+                runner.logger.info(exp_info)
+
         if runner.mode == 'train':
             if isinstance(log_dict['lr'], dict):
                 lr_str = ''
                 for k, val in log_dict['lr'].items():
-                    lr_str += '{}: {:.4e} '.format('lr_' + k, val)
-                log_str += 'Epoch [{}][{}/{}]\t{}, '.format(
-                    log_dict['epoch'], log_dict['iter'], runner.max_iters,
-                    lr_str)
+                    lr_str += f'lr_{k}: {val:.5e} '
             else:
-                log_str += 'Epoch [{}][{}/{}]\tlr: {:.4e}, '.format(
-                    log_dict['epoch'], log_dict['iter'], runner.max_iters,
-                    log_dict['lr'])
+                lr_str = f'lr: {log_dict["lr"]:.5e}'
+            log_str = f'Epoch [{log_dict["epoch"]}]' \
+                      f'[{log_dict["iter"]}/{runner.max_iters}]\t{lr_str}, '
             if 'time' in log_dict.keys():
                 self.time_sec_tot += (log_dict['time'] * self.interval)
                 time_sec_avg = self.time_sec_tot / (
                     runner.iter - self.start_iter + 1)
                 eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
                 eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
-                log_str += 'eta: {}, '.format(eta_str)
-                log_str += ('time: {:.3f}, data_time: {:.3f}, '.format(
-                    log_dict['time'], log_dict['data_time']))
-                log_str += 'memory: {}, '.format(log_dict['memory'])
+                log_str += f'eta: {eta_str}, '
+                log_str += f'time: {log_dict["time"]:.3f}, ' \
+                           f'data_time: {log_dict["data_time"]:.3f}, '
+                # statistic memory
+                if torch.cuda.is_available():
+                    log_str += f'memory: {log_dict["memory"]}, '
         else:
-            log_str += 'Iter({}) [{}]\t'.format(log_dict['mode'],
-                                                log_dict['iter'])
+            log_str += f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
@@ -187,7 +189,7 @@ class IterTextLoggerHook(TextLoggerHook):
             ]:
                 continue
             if isinstance(val, float):
-                val = '{:.4f}'.format(val)
-            log_items.append('{}: {}'.format(name, val))
+                val = f'{val:.4f}'
+            log_items.append(f'{name}: {val}')
         log_str += ', '.join(log_items)
         runner.logger.info(log_str)
