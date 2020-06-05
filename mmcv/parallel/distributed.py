@@ -12,7 +12,15 @@ class MMDistributedDataParallel(DistributedDataParallel):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):
-        # compatible with PyTorch 1.1 - 1.4
+        """train_step() API for module wrapped by DistributedDataParallel.
+
+        This function is basically the same as
+        DistributedDataParallel.forward(), while replacing self.module.forward
+        with self.module.train_step.
+
+        Different from DistributedDataParallel, it is compatible with
+        PyTorch 1.1 - 1.5.
+        """
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
         if self.device_ids:
@@ -38,7 +46,15 @@ class MMDistributedDataParallel(DistributedDataParallel):
         return output
 
     def val_step(self, *inputs, **kwargs):
-        # compatible with PyTorch 1.1 - 1.4
+        """val_step() API for module wrapped by DistributedDataParallel.
+
+        This function is basically the same as
+        DistributedDataParallel.forward(), while replacing self.module.forward
+        with self.module.val_step.
+
+        Different from DistributedDataParallel, it is compatible with
+        PyTorch 1.1 - 1.5.
+        """
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
         if self.device_ids:

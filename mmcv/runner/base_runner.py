@@ -188,7 +188,8 @@ class BaseRunner(metaclass=ABCMeta):
         """Get current learning rates.
 
         Returns:
-            list: Current learning rate of all param groups.
+            list | dict: Current learning rate of all param groups.
+                If it has several optimizers, this function will return a dict.
         """
         if isinstance(self.optimizer, torch.optim.Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
