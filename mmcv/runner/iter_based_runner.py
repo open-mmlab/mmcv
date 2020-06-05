@@ -8,6 +8,7 @@ from torch.optim import Optimizer
 import mmcv
 from .base_runner import BaseRunner
 from .checkpoint import save_checkpoint
+from .hooks import IterTimerHook
 from .utils import get_host_info
 
 
@@ -168,3 +169,31 @@ class IterBasedRunner(BaseRunner):
         # set `create_symlink` to False
         if create_symlink:
             mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
+
+    def register_training_hooks(self,
+                                lr_config,
+                                optimizer_config=None,
+                                checkpoint_config=None,
+                                log_config=None,
+                                momentum_config=None):
+        """Register default hooks for iter-based training.
+
+        Default hooks include:
+
+        - LrUpdaterHook
+        - MomentumUpdaterHook
+        - OptimizerStepperHook
+        - CheckpointSaverHook
+        - IterTimerHook
+        - LoggerHook(s)
+        """
+        if checkpoint_config is not None:
+            checkpoint_config.setdefault('by_epoch', False)
+        if lr_config is not None:
+            lr_config.setdefault('by_epoch', False)
+        self.register_lr_hook(lr_config)
+        self.register_momentum_hook(momentum_config)
+        self.register_optimizer_hook(optimizer_config)
+        self.register_checkpoint_hook(checkpoint_config)
+        self.register_hook(IterTimerHook())
+        self.register_logger_hooks(log_config)

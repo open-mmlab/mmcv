@@ -19,6 +19,7 @@ class TextLoggerHook(LoggerHook):
     saved in json file.
 
     Args:
+        by_epoch (bool): Whether logging by epoch.
         interval (int): Logging interval (every k iterations).
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`.
@@ -29,11 +30,13 @@ class TextLoggerHook(LoggerHook):
     """
 
     def __init__(self,
+                 by_epoch=True,
                  interval=10,
                  ignore_last=True,
                  reset_flag=False,
                  interval_exp_name=1000):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag)
+        self.by_epoch = by_epoch
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
 
@@ -56,16 +59,24 @@ class TextLoggerHook(LoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.meta is not None and 'exp_name' in runner.meta:
-            if (self.every_n_inner_iters(
-                    runner,
-                    self.interval_exp_name)) or self.end_of_epoch(runner):
-                exp_info = f"Exp name: {runner.meta['exp_name']}"
+            if (self.every_n_inner_iters(runner, self.interval_exp_name)) or (
+                    self.by_epoch and self.end_of_epoch(runner)):
+                exp_info = f'Exp name: {runner.meta["exp_name"]}'
                 runner.logger.info(exp_info)
 
         if runner.mode == 'train':
+            if self.by_epoch:
+                denominator = len(runner.data_loader)
+            else:
+                denominator = runner.max_iters
+            if isinstance(log_dict['lr'], dict):
+                lr_str = ''
+                for k, val in log_dict['lr'].items():
+                    lr_str += f'lr_{k}: {val:.5e} '
+            else:
+                lr_str = f'lr: {log_dict["lr"]:.5e}'
             log_str = f'Epoch [{log_dict["epoch"]}]' \
-                      f'[{log_dict["iter"]}/{len(runner.data_loader)}]\t' \
-                      f'lr: {log_dict["lr"]:.5f}, '
+                      f'[{log_dict["iter"]}/{denominator}]\t{lr_str}, '
             if 'time' in log_dict.keys():
                 self.time_sec_tot += (log_dict['time'] * self.interval)
                 time_sec_avg = self.time_sec_tot / (
@@ -79,8 +90,11 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
-            log_str = f'Epoch({log_dict["mode"]}) ' \
-                      f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
+            if self.by_epoch:
+                log_str = f'Epoch({log_dict["mode"]}) ' \
+                        f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
+            else:
+                log_str = f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
@@ -145,51 +159,3 @@ class TextLoggerHook(LoggerHook):
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
-
-
-@HOOKS.register_module
-class IterTextLoggerHook(TextLoggerHook):
-
-    def _log_info(self, log_dict, runner):
-        if runner.meta is not None and 'exp_name' in runner.meta:
-            if (self.every_n_inner_iters(runner, self.interval_exp_name)):
-                exp_info = f'Exp name: {runner.meta["exp_name"]}'
-                runner.logger.info(exp_info)
-
-        if runner.mode == 'train':
-            if isinstance(log_dict['lr'], dict):
-                lr_str = ''
-                for k, val in log_dict['lr'].items():
-                    lr_str += f'lr_{k}: {val:.5e} '
-            else:
-                lr_str = f'lr: {log_dict["lr"]:.5e}'
-            log_str = f'Epoch [{log_dict["epoch"]}]' \
-                      f'[{log_dict["iter"]}/{runner.max_iters}]\t{lr_str}, '
-            if 'time' in log_dict.keys():
-                self.time_sec_tot += (log_dict['time'] * self.interval)
-                time_sec_avg = self.time_sec_tot / (
-                    runner.iter - self.start_iter + 1)
-                eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
-                eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
-                log_str += f'eta: {eta_str}, '
-                log_str += f'time: {log_dict["time"]:.3f}, ' \
-                           f'data_time: {log_dict["data_time"]:.3f}, '
-                # statistic memory
-                if torch.cuda.is_available():
-                    log_str += f'memory: {log_dict["memory"]}, '
-        else:
-            log_str += f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
-        log_items = []
-        for name, val in log_dict.items():
-            # TODO: resolve this hack
-            # these items have been in log_str
-            if name in [
-                    'mode', 'Epoch', 'iter', 'lr', 'time', 'data_time',
-                    'memory', 'epoch'
-            ]:
-                continue
-            if isinstance(val, float):
-                val = f'{val:.4f}'
-            log_items.append(f'{name}: {val}')
-        log_str += ', '.join(log_items)
-        runner.logger.info(log_str)
