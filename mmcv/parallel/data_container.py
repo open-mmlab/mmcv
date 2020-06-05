@@ -50,6 +50,9 @@ class DataContainer(object):
     def __repr__(self):
         return f'{self.__class__.__name__}({repr(self.data)})'
 
+    def __len__(self):
+        return len(self._data)
+
     @property
     def data(self):
         return self._data
