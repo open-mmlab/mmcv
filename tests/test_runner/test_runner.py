@@ -43,7 +43,7 @@ def test_epoch_based_runner():
 
     with pytest.raises(TypeError):
         # batch_processor must be callable
-        model = Model()
+        model = OldStyleModel()
         _ = EpochBasedRunner(
             model, batch_processor=0, logger=logging.getLogger())
 
