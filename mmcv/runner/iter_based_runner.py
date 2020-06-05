@@ -35,9 +35,6 @@ class IterLoader(object):
 
         return data
 
-    def __len__(self):
-        return len(self._dataloader)
-
 
 class IterBasedRunner(BaseRunner):
 
