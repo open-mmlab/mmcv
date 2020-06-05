@@ -27,6 +27,15 @@ def _get_conv():
     return _ConvNd, _ConvTransposeMixin
 
 
+def _get_dataloader():
+    if torch.__version__ == 'parrots':
+        from torch.utils.data import DataLoader, PoolDataLoader
+    else:
+        from torch.utils.data import DataLoader
+        PoolDataLoader = DataLoader
+    return DataLoader, PoolDataLoader
+
+
 def _get_extension():
     if torch.__version__ == 'parrots':
         from parrots.utils.build_extension import BuildExtension, Extension
@@ -63,6 +72,7 @@ def _get_norm():
 
 CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
+DataLoader, PoolDataLoader = _get_dataloader()
 BuildExtension, CppExtension, CUDAExtension = _get_extension()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_norm()
 _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
