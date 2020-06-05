@@ -1,12 +1,10 @@
-import platform
 import re
 from pkg_resources import DistributionNotFound, get_distribution
-from setuptools import Extension, dist, find_packages, setup
+from setuptools import dist, find_packages, setup
 
-dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
+dist.Distribution().fetch_build_eggs(['pythran'])
 
-import numpy  # NOQA: E402  # isort:skip
-from Cython.Distutils import build_ext  # NOQA: E402  # isort:skip
+from pythran.dist import PythranExtension, PythranBuildExt  # noqa: E402
 
 
 def choose_requirement(primary, secondary):
@@ -121,25 +119,10 @@ install_requires = parse_requirements()
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
 
-if platform.system() == 'Darwin':
-    extra_compile_args = ['-stdlib=libc++']
-    extra_link_args = ['-stdlib=libc++']
-else:
-    extra_compile_args = []
-    extra_link_args = []
-
 EXT_MODULES = [
-    Extension(
-        name='mmcv._ext',
-        sources=[
-            './mmcv/video/optflow_warp/flow_warp.cpp',
-            './mmcv/video/optflow_warp/flow_warp_module.pyx'
-        ],
-        include_dirs=[numpy.get_include()],
-        language='c++',
-        extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-    ),
+    PythranExtension(
+        name="mmcv._ext",
+        sources=["mmcv/video/optflow_warp/flow_warp_module.py"]),
 ]
 
 setup(
@@ -168,5 +151,5 @@ setup(
     tests_require=['pytest'],
     install_requires=install_requires,
     ext_modules=EXT_MODULES,
-    cmdclass={'build_ext': build_ext},
+    cmdclass={'build_ext': PythranBuildExt},
     zip_safe=False)

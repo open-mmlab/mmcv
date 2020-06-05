@@ -1,4 +1,5 @@
 addict
 numpy
+pythran
 pyyaml
 yapf
