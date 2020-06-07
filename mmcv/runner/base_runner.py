@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import torch
 
 import mmcv
+from ..parallel import is_parallel_module
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook, IterTimerHook
@@ -56,7 +57,11 @@ class BaseRunner(metaclass=ABCMeta):
                           'train_step() and val_step() in the model instead.')
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
-            if hasattr(model, 'train_step') or hasattr(model, 'val_step'):
+            if is_parallel_module(model):
+                _model = model.module
+            else:
+                _model = model
+            if hasattr(_model, 'train_step') or hasattr(_model, 'val_step'):
                 raise RuntimeError(
                     'batch_processor and model.train_step()/model.val_step() '
                     'cannot be both available.')
