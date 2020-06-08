@@ -13,6 +13,9 @@ def is_parallel_module(module):
 
     Args:
         module (nn.Module): The module to be checked.
+
+    Returns:
+        bool: True if the input module is a parallel module.
     """
     parallels = (DataParallel, DistributedDataParallel,
                  MMDistributedDataParallel)
