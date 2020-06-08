@@ -18,7 +18,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import mmcv.runner
+from mmcv.runner import (EpochBasedRunner, IterTimerHook, MlflowLoggerHook,
+                         PaviLoggerHook, WandbLoggerHook)
+from mmcv.runner.hooks.lr_updater import (CosineAnealingLrUpdaterHook,
+                                          CyclicLrUpdaterHook)
+from mmcv.runner.hooks.momentum_updater import (
+    CosineAnealingMomentumUpdaterHook, CyclicMomentumUpdaterHook)
 
 
 def test_pavi_hook():
@@ -26,8 +31,7 @@ def test_pavi_hook():
 
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
-    hook = mmcv.runner.hooks.PaviLoggerHook(
-        add_graph=False, add_last_ckpt=True)
+    hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
@@ -52,7 +56,7 @@ def test_momentum_runner_hook():
     runner = _build_demo_runner()
 
     # add momentum scheduler
-    hook = mmcv.runner.hooks.momentum_updater.CyclicMomentumUpdaterHook(
+    hook = CyclicMomentumUpdaterHook(
         by_epoch=False,
         target_ratio=(0.85 / 0.95, 1),
         cyclic_times=1,
@@ -60,17 +64,16 @@ def test_momentum_runner_hook():
     runner.register_hook(hook)
 
     # add momentum LR scheduler
-    hook = mmcv.runner.hooks.lr_updater.CyclicLrUpdaterHook(
+    hook = CyclicLrUpdaterHook(
         by_epoch=False,
         target_ratio=(10, 1),
         cyclic_times=1,
         step_ratio_up=0.4)
     runner.register_hook(hook)
-    runner.register_hook(mmcv.runner.hooks.IterTimerHook())
+    runner.register_hook(IterTimerHook())
 
     # add pavi hook
-    hook = mmcv.runner.hooks.PaviLoggerHook(
-        interval=1, add_graph=False, add_last_ckpt=True)
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
     shutil.rmtree(runner.work_dir)
@@ -103,23 +106,21 @@ def test_cosine_runner_hook():
     runner = _build_demo_runner()
 
     # add momentum scheduler
-    hook = mmcv.runner.hooks.momentum_updater \
-        .CosineAnealingMomentumUpdaterHook(
-            min_momentum_ratio=0.99 / 0.95,
-            by_epoch=False,
-            warmup_iters=2,
-            warmup_ratio=0.9 / 0.95)
+    hook = CosineAnealingMomentumUpdaterHook(
+        min_momentum_ratio=0.99 / 0.95,
+        by_epoch=False,
+        warmup_iters=2,
+        warmup_ratio=0.9 / 0.95)
     runner.register_hook(hook)
 
     # add momentum LR scheduler
-    hook = mmcv.runner.hooks.lr_updater.CosineAnealingLrUpdaterHook(
+    hook = CosineAnealingLrUpdaterHook(
         by_epoch=False, min_lr_ratio=0, warmup_iters=2, warmup_ratio=0.9)
     runner.register_hook(hook)
-    runner.register_hook(mmcv.runner.hooks.IterTimerHook())
+    runner.register_hook(IterTimerHook())
 
     # add pavi hook
-    hook = mmcv.runner.hooks.PaviLoggerHook(
-        interval=1, add_graph=False, add_last_ckpt=True)
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
     shutil.rmtree(runner.work_dir)
@@ -151,8 +152,7 @@ def test_mlflow_hook(log_model):
     runner = _build_demo_runner()
     loader = DataLoader(torch.ones((5, 2)))
 
-    hook = mmcv.runner.hooks.MlflowLoggerHook(
-        exp_name='test', log_model=log_model)
+    hook = MlflowLoggerHook(exp_name='test', log_model=log_model)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
@@ -173,7 +173,7 @@ def test_mlflow_hook(log_model):
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = mmcv.runner.hooks.WandbLoggerHook()
+    hook = WandbLoggerHook()
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
@@ -190,7 +190,24 @@ def test_wandb_hook():
 
 
 def _build_demo_runner():
-    model = nn.Linear(2, 1)
+
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.linear = nn.Linear(2, 1)
+
+        def forward(self, x):
+            return self.linear(x)
+
+        def train_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x))
+
+        def val_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x))
+
+    model = Model()
+
     optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.95)
 
     log_config = dict(
@@ -199,10 +216,9 @@ def _build_demo_runner():
         ])
 
     tmp_dir = tempfile.mkdtemp()
-    runner = mmcv.runner.Runner(
+    runner = EpochBasedRunner(
         model=model,
         work_dir=tmp_dir,
-        batch_processor=lambda model, x, **kwargs: {'loss': model(x) - 0},
         optimizer=optimizer,
         logger=logging.getLogger())
 

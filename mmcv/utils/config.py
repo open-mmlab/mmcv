@@ -14,6 +14,7 @@ from .path import check_file_exist
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
+RESERVED_KEYS = ['filename', 'text', 'pretty_text']
 
 
 class ConfigDict(Dict):
@@ -184,6 +185,9 @@ class Config(object):
         elif not isinstance(cfg_dict, dict):
             raise TypeError('cfg_dict must be a dict, but '
                             f'got {type(cfg_dict)}')
+        for key in cfg_dict:
+            if key in RESERVED_KEYS:
+                raise KeyError(f'{key} is reserved for config file')
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
@@ -219,46 +223,72 @@ class Config(object):
             s = first + '\n' + s
             return s
 
-        def _format_basic_types(k, v):
+        def _format_basic_types(k, v, use_mapping=False):
             if isinstance(v, str):
                 v_str = f"'{v}'"
             else:
                 v_str = str(v)
-            attr_str = f'{str(k)}={v_str}'
+
+            if use_mapping:
+                k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                attr_str = f'{k_str}: {v_str}'
+            else:
+                attr_str = f'{str(k)}={v_str}'
             attr_str = _indent(attr_str, indent)
 
             return attr_str
 
-        def _format_list(k, v):
+        def _format_list(k, v, use_mapping=False):
             # check if all items in the list are dict
             if all(isinstance(_, dict) for _ in v):
                 v_str = '[\n'
                 v_str += '\n'.join(
                     f'dict({_indent(_format_dict(v_), indent)}),'
                     for v_ in v).rstrip(',')
-                attr_str = f'{str(k)}={v_str}'
+                if use_mapping:
+                    k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                    attr_str = f'{k_str}: {v_str}'
+                else:
+                    attr_str = f'{str(k)}={v_str}'
                 attr_str = _indent(attr_str, indent) + ']'
             else:
-                attr_str = _format_basic_types(k, v)
+                attr_str = _format_basic_types(k, v, use_mapping)
             return attr_str
 
-        def _format_dict(d, outest_level=False):
+        def _contain_invalid_identifier(dict_str):
+            contain_invalid_identifier = False
+            for key_name in dict_str:
+                contain_invalid_identifier |= \
+                    (not str(key_name).isidentifier())
+            return contain_invalid_identifier
+
+        def _format_dict(input_dict, outest_level=False):
             r = ''
             s = []
-            for idx, (k, v) in enumerate(d.items()):
-                is_last = idx >= len(d) - 1
+
+            use_mapping = _contain_invalid_identifier(input_dict)
+            if use_mapping:
+                r += '{'
+            for idx, (k, v) in enumerate(input_dict.items()):
+                is_last = idx >= len(input_dict) - 1
                 end = '' if outest_level or is_last else ','
                 if isinstance(v, dict):
                     v_str = '\n' + _format_dict(v)
-                    attr_str = f'{str(k)}=dict({v_str}'
+                    if use_mapping:
+                        k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                        attr_str = f'{k_str}: dict({v_str}'
+                    else:
+                        attr_str = f'{str(k)}=dict({v_str}'
                     attr_str = _indent(attr_str, indent) + ')' + end
                 elif isinstance(v, list):
-                    attr_str = _format_list(k, v) + end
+                    attr_str = _format_list(k, v, use_mapping) + end
                 else:
-                    attr_str = _format_basic_types(k, v) + end
+                    attr_str = _format_basic_types(k, v, use_mapping) + end
 
                 s.append(attr_str)
             r += '\n'.join(s)
+            if use_mapping:
+                r += '}'
             return r
 
         cfg_dict = self._cfg_dict.to_dict()
