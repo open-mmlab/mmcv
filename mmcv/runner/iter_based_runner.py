@@ -12,7 +12,7 @@ from .hooks import IterTimerHook
 from .utils import get_host_info
 
 
-class IterLoader(object):
+class IterLoader:
 
     def __init__(self, dataloader):
         self._dataloader = dataloader
@@ -40,6 +40,10 @@ class IterLoader(object):
 
 
 class IterBasedRunner(BaseRunner):
+    """Iteration-based Runner.
+
+    This runner train models iteration by iteration.
+    """
 
     def train(self, data_loader, **kwargs):
         self.model.train()

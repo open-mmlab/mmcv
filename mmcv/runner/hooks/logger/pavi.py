@@ -72,18 +72,20 @@ class PaviLoggerHook(LoggerHook):
             if tag not in ['time', 'data_time'] and is_scalar(val):
                 tags[tag] = val
         # add learning rate
-        if isinstance(runner.current_lr(), dict):
-            for name, value in runner.current_lr().items():
+        lrs = runner.current_lr()
+        if isinstance(lrs, dict):
+            for name, value in lrs.items():
                 tags[f'learning_rate/{name}'] = value[0]
         else:
-            tags['learning_rate'] = runner.current_lr()[0]
+            tags['learning_rate'] = lrs[0]
 
         # add momentum
-        if isinstance(runner.current_momentum(), dict):
-            for name, value in runner.current_momentum().items():
+        momentums = runner.current_momentum()
+        if isinstance(momentums, dict):
+            for name, value in momentums.items():
                 tags[f'momentum/{name}'] = value[0]
         else:
-            tags['momentum'] = runner.current_momentum()[0]
+            tags['momentum'] = momentums[0]
 
         if tags:
             self.writer.add_scalars(runner.mode, tags, runner.iter)
