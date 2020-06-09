@@ -9,12 +9,12 @@ from importlib import import_module
 
 import torch
 import torchvision
-from torch.nn.parallel import is_parallel_module
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
+from ..parallel import is_parallel_module
 from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
 
