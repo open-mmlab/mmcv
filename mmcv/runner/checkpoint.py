@@ -61,6 +61,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     # use _load_from_state_dict to enable checkpoint version control
     def load(module, prefix=''):
+        # recursively check parallel module in case that the model has a
+        # complicated structure, e.g., nn.Module(nn.Module(DDP))
         if is_parallel_module(module):
             module = module.module
         local_metadata = {} if metadata is None else metadata.get(
@@ -232,10 +234,7 @@ def load_checkpoint(model,
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
     # load state_dict
-    if hasattr(model, 'module'):
-        load_state_dict(model.module, state_dict, strict, logger)
-    else:
-        load_state_dict(model, state_dict, strict, logger)
+    load_state_dict(model, state_dict, strict, logger)
     return checkpoint
 
 
@@ -280,12 +279,13 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         'meta': meta,
         'state_dict': weights_to_cpu(model.state_dict())
     }
+    # save optimizer state dict in the checkpoint
     if isinstance(optimizer, Optimizer):
         checkpoint['optimizer'] = optimizer.state_dict()
     elif isinstance(optimizer, dict):
         checkpoint['optimizer'] = {}
-        for k, optim in optimizer.items():
-            checkpoint['optimizer'][k] = optim.state_dict()
+        for name, optim in optimizer.items():
+            checkpoint['optimizer'][name] = optim.state_dict()
     # immediately flush buffer
     with open(filename, 'wb') as f:
         torch.save(checkpoint, f)

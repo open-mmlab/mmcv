@@ -115,6 +115,7 @@ class EpochBasedRunner(BaseRunner):
                     raise TypeError(
                         'mode in workflow must be a str, but got {}'.format(
                             type(mode)))
+
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= max_epochs:
                         return
