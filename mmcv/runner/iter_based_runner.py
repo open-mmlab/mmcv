@@ -157,18 +157,6 @@ class IterBasedRunner(BaseRunner):
 
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
 
-    """Save checkpoint to file.
-
-    The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
-    ``optimizer``. By default ``meta`` will contain version and time info.
-
-    Args:
-        model (Module): Module whose params are to be saved.
-        filename (str): Checkpoint filename.
-        optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
-        meta (dict, optional): Metadata to be saved in checkpoint.
-    """
-
     def save_checkpoint(self,
                         out_dir,
                         filename_tmpl='iter_{}.pth',
