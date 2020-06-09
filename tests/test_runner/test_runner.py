@@ -10,6 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
+from mmcv.parallel import MMDataParallel
 from mmcv.runner import EpochBasedRunner
 
 
@@ -102,6 +103,24 @@ def test_epoch_based_runner():
     _ = EpochBasedRunner(model, work_dir=work_dir, logger=logging.getLogger())
     assert osp.isdir(work_dir)
     os.removedirs(work_dir)
+
+
+def test_runner_with_parallel():
+
+    def batch_processor():
+        pass
+
+    model = MMDataParallel(OldStyleModel())
+    _ = EpochBasedRunner(model, batch_processor)
+
+    with pytest.raises(RuntimeError):
+        # batch_processor and train_step() cannot be both set
+
+        def batch_processor():
+            pass
+
+        model = MMDataParallel(Model())
+        _ = EpochBasedRunner(model, batch_processor)
 
 
 def test_save_checkpoint():
