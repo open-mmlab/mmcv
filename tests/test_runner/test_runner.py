@@ -111,7 +111,7 @@ def test_runner_with_parallel():
         pass
 
     model = MMDataParallel(OldStyleModel())
-    _ = EpochBasedRunner(model, batch_processor)
+    _ = EpochBasedRunner(model, batch_processor, logger=logging.getLogger())
 
     with pytest.raises(RuntimeError):
         # batch_processor and train_step() cannot be both set
@@ -120,7 +120,8 @@ def test_runner_with_parallel():
             pass
 
         model = MMDataParallel(Model())
-        _ = EpochBasedRunner(model, batch_processor)
+        _ = EpochBasedRunner(
+            model, batch_processor, logger=logging.getLogger())
 
 
 def test_save_checkpoint():
