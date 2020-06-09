@@ -9,7 +9,7 @@ from importlib import import_module
 
 import torch
 import torchvision
-from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.nn.parallel import is_parallel_module
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
@@ -61,7 +61,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     # use _load_from_state_dict to enable checkpoint version control
     def load(module, prefix=''):
-        if isinstance(module, (DataParallel, DistributedDataParallel)):
+        if is_parallel_module(module):
             module = module.module
         local_metadata = {} if metadata is None else metadata.get(
             prefix[:-1], {})
@@ -273,7 +273,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))
-    if isinstance(model, (DataParallel, DistributedDataParallel)):
+    if is_parallel_module(model):
         model = model.module
 
     checkpoint = {
