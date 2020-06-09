@@ -10,6 +10,7 @@ from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 @OPTIMIZER_BUILDERS.register_module()
 class DefaultOptimizerConstructor(object):
     """Default constructor for optimizers.
+
     By default each parameter share the same optimizer settings, and we
     provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
     It is a dict and may contain the following fields:
@@ -26,7 +27,8 @@ class DefaultOptimizerConstructor(object):
       decay for all weight and bias parameters of depthwise conv
       layers.
     - ``bypass_duplicate`` (bool): If true, the duplicate parameters
-      would not be added into optimizer. Default: False
+      would not be added into optimizer. Default: False.
+
     Args:
         model (:obj:`nn.Module`): The model with parameters to be optimized.
         optimizer_cfg (dict): The config dict of the optimizer.
@@ -36,6 +38,7 @@ class DefaultOptimizerConstructor(object):
                 - any arguments of the corresponding optimizer type, e.g.,
                   lr, weight_decay, momentum, etc.
         paramwise_cfg (dict, optional): Parameter-wise options.
+
     Example:
         >>> model = torch.nn.modules.Conv1d(1, 1, 1)
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, momentum=0.9,
@@ -79,8 +82,10 @@ class DefaultOptimizerConstructor(object):
 
     def add_params(self, params, module, prefix=''):
         """Add all parameters of module to the params list.
+
         The parameters of the given module will be added to the list of param
         groups, with specific rules defined by paramwise_cfg.
+
         Args:
             params (list[dict]): A list of param groups, it will be modified
                 in place.
