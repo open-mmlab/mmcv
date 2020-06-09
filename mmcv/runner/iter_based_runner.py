@@ -84,11 +84,11 @@ class IterBasedRunner(BaseRunner):
         Args:
             data_loaders (list[:obj:`DataLoader`]): Dataloaders for training
                 and validation.
-            workflow (list[tuple]): A list of (phase, epochs) to specify the
-                running order and epochs. E.g, [('train', 2), ('val', 1)] means
-                running 2 epochs for training and 1 epoch for validation,
-                iteratively.
-            max_iters (int): Total training epochs.
+            workflow (list[tuple]): A list of (phase, iters) to specify the
+                running order and iterations. E.g, [('train', 10000),
+                ('val', 1000)] means running 10000 iterations for training and
+                1000 iterations for validation, iteratively.
+            max_iters (int): Total training iterations.
         """
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
@@ -126,7 +126,14 @@ class IterBasedRunner(BaseRunner):
                checkpoint,
                resume_optimizer=True,
                map_location='default'):
-        """Rewrite the default function to support optimizer dict
+        """Resume model from checkpoint.
+
+        Args:
+            checkpoint (str): Checkpoint to resume from.
+            resume_optimizer (bool, optional): Whether resume the optimizer(s)
+                if the checkpoint file includes optimizer(s). Default to True.
+            map_location (str, optional): Same as :func:`torch.load`.
+                Default to 'default'.
         """
         if map_location == 'default':
             device_id = torch.cuda.current_device()
@@ -150,12 +157,37 @@ class IterBasedRunner(BaseRunner):
 
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
 
+    """Save checkpoint to file.
+
+    The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
+    ``optimizer``. By default ``meta`` will contain version and time info.
+
+    Args:
+        model (Module): Module whose params are to be saved.
+        filename (str): Checkpoint filename.
+        optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
+        meta (dict, optional): Metadata to be saved in checkpoint.
+    """
+
     def save_checkpoint(self,
                         out_dir,
                         filename_tmpl='iter_{}.pth',
                         meta=None,
                         save_optimizer=True,
                         create_symlink=True):
+        """Save checkpoint to file.
+
+        Args:
+            out_dir (str): Directory to save checkpoint files.
+            filename_tmpl (str, optional): Checkpoint file template.
+                Defaults to 'iter_{}.pth'.
+            meta (dict, optional): Metadata to be saved in checkpoint.
+                Defaults to None.
+            save_optimizer (bool, optional): Whether save optimizer.
+                Defaults to True.
+            create_symlink (bool, optional): Whether create symlink to the
+                latest checkpoint file. Defaults to True.
+        """
         if meta is None:
             meta = dict(iter=self.iter + 1, epoch=self.epoch + 1)
         elif isinstance(meta, dict):
