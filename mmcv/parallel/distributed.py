@@ -7,6 +7,14 @@ from .scatter_gather import scatter_kwargs
 
 
 class MMDistributedDataParallel(DistributedDataParallel):
+    """The DDP module that supports DataContainer.
+
+    MMDDP has two main differences with PyTorch DDP:
+
+    - It supports a custom type :class:`DataContainer` which allows more
+      flexible control of input data.
+    - It implement two APIs ``train_step()`` and ``val_step()``.
+    """
 
     def scatter(self, inputs, kwargs, device_ids):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
@@ -14,12 +22,10 @@ class MMDistributedDataParallel(DistributedDataParallel):
     def train_step(self, *inputs, **kwargs):
         """train_step() API for module wrapped by DistributedDataParallel.
 
-        This function is basically the same as
-        DistributedDataParallel.forward(), while replacing self.module.forward
-        with self.module.train_step.
-
-        Different from DistributedDataParallel, it is compatible with
-        PyTorch 1.1 - 1.5.
+        This method is basically the same as
+        ``DistributedDataParallel.forward()``, while replacing
+        ``self.module.forward()`` with ``self.module.train_step()``.
+        It is compatible with PyTorch 1.1 - 1.5.
         """
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
@@ -48,12 +54,10 @@ class MMDistributedDataParallel(DistributedDataParallel):
     def val_step(self, *inputs, **kwargs):
         """val_step() API for module wrapped by DistributedDataParallel.
 
-        This function is basically the same as
-        DistributedDataParallel.forward(), while replacing self.module.forward
-        with self.module.val_step.
-
-        Different from DistributedDataParallel, it is compatible with
-        PyTorch 1.1 - 1.5.
+        This method is basically the same as
+        ``DistributedDataParallel.forward()``, while replacing
+        ``self.module.forward()`` with ``self.module.val_step()``.
+        It is compatible with PyTorch 1.1 - 1.5.
         """
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()

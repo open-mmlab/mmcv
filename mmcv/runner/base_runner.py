@@ -31,12 +31,14 @@ class BaseRunner(metaclass=ABCMeta):
         batch_processor (callable): A callable method that process a data
             batch. The interface of this method should be
             `batch_processor(model, data, train_mode) -> dict`
-        optimizer (dict or :obj:`torch.optim.Optimizer`): If it is a dict,
-            runner will construct an optimizer according to it.
+        optimizer (dict or :obj:`torch.optim.Optimizer`): It can be either an
+            optimizer (in most cases) or a dict of optimizers (in models that
+            requires more than one optimizer, e.g., GAN).
         work_dir (str, optional): The working directory to save checkpoints
             and logs. Defaults to None.
         logger (:obj:`logging.Logger`): Logger used during training.
-             Defaults to None.
+             Defaults to None. (The default value is just for backward
+             compatibility)
         meta (dict | None): A dict records some import information such as
             environment info and seed, which will be logged in logger hook.
             Defaults to None.
@@ -190,8 +192,9 @@ class BaseRunner(metaclass=ABCMeta):
         """Get current learning rates.
 
         Returns:
-            list | dict: Current learning rate of all param groups.
-                If it has several optimizers, this function will return a dict.
+            list[float] | dict[str, list[float]]: Current learning rates of all
+                param groups. If the runner has a dict of optimizers, this
+                method will return a dict.
         """
         if isinstance(self.optimizer, torch.optim.Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
@@ -208,8 +211,9 @@ class BaseRunner(metaclass=ABCMeta):
         """Get current momentums.
 
         Returns:
-            list | dict: Current momentum of all param groups.
-                If it has several optimizers, this function will return a dict.
+            list[float] | dict[str, list[float]]: Current momentums of all
+                param groups. If the runner has a dict of optimizers, this
+                method will return a dict.
         """
 
         def _get_momentum(optimizer):
