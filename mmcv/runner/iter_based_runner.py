@@ -191,6 +191,8 @@ class IterBasedRunner(BaseRunner):
             checkpoint_config.setdefault('by_epoch', False)
         if lr_config is not None:
             lr_config.setdefault('by_epoch', False)
+        if log_config is not None:
+            log_config.setdefault('by_epoch', False)
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
