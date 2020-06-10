@@ -45,6 +45,7 @@ class CheckpointHook(Hook):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
 
+        runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
         if not self.out_dir:
             self.out_dir = runner.work_dir
         runner.save_checkpoint(
@@ -67,11 +68,12 @@ class CheckpointHook(Hook):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
 
+        runner.logger.info(
+            f'Saving checkpoint at {runner.iter + 1} iterations')
         if not self.out_dir:
             self.out_dir = runner.work_dir
         runner.save_checkpoint(
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
-        runner.logger.info(f'Save checkpoint at {runner.iter} iterations')
 
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
