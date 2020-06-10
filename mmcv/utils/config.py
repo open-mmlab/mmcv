@@ -82,7 +82,7 @@ class Config(object):
     """
 
     @staticmethod
-    def _validate_syntax(filename):
+    def _validate_py_syntax(filename):
         with open(filename) as f:
             content = f.read()
         try:
@@ -104,7 +104,7 @@ class Config(object):
                                 osp.join(temp_config_dir, temp_config_name))
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
-                Config._validate_syntax(filename)
+                Config._validate_py_syntax(filename)
                 mod = import_module(temp_module_name)
                 sys.path.pop(0)
                 cfg_dict = {
