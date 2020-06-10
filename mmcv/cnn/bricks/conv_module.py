@@ -140,7 +140,7 @@ class ConvModule(nn.Module):
         if self.with_activation:
             act_cfg_ = act_cfg.copy()
             # nn.Tanh has no 'inplace' argument
-            if act_cfg_['type'] != 'Tanh':
+            if act_cfg_['type'] not in ['Tanh', 'PReLU', 'Sigmoid']:
                 act_cfg_.setdefault('inplace', inplace)
             self.activate = build_activation_layer(act_cfg_)
 
