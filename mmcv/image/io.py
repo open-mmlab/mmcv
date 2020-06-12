@@ -1,9 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import io
 import os.path as osp
 from pathlib import Path
 
 import cv2
-import io
 import numpy as np
 from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
 
@@ -97,7 +97,7 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
             #
             # Therefore, a random color (124, 117, 104) is used for canvas
             img = img.convert('RGBA')
-            canvas = Image.new("RGB", img.size, (124, 117, 104))
+            canvas = Image.new('RGB', img.size, (124, 117, 104))
             canvas.paste(img, mask=img.split()[3])  # 3 is alpha channel
             img = canvas
         elif img.mode != 'RGB':
@@ -113,6 +113,7 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
             raise ValueError(
                 'flag must be "color", "grayscale" or "unchanged"')
     return array
+
 
 def imread(img_or_path, flag='color', channel_order='bgr'):
     """Read an image.
