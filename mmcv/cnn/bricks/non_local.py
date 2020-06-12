@@ -91,8 +91,9 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
                 normal_init(self.conv_out.conv, std=std)
 
     def embedded_gaussian(self, theta_x, phi_x):
-        # Here we take NonLocal2D tensor shape change for example
-        # pairwise_weight: [N, HxW, HxW]
+        # NonLocal1d pairwise_weight: [N, H, H]
+        # NonLocal2d pairwise_weight: [N, HxW, HxW]
+        # NonLocal3d pairwise_weight: [N, TxHxW, TxHxW]
         pairwise_weight = torch.matmul(theta_x, phi_x)
         if self.use_scale:
             # theta_x.shape[-1] is `self.inter_channels`
@@ -102,35 +103,50 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
 
     @staticmethod
     def dot_product(theta_x, phi_x):
-        # Here we take NonLocal2D tensor shape change for example
-        # pairwise_weight: [N, HxW, HxW]
+        # NonLocal1d pairwise_weight: [N, H, H]
+        # NonLocal2d pairwise_weight: [N, HxW, HxW]
+        # NonLocal3d pairwise_weight: [N, TxHxW, TxHxW]
         pairwise_weight = torch.matmul(theta_x, phi_x)
         pairwise_weight /= pairwise_weight.shape[-1]
         return pairwise_weight
 
     def forward(self, x):
-        # Here we take NonLocal2D tensor shape change for example
-        # n, _, h, w = x.shape
+        # Assume `reduction = 1`, then `inter_channels = C`
+        # NonLocal1d x: [N, C, H]
+        # NonLocal2d x: [N, C, H, W]
+        # NonLocal3d x: [N, C, T, H, W]
         n = x.size(0)
 
-        # g_x: [N, HxW, C]
+        # NonLocal1d g_x: [N, H, C]
+        # NonLocal2d g_x: [N, HxW, C]
+        # NonLocal3d g_x: [N, TxHxW, C]
         g_x = self.g(x).view(n, self.inter_channels, -1)
         g_x = g_x.permute(0, 2, 1)
 
-        # theta_x: [N, HxW, C]
+        # NonLocal1d theta_x: [N, H, C]
+        # NonLocal2d theta_x: [N, HxW, C]
+        # NonLocal3d theta_x: [N, TxHxW, C]
         theta_x = self.theta(x).view(n, self.inter_channels, -1)
         theta_x = theta_x.permute(0, 2, 1)
 
-        # phi_x: [N, C, HxW]
+        # NonLocal1d phi_x: [N, C, H]
+        # NonLocal2d phi_x: [N, C, HxW]
+        # NonLocal3d phi_x: [N, C, TxHxW]
         phi_x = self.phi(x).view(n, self.inter_channels, -1)
 
         pairwise_func = getattr(self, self.mode)
-        # pairwise_weight: [N, HxW, HxW]
+        # NonLocal1d pairwise_weight: [N, H, H]
+        # NonLocal2d pairwise_weight: [N, HxW, HxW]
+        # NonLocal3d pairwise_weight: [N, TxHxW, TxHxW]
         pairwise_weight = pairwise_func(theta_x, phi_x)
 
-        # y: [N, HxW, C]
+        # NonLocal1d y: [N, H, C]
+        # NonLocal2d y: [N, HxW, C]
+        # NonLocal3d y: [N, TxHxW, C]
         y = torch.matmul(pairwise_weight, g_x)
-        # y: [N, C, H, W]
+        # NonLocal1d y: [N, C, H]
+        # NonLocal2d y: [N, C, H, W]
+        # NonLocal3d y: [N, C, T, H, W]
         y = y.permute(0, 2, 1).reshape(n, self.inter_channels, *x.size()[2:])
 
         output = x + self.conv_out(y)
