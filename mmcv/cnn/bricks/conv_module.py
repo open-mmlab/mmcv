@@ -88,7 +88,9 @@ class ConvModule(nn.Module):
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        self.with_bias = (not self.with_norm) if bias == 'auto' else bias
+        if bias == 'auto':
+            bias = not self.with_norm
+        self.with_bias = bias
 
         if self.with_norm and self.with_bias:
             warnings.warn('ConvModule has norm and bias at the same time')
