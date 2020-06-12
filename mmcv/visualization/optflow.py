@@ -55,8 +55,6 @@ def flow2rgb(flow, color_wheel=None, unknown_thr=1e6):
         dx /= max_rad
         dy /= max_rad
 
-    [h, w] = dx.shape
-
     rad = np.sqrt(dx**2 + dy**2)
     angle = np.arctan2(-dy, -dx) / np.pi
 
