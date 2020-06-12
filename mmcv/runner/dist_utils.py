@@ -33,7 +33,7 @@ def _init_dist_mpi(backend, **kwargs):
     raise NotImplementedError
 
 
-def _init_dist_slurm(backend, port=29500, **kwargs):
+def _init_dist_slurm(backend, port=29500):
     proc_id = int(os.environ['SLURM_PROCID'])
     ntasks = int(os.environ['SLURM_NTASKS'])
     node_list = os.environ['SLURM_NODELIST']

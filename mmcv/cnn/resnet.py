@@ -32,6 +32,7 @@ class BasicBlock(nn.Module):
                  style='pytorch',
                  with_cp=False):
         super(BasicBlock, self).__init__()
+        assert style in ['pytorch', 'caffe']
         self.conv1 = conv3x3(inplanes, planes, stride, dilation)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
@@ -171,7 +172,7 @@ def make_res_layer(block,
             style=style,
             with_cp=with_cp))
     inplanes = planes * block.expansion
-    for i in range(1, blocks):
+    for _ in range(1, blocks):
         layers.append(
             block(inplanes, planes, 1, dilation, style=style, with_cp=with_cp))
 
