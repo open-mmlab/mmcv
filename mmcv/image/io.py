@@ -90,9 +90,9 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
         if array.ndim >= 3 and array.shape[2] >= 3:  # color image
             array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
     else:
-        if img.mode.endswith('A'):
-            # When the mode is 'RGBA'/'LA', the default conversion will fill in
-            #  the canvas with black, which sometimes shadows black objects in
+        if img.mode == 'LA':
+            # When the mode is 'LA', the default conversion will fill in the
+            #  canvas with black, which sometimes shadows black objects in
             #  the foreground.
             #
             # Therefore, a random color (124, 117, 104) is used for canvas
