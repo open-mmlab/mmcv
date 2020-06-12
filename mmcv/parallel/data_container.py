@@ -17,7 +17,7 @@ def assert_tensor_type(func):
     return wrapper
 
 
-class DataContainer(object):
+class DataContainer():
     """A container for any type of objects.
 
     Typically tensors will be stacked in the collate function and sliced along

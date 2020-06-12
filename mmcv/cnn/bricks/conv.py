@@ -1,4 +1,4 @@
-from torch import nn as nn
+from torch import nn
 
 from .registry import CONV_LAYERS
 

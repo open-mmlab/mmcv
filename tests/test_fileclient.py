@@ -13,7 +13,7 @@ sys.modules['petrel_client.client'] = MagicMock()
 sys.modules['mc'] = MagicMock()
 
 
-class MockS3Client(object):
+class MockS3Client():
 
     def Get(self, filepath):
         with open(filepath, 'rb') as f:
@@ -21,7 +21,7 @@ class MockS3Client(object):
         return content
 
 
-class MockMemcachedClient(object):
+class MockMemcachedClient():
 
     def __init__(self, server_list_cfg, client_cfg):
         pass
@@ -31,7 +31,7 @@ class MockMemcachedClient(object):
             buffer.content = f.read()
 
 
-class TestFileClient(object):
+class TestFileClient():
 
     @classmethod
     def setup_class(cls):
@@ -187,7 +187,7 @@ class TestFileClient(object):
         # name must be a string
         with pytest.raises(TypeError):
 
-            class TestClass1(object):
+            class TestClass1():
                 pass
 
             FileClient.register_backend(1, TestClass1)
@@ -199,7 +199,7 @@ class TestFileClient(object):
         # module must be a subclass of BaseStorageBackend
         with pytest.raises(TypeError):
 
-            class TestClass1(object):
+            class TestClass1():
                 pass
 
             FileClient.register_backend('TestClass1', TestClass1)

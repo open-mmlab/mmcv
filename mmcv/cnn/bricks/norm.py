@@ -140,7 +140,4 @@ def is_norm(layer, exclude=None):
         return False
 
     all_norm_bases = (_BatchNorm, _InstanceNorm, nn.GroupNorm, nn.LayerNorm)
-    if isinstance(layer, all_norm_bases):
-        return True
-    else:
-        return False
+    return isinstance(layer, all_norm_bases)
