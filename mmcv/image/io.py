@@ -3,6 +3,7 @@ import os.path as osp
 from pathlib import Path
 
 import cv2
+import io
 import numpy as np
 from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
 
@@ -13,8 +14,13 @@ try:
 except ImportError:
     TJCS_RGB = TJPF_GRAY = TJPF_BGR = TurboJPEG = None
 
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
 jpeg = None
-supported_backends = ['cv2', 'turbojpeg']
+supported_backends = ['cv2', 'turbojpeg', 'pillow']
 
 imread_flags = {
     'color': IMREAD_COLOR,
@@ -42,6 +48,9 @@ def use_backend(backend):
         global jpeg
         if jpeg is None:
             jpeg = TurboJPEG()
+    elif imread_backend == 'pillow':
+        if Image is None:
+            raise ImportError('`Pillow` is not installed')
 
 
 def _jpegflag(flag='color', channel_order='bgr'):
@@ -59,6 +68,51 @@ def _jpegflag(flag='color', channel_order='bgr'):
     else:
         raise ValueError('flag must be "color" or "grayscale"')
 
+
+def _pillow2array(img, flag='color', channel_order='bgr'):
+    """Convert a pillow image to numpy array
+
+    Args:
+        img (:obj:`PIL.Image.Image`): The image loaded using PIL
+        flag (str): Flags specifying the color type of a loaded image,
+            candidates are `color`, `grayscale` and `unchanged`.
+        channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
+
+    Returns:
+        np.ndarray: The converted numpy array
+    """
+    channel_order = channel_order.lower()
+    if channel_order not in ['rgb', 'bgr']:
+        raise ValueError('channel order must be either "rgb" or "bgr"')
+
+    if flag == 'unchanged':
+        array = np.array(img)
+        if array.ndim >= 3 and array.shape[2] >= 3:  # color image
+            array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
+    else:
+        if img.mode.endswith('A'):
+            # When the mode is 'RGBA'/'LA', the default conversion will fill in
+            #  the canvas with black, which sometimes shadows black objects in
+            #  the foreground.
+            #
+            # Therefore, a random color (124, 117, 104) is used for canvas
+            img = img.convert('RGBA')
+            canvas = Image.new("RGB", img.size, (124, 117, 104))
+            canvas.paste(img, mask=img.split()[3])  # 3 is alpha channel
+            img = canvas
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        if flag == 'color':
+            array = np.array(img)
+            if channel_order != 'rgb':
+                array = array[:, :, ::-1]  # RGB to BGR
+        elif flag == 'grayscale':
+            img = img.convert('L')
+            array = np.array(img)
+        else:
+            raise ValueError(
+                'flag must be "color", "grayscale" or "unchanged"')
+    return array
 
 def imread(img_or_path, flag='color', channel_order='bgr'):
     """Read an image.
@@ -90,6 +144,10 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                 if img.shape[-1] == 1:
                     img = img[:, :, 0]
             return img
+        elif imread_backend == 'pillow':
+            img = Image.open(img_or_path)
+            img = _pillow2array(img, flag, channel_order)
+            return img
         else:
             flag = imread_flags[flag] if is_str(flag) else flag
             img = cv2.imread(img_or_path, flag)
@@ -115,6 +173,11 @@ def imfrombytes(content, flag='color', channel_order='bgr'):
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
+        return img
+    elif imread_backend == 'pillow':
+        buff = io.BytesIO(content)
+        img = Image.open(buff)
+        img = _pillow2array(img, flag, channel_order)
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)

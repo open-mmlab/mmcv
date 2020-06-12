@@ -8,7 +8,7 @@ from unittest.mock import patch
 import cv2
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_allclose
 
 import mmcv
 
@@ -62,6 +62,51 @@ class TestIO:
         assert img_cv2_grayscale2.shape == (300, 400, 3)
         img_cv2_unchanged = mmcv.imread(self.gray_img_path_obj, 'unchanged')
         assert img_cv2_unchanged.shape == (300, 400)
+        with pytest.raises(TypeError):
+            mmcv.imread(1)
+
+        # backend pillow
+        mmcv.use_backend('pillow')
+        self.gray_alpha_img_path = osp.join(self.data_dir, 'gray_alpha.png')
+        self.palette_img_path = osp.join(self.data_dir, 'palette.gif')
+        img_pil_grayscale1 = mmcv.imread(self.img_path, 'grayscale')
+        assert img_pil_grayscale1.shape == (300, 400)
+        img_pil_gray_alpha = mmcv.imread(self.gray_alpha_img_path, 'grayscale')
+        assert img_pil_gray_alpha.shape == (400, 500)
+        mean = img_pil_gray_alpha[300:, 400:].mean()
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        img_pil_gray_alpha = mmcv.imread(self.gray_alpha_img_path)
+        mean = img_pil_gray_alpha[300:, 400:].mean(axis=(0, 1))
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        assert img_pil_gray_alpha.shape == (400, 500, 3)
+        img_pil_gray_alpha = mmcv.imread(self.gray_alpha_img_path, 'unchanged')
+        assert img_pil_gray_alpha.shape == (400, 500, 2)
+        img_pil_palette = mmcv.imread(self.palette_img_path, 'grayscale')
+        assert img_pil_palette.shape == (300, 400)
+        img_pil_palette = mmcv.imread(self.palette_img_path)
+        assert img_pil_palette.shape == (300, 400, 3)
+        img_pil_palette = mmcv.imread(self.palette_img_path, 'unchanged')
+        assert img_pil_palette.shape == (300, 400)
+        img_pil_grayscale2 = mmcv.imread(self.gray_img_path)
+        assert img_pil_grayscale2.shape == (300, 400, 3)
+        img_pil_unchanged = mmcv.imread(self.gray_img_path, 'unchanged')
+        assert img_pil_unchanged.shape == (300, 400)
+        img_pil_unchanged = mmcv.imread(img_pil_unchanged)
+        assert_array_equal(img_pil_unchanged, mmcv.imread(img_pil_unchanged))
+
+        img_pil_color_bgr = mmcv.imread(self.img_path_obj)
+        assert img_pil_color_bgr.shape == (300, 400, 3)
+        img_pil_color_rgb = mmcv.imread(self.img_path_obj, channel_order='rgb')
+        assert img_pil_color_rgb.shape == (300, 400, 3)
+        assert (img_pil_color_rgb == img_cv2_color_rgb).sum() / float(
+            img_cv2_color_rgb.size) > 0.5
+        assert_array_equal(img_pil_color_rgb[:, :, ::-1], img_pil_color_bgr)
+        img_pil_grayscale1 = mmcv.imread(self.img_path_obj, 'grayscale')
+        assert img_pil_grayscale1.shape == (300, 400)
+        img_pil_grayscale2 = mmcv.imread(self.gray_img_path_obj)
+        assert img_pil_grayscale2.shape == (300, 400, 3)
+        img_pil_unchanged = mmcv.imread(self.gray_img_path_obj, 'unchanged')
+        assert img_pil_unchanged.shape == (300, 400)
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
@@ -136,6 +181,15 @@ class TestIO:
             img_bytes = f.read()
         gray_img_dim3_cv2 = mmcv.imfrombytes(img_bytes, flag='grayscale')
         assert gray_img_dim3_cv2.shape == (300, 400)
+
+        # backend pillow, channel order: bgr
+        mmcv.use_backend('pillow')
+        with open(self.img_path, 'rb') as f:
+            img_bytes = f.read()
+        img_pillow = mmcv.imfrombytes(img_bytes)
+        assert img_pillow.shape == (300, 400, 3)
+        # Pillow and opencv decoding may not be the same
+        assert (img_cv2 == img_pillow).sum() / float(img_cv2.size) > 0.5
 
         # backend turbojpeg, channel order: bgr
         mmcv.use_backend('turbojpeg')
