@@ -228,12 +228,19 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
         periods (list[int]): Periods for each cosine anneling cycle.
         restart_weights (list[float]): Restart weights at each restart
             iteration. Default: [1].
-        eta_min (float): The mimimum lr. Default: 0.
+        min_lr (float): The mimimum lr. Default: 0.
     """
 
-    def __init__(self, periods, restart_weights=[1], eta_min=0, **kwargs):
+    def __init__(self,
+                 periods,
+                 restart_weights=[1],
+                 min_lr=None,
+                 min_lr_ratio=None,
+                 **kwargs):
+        assert (min_lr is None) ^ (min_lr_ratio is None)
         self.periods = periods
-        self.eta_min = eta_min
+        self.min_lr = min_lr
+        self.min_lr_ratio = min_lr_ratio
         self.restart_weights = restart_weights
         assert (len(self.periods) == len(self.restart_weights)
                 ), 'periods and restart_weights should have the same length.'
@@ -254,9 +261,14 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
         nearest_restart = 0 if idx == 0 else self.cumulative_periods[idx - 1]
         current_periods = self.periods[idx]
 
+        if self.min_lr_ratio is not None:
+            target_lr = base_lr * self.min_lr_ratio
+        else:
+            target_lr = self.min_lr
+
         alpha = min((progress - nearest_restart) / current_periods, 1)
-        return self.eta_min + current_weight * 0.5 * (
-            base_lr - self.eta_min) * (1 + cos(pi * alpha))
+        return target_lr + current_weight * 0.5 * (base_lr - target_lr) * (
+            1 + cos(pi * alpha))
 
 
 def get_position_from_periods(iteration, cumulative_periods):
