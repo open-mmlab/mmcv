@@ -33,7 +33,8 @@ class TestVideoEditor:
 
     def test_resize_video(self):
         out_file = osp.join(tempfile.gettempdir(), '.mmcv_test.mp4')
-        mmcv.resize_video(self.video_path, out_file, (200, 100), quiet=True)
+        mmcv.resize_video(
+            self.video_path, out_file, (200, 100), log_level='panic')
         v = mmcv.VideoReader(out_file)
         assert v.resolution == (200, 100)
         os.remove(out_file)

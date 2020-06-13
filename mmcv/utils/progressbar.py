@@ -175,7 +175,7 @@ def track_parallel_progress(func,
     return results
 
 
-def track_iter_progress(tasks, bar_width=50, file=sys.stdout, **kwargs):
+def track_iter_progress(tasks, bar_width=50, file=sys.stdout):
     """Track the progress of tasks iteration or enumeration with a progress bar.
 
     Tasks are yielded with a simple for-loop.
