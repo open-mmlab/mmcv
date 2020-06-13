@@ -225,22 +225,22 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
     """Cosine annealing with restarts learning rate scheme.
 
     Args:
-        period (list[int]): Period for each cosine anneling cycle.
+        periods (list[int]): Periods for each cosine anneling cycle.
         restart_weights (list[float]): Restart weights at each restart
             iteration. Default: [1].
         eta_min (float): The mimimum lr. Default: 0.
     """
 
-    def __init__(self, period, restart_weights=[1], eta_min=0, **kwargs):
-        self.period = period
+    def __init__(self, periods, restart_weights=[1], eta_min=0, **kwargs):
+        self.periods = periods
         self.eta_min = eta_min
         self.restart_weights = restart_weights
-        assert (len(self.period) == len(self.restart_weights)
-                ), 'period and restart_weights should have the same length.'
+        assert (len(self.periods) == len(self.restart_weights)
+                ), 'periods and restart_weights should have the same length.'
         super(CosineRestartLrUpdaterHook, self).__init__(**kwargs)
 
-        self.cumulative_period = [
-            sum(self.period[0:i + 1]) for i in range(0, len(self.period))
+        self.cumulative_periods = [
+            sum(self.periods[0:i + 1]) for i in range(0, len(self.periods))
         ]
 
     def get_lr(self, runner, base_lr):
@@ -249,33 +249,33 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
         else:
             progress = runner.iter
 
-        idx = get_position_from_periods(progress, self.cumulative_period)
+        idx = get_position_from_periods(progress, self.cumulative_periods)
         current_weight = self.restart_weights[idx]
-        nearest_restart = self.cumulative_period[idx - 1]
-        current_period = self.period[idx]
+        nearest_restart = self.cumulative_periods[idx - 1]
+        current_periods = self.periods[idx]
 
-        alpha = min((progress - nearest_restart) / current_period, 1)
+        alpha = min((progress - nearest_restart) / current_periods, 1)
         return self.eta_min + current_weight * 0.5 * (
             base_lr - self.eta_min) * (1 + cos(pi * alpha))
 
 
-def get_position_from_periods(iteration, cumulative_period):
+def get_position_from_periods(iteration, cumulative_periods):
     """Get the position from a period list.
 
     It will return the index of the right-closest number in the period list.
-    For example, the cumulative_period = [100, 200, 300, 400],
+    For example, the cumulative_periods = [100, 200, 300, 400],
     if iteration == 50, return 0;
     if iteration == 210, return 2;
     if iteration == 300, return 2.
 
     Args:
         iteration (int): Current iteration.
-        cumulative_period (list[int]): Cumulative period list.
+        cumulative_periods (list[int]): Cumulative period list.
 
     Returns:
         int: The position of the right-closest number in the period list.
     """
-    for i, period in enumerate(cumulative_period):
+    for i, period in enumerate(cumulative_periods):
         if iteration <= period:
             return i
 
