@@ -251,7 +251,7 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
 
         idx = get_position_from_periods(progress, self.cumulative_periods)
         current_weight = self.restart_weights[idx]
-        nearest_restart = self.cumulative_periods[idx - 1]
+        nearest_restart = 0 if idx == 0 else self.cumulative_periods[idx - 1]
         current_periods = self.periods[idx]
 
         alpha = min((progress - nearest_restart) / current_periods, 1)
