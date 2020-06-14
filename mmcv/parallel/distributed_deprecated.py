@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from mmcv.utils import TORCH_VERSION
 from .scatter_gather import scatter_kwargs
 
 
@@ -37,7 +38,7 @@ class MMDistributedDataParallel(nn.Module):
             self._dist_broadcast_coalesced(module_states,
                                            self.broadcast_bucket_size)
         if self.broadcast_buffers:
-            if torch.__version__ < '1.0':
+            if TORCH_VERSION < '1.0':
                 buffers = [b.data for b in self.module._all_buffers()]
             else:
                 buffers = [b.data for b in self.module.buffers()]
