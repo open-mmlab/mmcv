@@ -28,6 +28,8 @@ class DefaultOptimizerConstructor(object):
       layers.
     - ``bypass_duplicate`` (bool): If true, the duplicate parameters
       would not be added into optimizer. Default: False.
+    - ``dcn_offset_lr_mult`` (float): It will be multiplied to the learning
+      rate for all parameters of offset layer in deformable convs.
 
     Args:
         model (:obj:`nn.Module`): The model with parameters to be optimized.
@@ -98,6 +100,7 @@ class DefaultOptimizerConstructor(object):
         norm_decay_mult = self.paramwise_cfg.get('norm_decay_mult', 1.)
         dwconv_decay_mult = self.paramwise_cfg.get('dwconv_decay_mult', 1.)
         bypass_duplicate = self.paramwise_cfg.get('bypass_duplicate', False)
+        dcn_offset_lr_mult = self.paramwise_cfg.get('dcn_offset_lr_mult', 1.)
 
         # special rules for norm layers and depth-wise conv layers
         is_norm = isinstance(module,
@@ -118,6 +121,11 @@ class DefaultOptimizerConstructor(object):
             # bias_lr_mult affects all bias parameters except for norm.bias
             if name == 'bias' and not is_norm:
                 param_group['lr'] = self.base_lr * bias_lr_mult
+
+            if prefix.find('conv_offset') != -1 and not is_norm:
+                # deal with both dcn_offset's bias & weight
+                param_group['lr'] = self.base_lr * dcn_offset_lr_mult
+
             # apply weight decay policies
             if self.base_wd is not None:
                 # norm decay
