@@ -270,8 +270,7 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
             target_lr = self.min_lr
 
         alpha = min((progress - nearest_restart) / current_periods, 1)
-        return target_lr + current_weight * 0.5 * (base_lr - target_lr) * (
-            1 + cos(pi * alpha))
+        return annealing_cos(base_lr, target_lr, alpha, current_weight)
 
 
 def get_position_from_periods(iteration, cumulative_periods):
@@ -370,7 +369,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                                      progress / (end_iter - start_iter))
 
 
-def annealing_cos(start, end, factor):
-    """Cosine anneal from `start` to `end` as pct goes from 0.0 to 1.0."""
+def annealing_cos(start, end, factor, weight=1):
+    """Cosine anneal from `weight * start + (1 - weight) * end` to `end` as
+    pct goes from 0.0 to 1.0.
+    """
     cos_out = cos(pi * factor) + 1
-    return end + 0.5 * (start - end) * cos_out
+    return end + 0.5 * weight * (start - end) * cos_out
