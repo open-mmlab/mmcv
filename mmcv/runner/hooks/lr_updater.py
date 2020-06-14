@@ -226,9 +226,12 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
 
     Args:
         periods (list[int]): Periods for each cosine anneling cycle.
-        restart_weights (list[float]): Restart weights at each restart
-            iteration. Default: [1].
-        min_lr (float): The mimimum lr. Default: 0.
+        restart_weights (list[float], optional): Restart weights at each
+            restart iteration. Default: [1].
+        min_lr (float, optional): The minimum lr. Default: None.
+        min_lr_ratio (float, optional): The ratio of minimum lr to the base lr.
+            Either `min_lr` or `min_lr_ratio` should be specified.
+            Default: None.
     """
 
     def __init__(self,
