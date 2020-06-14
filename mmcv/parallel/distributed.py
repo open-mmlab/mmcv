@@ -3,6 +3,7 @@ import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
                                            _find_tensors)
 
+from mmcv.utils import TORCH_VERSION
 from .scatter_gather import scatter_kwargs
 
 
@@ -47,7 +48,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if torch.__version__ > '1.2':
+            if TORCH_VERSION > '1.2':
                 self.require_forward_param_sync = False
         return output
 
@@ -79,6 +80,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if torch.__version__ > '1.2':
+            if TORCH_VERSION > '1.2':
                 self.require_forward_param_sync = False
         return output
