@@ -7,6 +7,8 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
+from mmcv.utils import TORCH_VERSION
+
 
 def init_dist(launcher, backend='nccl', **kwargs):
     if mp.get_start_method(allow_none=True) is None:
@@ -49,7 +51,7 @@ def _init_dist_slurm(backend, port=29500):
 
 
 def get_dist_info():
-    if torch.__version__ < '1.0':
+    if TORCH_VERSION < '1.0':
         initialized = dist._initialized
     else:
         if dist.is_available():
