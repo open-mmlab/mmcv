@@ -58,8 +58,7 @@ def resize_video(in_file,
                  ratio=None,
                  keep_ar=False,
                  log_level='info',
-                 print_cmd=False,
-                 **kwargs):
+                 print_cmd=False):
     """Resize a video.
 
     Args:
@@ -98,8 +97,7 @@ def cut_video(in_file,
               vcodec=None,
               acodec=None,
               log_level='info',
-              print_cmd=False,
-              **kwargs):
+              print_cmd=False):
     """Cut a clip from a video.
 
     Args:
@@ -132,8 +130,7 @@ def concat_video(video_list,
                  vcodec=None,
                  acodec=None,
                  log_level='info',
-                 print_cmd=False,
-                 **kwargs):
+                 print_cmd=False):
     """Concatenate multiple videos into a single one.
 
     Args:

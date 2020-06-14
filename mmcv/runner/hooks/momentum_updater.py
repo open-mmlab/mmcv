@@ -8,8 +8,7 @@ class MomentumUpdaterHook(Hook):
                  by_epoch=True,
                  warmup=None,
                  warmup_iters=0,
-                 warmup_ratio=0.9,
-                 **kwargs):
+                 warmup_ratio=0.9):
         # validate the "warmup" argument
         if warmup is not None:
             if warmup not in ['constant', 'linear', 'exp']:

@@ -15,6 +15,9 @@ sys.modules['mc'] = MagicMock()
 
 class MockS3Client(object):
 
+    def __init__(self, enable_mc=True):
+        self.enable_mc = enable_mc
+
     def Get(self, filepath):
         with open(filepath, 'rb') as f:
             content = f.read()
