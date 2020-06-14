@@ -370,8 +370,18 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
 
 
 def annealing_cos(start, end, factor, weight=1):
-    """Cosine anneal from `weight * start + (1 - weight) * end` to `end` as
-    pct goes from 0.0 to 1.0.
+    """Calculate annealing cos learning rate.
+
+    Cosine anneal from `weight * start + (1 - weight) * end` to `end` as
+    percentage goes from 0.0 to 1.0.
+
+    Args:
+        start (float): The starting learning rate of the cosine annealing.
+        end (float): The ending learing rate of the cosine annealing.
+        factor (float): The coefficient of `pi` when calculating the current
+            percentage. Range from 0.0 to 1.0.
+        weight (float, optional): The combination factor of `start` and `end`
+            when calculating the actual starting learning rate. Default to 1.
     """
     cos_out = cos(pi * factor) + 1
     return end + 0.5 * weight * (start - end) * cos_out
