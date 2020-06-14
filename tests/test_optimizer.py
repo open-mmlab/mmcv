@@ -21,6 +21,22 @@ class SubModel(nn.Module):
         return x
 
 
+class FakeDCN(nn.Conv2d):
+
+    def __init__(self, *args, deformable_groups=1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.deformable_groups = deformable_groups
+        self.conv_offset = nn.Conv2d(
+            self.in_channels,
+            self.deformable_groups * 2 * self.kernel_size[0] *
+            self.kernel_size[1],
+            kernel_size=self.kernel_size,
+            stride=self.stride,
+            padding=self.padding,
+            dilation=self.dilation,
+            bias=True)
+
+
 class ExampleModel(nn.Module):
 
     def __init__(self):
@@ -30,6 +46,7 @@ class ExampleModel(nn.Module):
         self.conv2 = nn.Conv2d(4, 2, kernel_size=1)
         self.bn = nn.BatchNorm2d(2)
         self.sub = SubModel()
+        self.dcn = FakeDCN(3, 4, kernel_size=3, deformable_groups=1)
 
     def forward(self, x):
         return x
@@ -46,6 +63,7 @@ class ExampleDuplicateModel(nn.Module):
         self.sub = SubModel()
         self.conv3 = nn.Sequential(nn.Conv2d(3, 4, kernel_size=1, bias=False))
         self.conv3[0] = self.conv1[0]
+        self.dcn = FakeDCN(3, 4, kernel_size=3, deformable_groups=1)
 
     def forward(self, x):
         return x
@@ -75,7 +93,8 @@ def check_default_optimizer(optimizer, model, prefix=''):
     param_names = [
         'param1', 'conv1.weight', 'conv2.weight', 'conv2.bias', 'bn.weight',
         'bn.bias', 'sub.param1', 'sub.conv1.weight', 'sub.conv1.bias',
-        'sub.gn.weight', 'sub.gn.bias'
+        'sub.gn.weight', 'sub.gn.bias', 'dcn.weight', 'dcn.bias',
+        'dcn.conv_offset.weight', 'dcn.conv_offset.bias'
     ]
     param_dict = dict(model.named_parameters())
     assert len(param_groups['params']) == len(param_names)
@@ -91,6 +110,7 @@ def check_optimizer(optimizer,
                     bias_decay_mult=1,
                     norm_decay_mult=1,
                     dwconv_decay_mult=1,
+                    dcn_offset_lr_mult=1,
                     bypass_duplicate=False):
     param_groups = optimizer.param_groups
     assert isinstance(optimizer, torch.optim.SGD)
@@ -147,6 +167,22 @@ def check_optimizer(optimizer,
     sub_gn_bias = param_groups[10]
     assert sub_gn_bias['lr'] == base_lr
     assert sub_gn_bias['weight_decay'] == base_wd * norm_decay_mult
+
+    dcn_conv_weight = param_groups[11]
+    assert dcn_conv_weight['lr'] == base_lr
+    assert dcn_conv_weight['weight_decay'] == base_wd
+
+    dcn_conv_bias = param_groups[12]
+    assert dcn_conv_bias['lr'] == base_lr * bias_lr_mult
+    assert dcn_conv_bias['weight_decay'] == base_wd * bias_decay_mult
+
+    dcn_offset_weight = param_groups[13]
+    assert dcn_offset_weight['lr'] == base_lr * dcn_offset_lr_mult
+    assert dcn_offset_weight['weight_decay'] == base_wd
+
+    dcn_offset_bias = param_groups[14]
+    assert dcn_offset_bias['lr'] == base_lr * dcn_offset_lr_mult
+    assert dcn_offset_bias['weight_decay'] == base_wd * bias_decay_mult
 
 
 def test_default_optimizer_constructor():
@@ -229,7 +265,8 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1)
+        dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
@@ -238,7 +275,7 @@ def test_default_optimizer_constructor():
     # paramwise_cfg with ExampleModel, weight decay is None
     model = ExampleModel()
     optimizer_cfg = dict(type='Rprop', lr=base_lr)
-    paramwise_cfg = dict(bias_lr_mult=2)
+    paramwise_cfg = dict(bias_lr_mult=2, dcn_offset_lr_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
@@ -273,6 +310,16 @@ def test_default_optimizer_constructor():
     assert param_groups[9]['lr'] == base_lr
     # sub.gn.bias
     assert param_groups[10]['lr'] == base_lr
+    # dcn.weight
+    assert param_groups[11]['lr'] == base_lr
+    # dcn.bias
+    assert param_groups[12]['lr'] == base_lr * paramwise_cfg['bias_lr_mult']
+    # dcn.conv_offset.weight
+    assert param_groups[13][
+        'lr'] == base_lr * paramwise_cfg['dcn_offset_lr_mult']
+    # dcn.conv_offset.bias
+    assert param_groups[14][
+        'lr'] == base_lr * paramwise_cfg['dcn_offset_lr_mult']
 
     # paramwise_cfg with pseudo data parallel
     model = PseudoDataParallel()
@@ -282,7 +329,8 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1)
+        dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
@@ -352,7 +400,7 @@ def test_default_optimizer_constructor():
         assert str(w[0].message) == 'conv3.0 is duplicate. It is skipped ' \
                                     'since bypass_duplicate=True'
     model_parameters = list(model.parameters())
-    assert len(optimizer.param_groups) == len(model_parameters) == 11
+    assert len(optimizer.param_groups) == len(model_parameters) == 15
     check_optimizer(optimizer, model, **paramwise_cfg)
 
 
@@ -442,6 +490,7 @@ def test_build_optimizer():
             bias_lr_mult=2,
             bias_decay_mult=0.5,
             norm_decay_mult=0,
+            dcn_offset_lr_mult=0.1,
             dwconv_decay_mult=0.1))
     optimizer = build_optimizer(model, optimizer_cfg)
     check_optimizer(optimizer, model, **optimizer_cfg['paramwise_cfg'])

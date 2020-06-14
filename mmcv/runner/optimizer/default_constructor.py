@@ -26,10 +26,15 @@ class DefaultOptimizerConstructor(object):
     - ``dwconv_decay_mult`` (float): It will be multiplied to the weight
       decay for all weight and bias parameters of depthwise conv
       layers.
+    - ``dcn_offset_lr_mult`` (float): It will be multiplied to the learning
+      rate for all parameters of offset layer in deformable convs. If the
+      option is used, it will override the effect of ``bias_lr_mult`` in the
+      bias of offset layer. So be careful when use both ``bias_lr_mult`` and
+      ``dcn_offset_lr_mult``. If you wish to apply both of them to the offset
+      layer in deformable convs, set ``dcn_offset_lr_mult`` = the original
+      ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
     - ``bypass_duplicate`` (bool): If true, the duplicate parameters
       would not be added into optimizer. Default: False.
-    - ``dcn_offset_lr_mult`` (float): It will be multiplied to the learning
-      rate for all parameters of offset layer in deformable convs.
 
     Args:
         model (:obj:`nn.Module`): The model with parameters to be optimized.
@@ -122,7 +127,8 @@ class DefaultOptimizerConstructor(object):
             if name == 'bias' and not is_norm:
                 param_group['lr'] = self.base_lr * bias_lr_mult
 
-            if prefix.find('conv_offset') != -1 and not is_norm:
+            if prefix.find('conv_offset') != -1 \
+                    and isinstance(module, torch.nn.Conv2d):
                 # deal with both dcn_offset's bias & weight
                 param_group['lr'] = self.base_lr * dcn_offset_lr_mult
 
