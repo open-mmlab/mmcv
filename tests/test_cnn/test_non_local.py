@@ -2,7 +2,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn import NonLocal1d, NonLocal2d, NonLocal3d, _NonLocalNd
+from mmcv.cnn import NonLocal1d, NonLocal2d, NonLocal3d
+from mmcv.cnn.bricks.non_local import _NonLocalNd
 
 
 def test_nonlocal():

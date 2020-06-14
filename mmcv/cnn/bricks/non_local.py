@@ -17,7 +17,8 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
     Args:
         in_channels (int): Channels of the input feature map.
         reduction (int): Channel reduction ratio. Default: 2.
-        use_scale (bool): Whether to scale pairwise_weight by 1/inter_channels.
+        use_scale (bool): Whether to scale pairwise_weight by
+            `1/sqrt(inter_channels)` when the mode is `embedded_gaussian`.
             Default: True.
         conv_cfg (None | dict): The config dict for convolution layers.
             If not specified, it will use `nn.Conv2d` for convolution layers.
@@ -48,7 +49,7 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
                 "Mode should be in 'embedded_gaussian' or 'dot_product', "
                 f'but got {mode} instead.')
 
-        # g, theta, phi are defaulted as `nn.Conv2d`.
+        # g, theta, phi are defaulted as `nn.ConvNd`.
         # Here we use ConvModule for potential usage.
         self.g = ConvModule(
             self.in_channels,
@@ -81,10 +82,8 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
     def init_weights(self, std=0.01, zeros_init=True):
         for m in [self.g, self.theta, self.phi]:
             normal_init(m.conv, std=std)
-        if zeros_init:
+        if zeros_init and self.conv_out.norm_cfg is None:
             constant_init(self.conv_out.conv, 0)
-            if self.conv_out.norm_cfg is not None:
-                constant_init(self.conv_out.norm, 0)
         else:
             normal_init(self.conv_out.conv, std=std)
             if self.conv_out.norm_cfg is not None:
@@ -147,7 +146,8 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
         # NonLocal1d y: [N, C, H]
         # NonLocal2d y: [N, C, H, W]
         # NonLocal3d y: [N, C, T, H, W]
-        y = y.permute(0, 2, 1).reshape(n, self.inter_channels, *x.size()[2:])
+        y = y.permute(0, 2, 1).contiguous().reshape(n, self.inter_channels,
+                                                    *x.size()[2:])
 
         output = x + self.conv_out(y)
 
@@ -160,7 +160,8 @@ class NonLocal1d(_NonLocalNd):
     Args:
         in_channels (int): Same as `NonLocalND`.
         sub_sample (bool): Whether to apply max pooling after pairwise
-            function. Default: False.
+            function (Note that the `sub_sample` is applied on spatial only).
+            Default: False.
         conv_cfg (None | dict): Same as `NonLocalND`.
             Default: dict(type='Conv1d').
     """
@@ -174,9 +175,9 @@ class NonLocal1d(_NonLocalNd):
             in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
-        max_pool_layer = nn.MaxPool1d(kernel_size=2)
 
         if sub_sample:
+            max_pool_layer = nn.MaxPool1d(kernel_size=2)
             self.g = nn.Sequential(self.g, max_pool_layer)
             self.phi = nn.Sequential(self.phi, max_pool_layer)
 
@@ -187,7 +188,8 @@ class NonLocal2d(_NonLocalNd):
     Args:
         in_channels (int): Same as `NonLocalND`.
         sub_sample (bool): Whether to apply max pooling after pairwise
-            function. Default: False.
+            function (Note that the `sub_sample` is applied on spatial only).
+            Default: False.
         conv_cfg (None | dict): Same as `NonLocalND`.
             Default: dict(type='Conv2d').
     """
@@ -201,9 +203,9 @@ class NonLocal2d(_NonLocalNd):
             in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
-        max_pool_layer = nn.MaxPool2d(kernel_size=(2, 2))
 
         if sub_sample:
+            max_pool_layer = nn.MaxPool2d(kernel_size=(2, 2))
             self.g = nn.Sequential(self.g, max_pool_layer)
             self.phi = nn.Sequential(self.phi, max_pool_layer)
 
@@ -214,7 +216,8 @@ class NonLocal3d(_NonLocalNd):
     Args:
         in_channels (int): Same as `NonLocalND`.
         sub_sample (bool): Whether to apply max pooling after pairwise
-            function. Default: False.
+            function (Note that the `sub_sample` is applied on spatial only).
+            Default: False.
         conv_cfg (None | dict): Same as `NonLocalND`.
             Default: dict(type='Conv3d').
     """
@@ -227,8 +230,8 @@ class NonLocal3d(_NonLocalNd):
         super(NonLocal3d, self).__init__(
             in_channels, conv_cfg=conv_cfg, **kwargs)
         self.sub_sample = sub_sample
-        max_pool_layer = nn.MaxPool3d(kernel_size=(1, 2, 2))
 
         if sub_sample:
+            max_pool_layer = nn.MaxPool3d(kernel_size=(1, 2, 2))
             self.g = nn.Sequential(self.g, max_pool_layer)
             self.phi = nn.Sequential(self.phi, max_pool_layer)
