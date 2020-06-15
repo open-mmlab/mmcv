@@ -6,12 +6,11 @@ import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import dist, find_packages, setup
 
-from Cython.Build import cythonize
-from Cython.Distutils import build_ext as build_cmd
-
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # NOQA: E402  # isort:skip
+from Cython.Build import cythonize  # NOQA: E402  # isort:skip
+from Cython.Distutils import build_ext as build_cmd  # NOQA: E402  # isort:skip
 
 
 def choose_requirement(primary, secondary):
