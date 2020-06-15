@@ -1,14 +1,13 @@
 import torch
 from torch.autograd import gradcheck
 
-from mmcv.op import CARAFE, CARAFENaive
-
 
 class TestCarafe(object):
 
     def test_carafe_naive_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import CARAFENaive
         feat = torch.randn(
             2, 64, 3, 3, requires_grad=True, device='cuda').double()
         mask = torch.randn(
@@ -19,6 +18,7 @@ class TestCarafe(object):
     def test_carafe_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import CARAFE
         feat = torch.randn(
             2, 64, 3, 3, requires_grad=True, device='cuda').double()
         mask = torch.randn(

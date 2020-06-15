@@ -2,14 +2,13 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.op import nms, nms_match, soft_nms
-
 
 class Testnms(object):
 
     def test_nms_allclose(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -31,6 +30,7 @@ class Testnms(object):
     def test_softnms_allclose(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import soft_nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -99,6 +99,7 @@ class Testnms(object):
     def test_nms_match(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import nms, nms_match
         iou_thr = 0.6
         # empty input
         empty_dets = np.array([])

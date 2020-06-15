@@ -3,8 +3,6 @@ import os
 import numpy as np
 import torch
 
-from mmcv.op import RoIPool, roi_pool
-
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -35,6 +33,7 @@ class TestRoiPool(object):
     def test_roipool_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import RoIPool
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -57,6 +56,7 @@ class TestRoiPool(object):
     def _test_roipool_allclose(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import roi_pool
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

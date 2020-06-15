@@ -1,9 +1,6 @@
 import numpy as np
 import torch
 
-from mmcv.op import (SigmoidFocalLoss, SoftmaxFocalLoss, sigmoid_focal_loss,
-                     softmax_focal_loss)
-
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -41,6 +38,7 @@ class Testfocalloss(object):
     def _test_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import softmax_focal_loss
         alpha = 0.25
         gamma = 2.0
         for case, output in zip(inputs, softmax_outputs):
@@ -61,6 +59,7 @@ class Testfocalloss(object):
     def _test_sigmoid(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import sigmoid_focal_loss
         alpha = 0.25
         gamma = 2.0
         for case, output in zip(inputs, sigmoid_outputs):
@@ -81,6 +80,7 @@ class Testfocalloss(object):
     def _test_grad_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import SoftmaxFocalLoss
         alpha = 0.25
         gamma = 2.0
         for case in inputs:
@@ -102,6 +102,7 @@ class Testfocalloss(object):
     def _test_grad_sigmoid(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import SigmoidFocalLoss
         alpha = 0.25
         gamma = 2.0
         for case in inputs:

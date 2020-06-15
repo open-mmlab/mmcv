@@ -3,8 +3,6 @@ import os
 import numpy
 import torch
 
-from mmcv.op import ModulatedDeformConv2dPack
-
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 input_t = [[[[1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]]]
@@ -33,6 +31,7 @@ class TestMdconv(object):
     def _test_mdconv(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import ModulatedDeformConv2dPack
         input = torch.tensor(input_t).cuda().type(dtype)
         input.requires_grad = True
 

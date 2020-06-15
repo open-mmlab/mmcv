@@ -3,8 +3,6 @@ import os
 import numpy as np
 import torch
 
-from mmcv.op import RoIAlign, roi_align
-
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -38,6 +36,7 @@ class TestRoiAlign(object):
     def test_roialign_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import RoIAlign
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -62,6 +61,7 @@ class TestRoiAlign(object):
     def _test_roipool_allclose(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import roi_align
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

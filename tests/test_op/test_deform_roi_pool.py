@@ -3,8 +3,6 @@ import os
 import numpy as np
 import torch
 
-from mmcv.op import DeformRoIPoolPack, ModulatedDeformRoIPoolPack
-
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -41,6 +39,7 @@ class TestDeformRoIPool(object):
     def test_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import DeformRoIPoolPack
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -69,6 +68,7 @@ class TestDeformRoIPool(object):
     def test_modulated_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import ModulatedDeformRoIPoolPack
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

@@ -2,8 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from mmcv.op import PSAMask
-
 
 class Loss(nn.Module):
 
@@ -21,6 +19,7 @@ class TestPSAMask(object):
     def test_psa_mask_collect(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(
@@ -60,6 +59,7 @@ class TestPSAMask(object):
     def test_psa_mask_distribute(self):
         if not torch.cuda.is_available():
             return
+        from mmcv.op import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(

@@ -6,8 +6,6 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 
-from mmcv.op import SyncBatchNorm
-
 
 class TestSyncBN(object):
 
@@ -34,6 +32,7 @@ class TestSyncBN(object):
             print('must run with slurm has 4 processes!\n'
                   'srun -p test --gres=gpu:4 -n4')
             return
+        from mmcv.op import SyncBatchNorm
 
         assert size in (1, 2, 4)
         if not dist.is_initialized():
