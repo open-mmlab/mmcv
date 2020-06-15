@@ -175,7 +175,7 @@ def test_cosine_restart_lr_update_hook():
             by_epoch=False,
             periods=[5, 2],  # cumulative_periods [5, 7 (5 + 2)]
             restart_weights=[0.5, 0.5],
-            min_lr_ratio=0)
+            min_lr=0.0001)
         runner.register_hook(hook)
         runner.register_hook(IterTimerHook())
 
