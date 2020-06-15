@@ -65,7 +65,6 @@ class IterBasedRunner(BaseRunner):
     def val(self, data_loader, **kwargs):
         self.model.eval()
         self.mode = 'val'
-        self._inner_iter = 0
         self.data_loader = data_loader
         self.call_hook('before_val_iter')
         data_batch = next(data_loader)
@@ -107,6 +106,7 @@ class IterBasedRunner(BaseRunner):
 
         while self.iter < max_iters:
             for i, flow in enumerate(workflow):
+                self._inner_iter = 0
                 mode, iters = flow
                 if not isinstance(mode, str) or not hasattr(self, mode):
                     raise ValueError(

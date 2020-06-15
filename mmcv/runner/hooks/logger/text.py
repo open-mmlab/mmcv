@@ -35,7 +35,8 @@ class TextLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=False,
                  interval_exp_name=1000):
-        super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag)
+        super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
+                                             by_epoch)
         self.by_epoch = by_epoch
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
