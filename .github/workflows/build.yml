@@ -22,13 +22,15 @@ jobs:
     - name: Install linting dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 isort yapf
+        pip install flake8 isort yapf clang-format
     - name: Lint with flake8
       run: flake8 --max-complexity 20 .
     - name: Lint with isort
       run: isort -rc --check-only --diff mmcv/ tests/ examples/
     - name: Format with yapf
       run: yapf -r -d mmcv/ tests/ examples/
+    - name: Format with clang-format
+      run: find mmcv/ -regextype posix-extended -regex ".*\.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)" | xargs clang-format
     - name: Build and install
       run: rm -rf .eggs && pip install -e .
     - name: Install system dependencies

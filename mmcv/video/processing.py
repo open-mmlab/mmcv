@@ -58,8 +58,7 @@ def resize_video(in_file,
                  ratio=None,
                  keep_ar=False,
                  log_level='info',
-                 print_cmd=False,
-                 **kwargs):
+                 print_cmd=False):
     """Resize a video.
 
     Args:
@@ -74,7 +73,7 @@ def resize_video(in_file,
     """
     if size is None and ratio is None:
         raise ValueError('expected size or ratio must be specified')
-    elif size is not None and ratio is not None:
+    if size is not None and ratio is not None:
         raise ValueError('size and ratio cannot be specified at the same time')
     options = {'log_level': log_level}
     if size:
@@ -98,8 +97,7 @@ def cut_video(in_file,
               vcodec=None,
               acodec=None,
               log_level='info',
-              print_cmd=False,
-              **kwargs):
+              print_cmd=False):
     """Cut a clip from a video.
 
     Args:
@@ -132,8 +130,7 @@ def concat_video(video_list,
                  vcodec=None,
                  acodec=None,
                  log_level='info',
-                 print_cmd=False,
-                 **kwargs):
+                 print_cmd=False):
     """Concatenate multiple videos into a single one.
 
     Args:

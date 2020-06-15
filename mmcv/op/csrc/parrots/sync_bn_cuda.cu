@@ -1,127 +1,105 @@
-#include <stdio.h>
-#include <float.h>
-#include <parrots/extension.hpp>
 #include "parrots_cuda_helper.hpp"
-using phalf=float16;
+
 #include "sync_bn_cuda_kernel.cuh"
 
-using namespace parrots;
+void SyncBNForwardMeanCUDAKernelLauncher(const DArrayLite input,
+                                         DArrayLite mean, cudaStream_t stream) {
+  int num = input.dim(0);
+  int channels = input.dim(1);
+  int spatial = input.dim(2);
 
-void cudaSyncBNForwardStep1(size_t n, size_t c, size_t h, size_t w,
-                            const DArrayLite input, DArrayLite mean, cudaStream_t stream) {
-    PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.elemType().prim(), ([&] {
-                const scalar_t *input_ptr = input.ptr<scalar_t>();
-                float *mean_ptr = mean.ptr<float>();
-                forward_mean_before_reduce<scalar_t><<<c, cuda_num_threads, 0, stream>>>(
-                    n, c, h * w, input_ptr, mean_ptr);
-            }));
+  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
+      input.elemType().prim(), ([&] {
+        sync_bn_forward_mean_cuda_kernel<scalar_t>
+            <<<channels, THREADS_PER_BLOCK, 0, stream>>>(input.ptr<scalar_t>(),
+                                                         mean.ptr<float>(), num,
+                                                         channels, spatial);
+      }));
 
-    cudaError_t err = cudaGetLastError();
-    if (cudaSuccess != err) {
-        fprintf(stderr, "cudaSyncBNForwardStep1 forward_local_stats_kernel failed : %s (%zu, %zu, %zu, %zu)\n",
-                cudaGetErrorString(err), n, c, h, w);
-        exit(-1);
-    }
+  PARROTS_CUDA_CHECK(cudaGetLastError());
 }
 
-void cudaSyncBNForwardStep2(size_t n, size_t c, size_t h, size_t w, const DArrayLite input,
-                            const DArrayLite mean, DArrayLite var, cudaStream_t stream) {
-    PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.elemType().prim(),  ([&] {
-                const scalar_t *input_ptr = input.ptr<scalar_t>();
-                const float *mean_ptr = mean.ptr<float>();
-                float *var_ptr = var.ptr<float>();
-                forward_var_before_reduce<scalar_t><<<c, cuda_num_threads, 0, stream>>>(
-                    n, c, h * w, input_ptr, mean_ptr, var_ptr);
-            }));
+void SyncBNForwardVarCUDAKernelLauncher(const DArrayLite input,
+                                        const DArrayLite mean, DArrayLite var,
+                                        cudaStream_t stream) {
+  int num = input.dim(0);
+  int channels = input.dim(1);
+  int spatial = input.dim(2);
 
-    cudaError_t err = cudaGetLastError();
-    if(cudaSuccess != err)
-    {
-        fprintf( stderr, "cudaSyncBNForwardStep2 forward_var_before_reduce failed : %s (%zu, %zu, %zu, %zu)\n", cudaGetErrorString( err ), n, c, h, w );
-        exit( -1 );
-    }
+  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
+      input.elemType().prim(), ([&] {
+        sync_bn_forward_var_cuda_kernel<scalar_t>
+            <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
+                input.ptr<scalar_t>(), mean.ptr<float>(), var.ptr<float>(), num,
+                channels, spatial);
+      }));
+
+  PARROTS_CUDA_CHECK(cudaGetLastError());
 }
 
-void cudaSyncBNForwardStep3(size_t n, size_t c, size_t h, size_t w, size_t group_size, const DArrayLite input,
-                            const float eps, const float momentum, const DArrayLite mean, const DArrayLite var,
-                            DArrayLite running_mean, DArrayLite running_var, const DArrayLite weight,
-                            const DArrayLite bias, DArrayLite std, DArrayLite output, cudaStream_t stream) {
-    PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.elemType().prim(), ([&] {
-                const scalar_t *input_ptr = input.ptr<scalar_t>();
-                const float *mean_ptr = mean.ptr<float>();
-                const float *var_ptr = var.ptr<float>();
-                float *running_mean_ptr = running_mean.ptr<float>();
-                float *running_var_ptr = running_var.ptr<float>();
-                const float *weight_ptr = weight.ptr<float>();
-                const float *bias_ptr = bias.ptr<float>();
-                float *std_ptr = std.ptr<float>();
-                scalar_t *output_ptr = output.ptr<scalar_t>();
-                forward_var_after_reduce<scalar_t><<<c, cuda_num_threads, 0, stream>>>(
-                    n, c, h*w, group_size, input_ptr, eps, momentum, mean_ptr, var_ptr,
-                    running_mean_ptr, running_var_ptr, weight_ptr, bias_ptr, std_ptr, output_ptr);
-            }));
+void SyncBNForwardOutputCUDAKernelLauncher(
+    const DArrayLite input, const DArrayLite mean, const DArrayLite var,
+    DArrayLite running_mean, DArrayLite running_var, const DArrayLite weight,
+    const DArrayLite bias, DArrayLite norm, DArrayLite std, DArrayLite output,
+    float eps, float momentum, size_t group_size, cudaStream_t stream) {
+  int num = input.dim(0);
+  int channels = input.dim(1);
+  int spatial = input.dim(2);
 
-    cudaError_t err = cudaGetLastError();
-    if(cudaSuccess != err)
-    {
-        fprintf( stderr, "cudaSyncBNForwardStep3 forward_var_after_reduce failed : %s (%zu, %zu, %zu, %zu)\n", cudaGetErrorString( err ), n, c, h, w );
-        exit( -1 );
-    }
+  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
+      input.elemType().prim(), ([&] {
+        sync_bn_forward_output_cuda_kernel<scalar_t>
+            <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
+                input.ptr<scalar_t>(), mean.ptr<float>(), var.ptr<float>(),
+                running_mean.ptr<float>(), running_var.ptr<float>(),
+                weight.ptr<float>(), bias.ptr<float>(), norm.ptr<float>(),
+                std.ptr<float>(), output.ptr<scalar_t>(), num, channels,
+                spatial, eps, momentum, group_size);
+      }));
+
+  PARROTS_CUDA_CHECK(cudaGetLastError());
 }
 
-void cudaSyncBNBackwardStep1(size_t n, size_t c, size_t h, size_t w, const DArrayLite input,
-                             const DArrayLite mean, DArrayLite weight_diff, DArrayLite bias_diff,
-                             const DArrayLite std, const DArrayLite grad_output, cudaStream_t stream) {
+void SyncBNBackwardParamCUDAKernelLauncher(const DArrayLite grad_output,
+                                           const DArrayLite norm,
+                                           DArrayLite grad_weight,
+                                           DArrayLite grad_bias,
+                                           cudaStream_t stream) {
+  int num = grad_output.dim(0);
+  int channels = grad_output.dim(1);
+  int spatial = grad_output.dim(2);
 
-    PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.elemType().prim(), ([&] {
-                const scalar_t *input_ptr = input.ptr<scalar_t>();
-                const float *mean_ptr = mean.ptr<float>();
-                float *weight_diff_ptr = weight_diff.ptr<float>();
-                float *bias_diff_ptr = bias_diff.ptr<float>();
-                const float *std_ptr = std.ptr<float>();
-                const scalar_t *grad_output_ptr = grad_output.ptr<scalar_t>();
-                backward_param_kernel<scalar_t> <<<c, cuda_num_threads, 0, stream>>>(
-                    n, c, h*w, input_ptr, mean_ptr, weight_diff_ptr,
-                    bias_diff_ptr, std_ptr, grad_output_ptr);
-            }));
+  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
+      grad_output.elemType().prim(), ([&] {
+        sync_bn_backward_param_cuda_kernel<scalar_t>
+            <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
+                grad_output.ptr<scalar_t>(), norm.ptr<float>(),
+                grad_weight.ptr<float>(), grad_bias.ptr<float>(), num, channels,
+                spatial);
+      }));
 
-    cudaError_t err = cudaGetLastError();
-    if(cudaSuccess != err)
-    {
-        fprintf( stderr, "cudaSyncBNBackwardStep1 backward_local_stats_kernel failed : %s (%zu, %zu, %zu, %zu)\n", cudaGetErrorString( err ), n, c, h, w );
-        exit( -1 );
-    }
+  PARROTS_CUDA_CHECK(cudaGetLastError());
 }
 
-void cudaSyncBNBackwardStep2(size_t n, size_t c, size_t h, size_t w, const DArrayLite input,
-                            DArrayLite grad_input, const DArrayLite mean, const DArrayLite weight,
-                            const DArrayLite weight_diff, const DArrayLite bias_diff, const DArrayLite std,
-                            const DArrayLite grad_output, cudaStream_t stream) {
-    const int blockSize = 1024;
-    const size_t gridSize = (w*h*c*n + blockSize - 1) / blockSize;
-    PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.elemType().prim(), ([&] {
-                const scalar_t *input_ptr = input.ptr<scalar_t>();
-                scalar_t *grad_input_ptr = grad_input.ptr<scalar_t>();
-                const float *mean_ptr = mean.ptr<float>();
-                const float *weight_ptr = weight.ptr<float>();
-                const float *weight_diff_ptr = weight_diff.ptr<float>();
-                const float *bias_diff_ptr = bias_diff.ptr<float>();
-                const float *std_ptr = std.ptr<float>();
-                const scalar_t *grad_output_ptr = grad_output.ptr<scalar_t>();
-                backward_data_kernel<scalar_t><<<gridSize, blockSize, 0, stream>>>(
-                    n, c, h*w, input_ptr, grad_input_ptr, mean_ptr, weight_ptr,
-                    weight_diff_ptr, bias_diff_ptr, std_ptr, grad_output_ptr);
-            }));
+void SyncBNBackwardDataCUDAKernelLauncher(
+    const DArrayLite grad_output, const DArrayLite weight,
+    const DArrayLite grad_weight, const DArrayLite grad_bias,
+    const DArrayLite norm, const DArrayLite std, DArrayLite grad_input,
+    cudaStream_t stream) {
+  int output_size = grad_input.size();
+  int num = grad_input.dim(0);
+  int channels = grad_input.dim(1);
+  int spatial = grad_input.dim(2);
 
-    cudaError_t err = cudaGetLastError();
-    if(cudaSuccess != err)
-    {
-        fprintf( stderr, "cudaSyncBNBackwardStep2 backward_compute_kernel failed : %s (%zu, %zu, %zu, %zu)\n", cudaGetErrorString( err ), n, c, h, w );
-        exit( -1 );
-    }
+  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
+      grad_input.elemType().prim(), ([&] {
+        sync_bn_backward_data_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+                output_size, grad_output.ptr<scalar_t>(), weight.ptr<float>(),
+                grad_weight.ptr<float>(), grad_bias.ptr<float>(),
+                norm.ptr<float>(), std.ptr<float>(), grad_input.ptr<scalar_t>(),
+                num, channels, spatial);
+      }));
+
+  PARROTS_CUDA_CHECK(cudaGetLastError());
 }

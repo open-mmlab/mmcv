@@ -9,10 +9,12 @@ from importlib import import_module
 
 import torch
 import torchvision
+from torch.optim import Optimizer
 from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
+from ..parallel import is_parallel_module
 from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
 
@@ -59,6 +61,10 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     # use _load_from_state_dict to enable checkpoint version control
     def load(module, prefix=''):
+        # recursively check parallel module in case that the model has a
+        # complicated structure, e.g., nn.Module(nn.Module(DDP))
+        if is_parallel_module(module):
+            module = module.module
         local_metadata = {} if metadata is None else metadata.get(
             prefix[:-1], {})
         module._load_from_state_dict(state_dict, prefix, local_metadata, True,
@@ -228,10 +234,7 @@ def load_checkpoint(model,
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
     # load state_dict
-    if hasattr(model, 'module'):
-        load_state_dict(model.module, state_dict, strict, logger)
-    else:
-        load_state_dict(model, state_dict, strict, logger)
+    load_state_dict(model, state_dict, strict, logger)
     return checkpoint
 
 
@@ -269,15 +272,20 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))
-    if hasattr(model, 'module'):
+    if is_parallel_module(model):
         model = model.module
 
     checkpoint = {
         'meta': meta,
         'state_dict': weights_to_cpu(model.state_dict())
     }
-    if optimizer is not None:
+    # save optimizer state dict in the checkpoint
+    if isinstance(optimizer, Optimizer):
         checkpoint['optimizer'] = optimizer.state_dict()
+    elif isinstance(optimizer, dict):
+        checkpoint['optimizer'] = {}
+        for name, optim in optimizer.items():
+            checkpoint['optimizer'][name] = optim.state_dict()
     # immediately flush buffer
     with open(filename, 'wb') as f:
         torch.save(checkpoint, f)

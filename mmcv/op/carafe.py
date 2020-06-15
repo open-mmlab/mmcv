@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
-from torch.autograd.function import once_differentiable
 from torch.nn.modules.module import Module
 
 from ..cnn import UPSAMPLE_LAYERS, normal_init, xavier_init
@@ -15,6 +14,16 @@ ext_module = ext_loader.load_ext('op_ext', [
 
 
 class CARAFENaiveFunction(Function):
+
+    @staticmethod
+    def symbolic(g, features, masks, kernel_size, group_size, scale_factor):
+        return g.op(
+            'MMCVCARAFENaive',
+            features,
+            masks,
+            kernel_size=kernel_size,
+            group_size=group_size,
+            scale_factor=scale_factor)
 
     @staticmethod
     def forward(ctx, features, masks, kernel_size, group_size, scale_factor):
@@ -40,15 +49,11 @@ class CARAFENaiveFunction(Function):
             group_size=group_size,
             scale_factor=scale_factor)
 
-        if torch.__version__ == 'parrots':
+        if features.requires_grad or masks.requires_grad:
             ctx.save_for_backward(features, masks)
-        else:
-            if features.requires_grad or masks.requires_grad:
-                ctx.save_for_backward(features, masks)
         return output
 
     @staticmethod
-    @once_differentiable
     def backward(ctx, grad_output):
         assert grad_output.is_cuda
 
@@ -94,6 +99,16 @@ class CARAFENaive(Module):
 class CARAFEFunction(Function):
 
     @staticmethod
+    def symbolic(g, features, masks, kernel_size, group_size, scale_factor):
+        return g.op(
+            'MMCVCARAFE',
+            features,
+            masks,
+            kernel_size=kernel_size,
+            group_size=group_size,
+            scale_factor=scale_factor)
+
+    @staticmethod
     def forward(ctx, features, masks, kernel_size, group_size, scale_factor):
         assert scale_factor >= 1
         assert masks.size(1) == kernel_size * kernel_size * group_size
@@ -123,11 +138,8 @@ class CARAFEFunction(Function):
             group_size=group_size,
             scale_factor=scale_factor)
 
-        if torch.__version__ == 'parrots':
+        if features.requires_grad or masks.requires_grad:
             ctx.save_for_backward(features, masks, rfeatures)
-        else:
-            if features.requires_grad or masks.requires_grad:
-                ctx.save_for_backward(features, masks, rfeatures)
         return output
 
     @staticmethod
@@ -139,20 +151,12 @@ class CARAFEFunction(Function):
         group_size = ctx.group_size
         scale_factor = ctx.scale_factor
 
-        if torch.__version__ == 'parrots':
-            rgrad_output = torch.zeros_like(grad_output)
-            rgrad_input_hs = torch.zeros_like(grad_output)
-            rgrad_input = torch.zeros_like(features)
-            rgrad_masks = torch.zeros_like(masks)
-            grad_input = torch.zeros_like(features)
-            grad_masks = torch.zeros_like(masks)
-        else:
-            rgrad_output = torch.zeros_like(grad_output, requires_grad=False)
-            rgrad_input_hs = torch.zeros_like(grad_output, requires_grad=False)
-            rgrad_input = torch.zeros_like(features, requires_grad=False)
-            rgrad_masks = torch.zeros_like(masks, requires_grad=False)
-            grad_input = torch.zeros_like(features, requires_grad=False)
-            grad_masks = torch.zeros_like(masks, requires_grad=False)
+        rgrad_output = torch.zeros_like(grad_output, requires_grad=False)
+        rgrad_input_hs = torch.zeros_like(grad_output, requires_grad=False)
+        rgrad_input = torch.zeros_like(features, requires_grad=False)
+        rgrad_masks = torch.zeros_like(masks, requires_grad=False)
+        grad_input = torch.zeros_like(features, requires_grad=False)
+        grad_masks = torch.zeros_like(masks, requires_grad=False)
         ext_module.carafe_backward(
             grad_output.contiguous(),
             rfeatures,

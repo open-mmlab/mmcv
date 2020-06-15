@@ -1,4 +1,5 @@
 addict
+clang-format
 numpy
 pyyaml
 yapf

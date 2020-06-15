@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.cnn import CONV_LAYERS
+from ..cnn import CONV_LAYERS
 
 
 def conv_ws_2d(input,

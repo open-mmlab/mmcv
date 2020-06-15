@@ -3,15 +3,8 @@
 
 template <typename T>
 __global__ void sigmoid_focal_loss_forward_cuda_kernel(
-    const int nthreads,
-    const T* input,
-    const int64_t* target,
-    const T* weight,
-    T* output,
-    const T gamma,
-    const T alpha,
-    const int num_classes) {
-
+    const int nthreads, const T* input, const int64_t* target, const T* weight,
+    T* output, const T gamma, const T alpha, const int num_classes) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     int n = index / num_classes;
     int c = index % num_classes;
@@ -32,22 +25,15 @@ __global__ void sigmoid_focal_loss_forward_cuda_kernel(
     output[index] += -flag_p * alpha * term_p;
     output[index] += -flag_n * ((T)1. - alpha) * term_n;
     if (weight != NULL) {
-       output[index] *= weight[t];
+      output[index] *= weight[t];
     }
   }
 }
 
 template <typename T>
 __global__ void sigmoid_focal_loss_backward_cuda_kernel(
-    const int nthreads,
-    const T* input,
-    const int64_t* target,
-    const T* weight,
-    T* grad_input,
-    const T gamma,
-    const T alpha,
-    const int num_classes) {
-
+    const int nthreads, const T* input, const int64_t* target, const T* weight,
+    T* grad_input, const T gamma, const T alpha, const int num_classes) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     int n = index / num_classes;
     int c = index % num_classes;
@@ -60,15 +46,17 @@ __global__ void sigmoid_focal_loss_backward_cuda_kernel(
     T p = (T)1. / ((T)1. + exp(-input[index]));
 
     // (1 - p)**gamma * (1 - p - gamma*p*log(p))
-    T term_p = pow(((T)1. - p), gamma) * ((T)1. - p - (gamma * p * log(max(p, (T)FLT_MIN))));
+    T term_p = pow(((T)1. - p), gamma) *
+               ((T)1. - p - (gamma * p * log(max(p, (T)FLT_MIN))));
     // p**gamma * (gamma * (1 - p) * log(1 - p) - p)
-    T term_n = pow(p, gamma) * (gamma * ((T)1. - p) * log(max((T)1. - p, (T)FLT_MIN)) - p);
+    T term_n = pow(p, gamma) *
+               (gamma * ((T)1. - p) * log(max((T)1. - p, (T)FLT_MIN)) - p);
 
     grad_input[index] = (T)0.;
     grad_input[index] += -flag_p * alpha * term_p;
     grad_input[index] += -flag_n * ((T)1. - alpha) * term_n;
     if (weight != NULL) {
-       grad_input[index] *= weight[t];
+      grad_input[index] *= weight[t];
     }
   }
 }

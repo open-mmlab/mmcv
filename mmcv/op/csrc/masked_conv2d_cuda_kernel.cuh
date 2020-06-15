@@ -1,12 +1,11 @@
 template <typename scalar_t>
-__global__ void MaskedIm2colForward(
-    const int n, const scalar_t *data_im,
-    const int height, const int width,
-    const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w,
-    const int64_t *mask_h_idx,
-    const int64_t *mask_w_idx,
-    const int mask_cnt, scalar_t *data_col) {
+__global__ void MaskedIm2colForward(const int n, const scalar_t *data_im,
+                                    const int height, const int width,
+                                    const int kernel_h, const int kernel_w,
+                                    const int pad_h, const int pad_w,
+                                    const int64_t *mask_h_idx,
+                                    const int64_t *mask_w_idx,
+                                    const int mask_cnt, scalar_t *data_col) {
   // mask_cnt * channels
   CUDA_1D_KERNEL_LOOP(index, n) {
     const int m_index = index % mask_cnt;
@@ -34,13 +33,12 @@ __global__ void MaskedIm2colForward(
 }
 
 template <typename scalar_t>
-__global__ void MaskedCol2imForward(
-    const int n, const scalar_t *data_col,
-    const int height, const int width,
-    const int channels,
-    const int64_t *mask_h_idx,
-    const int64_t *mask_w_idx,
-    const int mask_cnt, scalar_t *data_im) {
+__global__ void MaskedCol2imForward(const int n, const scalar_t *data_col,
+                                    const int height, const int width,
+                                    const int channels,
+                                    const int64_t *mask_h_idx,
+                                    const int64_t *mask_w_idx,
+                                    const int mask_cnt, scalar_t *data_im) {
   CUDA_1D_KERNEL_LOOP(index, n) {
     const int m_index = index % mask_cnt;
     const int h_im = mask_h_idx[m_index];

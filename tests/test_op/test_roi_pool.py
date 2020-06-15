@@ -33,6 +33,8 @@ outputs = [([[[[1., 2.], [3., 4.]]]], [[[[1., 1.], [1., 1.]]]]),
 class TestRoiPool(object):
 
     def test_roipool_gradcheck(self):
+        if not torch.cuda.is_available():
+            return
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -53,6 +55,8 @@ class TestRoiPool(object):
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

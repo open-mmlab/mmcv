@@ -5,7 +5,7 @@ import os.path as osp
 import numpy as np
 import torch
 
-from mmcv.runner import master_only
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -71,8 +71,22 @@ class PaviLoggerHook(LoggerHook):
         for tag, val in runner.log_buffer.output.items():
             if tag not in ['time', 'data_time'] and is_scalar(val):
                 tags[tag] = val
-        tags['learning_rate'] = runner.current_lr()[0]
-        tags['momentum'] = runner.current_momentum()[0]
+        # add learning rate
+        lrs = runner.current_lr()
+        if isinstance(lrs, dict):
+            for name, value in lrs.items():
+                tags[f'learning_rate/{name}'] = value[0]
+        else:
+            tags['learning_rate'] = lrs[0]
+
+        # add momentum
+        momentums = runner.current_momentum()
+        if isinstance(momentums, dict):
+            for name, value in momentums.items():
+                tags[f'momentum/{name}'] = value[0]
+        else:
+            tags['momentum'] = momentums[0]
+
         if tags:
             self.writer.add_scalars(runner.mode, tags, runner.iter)
 

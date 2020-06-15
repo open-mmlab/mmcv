@@ -1,57 +1,126 @@
 #include "pytorch_cpp_helper.hpp"
-#include <cmath>
-#include <vector>
 
-using namespace at;
+void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean);
 
-void cudaSyncBNForwardStep1(size_t n, size_t c, size_t h, size_t w,
-                            const at::Tensor input, at::Tensor mean);
+void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
+                                        Tensor var);
 
-void cudaSyncBNForwardStep2(size_t n, size_t c, size_t h, size_t w, const at::Tensor input,
-                            const at::Tensor mean, at::Tensor var);
+void SyncBNForwardOutputCUDAKernelLauncher(
+    const Tensor input, const Tensor mean, const Tensor var,
+    Tensor running_mean, Tensor running_var, const Tensor weight,
+    const Tensor bias, Tensor norm, Tensor std, Tensor output, float eps,
+    float momentum, int group_size);
 
-void cudaSyncBNForwardStep3(size_t n, size_t c, size_t h, size_t w, size_t group_size, const at::Tensor input,
-                            const float eps, const float momentum, const at::Tensor mean, const at::Tensor var,
-                            at::Tensor running_mean, at::Tensor running_var, const at::Tensor weight,
-                            const at::Tensor bias, at::Tensor std, at::Tensor output);
+void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
+                                           const Tensor norm,
+                                           Tensor grad_weight,
+                                           Tensor grad_bias);
 
-void cudaSyncBNBackwardStep1(size_t n, size_t c, size_t h, size_t w, const at::Tensor input,
-                             const at::Tensor mean, at::Tensor weight_diff, at::Tensor bias_diff,
-                             const at::Tensor std, const at::Tensor grad_output);
+void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
+                                          const Tensor weight,
+                                          const Tensor grad_weight,
+                                          const Tensor grad_bias,
+                                          const Tensor norm, const Tensor std,
+                                          Tensor grad_input);
 
-void cudaSyncBNBackwardStep2(size_t n, size_t c, size_t h, size_t w, const at::Tensor input,
-                            at::Tensor grad_input, const at::Tensor mean, const at::Tensor weight,
-                            const at::Tensor weight_diff, const at::Tensor bias_diff, const at::Tensor std,
-                            const at::Tensor grad_output);
-
-void syncbn_forward_step1(const at::Tensor input, at::Tensor mean,
-         size_t n, size_t c, size_t h, size_t w){
-    cudaSyncBNForwardStep1(n, c, h, w, input, mean);
+void sync_bn_forward_mean_cuda(const Tensor input, Tensor mean) {
+  SyncBNForwardMeanCUDAKernelLauncher(input, mean);
 }
 
-void syncbn_forward_step2(const at::Tensor input, at::Tensor mean, at::Tensor var,
-         size_t n, size_t c, size_t h, size_t w){
-    cudaSyncBNForwardStep2(n, c, h, w, input, mean, var);
+void sync_bn_forward_var_cuda(const Tensor input, const Tensor mean,
+                              Tensor var) {
+  SyncBNForwardVarCUDAKernelLauncher(input, mean, var);
 }
 
-void syncbn_forward_step3(const at::Tensor input, at::Tensor mean, at::Tensor var,
-         const at::Tensor weight, const at::Tensor bias, at::Tensor running_mean,
-         at::Tensor running_var, at::Tensor std, at::Tensor output,
-         size_t n, size_t c, size_t h, size_t w, size_t group_size, const float eps,
-         const float momentum){
-    cudaSyncBNForwardStep3(n, c, h, w, group_size, input, eps, momentum, mean, var, running_mean,
-                           running_var, weight, bias, std, output);
+void sync_bn_forward_output_cuda(const Tensor input, const Tensor mean,
+                                 const Tensor var, Tensor running_mean,
+                                 Tensor running_var, const Tensor weight,
+                                 const Tensor bias, Tensor norm, Tensor std,
+                                 Tensor output, float eps, float momentum,
+                                 int group_size) {
+  SyncBNForwardOutputCUDAKernelLauncher(input, mean, var, running_mean,
+                                        running_var, weight, bias, norm, std,
+                                        output, eps, momentum, group_size);
 }
 
-void syncbn_backward_step1(const at::Tensor input, const at::Tensor mean,
-         const at::Tensor std, const at::Tensor grad_output, at::Tensor weight_diff,
-         at::Tensor bias_diff, size_t n, size_t c, size_t h, size_t w){
-    cudaSyncBNBackwardStep1(n, c, h, w, input, mean, weight_diff, bias_diff, std, grad_output);
+void sync_bn_backward_param_cuda(const Tensor grad_output, const Tensor norm,
+                                 Tensor grad_weight, Tensor grad_bias) {
+  SyncBNBackwardParamCUDAKernelLauncher(grad_output, norm, grad_weight,
+                                        grad_bias);
 }
 
-void syncbn_backward_step2(const at::Tensor input, const at::Tensor mean,
-         const at::Tensor weight, const at::Tensor weight_diff, const at::Tensor bias_diff,
-         const at::Tensor std, const at::Tensor grad_output, at::Tensor grad_input, size_t n, size_t c, size_t h, size_t w){
-    cudaSyncBNBackwardStep2(n, c, h, w, input, grad_input, mean, weight, weight_diff, bias_diff,
-                            std, grad_output);
+void sync_bn_backward_data_cuda(const Tensor grad_output, const Tensor weight,
+                                const Tensor grad_weight,
+                                const Tensor grad_bias, const Tensor norm,
+                                const Tensor std, Tensor grad_input) {
+  SyncBNBackwardDataCUDAKernelLauncher(grad_output, weight, grad_weight,
+                                       grad_bias, norm, std, grad_input);
+}
+
+void sync_bn_forward_mean(const Tensor input, Tensor mean) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    sync_bn_forward_mean_cuda(input, mean);
+  }
+}
+
+void sync_bn_forward_var(const Tensor input, const Tensor mean, Tensor var) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    CHECK_CUDA_INPUT(var);
+    sync_bn_forward_var_cuda(input, mean, var);
+  }
+}
+
+void sync_bn_forward_output(const Tensor input, const Tensor mean,
+                            const Tensor var, Tensor running_mean,
+                            Tensor running_var, const Tensor weight,
+                            const Tensor bias, Tensor norm, Tensor std,
+                            Tensor output, float eps, float momentum,
+                            int group_size) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    CHECK_CUDA_INPUT(var);
+    CHECK_CUDA_INPUT(running_mean);
+    CHECK_CUDA_INPUT(running_var);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(bias);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(std);
+    CHECK_CUDA_INPUT(output);
+    sync_bn_forward_output_cuda(input, mean, var, running_mean, running_var,
+                                weight, bias, norm, std, output, eps, momentum,
+                                group_size);
+  }
+}
+
+void sync_bn_backward_param(const Tensor grad_output, const Tensor norm,
+                            Tensor grad_weight, Tensor grad_bias) {
+  if (grad_output.device().is_cuda()) {
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(grad_weight);
+    CHECK_CUDA_INPUT(grad_bias);
+    sync_bn_backward_param_cuda(grad_output, norm, grad_weight, grad_bias);
+  }
+}
+
+void sync_bn_backward_data(const Tensor grad_output, const Tensor weight,
+                           const Tensor grad_weight, const Tensor grad_bias,
+                           const Tensor norm, const Tensor std,
+                           Tensor grad_input) {
+  if (grad_output.device().is_cuda()) {
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(grad_weight);
+    CHECK_CUDA_INPUT(grad_bias);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(std);
+    CHECK_CUDA_INPUT(grad_input);
+    sync_bn_backward_data_cuda(grad_output, weight, grad_weight, grad_bias,
+                               norm, std, grad_input);
+  }
 }

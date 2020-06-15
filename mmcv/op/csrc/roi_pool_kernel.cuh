@@ -5,18 +5,9 @@
 
 template <typename T>
 __global__ void roi_pool_forward_cuda_kernel(
-    const int nthreads,
-    const T* input,
-    const T* rois,
-    T* output,
-    int* argmax,
-    const int pooled_height,
-    const int pooled_width,
-    const T spatial_scale,
-    const int channels,
-    const int height,
-    const int width) {
-
+    const int nthreads, const T* input, const T* rois, T* output, int* argmax,
+    const int pooled_height, const int pooled_width, const T spatial_scale,
+    const int channels, const int height, const int width) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
@@ -24,7 +15,7 @@ __global__ void roi_pool_forward_cuda_kernel(
     int c = (index / pooled_width / pooled_height) % channels;
     int n = index / pooled_width / pooled_height / channels;
 
-    const T *offset_rois = rois + n * 5;
+    const T* offset_rois = rois + n * 5;
     int roi_batch_ind = offset_rois[0];
     // calculate the roi region on feature maps
     T roi_x1 = offset_rois[1] * spatial_scale;
@@ -53,7 +44,8 @@ __global__ void roi_pool_forward_cuda_kernel(
     bin_y2 = min(max(bin_y2, 0), height);
     bool is_empty = (bin_y2 <= bin_y1) || (bin_x2 <= bin_x1);
 
-    const T* offset_input = input + (roi_batch_ind * channels + c) * height * width;
+    const T* offset_input =
+        input + (roi_batch_ind * channels + c) * height * width;
     // Define an empty pooling region to be zero
     // If nothing is pooled, argmax = -1 causes nothing to be backprop'd
     T max_val = is_empty ? 0 : -FLT_MAX;
@@ -74,27 +66,21 @@ __global__ void roi_pool_forward_cuda_kernel(
 
 template <typename T>
 __global__ void roi_pool_backward_cuda_kernel(
-    const int nthreads,
-    const T* grad_output,
-    const T* rois,
-    const int* argmax,
-    T* grad_input,
-    const int pooled_height,
-    const int pooled_width,
-    const int channels,
-    const int height,
-    const int width) {
+    const int nthreads, const T* grad_output, const T* rois, const int* argmax,
+    T* grad_input, const int pooled_height, const int pooled_width,
+    const int channels, const int height, const int width) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c) is an element in the pooled output
     int c = (index / pooled_width / pooled_height) % channels;
     int n = index / pooled_width / pooled_height / channels;
 
     int roi_batch_ind = rois[n * 5];
-    T* grad_input_offset = grad_input + ((roi_batch_ind * channels + c) * height * width);
+    T* grad_input_offset =
+        grad_input + ((roi_batch_ind * channels + c) * height * width);
     int argmax_index = argmax[index];
 
     if (argmax_index != -1) {
-        atomicAdd(grad_input_offset + argmax_index, grad_output[index]);
+      atomicAdd(grad_input_offset + argmax_index, grad_output[index]);
     }
   }
 }

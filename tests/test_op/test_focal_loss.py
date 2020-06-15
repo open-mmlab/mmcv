@@ -39,6 +39,8 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
 class Testfocalloss(object):
 
     def _test_softmax(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         alpha = 0.25
         gamma = 2.0
         for case, output in zip(inputs, softmax_outputs):
@@ -57,6 +59,8 @@ class Testfocalloss(object):
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
     def _test_sigmoid(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         alpha = 0.25
         gamma = 2.0
         for case, output in zip(inputs, sigmoid_outputs):
@@ -75,6 +79,8 @@ class Testfocalloss(object):
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
     def _test_grad_softmax(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         alpha = 0.25
         gamma = 2.0
         for case in inputs:
@@ -94,6 +100,8 @@ class Testfocalloss(object):
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
     def _test_grad_sigmoid(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         alpha = 0.25
         gamma = 2.0
         for case in inputs:

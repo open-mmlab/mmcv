@@ -1,7 +1,8 @@
 // modified from
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/vision.cpp
-#include "pytorch_cpp_helper.hpp"
 #include <cuda_runtime_api.h>
+
+#include "pytorch_cpp_helper.hpp"
 int get_cudart_version() { return CUDART_VERSION; }
 
 std::string get_compiling_cuda_version() {

@@ -1,9 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
 
-import torch
-
-from mmcv.runner import master_only
+from mmcv.utils import TORCH_VERSION
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -22,7 +21,7 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if torch.__version__ < '1.1' or torch.__version__ == 'parrots':
+        if TORCH_VERSION < '1.1' or TORCH_VERSION == 'parrots':
             try:
                 from tensorboardX import SummaryWriter
             except ImportError:
@@ -53,10 +52,22 @@ class TensorboardLoggerHook(LoggerHook):
             else:
                 self.writer.add_scalar(tag, runner.log_buffer.output[var],
                                        runner.iter)
-        self.writer.add_scalar('learning_rate',
-                               runner.current_lr()[0], runner.iter)
-        self.writer.add_scalar('momentum',
-                               runner.current_momentum()[0], runner.iter)
+        # add learning rate
+        lrs = runner.current_lr()
+        if isinstance(lrs, dict):
+            for name, value in lrs.items():
+                self.writer.add_scalar(f'learning_rate/{name}', value[0],
+                                       runner.iter)
+        else:
+            self.writer.add_scalar('learning_rate', lrs[0], runner.iter)
+        # add momentum
+        momentums = runner.current_momentum()
+        if isinstance(momentums, dict):
+            for name, value in momentums.items():
+                self.writer.add_scalar(f'momentum/{name}', value[0],
+                                       runner.iter)
+        else:
+            self.writer.add_scalar('momentum', momentums[0], runner.iter)
 
     @master_only
     def after_run(self, runner):

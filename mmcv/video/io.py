@@ -11,7 +11,7 @@ from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
                         track_progress)
 
 
-class Cache(object):
+class Cache:
 
     def __init__(self, capacity):
         self._cache = OrderedDict()
@@ -39,7 +39,7 @@ class Cache(object):
         return val
 
 
-class VideoReader(object):
+class VideoReader:
     """Video class with similar usage to a list object.
 
     This video warpper class provides convenient apis to access frames.

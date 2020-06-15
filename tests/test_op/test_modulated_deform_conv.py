@@ -31,6 +31,8 @@ dcn_offset_b_grad = [
 class TestMdconv(object):
 
     def _test_mdconv(self, dtype=torch.float):
+        if not torch.cuda.is_available():
+            return
         input = torch.tensor(input_t).cuda().type(dtype)
         input.requires_grad = True
 

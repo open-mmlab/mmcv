@@ -3,8 +3,6 @@ import torch
 
 from mmcv.op import DeformConv2dPack
 
-torch.set_printoptions(precision=8, threshold=100)
-
 input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
 offset_weight = [[[0.1, 0.4, 0.6, 0.1]], [[0.3, 0.2, 0.1, 0.3]],
                  [[0.5, 0.5, 0.2, 0.8]], [[0.8, 0.3, 0.9, 0.1]],
@@ -31,6 +29,8 @@ gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 class TestDeformconv(object):
 
     def _test_deformconv(self, dtype=torch.float, threshold=1e-3):
+        if not torch.cuda.is_available():
+            return
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).cuda().type(dtype)

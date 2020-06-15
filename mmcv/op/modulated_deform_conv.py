@@ -1,4 +1,3 @@
-import logging
 import math
 
 import torch
@@ -7,16 +6,31 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmcv.cnn import CONV_LAYERS
-from ..utils import ext_loader
+from ..cnn import CONV_LAYERS
+from ..utils import ext_loader, print_log
 
 ext_module = ext_loader.load_ext(
     'op_ext',
     ['modulated_deform_conv_forward', 'modulated_deform_conv_backward'])
-logger = logging.getLogger('global')
 
 
 class ModulatedDeformConv2dFunction(Function):
+
+    @staticmethod
+    def symbolic(g, input, offset, mask, weight, bias, stride, padding,
+                 dilation, groups, deform_groups):
+        return g.op(
+            'MMCVModulatedDeformConv2d',
+            input,
+            offset,
+            mask,
+            weight,
+            bias,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+            deform_groups=deform_groups)
 
     @staticmethod
     def forward(ctx,
@@ -43,17 +57,31 @@ class ModulatedDeformConv2dFunction(Function):
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
         if weight.requires_grad or mask.requires_grad or offset.requires_grad \
-                or input.requires_grad:
+           or input.requires_grad:
             ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
         ext_module.modulated_deform_conv_forward(
-            input, weight, bias,
-            ctx._bufs[0], offset, mask, output, ctx._bufs[1], weight.size(2),
-            weight.size(3), ctx.stride[1], ctx.stride[0], ctx.padding[1],
-            ctx.padding[0], ctx.dilation[1], ctx.dilation[0], ctx.groups,
-            ctx.deform_groups, ctx.with_bias)
+            input,
+            weight,
+            bias,
+            ctx._bufs[0],
+            offset,
+            mask,
+            output,
+            ctx._bufs[1],
+            kernel_h=weight.size(2),
+            kernel_w=weight.size(3),
+            stride_h=ctx.stride[0],
+            stride_w=ctx.stride[1],
+            pad_h=ctx.padding[0],
+            pad_w=ctx.padding[1],
+            dilation_h=ctx.dilation[0],
+            dilation_w=ctx.dilation[1],
+            group=ctx.groups,
+            deformable_group=ctx.deform_groups,
+            with_bias=ctx.with_bias)
         return output
 
     @staticmethod
@@ -67,12 +95,30 @@ class ModulatedDeformConv2dFunction(Function):
         grad_bias = torch.zeros_like(bias)
         grad_output = grad_output.contiguous()
         ext_module.modulated_deform_conv_backward(
-            input, weight, bias, ctx._bufs[0], offset, mask, ctx._bufs[1],
-            grad_input, grad_weight,
-            grad_bias, grad_offset, grad_mask, grad_output, weight.size(2),
-            weight.size(3), ctx.stride[1], ctx.stride[0], ctx.padding[1],
-            ctx.padding[0], ctx.dilation[1], ctx.dilation[0], ctx.groups,
-            ctx.deform_groups, ctx.with_bias)
+            input,
+            weight,
+            bias,
+            ctx._bufs[0],
+            offset,
+            mask,
+            ctx._bufs[1],
+            grad_input,
+            grad_weight,
+            grad_bias,
+            grad_offset,
+            grad_mask,
+            grad_output,
+            kernel_h=weight.size(2),
+            kernel_w=weight.size(3),
+            stride_h=ctx.stride[0],
+            stride_w=ctx.stride[1],
+            pad_h=ctx.padding[0],
+            pad_w=ctx.padding[1],
+            dilation_h=ctx.dilation[0],
+            dilation_w=ctx.dilation[1],
+            group=ctx.groups,
+            deformable_group=ctx.deform_groups,
+            with_bias=ctx.with_bias)
         if not ctx.with_bias:
             grad_bias = None
 
@@ -131,9 +177,9 @@ class ModulatedDeformConv2d(nn.Module):
             self.bias = nn.Parameter(torch.Tensor(out_channels))
         else:
             self.register_parameter('bias', None)
-        self.reset_parameters()
+        self.init_weights()
 
-    def reset_parameters(self):
+    def init_weights(self):
         n = self.in_channels
         for k in self.kernel_size:
             n *= k
@@ -150,69 +196,41 @@ class ModulatedDeformConv2d(nn.Module):
 
 
 @CONV_LAYERS.register_module('DCNv2')
-class ModulatedDeformConv2dPack(nn.Module):
+class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
     """A ModulatedDeformable Conv Encapsulation that acts as normal Conv layers.
 
     Args:
         in_channels (int): Same as nn.Conv2d.
         out_channels (int): Same as nn.Conv2d.
         kernel_size (int or tuple[int]): Same as nn.Conv2d.
-        stride (int or tuple[int]): Same as nn.Conv2d.
-        padding (int or tuple[int]): Same as nn.Conv2d.
-        dilation (int or tuple[int]): Same as nn.Conv2d.
+        stride (int): Same as nn.Conv2d, while tuple is not supported.
+        padding (int): Same as nn.Conv2d, while tuple is not supported.
+        dilation (int): Same as nn.Conv2d, while tuple is not supported.
         groups (int): Same as nn.Conv2d.
+        bias (bool or str): If specified as `auto`, it will be decided by the
+            norm_cfg. Bias will be set as True if norm_cfg is None, otherwise
+            False.
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 deform_groups=1,
-                 bias=True):
-        super(ModulatedDeformConv2dPack, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = _pair(kernel_size)
-        self.stride = _pair(stride)
-        self.padding = _pair(padding)
-        self.dilation = _pair(dilation)
-        self.groups = groups
-        self.deform_groups = deform_groups
-        # enable compatibility with nn.Conv2d
-        self.transposed = False
-        self.output_padding = _single(0)
+    _version = 2
 
-        self.weight = nn.Parameter(
-            torch.Tensor(out_channels, in_channels // groups,
-                         *self.kernel_size))
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(out_channels))
-        else:
-            self.register_parameter('bias', None)
-
+    def __init__(self, *args, **kwargs):
+        super(ModulatedDeformConv2dPack, self).__init__(*args, **kwargs)
         self.conv_offset = nn.Conv2d(
             self.in_channels,
             self.deform_groups * 3 * self.kernel_size[0] * self.kernel_size[1],
             kernel_size=self.kernel_size,
             stride=self.stride,
             padding=self.padding,
+            dilation=self.dilation,
             bias=True)
-        self.reset_parameters()
+        self.init_weights()
 
-    def reset_parameters(self):
-        n = self.in_channels
-        for k in self.kernel_size:
-            n *= k
-        stdv = 1. / math.sqrt(n)
-        self.weight.data.uniform_(-stdv, stdv)
-        if self.bias is not None:
-            self.bias.data.zero_()
-        self.conv_offset.weight.data.zero_()
-        self.conv_offset.bias.data.zero_()
+    def init_weights(self):
+        super(ModulatedDeformConv2dPack, self).init_weights()
+        if hasattr(self, 'conv_offset'):
+            self.conv_offset.weight.data.zero_()
+            self.conv_offset.bias.data.zero_()
 
     def forward(self, x):
         out = self.conv_offset(x)
@@ -223,3 +241,31 @@ class ModulatedDeformConv2dPack(nn.Module):
                                        self.stride, self.padding,
                                        self.dilation, self.groups,
                                        self.deform_groups)
+
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
+                              missing_keys, unexpected_keys, error_msgs):
+        version = local_metadata.get('version', None)
+
+        if version is None or version < 2:
+            # the key is different in early versions
+            # In version < 2, ModulatedDeformConvPack
+            # loads previous benchmark models.
+            if (prefix + 'conv_offset.weight' not in state_dict
+                    and prefix[:-1] + '_offset.weight' in state_dict):
+                state_dict[prefix + 'conv_offset.weight'] = state_dict.pop(
+                    prefix[:-1] + '_offset.weight')
+            if (prefix + 'conv_offset.bias' not in state_dict
+                    and prefix[:-1] + '_offset.bias' in state_dict):
+                state_dict[prefix +
+                           'conv_offset.bias'] = state_dict.pop(prefix[:-1] +
+                                                                '_offset.bias')
+
+        if version is not None and version > 1:
+            print_log(
+                f'ModulatedDeformConvPack {prefix.rstrip(".")} is upgraded to '
+                'version 2.',
+                logger='root')
+
+        super()._load_from_state_dict(state_dict, prefix, local_metadata,
+                                      strict, missing_keys, unexpected_keys,
+                                      error_msgs)

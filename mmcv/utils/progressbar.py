@@ -7,7 +7,7 @@ from shutil import get_terminal_size
 from .timer import Timer
 
 
-class ProgressBar(object):
+class ProgressBar:
     """A progress bar which can print the progress"""
 
     def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):
@@ -175,7 +175,7 @@ def track_parallel_progress(func,
     return results
 
 
-def track_iter_progress(tasks, bar_width=50, file=sys.stdout, **kwargs):
+def track_iter_progress(tasks, bar_width=50, file=sys.stdout):
     """Track the progress of tasks iteration or enumeration with a progress bar.
 
     Tasks are yielded with a simple for-loop.

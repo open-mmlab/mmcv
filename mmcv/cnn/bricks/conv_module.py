@@ -89,7 +89,7 @@ class ConvModule(nn.Module):
         self.with_activation = act_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
         if bias == 'auto':
-            bias = False if self.with_norm else True
+            bias = not self.with_norm
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
@@ -140,7 +140,7 @@ class ConvModule(nn.Module):
         if self.with_activation:
             act_cfg_ = act_cfg.copy()
             # nn.Tanh has no 'inplace' argument
-            if act_cfg_['type'] != 'Tanh':
+            if act_cfg_['type'] not in ['Tanh', 'PReLU', 'Sigmoid']:
                 act_cfg_.setdefault('inplace', inplace)
             self.activate = build_activation_layer(act_cfg_)
 

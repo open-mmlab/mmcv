@@ -14,6 +14,17 @@ ext_module = ext_loader.load_ext('op_ext', [
 class SigmoidFocalLossFunction(Function):
 
     @staticmethod
+    def symbolic(g, input, target, gamma, alpha, weight, reduction):
+        return g.op(
+            'MMCVSigmoidFocalLoss',
+            input,
+            target,
+            gamma=gamma,
+            alpha=alpha,
+            weight=weight,
+            reduction=reduction)
+
+    @staticmethod
     def forward(ctx,
                 input,
                 target,
@@ -95,6 +106,17 @@ class SigmoidFocalLoss(nn.Module):
 
 
 class SoftmaxFocalLossFunction(Function):
+
+    @staticmethod
+    def symbolic(g, input, target, gamma, alpha, weight, reduction):
+        return g.op(
+            'MMCVSoftmaxFocalLoss',
+            input,
+            target,
+            gamma=gamma,
+            alpha=alpha,
+            weight=weight,
+            reduction=reduction)
 
     @staticmethod
     def forward(ctx,

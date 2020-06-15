@@ -9,29 +9,27 @@ from torch.nn.parameter import Parameter
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('op_ext', [
-    'syncbn_forward_step1', 'syncbn_forward_step2', 'syncbn_forward_step3',
-    'syncbn_backward_step1', 'syncbn_backward_step2'
+    'sync_bn_forward_mean', 'sync_bn_forward_var', 'sync_bn_forward_output',
+    'sync_bn_backward_param', 'sync_bn_backward_data'
 ])
 
 
-class SyncBNFunction(Function):
-    """
-    同步批标准化 Function。
+class SyncBatchNormFunction(Function):
 
-    输入:
-        - input(Tensor): 输入
-        - running_mean(Tensor): 当前批数据均值
-        - running_var(Tensor): 当前批方差
-        - weight(Tensor): 权重
-        - bias(bool): 偏置
-        - momentum(float): 动量，用于 runnning_mean 和 running_var 的计算
-        - eps(float): 稳定性数值量
-        - group(int): 做 SyncBN 的组数
-        - group_size(int): 做 SyncBN 一组的数量
-
-    .. note::
-       目前只支持 GPU 端的半精度和全精度的计算。
-    """
+    @staticmethod
+    def symbolic(g, input, running_mean, running_var, weight, bias, momentum,
+                 eps, group, group_size):
+        return g.op(
+            'MMCVSyncBatchNorm',
+            input,
+            running_mean,
+            running_var,
+            weight,
+            bias,
+            momentum=momentum,
+            eps=eps,
+            group=group,
+            group_size=group_size)
 
     @staticmethod
     def forward(self, input, running_mean, running_var, weight, bias, momentum,
@@ -40,108 +38,78 @@ class SyncBNFunction(Function):
         self.eps = eps
         self.group = group
         self.group_size = group_size
+        self.input_shape = input.shape
 
         assert isinstance(
-            input, (torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
-            f'only support Half or Float GPU Tensor, but {input.type()}'
-        n, c, h, w = input.size()
-        mean = torch.empty(c, dtype=torch.float, device='cuda')
-        var = torch.empty(c, dtype=torch.float, device='cuda')
-        std = torch.empty(c, dtype=torch.float, device='cuda')
+                   input, (torch.HalfTensor, torch.FloatTensor,
+                           torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
+               f'only support Half or Float Tensor, but {input.type()}'
+        input = input.reshape(input.size(0), input.size(1), -1)
+
+        mean = torch.empty(
+            input.size(1), dtype=torch.float, device=input.device)
+        var = torch.empty(
+            input.size(1), dtype=torch.float, device=input.device)
+        if input.requires_grad or weight.requires_grad or bias.requires_grad:
+            norm = torch.empty_like(
+                input, dtype=torch.float, device=input.device)
+            std = torch.empty(
+                input.size(1), dtype=torch.float, device=input.device)
+        else:
+            norm = torch.empty(0, dtype=torch.float, device=input.device)
+            std = torch.empty(0, dtype=torch.float, device=input.device)
         output = torch.empty_like(input)
 
-        # parrots require all tensor parameters at the front and
-        # attr parameter passed by keyword
-        ext_module.syncbn_forward_step1(input, mean, n=n, c=c, h=h, w=w)
+        ext_module.sync_bn_forward_mean(input, mean)
         if self.group_size > 1:
             dist.all_reduce(mean, group=self.group)
             mean /= self.group_size
-        ext_module.syncbn_forward_step2(input, mean, var, n=n, c=c, h=h, w=w)
+        ext_module.sync_bn_forward_var(input, mean, var)
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
             var /= self.group_size
-        ext_module.syncbn_forward_step3(
+        ext_module.sync_bn_forward_output(
             input,
             mean,
             var,
-            weight,
-            bias,
             running_mean,
             running_var,
+            weight,
+            bias,
+            norm,
             std,
             output,
-            n=n,
-            c=c,
-            h=h,
-            w=w,
-            group_size=self.group_size,
             eps=self.eps,
-            momentum=self.momentum)
-        self.save_for_backward(input, mean, weight, std)
-        return output
+            momentum=self.momentum,
+            group_size=self.group_size)
+        self.save_for_backward(norm, std, weight)
+        return output.reshape(self.input_shape)
 
     @staticmethod
     @once_differentiable
     def backward(self, grad_output):
-        assert isinstance(
-            grad_output, (torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
-            f'only support Half or Float GPU Tensor, but {grad_output.type()}'
-        input, mean, weight, std = self.saved_tensors
-        n, c, h, w = input.size()
-        weight_diff = torch.empty_like(weight)
-        bias_diff = torch.empty_like(weight)
-        input_diff = torch.empty_like(input)
-        # backward step1
-        ext_module.syncbn_backward_step1(
-            input,
-            mean,
-            std,
-            grad_output,
-            weight_diff,
-            bias_diff,
-            n=n,
-            c=c,
-            h=h,
-            w=w)
+        norm, std, weight = self.saved_tensors
+        grad_output = grad_output.reshape(
+            grad_output.size(0), grad_output.size(1), -1)
+        grad_weight = torch.empty_like(weight)
+        grad_bias = torch.empty_like(weight)
+        grad_input = torch.empty_like(grad_output)
+        ext_module.sync_bn_backward_param(grad_output, norm, grad_weight,
+                                          grad_bias)
         # all reduce
         if self.group_size > 1:
-            dist.all_reduce(weight_diff, group=self.group)
-            dist.all_reduce(bias_diff, group=self.group)
-            weight_diff /= self.group_size
-            bias_diff /= self.group_size
-        # backward step2
-        ext_module.syncbn_backward_step2(
-            input,
-            mean,
-            weight,
-            weight_diff,
-            bias_diff,
-            std,
-            grad_output,
-            input_diff,
-            n=n,
-            c=c,
-            h=h,
-            w=w)
-        return input_diff, None, None, weight_diff, bias_diff, \
+            dist.all_reduce(grad_weight, group=self.group)
+            dist.all_reduce(grad_bias, group=self.group)
+            grad_weight /= self.group_size
+            grad_bias /= self.group_size
+        ext_module.sync_bn_backward_data(grad_output, weight, grad_weight,
+                                         grad_bias, norm, std, grad_input)
+        grad_input = grad_input.reshape(self.input_shape)
+        return grad_input, None, None, grad_weight, grad_bias, \
             None, None, None, None
 
 
-class SyncBatchNorm2d(Module):
-    """
-    同步批标准化 Module。
-
-    参数:
-        - num_features(Tensor): 特征数
-        - eps(float): 稳定性数值量
-        - momentum(float): 动量，用于 runnning_mean 和 running_var 的计算
-        - affine(bool): affine 参数是否可学习设置
-        - track_running_stats(bool): 是否跟踪每轮训练的均值和方差
-        - group(int): 做 SyncBN 的组数
-
-    输入:
-        - input(Tensor): 特征输入
-    """
+class SyncBatchNorm(Module):
 
     def __init__(self,
                  num_features,
@@ -150,7 +118,7 @@ class SyncBatchNorm2d(Module):
                  affine=True,
                  track_running_stats=True,
                  group=dist.group.WORLD):
-        super(SyncBatchNorm2d, self).__init__()
+        super(SyncBatchNorm, self).__init__()
         self.num_features = num_features
         self.eps = eps
         self.momentum = momentum
@@ -188,7 +156,9 @@ class SyncBatchNorm2d(Module):
             self.bias.data.zero_()
 
     def forward(self, input):
-
+        if input.dim() < 2:
+            raise ValueError(
+                f'expected at least 2D input, got {input.dim()}D input')
         if self.momentum is None:
             exponential_average_factor = 0.0
         else:
@@ -203,36 +173,24 @@ class SyncBatchNorm2d(Module):
                 else:  # use exponential moving average
                     exponential_average_factor = self.momentum
 
-        if self.training:
-            return SyncBNFunction.apply(input, self.running_mean,
-                                        self.running_var, self.weight,
-                                        self.bias, exponential_average_factor,
-                                        self.eps, self.group, self.group_size)
+        if self.training or not self.track_running_stats:
+            return SyncBatchNormFunction.apply(input, self.running_mean,
+                                               self.running_var, self.weight,
+                                               self.bias,
+                                               exponential_average_factor,
+                                               self.eps, self.group,
+                                               self.group_size)
         else:
             return F.batch_norm(input, self.running_mean, self.running_var,
-                                self.weight, self.bias, self.training,
+                                self.weight, self.bias, False,
                                 exponential_average_factor, self.eps)
 
-    def extra_repr(self):
-        s = f'{self.num_features}, '
+    def __repr__(self):
+        s = self.__class__.__name__
+        s += f'({self.num_features}, '
         s += f'eps={self.eps}, '
         s += f'momentum={self.momentum}, '
         s += f'affine={self.affine}, '
         s += f'track_running_stats={self.track_running_stats}, '
-        s += f'group_size={self.group_size}'
+        s += f'group_size={self.group_size})'
         return s
-
-    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
-                              missing_keys, unexpected_keys, error_msgs):
-        version = local_metadata.get('version', None)
-
-        if (version is None or version < 2) and self.track_running_stats:
-            num_batches_tracked_key = prefix + 'num_batches_tracked'
-            if num_batches_tracked_key not in state_dict:
-                state_dict[num_batches_tracked_key] = torch.tensor(
-                    0, dtype=torch.long)
-
-        super(SyncBatchNorm2d,
-              self)._load_from_state_dict(state_dict, prefix, local_metadata,
-                                          strict, missing_keys,
-                                          unexpected_keys, error_msgs)

@@ -1,92 +1,104 @@
 #include "pytorch_cpp_helper.hpp"
 
-int SigmoidFocalLossForwardCUDALaucher(Tensor input, Tensor target, Tensor weight, Tensor output,
-                                       const float gamma, const float alpha);
+void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor output,
+                                               const float gamma,
+                                               const float alpha);
 
-int SigmoidFocalLossBackwardCUDALaucher(Tensor input, Tensor target, Tensor weight, Tensor grad_input,
-                                       const float gamma, const float alpha);
+void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                                Tensor weight,
+                                                Tensor grad_input,
+                                                const float gamma,
+                                                const float alpha);
 
-int SoftmaxFocalLossForwardCUDALaucher(Tensor input, Tensor target, Tensor weight, Tensor output,
-                                       const float gamma, const float alpha);
+void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor output,
+                                               const float gamma,
+                                               const float alpha);
 
-int SoftmaxFocalLossBackwardCUDALaucher(Tensor input, Tensor target, Tensor weight, Tensor buff,
-                                        Tensor grad_input, const float gamma, const float alpha);
+void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                                Tensor weight, Tensor buff,
+                                                Tensor grad_input,
+                                                const float gamma,
+                                                const float alpha);
 
-int sigmoid_focal_loss_forward(
-    Tensor input,
-    Tensor target,
-    Tensor weight,
-    Tensor output,
-    float gamma, 
-    float alpha) {
-
-    if(input.device().is_cuda()){
-        CHECK_CUDA_INPUT(input);
-        CHECK_CUDA_INPUT(target);
-        CHECK_CUDA_INPUT(weight);
-        CHECK_CUDA_INPUT(output);
-
-        SigmoidFocalLossForwardCUDALaucher(input, target, weight, output, gamma, alpha);
-    }
-    return 0;
+void sigmoid_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,
+                                     Tensor output, float gamma, float alpha) {
+  SigmoidFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
+                                            gamma, alpha);
 }
 
-int sigmoid_focal_loss_backward(
-    Tensor input,
-    Tensor target,
-    Tensor weight,
-    Tensor grad_input,
-    float gamma, 
-    float alpha) {
-
-    if(input.device().is_cuda()){
-        CHECK_CUDA_INPUT(input);
-        CHECK_CUDA_INPUT(target);
-        CHECK_CUDA_INPUT(weight);
-        CHECK_CUDA_INPUT(grad_input);
-
-        SigmoidFocalLossBackwardCUDALaucher(input, target, weight, grad_input, gamma, alpha);
-    }
-    return 0;
+void sigmoid_focal_loss_backward_cuda(Tensor input, Tensor target,
+                                      Tensor weight, Tensor grad_input,
+                                      float gamma, float alpha) {
+  SigmoidFocalLossBackwardCUDAKernelLauncher(input, target, weight, grad_input,
+                                             gamma, alpha);
 }
 
-int softmax_focal_loss_forward(
-    Tensor input,
-    Tensor target,
-    Tensor weight,
-    Tensor output,
-    float gamma, 
-    float alpha) {
-
-    if(input.device().is_cuda()){
-        CHECK_CUDA_INPUT(input);
-        CHECK_CUDA_INPUT(target);
-        CHECK_CUDA_INPUT(weight);
-        CHECK_CUDA_INPUT(output);
-
-        SoftmaxFocalLossForwardCUDALaucher(input, target, weight, output, gamma, alpha);
-    }
-    return 0;
+void softmax_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,
+                                     Tensor output, float gamma, float alpha) {
+  SoftmaxFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
+                                            gamma, alpha);
 }
 
-int softmax_focal_loss_backward(
-    Tensor input,
-    Tensor target,
-    Tensor weight,
-    Tensor buff,
-    Tensor grad_input,
-    float gamma, 
-    float alpha) {
-
-    if(input.device().is_cuda()){
-        CHECK_CUDA_INPUT(input);
-        CHECK_CUDA_INPUT(target);
-        CHECK_CUDA_INPUT(weight);
-        CHECK_CUDA_INPUT(buff);
-        CHECK_CUDA_INPUT(grad_input);
-
-        SoftmaxFocalLossBackwardCUDALaucher(input, target, weight, buff, grad_input, gamma, alpha);
-    }
-    return 0;
+void softmax_focal_loss_backward_cuda(Tensor input, Tensor target,
+                                      Tensor weight, Tensor buff,
+                                      Tensor grad_input, float gamma,
+                                      float alpha) {
+  SoftmaxFocalLossBackwardCUDAKernelLauncher(input, target, weight, buff,
+                                             grad_input, gamma, alpha);
 }
 
+void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
+                                Tensor output, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(output);
+
+    sigmoid_focal_loss_forward_cuda(input, target, weight, output, gamma,
+                                    alpha);
+  }
+}
+
+void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
+                                 Tensor grad_input, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(grad_input);
+
+    sigmoid_focal_loss_backward_cuda(input, target, weight, grad_input, gamma,
+                                     alpha);
+  }
+}
+
+void softmax_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
+                                Tensor output, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(output);
+
+    softmax_focal_loss_forward_cuda(input, target, weight, output, gamma,
+                                    alpha);
+  }
+}
+
+void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
+                                 Tensor buff, Tensor grad_input, float gamma,
+                                 float alpha) {
+  if (input.device().is_cuda()) {
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(buff);
+    CHECK_CUDA_INPUT(grad_input);
+
+    softmax_focal_loss_backward_cuda(input, target, weight, buff, grad_input,
+                                     gamma, alpha);
+  }
+}

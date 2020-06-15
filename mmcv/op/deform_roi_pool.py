@@ -12,6 +12,20 @@ ext_module = ext_loader.load_ext(
 class DeformRoIPoolFunction(Function):
 
     @staticmethod
+    def symbolic(g, input, rois, offset, output_size, spatial_scale,
+                 sampling_ratio, gamma):
+        return g.op(
+            'MMCVDeformRoIPool',
+            input,
+            rois,
+            offset,
+            pooled_height=output_size[0],
+            pooled_width=output_size[1],
+            spatial_scale=spatial_scale,
+            sampling_ratio=sampling_ratio,
+            gamma=gamma)
+
+    @staticmethod
     def forward(ctx,
                 input,
                 rois,

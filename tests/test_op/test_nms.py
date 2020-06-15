@@ -1,12 +1,15 @@
 import numpy as np
+import pytest
 import torch
 
-from mmcv.op import nms, soft_nms
+from mmcv.op import nms, nms_match, soft_nms
 
 
 class Testnms(object):
 
     def test_nms_allclose(self):
+        if not torch.cuda.is_available():
+            return
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -26,6 +29,8 @@ class Testnms(object):
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
     def test_softnms_allclose(self):
+        if not torch.cuda.is_available():
+            return
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -90,3 +95,39 @@ class Testnms(object):
                     method=m)
                 assert np.allclose(dets.cpu().numpy(), np_output[m]['dets'])
                 assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
+
+    def test_nms_match(self):
+        if not torch.cuda.is_available():
+            return
+        iou_thr = 0.6
+        # empty input
+        empty_dets = np.array([])
+        assert len(nms_match(empty_dets, iou_thr)) == 0
+
+        # non empty ndarray input
+        np_dets = np.array(
+            [[49.1, 32.4, 51.0, 35.9, 0.9], [49.3, 32.9, 51.0, 35.3, 0.9],
+             [35.3, 11.5, 39.9, 14.5, 0.4], [35.2, 11.7, 39.7, 15.7, 0.3]],
+            dtype=np.float32)
+        np_groups = nms_match(np_dets, iou_thr)
+        assert isinstance(np_groups[0], np.ndarray)
+        assert len(np_groups) == 2
+        tensor_dets = torch.from_numpy(np_dets)
+        boxes = tensor_dets[:, :4]
+        scores = tensor_dets[:, 4]
+        nms_keep_inds = nms(boxes.contiguous(), scores.contiguous(),
+                            iou_thr)[1]
+        assert set([g[0].item()
+                    for g in np_groups]) == set(nms_keep_inds.tolist())
+
+        # non empty tensor input
+        tensor_dets = torch.from_numpy(np_dets)
+        tensor_groups = nms_match(tensor_dets, iou_thr)
+        assert isinstance(tensor_groups[0], torch.Tensor)
+        for i in range(len(tensor_groups)):
+            assert np.equal(tensor_groups[i].numpy(), np_groups[i]).all()
+
+        # input of wrong shape
+        wrong_dets = np.zeros((2, 3))
+        with pytest.raises(AssertionError):
+            nms_match(wrong_dets, iou_thr)

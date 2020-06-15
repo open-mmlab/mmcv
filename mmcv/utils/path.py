@@ -7,10 +7,7 @@ from .misc import is_str
 
 
 def is_filepath(x):
-    if is_str(x) or isinstance(x, Path):
-        return True
-    else:
-        return False
+    return is_str(x) or isinstance(x, Path)
 
 
 def fopen(filepath, *args, **kwargs):
@@ -18,6 +15,7 @@ def fopen(filepath, *args, **kwargs):
         return open(filepath, *args, **kwargs)
     elif isinstance(filepath, Path):
         return filepath.open(*args, **kwargs)
+    raise ValueError('`filepath` should be a string or a Path')
 
 
 def check_file_exist(filename, msg_tmpl='file "{}" does not exist'):

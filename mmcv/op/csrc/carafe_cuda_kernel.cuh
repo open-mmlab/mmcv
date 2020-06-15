@@ -33,6 +33,14 @@ __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
   return val;
 }
 
+template <>
+__device__ __forceinline__ phalf warpReduceSum(phalf val) {
+  for (int offset = 16; offset > 0; offset /= 2)
+    __PHALF(val) +=
+        __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
+  return val;
+}
+
 // Splits the original matrix into submatrices with size 32 * 32.
 // Each block transposes one submatrix by loading it into shared memory.
 // Reference https://devblogs.nvidia.com/efficient-matrix-transpose-cuda-cc/

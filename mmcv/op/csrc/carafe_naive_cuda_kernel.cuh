@@ -10,12 +10,9 @@ __device__ inline int Loc2Index(const int n, const int c, const int h,
 
 template <typename scalar_t>
 __global__ void carafe_naive_forward_cuda_kernel(
-    const int nthreads,
-    const scalar_t *bottom_data,
-    const scalar_t *bottom_masks,
-    scalar_t *top_data,
-    const int kernel_size, const int group_size,
-    const int scale_factor, const int channels,
+    const int nthreads, const scalar_t *bottom_data,
+    const scalar_t *bottom_masks, scalar_t *top_data, const int kernel_size,
+    const int group_size, const int scale_factor, const int channels,
     const int height, const int width) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the bottom_data
@@ -59,12 +56,8 @@ __global__ void carafe_naive_forward_cuda_kernel(
 
 template <typename scalar_t>
 __global__ void carafe_naive_backward_cuda_kernel(
-    const int nthreads,
-    const scalar_t *top_diff,
-    const scalar_t *bottom_data,
-    const scalar_t *bottom_masks,
-    scalar_t *bottom_diff,
-    scalar_t *mask_diff,
+    const int nthreads, const scalar_t *top_diff, const scalar_t *bottom_data,
+    const scalar_t *bottom_masks, scalar_t *bottom_diff, scalar_t *mask_diff,
     const int kernel_size, const int group_size, const int scale_factor,
     const int channels, const int height, const int width) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {

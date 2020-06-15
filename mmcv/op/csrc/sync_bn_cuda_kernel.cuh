@@ -1,222 +1,324 @@
-#include <stdio.h>
+#ifndef SYNC_BN_KERNEL_CUH
+#define SYNC_BN_KERNEL_CUH
 
-const size_t cuda_num_threads = 1024;
+template <typename T>
+__global__ void sync_bn_forward_mean_cuda_kernel(const T *input, float *mean,
+                                                 int num, int channels,
+                                                 int spatial) {
+  __shared__ float buffer[THREADS_PER_BLOCK];
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    buffer[tid] += input[index];
+  }
+  __syncthreads();
 
-template <typename scalar_t>
-__global__ void forward_mean_before_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const scalar_t *input, float *mean) {
-    __shared__ float buffer[cuda_num_threads];
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
-    buffer[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        size_t index = i / spatial_dim * (spatial_dim * (channels - 1)) + i + blockIdx.x * spatial_dim;
-        buffer[tid] += input[index];
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer[tid] += buffer[tid + s];
     }
     __syncthreads();
-
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer[tid] += buffer[tid + s];
-        }
-        __syncthreads();
-    }
-    size_t total = num * spatial_dim;
-    if (tid == 0) {
-        mean[c] = buffer[0] / total;
-    }
+  }
+  int total = num * spatial;
+  if (tid == 0) {
+    mean[c] = buffer[0] / total;
+  }
 }
 
 template <>
-__global__ void forward_mean_before_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const phalf *input, float *mean) {
-    __shared__ float buffer[cuda_num_threads];
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
-    buffer[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        size_t index = i / spatial_dim * (spatial_dim * (channels - 1)) + i + blockIdx.x * spatial_dim;
-        buffer[tid] += static_cast<float>(input[index]);
+__global__ void sync_bn_forward_mean_cuda_kernel(const phalf *input,
+                                                 float *mean, int num,
+                                                 int channels, int spatial) {
+  __shared__ float buffer[THREADS_PER_BLOCK];
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    buffer[tid] += static_cast<float>(input[index]);
+  }
+  __syncthreads();
+
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer[tid] += buffer[tid + s];
     }
     __syncthreads();
-
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer[tid] += buffer[tid + s];
-        }
-        __syncthreads();
-    }
-    size_t total = num * spatial_dim;
-    if (tid == 0) {
-        mean[c] = buffer[0] / total;
-    }
+  }
+  int total = num * spatial;
+  if (tid == 0) {
+    mean[c] = buffer[0] / total;
+  }
 }
 
-template <typename scalar_t>
-__global__ void forward_var_before_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const scalar_t *input, const float *mean, float* var) {
-    __shared__ float buffer[cuda_num_threads];
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
-    buffer[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        size_t index = i / spatial_dim * (spatial_dim * (channels - 1)) + i + blockIdx.x * spatial_dim;
-        float td = input[index] - mean[c];
-        buffer[tid] += td * td;
+template <typename T>
+__global__ void sync_bn_forward_var_cuda_kernel(const T *input,
+                                                const float *mean, float *var,
+                                                int num, int channels,
+                                                int spatial) {
+  __shared__ float buffer[THREADS_PER_BLOCK];
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    float td = input[index] - mean[c];
+    buffer[tid] += td * td;
+  }
+  __syncthreads();
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer[tid] += buffer[tid + s];
     }
     __syncthreads();
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer[tid] += buffer[tid + s];
-        }
-        __syncthreads();
-    }
-    size_t total = num * spatial_dim;
-    if (tid == 0) {
-        var[c] = buffer[0] / total;
-    }
+  }
+  int total = num * spatial;
+  if (tid == 0) {
+    var[c] = buffer[0] / total;
+  }
 }
 
 template <>
-__global__ void forward_var_before_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const phalf *input, const float *mean, float* var) {
-    __shared__ float buffer[cuda_num_threads];
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
-    buffer[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        size_t index = i / spatial_dim * (spatial_dim * (channels - 1)) + i + blockIdx.x * spatial_dim;
-        float td = static_cast<float>(input[index]) - mean[c];
-        buffer[tid] += td * td;
+__global__ void sync_bn_forward_var_cuda_kernel(const phalf *input,
+                                                const float *mean, float *var,
+                                                int num, int channels,
+                                                int spatial) {
+  __shared__ float buffer[THREADS_PER_BLOCK];
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    float td = static_cast<float>(input[index]) - mean[c];
+    buffer[tid] += td * td;
+  }
+  __syncthreads();
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer[tid] += buffer[tid + s];
     }
     __syncthreads();
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer[tid] += buffer[tid + s];
-        }
-        __syncthreads();
-    }
-    size_t total = num * spatial_dim;
-    if (tid == 0) {
-        var[c] = buffer[0] / total;
-    }
+  }
+  int total = num * spatial;
+  if (tid == 0) {
+    var[c] = buffer[0] / total;
+  }
 }
 
-template <typename scalar_t>
-__global__ void forward_var_after_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const size_t group_size, const scalar_t *input,
-                                         const float eps, const float momentum, const float *mean, const float *var, float *running_mean, float *running_var,
-                                         const float *weight, const float *bias, float *std, scalar_t *output) {
-    float temp = sqrt(var[blockIdx.x] + eps);
-    float weight_value = weight[blockIdx.x];
-    float bias_value = bias[blockIdx.x];
-    for(size_t i = threadIdx.x; i < num * spatial_dim; i += blockDim.x) {
-      size_t location = i / spatial_dim * spatial_dim * channels + (i % spatial_dim) + blockIdx.x * spatial_dim;
-      output[location] = (input[location] - mean[blockIdx.x]) / temp * weight_value + bias_value;
+template <typename T>
+__global__ void sync_bn_forward_output_cuda_kernel(
+    const T *input, const float *mean, const float *var, float *running_mean,
+    float *running_var, const float *weight, const float *bias, float *norm,
+    float *std, T *output, int num, int channels, int spatial, float eps,
+    float momentum, int group_size) {
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  float mean_value = mean[c];
+  float std_value = sqrt(var[c] + eps);
+
+  if (weight != nullptr) {
+    float weight_value = weight[c];
+    float bias_value = bias[c];
+    if (norm != nullptr) {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        norm[index] = (input[index] - mean_value) / std_value;
+        output[index] = norm[index] * weight_value + bias_value;
+      }
+    } else {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        output[index] =
+            (input[index] - mean_value) / std_value * weight_value + bias_value;
+      }
     }
-    if(threadIdx.x == 0) {
-      running_mean[blockIdx.x] = momentum * mean[blockIdx.x] + (1 - momentum) * running_mean[blockIdx.x];
-      size_t count = num * spatial_dim * group_size;
-      float var_unbias = count > 1 ? var[blockIdx.x] * count / (count - 1) : var[blockIdx.x];
-      running_var[blockIdx.x] = momentum * var_unbias + (1 - momentum) * running_var[blockIdx.x];
-      std[blockIdx.x] = temp;
+  } else {
+    if (norm != nullptr) {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        output[index] = norm[index] = (input[index] - mean_value) / std_value;
+      }
+    } else {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        output[index] = (input[index] - mean_value) / std_value;
+      }
     }
+  }
+  if (tid == 0) {
+    if (std != nullptr) std[c] = std_value;
+    if (running_mean != nullptr) {
+      running_mean[c] =
+          momentum * mean_value + (1 - momentum) * running_mean[c];
+      int count = num * spatial * group_size;
+      float var_unbias = count > 1 ? var[c] * count / (count - 1) : var[c];
+      running_var[c] = momentum * var_unbias + (1 - momentum) * running_var[c];
+    }
+  }
 }
 
 template <>
-__global__ void forward_var_after_reduce(const size_t num, const size_t channels, const size_t spatial_dim, const size_t group_size, const phalf *input,
-                                         const float eps, const float momentum, const float *mean, const float *var, float *running_mean, float *running_var,
-                                         const float *weight, const float *bias, float *std, phalf *output) {
-    float temp = sqrt(var[blockIdx.x] + eps);
-    float weight_value = weight[blockIdx.x];
-    float bias_value = bias[blockIdx.x];
-    for(size_t i = threadIdx.x; i < num * spatial_dim; i += blockDim.x) {
-      size_t location = i / spatial_dim * spatial_dim * channels + (i % spatial_dim) + blockIdx.x * spatial_dim;
-      output[location] = static_cast<phalf>((static_cast<float>(input[location]) - mean[blockIdx.x]) / temp * weight_value + bias_value);
+__global__ void sync_bn_forward_output_cuda_kernel(
+    const phalf *input, const float *mean, const float *var,
+    float *running_mean, float *running_var, const float *weight,
+    const float *bias, float *norm, float *std, phalf *output, int num,
+    int channels, int spatial, float eps, float momentum, int group_size) {
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  float mean_value = mean[c];
+  float std_value = sqrt(var[c] + eps);
+  if (weight != nullptr) {
+    float weight_value = weight[c];
+    float bias_value = bias[c];
+    if (norm != nullptr) {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        norm[index] =
+            (static_cast<float>(input[index]) - mean_value) / std_value;
+        output[index] =
+            static_cast<phalf>(norm[index] * weight_value + bias_value);
+      }
+    } else {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        output[index] =
+            static_cast<phalf>((static_cast<float>(input[index]) - mean_value) /
+                                   std_value * weight_value +
+                               bias_value);
+      }
     }
-    if(threadIdx.x == 0) {
-      running_mean[blockIdx.x] = momentum * mean[blockIdx.x] + (1 - momentum) * running_mean[blockIdx.x];
-      size_t count = num * spatial_dim * group_size;
-      float var_unbias = count > 1 ? var[blockIdx.x] * count / (count - 1) : var[blockIdx.x];
-      running_var[blockIdx.x] = momentum * var_unbias + (1 - momentum) * running_var[blockIdx.x];
-      std[blockIdx.x] = temp;
+  } else {
+    if (norm != nullptr) {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        norm[index] =
+            (static_cast<float>(input[index]) - mean_value) / std_value;
+        output[index] = static_cast<phalf>(norm[index]);
+      }
+    } else {
+      for (int i = tid; i < num * spatial; i += blockDim.x) {
+        int index =
+            (i / spatial) * channels * spatial + c * spatial + i % spatial;
+        output[index] = static_cast<phalf>(
+            (static_cast<float>(input[index]) - mean_value) / std_value);
+      }
     }
+  }
+  if (tid == 0) {
+    if (std != nullptr) std[c] = std_value;
+    if (running_mean != nullptr) {
+      running_mean[c] =
+          momentum * mean_value + (1 - momentum) * running_mean[c];
+      int count = num * spatial * group_size;
+      float var_unbias = count > 1 ? var[c] * count / (count - 1) : var[c];
+      running_var[c] = momentum * var_unbias + (1 - momentum) * running_var[c];
+    }
+  }
 }
 
-template <typename scalar_t>
-__global__ void backward_param_kernel(const size_t num, const size_t channels, const size_t spatial_dim, const scalar_t *input, 
-                                      const float *mean, float *weight_diff, float *bias_diff, const float *std, const scalar_t *grad_output) {
-    __shared__ float buffer1[cuda_num_threads];
-    __shared__ float buffer2[cuda_num_threads];
+template <typename T>
+__global__ void sync_bn_backward_param_cuda_kernel(const T *grad_output,
+                                                   const float *norm,
+                                                   float *grad_weight,
+                                                   float *grad_bias, int num,
+                                                   int channels, int spatial) {
+  __shared__ float buffer1[THREADS_PER_BLOCK];
+  __shared__ float buffer2[THREADS_PER_BLOCK];
 
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer1[tid] = buffer2[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    buffer1[tid] += grad_output[index] * norm[index];
+    buffer2[tid] += grad_output[index];
+  }
+  __syncthreads();
 
-    buffer1[tid] = buffer2[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        const size_t index = i / spatial_dim * channels * spatial_dim + c * spatial_dim + i % spatial_dim;
-        buffer1[tid] += grad_output[index] * ((input[index] - mean[c]) / std[c]);
-        buffer2[tid] += grad_output[index];
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer1[tid] += buffer1[tid + s];
+      buffer2[tid] += buffer2[tid + s];
     }
     __syncthreads();
-
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer1[tid] += buffer1[tid + s];
-            buffer2[tid] += buffer2[tid + s];
-        }
-        __syncthreads();
-    }
-    if (tid == 0) {
-        weight_diff[c] = buffer1[0];
-        bias_diff[c] = buffer2[0];
-    }
+  }
+  if (tid == 0) {
+    grad_weight[c] = buffer1[0];
+    grad_bias[c] = buffer2[0];
+  }
 }
 
-
 template <>
-__global__ void backward_param_kernel(const size_t num, const size_t channels, const size_t spatial_dim, const phalf *input, 
-                                      const float *mean, float *weight_diff, float *bias_diff, const float *std, const phalf *grad_output) {
-    __shared__ float buffer1[cuda_num_threads];
-    __shared__ float buffer2[cuda_num_threads];
+__global__ void sync_bn_backward_param_cuda_kernel(const phalf *grad_output,
+                                                   const float *norm,
+                                                   float *grad_weight,
+                                                   float *grad_bias, int num,
+                                                   int channels, int spatial) {
+  __shared__ float buffer1[THREADS_PER_BLOCK];
+  __shared__ float buffer2[THREADS_PER_BLOCK];
 
-    const size_t tid = threadIdx.x;
-    const size_t c = blockIdx.x;
+  int tid = threadIdx.x;
+  int c = blockIdx.x;
+  buffer1[tid] = buffer2[tid] = 0;
+  for (int i = tid; i < num * spatial; i += blockDim.x) {
+    int index = (i / spatial) * channels * spatial + c * spatial + i % spatial;
+    buffer1[tid] += static_cast<float>(grad_output[index]) * norm[index];
+    buffer2[tid] += static_cast<float>(grad_output[index]);
+  }
+  __syncthreads();
 
-    buffer1[tid] = buffer2[tid] = 0;
-    for (size_t i = tid; i < num * spatial_dim; i += blockDim.x) {
-        const size_t index = i / spatial_dim * channels * spatial_dim + c * spatial_dim + i % spatial_dim;
-        buffer1[tid] += static_cast<float>(grad_output[index]) * ((static_cast<float>(input[index]) - mean[c]) / std[c]);
-        buffer2[tid] += static_cast<float>(grad_output[index]);
+  for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    if (tid < s) {
+      buffer1[tid] += buffer1[tid + s];
+      buffer2[tid] += buffer2[tid + s];
     }
     __syncthreads();
-
-    for (size_t s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            buffer1[tid] += buffer1[tid + s];
-            buffer2[tid] += buffer2[tid + s];
-        }
-        __syncthreads();
-    }
-    if (tid == 0) {
-        weight_diff[c] = buffer1[0];
-        bias_diff[c] = buffer2[0];
-    }
+  }
+  if (tid == 0) {
+    grad_weight[c] = buffer1[0];
+    grad_bias[c] = buffer2[0];
+  }
 }
 
-template <typename scalar_t>
-__global__ void backward_data_kernel(const size_t num, const size_t channels, const size_t spatial_dim, const scalar_t *input,
-                                     scalar_t *grad_input, const float *mean, const float *weight, const float *weight_diff, const float *bias_diff,
-                                     const float *std, const scalar_t *grad_output) {
-    size_t factor = num * spatial_dim;
-    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < num * channels * spatial_dim; i += blockDim.x * gridDim.x) {
-        size_t c = (i / spatial_dim) % channels;
-        grad_input[i] = weight[c] * (grad_output[i] - (weight_diff[c] * (input[i] - mean[c]) / std[c] + bias_diff[c]) / factor) / std[c];
-    }
+template <typename T>
+__global__ void sync_bn_backward_data_cuda_kernel(
+    int output_size, const T *grad_output, const float *weight,
+    const float *grad_weight, const float *grad_bias, const float *norm,
+    const float *std, T *grad_input, int num, int channels, int spatial) {
+  int factor = num * spatial;
+  CUDA_1D_KERNEL_LOOP(index, output_size) {
+    int c = (index / spatial) % channels;
+    grad_input[index] =
+        weight[c] *
+        (grad_output[index] -
+         (grad_weight[c] * norm[index] + grad_bias[c]) / factor) /
+        std[c];
+  }
 }
 
 template <>
-__global__ void backward_data_kernel(const size_t num, const size_t channels, const size_t spatial_dim, const phalf *input,
-                                     phalf *grad_input, const float *mean, const float *weight, const float *weight_diff, const float *bias_diff,
-                                     const float *std, const phalf *grad_output) {
-    size_t factor = num * spatial_dim;
-    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < num * channels * spatial_dim; i += blockDim.x * gridDim.x) {
-        size_t c = (i / spatial_dim) % channels;
-        grad_input[i] = static_cast<phalf>(weight[c] * (static_cast<float>(grad_output[i]) - (weight_diff[c] * (static_cast<float>(input[i]) - mean[c]) / std[c] + bias_diff[c]) / factor) / std[c]);
-    }
+__global__ void sync_bn_backward_data_cuda_kernel(
+    int output_size, const phalf *grad_output, const float *weight,
+    const float *grad_weight, const float *grad_bias, const float *norm,
+    const float *std, phalf *grad_input, int num, int channels, int spatial) {
+  int factor = num * spatial;
+  CUDA_1D_KERNEL_LOOP(index, output_size) {
+    int c = (index / spatial) % channels;
+    grad_input[index] = static_cast<phalf>(
+        weight[c] *
+        (static_cast<float>(grad_output[index]) -
+         (grad_weight[c] * norm[index] + grad_bias[c]) / factor) /
+        std[c]);
+  }
 }
+
+#endif  // SYNC_BN_KERNEL_CUH
