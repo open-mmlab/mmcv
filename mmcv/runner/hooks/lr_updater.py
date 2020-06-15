@@ -292,6 +292,8 @@ def get_position_from_periods(iteration, cumulative_periods):
     for i, period in enumerate(cumulative_periods):
         if iteration <= period:
             return i
+    raise ValueError(f'Current iteration {iteration} exceeds '
+                     f'cumulative_periods {cumulative_periods}')
 
 
 @HOOKS.register_module()
