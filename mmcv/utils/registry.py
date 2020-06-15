@@ -5,7 +5,7 @@ from functools import partial
 from .misc import is_str
 
 
-class Registry():
+class Registry:
     """A registry to map strings to classes.
 
     Args:

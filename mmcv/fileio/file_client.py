@@ -192,7 +192,7 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
-class FileClient():
+class FileClient:
     """A general file client to access files in different backend.
 
     The client loads a file or text in a specified backend from its path

@@ -4,7 +4,7 @@ from mmcv.utils import Registry
 HOOKS = Registry('hook')
 
 
-class Hook():
+class Hook:
 
     def before_run(self, runner):
         pass
