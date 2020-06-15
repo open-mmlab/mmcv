@@ -10,6 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
+from mmcv.parallel import MMDataParallel
 from mmcv.runner import EpochBasedRunner
 
 
@@ -38,22 +39,48 @@ def test_epoch_based_runner():
         def batch_processor():
             pass
 
-        _ = EpochBasedRunner(model, batch_processor)
+        _ = EpochBasedRunner(
+            model, batch_processor, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # batch_processor must be callable
         model = OldStyleModel()
-        _ = EpochBasedRunner(model, batch_processor=0)
+        _ = EpochBasedRunner(
+            model, batch_processor=0, logger=logging.getLogger())
+
+    with pytest.raises(TypeError):
+        # optimizer must be a optimizer or a dict of optimizers
+        model = Model()
+        optimizer = 'NotAOptimizer'
+        _ = EpochBasedRunner(
+            model, optimizer=optimizer, logger=logging.getLogger())
+
+    with pytest.raises(TypeError):
+        # optimizer must be a optimizer or a dict of optimizers
+        model = Model()
+        optimizers = dict(optim1=torch.optim.Adam(), optim2='NotAOptimizer')
+        _ = EpochBasedRunner(
+            model, optimizer=optimizers, logger=logging.getLogger())
+
+    with pytest.raises(TypeError):
+        # logger must be a logging.Logger
+        model = Model()
+        _ = EpochBasedRunner(model, logger=None)
+
+    with pytest.raises(TypeError):
+        # meta must be a dict or None
+        model = Model()
+        _ = EpochBasedRunner(model, logger=logging.getLogger(), meta=['list'])
 
     with pytest.raises(AssertionError):
         # model must implement the method train_step()
         model = OldStyleModel()
-        _ = EpochBasedRunner(model)
+        _ = EpochBasedRunner(model, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # work_dir must be a str or None
         model = Model()
-        _ = EpochBasedRunner(model, work_dir=1)
+        _ = EpochBasedRunner(model, work_dir=1, logger=logging.getLogger())
 
     with pytest.raises(RuntimeError):
         # batch_processor and train_step() cannot be both set
@@ -62,7 +89,8 @@ def test_epoch_based_runner():
             pass
 
         model = Model()
-        _ = EpochBasedRunner(model, batch_processor)
+        _ = EpochBasedRunner(
+            model, batch_processor, logger=logging.getLogger())
 
     # test work_dir
     model = Model()
@@ -70,11 +98,30 @@ def test_epoch_based_runner():
     dir_name = ''.join(
         [random.choice(string.ascii_letters) for _ in range(10)])
     work_dir = osp.join(temp_root, dir_name)
-    _ = EpochBasedRunner(model, work_dir=work_dir)
+    _ = EpochBasedRunner(model, work_dir=work_dir, logger=logging.getLogger())
     assert osp.isdir(work_dir)
-    _ = EpochBasedRunner(model, work_dir=work_dir)
+    _ = EpochBasedRunner(model, work_dir=work_dir, logger=logging.getLogger())
     assert osp.isdir(work_dir)
     os.removedirs(work_dir)
+
+
+def test_runner_with_parallel():
+
+    def batch_processor():
+        pass
+
+    model = MMDataParallel(OldStyleModel())
+    _ = EpochBasedRunner(model, batch_processor, logger=logging.getLogger())
+
+    with pytest.raises(RuntimeError):
+        # batch_processor and train_step() cannot be both set
+
+        def batch_processor():
+            pass
+
+        model = MMDataParallel(Model())
+        _ = EpochBasedRunner(
+            model, batch_processor, logger=logging.getLogger())
 
 
 def test_save_checkpoint():

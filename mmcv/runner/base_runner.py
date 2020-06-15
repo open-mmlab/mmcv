@@ -5,8 +5,10 @@ import warnings
 from abc import ABCMeta, abstractmethod
 
 import torch
+from torch.optim import Optimizer
 
 import mmcv
+from ..parallel import is_parallel_module
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook, IterTimerHook
@@ -30,12 +32,14 @@ class BaseRunner(metaclass=ABCMeta):
         batch_processor (callable): A callable method that process a data
             batch. The interface of this method should be
             `batch_processor(model, data, train_mode) -> dict`
-        optimizer (dict or :obj:`torch.optim.Optimizer`): If it is a dict,
-            runner will construct an optimizer according to it.
+        optimizer (dict or :obj:`torch.optim.Optimizer`): It can be either an
+            optimizer (in most cases) or a dict of optimizers (in models that
+            requires more than one optimizer, e.g., GAN).
         work_dir (str, optional): The working directory to save checkpoints
             and logs. Defaults to None.
         logger (:obj:`logging.Logger`): Logger used during training.
-             Defaults to None.
+             Defaults to None. (The default value is just for backward
+             compatibility)
         meta (dict | None): A dict records some import information such as
             environment info and seed, which will be logged in logger hook.
             Defaults to None.
@@ -56,15 +60,44 @@ class BaseRunner(metaclass=ABCMeta):
                           'train_step() and val_step() in the model instead.')
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
-            if hasattr(model, 'train_step') or hasattr(model, 'val_step'):
+            if is_parallel_module(model):
+                _model = model.module
+            else:
+                _model = model
+            if hasattr(_model, 'train_step') or hasattr(_model, 'val_step'):
                 raise RuntimeError(
                     'batch_processor and model.train_step()/model.val_step() '
                     'cannot be both available.')
         else:
             assert hasattr(model, 'train_step')
+
+        # check the type of `optimizer`
+        if isinstance(optimizer, dict):
+            for name, optim in optimizer.items():
+                if not isinstance(optim, Optimizer):
+                    raise TypeError(
+                        f'optimizer must be a dict of torch.optim.Optimizers, '
+                        f'but optimizer["{name}"] is a {type(optim)}')
+        elif not isinstance(optimizer, Optimizer) and optimizer is not None:
+            raise TypeError(
+                f'optimizer must be a torch.optim.Optimizer object '
+                f'or dict or None, but got {type(optimizer)}')
+
+        # check the type of `logger`
+        if not isinstance(logger, logging.Logger):
+            raise TypeError(f'logger must be a logging.Logger object, '
+                            f'but got {type(logger)}')
+
+        # check the type of `meta`
+        if meta is not None and not isinstance(meta, dict):
+            raise TypeError(
+                f'meta must be a dict or None, but got {type(meta)}')
+
         self.model = model
         self.batch_processor = batch_processor
         self.optimizer = optimizer
+        self.logger = logger
+        self.meta = meta
 
         # create work_dir
         if mmcv.is_str(work_dir):
@@ -80,13 +113,6 @@ class BaseRunner(metaclass=ABCMeta):
             self._model_name = self.model.module.__class__.__name__
         else:
             self._model_name = self.model.__class__.__name__
-
-        assert logging is not None
-        self.logger = logger
-
-        if meta is not None:
-            assert isinstance(meta, dict), '"meta" must be a dict or None'
-        self.meta = meta
 
         self._rank, self._world_size = get_dist_info()
         self.timestamp = get_time_str()
@@ -171,30 +197,50 @@ class BaseRunner(metaclass=ABCMeta):
         """Get current learning rates.
 
         Returns:
-            list: Current learning rate of all param groups.
+            list[float] | dict[str, list[float]]: Current learning rates of all
+                param groups. If the runner has a dict of optimizers, this
+                method will return a dict.
         """
-        if self.optimizer is None:
+        if isinstance(self.optimizer, torch.optim.Optimizer):
+            lr = [group['lr'] for group in self.optimizer.param_groups]
+        elif isinstance(self.optimizer, dict):
+            lr = dict()
+            for name, optim in self.optimizer.items():
+                lr[name] = [group['lr'] for group in optim.param_groups]
+        else:
             raise RuntimeError(
                 'lr is not applicable because optimizer does not exist.')
-        return [group['lr'] for group in self.optimizer.param_groups]
+        return lr
 
     def current_momentum(self):
         """Get current momentums.
 
         Returns:
-            list: Current momentum of all param groups.
+            list[float] | dict[str, list[float]]: Current momentums of all
+                param groups. If the runner has a dict of optimizers, this
+                method will return a dict.
         """
+
+        def _get_momentum(optimizer):
+            momentums = []
+            for group in optimizer.param_groups:
+                if 'momentum' in group.keys():
+                    momentums.append(group['momentum'])
+                elif 'betas' in group.keys():
+                    momentums.append(group['betas'][0])
+                else:
+                    momentums.append(0)
+            return momentums
+
         if self.optimizer is None:
             raise RuntimeError(
                 'momentum is not applicable because optimizer does not exist.')
-        momentums = []
-        for group in self.optimizer.param_groups:
-            if 'momentum' in group.keys():
-                momentums.append(group['momentum'])
-            elif 'betas' in group.keys():
-                momentums.append(group['betas'][0])
-            else:
-                momentums.append(0)
+        elif isinstance(self.optimizer, torch.optim.Optimizer):
+            momentums = _get_momentum(self.optimizer)
+        elif isinstance(self.optimizer, dict):
+            momentums = dict()
+            for name, optim in self.optimizer.items():
+                momentums[name] = _get_momentum(optim)
         return momentums
 
     def register_hook(self, hook, priority='NORMAL'):
@@ -266,7 +312,7 @@ class BaseRunner(metaclass=ABCMeta):
             policy_type = lr_config.pop('policy')
             # If the type of policy is all in lower case, e.g., 'cyclic',
             # then its first letter will be capitalized, e.g., to be 'Cyclic'.
-            # This is for the convenient usage of Lr updater updater.
+            # This is for the convenient usage of Lr updater.
             # Since this is not applicable for `CosineAnealingLrUpdater`,
             # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():

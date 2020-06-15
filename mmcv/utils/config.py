@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import ast
 import os.path as osp
 import shutil
 import sys
@@ -54,7 +55,7 @@ def add_args(parser, cfg, prefix=''):
     return parser
 
 
-class Config(object):
+class Config:
     """A facility for config and config files.
 
     It supports common file formats as configs: python/json/yaml. The interface
@@ -81,6 +82,16 @@ class Config(object):
     """
 
     @staticmethod
+    def _validate_py_syntax(filename):
+        with open(filename) as f:
+            content = f.read()
+        try:
+            ast.parse(content)
+        except SyntaxError:
+            raise SyntaxError('There are syntax errors in config '
+                              f'file {filename}')
+
+    @staticmethod
     def _file2dict(filename):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
@@ -93,6 +104,7 @@ class Config(object):
                                 osp.join(temp_config_dir, temp_config_name))
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
+                Config._validate_py_syntax(filename)
                 mod = import_module(temp_module_name)
                 sys.path.pop(0)
                 cfg_dict = {

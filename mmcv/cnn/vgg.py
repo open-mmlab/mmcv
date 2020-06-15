@@ -141,7 +141,7 @@ class VGG(nn.Module):
     def forward(self, x):
         outs = []
         vgg_layers = getattr(self, self.module_name)
-        for i, num_blocks in enumerate(self.stage_blocks):
+        for i in range(len(self.stage_blocks)):
             for j in range(*self.range_sub_modules[i]):
                 vgg_layer = vgg_layers[j]
                 x = vgg_layer(x)

@@ -60,16 +60,17 @@ class PetrelBackend(BaseStorageBackend):
         path_mapping (dict|None): path mapping dict from local path to Petrel
             path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
             be replaced by `dst`. Default: None.
+        enable_mc (bool): whether to enable memcached support. Default: True.
     """
 
-    def __init__(self, path_mapping=None):
+    def __init__(self, path_mapping=None, enable_mc=True):
         try:
             from petrel_client import client
         except ImportError:
             raise ImportError('Please install petrel_client to enable '
                               'PetrelBackend.')
 
-        self._client = client.Client()
+        self._client = client.Client(enable_mc=enable_mc)
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
@@ -192,7 +193,7 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
-class FileClient(object):
+class FileClient:
     """A general file client to access files in different backend.
 
     The client loads a file or text in a specified backend from its path
