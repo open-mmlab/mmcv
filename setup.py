@@ -6,17 +6,12 @@ import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import dist, find_packages, setup
 
-import torch
 from Cython.Build import cythonize
+from Cython.Distutils import build_ext as build_cmd
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # NOQA: E402  # isort:skip
-
-if torch.__version__ != 'parrots':
-    from torch.utils.cpp_extension import BuildExtension, CUDAExtension
-else:
-    from parrots.utils.build_extension import BuildExtension, Extension
 
 
 def choose_requirement(primary, secondary):
@@ -154,37 +149,45 @@ def get_extensions():
         extra_link_args=extra_link_args)
     extensions.extend(cythonize(ext_flow))
 
-    cuda_args = [
-        '-gencode=arch=compute_60,code=sm_60',
-        '-gencode=arch=compute_61,code=sm_61',
-        '-gencode=arch=compute_70,code=sm_70',
-        '-gencode=arch=compute_70,code=compute_70'
-    ]
-
-    if torch.__version__ == 'parrots':
-        op_files = glob.glob('./mmcv/op/csrc/parrots/*')
-        op_header_args = ['-I./mmcv/op/csrc']
-        ext_op = Extension(
-            name='mmcv.op_ext',
-            sources=op_files,
-            extra_compile_args={
-                'nvcc': op_header_args + cuda_args,
-                'cxx': op_header_args,
-            },
-            cuda=True)
-        extensions.append(ext_op)
-    else:
-        op_files = glob.glob('./mmcv/op/csrc/pytorch/*')
-        include_path = os.path.abspath('./mmcv/op/csrc')
-        ext_op = CUDAExtension(
-            name='mmcv.op_ext',
-            sources=op_files,
-            include_dirs=[include_path],
-            extra_compile_args={
-                'nvcc': cuda_args,
-                'cxx': [],
-            })
-        extensions.append(ext_op)
+    try:
+        import torch
+        cuda_args = [
+            '-gencode=arch=compute_60,code=sm_60',
+            '-gencode=arch=compute_61,code=sm_61',
+            '-gencode=arch=compute_70,code=sm_70',
+            '-gencode=arch=compute_70,code=compute_70'
+        ]
+        if torch.__version__ == 'parrots':
+            from parrots.utils.build_extension import BuildExtension, Extension
+            op_files = glob.glob('./mmcv/op/csrc/parrots/*')
+            include_path = os.path.abspath('./mmcv/op/csrc')
+            ext_op = Extension(
+                name='mmcv.op_ext',
+                sources=op_files,
+                include_dirs=[include_path],
+                extra_compile_args={
+                    'nvcc': cuda_args,
+                    'cxx': [],
+                },
+                cuda=True)
+            extensions.append(ext_op)
+        else:
+            from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+            op_files = glob.glob('./mmcv/op/csrc/pytorch/*')
+            include_path = os.path.abspath('./mmcv/op/csrc')
+            ext_op = CUDAExtension(
+                name='mmcv.op_ext',
+                sources=op_files,
+                include_dirs=[include_path],
+                extra_compile_args={
+                    'nvcc': cuda_args,
+                    'cxx': [],
+                })
+            extensions.append(ext_op)
+        global build_cmd
+        build_cmd = BuildExtension
+    except ModuleNotFoundError:
+        print('Not build ext op.')
     return extensions
 
 
@@ -214,5 +217,5 @@ setup(
     tests_require=['pytest'],
     install_requires=install_requires,
     ext_modules=get_extensions(),
-    cmdclass={'build_ext': BuildExtension},
+    cmdclass={'build_ext': build_cmd},
     zip_safe=False)
