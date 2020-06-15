@@ -37,10 +37,10 @@ def color_val(color):
     elif isinstance(color, tuple):
         assert len(color) == 3
         for channel in color:
-            assert channel >= 0 and channel <= 255
+            assert 0 <= channel <= 255
         return color
     elif isinstance(color, int):
-        assert color >= 0 and color <= 255
+        assert 0 <= color <= 255
         return color, color, color
     elif isinstance(color, np.ndarray):
         assert color.ndim == 1 and color.size == 3

@@ -20,7 +20,7 @@ def reset_string_io(io):
     io.seek(0)
 
 
-class TestProgressBar(object):
+class TestProgressBar:
 
     def test_start(self):
         out = StringIO()
