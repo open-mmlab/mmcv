@@ -60,6 +60,23 @@ def test_construct():
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
 
+    # test h.py
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/h.py')
+    cfg_dict = dict(
+        item1='h.py',
+        item_2=f'{osp.dirname(__file__)}/data/config',
+        item3='abc_h')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == cfg.pretty_text
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'h.py')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
+
 
 def test_fromfile():
     for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
