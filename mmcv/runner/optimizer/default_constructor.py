@@ -14,12 +14,13 @@ class DefaultOptimizerConstructor:
     By default each parameter share the same optimizer settings, and we
     provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
     It is a dict and may contain the following fields:
+
     - ``custom_groups`` (dict): Group the parameters by keys and specifying
       different configs for different groups. Each key in ``custom_groups``
       corresponds to a parameter group. The parameters of the model will be
       added to the first parameter group that the key of the group appears in
-      the parameters' name. If this is specified, the below keys
-      (``bias_lr_mult`` etc.) will be ignored.
+      the parameters' name. See Example2 below. If this is specified, the below
+      keys (``bias_lr_mult`` etc.) will be ignored.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -45,7 +46,7 @@ class DefaultOptimizerConstructor:
                   lr, weight_decay, momentum, etc.
         paramwise_cfg (dict, optional): Parameter-wise options.
 
-    Example:
+    Example1:
         >>> model = torch.nn.modules.Conv1d(1, 1, 1)
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, momentum=0.9,
         >>>                      weight_decay=0.0001)
@@ -53,6 +54,18 @@ class DefaultOptimizerConstructor:
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)
+
+    Example2:
+        >>> # assume model have attribute model.backbone and model.cls_head
+        >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
+        >>> paramwise_cfg = dict(custom_groups=dict(
+                backbone=dict(lr=0.0001, weight_decay=0.9)))
+        >>> optim_builder = DefaultOptimizerConstructor(
+        >>>     optimizer_cfg, paramwise_cfg)
+        >>> optimizer = optim_builder(model)
+        >>> # Then the `lr` and `weight_decay` for model.backbone is
+        >>> # (0.0001, 0.9). `lr` and `weight_decay` for model.cls_head
+        >>> # is (0.01, 0.95).
     """
 
     def __init__(self, optimizer_cfg, paramwise_cfg=None):
