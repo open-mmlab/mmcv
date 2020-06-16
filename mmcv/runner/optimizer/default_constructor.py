@@ -69,6 +69,13 @@ class DefaultOptimizerConstructor:
         if not isinstance(self.paramwise_cfg, dict):
             raise TypeError('paramwise_cfg should be None or a dict, '
                             f'but got {type(self.paramwise_cfg)}')
+
+        if ('custom_groups' in self.paramwise_cfg
+                and not isinstance(self.paramwise_cfg['custom_groups'], dict)):
+            raise TypeError(
+                'If specified, custom_groups must be a dict, '
+                f'but got {type(self.paramwise_cfg["custom_groups"])}')
+
         # get base lr and weight decay
         # weight_decay must be explicitly specified if mult is specified
         if ('bias_decay_mult' in self.paramwise_cfg
@@ -147,10 +154,6 @@ class DefaultOptimizerConstructor:
     def parse_params_groups(self, model):
         # get param-wise options
         custom_groups = self.paramwise_cfg.get('custom_groups')
-
-        if not isinstance(custom_groups, dict):
-            raise TypeError('If specified, custom_groups must be a dict, '
-                            f'but got {type(custom_groups)}')
 
         default_params_group = []
         custom_params_groups = {custom_key: [] for custom_key in custom_groups}

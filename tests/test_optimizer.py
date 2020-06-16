@@ -369,6 +369,14 @@ def test_default_optimizer_constructor():
             param1=dict(lr=0.1, momentum=0.95),
             sub=dict(lr=0.0001, nesterov=True),
             conv=dict(lr=0.001, weight_decay=0)))
+
+    with pytest.raises(TypeError):
+        # custom_groups should be a dict
+        paramwise_cfg_ = dict(custom_groups=[0.1, 0.0001])
+        optim_constructor = DefaultOptimizerConstructor(
+            optim_constructor, paramwise_cfg_)
+        optimizer = optim_constructor(model)
+
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
