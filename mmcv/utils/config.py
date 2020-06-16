@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import os.path as osp
+import re
 import shutil
 import sys
 import tempfile
@@ -92,7 +93,7 @@ class Config:
                               f'file {filename}')
 
     @staticmethod
-    def _file2dict(filename):
+    def _file2dict(filename, use_predefined_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         if filename.endswith('.py'):
@@ -100,8 +101,27 @@ class Config:
                 temp_config_file = tempfile.NamedTemporaryFile(
                     dir=temp_config_dir, suffix='.py')
                 temp_config_name = osp.basename(temp_config_file.name)
-                shutil.copyfile(filename,
-                                osp.join(temp_config_dir, temp_config_name))
+                # Substitute predefined variables
+                if use_predefined_variables:
+                    fileDirname = osp.dirname(filename)
+                    fileBasename = osp.basename(filename)
+                    fileBasenameNoExtension = osp.splitext(fileBasename)[0]
+                    support_templates = dict(
+                        fileDirname=fileDirname,
+                        fileBasename=fileBasename,
+                        fileBasenameNoExtension=fileBasenameNoExtension)
+                    config_file = open(filename).read()
+                    for key, value in support_templates.items():
+                        regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+                        config_file = re.sub(regexp, value, config_file)
+                        print(config_file)
+                    tmp_config_file = open(
+                        osp.join(temp_config_dir, temp_config_name), 'w')
+                    tmp_config_file.write(config_file)
+                    tmp_config_file.close()
+                else:
+                    shutil.copyfile(
+                        filename, osp.join(temp_config_dir, temp_config_name))
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
                 Config._validate_py_syntax(filename)
