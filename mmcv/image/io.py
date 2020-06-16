@@ -15,6 +15,7 @@ except ImportError:
 
 jpeg = None
 supported_backends = ['cv2', 'turbojpeg']
+scaling_factors = [(1, 8), (1, 4), (3, 8), (1, 2), None]
 
 imread_flags = {
     'color': IMREAD_COLOR,
@@ -60,7 +61,7 @@ def _jpegflag(flag='color', channel_order='bgr'):
         raise ValueError('flag must be "color" or "grayscale"')
 
 
-def imread(img_or_path, flag='color', channel_order='bgr'):
+def imread(img_or_path, flag='color', channel_order='bgr', size_hint=None):
     """Read an image.
 
     Args:
@@ -85,8 +86,17 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                          f'img file does not exist: {img_or_path}')
         if imread_backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
-                img = jpeg.decode(in_file.read(),
-                                  _jpegflag(flag, channel_order))
+                f = in_file.read()
+                if size_hint is not None:
+                    hw, hh = size_hint
+                    w, h, _, _ = jpeg.decode_header(f)
+                    idx = min(4, int(8 * max(hw / w, hh / h)))
+                    scaling_factor = scaling_factors[idx]
+                else:
+                    scaling_factor = None
+                img = jpeg.decode(f,
+                                  _jpegflag(flag, channel_order),
+                                  scaling_factor)
                 if img.shape[-1] == 1:
                     img = img[:, :, 0]
             return img
@@ -101,7 +111,7 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                         'a pathlib.Path object')
 
 
-def imfrombytes(content, flag='color', channel_order='bgr'):
+def imfrombytes(content, flag='color', channel_order='bgr', size_hint=None):
     """Read an image from bytes.
 
     Args:
@@ -112,7 +122,16 @@ def imfrombytes(content, flag='color', channel_order='bgr'):
         ndarray: Loaded image array.
     """
     if imread_backend == 'turbojpeg':
-        img = jpeg.decode(content, _jpegflag(flag, channel_order))
+        if size_hint is not None:
+            hw, hh = size_hint
+            w, h, _, _ = jpeg.decode_header(content)
+            idx = min(4, int(8 * max(hw / w, hh / h)))
+            scaling_factor = scaling_factors[idx]
+        else:
+            scaling_factor = None
+        img = jpeg.decode(content,
+                          _jpegflag(flag, channel_order),
+                          scaling_factor)
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
