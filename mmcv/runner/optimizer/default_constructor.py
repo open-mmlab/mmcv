@@ -14,6 +14,12 @@ class DefaultOptimizerConstructor:
     By default each parameter share the same optimizer settings, and we
     provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
     It is a dict and may contain the following fields:
+    - ``custom_groups`` (dict): Group the parameters by keys and specifying
+      different configs for different groups. Each key in ``custom_groups``
+      corresponds to a parameter group. The parameters of the model will be
+      added to the first parameter group that the key of the group appears in
+      the parameters' name. If this is specified, the below keys
+      (``bias_lr_mult`` etc.) will be ignored.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -138,6 +144,40 @@ class DefaultOptimizerConstructor:
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
             self.add_params(params, child_mod, prefix=child_prefix)
 
+    def parse_params_groups(self, model):
+        # get param-wise options
+        custom_groups = self.paramwise_cfg.get('custom_groups')
+
+        if not isinstance(custom_groups, dict):
+            raise TypeError('If specified, custom_groups must be a dict, '
+                            f'but got {type(custom_groups)}')
+
+        default_params_group = []
+        custom_params_groups = {custom_key: [] for custom_key in custom_groups}
+
+        for name, param in model.named_parameters():
+            grouped = False
+            for custom_key in custom_groups:
+                if custom_key in name:
+                    custom_params_groups[custom_key].append(param)
+                    grouped = True
+                    break
+            if not grouped:
+                default_params_group.append(param)
+
+        params = []
+        for custom_key in custom_groups:
+            # only non-empty groups are added to `params`
+            if custom_params_groups[custom_key]:
+                params.append({
+                    'params': custom_params_groups[custom_key],
+                    **custom_groups[custom_key]
+                })
+        if default_params_group:
+            params.append({'params': default_params_group})
+
+        return params
+
     def __call__(self, model):
         if hasattr(model, 'module'):
             model = model.module
@@ -146,11 +186,13 @@ class DefaultOptimizerConstructor:
         # if no paramwise option is specified, just use the global setting
         if not self.paramwise_cfg:
             optimizer_cfg['params'] = model.parameters()
-            return build_from_cfg(optimizer_cfg, OPTIMIZERS)
-
+        # set param-wise lr and weight by custom param groups
+        elif 'custom_groups' in self.paramwise_cfg:
+            optimizer_cfg['params'] = self.parse_params_groups(model)
         # set param-wise lr and weight decay recursively
-        params = []
-        self.add_params(params, model)
-        optimizer_cfg['params'] = params
+        else:
+            params = []
+            self.add_params(params, model)
+            optimizer_cfg['params'] = params
 
         return build_from_cfg(optimizer_cfg, OPTIMIZERS)

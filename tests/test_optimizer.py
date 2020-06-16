@@ -64,6 +64,7 @@ class PseudoDataParallel(nn.Module):
 base_lr = 0.01
 base_wd = 0.0001
 momentum = 0.9
+nesterov = False
 
 
 def check_default_optimizer(optimizer, model, prefix=''):
@@ -354,6 +355,76 @@ def test_default_optimizer_constructor():
     model_parameters = list(model.parameters())
     assert len(optimizer.param_groups) == len(model_parameters) == 11
     check_optimizer(optimizer, model, **paramwise_cfg)
+
+    # test DefaultOptimizerConstructor with custom_groups and ExampleModel
+    model = ExampleModel()
+    optimizer_cfg = dict(
+        type='SGD',
+        lr=base_lr,
+        weight_decay=base_wd,
+        momentum=momentum,
+        nesterov=nesterov)
+    paramwise_cfg = dict(
+        custom_groups=dict(
+            param1=dict(lr=0.1, momentum=0.95),
+            sub=dict(lr=0.0001, nesterov=True),
+            conv=dict(lr=0.001, weight_decay=0)))
+    optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
+                                                    paramwise_cfg)
+    optimizer = optim_constructor(model)
+    # check optimizer type and default config
+    assert isinstance(optimizer, torch.optim.SGD)
+    assert optimizer.defaults['lr'] == base_lr
+    assert optimizer.defaults['momentum'] == momentum
+    assert optimizer.defaults['weight_decay'] == base_wd
+    assert optimizer.defaults['nesterov'] is nesterov
+
+    # check params groups
+    param_groups = optimizer.param_groups
+    assert len(param_groups) == 4
+    # group 0, params with name containing 'param1'
+    assert param_groups[0]['lr'] == 0.1
+    assert param_groups[0]['momentum'] == 0.95
+    assert param_groups[0]['weight_decay'] == base_wd
+    assert param_groups[0]['nesterov'] is nesterov
+    assert len(param_groups[0]['params']) == 2
+    assert torch.equal(param_groups[0]['params'][0], model.param1)
+    assert torch.equal(param_groups[0]['params'][1], model.sub.param1)
+
+    # group 1, params with name containing 'sub' (except model.sub.param1)
+    assert param_groups[1]['lr'] == 0.0001
+    assert param_groups[1]['momentum'] == momentum
+    assert param_groups[1]['weight_decay'] == base_wd
+    assert param_groups[1]['nesterov'] is True
+    assert len(
+        param_groups[1]['params']) == len(list(model.sub.parameters())) - 1
+    # there is no `model.sub.param1` in param_groups[1], add a offset
+    after_param1 = False
+    for i, (name, param) in enumerate(model.sub.named_parameters()):
+        if 'param1' in name:
+            after_param1 = True
+            continue
+        assert torch.equal(param_groups[1]['params'][i - after_param1], param)
+
+    # group 2, params with name containing 'conv'
+    assert param_groups[2]['lr'] == 0.001
+    assert param_groups[2]['momentum'] == momentum
+    assert param_groups[2]['weight_decay'] == 0
+    assert param_groups[2]['nesterov'] is nesterov
+    conv_params = list(model.conv1.parameters()) + list(
+        model.conv2.parameters())
+    assert len(param_groups[2]['params']) == len(conv_params)
+    for i, param in enumerate(conv_params):
+        assert torch.equal(param_groups[2]['params'][i], param)
+
+    # group 3, the last params group, the default group
+    assert param_groups[3]['lr'] == base_lr
+    assert param_groups[3]['momentum'] == momentum
+    assert param_groups[3]['weight_decay'] == base_wd
+    assert param_groups[3]['nesterov'] is nesterov
+    assert len(param_groups[3]['params']) == len(list(model.bn.parameters()))
+    for i, param in enumerate(model.bn.parameters()):
+        assert torch.equal(param_groups[3]['params'][i], param)
 
 
 def test_torch_optimizers():
