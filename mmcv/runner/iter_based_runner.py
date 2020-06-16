@@ -220,4 +220,6 @@ class IterBasedRunner(BaseRunner):
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())
+        if log_config is not None:
+            log_config.set_default('by_epoch', False)
         self.register_logger_hooks(log_config)
