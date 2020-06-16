@@ -114,7 +114,6 @@ class Config:
                     for key, value in support_templates.items():
                         regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
                         config_file = re.sub(regexp, value, config_file)
-                        print(config_file)
                     tmp_config_file = open(
                         osp.join(temp_config_dir, temp_config_name), 'w')
                     tmp_config_file.write(config_file)
