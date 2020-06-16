@@ -68,7 +68,7 @@ class IterBasedRunner(BaseRunner):
         self.data_loader = data_loader
         self.call_hook('before_val_iter')
         data_batch = next(data_loader)
-        outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
+        outputs = self.model.val_step(data_batch, **kwargs)
         if not isinstance(outputs, dict):
             raise TypeError('model.val_step() must return a dict')
         if 'log_vars' in outputs:
@@ -221,5 +221,5 @@ class IterBasedRunner(BaseRunner):
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())
         if log_config is not None:
-            log_config.set_default('by_epoch', False)
+            log_config.setdefault('by_epoch', False)
         self.register_logger_hooks(log_config)
