@@ -96,31 +96,35 @@ class Config:
     def _file2dict(filename, use_predefined_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
-        if filename.endswith('.py'):
-            with tempfile.TemporaryDirectory() as temp_config_dir:
-                temp_config_file = tempfile.NamedTemporaryFile(
-                    dir=temp_config_dir, suffix='.py')
-                temp_config_name = osp.basename(temp_config_file.name)
-                # Substitute predefined variables
-                if use_predefined_variables:
-                    fileDirname = osp.dirname(filename)
-                    fileBasename = osp.basename(filename)
-                    fileBasenameNoExtension = osp.splitext(fileBasename)[0]
-                    support_templates = dict(
-                        fileDirname=fileDirname,
-                        fileBasename=fileBasename,
-                        fileBasenameNoExtension=fileBasenameNoExtension)
-                    config_file = open(filename).read()
-                    for key, value in support_templates.items():
-                        regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
-                        config_file = re.sub(regexp, value, config_file)
-                    tmp_config_file = open(
-                        osp.join(temp_config_dir, temp_config_name), 'w')
-                    tmp_config_file.write(config_file)
-                    tmp_config_file.close()
-                else:
-                    shutil.copyfile(
-                        filename, osp.join(temp_config_dir, temp_config_name))
+        fileExtname = osp.splitext(filename)[1]
+        if fileExtname not in ['.py', '.json', '.yaml', 'yml']:
+            raise IOError('Only py/yml/yaml/json type are supported now!')
+
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            temp_config_file = tempfile.NamedTemporaryFile(
+                dir=temp_config_dir, suffix=fileExtname)
+            temp_config_name = osp.basename(temp_config_file.name)
+            # Substitute predefined variables
+            if use_predefined_variables:
+                fileDirname = osp.dirname(filename)
+                fileBasename = osp.basename(filename)
+                fileBasenameNoExtension = osp.splitext(fileBasename)[0]
+                support_templates = dict(
+                    fileDirname=fileDirname,
+                    fileBasename=fileBasename,
+                    fileBasenameNoExtension=fileBasenameNoExtension,
+                    fileExtname=fileExtname)
+                config_file = open(filename).read()
+                for key, value in support_templates.items():
+                    regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+                    config_file = re.sub(regexp, value, config_file)
+                tmp_config_file = open(temp_config_file.name, 'w')
+                tmp_config_file.write(config_file)
+                tmp_config_file.close()
+            else:
+                shutil.copyfile(filename, temp_config_file.name)
+
+            if filename.endswith('.py'):
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
                 Config._validate_py_syntax(filename)
@@ -133,13 +137,11 @@ class Config:
                 }
                 # delete imported module
                 del sys.modules[temp_module_name]
-                # close temp file
-                temp_config_file.close()
-        elif filename.endswith(('.yml', '.yaml', '.json')):
-            import mmcv
-            cfg_dict = mmcv.load(filename)
-        else:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
+            elif filename.endswith(('.yml', '.yaml', '.json')):
+                import mmcv
+                cfg_dict = mmcv.load(temp_config_file.name)
+            # close temp file
+            temp_config_file.close()
 
         cfg_text = filename + '\n'
         with open(filename, 'r') as f:
