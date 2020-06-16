@@ -368,6 +368,7 @@ def test_default_optimizer_constructor():
         custom_groups=dict(
             param1=dict(lr=0.1, momentum=0.95),
             sub=dict(lr=0.0001, nesterov=True),
+            non_exist_key=dict(lr=0.0),
             conv=dict(lr=0.001, weight_decay=0)))
 
     with pytest.raises(TypeError):
@@ -414,7 +415,7 @@ def test_default_optimizer_constructor():
             continue
         assert torch.equal(param_groups[1]['params'][i - after_param1], param)
 
-    # group 2, params with name containing 'conv'
+    # group 2, params with name containing 'conv' ('non_exist_key' is ignored)
     assert param_groups[2]['lr'] == 0.001
     assert param_groups[2]['momentum'] == momentum
     assert param_groups[2]['weight_decay'] == 0
