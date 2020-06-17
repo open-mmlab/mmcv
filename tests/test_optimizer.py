@@ -389,35 +389,36 @@ def test_default_optimizer_constructor():
 
     groups = []
     group_settings = []
-    # group 1
+    # group 1, matches of 'param1'.
+    # 'param1' is the longest match for 'sub.param1'
     groups.append(['param1', 'sub.param1'])
     group_settings.append({
         'lr': base_lr * 10,
         'momentum': momentum,
         'weight_decay': base_wd,
     })
-    # group 2
-    groups.append(['sub.conv1.weight', 'sub.conv1.bias'])
-    group_settings.append({
-        'lr': base_lr * 0.1,
-        'momentum': momentum,
-        'weight_decay': 0,
-    })
-    # group 3
+    # group 2, matches of 'sub.gn'
     groups.append(['sub.gn.weight', 'sub.gn.bias'])
     group_settings.append({
         'lr': base_lr * 0.01,
         'momentum': momentum,
         'weight_decay': base_wd,
     })
-    # group 4
+    # group 3, matches of 'sub'
+    groups.append(['sub.conv1.weight', 'sub.conv1.bias'])
+    group_settings.append({
+        'lr': base_lr * 0.1,
+        'momentum': momentum,
+        'weight_decay': 0,
+    })
+    # group 4, bn is configured by 'norm_decay_mult'
     groups.append(['bn.weight', 'bn.bias'])
     group_settings.append({
         'lr': base_lr,
         'momentum': momentum,
         'weight_decay': base_wd * 0.5,
     })
-    # group 5
+    # group 5, default group
     groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
     group_settings.append({
         'lr': base_lr,
