@@ -75,8 +75,10 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
     Args:
         img (:obj:`PIL.Image.Image`): The image loaded using PIL
         flag (str): Flags specifying the color type of a loaded image,
-            candidates are `color`, `grayscale` and `unchanged`.
-        channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
+            candidates are 'color', 'grayscale' and 'unchanged'.
+            Default to 'color'.
+        channel_order (str): The channel order of the output image array,
+            candidates are 'bgr' and 'rgb'. Default to 'bgr'.
 
     Returns:
         np.ndarray: The converted numpy array
@@ -90,18 +92,21 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
         if array.ndim >= 3 and array.shape[2] >= 3:  # color image
             array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
     else:
-        if img.mode == 'LA':
-            # When the mode is 'LA', the default conversion will fill in the
-            #  canvas with black, which sometimes shadows black objects in
-            #  the foreground.
-            #
-            # Therefore, a random color (124, 117, 104) is used for canvas
-            img = img.convert('RGBA')
-            canvas = Image.new('RGB', img.size, (124, 117, 104))
-            canvas.paste(img, mask=img.split()[3])  # 3 is alpha channel
-            img = canvas
-        elif img.mode != 'RGB':
-            img = img.convert('RGB')
+        # If the image mode is not 'RGB', convert it to 'RGB' first.
+        if img.mode != 'RGB':
+            if img.mode != 'LA':
+                # Most formats except 'LA' can be directly converted to RGB
+                img = img.convert('RGB')
+            else:
+                # When the mode is 'LA', the default conversion will fill in
+                #  the canvas with black, which sometimes shadows black objects
+                #  in the foreground.
+                #
+                # Therefore, a random color (124, 117, 104) is used for canvas
+                img = img.convert('RGBA')
+                canvas = Image.new('RGB', img.size, (124, 117, 104))
+                canvas.paste(img, mask=img.split()[3])  # 3 is alpha channel
+                img = canvas
         if flag == 'color':
             array = np.array(img)
             if channel_order != 'rgb':
@@ -111,7 +116,8 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
             array = np.array(img)
         else:
             raise ValueError(
-                'flag must be "color", "grayscale" or "unchanged"')
+                f'flag must be "color", "grayscale" or "unchanged", '
+                'but got {flag}')
     return array
 
 
