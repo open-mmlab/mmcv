@@ -24,6 +24,8 @@ class TestIO:
         cls.gray_img_path = osp.join(cls.data_dir, 'grayscale.jpg')
         cls.gray_img_path_obj = Path(cls.gray_img_path)
         cls.gray_img_dim3_path = osp.join(cls.data_dir, 'grayscale_dim3.jpg')
+        cls.gray_alpha_img_path = osp.join(cls.data_dir, 'gray_alpha.png')
+        cls.palette_img_path = osp.join(cls.data_dir, 'palette.gif')
         cls.img = cv2.imread(cls.img_path)
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
@@ -200,7 +202,6 @@ class TestIO:
         assert_array_equal(img_cv2, img_turbojpeg)
 
         # backend turbojpeg, channel order: rgb
-        mmcv.use_backend('cv2')
         with open(self.img_path, 'rb') as f:
             img_bytes = f.read()
         img_rgb_turbojpeg = mmcv.imfrombytes(img_bytes, channel_order='rgb')
@@ -246,5 +247,12 @@ class TestIO:
     def test_no_turbojpeg(self):
         with pytest.raises(ImportError):
             mmcv.use_backend('turbojpeg')
+
+        mmcv.use_backend('cv2')
+
+    @patch('mmcv.image.io.Image', None)
+    def test_no_pillow(self):
+        with pytest.raises(ImportError):
+            mmcv.use_backend('pillow')
 
         mmcv.use_backend('cv2')

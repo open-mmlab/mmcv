@@ -35,9 +35,9 @@ def use_backend(backend):
     """Select a backend for image decoding.
 
     Args:
-        backend (str): The image decoding backend type. Options are `cv2` and
-            `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
-            `turbojpeg` is faster but it only supports `.jpeg` file format.
+        backend (str): The image decoding backend type. Options are `cv2`,
+        `pillow`, `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
+        `turbojpeg` is faster but it only supports `.jpeg` file format.
     """
     assert backend in supported_backends
     global imread_backend
@@ -120,7 +120,7 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
     return array
 
 
-def imread(img_or_path, flag='color', channel_order='bgr'):
+def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
     """Read an image.
 
     Args:
@@ -131,10 +131,17 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
             candidates are `color`, `grayscale` and `unchanged`.
             Note that the `turbojpeg` backened does not support `unchanged`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
+        backend (str|None): The image decoding backend type. Options are `cv2`,
+            `pillow`, `turbojpeg`, `None`. If backend is None, the global
+            imread_backend will be used.
 
     Returns:
         ndarray: Loaded image array.
     """
+
+    if backend is None:
+        backend = imread_backend
+    assert backend in supported_backends
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
@@ -143,14 +150,14 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     elif is_str(img_or_path):
         check_file_exist(img_or_path,
                          f'img file does not exist: {img_or_path}')
-        if imread_backend == 'turbojpeg':
+        if backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
                                   _jpegflag(flag, channel_order))
                 if img.shape[-1] == 1:
                     img = img[:, :, 0]
             return img
-        elif imread_backend == 'pillow':
+        elif backend == 'pillow':
             img = Image.open(img_or_path)
             img = _pillow2array(img, flag, channel_order)
             return img
@@ -165,22 +172,29 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                         'a pathlib.Path object')
 
 
-def imfrombytes(content, flag='color', channel_order='bgr'):
+def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
     """Read an image from bytes.
 
     Args:
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
+        backend (str|None): The image decoding backend type. Options are `cv2`,
+            `pillow`, `turbojpeg`, `None`. If backend is None, the global
+            imread_backend will be used.
 
     Returns:
         ndarray: Loaded image array.
     """
-    if imread_backend == 'turbojpeg':
+
+    if backend is None:
+        backend = imread_backend
+    assert backend in supported_backends
+    if backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
-    elif imread_backend == 'pillow':
+    elif backend == 'pillow':
         buff = io.BytesIO(content)
         img = Image.open(buff)
         img = _pillow2array(img, flag, channel_order)
