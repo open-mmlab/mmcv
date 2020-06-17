@@ -15,8 +15,8 @@ class DefaultOptimizerConstructor:
     provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
     It is a dict and may contain the following fields:
 
-    - ``custom_groups`` (dict): Group the parameters by keys and specifying
-      different configs for different groups. Each key in ``custom_groups``
+    - ``custom_keys`` (dict): Group the parameters by keys and specifying
+      different configs for different groups. Each key in ``custom_keys``
       corresponds to a parameter group. The parameters of the model will be
       added to the first parameter group that the key of the group appears in
       the parameters' name. See Example2 below. If this is specified, the below
@@ -58,7 +58,7 @@ class DefaultOptimizerConstructor:
     Example2:
         >>> # assume model have attribute model.backbone and model.cls_head
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
-        >>> paramwise_cfg = dict(custom_groups=dict(
+        >>> paramwise_cfg = dict(custom_keys=dict(
                 backbone=dict(lr=0.0001, weight_decay=0.9)))
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
@@ -83,11 +83,11 @@ class DefaultOptimizerConstructor:
             raise TypeError('paramwise_cfg should be None or a dict, '
                             f'but got {type(self.paramwise_cfg)}')
 
-        if ('custom_groups' in self.paramwise_cfg
-                and not isinstance(self.paramwise_cfg['custom_groups'], dict)):
+        if ('custom_keys' in self.paramwise_cfg
+                and not isinstance(self.paramwise_cfg['custom_keys'], dict)):
             raise TypeError(
-                'If specified, custom_groups must be a dict, '
-                f'but got {type(self.paramwise_cfg["custom_groups"])}')
+                'If specified, custom_keys must be a dict, '
+                f'but got {type(self.paramwise_cfg["custom_keys"])}')
 
         # get base lr and weight decay
         # weight_decay must be explicitly specified if mult is specified
@@ -183,8 +183,9 @@ class DefaultOptimizerConstructor:
             optimizer_cfg['params'] = model.parameters()
             return build_from_cfg(optimizer_cfg, OPTIMIZERS)
 
-        params = []
         # set param-wise lr and weight decay recursively
+        params = []
+
         self.add_params(params, model)
         optimizer_cfg['params'] = params
 
