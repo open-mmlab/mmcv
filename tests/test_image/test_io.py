@@ -263,6 +263,11 @@ class TestIO:
 
         mmcv.use_backend('cv2')
 
+        with pytest.raises(ValueError):
+            with open(self.img_path, 'rb') as f:
+                img_bytes = f.read()
+            mmcv.imfrombytes(img_bytes, backend='unsupported_backend')
+
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
         out_file = osp.join(tempfile.gettempdir(), 'mmcv_test.jpg')

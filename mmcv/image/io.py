@@ -192,7 +192,9 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
 
     if backend is None:
         backend = imread_backend
-    assert backend in supported_backends
+    if backend not in supported_backends:
+        raise ValueError(f'backend: {backend} is not supported. Supported '
+                         "backends are 'cv2', 'turbojpeg', 'pillow'")
     if backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
