@@ -7,7 +7,7 @@ from shutil import get_terminal_size
 from .timer import Timer
 
 
-class ProgressBar(object):
+class ProgressBar:
     """A progress bar which can print the progress"""
 
     def __init__(self, task_num=0, bar_width=50, start=True, file=sys.stdout):

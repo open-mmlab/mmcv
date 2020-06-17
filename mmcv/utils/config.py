@@ -55,7 +55,7 @@ def add_args(parser, cfg, prefix=''):
     return parser
 
 
-class Config(object):
+class Config:
     """A facility for config and config files.
 
     It supports common file formats as configs: python/json/yaml. The interface

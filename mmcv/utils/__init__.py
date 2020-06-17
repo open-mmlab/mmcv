@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
+from .env import TORCH_VERSION
 from .logging import get_logger, print_log
 from .misc import (check_prerequisites, concat_list, is_list_of, is_seq_of,
                    is_str, is_tuple_of, iter_cast, list_cast,
@@ -29,5 +30,6 @@ __all__ = [
     'CUDA_HOME', 'SyncBatchNorm', '_AdaptiveAvgPoolNd', '_AdaptiveMaxPoolNd',
     '_AvgPoolNd', '_BatchNorm', '_ConvNd', '_ConvTransposeMixin',
     '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
-    'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader'
+    'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
+    'TORCH_VERSION'
 ]

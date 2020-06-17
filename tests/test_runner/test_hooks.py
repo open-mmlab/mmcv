@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader
 from mmcv.runner import (EpochBasedRunner, IterTimerHook, MlflowLoggerHook,
                          PaviLoggerHook, WandbLoggerHook)
 from mmcv.runner.hooks.lr_updater import (CosineAnealingLrUpdaterHook,
+                                          CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook)
 from mmcv.runner.hooks.momentum_updater import (
     CosineAnealingMomentumUpdaterHook, CyclicMomentumUpdaterHook)
@@ -139,6 +140,84 @@ def test_cosine_runner_hook():
         call('train', {
             'learning_rate': 0.0004894348370484647,
             'momentum': 0.9890211303259032
+        }, 9)
+    ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+def test_cosine_restart_lr_update_hook():
+    """Test CosineRestartLrUpdaterHook."""
+    with pytest.raises(AssertionError):
+        # either `min_lr` or `min_lr_ratio` should be specified
+        CosineRestartLrUpdaterHook(
+            by_epoch=False,
+            periods=[2, 10],
+            restart_weights=[0.5, 0.5],
+            min_lr=0.1,
+            min_lr_ratio=0)
+
+    with pytest.raises(AssertionError):
+        # periods and restart_weights should have the same length
+        CosineRestartLrUpdaterHook(
+            by_epoch=False,
+            periods=[2, 10],
+            restart_weights=[0.5],
+            min_lr_ratio=0)
+
+    with pytest.raises(ValueError):
+        # the last cumulative_periods 7 (out of [5, 7]) should >= 10
+        sys.modules['pavi'] = MagicMock()
+        loader = DataLoader(torch.ones((10, 2)))
+        runner = _build_demo_runner()
+
+        # add cosine restart LR scheduler
+        hook = CosineRestartLrUpdaterHook(
+            by_epoch=False,
+            periods=[5, 2],  # cumulative_periods [5, 7 (5 + 2)]
+            restart_weights=[0.5, 0.5],
+            min_lr=0.0001)
+        runner.register_hook(hook)
+        runner.register_hook(IterTimerHook())
+
+        # add pavi hook
+        hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+        runner.register_hook(hook)
+        runner.run([loader], [('train', 1)], 1)
+        shutil.rmtree(runner.work_dir)
+
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner()
+
+    # add cosine restart LR scheduler
+    hook = CosineRestartLrUpdaterHook(
+        by_epoch=False,
+        periods=[5, 5],
+        restart_weights=[0.5, 0.5],
+        min_lr_ratio=0)
+    runner.register_hook(hook)
+    runner.register_hook(IterTimerHook())
+
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)], 1)
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    calls = [
+        call('train', {
+            'learning_rate': 0.01,
+            'momentum': 0.95
+        }, 0),
+        call('train', {
+            'learning_rate': 0.0,
+            'momentum': 0.95
+        }, 5),
+        call('train', {
+            'learning_rate': 0.0009549150281252633,
+            'momentum': 0.95
         }, 9)
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
