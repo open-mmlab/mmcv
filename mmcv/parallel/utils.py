@@ -1,22 +1,20 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from torch.nn.parallel import DataParallel, DistributedDataParallel
-
-from .distributed_deprecated import MMDistributedDataParallel
+from .registry import MODULE_WRAPPERS
 
 
-def is_parallel_module(module):
-    """Check if a module is a parallel module.
+def is_module_wrapper(module):
+    """Check if a module is a module wrapper.
 
-    The following 3 modules (and their subclasses) are regarded as parallel
-    modules: DataParallel, DistributedDataParallel,
-    MMDistributedDataParallel (the deprecated version).
+    The following 3 modules in MMCV (and their subclasses) are regarded as
+    module wrappers: DataParallel, DistributedDataParallel,
+    MMDistributedDataParallel (the deprecated version). You may add you own
+    module wrapper by registering it to mmcv.parallel.MODULE_WRAPPERS.
 
     Args:
         module (nn.Module): The module to be checked.
 
     Returns:
-        bool: True if the input module is a parallel module.
+        bool: True if the input module is a module wrapper.
     """
-    parallels = (DataParallel, DistributedDataParallel,
-                 MMDistributedDataParallel)
-    return isinstance(module, parallels)
+    module_wrappers = tuple(MODULE_WRAPPERS.module_dict().values())
+    return isinstance(module, module_wrappers)
