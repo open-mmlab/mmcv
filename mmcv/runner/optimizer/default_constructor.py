@@ -15,12 +15,11 @@ class DefaultOptimizerConstructor:
     provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
     It is a dict and may contain the following fields:
 
-    - ``custom_keys`` (dict): Group the parameters by keys and specifying
-      different configs for different groups. Each key in ``custom_keys``
-      corresponds to a parameter group. The parameters of the model will be
-      added to the first parameter group that the key of the group appears in
-      the parameters' name. See Example2 below. If this is specified, the below
-      keys (``bias_lr_mult`` etc.) will be ignored.
+    - ``custom_keys`` (dict): Specified parameters-wise settings by keys. If
+      the name of the parameter match one of the keys in ``custom_keys``, then
+      the setting of the parameter will be specified by
+      ``custom_keys[the_first_matched_key]`` and other setting like
+      ``bias_lr_mult`` etc. will be ignored.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -185,7 +184,6 @@ class DefaultOptimizerConstructor:
 
         # set param-wise lr and weight decay recursively
         params = []
-
         self.add_params(params, model)
         optimizer_cfg['params'] = params
 
