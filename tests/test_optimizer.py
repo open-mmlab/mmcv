@@ -365,15 +365,16 @@ def test_default_optimizer_constructor():
         momentum=momentum,
         nesterov=nesterov)
     paramwise_cfg = dict(
-        custom_groups=dict(
+        custom_keys=dict(
             param1=dict(lr=0.1, momentum=0.95),
             sub=dict(lr=0.0001, nesterov=True),
             non_exist_key=dict(lr=0.0),
-            conv=dict(lr=0.001, weight_decay=0)))
+            conv=dict(lr=0.001, weight_decay=0)),
+        norm_decay_mult=0.5)
 
     with pytest.raises(TypeError):
-        # custom_groups should be a dict
-        paramwise_cfg_ = dict(custom_groups=[0.1, 0.0001])
+        # custom_keys should be a dict
+        paramwise_cfg_ = dict(custom_keys=[0.1, 0.0001])
         optim_constructor = DefaultOptimizerConstructor(
             optim_constructor, paramwise_cfg_)
         optimizer = optim_constructor(model)
@@ -390,50 +391,50 @@ def test_default_optimizer_constructor():
 
     # check params groups
     param_groups = optimizer.param_groups
-    assert len(param_groups) == 4
-    # group 0, params with name containing 'param1'
-    assert param_groups[0]['lr'] == 0.1
-    assert param_groups[0]['momentum'] == 0.95
-    assert param_groups[0]['weight_decay'] == base_wd
-    assert param_groups[0]['nesterov'] is nesterov
-    assert len(param_groups[0]['params']) == 2
-    assert torch.equal(param_groups[0]['params'][0], model.param1)
-    assert torch.equal(param_groups[0]['params'][1], model.sub.param1)
 
-    # group 1, params with name containing 'sub' (except model.sub.param1)
-    assert param_groups[1]['lr'] == 0.0001
-    assert param_groups[1]['momentum'] == momentum
-    assert param_groups[1]['weight_decay'] == base_wd
-    assert param_groups[1]['nesterov'] is True
-    assert len(
-        param_groups[1]['params']) == len(list(model.sub.parameters())) - 1
-    # there is no `model.sub.param1` in param_groups[1], add a offset
-    after_param1 = False
-    for i, (name, param) in enumerate(model.sub.named_parameters()):
-        if 'param1' in name:
-            after_param1 = True
-            continue
-        assert torch.equal(param_groups[1]['params'][i - after_param1], param)
+    groups = []
+    group_settings = []
+    # group 1
+    groups.append(['param1', 'sub.param1'])
+    group_settings.append({
+        'lr': 0.1,
+        'momentum': 0.95,
+        'weight_decay': base_wd,
+        'nesterov': nesterov
+    })
+    # group 2
+    groups.append(
+        ['sub.conv1.weight', 'sub.conv1.bias', 'sub.gn.weight', 'sub.gn.bias'])
+    group_settings.append({
+        'lr': 0.0001,
+        'momentum': momentum,
+        'weight_decay': base_wd,
+        'nesterov': True
+    })
+    # group 3
+    groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
+    group_settings.append({
+        'lr': 0.001,
+        'momentum': momentum,
+        'weight_decay': 0,
+        'nesterov': nesterov
+    })
+    # group 4
+    groups.append(['bn.weight', 'bn.bias'])
+    group_settings.append({
+        'lr': base_lr,
+        'momentum': momentum,
+        'weight_decay': base_wd * 0.5,
+        'nesterov': nesterov
+    })
 
-    # group 2, params with name containing 'conv' ('non_exist_key' is ignored)
-    assert param_groups[2]['lr'] == 0.001
-    assert param_groups[2]['momentum'] == momentum
-    assert param_groups[2]['weight_decay'] == 0
-    assert param_groups[2]['nesterov'] is nesterov
-    conv_params = list(model.conv1.parameters()) + list(
-        model.conv2.parameters())
-    assert len(param_groups[2]['params']) == len(conv_params)
-    for i, param in enumerate(conv_params):
-        assert torch.equal(param_groups[2]['params'][i], param)
-
-    # group 3, the last params group, the default group
-    assert param_groups[3]['lr'] == base_lr
-    assert param_groups[3]['momentum'] == momentum
-    assert param_groups[3]['weight_decay'] == base_wd
-    assert param_groups[3]['nesterov'] is nesterov
-    assert len(param_groups[3]['params']) == len(list(model.bn.parameters()))
-    for i, param in enumerate(model.bn.parameters()):
-        assert torch.equal(param_groups[3]['params'][i], param)
+    assert len(param_groups) == 11
+    for i, (name, param) in enumerate(model.named_parameters()):
+        assert torch.equal(param_groups[i]['params'][0], param)
+        for group, settings in zip(groups, group_settings):
+            if name in group:
+                for setting in settings:
+                    assert param_groups[i][setting] == settings[setting]
 
 
 def test_torch_optimizers():

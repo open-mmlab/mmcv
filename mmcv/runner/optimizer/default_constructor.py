@@ -119,6 +119,7 @@ class DefaultOptimizerConstructor:
             prefix (str): The prefix of the module
         """
         # get param-wise options
+        custom_keys = self.paramwise_cfg.get('custom_keys', {})
         bias_lr_mult = self.paramwise_cfg.get('bias_lr_mult', 1.)
         bias_decay_mult = self.paramwise_cfg.get('bias_decay_mult', 1.)
         norm_decay_mult = self.paramwise_cfg.get('norm_decay_mult', 1.)
@@ -141,58 +142,37 @@ class DefaultOptimizerConstructor:
                 warnings.warn(f'{prefix} is duplicate. It is skipped since '
                               f'bypass_duplicate={bypass_duplicate}')
                 continue
-            # bias_lr_mult affects all bias parameters except for norm.bias
-            if name == 'bias' and not is_norm:
-                param_group['lr'] = self.base_lr * bias_lr_mult
-            # apply weight decay policies
-            if self.base_wd is not None:
-                # norm decay
-                if is_norm:
-                    param_group[
-                        'weight_decay'] = self.base_wd * norm_decay_mult
-                # depth-wise conv
-                elif is_dwconv:
-                    param_group[
-                        'weight_decay'] = self.base_wd * dwconv_decay_mult
-                # bias lr and decay
-                elif name == 'bias':
-                    param_group[
-                        'weight_decay'] = self.base_wd * bias_decay_mult
+            # if the parameter match one of the custom keys, ignore other rules
+            is_custom = False
+            for key in custom_keys:
+                if key in f'{prefix}.{name}':
+                    print(f'    match {key}')
+                    is_custom = True
+                    param_group.update(**custom_keys[key])
+                    break
+            if not is_custom:
+                # bias_lr_mult affects all bias parameters except for norm.bias
+                if name == 'bias' and not is_norm:
+                    param_group['lr'] = self.base_lr * bias_lr_mult
+                # apply weight decay policies
+                if self.base_wd is not None:
+                    # norm decay
+                    if is_norm:
+                        param_group[
+                            'weight_decay'] = self.base_wd * norm_decay_mult
+                    # depth-wise conv
+                    elif is_dwconv:
+                        param_group[
+                            'weight_decay'] = self.base_wd * dwconv_decay_mult
+                    # bias lr and decay
+                    elif name == 'bias':
+                        param_group[
+                            'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
             self.add_params(params, child_mod, prefix=child_prefix)
-
-    def parse_params_groups(self, model):
-        # get param-wise options
-        custom_groups = self.paramwise_cfg.get('custom_groups')
-
-        default_params_group = []
-        custom_params_groups = {custom_key: [] for custom_key in custom_groups}
-
-        for name, param in model.named_parameters():
-            grouped = False
-            for custom_key in custom_groups:
-                if custom_key in name:
-                    custom_params_groups[custom_key].append(param)
-                    grouped = True
-                    break
-            if not grouped:
-                default_params_group.append(param)
-
-        params = []
-        for custom_key in custom_groups:
-            # only non-empty groups are added to `params`
-            if custom_params_groups[custom_key]:
-                params.append({
-                    'params': custom_params_groups[custom_key],
-                    **custom_groups[custom_key]
-                })
-        if default_params_group:
-            params.append({'params': default_params_group})
-
-        return params
 
     def __call__(self, model):
         if hasattr(model, 'module'):
@@ -202,13 +182,11 @@ class DefaultOptimizerConstructor:
         # if no paramwise option is specified, just use the global setting
         if not self.paramwise_cfg:
             optimizer_cfg['params'] = model.parameters()
-        # set param-wise lr and weight by custom param groups
-        elif 'custom_groups' in self.paramwise_cfg:
-            optimizer_cfg['params'] = self.parse_params_groups(model)
+            return build_from_cfg(optimizer_cfg, OPTIMIZERS)
+
+        params = []
         # set param-wise lr and weight decay recursively
-        else:
-            params = []
-            self.add_params(params, model)
-            optimizer_cfg['params'] = params
+        self.add_params(params, model)
+        optimizer_cfg['params'] = params
 
         return build_from_cfg(optimizer_cfg, OPTIMIZERS)
