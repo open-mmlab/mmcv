@@ -16,5 +16,5 @@ def is_module_wrapper(module):
     Returns:
         bool: True if the input module is a module wrapper.
     """
-    module_wrappers = tuple(MODULE_WRAPPERS.module_dict().values())
+    module_wrappers = tuple(MODULE_WRAPPERS.module_dict.values())
     return isinstance(module, module_wrappers)

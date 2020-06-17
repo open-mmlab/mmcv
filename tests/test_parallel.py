@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from mmcv.parallel import (MMDataParallel, MMDistributedDataParallel,
-                           is_module_wrapper)
+from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
+                           MMDistributedDataParallel, is_module_wrapper)
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
@@ -40,3 +40,16 @@ def test_is_module_wrapper():
 
     deprecated_mmddp = DeprecatedMMDDP(model)
     assert is_module_wrapper(deprecated_mmddp)
+
+    # test module wrapper registry
+    @MODULE_WRAPPERS.register_module()
+    class ModuleWrapper(object):
+
+        def __init__(self, module):
+            self.module = module
+
+        def forward(self, *args, **kwargs):
+            return self.module(*args, **kwargs)
+
+    module_wraper = ModuleWrapper(model)
+    assert is_module_wrapper(module_wraper)
