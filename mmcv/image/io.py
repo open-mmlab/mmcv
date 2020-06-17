@@ -115,8 +115,8 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
             array = np.array(img)
         else:
             raise ValueError(
-                f'flag must be "color", "grayscale" or "unchanged", '
-                'but got {flag}')
+                'flag must be "color", "grayscale" or "unchanged", '
+                f'but got {flag}')
     return array
 
 
