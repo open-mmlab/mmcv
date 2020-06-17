@@ -103,10 +103,9 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
                 #  in the foreground.
                 #
                 # Therefore, a random color (124, 117, 104) is used for canvas
-                img = img.convert('RGBA')
-                canvas = Image.new('RGB', img.size, (124, 117, 104))
-                canvas.paste(img, mask=img.split()[3])  # 3 is alpha channel
-                img = canvas
+                img_rgba = img.convert('RGBA')
+                img = Image.new('RGB', img_rgba.size, (124, 117, 104))
+                img.paste(img_rgba, mask=img_rgba.split()[3])  # 3 is alpha
         if flag == 'color':
             array = np.array(img)
             if channel_order != 'rgb':
