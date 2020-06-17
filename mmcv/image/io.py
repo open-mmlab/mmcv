@@ -133,7 +133,8 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
         backend (str|None): The image decoding backend type. Options are `cv2`,
             `pillow`, `turbojpeg`, `None`. If backend is None, the global
-            imread_backend will be used.
+            imread_backend specified by `mmcv.use_backend` will be used.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.
@@ -141,7 +142,9 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
 
     if backend is None:
         backend = imread_backend
-    assert backend in supported_backends
+    if backend not in supported_backends:
+        raise ValueError(f'backend: {backend} is not supported. Supported '
+                         "backends are 'cv2', 'turbojpeg', 'pillow'")
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
@@ -180,7 +183,8 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         flag (str): Same as :func:`imread`.
         backend (str|None): The image decoding backend type. Options are `cv2`,
             `pillow`, `turbojpeg`, `None`. If backend is None, the global
-            imread_backend will be used.
+            imread_backend specified by `mmcv.use_backend` will be used.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.

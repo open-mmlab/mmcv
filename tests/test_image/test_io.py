@@ -169,6 +169,9 @@ class TestIO:
         with pytest.raises(AssertionError):
             mmcv.use_backend('unsupport_backend')
 
+        with pytest.raises(ValueError):
+            mmcv.imread(self.img_path, 'unsupported_backend')
+
         mmcv.use_backend('cv2')
 
     def test_imfrombytes(self):
