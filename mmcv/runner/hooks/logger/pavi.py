@@ -40,8 +40,10 @@ class PaviLoggerHook(LoggerHook):
                  add_last_ckpt=False,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
-        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag)
+                 reset_flag=True,
+                 by_epoch=True):
+        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag,
+                                             by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt

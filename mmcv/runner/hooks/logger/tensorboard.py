@@ -14,9 +14,10 @@ class TensorboardLoggerHook(LoggerHook):
                  log_dir=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
+                 reset_flag=True,
+                 by_epoch=True):
         super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
-                                                    reset_flag)
+                                                    reset_flag, by_epoch)
         self.log_dir = log_dir
 
     @master_only
