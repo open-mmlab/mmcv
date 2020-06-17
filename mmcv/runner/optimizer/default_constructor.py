@@ -124,7 +124,7 @@ class DefaultOptimizerConstructor:
         """
         # get param-wise options
         custom_keys = self.paramwise_cfg.get('custom_keys', {})
-        # first sort with alphabet order and then sort with len of str
+        # first sort with alphabet order and then sort with reversed len of str
         sorted_keys = sorted(sorted(custom_keys.keys()), key=len, reverse=True)
 
         bias_lr_mult = self.paramwise_cfg.get('bias_lr_mult', 1.)
