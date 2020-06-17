@@ -146,7 +146,11 @@ class DefaultOptimizerConstructor:
             for key in custom_keys:
                 if key in f'{prefix}.{name}':
                     is_custom = True
-                    param_group.update(**custom_keys[key])
+                    param_group['lr'] = self.base_lr * custom_keys[key].get(
+                        'lr_mult', 1.)
+                    param_group[
+                        'weight_decay'] = self.base_wd * custom_keys[key].get(
+                            'decay_mult', 1.)
                     break
             if not is_custom:
                 # bias_lr_mult affects all bias parameters except for norm.bias

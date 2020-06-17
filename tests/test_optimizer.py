@@ -64,7 +64,6 @@ class PseudoDataParallel(nn.Module):
 base_lr = 0.01
 base_wd = 0.0001
 momentum = 0.9
-nesterov = False
 
 
 def check_default_optimizer(optimizer, model, prefix=''):
@@ -359,17 +358,13 @@ def test_default_optimizer_constructor():
     # test DefaultOptimizerConstructor with custom_groups and ExampleModel
     model = ExampleModel()
     optimizer_cfg = dict(
-        type='SGD',
-        lr=base_lr,
-        weight_decay=base_wd,
-        momentum=momentum,
-        nesterov=nesterov)
+        type='SGD', lr=base_lr, weight_decay=base_wd, momentum=momentum)
     paramwise_cfg = dict(
         custom_keys=dict(
-            param1=dict(lr=0.1, momentum=0.95),
-            sub=dict(lr=0.0001, nesterov=True),
-            non_exist_key=dict(lr=0.0),
-            conv=dict(lr=0.001, weight_decay=0)),
+            param1=dict(lr_mult=10),
+            sub=dict(lr_mult=0.01, nesterov=True),
+            non_exist_key=dict(lr_mult=0.0),
+            conv=dict(lr_mult=0.1, decay_mult=0)),
         norm_decay_mult=0.5)
 
     with pytest.raises(TypeError):
@@ -387,7 +382,6 @@ def test_default_optimizer_constructor():
     assert optimizer.defaults['lr'] == base_lr
     assert optimizer.defaults['momentum'] == momentum
     assert optimizer.defaults['weight_decay'] == base_wd
-    assert optimizer.defaults['nesterov'] is nesterov
 
     # check params groups
     param_groups = optimizer.param_groups
@@ -398,9 +392,8 @@ def test_default_optimizer_constructor():
     groups.append(['param1', 'sub.param1'])
     group_settings.append({
         'lr': 0.1,
-        'momentum': 0.95,
+        'momentum': momentum,
         'weight_decay': base_wd,
-        'nesterov': nesterov
     })
     # group 2
     groups.append(
@@ -409,7 +402,6 @@ def test_default_optimizer_constructor():
         'lr': 0.0001,
         'momentum': momentum,
         'weight_decay': base_wd,
-        'nesterov': True
     })
     # group 3
     groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
@@ -417,7 +409,6 @@ def test_default_optimizer_constructor():
         'lr': 0.001,
         'momentum': momentum,
         'weight_decay': 0,
-        'nesterov': nesterov
     })
     # group 4
     groups.append(['bn.weight', 'bn.bias'])
@@ -425,7 +416,6 @@ def test_default_optimizer_constructor():
         'lr': base_lr,
         'momentum': momentum,
         'weight_decay': base_wd * 0.5,
-        'nesterov': nesterov
     })
 
     assert len(param_groups) == 11
