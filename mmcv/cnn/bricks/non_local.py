@@ -86,8 +86,6 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
             constant_init(self.conv_out.conv, 0)
         else:
             normal_init(self.conv_out.conv, std=std)
-            if self.conv_out.norm_cfg is not None:
-                normal_init(self.conv_out.conv, std=std)
 
     def embedded_gaussian(self, theta_x, phi_x):
         # NonLocal1d pairwise_weight: [N, H, H]
