@@ -16,11 +16,12 @@ class DefaultOptimizerConstructor:
     It is a dict and may contain the following fields:
 
     - ``custom_keys`` (dict): Specified parameters-wise settings by keys. If
-      the name of the parameter match one of the keys in ``custom_keys``, then
-      the setting of the parameter will be specified by ``custom_keys[key]``
-      (``key`` is the first matched key) and other setting like
-      ``bias_lr_mult`` etc. will be ignored. ``custom_keys[key]`` should be a
-      dict and may contain fields ``lr_mult`` and ``decay_mult``.
+      one of the keys in ``custom_keys`` is a substring of the name of one
+      parameter, then the setting of the parameter will be specified by
+      ``custom_keys[key]`` (``key`` is the first key that is a substring of the
+      name of the parameter) and other setting like ``bias_lr_mult`` etc. will
+      be ignored. ``custom_keys[key]`` should be a dict and may contain fields
+      ``lr_mult`` and ``decay_mult``. See Example 2 below.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -46,7 +47,7 @@ class DefaultOptimizerConstructor:
                   lr, weight_decay, momentum, etc.
         paramwise_cfg (dict, optional): Parameter-wise options.
 
-    Example1:
+    Example 1:
         >>> model = torch.nn.modules.Conv1d(1, 1, 1)
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, momentum=0.9,
         >>>                      weight_decay=0.0001)
@@ -55,11 +56,11 @@ class DefaultOptimizerConstructor:
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)
 
-    Example2:
+    Example 2:
         >>> # assume model have attribute model.backbone and model.cls_head
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
-        >>> paramwise_cfg = dict(custom_keys=dict(
-                backbone=dict(lr_mult=0.1, decay_mult=0.9)))
+        >>> paramwise_cfg = dict(custom_keys={
+                '.backbone': dict(lr_mult=0.1, decay_mult=0.9)})
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)
