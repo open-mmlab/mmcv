@@ -8,7 +8,7 @@ import torch
 from torch.optim import Optimizer
 
 import mmcv
-from ..parallel import is_parallel_module
+from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook, IterTimerHook
@@ -60,7 +60,7 @@ class BaseRunner(metaclass=ABCMeta):
                           'train_step() and val_step() in the model instead.')
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
-            if is_parallel_module(model):
+            if is_module_wrapper(model):
                 _model = model.module
             else:
                 _model = model

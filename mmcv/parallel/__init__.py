@@ -5,9 +5,9 @@ from .data_parallel import MMDataParallel
 from .distributed import MMDistributedDataParallel
 from .registry import MODULE_WRAPPERS
 from .scatter_gather import scatter, scatter_kwargs
-from .utils import is_parallel_module
+from .utils import is_module_wrapper
 
 __all__ = [
     'collate', 'DataContainer', 'MMDataParallel', 'MMDistributedDataParallel',
-    'scatter', 'scatter_kwargs', 'is_parallel_module', 'MODULE_WRAPPERS'
+    'scatter', 'scatter_kwargs', 'is_module_wrapper', 'MODULE_WRAPPERS'
 ]

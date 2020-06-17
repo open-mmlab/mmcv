@@ -14,7 +14,7 @@ from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
-from ..parallel import is_parallel_module
+from ..parallel import is_module_wrapper
 from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
 
@@ -63,7 +63,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     def load(module, prefix=''):
         # recursively check parallel module in case that the model has a
         # complicated structure, e.g., nn.Module(nn.Module(DDP))
-        if is_parallel_module(module):
+        if is_module_wrapper(module):
             module = module.module
         local_metadata = {} if metadata is None else metadata.get(
             prefix[:-1], {})
@@ -273,7 +273,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
     mmcv.mkdir_or_exist(osp.dirname(filename))
-    if is_parallel_module(model):
+    if is_module_wrapper(model):
         model = model.module
 
     checkpoint = {

@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from mmcv.parallel import (MMDataParallel, MMDistributedDataParallel,
-                           is_parallel_module)
+                           is_module_wrapper)
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
@@ -12,7 +12,7 @@ from mmcv.parallel.distributed_deprecated import \
 @patch('torch.distributed._broadcast_coalesced', MagicMock)
 @patch('torch.distributed.broadcast', MagicMock)
 @patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', MagicMock)
-def test_is_parallel_module():
+def test_is_module_wrapper():
 
     class Model(nn.Module):
 
@@ -24,19 +24,19 @@ def test_is_parallel_module():
             return self.conv(x)
 
     model = Model()
-    assert not is_parallel_module(model)
+    assert not is_module_wrapper(model)
 
     dp = DataParallel(model)
-    assert is_parallel_module(dp)
+    assert is_module_wrapper(dp)
 
     mmdp = MMDataParallel(model)
-    assert is_parallel_module(mmdp)
+    assert is_module_wrapper(mmdp)
 
     ddp = DistributedDataParallel(model, process_group=MagicMock())
-    assert is_parallel_module(ddp)
+    assert is_module_wrapper(ddp)
 
     mmddp = MMDistributedDataParallel(model, process_group=MagicMock())
-    assert is_parallel_module(mmddp)
+    assert is_module_wrapper(mmddp)
 
     deprecated_mmddp = DeprecatedMMDDP(model)
-    assert is_parallel_module(deprecated_mmddp)
+    assert is_module_wrapper(deprecated_mmddp)
