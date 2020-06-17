@@ -18,10 +18,13 @@ class DefaultOptimizerConstructor:
     - ``custom_keys`` (dict): Specified parameters-wise settings by keys. If
       one of the keys in ``custom_keys`` is a substring of the name of one
       parameter, then the setting of the parameter will be specified by
-      ``custom_keys[key]`` (``key`` is the first key that is a substring of the
-      name of the parameter) and other setting like ``bias_lr_mult`` etc. will
-      be ignored. ``custom_keys[key]`` should be a dict and may contain fields
-      ``lr_mult`` and ``decay_mult``. See Example 2 below.
+      ``custom_keys[key]`` and other setting like ``bias_lr_mult`` etc. will
+      be ignored. It should be noted that the aforementioned ``key`` is the
+      longest key that is a substring of the name of the parameter. If there
+      are multiple matched keys with the same length, then the key with lower
+      alphabet order will be chosen.
+      ``custom_keys[key]`` should be a dict and may contain fields ``lr_mult``
+      and ``decay_mult``. See Example 2 below.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -121,7 +124,8 @@ class DefaultOptimizerConstructor:
         """
         # get param-wise options
         custom_keys = self.paramwise_cfg.get('custom_keys', {})
-        sorted_keys = sorted(custom_keys.keys(), key=lambda x: -len(x))
+        # first sort with alphabet order then sort with len of str
+        sorted_keys = sorted(sorted(custom_keys.keys()), key=lambda x: -len(x))
 
         bias_lr_mult = self.paramwise_cfg.get('bias_lr_mult', 1.)
         bias_decay_mult = self.paramwise_cfg.get('bias_decay_mult', 1.)
