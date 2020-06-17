@@ -17,9 +17,10 @@ class DefaultOptimizerConstructor:
 
     - ``custom_keys`` (dict): Specified parameters-wise settings by keys. If
       the name of the parameter match one of the keys in ``custom_keys``, then
-      the setting of the parameter will be specified by
-      ``custom_keys[the_first_matched_key]`` and other setting like
-      ``bias_lr_mult`` etc. will be ignored.
+      the setting of the parameter will be specified by ``custom_keys[key]``
+      (``key`` is the first matched key) and other setting like
+      ``bias_lr_mult`` etc. will be ignored. ``custom_keys[key]`` should be a
+      dict and may contain fields ``lr_mult`` and ``decay_mult``.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
       layers).
@@ -58,13 +59,13 @@ class DefaultOptimizerConstructor:
         >>> # assume model have attribute model.backbone and model.cls_head
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
         >>> paramwise_cfg = dict(custom_keys=dict(
-                backbone=dict(lr=0.0001, weight_decay=0.9)))
+                backbone=dict(lr_mult=0.1, decay_mult=0.9)))
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)
         >>> # Then the `lr` and `weight_decay` for model.backbone is
-        >>> # (0.0001, 0.9). `lr` and `weight_decay` for model.cls_head
-        >>> # is (0.01, 0.95).
+        >>> # (0.01 * 0.1, 0.95 * 0.9). `lr` and `weight_decay` for
+        >>> # model.cls_head is (0.01, 0.95).
     """
 
     def __init__(self, optimizer_cfg, paramwise_cfg=None):
