@@ -8,7 +8,7 @@ from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
 
 @OPTIMIZER_BUILDERS.register_module()
-class DefaultOptimizerConstructor(object):
+class DefaultOptimizerConstructor:
     """Default constructor for optimizers.
 
     By default each parameter share the same optimizer settings, and we

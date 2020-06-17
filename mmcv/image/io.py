@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import io
 import os.path as osp
 from pathlib import Path
 
@@ -13,8 +14,13 @@ try:
 except ImportError:
     TJCS_RGB = TJPF_GRAY = TJPF_BGR = TurboJPEG = None
 
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
 jpeg = None
-supported_backends = ['cv2', 'turbojpeg']
+supported_backends = ['cv2', 'turbojpeg', 'pillow']
 
 imread_flags = {
     'color': IMREAD_COLOR,
@@ -29,9 +35,9 @@ def use_backend(backend):
     """Select a backend for image decoding.
 
     Args:
-        backend (str): The image decoding backend type. Options are `cv2` and
-            `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
-            `turbojpeg` is faster but it only supports `.jpeg` file format.
+        backend (str): The image decoding backend type. Options are `cv2`,
+        `pillow`, `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
+        `turbojpeg` is faster but it only supports `.jpeg` file format.
     """
     assert backend in supported_backends
     global imread_backend
@@ -42,6 +48,9 @@ def use_backend(backend):
         global jpeg
         if jpeg is None:
             jpeg = TurboJPEG()
+    elif imread_backend == 'pillow':
+        if Image is None:
+            raise ImportError('`Pillow` is not installed')
 
 
 def _jpegflag(flag='color', channel_order='bgr'):
@@ -60,7 +69,58 @@ def _jpegflag(flag='color', channel_order='bgr'):
         raise ValueError('flag must be "color" or "grayscale"')
 
 
-def imread(img_or_path, flag='color', channel_order='bgr'):
+def _pillow2array(img, flag='color', channel_order='bgr'):
+    """Convert a pillow image to numpy array
+
+    Args:
+        img (:obj:`PIL.Image.Image`): The image loaded using PIL
+        flag (str): Flags specifying the color type of a loaded image,
+            candidates are 'color', 'grayscale' and 'unchanged'.
+            Default to 'color'.
+        channel_order (str): The channel order of the output image array,
+            candidates are 'bgr' and 'rgb'. Default to 'bgr'.
+
+    Returns:
+        np.ndarray: The converted numpy array
+    """
+    channel_order = channel_order.lower()
+    if channel_order not in ['rgb', 'bgr']:
+        raise ValueError('channel order must be either "rgb" or "bgr"')
+
+    if flag == 'unchanged':
+        array = np.array(img)
+        if array.ndim >= 3 and array.shape[2] >= 3:  # color image
+            array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
+    else:
+        # If the image mode is not 'RGB', convert it to 'RGB' first.
+        if img.mode != 'RGB':
+            if img.mode != 'LA':
+                # Most formats except 'LA' can be directly converted to RGB
+                img = img.convert('RGB')
+            else:
+                # When the mode is 'LA', the default conversion will fill in
+                #  the canvas with black, which sometimes shadows black objects
+                #  in the foreground.
+                #
+                # Therefore, a random color (124, 117, 104) is used for canvas
+                img_rgba = img.convert('RGBA')
+                img = Image.new('RGB', img_rgba.size, (124, 117, 104))
+                img.paste(img_rgba, mask=img_rgba.split()[3])  # 3 is alpha
+        if flag == 'color':
+            array = np.array(img)
+            if channel_order != 'rgb':
+                array = array[:, :, ::-1]  # RGB to BGR
+        elif flag == 'grayscale':
+            img = img.convert('L')
+            array = np.array(img)
+        else:
+            raise ValueError(
+                'flag must be "color", "grayscale" or "unchanged", '
+                f'but got {flag}')
+    return array
+
+
+def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
     """Read an image.
 
     Args:
@@ -71,10 +131,20 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
             candidates are `color`, `grayscale` and `unchanged`.
             Note that the `turbojpeg` backened does not support `unchanged`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
+        backend (str|None): The image decoding backend type. Options are `cv2`,
+            `pillow`, `turbojpeg`, `None`. If backend is None, the global
+            imread_backend specified by ``mmcv.use_backend()`` will be used.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.
     """
+
+    if backend is None:
+        backend = imread_backend
+    if backend not in supported_backends:
+        raise ValueError(f'backend: {backend} is not supported. Supported '
+                         "backends are 'cv2', 'turbojpeg', 'pillow'")
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
@@ -83,12 +153,16 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
     elif is_str(img_or_path):
         check_file_exist(img_or_path,
                          f'img file does not exist: {img_or_path}')
-        if imread_backend == 'turbojpeg':
+        if backend == 'turbojpeg':
             with open(img_or_path, 'rb') as in_file:
                 img = jpeg.decode(in_file.read(),
                                   _jpegflag(flag, channel_order))
                 if img.shape[-1] == 1:
                     img = img[:, :, 0]
+            return img
+        elif backend == 'pillow':
+            img = Image.open(img_or_path)
+            img = _pillow2array(img, flag, channel_order)
             return img
         else:
             flag = imread_flags[flag] if is_str(flag) else flag
@@ -101,20 +175,35 @@ def imread(img_or_path, flag='color', channel_order='bgr'):
                         'a pathlib.Path object')
 
 
-def imfrombytes(content, flag='color', channel_order='bgr'):
+def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
     """Read an image from bytes.
 
     Args:
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
+        backend (str|None): The image decoding backend type. Options are `cv2`,
+            `pillow`, `turbojpeg`, `None`. If backend is None, the global
+            imread_backend specified by ``mmcv.use_backend()`` will be used.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.
     """
-    if imread_backend == 'turbojpeg':
+
+    if backend is None:
+        backend = imread_backend
+    if backend not in supported_backends:
+        raise ValueError(f'backend: {backend} is not supported. Supported '
+                         "backends are 'cv2', 'turbojpeg', 'pillow'")
+    if backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
+        return img
+    elif backend == 'pillow':
+        buff = io.BytesIO(content)
+        img = Image.open(buff)
+        img = _pillow2array(img, flag, channel_order)
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)

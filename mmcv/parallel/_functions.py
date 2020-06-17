@@ -57,7 +57,7 @@ def get_input_device(input):
         raise Exception(f'Unknown type {type(input)}.')
 
 
-class Scatter(object):
+class Scatter:
 
     @staticmethod
     def forward(target_gpus, input):

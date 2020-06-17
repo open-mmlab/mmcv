@@ -5,7 +5,7 @@ from functools import partial
 from .misc import is_str
 
 
-class Registry(object):
+class Registry:
     """A registry to map strings to classes.
 
     Args:
@@ -63,8 +63,7 @@ class Registry(object):
         warnings.warn(
             'The old API of register_module(module, force=False) '
             'is deprecated and will be removed, please use the new API '
-            'register_module(name=None, force=False, module=None) instead.',
-            DeprecationWarning)
+            'register_module(name=None, force=False, module=None) instead.')
         if cls is None:
             return partial(self.deprecated_register_module, force=force)
         self._register_module(cls, force=force)

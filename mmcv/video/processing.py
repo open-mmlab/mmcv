@@ -73,7 +73,7 @@ def resize_video(in_file,
     """
     if size is None and ratio is None:
         raise ValueError('expected size or ratio must be specified')
-    elif size is not None and ratio is not None:
+    if size is not None and ratio is not None:
         raise ValueError('size and ratio cannot be specified at the same time')
     options = {'log_level': log_level}
     if size:
