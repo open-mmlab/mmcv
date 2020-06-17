@@ -67,10 +67,31 @@ class TestIO:
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
+        # test arg backend pillow
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, 'grayscale', backend='pillow')
+        assert img_pil_gray_alpha.shape == (400, 500)
+        mean = img_pil_gray_alpha[300:, 400:].mean()
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, backend='pillow')
+        mean = img_pil_gray_alpha[300:, 400:].mean(axis=(0, 1))
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        assert img_pil_gray_alpha.shape == (400, 500, 3)
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, 'unchanged', backend='pillow')
+        assert img_pil_gray_alpha.shape == (400, 500, 2)
+        img_pil_palette = mmcv.imread(
+            self.palette_img_path, 'grayscale', backend='pillow')
+        assert img_pil_palette.shape == (300, 400)
+        img_pil_palette = mmcv.imread(self.palette_img_path, backend='pillow')
+        assert img_pil_palette.shape == (300, 400, 3)
+        img_pil_palette = mmcv.imread(
+            self.palette_img_path, 'unchanged', backend='pillow')
+        assert img_pil_palette.shape == (300, 400)
+
         # backend pillow
         mmcv.use_backend('pillow')
-        self.gray_alpha_img_path = osp.join(self.data_dir, 'gray_alpha.png')
-        self.palette_img_path = osp.join(self.data_dir, 'palette.gif')
         img_pil_grayscale1 = mmcv.imread(self.img_path, 'grayscale')
         assert img_pil_grayscale1.shape == (300, 400)
         img_pil_gray_alpha = mmcv.imread(self.gray_alpha_img_path, 'grayscale')
@@ -183,6 +204,14 @@ class TestIO:
             img_bytes = f.read()
         gray_img_dim3_cv2 = mmcv.imfrombytes(img_bytes, flag='grayscale')
         assert gray_img_dim3_cv2.shape == (300, 400)
+
+        # arg backend pillow, channel order: bgr
+        with open(self.img_path, 'rb') as f:
+            img_bytes = f.read()
+        img_pillow = mmcv.imfrombytes(img_bytes, backend='pillow')
+        assert img_pillow.shape == (300, 400, 3)
+        # Pillow and opencv decoding may not be the same
+        assert (img_cv2 == img_pillow).sum() / float(img_cv2.size) > 0.5
 
         # backend pillow, channel order: bgr
         mmcv.use_backend('pillow')
