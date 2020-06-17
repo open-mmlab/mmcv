@@ -392,21 +392,21 @@ def test_default_optimizer_constructor():
     # group 1
     groups.append(['param1', 'sub.param1'])
     group_settings.append({
-        'lr': 0.1,
+        'lr': base_lr * 10,
         'momentum': momentum,
         'weight_decay': base_wd,
     })
     # group 2
     groups.append(['sub.conv1.weight', 'sub.conv1.bias'])
     group_settings.append({
-        'lr': 0.001,
+        'lr': base_lr * 0.1,
         'momentum': momentum,
         'weight_decay': 0,
     })
     # group 3
     groups.append(['sub.gn.weight', 'sub.gn.bias'])
     group_settings.append({
-        'lr': 0.0001,
+        'lr': base_lr * 0.01,
         'momentum': momentum,
         'weight_decay': base_wd,
     })
