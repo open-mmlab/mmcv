@@ -121,6 +121,8 @@ class DefaultOptimizerConstructor:
         """
         # get param-wise options
         custom_keys = self.paramwise_cfg.get('custom_keys', {})
+        sorted_keys = sorted(custom_keys.keys(), key=lambda x: -len(x))
+
         bias_lr_mult = self.paramwise_cfg.get('bias_lr_mult', 1.)
         bias_decay_mult = self.paramwise_cfg.get('bias_decay_mult', 1.)
         norm_decay_mult = self.paramwise_cfg.get('norm_decay_mult', 1.)
@@ -145,7 +147,7 @@ class DefaultOptimizerConstructor:
                 continue
             # if the parameter match one of the custom keys, ignore other rules
             is_custom = False
-            for key in custom_keys:
+            for key in sorted_keys:
                 if key in f'{prefix}.{name}':
                     is_custom = True
                     param_group['lr'] = self.base_lr * custom_keys[key].get(

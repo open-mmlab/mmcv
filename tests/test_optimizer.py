@@ -360,11 +360,12 @@ def test_default_optimizer_constructor():
     optimizer_cfg = dict(
         type='SGD', lr=base_lr, weight_decay=base_wd, momentum=momentum)
     paramwise_cfg = dict(
-        custom_keys=dict(
-            param1=dict(lr_mult=10),
-            sub=dict(lr_mult=0.01, nesterov=True),
-            non_exist_key=dict(lr_mult=0.0),
-            conv=dict(lr_mult=0.1, decay_mult=0)),
+        custom_keys={
+            'param1': dict(lr_mult=10),
+            'sub': dict(lr_mult=0.1, decay_mult=0),
+            'sub.gn': dict(lr_mult=0.01),
+            'non_exist_key': dict(lr_mult=0.0)
+        },
         norm_decay_mult=0.5)
 
     with pytest.raises(TypeError):
@@ -396,19 +397,18 @@ def test_default_optimizer_constructor():
         'weight_decay': base_wd,
     })
     # group 2
-    groups.append(
-        ['sub.conv1.weight', 'sub.conv1.bias', 'sub.gn.weight', 'sub.gn.bias'])
-    group_settings.append({
-        'lr': 0.0001,
-        'momentum': momentum,
-        'weight_decay': base_wd,
-    })
-    # group 3
-    groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
+    groups.append(['sub.conv1.weight', 'sub.conv1.bias'])
     group_settings.append({
         'lr': 0.001,
         'momentum': momentum,
         'weight_decay': 0,
+    })
+    # group 3
+    groups.append(['sub.gn.weight', 'sub.gn.bias'])
+    group_settings.append({
+        'lr': 0.0001,
+        'momentum': momentum,
+        'weight_decay': base_wd,
     })
     # group 4
     groups.append(['bn.weight', 'bn.bias'])
@@ -417,6 +417,13 @@ def test_default_optimizer_constructor():
         'momentum': momentum,
         'weight_decay': base_wd * 0.5,
     })
+    # group 5
+    groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
+    group_settings.append({
+        'lr': base_lr,
+        'momentum': momentum,
+        'weight_decay': base_wd
+    })
 
     assert len(param_groups) == 11
     for i, (name, param) in enumerate(model.named_parameters()):
@@ -424,7 +431,8 @@ def test_default_optimizer_constructor():
         for group, settings in zip(groups, group_settings):
             if name in group:
                 for setting in settings:
-                    assert param_groups[i][setting] == settings[setting]
+                    assert param_groups[i][setting] == settings[
+                        setting], f'{name} {setting}'
 
 
 def test_torch_optimizers():
