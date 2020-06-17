@@ -146,7 +146,6 @@ class DefaultOptimizerConstructor:
             is_custom = False
             for key in custom_keys:
                 if key in f'{prefix}.{name}':
-                    print(f'    match {key}')
                     is_custom = True
                     param_group.update(**custom_keys[key])
                     break
