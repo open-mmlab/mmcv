@@ -355,7 +355,7 @@ def test_default_optimizer_constructor():
     assert len(optimizer.param_groups) == len(model_parameters) == 11
     check_optimizer(optimizer, model, **paramwise_cfg)
 
-    # test DefaultOptimizerConstructor with custom_groups and ExampleModel
+    # test DefaultOptimizerConstructor with custom_keys and ExampleModel
     model = ExampleModel()
     optimizer_cfg = dict(
         type='SGD', lr=base_lr, weight_decay=base_wd, momentum=momentum)
@@ -424,6 +424,53 @@ def test_default_optimizer_constructor():
         'lr': base_lr,
         'momentum': momentum,
         'weight_decay': base_wd
+    })
+
+    assert len(param_groups) == 11
+    for i, (name, param) in enumerate(model.named_parameters()):
+        assert torch.equal(param_groups[i]['params'][0], param)
+        for group, settings in zip(groups, group_settings):
+            if name in group:
+                for setting in settings:
+                    assert param_groups[i][setting] == settings[
+                        setting], f'{name} {setting}'
+
+    # test DefaultOptimizerConstructor with custom_keys and ExampleModel 2
+    model = ExampleModel()
+    optimizer_cfg = dict(type='SGD', lr=base_lr, momentum=momentum)
+    paramwise_cfg = dict(custom_keys={'param1': dict(lr_mult=10)})
+
+    optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
+                                                    paramwise_cfg)
+    optimizer = optim_constructor(model)
+    # check optimizer type and default config
+    assert isinstance(optimizer, torch.optim.SGD)
+    assert optimizer.defaults['lr'] == base_lr
+    assert optimizer.defaults['momentum'] == momentum
+    assert optimizer.defaults['weight_decay'] == 0
+
+    # check params groups
+    param_groups = optimizer.param_groups
+
+    groups = []
+    group_settings = []
+    # group 1, matches of 'param1'
+    # 'param1' is the longest match for 'sub.param1'
+    groups.append(['param1', 'sub.param1'])
+    group_settings.append({
+        'lr': base_lr * 10,
+        'momentum': momentum,
+        'weight_decay': 0,
+    })
+    # group 2, default group
+    groups.append([
+        'sub.conv1.weight', 'sub.conv1.bias', 'sub.gn.weight', 'sub.gn.bias',
+        'conv1.weight', 'conv2.weight', 'conv2.bias', 'bn.weight', 'bn.bias'
+    ])
+    group_settings.append({
+        'lr': base_lr,
+        'momentum': momentum,
+        'weight_decay': 0
     })
 
     assert len(param_groups) == 11
