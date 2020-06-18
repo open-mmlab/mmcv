@@ -372,7 +372,16 @@ def test_default_optimizer_constructor():
         # custom_keys should be a dict
         paramwise_cfg_ = dict(custom_keys=[0.1, 0.0001])
         optim_constructor = DefaultOptimizerConstructor(
-            optim_constructor, paramwise_cfg_)
+            optimizer_cfg, paramwise_cfg_)
+        optimizer = optim_constructor(model)
+
+    with pytest.raises(ValueError):
+        # if 'decay_mult' is specified in custom_keys, weight_decay should be
+        # specified
+        optimizer_cfg_ = dict(type='SGD', lr=0.01)
+        paramwise_cfg_ = dict(custom_keys={'.backbone': dict(decay_mult=0.5)})
+        optim_constructor = DefaultOptimizerConstructor(
+            optimizer_cfg_, paramwise_cfg_)
         optimizer = optim_constructor(model)
 
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
