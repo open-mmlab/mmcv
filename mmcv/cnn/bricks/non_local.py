@@ -104,8 +104,7 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
         pairwise_weight = pairwise_weight.softmax(dim=-1)
         return pairwise_weight
 
-    @staticmethod
-    def dot_product(theta_x, phi_x):
+    def dot_product(self, theta_x, phi_x):
         # NonLocal1d pairwise_weight: [N, H, H]
         # NonLocal2d pairwise_weight: [N, HxW, HxW]
         # NonLocal3d pairwise_weight: [N, TxHxW, TxHxW]
