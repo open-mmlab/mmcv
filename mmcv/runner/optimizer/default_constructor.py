@@ -92,10 +92,10 @@ class DefaultOptimizerConstructor:
                 raise TypeError(
                     'If specified, custom_keys must be a dict, '
                     f'but got {type(self.paramwise_cfg["custom_keys"])}')
-            for key in self.paramwise_cfg['custom_keys']:
-                if ('decay_mult' in self.paramwise_cfg['custom_keys'][key]
-                        and self.base_wd is None):
-                    raise ValueError('base_wd should not be None')
+            if self.base_wd is None:
+                for key in self.paramwise_cfg['custom_keys']:
+                    if 'decay_mult' in self.paramwise_cfg['custom_keys'][key]:
+                        raise ValueError('base_wd should not be None')
 
         # get base lr and weight decay
         # weight_decay must be explicitly specified if mult is specified
