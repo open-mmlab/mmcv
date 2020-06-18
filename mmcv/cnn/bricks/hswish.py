@@ -20,5 +20,5 @@ class HSwish(nn.Module):
         super(HSwish, self).__init__()
         self.act = nn.ReLU6(inplace)
 
-    def forward(self, x): 
+    def forward(self, x):
         return x * self.act(x + 3) / 6

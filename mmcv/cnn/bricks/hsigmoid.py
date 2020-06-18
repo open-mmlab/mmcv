@@ -17,6 +17,6 @@ class HSigmoid(nn.Module):
 
     @staticmethod
     def forward(x):
-        x = (x + 1) / 2 
+        x = (x + 1) / 2
 
         return x.clamp_(0, 1)
