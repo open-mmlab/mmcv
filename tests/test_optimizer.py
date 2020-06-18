@@ -355,6 +355,86 @@ def test_default_optimizer_constructor():
     assert len(optimizer.param_groups) == len(model_parameters) == 11
     check_optimizer(optimizer, model, **paramwise_cfg)
 
+    # test DefaultOptimizerConstructor with custom_groups and ExampleModel
+    model = ExampleModel()
+    optimizer_cfg = dict(
+        type='SGD', lr=base_lr, weight_decay=base_wd, momentum=momentum)
+    paramwise_cfg = dict(
+        custom_keys={
+            'param1': dict(lr_mult=10),
+            'sub': dict(lr_mult=0.1, decay_mult=0),
+            'sub.gn': dict(lr_mult=0.01),
+            'non_exist_key': dict(lr_mult=0.0)
+        },
+        norm_decay_mult=0.5)
+
+    with pytest.raises(TypeError):
+        # custom_keys should be a dict
+        paramwise_cfg_ = dict(custom_keys=[0.1, 0.0001])
+        optim_constructor = DefaultOptimizerConstructor(
+            optim_constructor, paramwise_cfg_)
+        optimizer = optim_constructor(model)
+
+    optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
+                                                    paramwise_cfg)
+    optimizer = optim_constructor(model)
+    # check optimizer type and default config
+    assert isinstance(optimizer, torch.optim.SGD)
+    assert optimizer.defaults['lr'] == base_lr
+    assert optimizer.defaults['momentum'] == momentum
+    assert optimizer.defaults['weight_decay'] == base_wd
+
+    # check params groups
+    param_groups = optimizer.param_groups
+
+    groups = []
+    group_settings = []
+    # group 1, matches of 'param1'
+    # 'param1' is the longest match for 'sub.param1'
+    groups.append(['param1', 'sub.param1'])
+    group_settings.append({
+        'lr': base_lr * 10,
+        'momentum': momentum,
+        'weight_decay': base_wd,
+    })
+    # group 2, matches of 'sub.gn'
+    groups.append(['sub.gn.weight', 'sub.gn.bias'])
+    group_settings.append({
+        'lr': base_lr * 0.01,
+        'momentum': momentum,
+        'weight_decay': base_wd,
+    })
+    # group 3, matches of 'sub'
+    groups.append(['sub.conv1.weight', 'sub.conv1.bias'])
+    group_settings.append({
+        'lr': base_lr * 0.1,
+        'momentum': momentum,
+        'weight_decay': 0,
+    })
+    # group 4, bn is configured by 'norm_decay_mult'
+    groups.append(['bn.weight', 'bn.bias'])
+    group_settings.append({
+        'lr': base_lr,
+        'momentum': momentum,
+        'weight_decay': base_wd * 0.5,
+    })
+    # group 5, default group
+    groups.append(['conv1.weight', 'conv2.weight', 'conv2.bias'])
+    group_settings.append({
+        'lr': base_lr,
+        'momentum': momentum,
+        'weight_decay': base_wd
+    })
+
+    assert len(param_groups) == 11
+    for i, (name, param) in enumerate(model.named_parameters()):
+        assert torch.equal(param_groups[i]['params'][0], param)
+        for group, settings in zip(groups, group_settings):
+            if name in group:
+                for setting in settings:
+                    assert param_groups[i][setting] == settings[
+                        setting], f'{name} {setting}'
+
 
 def test_torch_optimizers():
     torch_optimizers = [
