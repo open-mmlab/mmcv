@@ -455,7 +455,6 @@ def test_default_optimizer_constructor():
     groups = []
     group_settings = []
     # group 1, matches of 'param1'
-    # 'param1' is the longest match for 'sub.param1'
     groups.append(['param1', 'sub.param1'])
     group_settings.append({
         'lr': base_lr * 10,
