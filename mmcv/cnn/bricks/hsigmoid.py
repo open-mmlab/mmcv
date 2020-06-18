@@ -15,7 +15,6 @@ class HSigmoid(nn.Module):
     def __init__(self):
         super(HSigmoid, self).__init__()
 
-    @staticmethod
     def forward(x):
         x = (x + 1) / 2
 
