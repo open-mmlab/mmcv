@@ -15,7 +15,7 @@ class HSigmoid(nn.Module):
     def __init__(self):
         super(HSigmoid, self).__init__()
 
-    def forward(x):
+    def forward(self, x):
         x = (x + 1) / 2
 
         return x.clamp_(0, 1)
