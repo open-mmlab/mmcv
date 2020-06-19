@@ -6,7 +6,7 @@ from .registry import ACTIVATION_LAYERS
 @ACTIVATION_LAYERS.register_module()
 class HSigmoid(nn.Module):
     """Hard Sigmoid Module. Apply the hard sigmoid function:
-    Hsigmoid(x) = min(max(0, (x + 1) / 2), 1)
+    Hsigmoid(x) = min(max((x + 1) / 2, 0), 1)
 
     Returns:
         Tensor: The output tensor.
