@@ -6,9 +6,10 @@ import pytest
 from mmcv.runner import init_dist
 
 
+@patch('torch.cuda.device_count', return_value=1)
 @patch('torch.distributed.init_process_group')
 @patch('subprocess.getoutput', return_value='127.0.0.1')
-def test_init_dist(mock_getoutput, mock_dist_init):
+def test_init_dist(mock_getoutput, mock_dist_init, mock_device_count):
     with pytest.raises(ValueError):
         # launcher must be one of {'pytorch', 'mpi', 'slurm'}
         init_dist('invaliad_launcher')
