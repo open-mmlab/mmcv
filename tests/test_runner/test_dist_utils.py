@@ -23,21 +23,21 @@ def test_init_dist(mock_getoutput, mock_dist_init):
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
     assert os.environ['RANK'] == '0'
-    mock_dist_init.assert_called_once_with(backend='nccl')
-    mock_dist_init.reset_mock()
+    mock_getoutput.assert_called_with('scontrol show hostname [0] | head -n1')
+    mock_dist_init.assert_called_with(backend='nccl')
 
     init_dist('slurm', port=29505)
     assert os.environ['MASTER_PORT'] == '29505'
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
     assert os.environ['RANK'] == '0'
-    mock_dist_init.assert_called_once_with(backend='nccl')
-    mock_dist_init.reset_mock()
+    mock_getoutput.assert_called_with('scontrol show hostname [0] | head -n1')
+    mock_dist_init.assert_called_with(backend='nccl')
 
     init_dist('slurm')
     assert os.environ['MASTER_PORT'] == '29505'
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
     assert os.environ['RANK'] == '0'
-    mock_dist_init.assert_called_once_with(backend='nccl')
-    mock_dist_init.reset_mock()
+    mock_getoutput.assert_called_with('scontrol show hostname [0] | head -n1')
+    mock_dist_init.assert_called_with(backend='nccl')
