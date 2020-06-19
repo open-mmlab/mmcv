@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch.nn.functional import relu6
 
@@ -18,5 +17,4 @@ def test_hswish():
     # test output shape
     assert output.shape == expected_output.shape
     # test output value
-    assert np.equal(output.cpu().data.numpy(),
-                    expected_output.cpu().data.numpy()).all()
+    assert torch.equal(output, expected_output)
