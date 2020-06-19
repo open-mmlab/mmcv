@@ -19,6 +19,7 @@ def test_init_dist(mock_getoutput, mock_dist_init):
     os.environ['SLURM_NODELIST'] = '[0]'  # haven't check the correct form
 
     init_dist('slurm')
+    # no port is specified, use default port 29500
     assert os.environ['MASTER_PORT'] == '29500'
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
@@ -27,6 +28,7 @@ def test_init_dist(mock_getoutput, mock_dist_init):
     mock_dist_init.assert_called_with(backend='nccl')
 
     init_dist('slurm', port=29505)
+    # port is specified with argument 'port'
     assert os.environ['MASTER_PORT'] == '29505'
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
@@ -35,6 +37,7 @@ def test_init_dist(mock_getoutput, mock_dist_init):
     mock_dist_init.assert_called_with(backend='nccl')
 
     init_dist('slurm')
+    # port is specified by environment variable 'MASTER_PORT'
     assert os.environ['MASTER_PORT'] == '29505'
     assert os.environ['MASTER_ADDR'] == '127.0.0.1'
     assert os.environ['WORLD_SIZE'] == '1'
