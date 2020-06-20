@@ -24,6 +24,8 @@ class TestIO:
         cls.gray_img_path = osp.join(cls.data_dir, 'grayscale.jpg')
         cls.gray_img_path_obj = Path(cls.gray_img_path)
         cls.gray_img_dim3_path = osp.join(cls.data_dir, 'grayscale_dim3.jpg')
+        cls.gray_alpha_img_path = osp.join(cls.data_dir, 'gray_alpha.png')
+        cls.palette_img_path = osp.join(cls.data_dir, 'palette.gif')
         cls.img = cv2.imread(cls.img_path)
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
@@ -65,10 +67,31 @@ class TestIO:
         with pytest.raises(TypeError):
             mmcv.imread(1)
 
+        # test arg backend pillow
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, 'grayscale', backend='pillow')
+        assert img_pil_gray_alpha.shape == (400, 500)
+        mean = img_pil_gray_alpha[300:, 400:].mean()
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, backend='pillow')
+        mean = img_pil_gray_alpha[300:, 400:].mean(axis=(0, 1))
+        assert_allclose(img_pil_gray_alpha[300:, 400:] - mean, 0)
+        assert img_pil_gray_alpha.shape == (400, 500, 3)
+        img_pil_gray_alpha = mmcv.imread(
+            self.gray_alpha_img_path, 'unchanged', backend='pillow')
+        assert img_pil_gray_alpha.shape == (400, 500, 2)
+        img_pil_palette = mmcv.imread(
+            self.palette_img_path, 'grayscale', backend='pillow')
+        assert img_pil_palette.shape == (300, 400)
+        img_pil_palette = mmcv.imread(self.palette_img_path, backend='pillow')
+        assert img_pil_palette.shape == (300, 400, 3)
+        img_pil_palette = mmcv.imread(
+            self.palette_img_path, 'unchanged', backend='pillow')
+        assert img_pil_palette.shape == (300, 400)
+
         # backend pillow
         mmcv.use_backend('pillow')
-        self.gray_alpha_img_path = osp.join(self.data_dir, 'gray_alpha.png')
-        self.palette_img_path = osp.join(self.data_dir, 'palette.gif')
         img_pil_grayscale1 = mmcv.imread(self.img_path, 'grayscale')
         assert img_pil_grayscale1.shape == (300, 400)
         img_pil_gray_alpha = mmcv.imread(self.gray_alpha_img_path, 'grayscale')
@@ -146,6 +169,9 @@ class TestIO:
         with pytest.raises(AssertionError):
             mmcv.use_backend('unsupport_backend')
 
+        with pytest.raises(ValueError):
+            mmcv.imread(self.img_path, 'unsupported_backend')
+
         mmcv.use_backend('cv2')
 
     def test_imfrombytes(self):
@@ -182,6 +208,14 @@ class TestIO:
         gray_img_dim3_cv2 = mmcv.imfrombytes(img_bytes, flag='grayscale')
         assert gray_img_dim3_cv2.shape == (300, 400)
 
+        # arg backend pillow, channel order: bgr
+        with open(self.img_path, 'rb') as f:
+            img_bytes = f.read()
+        img_pillow = mmcv.imfrombytes(img_bytes, backend='pillow')
+        assert img_pillow.shape == (300, 400, 3)
+        # Pillow and opencv decoding may not be the same
+        assert (img_cv2 == img_pillow).sum() / float(img_cv2.size) > 0.5
+
         # backend pillow, channel order: bgr
         mmcv.use_backend('pillow')
         with open(self.img_path, 'rb') as f:
@@ -200,7 +234,6 @@ class TestIO:
         assert_array_equal(img_cv2, img_turbojpeg)
 
         # backend turbojpeg, channel order: rgb
-        mmcv.use_backend('cv2')
         with open(self.img_path, 'rb') as f:
             img_bytes = f.read()
         img_rgb_turbojpeg = mmcv.imfrombytes(img_bytes, channel_order='rgb')
@@ -230,6 +263,11 @@ class TestIO:
 
         mmcv.use_backend('cv2')
 
+        with pytest.raises(ValueError):
+            with open(self.img_path, 'rb') as f:
+                img_bytes = f.read()
+            mmcv.imfrombytes(img_bytes, backend='unsupported_backend')
+
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
         out_file = osp.join(tempfile.gettempdir(), 'mmcv_test.jpg')
@@ -246,5 +284,12 @@ class TestIO:
     def test_no_turbojpeg(self):
         with pytest.raises(ImportError):
             mmcv.use_backend('turbojpeg')
+
+        mmcv.use_backend('cv2')
+
+    @patch('mmcv.image.io.Image', None)
+    def test_no_pillow(self):
+        with pytest.raises(ImportError):
+            mmcv.use_backend('pillow')
 
         mmcv.use_backend('cv2')

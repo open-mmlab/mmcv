@@ -6,9 +6,11 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
 from mmcv.utils import TORCH_VERSION
+from .registry import MODULE_WRAPPERS
 from .scatter_gather import scatter_kwargs
 
 
+@MODULE_WRAPPERS.register_module()
 class MMDistributedDataParallel(nn.Module):
 
     def __init__(self,
