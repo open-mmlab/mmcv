@@ -406,7 +406,7 @@ void DeformConvBackwardInputCUDAKernelLauncher(
   }
 }
 
-int DeformConvBackwardParametersCUDAKernelLauncher(
+void DeformConvBackwardParametersCUDAKernelLauncher(
     Tensor input, Tensor offset, Tensor gradOutput, Tensor gradWeight,
     Tensor columns, Tensor ones, int kW, int kH, int dW, int dH, int padW,
     int padH, int dilationW, int dilationH, int group, int deformable_group,

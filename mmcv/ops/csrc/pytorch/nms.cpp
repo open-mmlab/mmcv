@@ -185,8 +185,6 @@ Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
 }
 
 std::vector<std::vector<int> > nms_match_cpu(Tensor dets, float iou_threshold) {
-  AT_ASSERTM(!dets.type().is_cuda(), "dets must be a CPU tensor");
-
   auto x1_t = dets.select(1, 0).contiguous();
   auto y1_t = dets.select(1, 1).contiguous();
   auto x2_t = dets.select(1, 2).contiguous();
