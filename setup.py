@@ -158,10 +158,10 @@ def get_extensions():
         ]
         if torch.__version__ == 'parrots':
             from parrots.utils.build_extension import BuildExtension, Extension
-            op_files = glob.glob('./mmcv/op/csrc/parrots/*')
-            include_path = os.path.abspath('./mmcv/op/csrc')
-            ext_op = Extension(
-                name='mmcv.op_ext',
+            op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
+            include_path = os.path.abspath('./mmcv/ops/csrc')
+            ext_ops = Extension(
+                name='mmcv.ops_ext',
                 sources=op_files,
                 include_dirs=[include_path],
                 extra_compile_args={
@@ -169,20 +169,20 @@ def get_extensions():
                     'cxx': [],
                 },
                 cuda=True)
-            extensions.append(ext_op)
+            extensions.append(ext_ops)
         else:
             from torch.utils.cpp_extension import BuildExtension, CUDAExtension
-            op_files = glob.glob('./mmcv/op/csrc/pytorch/*')
-            include_path = os.path.abspath('./mmcv/op/csrc')
-            ext_op = CUDAExtension(
-                name='mmcv.op_ext',
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+            include_path = os.path.abspath('./mmcv/ops/csrc')
+            ext_ops = CUDAExtension(
+                name='mmcv.ops_ext',
                 sources=op_files,
                 include_dirs=[include_path],
                 extra_compile_args={
                     'nvcc': cuda_args,
                     'cxx': [],
                 })
-            extensions.append(ext_op)
+            extensions.append(ext_ops)
         global build_cmd
         build_cmd = BuildExtension
     except ModuleNotFoundError:

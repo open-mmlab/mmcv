@@ -33,7 +33,7 @@
   "regnetx_4.0gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_4.0gf-a88f671e.pth",
   "regnetx_6.4gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_6.4gf-006af45d.pth",
   "regnetx_8.0gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_8.0gf-3c68abe7.pth",
-  "regnetx_12gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_12gf-4c2a3350.pth"
+  "regnetx_12gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_12gf-4c2a3350.pth",
   "resnet50_v1c": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/resnet50_v1c-2cccc1ad.pth",
   "resnet101_v1c": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/resnet101_v1c-e67eebb6.pth"
 }
