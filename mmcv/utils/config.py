@@ -118,9 +118,8 @@ class Config:
                 for key, value in support_templates.items():
                     regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
                     config_file = re.sub(regexp, value, config_file)
-                tmp_config_file = open(temp_config_file.name, 'w')
-                tmp_config_file.write(config_file)
-                tmp_config_file.close()
+                with open(temp_config_file.name, 'w') as tmp_config_file:
+                    tmp_config_file.write(config_file)
             else:
                 shutil.copyfile(filename, temp_config_file.name)
 
