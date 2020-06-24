@@ -93,6 +93,24 @@ class Config:
                               f'file {filename}')
 
     @staticmethod
+    def _substitute_predefined_vars(filename, temp_config_name):
+        fileDirname = osp.dirname(filename)
+        fileBasename = osp.basename(filename)
+        fileBasenameNoExtension = osp.splitext(fileBasename)[0]
+        fileExtname = osp.splitext(filename)[1]
+        support_templates = dict(
+            fileDirname=fileDirname,
+            fileBasename=fileBasename,
+            fileBasenameNoExtension=fileBasenameNoExtension,
+            fileExtname=fileExtname)
+        config_file = open(filename).read()
+        for key, value in support_templates.items():
+            regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+            config_file = re.sub(regexp, value, config_file)
+        with open(temp_config_name, 'w') as tmp_config_file:
+            tmp_config_file.write(config_file)
+
+    @staticmethod
     def _file2dict(filename, use_predefined_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
@@ -106,20 +124,8 @@ class Config:
             temp_config_name = osp.basename(temp_config_file.name)
             # Substitute predefined variables
             if use_predefined_variables:
-                fileDirname = osp.dirname(filename)
-                fileBasename = osp.basename(filename)
-                fileBasenameNoExtension = osp.splitext(fileBasename)[0]
-                support_templates = dict(
-                    fileDirname=fileDirname,
-                    fileBasename=fileBasename,
-                    fileBasenameNoExtension=fileBasenameNoExtension,
-                    fileExtname=fileExtname)
-                config_file = open(filename).read()
-                for key, value in support_templates.items():
-                    regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
-                    config_file = re.sub(regexp, value, config_file)
-                with open(temp_config_file.name, 'w') as tmp_config_file:
-                    tmp_config_file.write(config_file)
+                Config._substitute_predefined_vars(filename,
+                                                   temp_config_file.name)
             else:
                 shutil.copyfile(filename, temp_config_file.name)
 
