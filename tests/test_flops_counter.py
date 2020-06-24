@@ -22,9 +22,6 @@ gt_results = [{'model': 'nn.Conv1d(3, 8, 3)', 'input': (3, 16), 'flops': 1120.0,
               {'model': 'nn.BatchNorm3d(3, 8)', 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},   # noqa: E501
               {'model': 'nn.SyncBatchNorm(8)', 'input': (8, 16, 16), 'flops': 4096.0, 'params': 16.0},  # noqa: E501
               {'model': 'nn.GroupNorm(2, 4)', 'input': (4, 16, 16), 'flops': 4096.0, 'params': 8},      # noqa: E501
-              {'model': 'nn.InstanceNorm1d(3, affine=True)', 'input': (3, 16), 'flops': 96.0, 'params': 6},     # noqa: E501
-              {'model': 'nn.InstanceNorm2d(3, affine=True)', 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6},   # noqa: E501
-              {'model': 'nn.InstanceNorm3d(3, affine=True)', 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6},    # noqa: E501
               {'model': 'nn.Sequential(nn.Conv2d(3, 8, 3), nn.Upsample((32, 32)))', 'input': (3, 16, 16), 'flops': 52096.0, 'params': 224},     # noqa: E501
               {'model': 'nn.Sequential(nn.Conv2d(3, 8, 3), nn.ReLU())', 'input': (3, 16, 16), 'flops': 45472.0, 'params': 224},     # noqa: E501
               {'model': 'nn.Sequential(nn.Conv2d(3, 8, 3), nn.ReLU6())', 'input': (3, 16, 16), 'flops': 45472.0, 'params': 224},    # noqa: E501
