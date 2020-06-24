@@ -25,6 +25,7 @@ except ImportError:
     ]
 else:
     from .env import TORCH_VERSION
+    from .flops_counter import get_model_complexity_info
     from .logging import get_logger, print_log
     from .parrots_wrapper import (CUDA_HOME, BuildExtension, CppExtension,
                                   CUDAExtension, DataLoader, PoolDataLoader,
@@ -46,5 +47,5 @@ else:
         '_AvgPoolNd', '_BatchNorm', '_ConvNd', '_ConvTransposeMixin',
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
-        'TORCH_VERSION'
+        'TORCH_VERSION', 'get_model_complexity_info'
     ]
