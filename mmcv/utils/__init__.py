@@ -47,4 +47,3 @@ else:
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION'
     ]
- 
