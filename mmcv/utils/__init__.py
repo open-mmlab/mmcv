@@ -1,3 +1,4 @@
+# flake8: noqa
 # Copyright (c) Open-MMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
 from .misc import (check_prerequisites, concat_list, is_list_of, is_seq_of,
