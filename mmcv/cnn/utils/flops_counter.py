@@ -29,9 +29,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .parrots_wrapper import (_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
-                              _AvgPoolNd, _BatchNorm, _ConvNd,
-                              _ConvTransposeMixin, _MaxPoolNd)
+from mmcv.utils.parrots_wrapper import (_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
+                                        _AvgPoolNd, _BatchNorm, _ConvNd,
+                                        _ConvTransposeMixin, _MaxPoolNd)
 
 
 def get_model_complexity_info(model,
