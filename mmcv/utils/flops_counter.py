@@ -387,23 +387,23 @@ def deconv_flops_counter_hook(conv_module, input, output):
     input = input[0]
 
     batch_size = input.shape[0]
-    input_height, input_width = input.shape[2:]
+    output_dims = list(output.shape[2:])
 
-    kernel_height, kernel_width = conv_module.kernel_size
+    kernel_dims = list(conv_module.kernel_size)
     in_channels = conv_module.in_channels
     out_channels = conv_module.out_channels
     groups = conv_module.groups
 
     filters_per_channel = out_channels // groups
-    conv_per_position_flops = (
-        kernel_height * kernel_width * in_channels * filters_per_channel)
+    conv_per_position_flops = np.prod(
+        kernel_dims) * in_channels * filters_per_channel
 
-    active_elements_count = batch_size * input_height * input_width
+    active_elements_count = batch_size * np.prod(output_dims)
     overall_conv_flops = conv_per_position_flops * active_elements_count
     bias_flops = 0
     if conv_module.bias is not None:
-        output_height, output_width = output.shape[2:]
-        bias_flops = out_channels * batch_size * output_height * output_height
+        output_dims = list(output.shape[2:])
+        bias_flops = out_channels * batch_size * np.prod(output_dims)
     overall_flops = overall_conv_flops + bias_flops
 
     conv_module.__flops__ += int(overall_flops)
@@ -427,7 +427,6 @@ def conv_flops_counter_hook(conv_module, input, output):
 
     active_elements_count = batch_size * np.prod(output_dims)
     if conv_module.__mask__ is not None:
-        print('here')
         # (b, 1, h, w)
         output_height, output_width = output.shape[2:]
         flops_mask = conv_module.__mask__.expand(batch_size, 1, output_height,
