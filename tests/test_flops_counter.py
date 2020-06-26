@@ -12,32 +12,32 @@ except ImportError:
 
 # yapf: disable
 gt_results = [
-              {'model': 'nn.Conv1d(3, 8, 3)', 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},       # noqa: E501
-              {'model': 'nn.Conv2d(3, 8, 3)', 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},     # noqa: E501
-              {'model': 'nn.Conv3d(3, 8, 3)', 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},     # noqa: E501
-              {'model': 'nn.ReLU()', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},     # noqa: E501
-              {'model': 'nn.PReLU()', 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},    # noqa: E501
-              {'model': 'nn.ELU()', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.LeakyReLU()', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.ReLU6()', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},    # noqa: E501
-              {'model': 'nn.MaxPool1d(2)', 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.MaxPool2d(2)', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.MaxPool3d(2)', 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AvgPool1d(2)', 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AvgPool2d(2)', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AvgPool3d(2)', 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveMaxPool1d(2)', 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveMaxPool2d(2)', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveMaxPool3d(2)', 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveAvgPool1d(2)', 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveAvgPool2d(2)', 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.AdaptiveAvgPool3d(2)', 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': 'nn.BatchNorm1d(3, 8)', 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
-              {'model': 'nn.BatchNorm2d(3, 8)', 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
-              {'model': 'nn.BatchNorm3d(3, 8)', 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
-              {'model': 'nn.Linear(1024, 2)', 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},      # noqa: E501
-              {'model': 'nn.ConvTranspose2d(3, 8, 3)', 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},  # noqa: E501
-              {'model': 'nn.Upsample((32, 32))', 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0},  # noqa: E501
+              {'model': nn.Conv1d(3, 8, 3), 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},       # noqa: E501
+              {'model': nn.Conv2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},     # noqa: E501
+              {'model': nn.Conv3d(3, 8, 3), 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},     # noqa: E501
+              {'model': nn.ReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},     # noqa: E501
+              {'model': nn.PReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},    # noqa: E501
+              {'model': nn.ELU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.LeakyReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.ReLU6(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},    # noqa: E501
+              {'model': nn.MaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+              {'model': nn.MaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.MaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+              {'model': nn.AvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+              {'model': nn.AvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.AvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveMaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveMaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveMaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveAvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveAvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+              {'model': nn.AdaptiveAvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+              {'model': nn.BatchNorm1d(3, 8), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
+              {'model': nn.BatchNorm2d(3, 8), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
+              {'model': nn.BatchNorm3d(3, 8), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
+              {'model': nn.Linear(1024, 2), 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},      # noqa: E501
+              {'model': nn.ConvTranspose2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},  # noqa: E501
+              {'model': nn.Upsample((32, 32)), 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0},  # noqa: E501
 ]
 # yapf: enable
 
@@ -74,13 +74,6 @@ def test_flops_counter():
     for item in gt_results:
         model = item['model']
         input = item['input']
-        if 'SyncBatchNorm' in model:
-            if torch.cuda.is_available():
-                model = eval(model).cuda()
-            else:
-                continue
-        else:
-            model = eval(model)
         flops, params = get_model_complexity_info(
             model, input, as_strings=False, print_per_layer_stat=False)
         assert flops == item['flops'] and params == item['params']
