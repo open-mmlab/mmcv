@@ -107,6 +107,13 @@ def test_flops_counter():
     assert out.getvalue(
     ) == 'Conv1d(0.0 GMac, 100.000% MACs, 3, 8, kernel_size=(3,), stride=(1,))\n'  # noqa: E501
 
+    # test when model is not a common instance
+    model = nn.Sequential(nn.Conv2d(3, 8, 3), nn.Flatten(), nn.Linear(1568, 2))
+    x = (3, 16, 16)
+    flops, params = get_model_complexity_info(
+        model, x, as_strings=False, print_per_layer_stat=False)
+    assert flops == 47040.0 and params == 3362
+
 
 def test_flops_to_string():
     flops = 6.54321 * 10.**9
