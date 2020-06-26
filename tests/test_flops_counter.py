@@ -3,7 +3,8 @@ import torch
 import torch.nn as nn
 
 from mmcv.utils import get_model_complexity_info
-from mmcv.utils.flops_counter import flops_to_string, params_to_string
+from mmcv.utils.flops_counter import (add_flops_mask, conv_flops_counter_hook,
+                                      flops_to_string, params_to_string)
 
 try:
     from StringIO import StringIO
@@ -11,7 +12,8 @@ except ImportError:
     from io import StringIO
 
 # yapf: disable
-gt_results = [{'model': 'nn.Conv1d(3, 8, 3)', 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},       # noqa: E501
+gt_results = [{'model': 'nn.Linear(1024, 2)', 'input': (1, 1024), 'flops': 1.0, 'params': 2050.0},      # noqa: E501
+              {'model': 'nn.Conv1d(3, 8, 3)', 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},       # noqa: E501
               {'model': 'nn.Conv2d(3, 8, 3)', 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},     # noqa: E501
               {'model': 'nn.Conv3d(3, 8, 3)', 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},     # noqa: E501
               {'model': 'nn.ConvTranspose1d(3, 8, 3)', 'input': (3, 16), 'flops': 1440.0, 'params': 80.0},  # noqa: E501
@@ -114,6 +116,8 @@ def test_flops_to_string():
     assert flops_to_string(flops, 'Mac') == '6543210000.0 Mac'
     assert flops_to_string(flops, precision=4) == '6.5432 GMac'
 
+    flops = 6.54321 * 10.**9
+    assert flops_to_string(flops, None) == '6.54 GMac'
     flops = 3.21 * 10.**7
     assert flops_to_string(flops, None) == '32.1 MMac'
     flops = 5.4 * 10.**3
@@ -131,3 +135,17 @@ def test_params_to_string():
 
     params_num = 7.89 * 10.**2
     assert params_to_string(params_num) == '789.0'
+
+
+def test_add_mask():
+    model = nn.Conv2d(3, 8, 3)
+    mask = torch.ones(1, 1, 1, 1)
+    add_flops_mask(model, mask)
+    assert torch.equal(mask, model.__mask__)
+
+    model.__flops__ = 0
+    tensor_shape = (1, 3, 16, 16)
+    input_tensor = torch.randn(tensor_shape)
+    output_tensor = model(input_tensor)
+    conv_flops_counter_hook(model, input_tensor, output_tensor)
+    assert model.__flops__ == 131712

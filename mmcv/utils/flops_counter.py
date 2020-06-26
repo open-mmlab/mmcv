@@ -35,21 +35,47 @@ from .parrots_wrapper import (_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
 
 
 def get_model_complexity_info(model,
-                              input_res,
+                              input_shape,
                               print_per_layer_stat=True,
                               as_strings=True,
                               input_constructor=None,
                               ost=sys.stdout):
-    assert type(input_res) is tuple
-    assert len(input_res) >= 2
+    """Get complexity information of a model.
+
+    This method can calculate FLOPs and parameter counts of a model with
+    corresponding input shape. It can also print complexity information for
+    each layer in a model.
+
+    Args:
+        model (nn.Module): The model for complexity calculation.
+        input_shape (tuple): Input shape used for calculation.
+        print_per_layer_stat (bool): Whether to print complexity information
+            for each layer in a model. Default: True.
+        as_strings (bool): Output FLOPs and params counts in a string form.
+            Default: True.
+        input_constructor (None | callable): If specified, it takes a callable
+            method that generates input. otherwise, it will generate a random
+            tensor with input shape to calculate FLOPs. Default: None.
+        ost (stream): same as :func:`print`. Default: sys.stdout.
+
+    Returns:
+        str | float: If `as_strings` is set to True, it will return FLOPs in a
+            string format. otherwise, it will return that in a float number
+            format.
+        str | float: If `as_strings` is set to True, it will return parameter
+            counts in a string format. otherwise, it will return that in a
+            float number format.
+    """
+    assert type(input_shape) is tuple
+    assert len(input_shape) >= 2
     flops_model = add_flops_counting_methods(model)
     flops_model.eval().start_flops_count()
     if input_constructor:
-        input = input_constructor(input_res)
+        input = input_constructor(input_shape)
         _ = flops_model(**input)
     else:
         batch = torch.ones(()).new_empty(
-            (1, *input_res),
+            (1, *input_shape),
             dtype=next(flops_model.parameters()).dtype,
             device=next(flops_model.parameters()).device)
         flops_model(batch)
@@ -67,6 +93,18 @@ def get_model_complexity_info(model,
 
 
 def flops_to_string(flops, units='GMac', precision=2):
+    """Convert FLOPs number into a string.
+
+    Args:
+        flops (float): FLOPs number to be converted.
+        units (None | str): Converted FLOPs units. Options are None, "GMac",
+            "MMac", "KMac", "Mac". If set to None, it will automatically
+            choose the most suitable unit for FLOPs. Default: 'GMac'.
+        precision (int): Digit number after the decimal point. Default: 2.
+
+    Return:
+        str: The converted FLOPs number.
+    """
     if units is None:
         if flops // 10**9 > 0:
             return str(round(flops / 10.**9, precision)) + ' GMac'
@@ -88,17 +126,21 @@ def flops_to_string(flops, units='GMac', precision=2):
 
 
 def params_to_string(params_num):
-    """converting number to string
+    """Convert parameter number into a string.
 
-    :param float params_num: number
-    :returns str: number
+    Args:
+        params_num (float): Parameter number to be converted.
 
-    >>> params_to_string(1e9)
-    '1000.0 M'
-    >>> params_to_string(2e5)
-    '200.0 k'
-    >>> params_to_string(3e-9)
-    '3e-09'
+    Returns:
+        str: The converted parameter number.
+
+    Example:
+        >>> params_to_string(1e9)
+        '1000.0 M'
+        >>> params_to_string(2e5)
+        '200.0 k'
+        >>> params_to_string(3e-9)
+        '3e-09'
     """
     if params_num // 10**6 > 0:
         return str(round(params_num / 10**6, 2)) + ' M'
@@ -109,6 +151,47 @@ def params_to_string(params_num):
 
 
 def print_model_with_flops(model, units='GMac', precision=3, ost=sys.stdout):
+    """Print a model with FLOPs for each layer.
+
+    Args:
+        model (nn.Module): The model to be printed.
+        units (None | str): Converted FLOPs units. Default: 'GMac'.
+        precision (int): Digit number after the decimal point. Default: 3.
+        ost (stream): same as :func:`print`. Default: sys.stdout.
+
+    Example:
+        >>> class ExampleModel(nn.Module):
+
+        >>> def __init__(self):
+        >>>     super().__init__()
+        >>>     self.conv1 = nn.Conv2d(3, 8, 3)
+        >>>     self.conv2 = nn.Conv2d(8, 256, 3)
+        >>>     self.conv3 = nn.Conv2d(256, 8, 3)
+        >>>     self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
+        >>>     self.flatten = nn.Flatten()
+        >>>     self.fc = nn.Linear(8, 1)
+
+        >>> def forward(self, x):
+        >>>     x = self.conv1(x)
+        >>>     x = self.conv2(x)
+        >>>     x = self.conv3(x)
+        >>>     x = self.avg_pool(x)
+        >>>     x = self.flatten(x)
+        >>>     x = self.fc(x)
+        >>>     return x
+
+        >>> model = ExampleModel()
+        >>> print_model_with_flops(model)
+        ExampleModel(
+          0.005 GMac, 100.000% MACs,
+          (conv1): Conv2d(0.0 GMac, 0.959% MACs, 3, 8, kernel_size=(3, 3), stride=(1, 1))   # noqa: E501
+          (conv2): Conv2d(0.003 GMac, 58.760% MACs, 8, 256, kernel_size=(3, 3), stride=(1, 1))
+          (conv3): Conv2d(0.002 GMac, 40.264% MACs, 256, 8, kernel_size=(3, 3), stride=(1, 1))
+          (avg_pool): AdaptiveAvgPool2d(0.0 GMac, 0.017% MACs, output_size=(1, 1))
+          (flatten): Flatten(0.0 GMac, 0.000% MACs, )
+          (fc): Linear(0.0 GMac, 0.000% MACs, in_features=8, out_features=1, bias=True)
+        )
+    """
     total_flops = model.compute_average_flops_cost()
 
     def accumulate_flops(self):
@@ -150,6 +233,14 @@ def print_model_with_flops(model, units='GMac', precision=3, ost=sys.stdout):
 
 
 def get_model_parameters_number(model):
+    """Calculate parameter number of a model.
+
+    Args:
+        model (nn.module): The model for parameter number calculation.
+
+    Returns:
+        float: Parameter number of the model.
+    """
     params_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return params_num
 
@@ -335,8 +426,8 @@ def conv_flops_counter_hook(conv_module, input, output):
         kernel_dims) * in_channels * filters_per_channel
 
     active_elements_count = batch_size * np.prod(output_dims)
-
     if conv_module.__mask__ is not None:
+        print('here')
         # (b, 1, h, w)
         output_height, output_width = output.shape[2:]
         flops_mask = conv_module.__mask__.expand(batch_size, 1, output_height,
@@ -357,10 +448,10 @@ def conv_flops_counter_hook(conv_module, input, output):
 
 
 hook_mapping = {
-    # conv
-    _ConvNd: conv_flops_counter_hook,
     # deconv
     _ConvTransposeMixin: deconv_flops_counter_hook,
+    # conv
+    _ConvNd: conv_flops_counter_hook,
     # fc
     nn.Linear: linear_flops_counter_hook,
     # pooling
