@@ -3,7 +3,7 @@ from abc import ABCMeta
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.utils.weight_init import constant_init, normal_init
+from ..utils import constant_init, normal_init
 from .conv_module import ConvModule
 
 

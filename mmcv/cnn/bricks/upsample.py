@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.cnn.utils.weight_init import xavier_init
+from ..utils import xavier_init
 from .registry import UPSAMPLE_LAYERS
 
 UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
