@@ -12,32 +12,32 @@ except ImportError:
 
 # yapf: disable
 gt_results = [
-              {'model': nn.Conv1d(3, 8, 3), 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},       # noqa: E501
-              {'model': nn.Conv2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},     # noqa: E501
-              {'model': nn.Conv3d(3, 8, 3), 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},     # noqa: E501
-              {'model': nn.ReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},     # noqa: E501
-              {'model': nn.PReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},    # noqa: E501
-              {'model': nn.ELU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.LeakyReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.ReLU6(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},    # noqa: E501
-              {'model': nn.MaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': nn.MaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.MaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': nn.AvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': nn.AvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.AvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveMaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveMaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveMaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveAvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveAvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-              {'model': nn.AdaptiveAvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-              {'model': nn.BatchNorm1d(3, 8), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
-              {'model': nn.BatchNorm2d(3, 8), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
-              {'model': nn.BatchNorm3d(3, 8), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
-              {'model': nn.Linear(1024, 2), 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},      # noqa: E501
-              {'model': nn.ConvTranspose2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},  # noqa: E501
-              {'model': nn.Upsample((32, 32)), 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0},  # noqa: E501
+    {'model': nn.Conv1d(3, 8, 3), 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},  # noqa: E501
+    {'model': nn.Conv2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},  # noqa: E501
+    {'model': nn.Conv3d(3, 8, 3), 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},  # noqa: E501
+    {'model': nn.ReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.PReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},  # noqa: E501
+    {'model': nn.ELU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.LeakyReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.ReLU6(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.MaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+    {'model': nn.MaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.MaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+    {'model': nn.AvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+    {'model': nn.AvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.AvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveMaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveMaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveMaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveAvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveAvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
+    {'model': nn.AdaptiveAvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
+    {'model': nn.BatchNorm1d(3, 8), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
+    {'model': nn.BatchNorm2d(3, 8), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
+    {'model': nn.BatchNorm3d(3, 8), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
+    {'model': nn.Linear(1024, 2), 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},  # noqa: E501
+    {'model': nn.ConvTranspose2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},  # noqa: E501
+    {'model': nn.Upsample((32, 32)), 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0}  # noqa: E501
 ]
 # yapf: enable
 
@@ -101,8 +101,8 @@ def test_flops_counter():
     x = (3, 16)
     out = StringIO()
     get_model_complexity_info(model, x, ost=out)
-    assert out.getvalue(
-    ) == 'Conv1d(0.0 M, 100.000% Params, 0.0 GFLOPs, 100.000% FLOPs, 3, 8, kernel_size=(3,), stride=(1,))\n'  # noqa: E501
+    assert out.getvalue() == \
+        'Conv1d(0.0 M, 100.000% Params, 0.0 GFLOPs, 100.000% FLOPs, 3, 8, kernel_size=(3,), stride=(1,))\n'  # noqa: E501
 
     # test when model is not a common instance
     model = nn.Sequential(nn.Conv2d(3, 8, 3), nn.Flatten(), nn.Linear(1568, 2))

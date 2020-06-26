@@ -45,18 +45,18 @@ def get_model_complexity_info(model,
     each layer in a model.
 
     Supported layers are listed as below:
-        Convolutions: `nn.Conv1d`, `nn.Conv2d`, `nn.Conv3d`.
-        Activations: `nn.ReLU`, `nn.PReLU`, `nn.ELU`, `nn.LeakyReLU`,
+        - Convolutions: `nn.Conv1d`, `nn.Conv2d`, `nn.Conv3d`.
+        - Activations: `nn.ReLU`, `nn.PReLU`, `nn.ELU`, `nn.LeakyReLU`,
             `nn.ReLU6`.
-        Poolings: `nn.MaxPool1d`, `nn.MaxPool2d`, `nn.MaxPool3d`,
+        - Poolings: `nn.MaxPool1d`, `nn.MaxPool2d`, `nn.MaxPool3d`,
             `nn.AvgPool1d`, `nn.AvgPool2d`, `nn.AvgPool3d`,
             `nn.AdaptiveMaxPool1d`, `nn.AdaptiveMaxPool2d`,
             `nn.AdaptiveMaxPool3d`, `nn.AdaptiveAvgPool1d`,
             `nn.AdaptiveAvgPool2d`, `nn.AdaptiveAvgPool3d`.
-        BatchNorms: `nn.BatchNorm1d`, `nn.BatchNorm2d`, `nn.BatchNorm3d`.
-        Linear: `nn.Linear`.
-        Deconvolution: `nn.ConvTranspose2d`.
-        Upsample: `nn.Upsample`.
+        - BatchNorms: `nn.BatchNorm1d`, `nn.BatchNorm2d`, `nn.BatchNorm3d`.
+        - Linear: `nn.Linear`.
+        - Deconvolution: `nn.ConvTranspose2d`.
+        - Upsample: `nn.Upsample`.
 
     Args:
         model (nn.Module): The model for complexity calculation.
@@ -73,12 +73,9 @@ def get_model_complexity_info(model,
             Default: sys.stdout.
 
     Returns:
-        str | float: If `as_strings` is set to True, it will return FLOPs in a
-            string format. otherwise, it will return that in a float number
-            format.
-        str | float: If `as_strings` is set to True, it will return parameter
-            counts in a string format. otherwise, it will return that in a
-            float number format.
+        tuple[float | str]: If `as_strings` is set to True, it will return
+            FLOPs and parameter counts in a string format. otherwise, it will
+            return those in a float number format.
     """
     assert type(input_shape) is tuple
     assert len(input_shape) >= 1
@@ -427,7 +424,6 @@ def pool_flops_counter_hook(module, input, output):
 
 
 def bn_flops_counter_hook(module, input, output):
-    module.affine
     input = input[0]
 
     batch_flops = np.prod(input.shape)
