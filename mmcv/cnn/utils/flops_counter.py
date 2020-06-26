@@ -266,12 +266,14 @@ def add_flops_counting_methods(net_main_module):
 
 
 def compute_average_flops_cost(self):
-    """
-    A method that will be available after add_flops_counting_methods() is
-    called on a desired net object.
-    Returns current mean flops consumption per image.
-    """
+    """Compute average FLOPs cost.
 
+    A method to compute average FLOPs cost, which will be available after
+    `add_flops_counting_methods()` is called on a desired net object.
+
+    Returns:
+        float: Current mean flops consumption per image.
+    """
     batches_count = self.__batch_counter__
     flops_sum = 0
     for module in self.modules():
@@ -282,32 +284,32 @@ def compute_average_flops_cost(self):
 
 
 def start_flops_count(self):
-    """
-    A method that will be available after add_flops_counting_methods() is
-    called on a desired net object.
-    Activates the computation of mean flops consumption per image.
-    Call it before you run the network.
+    """Activate the computation of mean flops consumption per image.
+
+    A method to activate the computation of mean flops consumption per image.
+    which will be available after `add_flops_counting_methods()` is called on
+    a desired net object. It should be called before running the network.
     """
     add_batch_counter_hook_function(self)
     self.apply(add_flops_counter_hook_function)
 
 
 def stop_flops_count(self):
-    """
-    A method that will be available after add_flops_counting_methods() is
-    called on a desired net object.
-    Stops computing the mean flops consumption per image.
-    Call whenever you want to pause the computation.
+    """Stop computing the mean flops consumption per image.
+
+    A method to stop computing the mean flops consumption per image, which
+    will be available after `add_flops_counting_methods()` is called on a
+    desired net object. It can be called to pause the computation whenever.
     """
     remove_batch_counter_hook_function(self)
     self.apply(remove_flops_counter_hook_function)
 
 
 def reset_flops_count(self):
-    """
-    A method that will be available after add_flops_counting_methods() is
-    called on a desired net object.
-    Resets statistics computed so far.
+    """Reset statistics computed so far.
+
+    A method to Reset computed statistics, which will be available
+    after `add_flops_counting_methods()` is called on a desired net object.
     """
     add_batch_counter_variables_or_reset(self)
     self.apply(add_flops_counter_variable_or_reset)
