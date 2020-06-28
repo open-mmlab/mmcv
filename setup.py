@@ -175,6 +175,8 @@ def get_extensions():
         else:
             from torch.utils.cpp_extension import (BuildExtension,
                                                    CUDAExtension, CppExtension)
+            # prevent ninja from using too many resources
+            os.environ.setdefault('MAX_JOBS', '4')
             define_macros = []
             extra_compile_args = {'cxx': []}
 
@@ -217,7 +219,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',

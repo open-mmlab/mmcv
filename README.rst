@@ -24,12 +24,12 @@ and `MMAction <https://github.com/open-mmlab/mmaction>`_.
 It provides the following functionalities.
 
 - Universal IO APIs
-- Image processing
-- Video processing
+- Image/Video processing
 - Image and annotation visualization
 - Useful utilities (progress bar, timer, ...)
 - PyTorch runner with hooking mechanism
 - Various CNN architectures
+- High-quality implementation of common CUDA ops
 
 See the `documentation <http://mmcv.readthedocs.io/en/latest>`_ for more features and usage.
 
