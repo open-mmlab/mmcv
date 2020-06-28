@@ -202,14 +202,14 @@ def get_extensions():
         global build_cmd
         build_cmd = BuildExtension
     except ModuleNotFoundError:
-        print('Not build ext ops.')
+        print('Skip building ext ops due to the absence of torch.')
     return extensions
 
 
 setup(
     name='mmcv',
     version=get_version(),
-    description='Open MMLab Computer Vision Foundation',
+    description='OpenMMLab Computer Vision Foundation',
     long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
@@ -225,7 +225,7 @@ setup(
         'Topic :: Utilities',
     ],
     url='https://github.com/open-mmlab/mmcv',
-    author='Kai Chen',
+    author='MMCV Authors',
     author_email='chenkaidev@gmail.com',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
