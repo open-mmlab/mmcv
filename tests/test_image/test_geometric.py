@@ -201,23 +201,23 @@ class TestGeometric:
         patches = mmcv.imcrop(self.img, bboxes)
         assert len(patches) == bboxes.shape[0]
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and no padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2)
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/scale_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/scale_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=[255, 255, 0])
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/pad_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/pad_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=0)
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/pad0_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/pad0_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
     def test_impad(self):

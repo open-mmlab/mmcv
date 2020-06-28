@@ -28,3 +28,11 @@ repos:
         args: ["--remove"]
       - id: mixed-line-ending
         args: ["--fix=lf"]
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        description: Format files with ClangFormat
+        entry: clang-format -i
+        language: system
+        files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)$

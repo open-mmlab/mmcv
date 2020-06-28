@@ -1,12 +1,16 @@
+import glob
+import os
 import platform
 import re
+import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
-from setuptools import Extension, dist, find_packages, setup
+from setuptools import dist, find_packages, setup
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # NOQA: E402  # isort:skip
-from Cython.Distutils import build_ext  # NOQA: E402  # isort:skip
+from Cython.Build import cythonize  # NOQA: E402  # isort:skip
+from Cython.Distutils import build_ext as build_cmd  # NOQA: E402  # isort:skip
 
 
 def choose_requirement(primary, secondary):
@@ -121,16 +125,19 @@ install_requires = parse_requirements()
 for main, secondary in CHOOSE_INSTALL_REQUIRES:
     install_requires.append(choose_requirement(main, secondary))
 
-if platform.system() == 'Darwin':
-    extra_compile_args = ['-stdlib=libc++']
-    extra_link_args = ['-stdlib=libc++']
-else:
-    extra_compile_args = []
-    extra_link_args = []
 
-EXT_MODULES = [
-    Extension(
-        name='mmcv._ext',
+def get_extensions():
+    extensions = []
+
+    if platform.system() == 'Darwin':
+        extra_compile_args = ['-stdlib=libc++']
+        extra_link_args = ['-stdlib=libc++']
+    else:
+        extra_compile_args = []
+        extra_link_args = []
+
+    ext_flow = setuptools.Extension(
+        name='mmcv._flow_warp_ext',
         sources=[
             './mmcv/video/optflow_warp/flow_warp.cpp',
             './mmcv/video/optflow_warp/flow_warp_module.pyx'
@@ -138,14 +145,71 @@ EXT_MODULES = [
         include_dirs=[numpy.get_include()],
         language='c++',
         extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-    ),
-]
+        extra_link_args=extra_link_args)
+    extensions.extend(cythonize(ext_flow))
+
+    try:
+        import torch
+        cuda_args = [
+            '-gencode=arch=compute_52,code=sm_52',
+            '-gencode=arch=compute_60,code=sm_60',
+            '-gencode=arch=compute_61,code=sm_61',
+            '-gencode=arch=compute_70,code=sm_70',
+            '-gencode=arch=compute_70,code=compute_70'
+        ]
+        ext_name = 'mmcv._ext'
+        if torch.__version__ == 'parrots':
+            from parrots.utils.build_extension import BuildExtension, Extension
+            op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
+            include_path = os.path.abspath('./mmcv/ops/csrc')
+            ext_ops = Extension(
+                name=ext_name,
+                sources=op_files,
+                include_dirs=[include_path],
+                extra_compile_args={
+                    'nvcc': cuda_args,
+                    'cxx': [],
+                },
+                cuda=True)
+            extensions.append(ext_ops)
+        else:
+            from torch.utils.cpp_extension import (BuildExtension,
+                                                   CUDAExtension, CppExtension)
+            # prevent ninja from using too many resources
+            os.environ.setdefault('MAX_JOBS', '4')
+            define_macros = []
+            extra_compile_args = {'cxx': []}
+
+            if (torch.cuda.is_available()
+                    or os.getenv('FORCE_CUDA', '0') == '1'):
+                define_macros += [('WITH_CUDA', None)]
+                extra_compile_args['nvcc'] = cuda_args
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+                extension = CUDAExtension
+            else:
+                print(f'Compiling {ext_name} without CUDA')
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+                extension = CppExtension
+
+            include_path = os.path.abspath('./mmcv/ops/csrc')
+            ext_ops = extension(
+                name=ext_name,
+                sources=op_files,
+                include_dirs=[include_path],
+                define_macros=define_macros,
+                extra_compile_args=extra_compile_args)
+            extensions.append(ext_ops)
+        global build_cmd
+        build_cmd = BuildExtension
+    except ModuleNotFoundError:
+        print('Skip building ext ops due to the absence of torch.')
+    return extensions
+
 
 setup(
     name='mmcv',
     version=get_version(),
-    description='Open MMLab Computer Vision Foundation',
+    description='OpenMMLab Computer Vision Foundation',
     long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
@@ -155,18 +219,17 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Topic :: Utilities',
     ],
     url='https://github.com/open-mmlab/mmcv',
-    author='Kai Chen',
+    author='MMCV Authors',
     author_email='chenkaidev@gmail.com',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=install_requires,
-    ext_modules=EXT_MODULES,
-    cmdclass={'build_ext': build_ext},
+    ext_modules=get_extensions(),
+    cmdclass={'build_ext': build_cmd},
     zip_safe=False)

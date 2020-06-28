@@ -48,7 +48,10 @@ extensions = [
     'recommonmark',
 ]
 
-autodoc_mock_imports = ['cv2', 'mmcv._ext', 'torchvision']
+autodoc_mock_imports = [
+    'cv2', 'mmcv._ext', 'mmcv._flow_warp_ext', 'mmcv.utils.ext_loader',
+    'torchvision'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
