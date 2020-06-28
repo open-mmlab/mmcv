@@ -7,7 +7,7 @@ from torch.nn.modules.module import Module
 from ..cnn import UPSAMPLE_LAYERS, normal_init, xavier_init
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('ops_ext', [
+ext_module = ext_loader.load_ext('_ext', [
     'carafe_naive_forward', 'carafe_naive_backward', 'carafe_forward',
     'carafe_backward'
 ])

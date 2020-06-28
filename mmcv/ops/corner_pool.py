@@ -3,7 +3,7 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('ops_ext', [
+ext_module = ext_loader.load_ext('_ext', [
     'top_pool_forward', 'top_pool_backward', 'bottom_pool_forward',
     'bottom_pool_backward', 'left_pool_forward', 'left_pool_backward',
     'right_pool_forward', 'right_pool_backward'

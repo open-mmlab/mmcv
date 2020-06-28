@@ -3,7 +3,7 @@ import torch
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('ops_ext', ['nms', 'softnms', 'nms_match'])
+ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 
 
 def nms(boxes, scores, iou_threshold, offset=0):

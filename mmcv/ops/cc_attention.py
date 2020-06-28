@@ -7,8 +7,7 @@ from mmcv.cnn import Scale
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    'ops_ext',
-    ['ca_forward', 'ca_backward', 'ca_map_forward', 'ca_map_backward'])
+    '_ext', ['ca_forward', 'ca_backward', 'ca_map_forward', 'ca_map_backward'])
 
 
 class CAWeightFunction(torch.autograd.Function):

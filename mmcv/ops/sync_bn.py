@@ -8,7 +8,7 @@ from torch.nn.parameter import Parameter
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('ops_ext', [
+ext_module = ext_loader.load_ext('_ext', [
     'sync_bn_forward_mean', 'sync_bn_forward_var', 'sync_bn_forward_output',
     'sync_bn_backward_param', 'sync_bn_backward_data'
 ])

@@ -11,7 +11,7 @@ if torch.__version__ == 'parrots':
 else:
     from ..utils import ext_loader
     ext_module = ext_loader.load_ext(
-        'ops_ext', ['get_compiler_version', 'get_compiling_cuda_version'])
+        '_ext', ['get_compiler_version', 'get_compiling_cuda_version'])
 
     def get_compiler_version():
         return ext_module.get_compiler_version()

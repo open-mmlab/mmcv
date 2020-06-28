@@ -10,7 +10,7 @@ from torch.nn.modules.utils import _pair, _single
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
-ext_module = ext_loader.load_ext('ops_ext', [
+ext_module = ext_loader.load_ext('_ext', [
     'deform_conv_forward', 'deform_conv_backward_input',
     'deform_conv_backward_parameters'
 ])

@@ -6,7 +6,7 @@ from torch.nn.modules.utils import _pair
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    'ops_ext', ['deform_roi_pool_forward', 'deform_roi_pool_backward'])
+    '_ext', ['deform_roi_pool_forward', 'deform_roi_pool_backward'])
 
 
 class DeformRoIPoolFunction(Function):

@@ -1,6 +1,6 @@
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('ops_ext', ['bbox_overlaps'])
+ext_module = ext_loader.load_ext('_ext', ['bbox_overlaps'])
 
 
 def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):

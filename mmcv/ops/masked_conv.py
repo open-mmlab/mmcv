@@ -9,7 +9,7 @@ from torch.nn.modules.utils import _pair
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    'ops_ext', ['masked_im2col_forward', 'masked_col2im_forward'])
+    '_ext', ['masked_im2col_forward', 'masked_col2im_forward'])
 
 
 class MaskedConv2dFunction(Function):

@@ -137,7 +137,7 @@ def get_extensions():
         extra_link_args = []
 
     ext_flow = setuptools.Extension(
-        name='mmcv._ext',
+        name='mmcv._flow_warp_ext',
         sources=[
             './mmcv/video/optflow_warp/flow_warp.cpp',
             './mmcv/video/optflow_warp/flow_warp_module.pyx'
@@ -157,7 +157,7 @@ def get_extensions():
             '-gencode=arch=compute_70,code=sm_70',
             '-gencode=arch=compute_70,code=compute_70'
         ]
-        ext_name = 'mmcv.ops_ext'
+        ext_name = 'mmcv._ext'
         if torch.__version__ == 'parrots':
             from parrots.utils.build_extension import BuildExtension, Extension
             op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
