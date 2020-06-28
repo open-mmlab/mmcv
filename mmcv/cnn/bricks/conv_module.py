@@ -2,7 +2,7 @@ import warnings
 
 import torch.nn as nn
 
-from ..weight_init import constant_init, kaiming_init
+from ..utils import constant_init, kaiming_init
 from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .norm import build_norm_layer
