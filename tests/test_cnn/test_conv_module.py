@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import CONV_LAYERS, ConvModule, HSwish, HSigmoid
+from mmcv.cnn.bricks import CONV_LAYERS, ConvModule, HSigmoid, HSwish
 
 
 @CONV_LAYERS.register_module()
