@@ -1,6 +1,5 @@
-#include "pytorch_cuda_helper.hpp"
-
 #include "deform_roi_pool_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
                                             Tensor offset, Tensor output,

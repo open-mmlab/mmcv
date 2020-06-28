@@ -1,6 +1,5 @@
-#include "pytorch_cuda_helper.hpp"
-
 #include "masked_conv2d_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void MaskedIm2colForwardCUDAKernelLauncher(const Tensor bottom_data,
                                            const Tensor mask_h_idx,

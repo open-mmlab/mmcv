@@ -6,9 +6,8 @@
 
 #include <THC/THCDeviceUtils.cuh>
 
-#include "pytorch_cuda_helper.hpp"
-
 #include "psamask_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void PSAMaskForwardCUDAKernelLauncher(const int psa_type, const Tensor input,
                                       Tensor output, const int num_,

@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "deform_roi_pool_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void DeformRoIPoolForwardCUDAKernelLauncher(
     const DArrayLite input, const DArrayLite rois, const DArrayLite offset,

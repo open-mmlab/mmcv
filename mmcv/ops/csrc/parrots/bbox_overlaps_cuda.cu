@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "bbox_overlaps_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void BBoxOverlapsCUDAKernelLauncher(const DArrayLite bboxes1,
                                     const DArrayLite bboxes2, DArrayLite ious,

@@ -1,6 +1,5 @@
-#include "pytorch_cuda_helper.hpp"
-
 #include "carafe_naive_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 int CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
                                          const Tensor masks, Tensor output,

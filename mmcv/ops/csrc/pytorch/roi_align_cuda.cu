@@ -1,5 +1,4 @@
 #include "pytorch_cuda_helper.hpp"
-
 #include "roi_align_kernel.cuh"
 
 void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,

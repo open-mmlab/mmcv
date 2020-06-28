@@ -1,6 +1,5 @@
-#include "pytorch_cuda_helper.hpp"
-
 #include "bbox_overlaps_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,

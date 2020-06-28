@@ -2,7 +2,6 @@
 // https://github.com/hszhao/semseg/blob/master/lib/psa/src
 
 #include "parrots_cuda_helper.hpp"
-
 #include "psamask_cuda_kernel.cuh"
 
 void PSAMaskForwardCUDAKernelLauncher(const int psa_type,

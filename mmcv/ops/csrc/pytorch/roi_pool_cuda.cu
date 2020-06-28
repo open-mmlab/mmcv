@@ -1,5 +1,4 @@
 #include "pytorch_cuda_helper.hpp"
-
 #include "roi_pool_kernel.cuh"
 
 void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,

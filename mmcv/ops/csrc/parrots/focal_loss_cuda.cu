@@ -1,5 +1,4 @@
 #include "parrots_cuda_helper.hpp"
-
 #include "sigmoid_focal_loss_kernel.cuh"
 #include "softmax_focal_loss_kernel.cuh"
 

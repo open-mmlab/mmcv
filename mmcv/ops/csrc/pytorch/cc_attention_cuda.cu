@@ -5,9 +5,8 @@
 
 #include <THC/THCDeviceUtils.cuh>
 
-#include "pytorch_cuda_helper.hpp"
-
 #include "cc_attention_cuda_kernel.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void CAForwardCUDAKernelLauncher(const Tensor t, const Tensor f,
                                  Tensor weight) {

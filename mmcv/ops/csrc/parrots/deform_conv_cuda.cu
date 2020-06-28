@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "deform_conv_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void deformable_im2col(DArrayLite data_im, DArrayLite data_offset,
                        const int channels, const int height, const int width,

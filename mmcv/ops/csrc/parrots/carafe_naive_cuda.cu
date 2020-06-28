@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "carafe_naive_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void CARAFENAIVEForwardCUDAKernelLauncher(
     const DArrayLite features, const DArrayLite masks, DArrayLite output,

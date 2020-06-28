@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "cc_attention_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void CAForwardCUDAKernelLauncher(const DArrayLite t, const DArrayLite f,
                                  DArrayLite weight, CudaContext &ctx,

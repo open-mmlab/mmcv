@@ -1,6 +1,5 @@
-#include "parrots_cuda_helper.hpp"
-
 #include "masked_conv2d_cuda_kernel.cuh"
+#include "parrots_cuda_helper.hpp"
 
 void MaskedIm2colForwardCUDAKernelLauncher(
     const DArrayLite bottom_data, const DArrayLite mask_h_idx,

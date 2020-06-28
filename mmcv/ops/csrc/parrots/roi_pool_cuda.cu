@@ -1,5 +1,4 @@
 #include "parrots_cuda_helper.hpp"
-
 #include "roi_pool_kernel.cuh"
 
 void ROIPoolForwardCUDAKernelLauncher(const DArrayLite input,

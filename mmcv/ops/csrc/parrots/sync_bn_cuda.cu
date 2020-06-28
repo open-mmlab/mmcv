@@ -1,5 +1,4 @@
 #include "parrots_cuda_helper.hpp"
-
 #include "sync_bn_cuda_kernel.cuh"
 
 void SyncBNForwardMeanCUDAKernelLauncher(const DArrayLite input,
