@@ -38,38 +38,38 @@ class SyncBatchNormFunction(Function):
         self.eps = eps
         self.group = group
         self.group_size = group_size
-        self.input_shape = input.shape
 
         assert isinstance(
                    input, (torch.HalfTensor, torch.FloatTensor,
                            torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
                f'only support Half or Float Tensor, but {input.type()}'
-        input = input.reshape(input.size(0), input.size(1), -1)
+        output = torch.empty_like(input)
+        input3d = input.view(input.size(0), input.size(1), -1)
+        output3d = output.view_as(input3d)
 
         mean = torch.empty(
-            input.size(1), dtype=torch.float, device=input.device)
+            input3d.size(1), dtype=torch.float, device=input3d.device)
         var = torch.empty(
-            input.size(1), dtype=torch.float, device=input.device)
-        if input.requires_grad or weight.requires_grad or bias.requires_grad:
+            input3d.size(1), dtype=torch.float, device=input3d.device)
+        if input3d.requires_grad or weight.requires_grad or bias.requires_grad:
             norm = torch.empty_like(
-                input, dtype=torch.float, device=input.device)
+                input3d, dtype=torch.float, device=input3d.device)
             std = torch.empty(
-                input.size(1), dtype=torch.float, device=input.device)
+                input3d.size(1), dtype=torch.float, device=input3d.device)
         else:
-            norm = torch.empty(0, dtype=torch.float, device=input.device)
-            std = torch.empty(0, dtype=torch.float, device=input.device)
-        output = torch.empty_like(input)
+            norm = torch.empty(0, dtype=torch.float, device=input3d.device)
+            std = torch.empty(0, dtype=torch.float, device=input3d.device)
 
-        ext_module.sync_bn_forward_mean(input, mean)
+        ext_module.sync_bn_forward_mean(input3d, mean)
         if self.group_size > 1:
             dist.all_reduce(mean, group=self.group)
             mean /= self.group_size
-        ext_module.sync_bn_forward_var(input, mean, var)
+        ext_module.sync_bn_forward_var(input3d, mean, var)
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
             var /= self.group_size
         ext_module.sync_bn_forward_output(
-            input,
+            input3d,
             mean,
             var,
             running_mean,
@@ -78,23 +78,24 @@ class SyncBatchNormFunction(Function):
             bias,
             norm,
             std,
-            output,
+            output3d,
             eps=self.eps,
             momentum=self.momentum,
             group_size=self.group_size)
         self.save_for_backward(norm, std, weight)
-        return output.reshape(self.input_shape)
+        return output
 
     @staticmethod
     @once_differentiable
     def backward(self, grad_output):
         norm, std, weight = self.saved_tensors
-        grad_output = grad_output.reshape(
-            grad_output.size(0), grad_output.size(1), -1)
         grad_weight = torch.empty_like(weight)
         grad_bias = torch.empty_like(weight)
         grad_input = torch.empty_like(grad_output)
-        ext_module.sync_bn_backward_param(grad_output, norm, grad_weight,
+        grad_output3d = grad_output.view(
+            grad_output.size(0), grad_output.size(1), -1)
+        grad_input3d = grad_input.view_as(grad_output3d)
+        ext_module.sync_bn_backward_param(grad_output3d, norm, grad_weight,
                                           grad_bias)
         # all reduce
         if self.group_size > 1:
@@ -102,9 +103,8 @@ class SyncBatchNormFunction(Function):
             dist.all_reduce(grad_bias, group=self.group)
             grad_weight /= self.group_size
             grad_bias /= self.group_size
-        ext_module.sync_bn_backward_data(grad_output, weight, grad_weight,
-                                         grad_bias, norm, std, grad_input)
-        grad_input = grad_input.reshape(self.input_shape)
+        ext_module.sync_bn_backward_data(grad_output3d, weight, grad_weight,
+                                         grad_bias, norm, std, grad_input3d)
         return grad_input, None, None, grad_weight, grad_bias, \
             None, None, None, None
 
@@ -138,9 +138,9 @@ class SyncBatchNorm(Module):
             self.register_buffer('num_batches_tracked',
                                  torch.tensor(0, dtype=torch.long))
         else:
-            self.register_parameter('running_mean', None)
-            self.register_parameter('running_var', None)
-            self.register_parameter('num_batches_tracked', None)
+            self.register_buffer('running_mean', None)
+            self.register_buffer('running_var', None)
+            self.register_buffer('num_batches_tracked', None)
         self.reset_parameters()
 
     def reset_running_stats(self):

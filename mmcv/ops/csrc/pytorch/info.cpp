@@ -1,13 +1,15 @@
 // modified from
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/vision.cpp
-#include <cuda_runtime_api.h>
-
 #include "pytorch_cpp_helper.hpp"
+
+#ifdef WITH_CUDA
+#include <cuda_runtime_api.h>
 int get_cudart_version() { return CUDART_VERSION; }
+#endif
 
 std::string get_compiling_cuda_version() {
+#ifdef WITH_CUDA
   std::ostringstream oss;
-
   // copied from
   // https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/cuda/detail/CUDAHooks.cpp#L231
   auto printCudaStyleVersion = [&](int v) {
@@ -18,6 +20,9 @@ std::string get_compiling_cuda_version() {
   };
   printCudaStyleVersion(get_cudart_version());
   return oss.str();
+#else
+  return std::string("not available");
+#endif
 }
 
 // similar to

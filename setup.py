@@ -151,17 +151,19 @@ def get_extensions():
     try:
         import torch
         cuda_args = [
+            '-gencode=arch=compute_52,code=sm_52',
             '-gencode=arch=compute_60,code=sm_60',
             '-gencode=arch=compute_61,code=sm_61',
             '-gencode=arch=compute_70,code=sm_70',
             '-gencode=arch=compute_70,code=compute_70'
         ]
+        ext_name = 'mmcv.ops_ext'
         if torch.__version__ == 'parrots':
             from parrots.utils.build_extension import BuildExtension, Extension
             op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
             include_path = os.path.abspath('./mmcv/ops/csrc')
             ext_ops = Extension(
-                name='mmcv.ops_ext',
+                name=ext_name,
                 sources=op_files,
                 include_dirs=[include_path],
                 extra_compile_args={
@@ -171,22 +173,34 @@ def get_extensions():
                 cuda=True)
             extensions.append(ext_ops)
         else:
-            from torch.utils.cpp_extension import BuildExtension, CUDAExtension
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+            from torch.utils.cpp_extension import (BuildExtension,
+                                                   CUDAExtension, CppExtension)
+            define_macros = []
+            extra_compile_args = {'cxx': []}
+
+            if (torch.cuda.is_available()
+                    or os.getenv('FORCE_CUDA', '0') == '1'):
+                define_macros += [('WITH_CUDA', None)]
+                extra_compile_args['nvcc'] = cuda_args
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+                extension = CUDAExtension
+            else:
+                print(f'Compiling {ext_name} without CUDA')
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+                extension = CppExtension
+
             include_path = os.path.abspath('./mmcv/ops/csrc')
-            ext_ops = CUDAExtension(
-                name='mmcv.ops_ext',
+            ext_ops = extension(
+                name=ext_name,
                 sources=op_files,
                 include_dirs=[include_path],
-                extra_compile_args={
-                    'nvcc': cuda_args,
-                    'cxx': [],
-                })
+                define_macros=define_macros,
+                extra_compile_args=extra_compile_args)
             extensions.append(ext_ops)
         global build_cmd
         build_cmd = BuildExtension
     except ModuleNotFoundError:
-        print('Not build ext op.')
+        print(f'Not build {ext_name}.')
     return extensions
 
 

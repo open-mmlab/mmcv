@@ -44,7 +44,8 @@ void deformable_col2im(DArrayLite data_col, DArrayLite data_offset,
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
   int width_col =
       (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
-  int num_kernels = channels * ksize_h * ksize_w * height_col * width_col;
+  int num_kernels =
+      channels * ksize_h * ksize_w * height_col * width_col * parallel_imgs;
   int channel_per_deformable_group = channels / deformable_group;
 
   PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -72,8 +73,8 @@ void deformable_col2im_coord(
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
   int width_col =
       (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
-  int num_kernels =
-      height_col * width_col * 2 * ksize_h * ksize_w * deformable_group;
+  int num_kernels = height_col * width_col * 2 * ksize_h * ksize_w *
+                    deformable_group * parallel_imgs;
   int channel_per_deformable_group =
       channels * ksize_h * ksize_w / deformable_group;
 

@@ -32,6 +32,8 @@ class TestSyncBN(object):
             print('must run with slurm has 4 processes!\n'
                   'srun -p test --gres=gpu:4 -n4')
             return
+        else:
+            print('Running syncbn test')
         from mmcv.ops import SyncBatchNorm
 
         assert size in (1, 2, 4)

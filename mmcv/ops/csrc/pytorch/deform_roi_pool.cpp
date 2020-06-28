@@ -1,5 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
+#ifdef WITH_CUDA
 void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
                                             Tensor offset, Tensor output,
                                             int pooled_height, int pooled_width,
@@ -30,12 +31,14 @@ void deform_roi_pool_backward_cuda(Tensor grad_output, Tensor input,
       grad_output, input, rois, offset, grad_input, grad_offset, pooled_height,
       pooled_width, spatial_scale, sampling_ratio, gamma);
 }
+#endif
 
 void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
                              Tensor output, int pooled_height, int pooled_width,
                              float spatial_scale, int sampling_ratio,
                              float gamma) {
   if (input.device().is_cuda()) {
+#ifdef WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(rois);
     CHECK_CUDA_INPUT(offset);
@@ -44,6 +47,11 @@ void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
     deform_roi_pool_forward_cuda(input, rois, offset, output, pooled_height,
                                  pooled_width, spatial_scale, sampling_ratio,
                                  gamma);
+#else
+    AT_ERROR("DeformRoIPool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("DeformRoIPool is not implemented on CPU");
   }
 }
 
@@ -53,6 +61,7 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma) {
   if (grad_output.device().is_cuda()) {
+#ifdef WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(rois);
@@ -63,5 +72,10 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
     deform_roi_pool_backward_cuda(grad_output, input, rois, offset, grad_input,
                                   grad_offset, pooled_height, pooled_width,
                                   spatial_scale, sampling_ratio, gamma);
+#else
+    AT_ERROR("DeformRoIPool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("DeformRoIPool is not implemented on CPU");
   }
 }

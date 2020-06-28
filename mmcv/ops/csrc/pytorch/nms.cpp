@@ -1,11 +1,13 @@
 #include "pytorch_cpp_helper.hpp"
 
+#ifdef WITH_CUDA
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
 Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   return NMSCUDAKernelLauncher(boxes, scores, iou_threshold, offset);
 }
+#endif
 
 Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.numel() == 0) {
@@ -60,9 +62,13 @@ Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.device().is_cuda()) {
+#ifdef WITH_CUDA
     CHECK_CUDA_INPUT(boxes);
     CHECK_CUDA_INPUT(scores);
     return nms_cuda(boxes, scores, iou_threshold, offset);
+#else
+    AT_ERROR("nms is not compiled with GPU support");
+#endif
   } else {
     CHECK_CPU_INPUT(boxes);
     CHECK_CPU_INPUT(scores);
@@ -177,7 +183,7 @@ Tensor softnms_cpu(Tensor boxes, Tensor scores, Tensor dets,
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset) {
   if (boxes.device().is_cuda()) {
-    AT_ERROR("No support for gpu softnms!");
+    AT_ERROR("softnms is not implemented on GPU");
   } else {
     return softnms_cpu(boxes, scores, dets, iou_threshold, sigma, min_score,
                        method, offset);
@@ -247,7 +253,7 @@ std::vector<std::vector<int> > nms_match_cpu(Tensor dets, float iou_threshold) {
 
 std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold) {
   if (dets.device().is_cuda()) {
-    AT_ERROR("No support for gpu nms_match!");
+    AT_ERROR("nms_match is not implemented on GPU");
   } else {
     return nms_match_cpu(dets, iou_threshold);
   }

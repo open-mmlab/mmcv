@@ -1,5 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
+#ifdef WITH_CUDA
 void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
                                      Tensor rmasks, Tensor output,
@@ -31,11 +32,13 @@ void carafe_backward_cuda(Tensor top_grad, Tensor rfeatures, Tensor masks,
                                    bottom_grad, mask_grad, kernel_size,
                                    group_size, scale_factor);
 }
+#endif
 
 void carafe_forward(Tensor features, Tensor masks, Tensor rfeatures,
                     Tensor routput, Tensor rmasks, Tensor output,
                     int kernel_size, int group_size, int scale_factor) {
   if (features.device().is_cuda()) {
+#ifdef WITH_CUDA
     CHECK_CUDA_INPUT(features);
     CHECK_CUDA_INPUT(masks);
     CHECK_CUDA_INPUT(rfeatures);
@@ -44,6 +47,11 @@ void carafe_forward(Tensor features, Tensor masks, Tensor rfeatures,
     CHECK_CUDA_INPUT(output);
     carafe_forward_cuda(features, masks, rfeatures, routput, rmasks, output,
                         kernel_size, group_size, scale_factor);
+#else
+    AT_ERROR("Carafe is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("Carafe is not implemented on CPU");
   }
 }
 
@@ -53,6 +61,7 @@ void carafe_backward(Tensor top_grad, Tensor rfeatures, Tensor masks,
                      Tensor mask_grad, int kernel_size, int group_size,
                      int scale_factor) {
   if (top_grad.device().is_cuda()) {
+#ifdef WITH_CUDA
     CHECK_CUDA_INPUT(top_grad);
     CHECK_CUDA_INPUT(rfeatures);
     CHECK_CUDA_INPUT(masks);
@@ -65,5 +74,10 @@ void carafe_backward(Tensor top_grad, Tensor rfeatures, Tensor masks,
     carafe_backward_cuda(top_grad, rfeatures, masks, rtop_grad, rbottom_grad_hs,
                          rbottom_grad, rmask_grad, bottom_grad, mask_grad,
                          kernel_size, group_size, scale_factor);
+#else
+    AT_ERROR("Carafe is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("Carafe is not implemented on CPU");
   }
 }
