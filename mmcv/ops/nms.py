@@ -214,12 +214,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
 def nms_match(dets, iou_threshold):
     """Matched dets into different groups by NMS.
+
     NMS match is Similar to NMS but when a bbox is suppressed, nms match will
     record the indice of supporessed bbox and form a group with the indice of
     kept bbox. In each group, indice is sorted as score order.
+
     Arguments:
         dets (torch.Tensor | np.ndarray): Det boxes with scores, shape (N, 5).
         iou_thr (float): IoU thresh for NMS.
+
     Returns:
         List[Tensor | ndarray]: The outer list corresponds different matched
             group, the inner Tensor corresponds the indices for a group in

@@ -5,17 +5,21 @@ ext_module = ext_loader.load_ext('ops_ext', ['bbox_overlaps'])
 
 def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
     """Calculate overlap between two set of bboxes.
+
     If ``aligned`` is ``False``, then calculate the ious between each bbox
     of bboxes1 and bboxes2, otherwise the ious between each aligned pair of
     bboxes1 and bboxes2.
+
     Args:
         bboxes1 (Tensor): shape (m, 4) in <x1, y1, x2, y2> format or empty.
         bboxes2 (Tensor): shape (n, 4) in <x1, y1, x2, y2> format or empty.
             If aligned is ``True``, then m and n must be equal.
         mode (str): "iou" (intersection over union) or iof (intersection over
             foreground).
+
     Returns:
         ious(Tensor): shape (m, n) if aligned == False else shape (m, 1)
+
     Example:
         >>> bboxes1 = torch.FloatTensor([
         >>>     [0, 0, 10, 10],
@@ -31,6 +35,7 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
         tensor([[0.5000, 0.0000, 0.0000],
                 [0.0000, 0.0000, 1.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     Example:
         >>> empty = torch.FloatTensor([])
         >>> nonempty = torch.FloatTensor([

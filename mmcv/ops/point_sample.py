@@ -31,10 +31,12 @@ def denormalize(grid):
 def generate_grid(num_grid, size, device):
     """Generate regular square grid of points in [0, 1] x [0, 1] coordinate
     space.
+
     Args:
         num_grid (int): The number of grids to sample, one for each region.
         size (tuple(int, int)): The side size of the regular grid.
         device (torch.device): Desired device of returned tensor.
+
     Returns:
         (torch.Tensor): A tensor of shape (num_grid, size[0]*size[1], 2) that
             contains coordinates for the regular grids.
@@ -50,6 +52,7 @@ def generate_grid(num_grid, size, device):
 def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
     """Convert roi based relative point coordinates to image based absolute
     point coordinates.
+
     Args:
         rois (Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
         rel_roi_points (Tensor): Point coordinates inside RoI, relative to
@@ -81,11 +84,13 @@ def abs_img_point_to_rel_img_point(abs_img_points,
                                    spatial_scale=1.):
     """Convert image based absolute point coordinates to image based relative
     coordinates for sampling.
+
     Args:
         abs_img_points (Tensor): Image based absolute point coordinates,
             shape (N, P, 2)
         img_shape (tuple): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
+
     Returns:
         Tensor: Image based relative point coordinates for sampling,
             shape (N, P, 2)
@@ -108,12 +113,14 @@ def rel_roi_point_to_rel_img_point(rois,
                                    spatial_scale=1.):
     """Convert roi based relative point coordinates to image based absolute
     point coordinates.
+
     Args:
         rois (Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
         rel_roi_points (Tensor): Point coordinates inside RoI, relative to
             RoI, location, range (0, 1), shape (N, P, 2)
         img_shape (tuple): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
+
     Returns:
         Tensor: Image based relative point coordinates for sampling,
             shape (N, P, 2)
@@ -130,11 +137,13 @@ def point_sample(input, points, align_corners=False, **kwargs):
     """A wrapper around :function:`grid_sample` to support 3D point_coords
     tensors Unlike :function:`torch.nn.functional.grid_sample` it assumes
     point_coords to lie inside [0, 1] x [0, 1] square.
+
     Args:
         input (Tensor): Feature map, shape (N, C, H, W).
         points (Tensor): Image based absolute point coordinates (normalized),
             range [0, 1] x [0, 1], shape (N, P, 2) or (N, Hgrid, Wgrid, 2).
         align_corners (bool): Whether align_corners. Default: False
+
     Returns:
         Tensor: Features of `point` on `input`, shape (N, C, P) or
             (N, C, Hgrid, Wgrid).
@@ -155,6 +164,7 @@ class SimpleRoIAlign(nn.Module):
 
     def __init__(self, out_size, spatial_scale, aligned=True):
         """Simple RoI align in PointRend, faster than standard RoIAlign.
+
         Args:
             out_size (tuple[int]): h, w
             spatial_scale (float): scale the input boxes by this number

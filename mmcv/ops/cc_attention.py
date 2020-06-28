@@ -68,7 +68,7 @@ ca_map = CAMapFunction.apply
 
 
 class CrissCrossAttention(nn.Module):
-    """Criss-Cross Attention Module"""
+    """Criss-Cross Attention Module."""
 
     def __init__(self, in_channels):
         super(CrissCrossAttention, self).__init__()
