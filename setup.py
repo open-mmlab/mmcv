@@ -200,7 +200,7 @@ def get_extensions():
         global build_cmd
         build_cmd = BuildExtension
     except ModuleNotFoundError:
-        print(f'Not build {ext_name}.')
+        print('Not build ext ops.')
     return extensions
 
 
