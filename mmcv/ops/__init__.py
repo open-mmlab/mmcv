@@ -16,7 +16,6 @@ from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
 from .nms import batched_nms, nms, nms_match, soft_nms
-from .non_local import NonLocal2D
 from .plugin import build_plugin_layer
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
@@ -36,8 +35,8 @@ __all__ = [
     'get_compiling_cuda_version', 'MaskedConv2d', 'masked_conv2d',
     'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
     'modulated_deform_conv2d', 'batched_nms', 'nms', 'soft_nms', 'nms_match',
-    'NonLocal2D', 'build_plugin_layer', 'RoIAlign', 'roi_align', 'RoIPool',
-    'roi_pool', 'SyncBatchNorm', 'Conv2d', 'ConvTranspose2d', 'Linear',
-    'MaxPool2d', 'CrissCrossAttention', 'PSAMask', 'point_sample',
+    'build_plugin_layer', 'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool',
+    'SyncBatchNorm', 'Conv2d', 'ConvTranspose2d', 'Linear', 'MaxPool2d',
+    'CrissCrossAttention', 'PSAMask', 'point_sample',
     'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign'
 ]
