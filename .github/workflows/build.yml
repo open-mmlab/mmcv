@@ -79,10 +79,10 @@ jobs:
           - torch: 1.5.0
             torchvision: 0.6.0
             cuda_arch: "7.0"
-          - python-version: 3.8
-            torch: 1.5.0
-            torchvision: 0.6.0
-            cuda_arch: "7.0"
+#          - python-version: 3.8
+#            torch: 1.5.0
+#            torchvision: 0.6.0
+#            cuda_arch: "7.0"
 
     steps:
       - uses: actions/checkout@v2
