@@ -12,7 +12,6 @@
 #include <parrots/foundation/mathfunction.hpp>
 
 #include "common_cuda_helper.hpp"
-
 #include "parrots_cudawarpfunction.cuh"
 
 using namespace parrots;
