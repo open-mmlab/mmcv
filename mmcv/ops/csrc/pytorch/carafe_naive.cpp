@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
                                           const Tensor masks, Tensor output,
                                           const int kernel_size,
@@ -32,7 +32,7 @@ void carafe_naive_backward_cuda(Tensor top_grad, Tensor features, Tensor masks,
 void carafe_naive_forward(Tensor features, Tensor masks, Tensor output,
                           int kernel_size, int group_size, int scale_factor) {
   if (features.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(features);
     CHECK_CUDA_INPUT(masks);
     CHECK_CUDA_INPUT(output);
@@ -50,7 +50,7 @@ void carafe_naive_backward(Tensor top_grad, Tensor features, Tensor masks,
                            Tensor bottom_grad, Tensor mask_grad,
                            int kernel_size, int group_size, int scale_factor) {
   if (top_grad.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(top_grad);
     CHECK_CUDA_INPUT(features);
     CHECK_CUDA_INPUT(masks);

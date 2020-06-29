@@ -182,7 +182,7 @@ void psamask_backward_cpu(const int psa_type, const Tensor grad_output,
                                 grad_input);
 }
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void PSAMaskForwardCUDAKernelLauncher(const int psa_type, const Tensor input,
                                       Tensor output, const int num_,
                                       const int h_feature, const int w_feature,
@@ -221,7 +221,7 @@ void psamask_forward(const Tensor input, Tensor output, const int psa_type,
                      const int h_mask, const int w_mask, const int half_h_mask,
                      const int half_w_mask) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(output);
     psamask_forward_cuda(psa_type, input, output, num_, h_feature, w_feature,
@@ -240,7 +240,7 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask) {
   if (grad_input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_input);
     CHECK_CUDA_INPUT(grad_output);
     psamask_backward_cuda(psa_type, grad_output, grad_input, num_, h_feature,

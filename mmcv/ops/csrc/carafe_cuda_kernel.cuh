@@ -1,3 +1,12 @@
+#ifndef CARAFE_CUDA_KERNEL_CUH
+#define CARAFE_CUDA_KERNEL_CUH
+
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
+
 #define WARP_SIZE 32
 #define THREADS_PER_PIXEL 32
 #define MAX_SHARED_MEMORY 49152
@@ -301,3 +310,5 @@ __global__ void CARAFEBackward_Mask(const int num_kernels,
     mask_diff[mask_id] = output_val;
   }
 }
+
+#endif  // CARAFE_CUDA_KERNEL_CUH

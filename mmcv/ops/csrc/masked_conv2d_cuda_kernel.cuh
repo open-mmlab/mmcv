@@ -1,3 +1,12 @@
+#ifndef MASKED_CONV2D_CUDA_KERNEL_CUH
+#define MASKED_CONV2D_CUDA_KERNEL_CUH
+
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
+
 template <typename scalar_t>
 __global__ void MaskedIm2colForward(const int n, const scalar_t *data_im,
                                     const int height, const int width,
@@ -48,3 +57,5 @@ __global__ void MaskedCol2imForward(const int n, const scalar_t *data_col,
     data_im[(c_im * height + h_im) * width + w_im] = data_col[index];
   }
 }
+
+#endif  // MASKED_CONV2D_CUDA_KERNEL_CUH
