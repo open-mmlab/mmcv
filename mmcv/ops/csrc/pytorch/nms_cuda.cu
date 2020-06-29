@@ -1,4 +1,4 @@
-#include "nms_kernel.cuh"
+#include "nms_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,

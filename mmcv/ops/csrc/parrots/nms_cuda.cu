@@ -1,4 +1,4 @@
-#include "nms_kernel.cuh"
+#include "nms_cuda_kernel.cuh"
 #include "parrots_cuda_helper.hpp"
 
 DArrayLite NMSCUDAKernelLauncher(const DArrayLite boxes_sorted,

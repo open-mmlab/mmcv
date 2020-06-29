@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
                                                Tensor weight, Tensor output,
                                                const float gamma,
@@ -54,7 +54,7 @@ void softmax_focal_loss_backward_cuda(Tensor input, Tensor target,
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(target);
     CHECK_CUDA_INPUT(weight);
@@ -73,7 +73,7 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor grad_input, float gamma, float alpha) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(target);
     CHECK_CUDA_INPUT(weight);
@@ -92,7 +92,7 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 void softmax_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(target);
     CHECK_CUDA_INPUT(weight);
@@ -112,7 +112,7 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor buff, Tensor grad_input, float gamma,
                                  float alpha) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(target);
     CHECK_CUDA_INPUT(weight);

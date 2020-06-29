@@ -150,22 +150,23 @@ def get_extensions():
 
     try:
         import torch
-        cuda_args = [
-            '-gencode=arch=compute_52,code=sm_52',
-            '-gencode=arch=compute_60,code=sm_60',
-            '-gencode=arch=compute_61,code=sm_61',
-            '-gencode=arch=compute_70,code=sm_70',
-            '-gencode=arch=compute_70,code=compute_70'
-        ]
         ext_name = 'mmcv._ext'
         if torch.__version__ == 'parrots':
             from parrots.utils.build_extension import BuildExtension, Extension
+            cuda_args = [
+                '-gencode=arch=compute_60,code=sm_60',
+                '-gencode=arch=compute_61,code=sm_61',
+                '-gencode=arch=compute_70,code=sm_70',
+                '-gencode=arch=compute_70,code=compute_70'
+            ]
+            define_macros = [('MMCV_USE_PARROTS', None)]
             op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
             include_path = os.path.abspath('./mmcv/ops/csrc')
             ext_ops = Extension(
                 name=ext_name,
                 sources=op_files,
                 include_dirs=[include_path],
+                define_macros=define_macros,
                 extra_compile_args={
                     'nvcc': cuda_args,
                     'cxx': [],
@@ -177,12 +178,19 @@ def get_extensions():
                                                    CUDAExtension, CppExtension)
             # prevent ninja from using too many resources
             os.environ.setdefault('MAX_JOBS', '4')
+            cuda_args = [
+                '-gencode=arch=compute_52,code=sm_52',
+                '-gencode=arch=compute_60,code=sm_60',
+                '-gencode=arch=compute_61,code=sm_61',
+                '-gencode=arch=compute_70,code=sm_70',
+                '-gencode=arch=compute_70,code=compute_70'
+            ]
             define_macros = []
             extra_compile_args = {'cxx': []}
 
             if (torch.cuda.is_available()
                     or os.getenv('FORCE_CUDA', '0') == '1'):
-                define_macros += [('WITH_CUDA', None)]
+                define_macros += [('MMCV_WITH_CUDA', None)]
                 extra_compile_args['nvcc'] = cuda_args
                 op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
                 extension = CUDAExtension

@@ -1,5 +1,12 @@
-#ifndef PSAMASK_CUDA_CUH
-#define PSAMASK_CUDA_CUH
+#ifndef PSAMASK_CUDA_KERNEL_CUH
+#define PSAMASK_CUDA_KERNEL_CUH
+
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
+
 // CUDA: grid stride looping
 #ifndef CUDA_KERNEL_LOOP
 #define CUDA_KERNEL_LOOP(i, n)                                 \
@@ -130,4 +137,4 @@ __global__ void psamask_distribute_backward_cuda(
   }
 }
 
-#endif
+#endif  // PSAMASK_CUDA_KERNEL_CUH

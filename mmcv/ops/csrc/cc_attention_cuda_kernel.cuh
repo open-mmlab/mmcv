@@ -1,5 +1,11 @@
-#ifndef CA_CUDA_KERNEL_CUH
-#define CA_CUDA_KERNEL_CUH
+#ifndef CC_ATTENTION_CUDA_KERNEL_CUH
+#define CC_ATTENTION_CUDA_KERNEL_CUH
+
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
 template <typename T>
 __global__ void ca_forward_kernel(const T *t, const T *f, T *weight, int num,
@@ -176,4 +182,4 @@ __global__ void ca_map_backward_kernel_g(const T *dout, const T *weight,
   }
 }
 
-#endif
+#endif  // CC_ATTENTION_CUDA_KERNEL_CUH

@@ -1,5 +1,11 @@
-#ifndef SOFTMAX_FOCAL_LOSS_KERNEL_CUH
-#define SOFTMAX_FOCAL_LOSS_KERNEL_CUH
+#ifndef SOFTMAX_FOCAL_LOSS_CUDA_KERNEL_CUH
+#define SOFTMAX_FOCAL_LOSS_CUDA_KERNEL_CUH
+
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
 template <typename T>
 __global__ void softmax_focal_loss_forward_cuda_kernel(
@@ -61,4 +67,5 @@ __global__ void softmax_focal_loss_backward_cuda2_kernel(
     }
   }
 }
-#endif
+
+#endif  // SOFTMAX_FOCAL_LOSS_CUDA_KERNEL_CUH

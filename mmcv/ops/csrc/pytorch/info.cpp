@@ -2,13 +2,13 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/vision.cpp
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 #include <cuda_runtime_api.h>
 int get_cudart_version() { return CUDART_VERSION; }
 #endif
 
 std::string get_compiling_cuda_version() {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
   std::ostringstream oss;
   // copied from
   // https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/cuda/detail/CUDAHooks.cpp#L231

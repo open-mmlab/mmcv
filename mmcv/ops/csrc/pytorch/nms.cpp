@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
@@ -62,7 +62,7 @@ Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(boxes);
     CHECK_CUDA_INPUT(scores);
     return nms_cuda(boxes, scores, iou_threshold, offset);

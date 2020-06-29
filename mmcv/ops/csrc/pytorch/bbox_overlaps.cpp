@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,
                                     const bool aligned, const int offset);
@@ -14,7 +14,7 @@ void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset) {
   if (bboxes1.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(bboxes1);
     CHECK_CUDA_INPUT(bboxes2);
     CHECK_CUDA_INPUT(ious);

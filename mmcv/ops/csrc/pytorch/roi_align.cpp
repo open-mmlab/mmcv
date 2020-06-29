@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
                                        Tensor argmax_y, Tensor argmax_x,
                                        int aligned_height, int aligned_width,
@@ -40,7 +40,7 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        int aligned_width, float spatial_scale,
                        int sampling_ratio, int pool_mode, bool aligned) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(rois);
     CHECK_CUDA_INPUT(output);
@@ -63,7 +63,7 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                         int aligned_width, float spatial_scale,
                         int sampling_ratio, int pool_mode, bool aligned) {
   if (grad_output.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(rois);
     CHECK_CUDA_INPUT(argmax_y);
