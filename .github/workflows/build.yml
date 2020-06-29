@@ -67,6 +67,12 @@ jobs:
       CUDA_SHORT: 10.1
       UBUNTU_VERSION: ubuntu1804
       FORCE_CUDA: 1
+      MMCV_CUDA_ARGS: |
+        -gencode=arch=compute_52,code=sm_52
+        -gencode=arch=compute_60,code=sm_60
+        -gencode=arch=compute_61,code=sm_61
+        -gencode=arch=compute_70,code=sm_70
+        -gencode=arch=compute_70,code=compute_70
     strategy:
       matrix:
         python-version: [3.6, 3.7]
@@ -128,13 +134,6 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install unittest dependencies
         run: pip install pytest coverage lmdb PyTurboJPEG
-#      - name: Build and install
-#        env:
-#          CUDA_ARCH: ${{matrix.cuda_arch}}
-#        run: |
-#          rm -rf .eggs
-#          python setup.py check -m -s
-#          TORCH_CUDA_ARCH_LIST=${CUDA_ARCH} python setup.py build_ext --inplace
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
