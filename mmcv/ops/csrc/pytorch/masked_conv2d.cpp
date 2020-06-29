@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void MaskedIm2colForwardCUDAKernelLauncher(const Tensor bottom_data,
                                            const Tensor mask_h_idx,
                                            const Tensor mask_w_idx,
@@ -39,7 +39,7 @@ void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const int kernel_h, const int kernel_w,
                            const int pad_h, const int pad_w) {
   if (im.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(im);
     CHECK_CUDA_INPUT(mask_h_idx);
     CHECK_CUDA_INPUT(mask_w_idx);
@@ -58,7 +58,7 @@ void masked_col2im_forward(const Tensor col, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor im, int height,
                            int width, int channels) {
   if (col.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(col);
     CHECK_CUDA_INPUT(mask_h_idx);
     CHECK_CUDA_INPUT(mask_w_idx);

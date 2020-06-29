@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void ModulatedDeformConvForwardCUDAKernelLauncher(
     Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
     Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
@@ -50,7 +50,7 @@ void modulated_deform_conv_forward(
     const int dilation_h, const int dilation_w, const int group,
     const int deformable_group, const bool with_bias) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(bias);
@@ -80,7 +80,7 @@ void modulated_deform_conv_backward(
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(bias);

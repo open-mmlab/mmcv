@@ -159,7 +159,7 @@ def get_extensions():
                 '-gencode=arch=compute_70,code=sm_70',
                 '-gencode=arch=compute_70,code=compute_70'
             ]
-            define_macros = [('USE_PARROTS', None)]
+            define_macros = [('MMCV_USE_PARROTS', None)]
             op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
             include_path = os.path.abspath('./mmcv/ops/csrc')
             ext_ops = Extension(
@@ -190,7 +190,7 @@ def get_extensions():
 
             if (torch.cuda.is_available()
                     or os.getenv('FORCE_CUDA', '0') == '1'):
-                define_macros += [('WITH_CUDA', None)]
+                define_macros += [('MMCV_WITH_CUDA', None)]
                 extra_compile_args['nvcc'] = cuda_args
                 op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
                 extension = CUDAExtension

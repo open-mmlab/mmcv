@@ -1,7 +1,7 @@
 #ifndef CARAFE_CUDA_KERNEL_CUH
 #define CARAFE_CUDA_KERNEL_CUH
 
-#ifdef USE_PARROTS
+#ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
 #else
 #include "pytorch_cuda_helper.hpp"

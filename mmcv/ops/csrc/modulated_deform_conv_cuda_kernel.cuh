@@ -66,7 +66,7 @@
 #ifndef MODULATED_DEFORM_CONV_CUDA_KERNEL_CUH
 #define MODULATED_DEFORM_CONV_CUDA_KERNEL_CUH
 
-#ifdef USE_PARROTS
+#ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
 #else
 #include "pytorch_cuda_helper.hpp"

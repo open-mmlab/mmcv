@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void CAForwardCUDAKernelLauncher(const Tensor t, const Tensor f, Tensor weight);
 
 void CABackwardCUDAKernelLauncher(const Tensor dw, const Tensor t,
@@ -33,7 +33,7 @@ void ca_map_backward_cuda(const Tensor dout, const Tensor weight,
 
 void ca_forward(const Tensor t, const Tensor f, Tensor weight) {
   if (t.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(t);
     CHECK_CUDA_INPUT(f);
     CHECK_CUDA_INPUT(weight);
@@ -49,7 +49,7 @@ void ca_forward(const Tensor t, const Tensor f, Tensor weight) {
 void ca_backward(const Tensor dw, const Tensor t, const Tensor f, Tensor dt,
                  Tensor df) {
   if (dw.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(dw);
     CHECK_CUDA_INPUT(t);
     CHECK_CUDA_INPUT(f);
@@ -66,7 +66,7 @@ void ca_backward(const Tensor dw, const Tensor t, const Tensor f, Tensor dt,
 
 void ca_map_forward(const Tensor weight, const Tensor g, Tensor out) {
   if (weight.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(g);
     CHECK_CUDA_INPUT(out);
@@ -82,7 +82,7 @@ void ca_map_forward(const Tensor weight, const Tensor g, Tensor out) {
 void ca_map_backward(const Tensor dout, const Tensor weight, const Tensor g,
                      Tensor dw, Tensor dg) {
   if (dout.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(dout);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(g);

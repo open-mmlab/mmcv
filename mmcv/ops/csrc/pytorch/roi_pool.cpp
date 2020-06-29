@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
                                       Tensor argmax, int pooled_height,
                                       int pooled_width, float spatial_scale);
@@ -29,7 +29,7 @@ void roi_pool_forward(Tensor input, Tensor rois, Tensor output, Tensor argmax,
                       int pooled_height, int pooled_width,
                       float spatial_scale) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(rois);
     CHECK_CUDA_INPUT(output);
@@ -49,7 +49,7 @@ void roi_pool_backward(Tensor grad_output, Tensor rois, Tensor argmax,
                        Tensor grad_input, int pooled_height, int pooled_width,
                        float spatial_scale) {
   if (grad_output.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(rois);
     CHECK_CUDA_INPUT(argmax);

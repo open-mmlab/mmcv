@@ -1,6 +1,6 @@
 #include "pytorch_cpp_helper.hpp"
 
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
 void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean);
 
 void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
@@ -61,7 +61,7 @@ void sync_bn_backward_data_cuda(const Tensor grad_output, const Tensor weight,
 
 void sync_bn_forward_mean(const Tensor input, Tensor mean) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(mean);
     sync_bn_forward_mean_cuda(input, mean);
@@ -75,7 +75,7 @@ void sync_bn_forward_mean(const Tensor input, Tensor mean) {
 
 void sync_bn_forward_var(const Tensor input, const Tensor mean, Tensor var) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(mean);
     CHECK_CUDA_INPUT(var);
@@ -95,7 +95,7 @@ void sync_bn_forward_output(const Tensor input, const Tensor mean,
                             Tensor output, float eps, float momentum,
                             int group_size) {
   if (input.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(mean);
     CHECK_CUDA_INPUT(var);
@@ -120,7 +120,7 @@ void sync_bn_forward_output(const Tensor input, const Tensor mean,
 void sync_bn_backward_param(const Tensor grad_output, const Tensor norm,
                             Tensor grad_weight, Tensor grad_bias) {
   if (grad_output.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(norm);
     CHECK_CUDA_INPUT(grad_weight);
@@ -139,7 +139,7 @@ void sync_bn_backward_data(const Tensor grad_output, const Tensor weight,
                            const Tensor norm, const Tensor std,
                            Tensor grad_input) {
   if (grad_output.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(grad_weight);
