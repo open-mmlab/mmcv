@@ -34,7 +34,11 @@ outputs = [([[[[1.0, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
 class TestRoiAlign(object):
 
     def _test_roialign_gradcheck(self, device='cuda'):
-        from mmcv.ops import RoIAlign
+        try:
+            from mmcv.ops import RoIAlign
+        except ModuleNotFoundError:
+            print('Extension is not compiled')
+            pass
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -59,7 +63,11 @@ class TestRoiAlign(object):
     def _test_roialign_allclose(self, dtype=torch.float, device='cuda'):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import roi_align
+        try:
+            from mmcv.ops import roi_align
+        except ModuleNotFoundError:
+            print('Extension is not compiled')
+            pass
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
