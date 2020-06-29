@@ -33,9 +33,7 @@ outputs = [([[[[1.0, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
 
 class TestRoiAlign(object):
 
-    def test_roialign_gradcheck(self):
-        if not torch.cuda.is_available():
-            return
+    def _test_roialign_gradcheck(self, device='cuda'):
         from mmcv.ops import RoIAlign
         pool_h = 2
         pool_w = 2
@@ -46,8 +44,8 @@ class TestRoiAlign(object):
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
 
-            x = torch.tensor(np_input, device='cuda', requires_grad=True)
-            rois = torch.tensor(np_rois, device='cuda')
+            x = torch.tensor(np_input, device=device, requires_grad=True)
+            rois = torch.tensor(np_rois, device=device)
 
             froipool = RoIAlign((pool_h, pool_w), spatial_scale,
                                 sampling_ratio)
@@ -58,7 +56,7 @@ class TestRoiAlign(object):
             else:
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
-    def _test_roipool_allclose(self, dtype=torch.float):
+    def _test_roialign_allclose(self, dtype=torch.float, device='cuda'):
         if not torch.cuda.is_available():
             return
         from mmcv.ops import roi_align
@@ -74,8 +72,8 @@ class TestRoiAlign(object):
             np_grad = np.array(output[1])
 
             x = torch.tensor(
-                np_input, dtype=dtype, device='cuda', requires_grad=True)
-            rois = torch.tensor(np_rois, dtype=dtype, device='cuda')
+                np_input, dtype=dtype, device=device, requires_grad=True)
+            rois = torch.tensor(np_rois, dtype=dtype, device=device)
 
             output = roi_align(x, rois, (pool_h, pool_w), spatial_scale,
                                sampling_ratio, 'avg', True)
@@ -89,7 +87,14 @@ class TestRoiAlign(object):
                 np_grad,
                 atol=1e-3)
 
-    def test_roipool_allclose(self):
-        self._test_roipool_allclose(torch.float)
-        self._test_roipool_allclose(torch.double)
-        self._test_roipool_allclose(torch.half)
+    def test_roialign_allclose(self):
+        if torch.cuda.is_available():
+            self._test_roialign_gradcheck(device='cuda')
+            self._test_roialign_allclose(torch.float, device='cuda')
+            self._test_roialign_allclose(torch.double, device='cuda')
+            self._test_roialign_allclose(torch.half, device='cuda')
+
+        self._test_roialign_gradcheck(device='cpu')
+        self._test_roialign_allclose(torch.float, device='cpu')
+        self._test_roialign_allclose(torch.double, device='cpu')
+        self._test_roialign_allclose(torch.half, device='cpu')
