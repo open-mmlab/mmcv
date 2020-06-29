@@ -38,7 +38,7 @@ class TestRoiAlign(object):
             from mmcv.ops import RoIAlign
         except ModuleNotFoundError:
             print('Extension is not compiled')
-            pass
+            return
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -67,7 +67,7 @@ class TestRoiAlign(object):
             from mmcv.ops import roi_align
         except ModuleNotFoundError:
             print('Extension is not compiled')
-            pass
+            return
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
