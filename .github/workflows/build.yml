@@ -67,12 +67,7 @@ jobs:
       CUDA_SHORT: 10.1
       UBUNTU_VERSION: ubuntu1804
       FORCE_CUDA: 1
-      MMCV_CUDA_ARGS: >
-        -gencode=arch=compute_52,code=sm_52
-        -gencode=arch=compute_60,code=sm_60
-        -gencode=arch=compute_61,code=sm_61
-        -gencode=arch=compute_70,code=sm_70
-        -gencode=arch=compute_70,code=compute_70
+      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
     strategy:
       matrix:
         python-version: [3.6, 3.7]
