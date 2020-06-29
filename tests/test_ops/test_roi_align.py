@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pytest
 import torch
 
 _USING_PARROTS = True
@@ -30,79 +31,67 @@ outputs = [([[[[1.0, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
                [0.42968750, 0.39062500, 0.39062500, 0.03906250],
                [0.04296875, 0.03906250, 0.03906250, 0.00390625]]]])]
 
+pool_h = 2
+pool_w = 2
+spatial_scale = 1.0
+sampling_ratio = 2
 
-class TestRoiAlign(object):
 
-    def _test_roialign_gradcheck(self, device='cuda'):
-        try:
-            from mmcv.ops import RoIAlign
-        except ModuleNotFoundError:
-            print('Extension is not compiled')
-            return
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
-        sampling_ratio = 2
+def _test_roialign_gradcheck(device, dtype):
+    if not torch.cuda.is_available() and device == 'cuda':
+        pytest.skip('test requires GPU')
+    try:
+        from mmcv.ops import RoIAlign
+    except ModuleNotFoundError:
+        pytest.skip('test requires compilation')
+    if dtype is torch.half:
+        pytest.skip('grad check does not support fp16')
+    for case in inputs:
+        np_input = np.array(case[0])
+        np_rois = np.array(case[1])
 
-        for case in inputs:
-            np_input = np.array(case[0])
-            np_rois = np.array(case[1])
+        x = torch.tensor(
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        rois = torch.tensor(np_rois, dtype=dtype, device=device)
 
-            x = torch.tensor(np_input, device=device, requires_grad=True)
-            rois = torch.tensor(np_rois, device=device)
+        froipool = RoIAlign((pool_h, pool_w), spatial_scale, sampling_ratio)
 
-            froipool = RoIAlign((pool_h, pool_w), spatial_scale,
-                                sampling_ratio)
+        gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
-            if _USING_PARROTS:
-                pass
-                # gradcheck(froipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
-    def _test_roialign_allclose(self, dtype=torch.float, device='cuda'):
-        if not torch.cuda.is_available():
-            return
-        try:
-            from mmcv.ops import roi_align
-        except ModuleNotFoundError:
-            print('Extension is not compiled')
-            return
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
-        sampling_ratio = 2
+def _test_roialign_allclose(device, dtype):
+    if not torch.cuda.is_available() and device == 'cuda':
+        pytest.skip('test requires GPU')
+    try:
+        from mmcv.ops import roi_align
+    except ModuleNotFoundError:
+        pytest.skip('test requires compilation')
+    pool_h = 2
+    pool_w = 2
+    spatial_scale = 1.0
+    sampling_ratio = 2
 
-        for case, output in zip(inputs, outputs):
-            np_input = np.array(case[0])
-            np_rois = np.array(case[1])
-            np_output = np.array(output[0])
-            np_grad = np.array(output[1])
+    for case, output in zip(inputs, outputs):
+        np_input = np.array(case[0])
+        np_rois = np.array(case[1])
+        np_output = np.array(output[0])
+        np_grad = np.array(output[1])
 
-            x = torch.tensor(
-                np_input, dtype=dtype, device=device, requires_grad=True)
-            rois = torch.tensor(np_rois, dtype=dtype, device=device)
+        x = torch.tensor(
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        rois = torch.tensor(np_rois, dtype=dtype, device=device)
 
-            output = roi_align(x, rois, (pool_h, pool_w), spatial_scale,
-                               sampling_ratio, 'avg', True)
-            output.backward(torch.ones_like(output))
-            assert np.allclose(
-                output.data.type(torch.float).cpu().numpy(),
-                np_output,
-                atol=1e-3)
-            assert np.allclose(
-                x.grad.data.type(torch.float).cpu().numpy(),
-                np_grad,
-                atol=1e-3)
+        output = roi_align(x, rois, (pool_h, pool_w), spatial_scale,
+                           sampling_ratio, 'avg', True)
+        output.backward(torch.ones_like(output))
+        assert np.allclose(
+            output.data.type(torch.float).cpu().numpy(), np_output, atol=1e-3)
+        assert np.allclose(
+            x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
-    def test_roialign_allclose(self):
-        if torch.cuda.is_available():
-            self._test_roialign_gradcheck(device='cuda')
-            self._test_roialign_allclose(torch.float, device='cuda')
-            self._test_roialign_allclose(torch.double, device='cuda')
-            self._test_roialign_allclose(torch.half, device='cuda')
 
-        self._test_roialign_gradcheck(device='cpu')
-        self._test_roialign_allclose(torch.float, device='cpu')
-        self._test_roialign_allclose(torch.double, device='cpu')
-        self._test_roialign_allclose(torch.half, device='cpu')
+@pytest.mark.parametrize('device', ['cuda', 'cpu'])
+@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
+def test_roialign_allclose(device, dtype):
+    _test_roialign_gradcheck(device=device, dtype=dtype)
+    _test_roialign_allclose(device=device, dtype=dtype)
