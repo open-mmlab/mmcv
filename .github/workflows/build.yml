@@ -129,13 +129,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install unittest dependencies
         run: pip install pytest coverage lmdb PyTurboJPEG
+#      - name: Build and install
+#        env:
+#          CUDA_ARCH: ${{matrix.cuda_arch}}
+#        run: |
+#          rm -rf .eggs
+#          python setup.py check -m -s
+#          TORCH_CUDA_ARCH_LIST=${CUDA_ARCH} python setup.py build_ext --inplace
       - name: Build and install
-        env:
-          CUDA_ARCH: ${{matrix.cuda_arch}}
-        run: |
-          rm -rf .eggs
-          python setup.py check -m -s
-          TORCH_CUDA_ARCH_LIST=${CUDA_ARCH} python setup.py build_ext --inplace
+        run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source=mmcv -m pytest tests/
