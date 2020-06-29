@@ -1,6 +1,12 @@
 #ifndef BBOX_OVERLAPS_CUDA_KERNEL_CUH
 #define BBOX_OVERLAPS_CUDA_KERNEL_CUH
 
+#ifdef USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
+
 template <typename T>
 __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
                                           T* ious, const int num_bbox1,
@@ -73,4 +79,5 @@ __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
     }
   }
 }
-#endif
+
+#endif  // BBOX_OVERLAPS_CUDA_KERNEL_CUH

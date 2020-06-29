@@ -1,5 +1,5 @@
 #include "pytorch_cuda_helper.hpp"
-#include "roi_pool_kernel.cuh"
+#include "roi_pool_cuda_kernel.cuh"
 
 void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
                                       Tensor argmax, int pooled_height,

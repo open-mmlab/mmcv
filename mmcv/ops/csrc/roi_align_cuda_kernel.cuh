@@ -1,5 +1,11 @@
-#ifndef ROI_ALIGN_KERNEL_CUH
-#define ROI_ALIGN_KERNEL_CUH
+#ifndef ROI_ALIGN_CUDA_KERNEL_CUH
+#define ROI_ALIGN_CUDA_KERNEL_CUH
+
+#ifdef USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
 /*** Forward ***/
 template <typename T>
@@ -196,4 +202,4 @@ __global__ void roi_align_backward_cuda_kernel(
   }
 }
 
-#endif  // ROI_ALIGN_KERNEL_CUH
+#endif  // ROI_ALIGN_CUDA_KERNEL_CUH

@@ -1,5 +1,5 @@
 #include "parrots_cuda_helper.hpp"
-#include "roi_align_kernel.cuh"
+#include "roi_align_cuda_kernel.cuh"
 
 void ROIAlignForwardCUDAKernelLauncher(const DArrayLite input,
                                        const DArrayLite rois, DArrayLite output,

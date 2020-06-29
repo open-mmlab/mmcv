@@ -406,7 +406,7 @@ void DeformConvBackwardInputCUDAKernelLauncher(
   }
 }
 
-int DeformConvBackwardParametersCUDAKernelLauncher(
+void DeformConvBackwardParametersCUDAKernelLauncher(
     DArrayLite input, DArrayLite offset, DArrayLite gradOutput,
     DArrayLite gradWeight, DArrayLite columns, DArrayLite ones, int kW, int kH,
     int dW, int dH, int padW, int padH, int dilationW, int dilationH, int group,

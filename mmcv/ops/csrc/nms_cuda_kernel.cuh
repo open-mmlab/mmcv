@@ -1,5 +1,11 @@
-#ifndef NMS_KERNEL_CUH
-#define NMS_KERNEL_CUH
+#ifndef NMS_CUDA_KERNEL_CUH
+#define NMS_CUDA_KERNEL_CUH
+
+#ifdef USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 int const threadsPerBlock = sizeof(unsigned long long int) * 8;
@@ -60,4 +66,4 @@ __global__ void nms_cuda(const int n_boxes, const float iou_threshold,
     dev_mask[cur_box_idx * gridDim.y + col_start] = t;
   }
 }
-#endif
+#endif  // NMS_CUDA_KERNEL_CUH

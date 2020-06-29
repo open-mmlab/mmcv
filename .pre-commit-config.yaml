@@ -33,6 +33,6 @@ repos:
       - id: clang-format
         name: clang-format
         description: Format files with ClangFormat
-        entry: clang-format -i
+        entry: clang-format -style=google -i
         language: system
         files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)$

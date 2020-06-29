@@ -1,6 +1,12 @@
 #ifndef CARAFE_NAIVE_CUDA_KERNEL_CUH
 #define CARAFE_NAIVE_CUDA_KERNEL_CUH
 
+#ifdef USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
+
 __device__ inline int Loc2Index(const int n, const int c, const int h,
                                 const int w, const int channel_num,
                                 const int height, const int width) {
@@ -101,4 +107,4 @@ __global__ void carafe_naive_backward_cuda_kernel(
   }
 }
 
-#endif
+#endif  // CARAFE_NAIVE_CUDA_KERNEL_CUH

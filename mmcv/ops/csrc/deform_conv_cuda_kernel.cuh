@@ -63,8 +63,14 @@
 // modified from
 // https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/blob/mmdetection/mmdet/ops/dcn/src/deform_conv_cuda_kernel.cu
 
-#ifndef DEFORM_CONV_KERNEL_CUH
-#define DEFORM_CONV_KERNEL_CUH
+#ifndef DEFORM_CONV_CUDA_KERNEL_CUH
+#define DEFORM_CONV_CUDA_KERNEL_CUH
+
+#ifdef USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
 template <typename T>
 __device__ T deformable_im2col_bilinear(const T *input, const int data_width,
@@ -353,4 +359,4 @@ __global__ void deformable_col2im_coord_gpu_kernel(
   }
 }
 
-#endif
+#endif  // DEFORM_CONV_CUDA_KERNEL_CUH

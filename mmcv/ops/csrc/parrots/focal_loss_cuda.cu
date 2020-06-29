@@ -1,6 +1,6 @@
 #include "parrots_cuda_helper.hpp"
-#include "sigmoid_focal_loss_kernel.cuh"
-#include "softmax_focal_loss_kernel.cuh"
+#include "sigmoid_focal_loss_cuda_kernel.cuh"
+#include "softmax_focal_loss_cuda_kernel.cuh"
 
 void SigmoidFocalLossForwardCUDAKernelLauncher(
     const DArrayLite input, const DArrayLite target, const DArrayLite weight,
