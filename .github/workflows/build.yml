@@ -55,8 +55,11 @@ jobs:
         run: pip install pytest coverage lmdb PyTurboJPEG
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
-      - name: Run unittests
-        run: coverage run --branch --source=mmcv -m pytest tests/
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source=mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
 
   build_cuda:
     runs-on: ubuntu-latest
@@ -110,13 +113,12 @@ jobs:
         run: pip install pytest coverage lmdb PyTurboJPEG
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
-      - name: Run unittests
-        run: coverage run --branch --source=mmcv -m pytest tests/
-      # Only generate and upload coverage report for python3.7 && pytorch1.5
-      - name: Generate coverage report
+      - name: Run unittests and generate coverage report
         run: |
+          coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
           coverage report -m
+      # Only upload coverage report for python3.7 && pytorch1.5
       - name: Upload coverage to Codecov
         if: ${{matrix.torch == '1.5.0' && matrix.python-version == '3.7'}}
         uses: codecov/codecov-action@master
@@ -154,5 +156,8 @@ jobs:
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Run unittests
-        run: coverage run --branch --source=mmcv -m pytest tests/
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source=mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
