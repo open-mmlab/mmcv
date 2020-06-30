@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pytest
 import torch
@@ -11,25 +9,27 @@ except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-
-inputs = [([[[[1., 2.], [3., 4.]]]], [[0., 0., 0., 1., 1.]]),
-          ([[[[1., 2.], [3., 4.]], [[4., 3.], [2.,
-                                               1.]]]], [[0., 0., 0., 1., 1.]]),
-          ([[[[1., 2., 5., 6.], [3., 4., 7., 8.], [9., 10., 13., 14.],
-              [11., 12., 15., 16.]]]], [[0., 0., 0., 3., 3.]])]
-outputs = [([[[[1.0, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
-                                               [0.4375, 0.0625]]]]),
+# yapf:disable
+inputs = [([[[[1., 2.], [3., 4.]]]],
+           [[0., 0., 0., 1., 1.]]),
+          ([[[[1., 2.], [3., 4.]],
+             [[4., 3.], [2., 1.]]]],
+           [[0., 0., 0., 1., 1.]]),
+          ([[[[1., 2., 5., 6.], [3., 4., 7., 8.],
+              [9., 10., 13., 14.], [11., 12., 15., 16.]]]],
+           [[0., 0., 0., 3., 3.]])]
+outputs = [([[[[1.0, 1.25], [1.5, 1.75]]]],
+            [[[[3.0625, 0.4375], [0.4375, 0.0625]]]]),
            ([[[[1.0, 1.25], [1.5, 1.75]],
-              [[4.0, 3.75], [3.5, 3.25]]]], [[[[3.0625, 0.4375],
-                                               [0.4375, 0.0625]],
-                                              [[3.0625, 0.4375],
-                                               [0.4375, 0.0625]]]]),
+              [[4.0, 3.75], [3.5, 3.25]]]],
+            [[[[3.0625, 0.4375], [0.4375, 0.0625]],
+              [[3.0625, 0.4375], [0.4375, 0.0625]]]]),
            ([[[[1.9375, 4.75], [7.5625, 10.375]]]],
             [[[[0.47265625, 0.42968750, 0.42968750, 0.04296875],
                [0.42968750, 0.39062500, 0.39062500, 0.03906250],
                [0.42968750, 0.39062500, 0.39062500, 0.03906250],
                [0.04296875, 0.03906250, 0.03906250, 0.00390625]]]])]
+# yapf:enable
 
 pool_h = 2
 pool_w = 2
@@ -43,7 +43,7 @@ def _test_roialign_gradcheck(device, dtype):
     try:
         from mmcv.ops import RoIAlign
     except ModuleNotFoundError:
-        pytest.skip('test requires compilation')
+        pytest.skip('RoIAlign op is not successfully compiled')
     if dtype is torch.half:
         pytest.skip('grad check does not support fp16')
     for case in inputs:
@@ -56,7 +56,7 @@ def _test_roialign_gradcheck(device, dtype):
 
         froipool = RoIAlign((pool_h, pool_w), spatial_scale, sampling_ratio)
 
-        gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
+        gradcheck(froipool, (x, rois), eps=1e-5, atol=1e-5)
 
 
 def _test_roialign_allclose(device, dtype):
@@ -92,6 +92,8 @@ def _test_roialign_allclose(device, dtype):
 
 @pytest.mark.parametrize('device', ['cuda', 'cpu'])
 @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
-def test_roialign_allclose(device, dtype):
-    _test_roialign_gradcheck(device=device, dtype=dtype)
+def test_roialign(device, dtype):
+    # check double only
+    if dtype is torch.double:
+        _test_roialign_gradcheck(device=device, dtype=dtype)
     _test_roialign_allclose(device=device, dtype=dtype)
