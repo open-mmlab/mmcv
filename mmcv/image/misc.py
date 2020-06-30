@@ -25,6 +25,8 @@ def tensor2imgs(tensor, mean=(0, 0, 0), std=(1, 1, 1), to_rgb=True):
         list[np.ndarray]: A list that contains multiple images.
     """
 
+    if torch is None:
+        raise RuntimeError('pytorch is not installed')
     assert torch.is_tensor(tensor) and tensor.ndim == 4
     assert len(mean) == 3
     assert len(std) == 3
