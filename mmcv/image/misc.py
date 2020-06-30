@@ -1,7 +1,11 @@
 import numpy as np
-import torch
 
 import mmcv
+
+try:
+    import torch
+except ImportError:
+    torch = None
 
 
 def tensor2imgs(tensor, mean=(0, 0, 0), std=(1, 1, 1), to_rgb=True):
