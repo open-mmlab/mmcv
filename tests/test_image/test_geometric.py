@@ -224,7 +224,7 @@ class TestGeometric:
     def test_impad(self):
         # grayscale image
         img = np.random.rand(10, 10).astype(np.float32)
-        padded_img = mmcv.impad(img, (0, 0, 2, 5), 0)
+        padded_img = mmcv.impad(img, padding=(0, 0, 2, 5), pad_val=0)
         assert_array_equal(img, padded_img[:10, :10])
         assert_array_equal(
             np.zeros((5, 12), dtype='float32'), padded_img[10:, :])
@@ -233,15 +233,47 @@ class TestGeometric:
 
         # RGB image
         img = np.random.rand(10, 10, 3).astype(np.float32)
-        padded_img = mmcv.impad(img, (0, 0, 2, 5), 0)
+        padded_img = mmcv.impad(img, padding=(0, 0, 2, 5), pad_val=0)
         assert_array_equal(img, padded_img[:10, :10, :])
         assert_array_equal(
             np.zeros((5, 12, 3), dtype='float32'), padded_img[10:, :, :])
         assert_array_equal(
             np.zeros((15, 2, 3), dtype='float32'), padded_img[:, 10:, :])
 
+        # RGB image with different values for three channels.
         img = np.random.randint(256, size=(10, 10, 3)).astype('uint8')
-        padded_img = mmcv.impad(img, (0, 0, 2, 5), (100, 110, 120))
+        padded_img = mmcv.impad(
+            img, padding=(0, 0, 2, 5), pad_val=(100, 110, 120))
+        assert_array_equal(img, padded_img[:10, :10, :])
+        assert_array_equal(
+            np.array([100, 110, 120], dtype='uint8') * np.ones(
+                (5, 12, 3), dtype='uint8'), padded_img[10:, :, :])
+        assert_array_equal(
+            np.array([100, 110, 120], dtype='uint8') * np.ones(
+                (15, 2, 3), dtype='uint8'), padded_img[:, 10:, :])
+
+        # Pad the grayscale image to shape (15, 12)
+        img = np.random.rand(10, 10).astype(np.float32)
+        padded_img = mmcv.impad(img, shape=(15, 12))
+        assert_array_equal(img, padded_img[:10, :10])
+        assert_array_equal(
+            np.zeros((5, 12), dtype='float32'), padded_img[10:, :])
+        assert_array_equal(
+            np.zeros((15, 2), dtype='float32'), padded_img[:, 10:])
+
+        # Pad the RGB image to shape (15, 12)
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        padded_img = mmcv.impad(img, shape=(15, 12))
+        assert_array_equal(img, padded_img[:10, :10, :])
+        assert_array_equal(
+            np.zeros((5, 12, 3), dtype='float32'), padded_img[10:, :, :])
+        assert_array_equal(
+            np.zeros((15, 2, 3), dtype='float32'), padded_img[:, 10:, :])
+
+        # Pad the RGB image to shape (15, 12) with different values for
+        # three channels.
+        img = np.random.randint(256, size=(10, 10, 3)).astype('uint8')
+        padded_img = mmcv.impad(img, shape=(15, 12), pad_val=(100, 110, 120))
         assert_array_equal(img, padded_img[:10, :10, :])
         assert_array_equal(
             np.array([100, 110, 120], dtype='uint8') * np.ones(
@@ -252,7 +284,7 @@ class TestGeometric:
 
         # RGB image with padding=[5, 2]
         img = np.random.rand(10, 10, 3).astype(np.float32)
-        padded_img = mmcv.impad(img, (5, 2), 0)
+        padded_img = mmcv.impad(img, padding=(5, 2), pad_val=0)
 
         assert padded_img.shape == (14, 20, 3)
         assert_array_equal(img, padded_img[2:12, 5:15, :])
@@ -268,7 +300,7 @@ class TestGeometric:
         # RGB image with type(pad_val) = tuple
         pad_val = (0, 1, 2)
         img = np.random.rand(10, 10, 3).astype(np.float32)
-        padded_img = mmcv.impad(img, (0, 0, 5, 2), pad_val=pad_val)
+        padded_img = mmcv.impad(img, padding=(0, 0, 5, 2), pad_val=pad_val)
 
         assert padded_img.shape == (12, 15, 3)
         assert_array_equal(img, padded_img[:10, :10, :])
@@ -290,33 +322,47 @@ class TestGeometric:
         for mode in ['constant', 'edge', 'reflect', 'symmetric']:
             img = np.random.rand(10, 10, 3).astype(np.float32)
             padded_img = mmcv.impad(
-                img, (0, 0, 5, 2), pad_val=pad_val, padding_mode=mode)
+                img, padding=(0, 0, 5, 2), pad_val=pad_val, padding_mode=mode)
             assert padded_img.shape == (12, 15, 3)
 
         # test different padding mode with channel number = 1
         for mode in ['constant', 'edge', 'reflect', 'symmetric']:
             img = np.random.rand(10, 10).astype(np.float32)
             padded_img = mmcv.impad(
-                img, (0, 0, 5, 2), pad_val=0, padding_mode=mode)
+                img, padding=(0, 0, 5, 2), pad_val=0, padding_mode=mode)
             assert padded_img.shape == (12, 15)
 
+        # Padding must be a int or a 2, or 4 element tuple.
         with pytest.raises(ValueError):
-            mmcv.impad(img, (1, 1, 1), 0)
+            mmcv.impad(img, padding=(1, 1, 1))
+
+        # pad_val must be a int or a tuple
+        with pytest.raises(TypeError):
+            mmcv.impad(img, pad_val='wrong')
+
+        # When pad_val is a tuple,
+        # len(pad_val) should be equal to img.shape[-1]
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        with pytest.raises(AssertionError):
+            mmcv.impad(img, padding=3, pad_val=(100, 200))
 
         with pytest.raises(AssertionError):
-            mmcv.impad(img, 2, 0, padding_mode='unknown')
+            mmcv.impad(img, padding=2, pad_val=0, padding_mode='unknown')
 
-        # test the padding speed of the two implementations
+        with pytest.raises(AssertionError):
+            mmcv.impad(img, padding=None, shape=None)
+
+        # test the speed of the two implementations
         from . import impad
         img = np.random.rand(10, 10).astype(np.float32)
         test_times = 1000
         start_time = time.time()
         for i in range(test_times):
-            mmcv.impad(img, (0, 0, 2, 5), 0)
+            mmcv.impad(img, shape=(15, 12))
         end_time = time.time() - start_time
         start_time = time.time()
         for i in range(test_times):
-            impad(img, (15, 12), 0)
+            impad(img, (15, 12))
         end_time_origin = time.time() - start_time
         assert end_time - end_time_origin <= 0.01
 
