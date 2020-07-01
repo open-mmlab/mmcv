@@ -1,4 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import numbers
+
 import cv2
 import numpy as np
 
@@ -267,7 +269,7 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
         scale (float, optional): Scale ratio of bboxes, the default value
             1.0 means no padding.
-        pad_fill (Number | list[Number]): Value to be filled for padding.
+        pad_fill (Number | list[Number]): Value to be pad_valed for padding.
             Default: None, which means no padding.
 
     Returns:
@@ -311,29 +313,70 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         return patches
 
 
-def impad(img, shape, pad_val=0):
-    """Pad an image to a certain shape.
+def impad(img, padding, pad_val=0, padding_mode='constant'):
+    """Pad the given image on all sides with specified padding mode and
+    padding value.
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple[int]): Expected padding shape (h, w).
+        padding (int or tuple): Padding on each border. If a single int is
+            provided this is used to pad all borders. If tuple of length 2 is
+            provided this is the padding on left/right and top/bottom
+            respectively. If a tuple of length 4 is provided this is the
+            padding for the left, top, right and bottom borders respectively.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
-            areas. Default: 0.
+            areas when padding_mode is 'constant'. Default: 0.
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Default: constant.
+            -constant: pads with a constant value, this value is specified
+                with pad_val.
+            -edge: pads with the last value at the edge of the image.
+            -reflect: pads with reflection of image without repeating the
+                last value on the edge. For example, padding [1, 2, 3, 4]
+                with 2 elements on both sides in reflect mode will result
+                in [3, 2, 1, 2, 3, 4, 3, 2].
+            -symmetric: pads with reflection of image repeating the last
+                value on the edge. For example, padding [1, 2, 3, 4] with
+                2 elements on both sides in symmetric mode will result in
+                [2, 1, 1, 2, 3, 4, 4, 3]
 
     Returns:
         ndarray: The padded image.
     """
+    # check pad_val
+    assert isinstance(pad_val, (numbers.Number, tuple))
     if not isinstance(pad_val, (int, float)):
         assert len(pad_val) == img.shape[-1]
-    if len(shape) < len(img.shape):
-        shape = shape + (img.shape[-1], )
-    assert len(shape) == len(img.shape)
-    for s, img_s in zip(shape, img.shape):
-        assert s >= img_s
-    pad = np.empty(shape, dtype=img.dtype)
-    pad[...] = pad_val
-    pad[:img.shape[0], :img.shape[1], ...] = img
-    return pad
+
+    # check padding value
+    if isinstance(padding, tuple) and len(padding) in [2, 4]:
+        if len(padding) == 2:
+            padding = [padding[0], padding[1], padding[0], padding[1]]
+    elif isinstance(padding, numbers.Number):
+        padding = [padding, padding, padding, padding]
+    else:
+        raise ValueError("Padding must be a int or a 2, or 4 element tuple, "
+                         f"not a {len(padding)} element tuple")
+
+    # check padding mode
+    assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+
+    border_type = {
+        'constant': cv2.BORDER_CONSTANT,
+        'edge': cv2.BORDER_REPLICATE,
+        'reflect': cv2.BORDER_REFLECT_101,
+        'symmetric': cv2.BORDER_REFLECT
+    }
+    img = cv2.copyMakeBorder(
+        img,
+        padding[1],
+        padding[3],
+        padding[0],
+        padding[2],
+        border_type[padding_mode],
+        value=pad_val)
+
+    return img
 
 
 def impad_to_multiple(img, divisor, pad_val=0):
@@ -349,4 +392,7 @@ def impad_to_multiple(img, divisor, pad_val=0):
     """
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
-    return impad(img, (pad_h, pad_w), pad_val)
+    return impad(
+        img, (0, 0, pad_w - img.shape[1], pad_h - img.shape[0]),
+        pad_val,
+        padding_mode='constant')
