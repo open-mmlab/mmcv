@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
+import bisect
 import os.path as osp
 import shutil
 import sys
@@ -227,17 +228,34 @@ class Config:
 
         def _indent(s_, num_spaces):
             s = s_.split('\n')
+            # find multiline string interval
+            mls_intervals = []
+            for idx, line in enumerate(s):
+                if '\"\"\"' in line:
+                    mls_intervals.append(idx)
+            assert len(mls_intervals) % 2 == 0
+
             if len(s) == 1:
                 return s_
             first = s.pop(0)
-            s = [(num_spaces * ' ') + line for line in s]
-            s = '\n'.join(s)
+            indented_s = []
+            for idx, line in enumerate(s):
+                if (len(mls_intervals) > 0
+                        and bisect.bisect_left(mls_intervals, idx + 1) % 2):
+                    indented_s.append(line)
+                else:
+                    indented_s.append((num_spaces * ' ') + line)
+            s = '\n'.join(indented_s)
             s = first + '\n' + s
             return s
 
         def _format_basic_types(k, v, use_mapping=False):
             if isinstance(v, str):
-                v_str = f"'{v}'"
+                # handle multiline string
+                if '\n' in v:
+                    v_str = f'"""{v}"""'
+                else:
+                    v_str = f"'{v}'"
             else:
                 v_str = str(v)
 
