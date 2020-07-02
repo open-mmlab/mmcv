@@ -338,7 +338,7 @@ class TestGeometric:
 
         # pad_val must be a int or a tuple
         with pytest.raises(TypeError):
-            mmcv.impad(img, pad_val='wrong')
+            mmcv.impad(img, padding=(1, 1, 1, 1), pad_val='wrong')
 
         # When pad_val is a tuple,
         # len(pad_val) should be equal to img.shape[-1]
