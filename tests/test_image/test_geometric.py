@@ -350,21 +350,7 @@ class TestGeometric:
             mmcv.impad(img, padding=2, pad_val=0, padding_mode='unknown')
 
         with pytest.raises(AssertionError):
-            mmcv.impad(img, padding=None, shape=None)
-
-        # test the speed of the two implementations
-        from . import impad
-        img = np.random.rand(10, 10).astype(np.float32)
-        test_times = 1000
-        start_time = time.time()
-        for i in range(test_times):
-            mmcv.impad(img, shape=(15, 12))
-        end_time = time.time() - start_time
-        start_time = time.time()
-        for i in range(test_times):
-            impad(img, (15, 12))
-        end_time_origin = time.time() - start_time
-        assert end_time - end_time_origin <= 0.01
+            mmcv.impad(img, shape=(12, 15), padding=(0, 0, 5, 2))
 
     def test_impad_to_multiple(self):
         img = np.random.rand(11, 14, 3).astype(np.float32)

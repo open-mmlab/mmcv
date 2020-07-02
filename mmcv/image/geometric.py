@@ -313,18 +313,25 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         return patches
 
 
-def impad(img, shape=None, padding=None, pad_val=0, padding_mode='constant'):
+def impad(img,
+          *,
+          shape=None,
+          padding=None,
+          pad_val=0,
+          padding_mode='constant'):
     """Pad the given image to a certain shape or pad on all sides with
     specified padding mode and padding value.
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple[int]): Expected padding shape (h, w).
-        padding (int or tuple): Padding on each border. If a single int is
+        shape (tuple[int]): Expected padding shape (h, w). Default: None,
+        padding (int or tuple[int]): Padding on each border. If a single int is
             provided this is used to pad all borders. If tuple of length 2 is
             provided this is the padding on left/right and top/bottom
             respectively. If a tuple of length 4 is provided this is the
             padding for the left, top, right and bottom borders respectively.
+            Default: None. Note that `shape` and `padding`  can not be both
+            set.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
             areas when padding_mode is 'constant'. Default: 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
@@ -345,16 +352,16 @@ def impad(img, shape=None, padding=None, pad_val=0, padding_mode='constant'):
         ndarray: The padded image.
     """
 
-    assert (shape is None) ^ (padding is None)
+    assert (shape is not None) ^ (padding is not None)
     if shape is not None:
         padding = (0, 0, shape[1] - img.shape[1], shape[0] - img.shape[0])
 
     # check pad_val
-    if not isinstance(pad_val, (numbers.Number, tuple)):
+    if isinstance(pad_val, tuple):
+        assert len(pad_val) == img.shape[-1]
+    elif not isinstance(pad_val, numbers.Number):
         raise TypeError('pad_val must be a int or a tuple. '
                         f'But received {type(pad_val)}')
-    if not isinstance(pad_val, (int, float)):
-        assert len(pad_val) == img.shape[-1]
 
     # check padding
     if isinstance(padding, tuple) and len(padding) in [2, 4]:
@@ -400,4 +407,4 @@ def impad_to_multiple(img, divisor, pad_val=0):
     """
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
-    return impad(img, (pad_h, pad_w))
+    return impad(img, shape=(pad_h, pad_w))
