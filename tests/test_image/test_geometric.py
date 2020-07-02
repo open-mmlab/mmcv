@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
-import time
 
 import cv2
 import numpy as np
