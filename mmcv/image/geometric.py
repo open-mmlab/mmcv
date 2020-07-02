@@ -324,13 +324,13 @@ def impad(img,
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple[int]): Expected padding shape (h, w). Default: None,
+        shape (tuple[int]): Expected padding shape (h, w). Default: None.
         padding (int or tuple[int]): Padding on each border. If a single int is
             provided this is used to pad all borders. If tuple of length 2 is
             provided this is the padding on left/right and top/bottom
             respectively. If a tuple of length 4 is provided this is the
             padding for the left, top, right and bottom borders respectively.
-            Default: None. Note that `shape` and `padding`  can not be both
+            Default: None. Note that `shape` and `padding` can not be both
             set.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
             areas when padding_mode is 'constant'. Default: 0.
