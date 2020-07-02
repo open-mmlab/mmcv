@@ -23,14 +23,14 @@ class ContextBlock(nn.Module):
         in_channels (int): Channels of the input feature map.
         ratio (float): Ratio of channels of transform bottleneck
         pooling_type (str): Pooling method for context modeling.
-        Options are 'att' and 'avg', stand for attention pooling and average
-        pooling respectively. Default: 'att'.
+            Options are 'att' and 'avg', stand for attention pooling and
+            average pooling respectively. Default: 'att'.
         fusion_types (Sequence[str]): Fusion method for feature fusion,
             Options are 'channels_add', 'channel_mul', stand for channelwise
             addition and multiplication respectively. Default: ('channel_add',)
     """
 
-    abbr = 'context_block'
+    _abbr_ = 'context_block'
 
     def __init__(self,
                  in_channels,

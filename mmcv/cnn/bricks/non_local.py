@@ -199,7 +199,7 @@ class NonLocal2d(_NonLocalNd):
             Default: dict(type='Conv2d').
     """
 
-    abbr = 'nonlocal_block'
+    _abbr_ = 'nonlocal_block'
 
     def __init__(self,
                  in_channels,

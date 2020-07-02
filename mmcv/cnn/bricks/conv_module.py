@@ -56,7 +56,7 @@ class ConvModule(nn.Module):
             Default: ('conv', 'norm', 'act').
     """
 
-    abbr = 'conv_block'
+    _abbr_ = 'conv_block'
 
     def __init__(self,
                  in_channels,

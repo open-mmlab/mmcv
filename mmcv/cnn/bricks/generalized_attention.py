@@ -40,7 +40,7 @@ class GeneralizedAttention(nn.Module):
             Default: '1111'.
     """
 
-    abbr = 'gen_attention_block'
+    _abbr_ = 'gen_attention_block'
 
     def __init__(self,
                  in_channels,

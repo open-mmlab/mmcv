@@ -11,7 +11,8 @@ def infer_abbr(class_type):
     abbreviations.
 
     Rule 1: If the class has the property "abbr", return the property.
-    Rule 2: Otherwise, the abbreviation falls back to snake case of class name.
+    Rule 2: Otherwise, the abbreviation falls back to snake case of class
+    name, e.g. the abbreviation of ``FancyBlock`` will be ``fancy_block``.
 
     Args:
         class_type (type): The norm layer type.
@@ -41,8 +42,8 @@ def infer_abbr(class_type):
     if not inspect.isclass(class_type):
         raise TypeError(
             f'class_type must be a type, but got {type(class_type)}')
-    if hasattr(class_type, 'abbr'):
-        return class_type.abbr
+    if hasattr(class_type, '_abbr_'):
+        return class_type._abbr_
     else:
         return camel2snack(class_type.__name__)
 

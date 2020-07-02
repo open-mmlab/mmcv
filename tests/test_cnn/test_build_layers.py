@@ -64,7 +64,7 @@ def test_infer_norm_abbr():
 
     class MyNorm:
 
-        abbr = 'mn'
+        _abbr_ = 'mn'
 
     assert infer_norm_abbr(MyNorm) == 'mn'
 
@@ -306,7 +306,7 @@ def test_infer_plugin_abbr():
 
     class MyPlugin:
 
-        abbr = 'mp'
+        _abbr_ = 'mp'
 
     assert infer_plugin_abbr(MyPlugin) == 'mp'
 
