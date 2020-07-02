@@ -59,8 +59,9 @@ def build_plugin_layer(cfg, postfix='', **kwargs):
             create named layer. Default: ''.
 
     Returns:
-        name (str): abbreviation + postfix
-        layer (nn.Module): created plugin layer
+        tuple[str, nn.Module]:
+            name (str): abbreviation + postfix
+            layer (nn.Module): created plugin layer
     """
     if not isinstance(cfg, dict):
         raise TypeError('cfg must be a dict')
