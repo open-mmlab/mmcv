@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 
-from ..cnn import constant_init, kaiming_init
+from ..utils import constant_init, kaiming_init
+from .registry import PLUGIN_LAYERS
 
 
 def last_zero_init(m):
@@ -11,6 +12,7 @@ def last_zero_init(m):
         constant_init(m, val=0)
 
 
+@PLUGIN_LAYERS.register_module()
 class ContextBlock(nn.Module):
     """ContextBlock module in GCNet.
 
@@ -20,10 +22,15 @@ class ContextBlock(nn.Module):
     Args:
         in_channels (int): Channels of the input feature map.
         ratio (float): Ratio of channels of transform bottleneck
-        pooling_type (str): Pooling method for context modeling
-        fusion_types (list[str]|tuple[str]): Fusion method for feature fusion,
-            options: 'channels_add', 'channel_mul'
+        pooling_type (str): Pooling method for context modeling.
+            Options are 'att' and 'avg', stand for attention pooling and
+            average pooling respectively. Default: 'att'.
+        fusion_types (Sequence[str]): Fusion method for feature fusion,
+            Options are 'channels_add', 'channel_mul', stand for channelwise
+            addition and multiplication respectively. Default: ('channel_add',)
     """
+
+    _abbr_ = 'context_block'
 
     def __init__(self,
                  in_channels,
