@@ -121,7 +121,7 @@ jobs:
       # Only upload coverage report for python3.7 && pytorch1.5
       - name: Upload coverage to Codecov
         if: ${{matrix.torch == '1.5.0' && matrix.python-version == '3.7'}}
-        uses: codecov/codecov-action@master
+        uses: codecov/codecov-action@v1.0.7
         with:
           file: ./coverage.xml
           flags: unittests
