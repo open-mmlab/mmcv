@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from ..utils import constant_init, normal_init
 from .conv_module import ConvModule
+from .registry import PLUGIN_LAYERS
 
 
 class _NonLocalNd(nn.Module, metaclass=ABCMeta):
@@ -185,6 +186,7 @@ class NonLocal1d(_NonLocalNd):
             self.phi = nn.Sequential(self.phi, max_pool_layer)
 
 
+@PLUGIN_LAYERS.register_module()
 class NonLocal2d(_NonLocalNd):
     """2D Non-local module.
 
@@ -196,6 +198,8 @@ class NonLocal2d(_NonLocalNd):
         conv_cfg (None | dict): Same as `NonLocalND`.
             Default: dict(type='Conv2d').
     """
+
+    abbr = 'nonlocal_block'
 
     def __init__(self,
                  in_channels,

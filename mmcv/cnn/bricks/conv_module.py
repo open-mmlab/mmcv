@@ -7,8 +7,10 @@ from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
+from .registry import PLUGIN_LAYERS
 
 
+@PLUGIN_LAYERS.register_module()
 class ConvModule(nn.Module):
     """A conv block that bundles conv/norm/activation layers.
 
@@ -53,6 +55,8 @@ class ConvModule(nn.Module):
             ("conv", "norm", "act") and ("act", "conv", "norm").
             Default: ('conv', 'norm', 'act').
     """
+
+    abbr = 'conv_block'
 
     def __init__(self,
                  in_channels,

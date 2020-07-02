@@ -5,9 +5,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..cnn import kaiming_init
+from ..utils import kaiming_init
+from .registry import PLUGIN_LAYERS
 
 
+@PLUGIN_LAYERS.register_module()
 class GeneralizedAttention(nn.Module):
     """GeneralizedAttention module.
 
@@ -16,13 +18,18 @@ class GeneralizedAttention(nn.Module):
 
     Args:
         in_channels (int): Channels of the input feature map.
-        spatial_range (int): The spatial range.
-            -1 indicates no spatial range constraint.
+        spatial_range (int): The spatial range. -1 indicates no spatial range
+            constraint. Default: -1.
         num_heads (int): The head number of empirical_attention module.
+            Default: 9.
         position_embedding_dim (int): The position embedding dimension.
+            Default: -1.
         position_magnitude (int): A multiplier acting on coord difference.
+            Default: 1.
         kv_stride (int): The feature stride acting on key/value feature map.
+            Default: 2.
         q_stride (int): The feature stride acting on query feature map.
+            Default: 1.
         attention_type (str): A binary indicator string for indicating which
             items in generalized empirical_attention module are used.
             '1000' indicates 'query and key content' (appr - appr) item,
@@ -30,7 +37,10 @@ class GeneralizedAttention(nn.Module):
               (appr - position) item,
             '0010' indicates 'key content only' (bias - appr) item,
             '0001' indicates 'relative position only' (bias - position) item.
+            Default: '1111'.
     """
+
+    abbr = 'gen_attention_block'
 
     def __init__(self,
                  in_channels,
@@ -161,16 +171,16 @@ class GeneralizedAttention(nn.Module):
                                device,
                                feat_dim,
                                wave_length=1000):
-        h_idxs = torch.linspace(0, h - 1, h).cuda(device)
+        h_idxs = torch.linspace(0, h - 1, h).to(device)
         h_idxs = h_idxs.view((h, 1)) * q_stride
 
-        w_idxs = torch.linspace(0, w - 1, w).cuda(device)
+        w_idxs = torch.linspace(0, w - 1, w).to(device)
         w_idxs = w_idxs.view((w, 1)) * q_stride
 
-        h_kv_idxs = torch.linspace(0, h_kv - 1, h_kv).cuda(device)
+        h_kv_idxs = torch.linspace(0, h_kv - 1, h_kv).to(device)
         h_kv_idxs = h_kv_idxs.view((h_kv, 1)) * kv_stride
 
-        w_kv_idxs = torch.linspace(0, w_kv - 1, w_kv).cuda(device)
+        w_kv_idxs = torch.linspace(0, w_kv - 1, w_kv).to(device)
         w_kv_idxs = w_kv_idxs.view((w_kv, 1)) * kv_stride
 
         # (h, h_kv, 1)
@@ -181,9 +191,9 @@ class GeneralizedAttention(nn.Module):
         w_diff = w_idxs.unsqueeze(1) - w_kv_idxs.unsqueeze(0)
         w_diff *= self.position_magnitude
 
-        feat_range = torch.arange(0, feat_dim / 4).cuda(device)
+        feat_range = torch.arange(0, feat_dim / 4).to(device)
 
-        dim_mat = torch.Tensor([wave_length]).cuda(device)
+        dim_mat = torch.Tensor([wave_length]).to(device)
         dim_mat = dim_mat**((4. / feat_dim) * feat_range)
         dim_mat = dim_mat.view((1, 1, -1))
 
@@ -370,6 +380,15 @@ class GeneralizedAttention(nn.Module):
             view(n, self.v_dim * self.num_heads, h, w)
 
         out = self.proj_conv(out)
+
+        # output is downsampled, upsample back to input size
+        if self.q_downsample is not None:
+            out = F.interpolate(
+                out,
+                size=x_input.shape[2:],
+                mode='bilinear',
+                align_corners=False)
+
         out = self.gamma * out + x_input
         return out
 
