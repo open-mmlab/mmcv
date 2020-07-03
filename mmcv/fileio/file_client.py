@@ -6,8 +6,8 @@ from abc import ABCMeta, abstractmethod
 class BaseStorageBackend(metaclass=ABCMeta):
     """Abstract class of storage backends.
 
-    All backends need to implement two apis: `get()` and `get_text()`.
-    `get()` reads the file as a byte stream and `get_text()` reads the file
+    All backends need to implement two apis: ``get()`` and ``get_text()``.
+    ``get()`` reads the file as a byte stream and ``get_text()`` reads the file
     as texts.
     """
 
@@ -25,8 +25,8 @@ class CephBackend(BaseStorageBackend):
 
     Args:
         path_mapping (dict|None): path mapping dict from local path to Petrel
-            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
-            be replaced by `dst`. Default: None.
+            path. When ``path_mapping={'src': 'dst'}``, ``src`` in ``filepath``
+            will be replaced by ``dst``. Default: None.
     """
 
     def __init__(self, path_mapping=None):

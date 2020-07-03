@@ -52,14 +52,15 @@ def build_upsample_layer(cfg, *args, **kwargs):
 
     Args:
         cfg (dict): The upsample layer config, which should contain:
+
             - type (str): Layer type.
             - scale_factor (int): Upsample ratio, which is not applicable to
                 deconv.
             - layer args: Args needed to instantiate a upsample layer.
-        args (argument list): Arguments passed to the `__init__`
+        args (argument list): Arguments passed to the ``__init__``
             method of the corresponding conv layer.
-        kwargs (keyword arguments): Keyword arguments passed to the `__init__`
-            method of the corresponding conv layer.
+        kwargs (keyword arguments): Keyword arguments passed to the
+            ``__init__`` method of the corresponding conv layer.
 
     Returns:
         nn.Module: Created upsample layer.

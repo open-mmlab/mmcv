@@ -5,8 +5,12 @@ from .registry import ACTIVATION_LAYERS
 
 @ACTIVATION_LAYERS.register_module()
 class HSwish(nn.Module):
-    """Hard Swish Module. Apply the hard swish function:
-    Hswish(x) = x * ReLU6(x + 3) / 6
+    """Hard Swish Module.
+
+    This module applies the hard swish function:
+
+    .. math::
+        Hswish(x) = x * ReLU6(x + 3) / 6
 
     Args:
         inplace (bool): can optionally do the operation in-place.

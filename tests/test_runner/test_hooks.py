@@ -1,10 +1,8 @@
-"""
-Tests the hooks with runners.
+"""Tests the hooks with runners.
 
 CommandLine:
     pytest tests/test_hooks.py
     xdoctest tests/test_hooks.py zero
-
 """
 import logging
 import os.path as osp
@@ -49,9 +47,7 @@ def test_pavi_hook():
 
 
 def test_momentum_runner_hook():
-    """
-    xdoctest -m tests/test_hooks.py test_momentum_runner_hook
-    """
+    """xdoctest -m tests/test_hooks.py test_momentum_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner()
@@ -99,9 +95,7 @@ def test_momentum_runner_hook():
 
 
 def test_cosine_runner_hook():
-    """
-    xdoctest -m tests/test_hooks.py test_cosine_runner_hook
-    """
+    """xdoctest -m tests/test_hooks.py test_cosine_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner()

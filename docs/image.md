@@ -145,7 +145,7 @@ img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=[100, 50, 200])
 # pad the image on left, right, top, bottom borders with all zeros
 img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=0)
 
-# pad the image on left, right, top, bottom borders with different values 
+# pad the image on left, right, top, bottom borders with different values
 # for three channels.
 img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=[100, 50, 200])
 

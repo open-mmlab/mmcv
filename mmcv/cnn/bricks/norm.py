@@ -73,6 +73,7 @@ def build_norm_layer(cfg, num_features, postfix=''):
 
     Args:
         cfg (dict): The norm layer config, which should contain:
+
             - type (str): Layer type.
             - layer args: Args needed to instantiate a norm layer.
             - requires_grad (bool, optional): Whether stop gradient updates.
@@ -81,10 +82,9 @@ def build_norm_layer(cfg, num_features, postfix=''):
             to create named layer.
 
     Returns:
-        tuple[str, nn.Module]:
-            name (str): The layer name consisting of abbreviation and postfix,
-                e.g., bn1, gn.
-            layer (nn.Module): Created norm layer.
+        (str, nn.Module): The first element is the layer name consisting of
+            abbreviation and postfix, e.g., bn1, gn. The second element is the
+            created norm layer.
     """
     if not isinstance(cfg, dict):
         raise TypeError('cfg must be a dict')

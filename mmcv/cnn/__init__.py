@@ -2,8 +2,8 @@
 from .alexnet import AlexNet
 from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                      PADDING_LAYERS, PLUGIN_LAYERS, UPSAMPLE_LAYERS,
-                     ContextBlock, ConvModule, GeneralizedAttention,
-                     NonLocal1d, NonLocal2d, NonLocal3d, Scale,
+                     ContextBlock, ConvModule, GeneralizedAttention, HSigmoid,
+                     HSwish, NonLocal1d, NonLocal2d, NonLocal3d, Scale,
                      build_activation_layer, build_conv_layer,
                      build_norm_layer, build_padding_layer, build_plugin_layer,
                      build_upsample_layer, is_norm)
@@ -20,7 +20,7 @@ __all__ = [
     'build_activation_layer', 'build_conv_layer', 'build_norm_layer',
     'build_padding_layer', 'build_upsample_layer', 'build_plugin_layer',
     'is_norm', 'NonLocal1d', 'NonLocal2d', 'NonLocal3d', 'ContextBlock',
-    'GeneralizedAttention', 'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS',
-    'PADDING_LAYERS', 'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale',
-    'get_model_complexity_info'
+    'HSigmoid', 'HSwish', 'GeneralizedAttention', 'ACTIVATION_LAYERS',
+    'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS', 'UPSAMPLE_LAYERS',
+    'PLUGIN_LAYERS', 'Scale', 'get_model_complexity_info'
 ]
