@@ -134,9 +134,9 @@ def rel_roi_point_to_rel_img_point(rois,
 
 
 def point_sample(input, points, align_corners=False, **kwargs):
-    """A wrapper around :func:`grid_sample` to support 3D point_coords
-    tensors Unlike :func:`torch.nn.functional.grid_sample` it assumes
-    point_coords to lie inside [0, 1] x [0, 1] square.
+    """A wrapper around :func:`grid_sample` to support 3D point_coords tensors
+    Unlike :func:`torch.nn.functional.grid_sample` it assumes point_coords to
+    lie inside ``[0, 1] x [0, 1]`` square.
 
     Args:
         input (Tensor): Feature map, shape (N, C, H, W).

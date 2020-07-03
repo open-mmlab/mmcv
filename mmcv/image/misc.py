@@ -9,7 +9,7 @@ except ImportError:
 
 
 def tensor2imgs(tensor, mean=(0, 0, 0), std=(1, 1, 1), to_rgb=True):
-    """Convert tensor to 3-channel images
+    """Convert tensor to 3-channel images.
 
     Args:
         tensor (torch.Tensor): Tensor that contains multiple images, shape (

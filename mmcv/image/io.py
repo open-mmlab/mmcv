@@ -70,7 +70,7 @@ def _jpegflag(flag='color', channel_order='bgr'):
 
 
 def _pillow2array(img, flag='color', channel_order='bgr'):
-    """Convert a pillow image to numpy array
+    """Convert a pillow image to numpy array.
 
     Args:
         img (:obj:`PIL.Image.Image`): The image loaded using PIL
@@ -215,7 +215,7 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
 
 
 def imwrite(img, file_path, params=None, auto_mkdir=True):
-    """Write image to file
+    """Write image to file.
 
     Args:
         img (ndarray): Image array to be written.
