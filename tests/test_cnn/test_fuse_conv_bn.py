@@ -7,6 +7,7 @@ from mmcv.cnn import ConvModule, fuse_module
 def test_fuse_module():
     inputs = torch.rand((1, 3, 5, 5))
     modules = nn.ModuleList()
+    modules.append(nn.BatchNorm2d(3))
     modules.append(ConvModule(3, 5, 3, norm_cfg=dict(type='BN')))
     modules.append(ConvModule(5, 5, 3, norm_cfg=dict(type='BN')))
     modules = nn.Sequential(*modules)
