@@ -139,7 +139,7 @@ def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
 
 
 def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
-    """Use flow to warp img
+    """Use flow to warp img.
 
     Args:
         img (ndarray, float or uint8): Image to be warped.

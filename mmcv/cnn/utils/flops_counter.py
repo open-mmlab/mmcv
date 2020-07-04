@@ -45,18 +45,19 @@ def get_model_complexity_info(model,
     each layer in a model.
 
     Supported layers are listed as below:
-        - Convolutions: `nn.Conv1d`, `nn.Conv2d`, `nn.Conv3d`.
-        - Activations: `nn.ReLU`, `nn.PReLU`, `nn.ELU`, `nn.LeakyReLU`,
-            `nn.ReLU6`.
-        - Poolings: `nn.MaxPool1d`, `nn.MaxPool2d`, `nn.MaxPool3d`,
-            `nn.AvgPool1d`, `nn.AvgPool2d`, `nn.AvgPool3d`,
-            `nn.AdaptiveMaxPool1d`, `nn.AdaptiveMaxPool2d`,
-            `nn.AdaptiveMaxPool3d`, `nn.AdaptiveAvgPool1d`,
-            `nn.AdaptiveAvgPool2d`, `nn.AdaptiveAvgPool3d`.
-        - BatchNorms: `nn.BatchNorm1d`, `nn.BatchNorm2d`, `nn.BatchNorm3d`.
-        - Linear: `nn.Linear`.
-        - Deconvolution: `nn.ConvTranspose2d`.
-        - Upsample: `nn.Upsample`.
+        - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
+        - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
+            ``nn.ReLU6``.
+        - Poolings: ``nn.MaxPool1d``, ``nn.MaxPool2d``, ``nn.MaxPool3d``,
+            ``nn.AvgPool1d``, ``nn.AvgPool2d``, ``nn.AvgPool3d``,
+            ``nn.AdaptiveMaxPool1d``, ``nn.AdaptiveMaxPool2d``,
+            ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``,
+            ``nn.AdaptiveAvgPool2d``, ``nn.AdaptiveAvgPool3d``.
+        - BatchNorms: ``nn.BatchNorm1d``, ``nn.BatchNorm2d``,
+            ``nn.BatchNorm3d``.
+        - Linear: ``nn.Linear``.
+        - Deconvolution: ``nn.ConvTranspose2d``.
+        - Upsample: ``nn.Upsample``.
 
     Args:
         model (nn.Module): The model for complexity calculation.
@@ -69,11 +70,11 @@ def get_model_complexity_info(model,
             method that generates input. otherwise, it will generate a random
             tensor with input shape to calculate FLOPs. Default: None.
         flush (bool): same as that in :func:`print`. Default: False.
-        ost (stream): same as `file` param in :func:`print`.
+        ost (stream): same as ``file`` param in :func:`print`.
             Default: sys.stdout.
 
     Returns:
-        tuple[float | str]: If `as_strings` is set to True, it will return
+        tuple[float | str]: If ``as_strings`` is set to True, it will return
             FLOPs and parameter counts in a string format. otherwise, it will
             return those in a float number format.
     """
@@ -352,7 +353,7 @@ def start_flops_count(self):
     """Activate the computation of mean flops consumption per image.
 
     A method to activate the computation of mean flops consumption per image.
-    which will be available after `add_flops_counting_methods()` is called on
+    which will be available after ``add_flops_counting_methods()`` is called on
     a desired net object. It should be called before running the network.
     """
     add_batch_counter_hook_function(self)
@@ -374,9 +375,9 @@ def start_flops_count(self):
 def stop_flops_count(self):
     """Stop computing the mean flops consumption per image.
 
-    A method to stop computing the mean flops consumption per image, which
-    will be available after `add_flops_counting_methods()` is called on a
-    desired net object. It can be called to pause the computation whenever.
+    A method to stop computing the mean flops consumption per image, which will
+    be available after ``add_flops_counting_methods()`` is called on a desired
+    net object. It can be called to pause the computation whenever.
     """
     remove_batch_counter_hook_function(self)
     self.apply(remove_flops_counter_hook_function)
@@ -385,8 +386,8 @@ def stop_flops_count(self):
 def reset_flops_count(self):
     """Reset statistics computed so far.
 
-    A method to Reset computed statistics, which will be available
-    after `add_flops_counting_methods()` is called on a desired net object.
+    A method to Reset computed statistics, which will be available after
+    `add_flops_counting_methods()` is called on a desired net object.
     """
     add_batch_counter_variables_or_reset(self)
     self.apply(add_flops_counter_variable_or_reset)

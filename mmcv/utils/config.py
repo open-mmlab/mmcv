@@ -78,7 +78,6 @@ class Config:
         >>> cfg
         "Config [path: /home/kchen/projects/mmcv/tests/data/config/a.py]: "
         "{'item1': [1, 2], 'item2': {'a': 0}, 'item3': True, 'item4': 'test'}"
-
     """
 
     @staticmethod
@@ -180,8 +179,7 @@ class Config:
 
     @staticmethod
     def auto_argparser(description=None):
-        """Generate argparser from config file automatically (experimental)
-        """
+        """Generate argparser from config file automatically (experimental)"""
         partial_parser = ArgumentParser(description=description)
         partial_parser.add_argument('config', help='config file path')
         cfg_file = partial_parser.parse_known_args()[0].config
@@ -356,7 +354,7 @@ class Config:
                 mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
-        """Merge list into cfg_dict
+        """Merge list into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
 

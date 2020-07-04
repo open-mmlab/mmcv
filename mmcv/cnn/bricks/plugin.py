@@ -31,7 +31,6 @@ def infer_abbr(class_type):
 
             >>> camel2snack("FancyBlock")
             'fancy_block'
-
         """
 
         word = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', word)

@@ -27,5 +27,5 @@ __all__ = [
     'obj_from_dict', 'init_dist', 'get_dist_info', 'master_only',
     'OPTIMIZER_BUILDERS', 'OPTIMIZERS', 'DefaultOptimizerConstructor',
     'build_optimizer', 'build_optimizer_constructor', 'IterLoader',
-    'IterBasedRunner', 'set_random_seed'
+    'set_random_seed'
 ]

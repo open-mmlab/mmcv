@@ -32,12 +32,13 @@ class GeneralizedAttention(nn.Module):
             Default: 1.
         attention_type (str): A binary indicator string for indicating which
             items in generalized empirical_attention module are used.
-            '1000' indicates 'query and key content' (appr - appr) item,
-            '0100' indicates 'query content and relative position'
-              (appr - position) item,
-            '0010' indicates 'key content only' (bias - appr) item,
-            '0001' indicates 'relative position only' (bias - position) item.
             Default: '1111'.
+
+            - '1000' indicates 'query and key content' (appr - appr) item,
+            - '0100' indicates 'query content and relative position'
+              (appr - position) item,
+            - '0010' indicates 'key content only' (bias - appr) item,
+            - '0001' indicates 'relative position only' (bias - position) item.
     """
 
     _abbr_ = 'gen_attention_block'

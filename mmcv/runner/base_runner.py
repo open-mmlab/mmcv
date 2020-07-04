@@ -247,7 +247,7 @@ class BaseRunner(metaclass=ABCMeta):
         """Register a hook into the hook list.
 
         The hook will be inserted into a priority queue, with the specified
-        priority (See :cls:`Priority` for details of priorities).
+        priority (See :class:`Priority` for details of priorities).
         For hooks with the same priority, they will be triggered in the same
         order as they are registered.
 
