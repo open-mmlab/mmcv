@@ -178,7 +178,7 @@ jobs:
         with:
           python-version: 3.7
       - name: Install system dependencies
-        run: brew install ffmpeg libturbojpeg
+        run: brew install ffmpeg jpeg-turbo
       - name: Install unittest dependencies
         run: pip install pytest coverage lmdb PyTurboJPEG
       - name: Build and install
