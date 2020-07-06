@@ -184,7 +184,7 @@ jobs:
       - name: Build and install
         run: |
           rm -rf .eggs
-          CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
+          CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
