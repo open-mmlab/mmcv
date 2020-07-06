@@ -182,12 +182,14 @@ jobs:
       - name: Install unittest dependencies
         run: pip install pytest coverage lmdb PyTurboJPEG
       - name: Build and install
-        run: rm -rf .eggs && pip install -e .
+        run: |
+          rm -rf .eggs
+          CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source=mmcv -m pytest tests/
