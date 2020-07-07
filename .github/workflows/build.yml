@@ -133,10 +133,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.4.0]
-        include:
-          - torch: 1.4.0
-            torchvision: 0.4.2
 
     steps:
       - uses: actions/checkout@v2
@@ -153,11 +149,9 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
-      - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_image --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops
           coverage xml
           coverage report -m
 
