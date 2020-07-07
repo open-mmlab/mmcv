@@ -52,20 +52,20 @@ CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
 We also provide pre-build mmcv with corresponding Pytorch and CUDA versions
 
 <table class="docutils"><tbody><tr><th width="80"> CUDA </th><th valign="bottom" align="left" width="100">torch 1.5</th><th valign="bottom" align="left" width="100">torch 1.4</th><th valign="bottom" align="left" width="100">torch 1.3</th></tr>
-<tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.5.0+cu102 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
+<tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td> <td align="left"> </td> <td align="left"> </td> </tr>
-<tr><td align="left">10.1</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu101 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu101 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu101 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
+<tr><td align="left">10.1</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td></tr>
 <tr><td align="left">10.0</td><td align="left"> </td><td align="left"> </td> <td align="left"> </td> </tr>
-<tr><td align="left">9.2</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu92 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu92 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu92 -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
+<tr><td align="left">9.2</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td></tr>
-<tr><td align="left">cpu</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cpu -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cpu -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cpu -f http://8.210.27.39:9000/ --trusted-host 8.210.27.39
+<tr><td align="left">cpu</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td> </tr>
 </tbody></table>
 
