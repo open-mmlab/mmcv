@@ -192,6 +192,7 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
+          # The timing on macos VMs is not precise, so we skip the progressbar tests
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore tests/test_progressbar.py
           coverage xml
           coverage report -m
