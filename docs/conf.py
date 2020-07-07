@@ -14,6 +14,9 @@
 import os
 import sys
 
+from m2r import MdInclude
+from recommonmark.transform import AutoStructify
+
 sys.path.insert(0, os.path.abspath('..'))
 
 version_file = '../mmcv/version.py'
@@ -46,12 +49,14 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'recommonmark',
+    'sphinx.ext.autosectionlabel',
 ]
 
 autodoc_mock_imports = [
     'cv2', 'mmcv._ext', 'mmcv._flow_warp_ext', 'mmcv.utils.ext_loader',
     'torchvision'
 ]
+autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -176,3 +181,16 @@ epub_title = project
 epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
+
+
+def setup(app):
+    app.add_config_value('no_underscore_emphasis', False, 'env')
+    app.add_config_value('m2r_parse_relative_links', False, 'env')
+    app.add_config_value('m2r_anonymous_references', False, 'env')
+    app.add_config_value('m2r_disable_inline_math', False, 'env')
+    app.add_directive('mdinclude', MdInclude)
+    app.add_config_value('recommonmark_config', {
+        'auto_toc_tree_section': 'Contents',
+        'enable_eval_rst': True,
+    }, True)
+    app.add_transform(AutoStructify)
