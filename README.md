@@ -48,7 +48,7 @@ If you are on macOS, replace the last command with
 CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
 ```
 
-We also provide pre-build mmcv with corresponding Pytorch and CUDA versions
+Note that the building process may take up to 10 mins. We also provide pre-built mmcv with corresponding Pytorch and CUDA versions to simplify the building.
 
 <table class="docutils"><tbody><tr><th width="80"> CUDA </th><th valign="bottom" align="left" width="100">torch 1.5</th><th valign="bottom" align="left" width="100">torch 1.4</th><th valign="bottom" align="left" width="100">torch 1.3</th></tr>
 <tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
