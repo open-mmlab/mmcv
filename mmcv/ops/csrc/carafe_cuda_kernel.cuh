@@ -7,7 +7,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-
 #define WARP_SIZE 32
 #define THREADS_PER_PIXEL 32
 #define MAX_SHARED_MEMORY 49152
@@ -43,7 +42,7 @@ __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
     val += __shfl_down_sync(FULL_MASK, val, offset);
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-    val += __shfl_down(FULL_MASK, val, offset);
+  val += __shfl_down(FULL_MASK, val, offset);
 #endif
   return val;
 }
@@ -56,7 +55,7 @@ __device__ __forceinline__ phalf warpReduceSum(phalf val) {
         __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-        __shfl_down(FULL_MASK, static_cast<unsigned int>(__PHALF(val)), offset);
+  __shfl_down(FULL_MASK, static_cast<unsigned int>(__PHALF(val)), offset);
 #endif
   return val;
 }

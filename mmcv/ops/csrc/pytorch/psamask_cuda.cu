@@ -5,10 +5,12 @@
 
 #ifdef __NVCC__
 #include <THC/THC.h>
+
 #include <THC/THCDeviceUtils.cuh>
 #endif
 #ifdef __HIP_PLATFORM_HCC__
 #include <THH/THH.h>
+
 #include <THH/THHDeviceUtils.cuh>
 #endif
 
