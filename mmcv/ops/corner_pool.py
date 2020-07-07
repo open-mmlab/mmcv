@@ -113,7 +113,7 @@ class CornerPool(nn.Module):
         self.corner_pool = self.pool_functions[mode]
 
     def forward(self, x):
-        if torch.__version__ >= '1.5.0':
+        if torch.__version__ != 'parrots' and torch.__version__ >= '1.5.0':
             dim, flip = self.cummax_dim_flip[self.mode]
             if flip:
                 x = x.flip(dim)
