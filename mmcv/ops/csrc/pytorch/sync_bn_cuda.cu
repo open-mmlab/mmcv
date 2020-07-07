@@ -11,7 +11,7 @@ void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean) {
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(input.device());
+  // at::cuda::HIPGuard device_guard(input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -40,7 +40,7 @@ void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(input.device());
+  // at::cuda::HIPGuard device_guard(input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -72,7 +72,7 @@ void SyncBNForwardOutputCUDAKernelLauncher(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(input.device());
+  // at::cuda::HIPGuard device_guard(input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -107,7 +107,7 @@ void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(grad_output.device());
+  // at::cuda::HIPGuard device_guard(grad_output.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -142,7 +142,7 @@ void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(grad_input.device());
+  // at::cuda::HIPGuard device_guard(grad_input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

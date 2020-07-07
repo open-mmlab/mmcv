@@ -13,7 +13,7 @@ void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(bboxes1.device());
+  // at::cuda::HIPGuard device_guard(bboxes1.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

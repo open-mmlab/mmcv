@@ -16,7 +16,7 @@ int CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(features.device());
+  // at::cuda::HIPGuard device_guard(features.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -51,7 +51,7 @@ int CARAFENAIVEBackwardCUDAKernelLauncher(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(top_grad.device());
+  // at::cuda::HIPGuard device_guard(top_grad.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

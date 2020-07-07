@@ -7,7 +7,7 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   at::cuda::CUDAGuard device_guard(boxes.device());
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(boxes.device());
+  // at::cuda::HIPGuard device_guard(boxes.device());
 #endif
 
   if (boxes.numel() == 0) {

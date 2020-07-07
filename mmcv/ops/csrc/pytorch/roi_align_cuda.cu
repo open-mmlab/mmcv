@@ -16,7 +16,7 @@ void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(input.device());
+  // at::cuda::HIPGuard device_guard(input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -55,7 +55,7 @@ void ROIAlignBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(grad_output.device());
+  // at::cuda::HIPGuard device_guard(grad_output.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

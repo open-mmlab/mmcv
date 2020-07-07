@@ -18,7 +18,7 @@ void MaskedIm2colForwardCUDAKernelLauncher(const Tensor bottom_data,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(bottom_data.device());
+  // at::cuda::HIPGuard device_guard(bottom_data.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -51,7 +51,7 @@ void MaskedCol2imForwardCUDAKernelLauncher(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(bottom_data.device());
+  // at::cuda::HIPGuard device_guard(bottom_data.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

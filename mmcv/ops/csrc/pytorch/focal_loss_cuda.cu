@@ -15,7 +15,7 @@ void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(input.device());
+  // at::cuda::HIPGuard device_guard(input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -48,7 +48,7 @@ void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(grad_input.device());
+  // at::cuda::HIPGuard device_guard(grad_input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -82,7 +82,7 @@ void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor softmax, Tensor target,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(softmax.device());
+  // at::cuda::HIPGuard device_guard(softmax.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -115,7 +115,7 @@ void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor softmax, Tensor target,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 #endif
 #ifdef __HIP_PLATFORM_HCC__
-  at::cuda::HIPGuard device_guard(grad_input.device());
+  // at::cuda::HIPGuard device_guard(grad_input.device());
   hipStream_t stream = at::cuda::getCurrentHIPStream();
 #endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
