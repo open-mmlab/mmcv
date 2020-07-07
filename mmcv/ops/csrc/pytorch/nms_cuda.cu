@@ -3,7 +3,12 @@
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset) {
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(boxes.device());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(boxes.device());
+#endif
 
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
@@ -17,7 +22,12 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
+#ifdef __NVCC__
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   nms_cuda<<<blocks, threads, 0, stream>>>(
       boxes_num, iou_threshold, offset, boxes_sorted.data_ptr<float>(),
       (unsigned long long*)mask.data_ptr<int64_t>());
@@ -47,6 +57,11 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
     }
   }
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
   return order_t.masked_select(keep_t.to(at::kCUDA));
 }

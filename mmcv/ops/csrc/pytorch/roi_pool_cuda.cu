@@ -9,8 +9,14 @@ void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
   int height = input.size(2);
   int width = input.size(3);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "roi_pool_forward_cuda_kernel", [&] {
         roi_pool_forward_cuda_kernel<scalar_t>
@@ -21,7 +27,12 @@ void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
                 static_cast<scalar_t>(spatial_scale), channels, height, width);
       });
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void ROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
@@ -33,8 +44,14 @@ void ROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
   int height = grad_input.size(2);
   int width = grad_input.size(3);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(grad_output.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(grad_output.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "roi_pool_backward_cuda_kernel", [&] {
         roi_pool_backward_cuda_kernel<scalar_t>
@@ -45,5 +62,10 @@ void ROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
                 channels, height, width);
       });
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

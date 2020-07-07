@@ -8,8 +8,14 @@ void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
   int num_bbox1 = bboxes1.size(0);
   int num_bbox2 = bboxes2.size(0);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(bboxes1.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(bboxes1.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       bboxes1.scalar_type(), "bbox_overlaps_cuda_kernel", ([&] {
         bbox_overlaps_cuda_kernel<scalar_t>
@@ -18,5 +24,10 @@ void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                 ious.data_ptr<scalar_t>(), num_bbox1, num_bbox2, mode, aligned,
                 offset);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

@@ -22,8 +22,14 @@ void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
   rmasks.resize_({batch_size, output_height, output_width, mask_channels});
 
   // one warp per pixel
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(features.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(features.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features.scalar_type(), "NCHW2NHWC_Feature", ([&] {
         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
@@ -72,7 +78,12 @@ void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
                 bottom_data, top_data);
       }));
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void CARAFEBackwardCUDAKernelLauncher(
@@ -95,8 +106,14 @@ void CARAFEBackwardCUDAKernelLauncher(
   rbottom_grad_hs.resize_({batch_size, output_height, output_width, channels});
   rmask_grad.resize_({batch_size, output_height, output_width, mask_channels});
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(top_grad.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(top_grad.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       top_grad.scalar_type(), "NCHW2NHWC_Top_Grad", ([&] {
         const scalar_t *bottom_data = top_grad.data_ptr<scalar_t>();
@@ -175,5 +192,10 @@ void CARAFEBackwardCUDAKernelLauncher(
                 bottom_data, top_data);
       }));
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

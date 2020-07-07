@@ -1,7 +1,10 @@
 #ifndef COMMON_CUDA_HELPER
 #define COMMON_CUDA_HELPER
 
+#ifdef __NVCC__
 #include <cuda.h>
+#endif
+
 
 #define CUDA_1D_KERNEL_LOOP(i, n)                              \
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); \

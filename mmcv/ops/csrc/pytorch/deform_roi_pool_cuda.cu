@@ -11,8 +11,14 @@ void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
   int height = input.size(2);
   int width = input.size(3);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "deform_roi_pool_forward_cuda_kernel", [&] {
         deform_roi_pool_forward_cuda_kernel<scalar_t>
@@ -24,7 +30,12 @@ void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
                 static_cast<scalar_t>(gamma), channels, height, width);
       });
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void DeformRoIPoolBackwardCUDAKernelLauncher(
@@ -36,8 +47,14 @@ void DeformRoIPoolBackwardCUDAKernelLauncher(
   int height = grad_input.size(2);
   int width = grad_input.size(3);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(grad_output.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(grad_output.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "deform_roi_pool_backward_cuda_kernel", [&] {
         deform_roi_pool_backward_cuda_kernel<scalar_t>
@@ -50,5 +67,10 @@ void DeformRoIPoolBackwardCUDAKernelLauncher(
                 static_cast<scalar_t>(gamma), channels, height, width);
       });
 
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

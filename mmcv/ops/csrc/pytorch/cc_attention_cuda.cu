@@ -1,9 +1,16 @@
 // Modified from
 // https://github.com/LikeLy-Journey/SegmenTron/blob/master/segmentron/modules/csrc/criss_cross_attention/ca_cuda.cu
 
+#ifdef __NVCC__
 #include <THC/THC.h>
 
 #include <THC/THCDeviceUtils.cuh>
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+#include <THH/THH.h>
+
+#include <THH/THHDeviceUtils.cuh>
+#endif
 
 #include "cc_attention_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
@@ -18,7 +25,12 @@ void CAForwardCUDAKernelLauncher(const Tensor t, const Tensor f,
   auto h = t.size(2);
   auto w = t.size(3);
 
+#ifdef __NVCC__
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
 
   // Run kernel
   dim3 threads(32, 32);
@@ -33,7 +45,12 @@ void CAForwardCUDAKernelLauncher(const Tensor t, const Tensor f,
         f.contiguous().data_ptr<scalar_t>(),
         weight.contiguous().data_ptr<scalar_t>(), n, c, h, w);
   });
+#ifdef __NVCC__
   THCudaCheck(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  THCudaCheck(hipGetLastError());
+#endif
 }
 
 void CABackwardCUDAKernelLauncher(const Tensor dw, const Tensor t,
@@ -47,7 +64,12 @@ void CABackwardCUDAKernelLauncher(const Tensor dw, const Tensor t,
   auto h = t.size(2);
   auto w = t.size(3);
 
+#ifdef __NVCC__
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
 
   // Run kernel
   dim3 threads(32, 32);
@@ -71,7 +93,12 @@ void CABackwardCUDAKernelLauncher(const Tensor dw, const Tensor t,
         f.contiguous().data_ptr<scalar_t>(),
         df.contiguous().data_ptr<scalar_t>(), n, c, h, w);
   });
+#ifdef __NVCC__
   THCudaCheck(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  THCudaCheck(hipGetLastError());
+#endif
 }
 
 void CAMapForwardCUDAKernelLauncher(const Tensor weight, const Tensor g,
@@ -84,7 +111,12 @@ void CAMapForwardCUDAKernelLauncher(const Tensor weight, const Tensor g,
   auto h = g.size(2);
   auto w = g.size(3);
 
+#ifdef __NVCC__
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
 
   // Run kernel
   dim3 threads(32, 32);
@@ -99,7 +131,12 @@ void CAMapForwardCUDAKernelLauncher(const Tensor weight, const Tensor g,
         g.contiguous().data_ptr<scalar_t>(),
         out.contiguous().data_ptr<scalar_t>(), n, c, h, w);
   });
+#ifdef __NVCC__
   THCudaCheck(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  THCudaCheck(hipGetLastError());
+#endif
 }
 
 void CAMapBackwardCUDAKernelLauncher(const Tensor dout, const Tensor weight,
@@ -113,7 +150,12 @@ void CAMapBackwardCUDAKernelLauncher(const Tensor dout, const Tensor weight,
   auto h = dout.size(2);
   auto w = dout.size(3);
 
+#ifdef __NVCC__
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
 
   // Run kernel
   dim3 threads(32, 32);
@@ -138,5 +180,10 @@ void CAMapBackwardCUDAKernelLauncher(const Tensor dout, const Tensor weight,
         g.contiguous().data_ptr<scalar_t>(),
         dg.contiguous().data_ptr<scalar_t>(), n, c, h, w);
   });
+#ifdef __NVCC__
   THCudaCheck(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  THCudaCheck(hipGetLastError());
+#endif
 }

@@ -13,8 +13,14 @@ void MaskedIm2colForwardCUDAKernelLauncher(const Tensor bottom_data,
   int mask_cnt = mask_h_idx.size(0);
   int output_size = mask_cnt * channels;
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(bottom_data.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(bottom_data.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       bottom_data.scalar_type(), "MaskedIm2colLaucherForward", ([&] {
         const scalar_t *bottom_data_ = bottom_data.data_ptr<scalar_t>();
@@ -26,7 +32,12 @@ void MaskedIm2colForwardCUDAKernelLauncher(const Tensor bottom_data,
                 output_size, bottom_data_, height, width, kernel_h, kernel_w,
                 pad_h, pad_w, mask_h_idx_, mask_w_idx_, mask_cnt, top_data_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void MaskedCol2imForwardCUDAKernelLauncher(
@@ -35,8 +46,14 @@ void MaskedCol2imForwardCUDAKernelLauncher(
   int mask_cnt = mask_h_idx.size(0);
   int output_size = mask_cnt * channels;
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(bottom_data.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(bottom_data.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       bottom_data.scalar_type(), "MaskedCol2imLaucherForward", ([&] {
         const scalar_t *bottom_data_ = bottom_data.data_ptr<scalar_t>();
@@ -49,5 +66,10 @@ void MaskedCol2imForwardCUDAKernelLauncher(
                 output_size, bottom_data_, height, width, channels, mask_h_idx_,
                 mask_w_idx_, mask_cnt, top_data_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

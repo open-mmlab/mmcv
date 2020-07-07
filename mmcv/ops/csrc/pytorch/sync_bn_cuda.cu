@@ -6,8 +6,14 @@ void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean) {
   int channels = input.size(1);
   int spatial = input.size(2);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_cuda_kernel", [&] {
         sync_bn_forward_mean_cuda_kernel<scalar_t>
@@ -15,7 +21,12 @@ void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean) {
                 input.data_ptr<scalar_t>(), mean.data_ptr<float>(), num,
                 channels, spatial);
       });
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
@@ -24,8 +35,14 @@ void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
   int channels = input.size(1);
   int spatial = input.size(2);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_cuda_kernel", [&] {
         sync_bn_forward_var_cuda_kernel<scalar_t>
@@ -33,7 +50,12 @@ void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
                 input.data_ptr<scalar_t>(), mean.data_ptr<float>(),
                 var.data_ptr<float>(), num, channels, spatial);
       });
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void SyncBNForwardOutputCUDAKernelLauncher(
@@ -45,8 +67,14 @@ void SyncBNForwardOutputCUDAKernelLauncher(
   int channels = input.size(1);
   int spatial = input.size(2);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_cuda_kernel", [&] {
         sync_bn_forward_output_cuda_kernel<scalar_t>
@@ -58,7 +86,12 @@ void SyncBNForwardOutputCUDAKernelLauncher(
                 std.data_ptr<float>(), output.data_ptr<scalar_t>(), num,
                 channels, spatial, eps, momentum, group_size);
       });
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
@@ -69,8 +102,14 @@ void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
   int channels = grad_output.size(1);
   int spatial = grad_output.size(2);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(grad_output.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(grad_output.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "sync_bn_backward_param_cuda_kernel", [&] {
         sync_bn_backward_param_cuda_kernel<scalar_t>
@@ -79,7 +118,12 @@ void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
                 grad_weight.data_ptr<float>(), grad_bias.data_ptr<float>(), num,
                 channels, spatial);
       });
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
@@ -93,8 +137,14 @@ void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
   int channels = grad_input.size(1);
   int spatial = grad_input.size(2);
 
+#ifdef __NVCC__
   at::cuda::CUDAGuard device_guard(grad_input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  at::cuda::HIPGuard device_guard(grad_input.device());
+  hipStream_t stream = at::cuda::getCurrentHIPStream();
+#endif
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "sync_bn_backward_data_cuda_kernel", [&] {
         sync_bn_backward_data_cuda_kernel<scalar_t>
@@ -105,5 +155,10 @@ void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
                 std.data_ptr<float>(), grad_input.data_ptr<scalar_t>(), num,
                 channels, spatial);
       });
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }

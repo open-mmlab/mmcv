@@ -25,13 +25,23 @@ void deformable_im2col(Tensor data_im, Tensor data_offset, const int channels,
 
         deformable_im2col_gpu_kernel<<<GET_BLOCKS(num_kernels),
                                        THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
                                        at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+                                       at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_im_, data_offset_, height, width, ksize_h,
             ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
             channel_per_deformable_group, parallel_imgs, channels,
             deformable_group, height_col, width_col, data_col_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
@@ -58,13 +68,23 @@ void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
 
         deformable_col2im_gpu_kernel<<<GET_BLOCKS(num_kernels),
                                        THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
                                        at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+                                       at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_col_, data_offset_, channels, height, width,
             ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h,
             dilation_w, channel_per_deformable_group, parallel_imgs,
             deformable_group, height_col, width_col, grad_im_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void deformable_col2im_coord(
@@ -91,14 +111,24 @@ void deformable_col2im_coord(
 
         deformable_col2im_coord_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
             at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+            at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_col_, data_im_, data_offset_, channels, height,
             width, ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, parallel_imgs,
             2 * ksize_h * ksize_w * deformable_group, deformable_group,
             height_col, width_col, grad_offset_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void deform_conv_shape_check(Tensor input, Tensor offset, Tensor *gradOutput,

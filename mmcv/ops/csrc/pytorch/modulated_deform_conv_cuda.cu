@@ -21,13 +21,23 @@ void modulated_deformable_im2col_cuda(
 
         modulated_deformable_im2col_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
             at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+            at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_im_, data_offset_, data_mask_, height_im,
             width_im, kernel_h, kenerl_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, batch_size,
             channels, deformable_group, height_col, width_col, data_col_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void modulated_deformable_col2im_cuda(
@@ -50,13 +60,23 @@ void modulated_deformable_col2im_cuda(
 
         modulated_deformable_col2im_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
             at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+            at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_col_, data_offset_, data_mask_, channels,
             height_im, width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h,
             stride_w, dilation_h, dilation_w, channel_per_deformable_group,
             batch_size, deformable_group, height_col, width_col, grad_im_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void modulated_deformable_col2im_coord_cuda(
@@ -83,7 +103,12 @@ void modulated_deformable_col2im_coord_cuda(
 
         modulated_deformable_col2im_coord_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+#ifdef __NVCC__
             at::cuda::getCurrentCUDAStream()>>>(
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+            at::cuda::getCurrentHIPStream()>>>(
+#endif
             num_kernels, data_col_, data_im_, data_offset_, data_mask_,
             channels, height_im, width_im, kernel_h, kernel_w, pad_h, pad_w,
             stride_h, stride_w, dilation_h, dilation_w,
@@ -91,7 +116,12 @@ void modulated_deformable_col2im_coord_cuda(
             2 * kernel_h * kernel_w * deformable_group, deformable_group,
             height_col, width_col, grad_offset_, grad_mask_);
       }));
+#ifdef __NVCC__
   AT_CUDA_CHECK(cudaGetLastError());
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  AT_CUDA_CHECK(hipGetLastError());
+#endif
 }
 
 void ModulatedDeformConvForwardCUDAKernelLauncher(

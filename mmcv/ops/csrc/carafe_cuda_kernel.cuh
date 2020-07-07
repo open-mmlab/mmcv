@@ -7,6 +7,7 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+
 #define WARP_SIZE 32
 #define THREADS_PER_PIXEL 32
 #define MAX_SHARED_MEMORY 49152
@@ -26,19 +27,24 @@ __device__ inline int Loc2Index(const int n, const int c, const int h,
 }
 /* TODO: move this to a common place */
 template <typename scalar_t>
-__device__ inline scalar_t min(scalar_t a, scalar_t b) {
+__device__ inline scalar_t min_min(scalar_t a, scalar_t b) {
   return a < b ? a : b;
 }
 
 template <typename scalar_t>
-__device__ inline scalar_t max(scalar_t a, scalar_t b) {
+__device__ inline scalar_t max_max(scalar_t a, scalar_t b) {
   return a > b ? a : b;
 }
 
 template <typename scalar_t>
 __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
   for (int offset = 16; offset > 0; offset /= 2)
+#ifdef __NVCC__
     val += __shfl_down_sync(FULL_MASK, val, offset);
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+    val += __shfl_down(FULL_MASK, val, offset);
+#endif
   return val;
 }
 
@@ -46,7 +52,12 @@ template <>
 __device__ __forceinline__ phalf warpReduceSum(phalf val) {
   for (int offset = 16; offset > 0; offset /= 2)
     __PHALF(val) +=
+#ifdef __NVCC__
         __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+        __shfl_down(FULL_MASK, static_cast<unsigned int>(__PHALF(val)), offset);
+#endif
   return val;
 }
 
@@ -294,7 +305,7 @@ __global__ void CARAFEBackward_Mask(const int num_kernels,
       down_x <= down_width - 1) {
     const int channels_per_mask = ceilf(channels / (float)group_size);
     const int start = channels_per_mask * mask_group;
-    const int end = min(channels_per_mask * (mask_group + 1), channels);
+    const int end = min_min(channels_per_mask * (mask_group + 1), channels);
     for (int c = start + lane_id; c < end; c += WARP_SIZE) {
       int bottom_id =
           Loc2Index(n, down_y, down_x, c, down_height, down_width, channels);
@@ -302,7 +313,13 @@ __global__ void CARAFEBackward_Mask(const int num_kernels,
       output_val += top_diff[top_id] * bottom_data[bottom_id];
     }
   }
+#ifdef __NVCC__
   __syncwarp();
+#endif
+#ifdef __HIP_PLATFORM_HCC__
+  // confused !!!
+  __syncthreads();
+#endif
   output_val = warpReduceSum(output_val);
   if (lane_id == 0) {
     const int mask_id =
