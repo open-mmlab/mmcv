@@ -94,15 +94,15 @@ class Config:
 
     @staticmethod
     def _substitute_predefined_vars(filename, temp_config_name):
-        fileDirname = osp.dirname(filename)
-        fileBasename = osp.basename(filename)
-        fileBasenameNoExtension = osp.splitext(fileBasename)[0]
-        fileExtname = osp.splitext(filename)[1]
+        file_dirname = osp.dirname(filename)
+        file_basename = osp.basename(filename)
+        file_basename_no_extension = osp.splitext(file_basename)[0]
+        file_extname = osp.splitext(filename)[1]
         support_templates = dict(
-            fileDirname=fileDirname,
-            fileBasename=fileBasename,
-            fileBasenameNoExtension=fileBasenameNoExtension,
-            fileExtname=fileExtname)
+            fileDirname=file_dirname,
+            fileBasename=file_basename,
+            fileBasenameNoExtension=file_basename_no_extension,
+            fileExtname=file_extname)
         config_file = open(filename).read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'

@@ -64,7 +64,7 @@ def test_construct():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/h.py')
     cfg_dict = dict(
         item1='h.py',
-        item_2=f'{osp.dirname(__file__)}/data/config',
+        item2=f'{osp.dirname(__file__)}/data/config',
         item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
@@ -76,6 +76,39 @@ def test_construct():
         cfg.dump(dump_file)
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
+        assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
+        assert Config.fromfile(dump_file)['item2'] == cfg_dict['item2']
+        assert Config.fromfile(dump_file)['item3'] == cfg_dict['item3']
+
+    # test p.yaml
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/p.yaml')
+    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == yaml.dump(cfg_dict)
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'p.yaml')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
+        assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
+
+    # test o.json
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/o.json')
+    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg = Config(cfg_dict, filename=cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.dump() == json.dumps(cfg_dict)
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, 'o.json')
+        cfg.dump(dump_file)
+        assert cfg.dump() == open(dump_file, 'r').read()
+        assert Config.fromfile(dump_file)
+        assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
 
 
 def test_fromfile():
