@@ -1,16 +1,15 @@
-# MMCV
+<div align="center">
+  <img src="./docs/mmcv-logo.png" width="300"/>
+</div>
 
-[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
-[![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
-[![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
+
+[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
 
 ## Introduction
 
 MMCV is a foundational python library for computer vision research and supports many
-research projects in MMLAB, such as [MMDetection](https://github.com/open-mmlab/mmdetection)
-and [MMAction](https://github.com/open-mmlab/mmaction).
+research projects in MMLAB, such as [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMAction](https://github.com/open-mmlab/mmaction).
 
 It provides the following functionalities.
 
