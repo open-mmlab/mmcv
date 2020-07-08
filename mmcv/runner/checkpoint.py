@@ -254,7 +254,7 @@ def weights_to_cpu(state_dict):
     return state_dict_cpu
 
 
-def get_state_dict(module, destination=None, prefix='', keep_vars=False):
+def state_dict(module, destination=None, prefix='', keep_vars=False):
     """Returns a dictionary containing a whole state of the module.
 
     Both parameters and persistent buffers (e.g. running averages) are
@@ -274,6 +274,12 @@ def get_state_dict(module, destination=None, prefix='', keep_vars=False):
     Returns:
         dict: a dictionary containing a whole state of the module.
     """
+    # this is what we modified:
+    # recursively check parallel module in case that the model has a
+    # complicated structure, e.g., nn.Module(nn.Module(DDP))
+    if is_module_wrapper(module):
+        module = module.module
+
     if destination is None:
         destination = OrderedDict()
         destination._metadata = OrderedDict()
@@ -287,11 +293,7 @@ def get_state_dict(module, destination=None, prefix='', keep_vars=False):
             destination[prefix + name] = buf if keep_vars else buf.data
     for name, child in module._modules.items():
         if child is not None:
-            # this is what we modified: if sub-module is wrapped by
-            # DataParallel or other module wrappers, get its module
-            if is_module_wrapper(child):
-                child = child.module
-            get_state_dict(
+            state_dict(
                 child, destination, prefix + name + '.', keep_vars=keep_vars)
     for hook in module._state_dict_hooks.values():
         hook_result = hook(module, destination, prefix, local_metadata)
@@ -324,7 +326,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     checkpoint = {
         'meta': meta,
-        'state_dict': weights_to_cpu(get_state_dict(model))
+        'state_dict': weights_to_cpu(state_dict(model))
     }
     # save optimizer state dict in the checkpoint
     if isinstance(optimizer, Optimizer):
