@@ -1,1 +1,1 @@
-item1: '{{fileDirname}}'
+item1: '{{ fileDirname }}'

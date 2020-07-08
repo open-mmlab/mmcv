@@ -80,6 +80,16 @@ def test_construct():
         assert Config.fromfile(dump_file)['item2'] == cfg_dict['item2']
         assert Config.fromfile(dump_file)['item3'] == cfg_dict['item3']
 
+    # test no use_predefined_variable
+    cfg_dict = dict(
+        item1='{{ fileBasename }}',
+        item2='{{ fileDirname }}',
+        item3='abc_{{ fileBasenameNoExtension }}') 
+    assert Config.fromfile(cfg_file, False)
+    assert Config.fromfile(cfg_file,False)['item1'] == cfg_dict['item1']
+    assert Config.fromfile(cfg_file,False)['item2'] == cfg_dict['item2']
+    assert Config.fromfile(cfg_file, False)['item3'] == cfg_dict['item3']
+
     # test p.yaml
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/p.yaml')
     cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
@@ -94,6 +104,10 @@ def test_construct():
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
+    
+    # test no use_predefined_variable
+    assert Config.fromfile(cfg_file,False)
+    assert Config.fromfile(cfg_file, False)['item1'] == '{{ fileDirname }}'
 
     # test o.json
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/o.json')
@@ -109,6 +123,10 @@ def test_construct():
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
+    
+    # test no use_predefined_variable
+    assert Config.fromfile(cfg_file, False)
+    assert Config.fromfile(cfg_file, False)['item1'] == '{{ fileDirname }}'
 
 
 def test_fromfile():

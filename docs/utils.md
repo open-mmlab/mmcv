@@ -26,17 +26,17 @@ To load and use configs
 ...      d='string')
 ```
 
-For all format configs, some predefined variables are supported. It will convert the variable in `{{var}}` with its real value.
+For all format configs, some predefined variables are supported. It will convert the variable in `{{ var }}` with its real value.
 
 Currently, it supports four predefined variables:
 
-`{{fileDirname}}` - the current opened file's dirname, e.g. /home/your-username/your-project/folder
+`{{ fileDirname }}` - the current opened file's dirname, e.g. /home/your-username/your-project/folder
 
-`{{fileBasename}}` - the current opened file's basename, e.g. file.ext
+`{{ fileBasename }}` - the current opened file's basename, e.g. file.ext
 
-`{{fileBasenameNoExtension}}` - the current opened file's basename with no file extension, e.g. file
+`{{ fileBasenameNoExtension }}` - the current opened file's basename with no file extension, e.g. file
 
-`{{fileExtname}}` - the current opened file's extension, e.g. .ext
+`{{ fileExtname }}` - the current opened file's extension, e.g. .ext
 
 These variable names are referred from https://code.visualstudio.com/docs/editor/variables-reference.
 
@@ -46,8 +46,8 @@ Here is one examples of config with predefined variables.
 
 ```python
 a = 1
-b = './work_dir/{{fileBasenameNoExtension}}'
-c = '{{fileExtname}}'
+b = './work_dir/{{ fileBasenameNoExtension }}'
+c = '{{ fileExtname }}'
 ```
 
 ```python
