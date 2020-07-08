@@ -254,6 +254,27 @@ def weights_to_cpu(state_dict):
     return state_dict_cpu
 
 
+def _save_to_state_dict(module, destination, prefix, keep_vars):
+    """Saves module state to `destination` dictionary, containing a state of
+    the module, but not its descendants. This is called on every submodule in
+    :meth:`~torch.nn.Module.state_dict`.
+
+    This method is modified from :meth:`torch.nn.Module._save_to_state_dict`.
+
+    Arguments:
+        module (nn.Module): The module to generate state_dict.
+        destination (dict): a dict where state will be stored
+        prefix (str): the prefix for parameters and buffers used in this
+            module
+    """
+    for name, param in module._parameters.items():
+        if param is not None:
+            destination[prefix + name] = param if keep_vars else param.detach()
+    for name, buf in module._buffers.items():
+        if buf is not None and name not in module._non_persistent_buffers_set:
+            destination[prefix + name] = buf if keep_vars else buf.detach()
+
+
 def state_dict(module, destination=None, prefix='', keep_vars=False):
     """Returns a dictionary containing a whole state of the module.
 
@@ -286,12 +307,7 @@ def state_dict(module, destination=None, prefix='', keep_vars=False):
         destination._metadata = OrderedDict()
     destination._metadata[prefix[:-1]] = local_metadata = dict(
         version=module._version)
-    for name, param in module._parameters.items():
-        if param is not None:
-            destination[prefix + name] = param if keep_vars else param.data
-    for name, buf in module._buffers.items():
-        if buf is not None:
-            destination[prefix + name] = buf if keep_vars else buf.data
+    _save_to_state_dict(module, destination, prefix, keep_vars)
     for name, child in module._modules.items():
         if child is not None:
             state_dict(
