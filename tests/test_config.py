@@ -82,8 +82,8 @@ def test_construct():
 
     # test no use_predefined_variable
     cfg_dict = dict(
-        item1='{{ fileBasename }}',
-        item2='{{ fileDirname }}',
+        item1='{{fileBasename}}',
+        item2='{{ fileDirname}}',
         item3='abc_{{ fileBasenameNoExtension }}')
     assert Config.fromfile(cfg_file, False)
     assert Config.fromfile(cfg_file, False)['item1'] == cfg_dict['item1']
