@@ -425,6 +425,7 @@ class LinearLrUpdaterHook(LrUpdaterHook):
             Either `min_lr` or `min_lr_ratio` should be specified.
             Default: None.
     """
+
     def __init__(self, min_lr=None, min_lr_ratio=None, **kwargs):
         assert (min_lr is None) ^ (min_lr_ratio is None)
         self.min_lr = min_lr

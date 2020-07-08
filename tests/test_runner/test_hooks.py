@@ -308,15 +308,10 @@ def test_linear_lr_update_hook():
 
     with pytest.raises(AssertionError):
         # either `min_lr` or `min_lr_ratio` should be specified
-        LinearLrUpdaterHook(
-            by_epoch=False,
-            min_lr=0.1,
-            min_lr_ratio=0)
+        LinearLrUpdaterHook(by_epoch=False, min_lr=0.1, min_lr_ratio=0)
 
     # add cosine restart LR scheduler
-    hook = LinearLrUpdaterHook(
-        by_epoch=False,
-        min_lr_ratio=0)
+    hook = LinearLrUpdaterHook(by_epoch=False, min_lr_ratio=0)
     runner.register_hook(hook)
     runner.register_hook(IterTimerHook())
 
