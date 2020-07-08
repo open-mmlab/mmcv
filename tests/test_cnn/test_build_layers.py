@@ -3,11 +3,12 @@ import torch
 import torch.nn as nn
 
 from mmcv.cnn.bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
-                             PADDING_LAYERS, build_activation_layer,
-                             build_conv_layer, build_norm_layer,
-                             build_padding_layer, build_upsample_layer,
-                             is_norm)
-from mmcv.cnn.bricks.norm import infer_abbr
+                             PADDING_LAYERS, PLUGIN_LAYERS,
+                             build_activation_layer, build_conv_layer,
+                             build_norm_layer, build_padding_layer,
+                             build_plugin_layer, build_upsample_layer, is_norm)
+from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
+from mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
 from mmcv.cnn.bricks.upsample import PixelShufflePack
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
@@ -56,41 +57,41 @@ def test_build_conv_layer():
         assert layer.out_channels == kwargs['out_channels']
 
 
-def test_infer_abbr():
+def test_infer_norm_abbr():
     with pytest.raises(TypeError):
         # class_type must be a class
-        infer_abbr(0)
+        infer_norm_abbr(0)
 
     class MyNorm:
 
-        abbr = 'mn'
+        _abbr_ = 'mn'
 
-    assert infer_abbr(MyNorm) == 'mn'
+    assert infer_norm_abbr(MyNorm) == 'mn'
 
     class FancyBatchNorm:
         pass
 
-    assert infer_abbr(FancyBatchNorm) == 'bn'
+    assert infer_norm_abbr(FancyBatchNorm) == 'bn'
 
     class FancyInstanceNorm:
         pass
 
-    assert infer_abbr(FancyInstanceNorm) == 'in'
+    assert infer_norm_abbr(FancyInstanceNorm) == 'in'
 
     class FancyLayerNorm:
         pass
 
-    assert infer_abbr(FancyLayerNorm) == 'ln'
+    assert infer_norm_abbr(FancyLayerNorm) == 'ln'
 
     class FancyGroupNorm:
         pass
 
-    assert infer_abbr(FancyGroupNorm) == 'gn'
+    assert infer_norm_abbr(FancyGroupNorm) == 'gn'
 
     class FancyNorm:
         pass
 
-    assert infer_abbr(FancyNorm) == 'norm'
+    assert infer_norm_abbr(FancyNorm) == 'norm'
 
 
 def test_build_norm_layer():
@@ -296,3 +297,77 @@ def test_is_norm():
     with pytest.raises(TypeError):
         layer = nn.BatchNorm1d(3)
         is_norm(layer, exclude=('BN', ))
+
+
+def test_infer_plugin_abbr():
+    with pytest.raises(TypeError):
+        # class_type must be a class
+        infer_plugin_abbr(0)
+
+    class MyPlugin:
+
+        _abbr_ = 'mp'
+
+    assert infer_plugin_abbr(MyPlugin) == 'mp'
+
+    class FancyPlugin:
+        pass
+
+    assert infer_plugin_abbr(FancyPlugin) == 'fancy_plugin'
+
+
+def test_build_plugin_layer():
+    with pytest.raises(TypeError):
+        # cfg must be a dict
+        cfg = 'Plugin'
+        build_plugin_layer(cfg)
+
+    with pytest.raises(KeyError):
+        # `type` must be in cfg
+        cfg = dict()
+        build_plugin_layer(cfg)
+
+    with pytest.raises(KeyError):
+        # unsupported plugin type
+        cfg = dict(type='FancyPlugin')
+        build_plugin_layer(cfg)
+
+    with pytest.raises(AssertionError):
+        # postfix must be int or str
+        cfg = dict(type='ConvModule')
+        build_plugin_layer(cfg, postfix=[1, 2])
+
+    # test ContextBlock
+    for postfix in ['', '_test', 1]:
+        cfg = dict(type='ContextBlock')
+        name, layer = build_plugin_layer(
+            cfg, postfix=postfix, in_channels=16, ratio=1. / 4)
+        assert name == 'context_block' + str(postfix)
+        assert isinstance(layer, PLUGIN_LAYERS.module_dict['ContextBlock'])
+
+    # test GeneralizedAttention
+    for postfix in ['', '_test', 1]:
+        cfg = dict(type='GeneralizedAttention')
+        name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
+        assert name == 'gen_attention_block' + str(postfix)
+        assert isinstance(layer,
+                          PLUGIN_LAYERS.module_dict['GeneralizedAttention'])
+
+    # test NonLocal2d
+    for postfix in ['', '_test', 1]:
+        cfg = dict(type='NonLocal2d')
+        name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
+        assert name == 'nonlocal_block' + str(postfix)
+        assert isinstance(layer, PLUGIN_LAYERS.module_dict['NonLocal2d'])
+
+    # test ConvModule
+    for postfix in ['', '_test', 1]:
+        cfg = dict(type='ConvModule')
+        name, layer = build_plugin_layer(
+            cfg,
+            postfix=postfix,
+            in_channels=16,
+            out_channels=4,
+            kernel_size=3)
+        assert name == 'conv_block' + str(postfix)
+        assert isinstance(layer, PLUGIN_LAYERS.module_dict['ConvModule'])

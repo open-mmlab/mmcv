@@ -18,7 +18,7 @@ from mmcv.runner import DistSamplerSeedHook, Runner
 
 
 def accuracy(output, target, topk=(1, )):
-    """Computes the precision@k for the specified values of k"""
+    """Computes the precision@k for the specified values of k."""
     with torch.no_grad():
         maxk = max(topk)
         batch_size = target.size(0)

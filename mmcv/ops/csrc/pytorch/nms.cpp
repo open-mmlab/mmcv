@@ -102,7 +102,7 @@ Tensor softnms_cpu(Tensor boxes, Tensor scores, Tensor dets,
 
   int64_t pos = 0;
   Tensor inds_t = at::arange(nboxes, boxes.options().dtype(at::kLong));
-  auto inds = inds_t.data_ptr<long>();
+  auto inds = inds_t.data_ptr<int64_t>();
 
   for (int64_t i = 0; i < nboxes; i++) {
     auto max_score = sc[i];

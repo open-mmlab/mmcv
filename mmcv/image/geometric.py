@@ -336,6 +336,7 @@ def impad(img,
             areas when padding_mode is 'constant'. Default: 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Default: constant.
+
             - constant: pads with a constant value, this value is specified
                 with pad_val.
             - edge: pads with the last value at the edge of the image.
@@ -370,8 +371,13 @@ def impad(img,
     elif isinstance(padding, numbers.Number):
         padding = (padding, padding, padding, padding)
     else:
+<<<<<<< HEAD
         raise ValueError("Padding must be a int or a 2, or 4 element tuple."
                          f"But received {padding}")
+=======
+        raise ValueError('Padding must be a int or a 2, or 4 element tuple.'
+                         f'But received {padding}')
+>>>>>>> 18d63720279de522e494b9a43bc3ae8c2d69ae9e
 
     # check padding mode
     assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']

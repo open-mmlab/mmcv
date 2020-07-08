@@ -161,7 +161,7 @@ class EpochBasedRunner(BaseRunner):
 
 
 class Runner(EpochBasedRunner):
-    """Deprecated name of EpochBasedRunner"""
+    """Deprecated name of EpochBasedRunner."""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(

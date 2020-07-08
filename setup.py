@@ -1,6 +1,5 @@
 import glob
 import os
-import platform
 import re
 import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
@@ -10,13 +9,24 @@ dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
 import numpy  # NOQA: E402  # isort:skip
 from Cython.Build import cythonize  # NOQA: E402  # isort:skip
-from Cython.Distutils import build_ext as build_cmd  # NOQA: E402  # isort:skip
+
+EXT_TYPE = ''
+try:
+    import torch
+    if torch.__version__ == 'parrots':
+        from parrots.utils.build_extension import BuildExtension
+        EXT_TYPE = 'parrots'
+    else:
+        from torch.utils.cpp_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
+except ModuleNotFoundError:
+    from Cython.Distutils import build_ext as BuildExtension
+    print('Skip building ext ops due to the absence of torch.')
 
 
 def choose_requirement(primary, secondary):
-    """If some version of primary requirement installed, return primary,
-    else return secondary.
-    """
+    """If some version of primary requirement installed, return primary, else
+    return secondary."""
     try:
         name = re.split(r'[!<>=]', primary)[0]
         get_distribution(name)
@@ -27,7 +37,7 @@ def choose_requirement(primary, secondary):
 
 
 def readme():
-    with open('README.rst', encoding='utf-8') as f:
+    with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
 
@@ -40,8 +50,7 @@ def get_version():
 
 
 def parse_requirements(fname='requirements.txt', with_version=True):
-    """
-    Parse the package dependencies listed in a requirements file but strips
+    """Parse the package dependencies listed in a requirements file but strips
     specific versioning information.
 
     Args:
@@ -60,9 +69,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
     require_fpath = fname
 
     def parse_line(line):
-        """
-        Parse information from a line in a requirements text file
-        """
+        """Parse information from a line in a requirements text file."""
         if line.startswith('-r '):
             # Allow specifying requirements in other files
             target = line.split(' ')[1]
@@ -129,13 +136,6 @@ for main, secondary in CHOOSE_INSTALL_REQUIRES:
 def get_extensions():
     extensions = []
 
-    if platform.system() == 'Darwin':
-        extra_compile_args = ['-stdlib=libc++']
-        extra_link_args = ['-stdlib=libc++']
-    else:
-        extra_compile_args = []
-        extra_link_args = []
-
     ext_flow = setuptools.Extension(
         name='mmcv._flow_warp_ext',
         sources=[
@@ -143,63 +143,54 @@ def get_extensions():
             './mmcv/video/optflow_warp/flow_warp_module.pyx'
         ],
         include_dirs=[numpy.get_include()],
-        language='c++',
-        extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args)
+        language='c++')
     extensions.extend(cythonize(ext_flow))
 
-    try:
-        import torch
+    if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
-        if torch.__version__ == 'parrots':
-            from parrots.utils.build_extension import BuildExtension, Extension
-            define_macros = [('MMCV_USE_PARROTS', None)]
-            op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
-            include_path = os.path.abspath('./mmcv/ops/csrc')
+        from parrots.utils.build_extension import Extension
+        define_macros = [('MMCV_USE_PARROTS', None)]
+        op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
+        include_path = os.path.abspath('./mmcv/ops/csrc')
+        cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        ext_ops = Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=define_macros,
+            extra_compile_args={
+                'nvcc': [cuda_args] if cuda_args else [],
+                'cxx': [],
+            },
+            cuda=True)
+        extensions.append(ext_ops)
+    elif EXT_TYPE == 'pytorch':
+        ext_name = 'mmcv._ext'
+        from torch.utils.cpp_extension import (CUDAExtension, CppExtension)
+        # prevent ninja from using too many resources
+        os.environ.setdefault('MAX_JOBS', '4')
+        define_macros = []
+        extra_compile_args = {'cxx': []}
+
+        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
-            ext_ops = Extension(
-                name=ext_name,
-                sources=op_files,
-                include_dirs=[include_path],
-                define_macros=define_macros,
-                extra_compile_args={
-                    'nvcc': [cuda_args] if cuda_args else [],
-                    'cxx': [],
-                },
-                cuda=True)
-            extensions.append(ext_ops)
+            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+            extension = CUDAExtension
         else:
-            from torch.utils.cpp_extension import (BuildExtension,
-                                                   CUDAExtension, CppExtension)
-            # prevent ninja from using too many resources
-            os.environ.setdefault('MAX_JOBS', '4')
-            define_macros = []
-            extra_compile_args = {'cxx': []}
+            print(f'Compiling {ext_name} without CUDA')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+            extension = CppExtension
 
-            if (torch.cuda.is_available()
-                    or os.getenv('FORCE_CUDA', '0') == '1'):
-                define_macros += [('MMCV_WITH_CUDA', None)]
-                cuda_args = os.getenv('MMCV_CUDA_ARGS')
-                extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
-                extension = CUDAExtension
-            else:
-                print(f'Compiling {ext_name} without CUDA')
-                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
-                extension = CppExtension
-
-            include_path = os.path.abspath('./mmcv/ops/csrc')
-            ext_ops = extension(
-                name=ext_name,
-                sources=op_files,
-                include_dirs=[include_path],
-                define_macros=define_macros,
-                extra_compile_args=extra_compile_args)
-            extensions.append(ext_ops)
-        global build_cmd
-        build_cmd = BuildExtension
-    except ModuleNotFoundError:
-        print('Skip building ext ops due to the absence of torch.')
+        include_path = os.path.abspath('./mmcv/ops/csrc')
+        ext_ops = extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=define_macros,
+            extra_compile_args=extra_compile_args)
+        extensions.append(ext_ops)
     return extensions
 
 
@@ -228,5 +219,5 @@ setup(
     tests_require=['pytest'],
     install_requires=install_requires,
     ext_modules=get_extensions(),
-    cmdclass={'build_ext': build_cmd},
+    cmdclass={'build_ext': BuildExtension},
     zip_safe=False)

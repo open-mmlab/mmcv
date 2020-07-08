@@ -103,8 +103,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def load_url_dist(url, model_dir=None):
-    """ In distributed setting, this function only download checkpoint at
-    local rank 0 """
+    """In distributed setting, this function only download checkpoint at local
+    rank 0."""
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
