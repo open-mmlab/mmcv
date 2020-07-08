@@ -414,3 +414,34 @@ def annealing_cos(start, end, factor, weight=1):
     """
     cos_out = cos(pi * factor) + 1
     return end + 0.5 * weight * (start - end) * cos_out
+
+
+@HOOKS.register_module()
+class LinearLrUpdaterHook(LrUpdaterHook):
+    """Linear descent learning rate scheme.
+
+    Args:
+        min_lr (float, optional): The minimum lr. Default: None.
+        min_lr_ratio (float, optional): The ratio of minimum lr to the base lr.
+            Either `min_lr` or `min_lr_ratio` should be specified.
+            Default: None.
+    """
+    def __init__(self, min_lr=None, min_lr_ratio=None, **kwargs):
+        assert (min_lr is None) ^ (min_lr_ratio is None)
+        self.min_lr = min_lr
+        self.min_lr_ratio = min_lr_ratio
+        super(LinearLrUpdaterHook, self).__init__(**kwargs)
+
+    def get_lr(self, runner, base_lr):
+        if self.by_epoch:
+            progress = runner.epoch
+            max_progress = runner.max_epochs
+        else:
+            progress = runner.iter
+            max_progress = runner.max_iters
+        if self.min_lr_ratio is not None:
+            target_lr = base_lr * self.min_lr_ratio
+        else:
+            target_lr = self.min_lr
+        decreased_lr = (base_lr - target_lr)* progress / max_progress
+        return max(target_lr, base_lr - decreased_lr)
