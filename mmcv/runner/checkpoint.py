@@ -259,7 +259,7 @@ def _save_to_state_dict(module, destination, prefix, keep_vars):
 
     This method is modified from :meth:`torch.nn.Module._save_to_state_dict`.
 
-    Arguments:
+    Args:
         module (nn.Module): The module to generate state_dict.
         destination (dict): a dict where state will be stored
         prefix (str): the prefix for parameters and buffers used in this
@@ -279,9 +279,9 @@ def state_dict(module, destination=None, prefix='', keep_vars=False):
     Both parameters and persistent buffers (e.g. running averages) are
     included. Keys are corresponding parameter and buffer names.
 
-    This method is modified from :meth:`torch.nn.Module.state_dict`:
-    1. Support getting sub-module for MMDataParallel,
-        MMDistributedDataParallel or other registered module wrappers.
+    This method is modified from :meth:`torch.nn.Module.state_dict` to
+    recursively check parallel module in case that the model has a complicated
+    structure, e.g., nn.Module(nn.Module(DDP))
 
     Args:
         module (nn.Module): The module to generate state_dict.
@@ -294,7 +294,6 @@ def state_dict(module, destination=None, prefix='', keep_vars=False):
     Returns:
         dict: a dictionary containing a whole state of the module.
     """
-    # this is what we modified:
     # recursively check parallel module in case that the model has a
     # complicated structure, e.g., nn.Module(nn.Module(DDP))
     if is_module_wrapper(module):
