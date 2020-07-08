@@ -136,9 +136,6 @@ for main, secondary in CHOOSE_INSTALL_REQUIRES:
 def get_extensions():
     extensions = []
 
-    if not os.getenv('MMCV_WITH_OPS', 0):
-        return extensions
-
     ext_flow = setuptools.Extension(
         name='mmcv._flow_warp_ext',
         sources=[
@@ -148,6 +145,9 @@ def get_extensions():
         include_dirs=[numpy.get_include()],
         language='c++')
     extensions.extend(cythonize(ext_flow))
+
+    if os.getenv('MMCV_WITH_OPS', '0') == '0':
+        return extensions
 
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
@@ -198,10 +198,9 @@ def get_extensions():
 
 
 setup(
-    name='mmcv' if not os.getenv('MMCV_WITH_OPS', 0) else 'mmcv-full',
+    name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
     version=get_version(),
     description='OpenMMLab Computer Vision Foundation',
-    long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
     include_package_data=True,
