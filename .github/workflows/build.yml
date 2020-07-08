@@ -133,10 +133,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.4.0]
-        include:
-          - torch: 1.4.0
-            torchvision: 0.4.2
 
     steps:
       - uses: actions/checkout@v2
@@ -151,15 +147,10 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Install Pillow
-        run: pip install Pillow==6.2.2
-        if: ${{matrix.torchvision == '0.4.2'}}
-      - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install Pillow
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
+          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_registry.py
 
   build_macos:
     runs-on: macos-latest
@@ -181,15 +172,15 @@ jobs:
         run: brew install ffmpeg jpeg-turbo
       - name: Install unittest dependencies
         run: pip install pytest coverage lmdb PyTurboJPEG
-      - name: Build and install
-        run: |
-          rm -rf .eggs
-          CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Build and install
+        run: |
+          rm -rf .eggs
+          CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
       - name: Run unittests
         run: |
           # The timing on macos VMs is not precise, so we skip the progressbar tests

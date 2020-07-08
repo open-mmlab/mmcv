@@ -162,11 +162,11 @@ def point_sample(input, points, align_corners=False, **kwargs):
 
 class SimpleRoIAlign(nn.Module):
 
-    def __init__(self, out_size, spatial_scale, aligned=True):
+    def __init__(self, output_size, spatial_scale, aligned=True):
         """Simple RoI align in PointRend, faster than standard RoIAlign.
 
         Args:
-            out_size (tuple[int]): h, w
+            output_size (tuple[int]): h, w
             spatial_scale (float): scale the input boxes by this number
             aligned (bool): if False, use the legacy implementation in
                 MMDetection, align_corners=True will be used in F.grid_sample.
@@ -174,7 +174,7 @@ class SimpleRoIAlign(nn.Module):
         """
 
         super(SimpleRoIAlign, self).__init__()
-        self.out_size = _pair(out_size)
+        self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)
         # to be consistent with other RoI ops
         self.use_torchvision = False
@@ -185,7 +185,7 @@ class SimpleRoIAlign(nn.Module):
         num_imgs = features.size(0)
         num_rois = rois.size(0)
         rel_roi_points = generate_grid(
-            num_rois, self.out_size, device=rois.device)
+            num_rois, self.output_size, device=rois.device)
 
         point_feats = []
         for batch_ind in range(num_imgs):
@@ -203,12 +203,12 @@ class SimpleRoIAlign(nn.Module):
 
         channels = features.size(1)
         roi_feats = torch.cat(point_feats, dim=0)
-        roi_feats = roi_feats.reshape(num_rois, channels, *self.out_size)
+        roi_feats = roi_feats.reshape(num_rois, channels, *self.output_size)
 
         return roi_feats
 
     def __repr__(self):
         format_str = self.__class__.__name__
-        format_str += '(out_size={}, spatial_scale={}'.format(
-            self.out_size, self.spatial_scale)
+        format_str += '(output_size={}, spatial_scale={}'.format(
+            self.output_size, self.spatial_scale)
         return format_str
