@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import torch.nn as nn
+from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import get_state_dict
@@ -62,7 +63,7 @@ def test_get_state_dict():
 
     # wrapped inner module
     for name, module in ddp_wrapped_model.module._modules.items():
-        module = DDPWrapper(module)
+        module = DataParallel(module)
         ddp_wrapped_model.module._modules[name] = module
     state_dict = get_state_dict(ddp_wrapped_model)
     assert isinstance(state_dict, OrderedDict)
