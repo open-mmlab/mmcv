@@ -265,6 +265,7 @@ def state_dict(module, destination=None, prefix='', keep_vars=False):
         MMDistributedDataParallel or other registered module wrappers.
 
     Args:
+        module (nn.Module): The module to generate state_dict.
         destination (OrderedDict): Returned dict for the state of the
             module.
         prefix (str): Prefix of the key.
