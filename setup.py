@@ -146,6 +146,9 @@ def get_extensions():
         language='c++')
     extensions.extend(cythonize(ext_flow))
 
+    if os.getenv('MMCV_WITH_OPS', '0') == '0':
+        return extensions
+
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
@@ -195,10 +198,9 @@ def get_extensions():
 
 
 setup(
-    name='mmcv',
+    name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
     version=get_version(),
     description='OpenMMLab Computer Vision Foundation',
-    long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
     include_package_data=True,

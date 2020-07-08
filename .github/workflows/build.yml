@@ -2,6 +2,9 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  MMCV_WITH_OPS: 1
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -27,6 +30,37 @@ jobs:
           source: mmcv/ops/csrc
           extensions: h,c,cpp,hpp,cu,cuh
           style: google
+
+  build_without_ops:
+    runs-on: ubuntu-latest
+    env:
+      MMCV_WITH_OPS: 0
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.5.0]
+        include:
+          - torch: 1.5.0
+            torchvision: 0.6.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install Pillow
+        run: pip install Pillow==6.2.2
+        if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install unittest dependencies
+        run: pip install pytest coverage lmdb PyTurboJPEG
+      - name: Build and install
+        run: rm -rf .eggs && pip install -e .
+      - name: Run unittests
+        run: pytest tests/ --ignore=tests/test_ops
 
   build_cpu:
     runs-on: ubuntu-latest
