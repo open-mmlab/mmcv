@@ -255,9 +255,7 @@ def weights_to_cpu(state_dict):
 
 
 def _save_to_state_dict(module, destination, prefix, keep_vars):
-    """Saves module state to `destination` dictionary, containing a state of
-    the module, but not its descendants. This is called on every submodule in
-    :meth:`~torch.nn.Module.state_dict`.
+    """Saves module state to `destination` dictionary.
 
     This method is modified from :meth:`torch.nn.Module._save_to_state_dict`.
 
