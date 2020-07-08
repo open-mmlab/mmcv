@@ -60,8 +60,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests
-        run: |
-          pytest tests/ --ignore=tests/test_ops
+        run: pytest tests/ --ignore=tests/test_ops
 
   build_cpu:
     runs-on: ubuntu-latest
