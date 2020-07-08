@@ -4,7 +4,7 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule, fuse_conv_bn
 
 
-def test_fuse_module():
+def test_fuse_conv_bn():
     inputs = torch.rand((1, 3, 5, 5))
     modules = nn.ModuleList()
     modules.append(nn.BatchNorm2d(3))

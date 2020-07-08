@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-def fuse_conv_bn_single(conv, bn):
+def _fuse_conv_bn(conv, bn):
     """Fuse conv and bn into one module.
 
     Args:
@@ -45,7 +45,7 @@ def fuse_conv_bn(module):
                       (nn.modules.batchnorm._BatchNorm, nn.SyncBatchNorm)):
             if last_conv is None:  # only fuse BN that is after Conv
                 continue
-            fused_conv = fuse_conv_bn_single(last_conv, child)
+            fused_conv = _fuse_conv_bn(last_conv, child)
             module._modules[last_conv_name] = fused_conv
             # To reduce changes, set BN as Identity instead of deleting it.
             module._modules[name] = nn.Identity()
