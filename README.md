@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/mmcv-logo.png" width="300"/>
+    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
 </div>
 
 
