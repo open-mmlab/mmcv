@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..cnn import CONV_LAYERS
+from .registry import CONV_LAYERS
 
 
 def conv_ws_2d(input,
