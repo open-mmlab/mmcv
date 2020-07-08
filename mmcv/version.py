@@ -1,2 +1,2 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-__version__ = '1.0rc1'
+__version__ = '1.0rc2'
