@@ -22,8 +22,6 @@ jobs:
   build-n-publish_with_ops:
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags')
-    env:
-      MMCV_WITH_OPS: 1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7

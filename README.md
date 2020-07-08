@@ -28,6 +28,7 @@ Note: MMCV requires Python 3.6+.
 
 ## Installation
 
+a. Install lite version without CUDA ops.
 Try and start with
 
 ```bash
@@ -48,23 +49,37 @@ If you are on macOS, replace the last command with
 CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
 ```
 
+b. Install full version with CUDA ops.
+
+```bash
+MMCV_WITH_OPS=1 pip install mmcv
+```
+
+or install from source
+
+```bash
+git clone https://github.com/open-mmlab/mmcv.git
+cd mmcv
+MMCV_WITH_OPS=1 pip install -e .
+```
+
 Note that the building process may take up to 10 mins. We also provide pre-built mmcv with corresponding Pytorch and CUDA versions to simplify the building.
 
 <table class="docutils"><tbody><tr><th width="80"> CUDA </th><th valign="bottom" align="left" width="100">torch 1.5</th><th valign="bottom" align="left" width="100">torch 1.4</th><th valign="bottom" align="left" width="100">torch 1.3</th></tr>
-<tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+<tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td> <td align="left"> </td> <td align="left"> </td> </tr>
-<tr><td align="left">10.1</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+<tr><td align="left">10.1</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==1.0rc0+torch1.5.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.4.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.3.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td></tr>
 <tr><td align="left">10.0</td><td align="left"> </td><td align="left"> </td> <td align="left"> </td> </tr>
-<tr><td align="left">9.2</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+<tr><td align="left">9.2</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==1.0rc0+torch1.5.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.4.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.3.0+cu92 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td></tr>
-<tr><td align="left">cpu</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv==1.0rc0+torch1.5.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.4.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv==1.0rc0+torch1.3.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+<tr><td align="left">cpu</td><td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==1.0rc0+torch1.5.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.4.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+</code></pre> </details> </td> <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==1.0rc0+torch1.3.0+cpu -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
 </code></pre> </details> </td> </tr>
 </tbody></table>
 

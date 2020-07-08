@@ -59,11 +59,9 @@ jobs:
         run: pip install pytest coverage lmdb PyTurboJPEG
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
-      - name: Run unittests and generate coverage report
+      - name: Run unittests
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
+          pytest tests/ --ignore=tests/test_ops
 
   build_cpu:
     runs-on: ubuntu-latest
