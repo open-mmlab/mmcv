@@ -171,5 +171,5 @@ class RoIAlign(nn.Module):
         s += f'sampling_ratio={self.sampling_ratio}, '
         s += f'pool_mode={self.pool_mode}, '
         s += f'aligned={self.aligned}, '
-        s += f'aligned={self.use_torchvision})'
+        s += f'use_torchvision={self.use_torchvision})'
         return s
