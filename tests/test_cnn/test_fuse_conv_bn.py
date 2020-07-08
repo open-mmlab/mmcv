@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from mmcv.cnn import ConvModule, fuse_module
+from mmcv.cnn import ConvModule, fuse_conv_bn
 
 
 def test_fuse_module():
@@ -11,5 +11,5 @@ def test_fuse_module():
     modules.append(ConvModule(3, 5, 3, norm_cfg=dict(type='BN')))
     modules.append(ConvModule(5, 5, 3, norm_cfg=dict(type='BN')))
     modules = nn.Sequential(*modules)
-    fused_modules = fuse_module(modules)
+    fused_modules = fuse_conv_bn(modules)
     assert torch.equal(modules(inputs), fused_modules(inputs))

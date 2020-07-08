@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-def fuse_conv_bn(conv, bn):
+def fuse_conv_bn_single(conv, bn):
     """Fuse conv and bn into one module.
 
     During inference, the functionary of batch norm layers is turned off
@@ -28,7 +28,7 @@ def fuse_conv_bn(conv, bn):
     return conv
 
 
-def fuse_module(m):
+def fuse_conv_bn(m):
     """Recursively fuse conv and bn in a module.
 
     Args:
@@ -45,7 +45,7 @@ def fuse_module(m):
                       (nn.modules.batchnorm._BatchNorm, nn.SyncBatchNorm)):
             if last_conv is None:  # only fuse BN that is after Conv
                 continue
-            fused_conv = fuse_conv_bn(last_conv, child)
+            fused_conv = fuse_conv_bn_single(last_conv, child)
             m._modules[last_conv_name] = fused_conv
             # To reduce changes, set BN as Identity instead of deleting it.
             m._modules[name] = nn.Identity()
@@ -54,5 +54,5 @@ def fuse_module(m):
             last_conv = child
             last_conv_name = name
         else:
-            fuse_module(child)
+            fuse_conv_bn(child)
     return m
