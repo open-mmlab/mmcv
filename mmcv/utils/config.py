@@ -201,7 +201,8 @@ class Config:
 
     @staticmethod
     def fromfile(filename, use_predefined_variables=True):
-        cfg_dict, cfg_text = Config._file2dict(filename, use_predefined_variables)
+        cfg_dict, cfg_text = Config._file2dict(filename,
+                                               use_predefined_variables)
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod

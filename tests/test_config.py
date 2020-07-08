@@ -84,10 +84,10 @@ def test_construct():
     cfg_dict = dict(
         item1='{{ fileBasename }}',
         item2='{{ fileDirname }}',
-        item3='abc_{{ fileBasenameNoExtension }}') 
+        item3='abc_{{ fileBasenameNoExtension }}')
     assert Config.fromfile(cfg_file, False)
-    assert Config.fromfile(cfg_file,False)['item1'] == cfg_dict['item1']
-    assert Config.fromfile(cfg_file,False)['item2'] == cfg_dict['item2']
+    assert Config.fromfile(cfg_file, False)['item1'] == cfg_dict['item1']
+    assert Config.fromfile(cfg_file, False)['item2'] == cfg_dict['item2']
     assert Config.fromfile(cfg_file, False)['item3'] == cfg_dict['item3']
 
     # test p.yaml
@@ -104,9 +104,9 @@ def test_construct():
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
-    
+
     # test no use_predefined_variable
-    assert Config.fromfile(cfg_file,False)
+    assert Config.fromfile(cfg_file, False)
     assert Config.fromfile(cfg_file, False)['item1'] == '{{ fileDirname }}'
 
     # test o.json
@@ -123,7 +123,7 @@ def test_construct():
         assert cfg.dump() == open(dump_file, 'r').read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
-    
+
     # test no use_predefined_variable
     assert Config.fromfile(cfg_file, False)
     assert Config.fromfile(cfg_file, False)['item1'] == '{{ fileDirname }}'
