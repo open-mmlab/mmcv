@@ -325,4 +325,3 @@ def test_linear_lr_update_hook():
     runner.register_hook(hook)
     runner.run([loader], [('train', 1)], 1)
     shutil.rmtree(runner.work_dir)
-

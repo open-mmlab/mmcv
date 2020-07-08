@@ -442,5 +442,5 @@ class LinearLrUpdaterHook(LrUpdaterHook):
             target_lr = base_lr * self.min_lr_ratio
         else:
             target_lr = self.min_lr
-        decreased_lr = (base_lr - target_lr)* progress / max_progress
+        decreased_lr = (base_lr - target_lr) * progress / max_progress
         return max(target_lr, base_lr - decreased_lr)
