@@ -371,13 +371,8 @@ def impad(img,
     elif isinstance(padding, numbers.Number):
         padding = (padding, padding, padding, padding)
     else:
-<<<<<<< HEAD
-        raise ValueError("Padding must be a int or a 2, or 4 element tuple."
-                         f"But received {padding}")
-=======
         raise ValueError('Padding must be a int or a 2, or 4 element tuple.'
                          f'But received {padding}')
->>>>>>> 18d63720279de522e494b9a43bc3ae8c2d69ae9e
 
     # check padding mode
     assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
