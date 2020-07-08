@@ -261,15 +261,15 @@ def _save_to_state_dict(module, destination, prefix, keep_vars):
 
     Args:
         module (nn.Module): The module to generate state_dict.
-        destination (dict): a dict where state will be stored
-        prefix (str): the prefix for parameters and buffers used in this
-            module
+        destination (dict): A dict where state will be stored.
+        prefix (str): The prefix for parameters and buffers used in this
+            module.
     """
     for name, param in module._parameters.items():
         if param is not None:
             destination[prefix + name] = param if keep_vars else param.detach()
     for name, buf in module._buffers.items():
-        if buf is not None and name not in module._non_persistent_buffers_set:
+        if buf is not None:
             destination[prefix + name] = buf if keep_vars else buf.detach()
 
 
