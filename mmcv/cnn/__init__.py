@@ -10,8 +10,8 @@ from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                      is_norm)
 from .resnet import ResNet, make_res_layer
 from .utils import (bias_init_with_prob, caffe2_xavier_init, constant_init,
-                    get_model_complexity_info, kaiming_init, normal_init,
-                    uniform_init, xavier_init)
+                    fuse_conv_bn, get_model_complexity_info, kaiming_init,
+                    normal_init, uniform_init, xavier_init)
 from .vgg import VGG, make_vgg_layer
 
 __all__ = [
@@ -24,5 +24,5 @@ __all__ = [
     'HSigmoid', 'HSwish', 'GeneralizedAttention', 'ACTIVATION_LAYERS',
     'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS', 'UPSAMPLE_LAYERS',
     'PLUGIN_LAYERS', 'Scale', 'get_model_complexity_info', 'conv_ws_2d',
-    'ConvAWS2d', 'ConvWS2d'
+    'ConvAWS2d', 'ConvWS2d', 'fuse_conv_bn'
 ]
