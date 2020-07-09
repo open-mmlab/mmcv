@@ -36,12 +36,6 @@ def choose_requirement(primary, secondary):
     return str(primary)
 
 
-def readme():
-    with open('README.md', encoding='utf-8') as f:
-        content = f.read()
-    return content
-
-
 def get_version():
     version_file = 'mmcv/version.py'
     with open(version_file, 'r', encoding='utf-8') as f:
@@ -146,6 +140,9 @@ def get_extensions():
         language='c++')
     extensions.extend(cythonize(ext_flow))
 
+    if os.getenv('MMCV_WITH_OPS', '0') == '0':
+        return extensions
+
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
@@ -195,10 +192,9 @@ def get_extensions():
 
 
 setup(
-    name='mmcv',
+    name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
     version=get_version(),
     description='OpenMMLab Computer Vision Foundation',
-    long_description=readme(),
     keywords='computer vision',
     packages=find_packages(),
     include_package_data=True,
