@@ -216,7 +216,7 @@ def requires_executable(prerequisites):
     return check_prerequisites(prerequisites, checker=_check_executable)
 
 
-def deprecate_api_warning(name_dict, cls_name=None):
+def deprecated_api_warning(name_dict, cls_name=None):
     """A decorator to check if some argments are deprecate and try to replace
     deprecate src_arg_name to dst_arg_name.
 
