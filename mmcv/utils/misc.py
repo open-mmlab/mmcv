@@ -216,18 +216,18 @@ def requires_executable(prerequisites):
     return check_prerequisites(prerequisites, checker=_check_executable)
 
 
-def api_warning(src_arg_name, dst_arg_name, cls_name=None):
+def deprecate_api_warning(name_dict, cls_name=None):
     """A decorator to check if some argments are deprecate and try to replace
     deprecate src_arg_name to dst_arg_name.
 
     Args:
-        src_arg_name (tuple[str]): Deprecate argument names.
-        dst_arg_name (tuple[str]): Expected argument names.
+        name_dict(dict):
+            key (str): Deprecate argument names.
+            val (str): Expected argument names.
 
     Returns:
         func: New function.
     """
-    assert len(src_arg_name) == len(dst_arg_name)
 
     def api_warning_wrapper(old_func):
 
@@ -241,20 +241,19 @@ def api_warning(src_arg_name, dst_arg_name, cls_name=None):
                 func_name = f'{cls_name}.{func_name}'
             if args:
                 arg_names = args_info.args[:len(args)]
-                for i in range(len(src_arg_name)):
-                    if src_arg_name[i] in arg_names:
-                        print(f'"{src_arg_name[i]}" is deprecate in '
-                              f'`{func_name}`, please use "{dst_arg_name[i]}" '
+                for src_arg_name, dst_arg_name in name_dict.items():
+                    if src_arg_name in arg_names:
+                        print(f'"{src_arg_name}" is deprecated in '
+                              f'`{func_name}`, please use "{dst_arg_name}" '
                               'instead')
-                        arg_names[arg_names.index(
-                            src_arg_name)] = dst_arg_name[i]
+                        arg_names[arg_names.index(src_arg_name)] = dst_arg_name
             if kwargs:
-                for i in range(len(src_arg_name)):
-                    if src_arg_name[i] in kwargs:
-                        print(f'"{src_arg_name[i]}" is deprecate in '
-                              f'`{func_name}`, please use "{dst_arg_name[i]}" '
+                for src_arg_name, dst_arg_name in name_dict.items():
+                    if src_arg_name in kwargs:
+                        print(f'"{src_arg_name}" is deprecated in '
+                              f'`{func_name}`, please use "{dst_arg_name}" '
                               'instead')
-                        kwargs[dst_arg_name[i]] = kwargs.pop(src_arg_name[i])
+                        kwargs[dst_arg_name] = kwargs.pop(src_arg_name)
 
             # apply converted arguments to the decorated method
             output = old_func(*args, **kwargs)
