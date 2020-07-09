@@ -1,11 +1,13 @@
 import numpy as np
 import torch
 
+from mmcv.utils import api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 
 
+@api_warning(('iou_thr', ), ('iou_threshold', ))
 def nms(boxes, scores, iou_threshold, offset=0):
     """Dispatch to either CPU or GPU NMS implementations.
 

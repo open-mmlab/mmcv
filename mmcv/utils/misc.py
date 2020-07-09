@@ -4,6 +4,7 @@ import itertools
 import subprocess
 from collections import abc
 from importlib import import_module
+from inspect import getfullargspec
 
 
 def is_str(x):
@@ -213,3 +214,52 @@ def requires_executable(prerequisites):
         1
     """
     return check_prerequisites(prerequisites, checker=_check_executable)
+
+
+def api_warning(src_arg_name, dst_arg_name, cls_name=None):
+    """A decorator to check if some argments are deprecate and try to replace
+    deprecate src_arg_name to dst_arg_name.
+
+    Args:
+        src_arg_name (tuple[str]): Deprecate argument names.
+        dst_arg_name (tuple[str]): Expected argument names.
+
+    Returns:
+        func: New function.
+    """
+    assert len(src_arg_name) == len(dst_arg_name)
+
+    def api_warning_wrapper(old_func):
+
+        @functools.wraps(old_func)
+        def new_func(*args, **kwargs):
+            # get the arg spec of the decorated method
+            args_info = getfullargspec(old_func)
+            # get name of the function
+            func_name = old_func.__name__
+            if cls_name is not None:
+                func_name = f'{cls_name}.{func_name}'
+            if args:
+                arg_names = args_info.args[:len(args)]
+                for i in range(len(src_arg_name)):
+                    if src_arg_name[i] in arg_names:
+                        print(f'"{src_arg_name[i]}" is deprecate in '
+                              f'`{func_name}`, please use "{dst_arg_name[i]}" '
+                              'instead')
+                        arg_names[arg_names.index(
+                            src_arg_name)] = dst_arg_name[i]
+            if kwargs:
+                for i in range(len(src_arg_name)):
+                    if src_arg_name[i] in kwargs:
+                        print(f'"{src_arg_name[i]}" is deprecate in '
+                              f'`{func_name}`, please use "{dst_arg_name[i]}" '
+                              'instead')
+                        kwargs[dst_arg_name[i]] = kwargs.pop(src_arg_name[i])
+
+            # apply converted arguments to the decorated method
+            output = old_func(*args, **kwargs)
+            return output
+
+        return new_func
+
+    return api_warning_wrapper
