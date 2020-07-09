@@ -2,6 +2,7 @@
 import functools
 import itertools
 import subprocess
+import warnings
 from collections import abc
 from importlib import import_module
 from inspect import getfullargspec
@@ -243,16 +244,18 @@ def deprecated_api_warning(name_dict, cls_name=None):
                 arg_names = args_info.args[:len(args)]
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in arg_names:
-                        print(f'"{src_arg_name}" is deprecated in '
-                              f'`{func_name}`, please use "{dst_arg_name}" '
-                              'instead')
+                        warnings.warn(
+                            f'"{src_arg_name}" is deprecated in '
+                            f'`{func_name}`, please use "{dst_arg_name}" '
+                            'instead')
                         arg_names[arg_names.index(src_arg_name)] = dst_arg_name
             if kwargs:
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in kwargs:
-                        print(f'"{src_arg_name}" is deprecated in '
-                              f'`{func_name}`, please use "{dst_arg_name}" '
-                              'instead')
+                        warnings.warn(
+                            f'"{src_arg_name}" is deprecated in '
+                            f'`{func_name}`, please use "{dst_arg_name}" '
+                            'instead')
                         kwargs[dst_arg_name] = kwargs.pop(src_arg_name)
 
             # apply converted arguments to the decorated method
