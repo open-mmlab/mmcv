@@ -7,6 +7,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
+from mmcv.utils import deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
@@ -171,6 +172,8 @@ deform_conv2d = DeformConv2dFunction.apply
 
 class DeformConv2d(nn.Module):
 
+    @deprecated_api_warning({'deformable_groups': 'deform_groups'},
+                            cls_name='DeformConv2d')
     def __init__(self,
                  in_channels,
                  out_channels,
