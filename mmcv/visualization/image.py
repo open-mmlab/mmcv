@@ -122,7 +122,7 @@ def imshow_det_bboxes(img,
 
     bbox_color = color_val(bbox_color)
     text_color = color_val(text_color)
-
+    img = np.ascontiguousarray(img)
     for bbox, label in zip(bboxes, labels):
         bbox_int = bbox.astype(np.int32)
         left_top = (bbox_int[0], bbox_int[1])
