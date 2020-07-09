@@ -3,7 +3,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+from ..utils import deprecated_api_warning, ext_loader
 
 ext_module = ext_loader.load_ext('_ext',
                                  ['roi_align_forward', 'roi_align_backward'])
@@ -131,6 +131,12 @@ class RoIAlign(nn.Module):
         performance if ROIAlign is used together with conv layers.
     """
 
+    @deprecated_api_warning(
+        {
+            'out_size': 'output_size',
+            'sample_num': 'sampling_ratio'
+        },
+        cls_name='RoIAlign')
     def __init__(self,
                  output_size,
                  spatial_scale=1.0,
