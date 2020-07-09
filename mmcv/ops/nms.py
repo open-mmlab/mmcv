@@ -87,6 +87,7 @@ def nms(boxes, scores, iou_threshold, offset=0):
     return dets, inds
 
 
+@api_warning(('iou_thr', ), ('iou_threshold', ))
 def soft_nms(boxes,
              scores,
              iou_threshold=0.3,
