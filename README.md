@@ -7,7 +7,7 @@
 ## Introduction
 
 MMCV is a foundational python library for computer vision research and supports many
-research projects in MMLAB, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation), [MMEditing](https://github.com/open-mmlab/mmediting), [MMPose](https://github.com/open-mmlab/mmpose), [MMAction](https://github.com/open-mmlab/mmaction), and [MMClassification](https://github.com/open-mmlab/mmclassification).
+research projects in MMLAB, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation), [MMEditing](https://github.com/open-mmlab/mmediting), [MMPose](https://github.com/open-mmlab/mmpose), [MMAction2](https://github.com/open-mmlab/mmaction2), [MMAction](https://github.com/open-mmlab/mmaction), and [MMClassification](https://github.com/open-mmlab/mmclassification).
 
 It provides the following functionalities.
 
