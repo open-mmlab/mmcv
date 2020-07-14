@@ -105,6 +105,7 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('before_epoch')
 
         while self.iter < max_iters:
+            print('Check after run  ababaaba')
             for i, flow in enumerate(workflow):
                 self._inner_iter = 0
                 mode, iters = flow
@@ -115,7 +116,7 @@ class IterBasedRunner(BaseRunner):
                 iter_runner = getattr(self, mode)
                 for _ in range(iters):
                     if mode == 'train' and self.iter >= max_iters:
-                        return
+                        break
                     iter_runner(iter_loaders[i], **kwargs)
 
         time.sleep(1)  # wait for some hooks like loggers to finish
