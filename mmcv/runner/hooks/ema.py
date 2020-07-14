@@ -1,6 +1,7 @@
 import logging
 
-from .hook import HOOKS, Hook
+from mmcv.parallel import is_module_wrapper
+from mmcv.runner.hooks.hook import HOOKS, Hook
 
 logger = logging.getLogger('global')
 
@@ -19,14 +20,20 @@ class EMA(Hook):
         momentum (float): used for update ema parameter.
         interval (int): update ema parameter every interval iteration
         warm_up (int): during first warmup steps, we may use smaller momentum
-            to update ema parameters more slowly.
+            to update ema parameters more slowly.\
+        resume_from (str): the checkpoint path
     """
 
-    def __init__(self, momentum=0.1, interval=1, warm_up=100):
+    def __init__(self,
+                 momentum=0.1,
+                 interval=1,
+                 warm_up=100,
+                 resume_from=None):
         assert isinstance(interval, int) and interval > 0
         self.warm_up = warm_up
         self.interval = interval
         self.momentum = momentum**interval
+        self.resume_from = resume_from
 
     def before_run(self, runner):
         """ To resume model with it's ema parameters more friendly. Register ema
@@ -34,6 +41,8 @@ class EMA(Hook):
 
         """
         model = runner.model
+        if is_module_wrapper(model):
+            model = model.module
         self.parameter_emabuffer = {}
         self.model_parameters = dict(model.named_parameters(recurse=True))
         for name, value in self.model_parameters.items():
@@ -42,6 +51,8 @@ class EMA(Hook):
             self.parameter_emabuffer[name] = buffer_name
             model.register_buffer(buffer_name, value.data.clone())
         self.model_buffers = dict(model.named_buffers(recurse=True))
+        if self.resume_from is not None:
+            runner.resume(self.resume_from)
 
     def after_train_iter(self, runner):
         """ Update ema parameter every self.interval iterations
