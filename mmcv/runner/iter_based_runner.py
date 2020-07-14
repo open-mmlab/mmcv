@@ -105,7 +105,6 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('before_epoch')
 
         while self.iter < max_iters:
-            print('Check after run  ababaaba')
             for i, flow in enumerate(workflow):
                 self._inner_iter = 0
                 mode, iters = flow
