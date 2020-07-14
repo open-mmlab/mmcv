@@ -11,7 +11,7 @@ def get_stages(docker_image, torch, torchvision) {
                 sh "apt-get install -y ninja-build"
             }
             stage("dependencies") {
-                if (Float.parseFloat(torchvision) < 0.5) {
+                if (torchvision == "0.4.2") {
                     sh "pip install Pillow==6.2.2 ${aliyun_mirror_args}"
                 }
                 sh "pip install pip install torch==${torch} torchvision==${torchvision} ${aliyun_mirror_args}"
