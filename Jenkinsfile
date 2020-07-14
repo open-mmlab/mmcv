@@ -3,7 +3,7 @@ def torch_versions = ["1.3.0", "1.5.0"]
 def torchvision_versions = ["0.4.2", "0.6.0"]
 
 
-def get_stages(docker_image, torch, torchvision, cuda_arch) {
+def get_stages(docker_image, torch, torchvision) {
     def aliyun_mirror_args = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all') {
@@ -42,9 +42,8 @@ node('master') {
         for (int j = 0; j < torch_versions.size(); j++) {
             def torch = torch_versions[j]
             def torchvision = torchvision_versions[j]
-            def cuda_arch = cuda_archs[j]
-            def tag = docker_image + '_' + torch + '_' + torchvision + '_' + cuda_arch
-            stages[tag] = get_stages(docker_image, torch, torchvision, cuda_arch)
+            def tag = docker_image + '_' + torch + '_' + torchvision
+            stages[tag] = get_stages(docker_image, torch, torchvision)
         }
     }
     parallel stages
