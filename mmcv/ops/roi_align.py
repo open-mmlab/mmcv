@@ -3,7 +3,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+from ..utils import deprecated_api_warning, ext_loader
 
 ext_module = ext_loader.load_ext('_ext',
                                  ['roi_align_forward', 'roi_align_backward'])
@@ -105,6 +105,7 @@ class RoIAlign(nn.Module):
         pool_mode (str, 'avg' or 'max'): pooling mode in each bin.
         aligned (bool): if False, use the legacy implementation in
             MMDetection. If True, align the results more perfectly.
+        use_torchvision (bool): whether to use roi_align from torchvision.
 
     Note:
         The implementation of RoIAlign when aligned=True is modified from
@@ -130,12 +131,19 @@ class RoIAlign(nn.Module):
         performance if ROIAlign is used together with conv layers.
     """
 
+    @deprecated_api_warning(
+        {
+            'out_size': 'output_size',
+            'sample_num': 'sampling_ratio'
+        },
+        cls_name='RoIAlign')
     def __init__(self,
                  output_size,
                  spatial_scale=1.0,
                  sampling_ratio=0,
                  pool_mode='avg',
-                 aligned=True):
+                 aligned=True,
+                 use_torchvision=False):
         super(RoIAlign, self).__init__()
 
         self.output_size = _pair(output_size)
@@ -143,6 +151,9 @@ class RoIAlign(nn.Module):
         self.sampling_ratio = int(sampling_ratio)
         self.pool_mode = pool_mode
         self.aligned = aligned
+        self.use_torchvision = use_torchvision
+        assert not (use_torchvision and
+                    aligned), 'Torchvision does not support aligned RoIAlgin'
 
     def forward(self, input, rois):
         """
@@ -151,8 +162,13 @@ class RoIAlign(nn.Module):
             rois: Bx5 boxes. First column is the index into N.\
                 The other 4 columns are xyxy.
         """
-        return roi_align(input, rois, self.output_size, self.spatial_scale,
-                         self.sampling_ratio, self.pool_mode, self.aligned)
+        if self.use_torchvision:
+            from torchvision.ops import roi_align as tv_roi_align
+            return tv_roi_align(input, rois, self.output_size,
+                                self.spatial_scale, self.sampling_ratio)
+        else:
+            return roi_align(input, rois, self.output_size, self.spatial_scale,
+                             self.sampling_ratio, self.pool_mode, self.aligned)
 
     def __repr__(self):
         s = self.__class__.__name__
@@ -160,5 +176,6 @@ class RoIAlign(nn.Module):
         s += f'spatial_scale={self.spatial_scale}, '
         s += f'sampling_ratio={self.sampling_ratio}, '
         s += f'pool_mode={self.pool_mode}, '
-        s += f'aligned={self.aligned})'
+        s += f'aligned={self.aligned}, '
+        s += f'use_torchvision={self.use_torchvision})'
         return s
