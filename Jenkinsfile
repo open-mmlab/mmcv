@@ -4,7 +4,7 @@ def torchvision_versions = ["0.4.2", "0.6.0"]
 
 
 def get_stages(docker_image, torch, torchvision) {
-    def aliyun_mirror_args = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
+    def pip_mirror = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all') {
             stage("before_install") {
@@ -12,14 +12,14 @@ def get_stages(docker_image, torch, torchvision) {
             }
             stage("dependencies") {
                 if (torchvision == "0.4.2") {
-                    sh "pip install Pillow==6.2.2 ${aliyun_mirror_args}"
+                    sh "pip install Pillow==6.2.2 ${pip_mirror}"
                 }
-                sh "pip install pip install torch==${torch} torchvision==${torchvision} ${aliyun_mirror_args}"
+                sh "pip install pip install torch==${torch} torchvision==${torchvision} ${pip_mirror}"
                 sh "apt-get update && apt-get install -y ffmpeg libturbojpeg"
-                sh "pip install pytest coverage lmdb PyTurboJPEG ${aliyun_mirror_args}"
+                sh "pip install pytest coverage lmdb PyTurboJPEG ${pip_mirror}"
             }
             stage("build") {
-                sh "rm -rf .eggs && pip install -e ."
+                sh "rm -rf .eggs && pip install -e . ${pip_mirror}"
             }
             stage("test") {
                 sh "coverage run --branch --source=mmcv -m pytest tests/"
