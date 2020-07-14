@@ -87,9 +87,9 @@ class Config:
             content = f.read()
         try:
             ast.parse(content)
-        except SyntaxError:
+        except SyntaxError as e:
             raise SyntaxError('There are syntax errors in config '
-                              f'file {filename}')
+                              f'file {filename}: {e}')
 
     @staticmethod
     def _substitute_predefined_vars(filename, temp_config_name):
