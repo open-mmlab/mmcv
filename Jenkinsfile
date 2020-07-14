@@ -19,7 +19,8 @@ def get_stages(docker_image, torch, torchvision) {
                 sh "pip install pytest coverage lmdb PyTurboJPEG ${pip_mirror}"
             }
             stage("build") {
-                sh "rm -rf .eggs && pip install -e . ${pip_mirror}"
+                sh "rm -rf .eggs"
+                sh "MMCV_WITH_OPS=1 pip install -e . ${pip_mirror}"
             }
             stage("test") {
                 sh "coverage run --branch --source=mmcv -m pytest tests/"
