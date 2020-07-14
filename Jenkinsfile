@@ -23,6 +23,7 @@ def get_stages(docker_image, torch, torchvision) {
                 sh "MMCV_WITH_OPS=1 pip install -e . ${pip_mirror}"
             }
             stage("test") {
+                sh "TORCH_USE_RTLD_GLOBAL=YES"  // https://github.com/pytorch/pytorch/issues/38122
                 sh "coverage run --branch --source=mmcv -m pytest tests/"
                 sh "coverage xml"
                 sh "coverage report -m"
