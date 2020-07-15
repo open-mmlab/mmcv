@@ -50,7 +50,7 @@ class TextLoggerHook(LoggerHook):
             self._dump_log(runner.meta, runner)
 
     def _get_max_memory(self, runner):
-        device = runner.model.output_device
+        device = getattr(runner.model, 'output_device', None)
         mem = torch.cuda.max_memory_allocated(device=device)
         mem_mb = torch.tensor([mem / (1024 * 1024)],
                               dtype=torch.int,
