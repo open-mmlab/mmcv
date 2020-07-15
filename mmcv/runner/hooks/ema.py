@@ -8,8 +8,9 @@ logger = logging.getLogger('global')
 
 @HOOKS.register_module()
 class EmaHook(Hook):
-    r""" Exponential Moving Average on all parameters of model
-        all parameter has a ema backup, which update by the formula as below.
+    r""" Use Exponential Moving Average on all parameters of model in training
+        process.all parameter has a ema backup, which update by the formula
+        as below.
 
         .. math::
 
@@ -19,8 +20,8 @@ class EmaHook(Hook):
     Args:
         momentum (float): used for update ema parameter.
         interval (int): update ema parameter every interval iteration
-        warm_up (int): during first warmup steps, we may use smaller momentum
-            to update ema parameters more slowly.\
+        warm_up (int): during first warm_up steps, we may use smaller momentum
+            to update ema parameters more slowly.
         resume_from (str): the checkpoint path
     """
 
