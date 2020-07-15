@@ -135,6 +135,8 @@ def test_build_norm_layer():
         'IN3d': 'in',
     }
     for type_name, module in NORM_LAYERS.module_dict.items():
+        if type_name == 'MMSyncBN':  # skip MMSyncBN
+            continue
         for postfix in ['_test', 1]:
             cfg = dict(type=type_name)
             if type_name == 'GN':
