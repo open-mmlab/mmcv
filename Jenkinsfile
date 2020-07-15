@@ -31,7 +31,7 @@ def get_stages(docker_image, torch, torchvision, folder) {
                     }
                 }
             } finally {
-                sh "rm -rf ${env.WORKSPACE}-${folder}"
+                sh "rm -rf ${env.WORKSPACE}-${folder} ${env.WORKSPACE}-${folder}@tmp"
             }
         }
     }
