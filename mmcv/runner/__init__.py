@@ -5,7 +5,7 @@ from .checkpoint import (_load_checkpoint, load_checkpoint, load_state_dict,
 from .dist_utils import get_dist_info, init_dist, master_only
 from .epoch_based_runner import EpochBasedRunner, Runner
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistSamplerSeedHook,
-                    Hook, IterTimerHook, LoggerHook, LrUpdaterHook,
+                    EmaHook, Hook, IterTimerHook, LoggerHook, LrUpdaterHook,
                     MlflowLoggerHook, OptimizerHook, PaviLoggerHook,
                     TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
 from .iter_based_runner import IterBasedRunner, IterLoader
@@ -20,7 +20,7 @@ __all__ = [
     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
     'OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook', 'LoggerHook',
-    'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
+    'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook', 'EmaHook',
     'WandbLoggerHook', 'MlflowLoggerHook', '_load_checkpoint',
     'load_state_dict', 'load_checkpoint', 'weights_to_cpu', 'save_checkpoint',
     'Priority', 'get_priority', 'get_host_info', 'get_time_str',

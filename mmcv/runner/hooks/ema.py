@@ -1,13 +1,13 @@
 import logging
 
-from mmcv.parallel import is_module_wrapper
-from mmcv.runner.hooks.hook import HOOKS, Hook
+from ...parallel import is_module_wrapper
+from ..hooks.hook import HOOKS, Hook
 
 logger = logging.getLogger('global')
 
 
 @HOOKS.register_module()
-class EMA(Hook):
+class EmaHook(Hook):
     r""" Exponential Moving Average on all parameters of model
         all parameter has a ema backup, which update by the formula as below.
 
@@ -36,9 +36,9 @@ class EMA(Hook):
         self.resume_from = resume_from
 
     def before_run(self, runner):
-        """ To resume model with it's ema parameters more friendly. Register ema
-        parameter as named_buffer to model
+        """To resume model with it's ema parameters more friendly.
 
+        Register ema parameter as named_buffer to model
         """
         model = runner.model
         if is_module_wrapper(model):
@@ -55,9 +55,7 @@ class EMA(Hook):
             runner.resume(self.resume_from)
 
     def after_train_iter(self, runner):
-        """ Update ema parameter every self.interval iterations
-
-        """
+        """Update ema parameter every self.interval iterations."""
         curr_step = runner.iter
         momentum = min(self.momentum,
                        (1 + curr_step) / (self.warm_up + curr_step))
@@ -81,9 +79,7 @@ class EMA(Hook):
         self.swap_ema_parameters()
 
     def swap_ema_parameters(self, ):
-        """ Swap the parameter of model with parameter in ema_buffer
-
-        """
+        """Swap the parameter of model with parameter in ema_buffer."""
         for name, value in self.model_parameters.items():
             temp = value.data.clone()
             ema_buffer = self.model_buffers[self.parameter_emabuffer[name]]
