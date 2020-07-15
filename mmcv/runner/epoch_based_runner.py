@@ -118,7 +118,7 @@ class EpochBasedRunner(BaseRunner):
 
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= max_epochs:
-                        return
+                        break
                     epoch_runner(data_loaders[i], **kwargs)
 
         time.sleep(1)  # wait for some hooks like loggers to finish
@@ -161,7 +161,7 @@ class EpochBasedRunner(BaseRunner):
 
 
 class Runner(EpochBasedRunner):
-    """Deprecated name of EpochBasedRunner"""
+    """Deprecated name of EpochBasedRunner."""
 
     def __init__(self, *args, **kwargs):
         warnings.warn(

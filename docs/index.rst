@@ -1,4 +1,5 @@
-.. include:: ../README.rst
+
+.. mdinclude:: readme.md
 
 Contents
 ========
@@ -13,7 +14,7 @@ Contents
    utils.md
    runner.md
    cnn.md
-   model_zoo.md
+   ops.md
    api.rst
 
 

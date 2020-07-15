@@ -128,7 +128,7 @@ class CosineAnealingMomentumUpdaterHook(MomentumUpdaterHook):
 
 @HOOKS.register_module()
 class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
-    """Cyclic momentum Scheduler
+    """Cyclic momentum Scheduler.
 
     Implemet the cyclical momentum scheduler policy described in
     https://arxiv.org/pdf/1708.07120.pdf
@@ -143,7 +143,6 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         step_ratio_up (float): The ratio of the increasing process of momentum
             in  the total cycle.
         by_epoch (bool): Whether to update momentum by epoch.
-
     """
 
     def __init__(self,

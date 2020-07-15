@@ -26,7 +26,7 @@ def infer_abbr(class_type):
     the norm type in variable names, e.g, self.bn1, self.gn. This method will
     infer the abbreviation to map class types to abbreviations.
 
-    Rule 1: If the class has the property "abbr", return the property.
+    Rule 1: If the class has the property "_abbr_", return the property.
     Rule 2: If the parent class is _BatchNorm, GroupNorm, LayerNorm or
     InstanceNorm, the abbreviation of this layer will be "bn", "gn", "ln" and
     "in" respectively.
@@ -44,8 +44,8 @@ def infer_abbr(class_type):
     if not inspect.isclass(class_type):
         raise TypeError(
             f'class_type must be a type, but got {type(class_type)}')
-    if hasattr(class_type, 'abbr'):
-        return class_type.abbr
+    if hasattr(class_type, '_abbr_'):
+        return class_type._abbr_
     if issubclass(class_type, _InstanceNorm):  # IN is a subclass of BN
         return 'in'
     elif issubclass(class_type, _BatchNorm):
@@ -73,6 +73,7 @@ def build_norm_layer(cfg, num_features, postfix=''):
 
     Args:
         cfg (dict): The norm layer config, which should contain:
+
             - type (str): Layer type.
             - layer args: Args needed to instantiate a norm layer.
             - requires_grad (bool, optional): Whether stop gradient updates.
@@ -81,10 +82,9 @@ def build_norm_layer(cfg, num_features, postfix=''):
             to create named layer.
 
     Returns:
-        tuple[str, nn.Module]:
-            name (str): The layer name consisting of abbreviation and postfix,
-                e.g., bn1, gn.
-            layer (nn.Module): Created norm layer.
+        (str, nn.Module): The first element is the layer name consisting of
+            abbreviation and postfix, e.g., bn1, gn. The second element is the
+            created norm layer.
     """
     if not isinstance(cfg, dict):
         raise TypeError('cfg must be a dict')

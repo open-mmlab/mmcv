@@ -115,7 +115,7 @@ class IterBasedRunner(BaseRunner):
                 iter_runner = getattr(self, mode)
                 for _ in range(iters):
                     if mode == 'train' and self.iter >= max_iters:
-                        return
+                        break
                     iter_runner(iter_loaders[i], **kwargs)
 
         time.sleep(1)  # wait for some hooks like loggers to finish

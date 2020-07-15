@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numpy as np
 
-from mmcv._ext import flow_warp_c
+from mmcv._flow_warp_ext import flow_warp_c
 from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
@@ -139,7 +139,7 @@ def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
 
 
 def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
-    """Use flow to warp img
+    """Use flow to warp img.
 
     Args:
         img (ndarray, float or uint8): Image to be warped.

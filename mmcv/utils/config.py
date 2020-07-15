@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import os.path as osp
+import re
 import shutil
 import sys
 import tempfile
@@ -78,7 +79,6 @@ class Config:
         >>> cfg
         "Config [path: /home/kchen/projects/mmcv/tests/data/config/a.py]: "
         "{'item1': [1, 2], 'item2': {'a': 0}, 'item3': True, 'item4': 'test'}"
-
     """
 
     @staticmethod
@@ -87,21 +87,48 @@ class Config:
             content = f.read()
         try:
             ast.parse(content)
-        except SyntaxError:
+        except SyntaxError as e:
             raise SyntaxError('There are syntax errors in config '
-                              f'file {filename}')
+                              f'file {filename}: {e}')
 
     @staticmethod
-    def _file2dict(filename):
+    def _substitute_predefined_vars(filename, temp_config_name):
+        file_dirname = osp.dirname(filename)
+        file_basename = osp.basename(filename)
+        file_basename_no_extension = osp.splitext(file_basename)[0]
+        file_extname = osp.splitext(filename)[1]
+        support_templates = dict(
+            fileDirname=file_dirname,
+            fileBasename=file_basename,
+            fileBasenameNoExtension=file_basename_no_extension,
+            fileExtname=file_extname)
+        config_file = open(filename).read()
+        for key, value in support_templates.items():
+            regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+            config_file = re.sub(regexp, value, config_file)
+        with open(temp_config_name, 'w') as tmp_config_file:
+            tmp_config_file.write(config_file)
+
+    @staticmethod
+    def _file2dict(filename, use_predefined_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
-        if filename.endswith('.py'):
-            with tempfile.TemporaryDirectory() as temp_config_dir:
-                temp_config_file = tempfile.NamedTemporaryFile(
-                    dir=temp_config_dir, suffix='.py')
-                temp_config_name = osp.basename(temp_config_file.name)
-                shutil.copyfile(filename,
-                                osp.join(temp_config_dir, temp_config_name))
+        fileExtname = osp.splitext(filename)[1]
+        if fileExtname not in ['.py', '.json', '.yaml', 'yml']:
+            raise IOError('Only py/yml/yaml/json type are supported now!')
+
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            temp_config_file = tempfile.NamedTemporaryFile(
+                dir=temp_config_dir, suffix=fileExtname)
+            temp_config_name = osp.basename(temp_config_file.name)
+            # Substitute predefined variables
+            if use_predefined_variables:
+                Config._substitute_predefined_vars(filename,
+                                                   temp_config_file.name)
+            else:
+                shutil.copyfile(filename, temp_config_file.name)
+
+            if filename.endswith('.py'):
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
                 Config._validate_py_syntax(filename)
@@ -114,13 +141,11 @@ class Config:
                 }
                 # delete imported module
                 del sys.modules[temp_module_name]
-                # close temp file
-                temp_config_file.close()
-        elif filename.endswith(('.yml', '.yaml', '.json')):
-            import mmcv
-            cfg_dict = mmcv.load(filename)
-        else:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
+            elif filename.endswith(('.yml', '.yaml', '.json')):
+                import mmcv
+                cfg_dict = mmcv.load(temp_config_file.name)
+            # close temp file
+            temp_config_file.close()
 
         cfg_text = filename + '\n'
         with open(filename, 'r') as f:
@@ -174,14 +199,14 @@ class Config:
         return b
 
     @staticmethod
-    def fromfile(filename):
-        cfg_dict, cfg_text = Config._file2dict(filename)
+    def fromfile(filename, use_predefined_variables=True):
+        cfg_dict, cfg_text = Config._file2dict(filename,
+                                               use_predefined_variables)
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod
     def auto_argparser(description=None):
-        """Generate argparser from config file automatically (experimental)
-        """
+        """Generate argparser from config file automatically (experimental)"""
         partial_parser = ArgumentParser(description=description)
         partial_parser.add_argument('config', help='config file path')
         cfg_file = partial_parser.parse_known_args()[0].config
@@ -356,7 +381,7 @@ class Config:
                 mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
-        """Merge list into cfg_dict
+        """Merge list into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
 
