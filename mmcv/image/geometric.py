@@ -4,6 +4,13 @@ import numbers
 import cv2
 import numpy as np
 
+from .io import imread_backend
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
 
 def _scale_size(size, scale):
     """Rescale a size by a ratio.
@@ -19,7 +26,7 @@ def _scale_size(size, scale):
     return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
 
 
-interp_codes = {
+cv2_interp_codes = {
     'nearest': cv2.INTER_NEAREST,
     'bilinear': cv2.INTER_LINEAR,
     'bicubic': cv2.INTER_CUBIC,
@@ -27,12 +34,19 @@ interp_codes = {
     'lanczos': cv2.INTER_LANCZOS4
 }
 
+if Image is not None:
+    pillow_interp_codes = {
+        'bilinear': Image.BILINEAR,
+        'bicubic': Image.BICUBIC
+    }
+
 
 def imresize(img,
              size,
              return_scale=False,
              interpolation='bilinear',
-             out=None):
+             out=None,
+             backend=None):
     """Resize image to a given size.
 
     Args:
@@ -40,16 +54,32 @@ def imresize(img,
         size (tuple[int]): Target size (w, h).
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Interpolation method, accepted values are
-            "nearest", "bilinear", "bicubic", "area", "lanczos".
+            "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
+            backend, "nearest", "bilinear" for 'pillow' backend.
         out (ndarray): The output destination.
+        backend (str | None): The image resize backend type. Options are `cv2`,
+            `pillow`, `None`. If backend is None, the global imread_backend
+            specified by ``mmcv.use_backend()`` will be used. Default: None.
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = img.shape[:2]
-    resized_img = cv2.resize(
-        img, size, dst=out, interpolation=interp_codes[interpolation])
+    if backend is None:
+        backend = imread_backend
+    if backend not in ['cv2', 'pillow']:
+        raise ValueError(f'backend: {backend} is not supported for resize.'
+                         f"Supported backends are 'cv2', 'pillow'")
+
+    if backend == 'pillow':
+        assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
+        pil_image = Image.fromarray(img)
+        pil_image = pil_image.resize(size, pillow_interp_codes[interpolation])
+        resized_img = np.array(pil_image)
+    else:
+        resized_img = cv2.resize(
+            img, size, dst=out, interpolation=cv2_interp_codes[interpolation])
     if not return_scale:
         return resized_img
     else:
@@ -58,7 +88,11 @@ def imresize(img,
         return resized_img, w_scale, h_scale
 
 
-def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
+def imresize_like(img,
+                  dst_img,
+                  return_scale=False,
+                  interpolation='bilinear',
+                  backend=None):
     """Resize image to the same size of a given image.
 
     Args:
@@ -66,13 +100,14 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
         dst_img (ndarray): The target image.
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Same as :func:`resize`.
+        backend (str | None): Same as :func:`resize`.
 
     Returns:
         tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = dst_img.shape[:2]
-    return imresize(img, (w, h), return_scale, interpolation)
+    return imresize(img, (w, h), return_scale, interpolation, backend=backend)
 
 
 def rescale_size(old_size, scale, return_scale=False):
@@ -112,7 +147,11 @@ def rescale_size(old_size, scale, return_scale=False):
         return new_size
 
 
-def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
+def imrescale(img,
+              scale,
+              return_scale=False,
+              interpolation='bilinear',
+              backend=None):
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -124,13 +163,15 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image.
         interpolation (str): Same as :func:`resize`.
+        backend (str | None): Same as :func:`resize`.
 
     Returns:
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
     new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
-    rescaled_img = imresize(img, new_size, interpolation=interpolation)
+    rescaled_img = imresize(
+        img, new_size, interpolation=interpolation, backend=backend)
     if return_scale:
         return rescaled_img, scale_factor
     else:
