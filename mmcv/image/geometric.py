@@ -36,8 +36,12 @@ cv2_interp_codes = {
 
 if Image is not None:
     pillow_interp_codes = {
+        'nearest': Image.NEAREST,
         'bilinear': Image.BILINEAR,
-        'bicubic': Image.BICUBIC
+        'bicubic': Image.BICUBIC,
+        'box': Image.BOX,
+        'lanczos': Image.LANCZOS,
+        'hamming': Image.HAMMING
     }
 
 

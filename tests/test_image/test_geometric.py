@@ -36,7 +36,9 @@ class TestGeometric:
             assert resized_img.shape == (600, 1000, 3)
 
         # test pillow resize
-        for mode in ['nearest', 'bilinear']:
+        for mode in [
+                'nearest', 'bilinear', 'bicubic', 'box', 'lanczos', 'hamming'
+        ]:
             resized_img = mmcv.imresize(
                 self.img, (1000, 600), interpolation=mode, backend='pillow')
             assert resized_img.shape == (600, 1000, 3)
