@@ -6,7 +6,7 @@ from mmcv.cnn import NonLocal1d, NonLocal2d, NonLocal3d
 from mmcv.cnn.bricks.non_local import _NonLocalNd
 
 
-def test_non_local():
+def test_nonlocal():
     with pytest.raises(ValueError):
         # mode should be in ['embedded_gaussian', 'dot_product']
         _NonLocalNd(3, mode='unsupport_mode')
@@ -16,6 +16,8 @@ def test_non_local():
     # Not Zero initialization
     _NonLocalNd(3, norm_cfg=dict(type='BN'), zeros_init=True)
 
+
+def test_nonlocal3d():
     # NonLocal3d with 'embedded_gaussian' mode
     imgs = torch.randn(2, 3, 10, 20, 20)
     nonlocal_3d = NonLocal3d(3)
@@ -79,6 +81,8 @@ def test_non_local():
     out = nonlocal_3d(imgs)
     assert out.shape == imgs.shape
 
+
+def test_nonlocal2d():
     # NonLocal2d with 'embedded_gaussian' mode
     imgs = torch.randn(2, 3, 20, 20)
     nonlocal_2d = NonLocal2d(3)
@@ -144,6 +148,8 @@ def test_non_local():
     out = nonlocal_2d(imgs)
     assert out.shape == imgs.shape
 
+
+def test_nonlocal1d():
     # NonLocal1d with 'embedded_gaussian' mode
     imgs = torch.randn(2, 3, 20)
     nonlocal_1d = NonLocal1d(3)
