@@ -6,7 +6,7 @@ from mmcv.cnn import NonLocal1d, NonLocal2d, NonLocal3d
 from mmcv.cnn.bricks.non_local import _NonLocalNd
 
 
-def test_nonlocal():
+def test_non_local():
     with pytest.raises(ValueError):
         # mode should be in ['embedded_gaussian', 'dot_product']
         _NonLocalNd(3, mode='unsupport_mode')
