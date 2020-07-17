@@ -313,7 +313,7 @@ class BaseRunner(metaclass=ABCMeta):
             # If the type of policy is all in lower case, e.g., 'cyclic',
             # then its first letter will be capitalized, e.g., to be 'Cyclic'.
             # This is for the convenient usage of Lr updater.
-            # Since this is not applicable for `CosineAnealingLrUpdater`,
+            # Since this is not applicable for `CosineAnnealingLrUpdater`,
             # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
@@ -333,7 +333,7 @@ class BaseRunner(metaclass=ABCMeta):
             # If the type of policy is all in lower case, e.g., 'cyclic',
             # then its first letter will be capitalized, e.g., to be 'Cyclic'.
             # This is for the convenient usage of momentum updater.
-            # Since this is not applicable for `CosineAnealingMomentumUpdater`,
+            # Since this is not applicable for `CosineAnnealingMomentumUpdater`,
             # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
