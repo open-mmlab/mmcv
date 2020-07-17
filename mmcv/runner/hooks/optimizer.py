@@ -31,6 +31,7 @@ class OptimizerHook(Hook):
         runner.optimizer.step()
 
 
+@HOOKS.register_module()
 class Fp16OptimizerHook(OptimizerHook):
     """FP16 optimizer hook.
 
