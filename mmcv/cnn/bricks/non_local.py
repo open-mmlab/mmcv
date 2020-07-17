@@ -43,9 +43,7 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
         self.in_channels = in_channels
         self.reduction = reduction
         self.use_scale = use_scale
-        self.inter_channels = in_channels // reduction
-        if self.inter_channels == 0:
-            self.inter_channels = 1
+        self.inter_channels = max(in_channels // reduction, 1)
         self.mode = mode
 
         if mode not in [
