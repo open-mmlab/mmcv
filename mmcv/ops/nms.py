@@ -10,6 +10,7 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 
 
+# This function is modified from: https://github.com/pytorch/vision/
 class NMSop(torch.autograd.Function):
 
     @staticmethod
