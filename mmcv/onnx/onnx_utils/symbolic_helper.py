@@ -1,8 +1,7 @@
 """Modified from https://github.com/pytorch/pytorch."""
-from __future__ import absolute_import, division, print_function
 import warnings
 from functools import wraps
-from sys import maxsize as maxsize
+from sys import maxsize
 
 import torch
 import torch.onnx
