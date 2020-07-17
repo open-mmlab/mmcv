@@ -11,13 +11,13 @@ def test_nonlocal():
         # mode should be in ['embedded_gaussian', 'dot_product']
         _NonLocalNd(3, mode='unsupport_mode')
 
-    # _NonLocalNd
+    # _NonLocalNd with zero initialization
     _NonLocalNd(3)
     _NonLocalNd(3, norm_cfg=dict(type='BN'))
 
-    # _NonLocalNd with zero initialization
-    _NonLocalNd(3, zeros_init=True)
-    _NonLocalNd(3, norm_cfg=dict(type='BN'), zeros_init=True)
+    # _NonLocalNd without zero initialization
+    _NonLocalNd(3, zeros_init=False)
+    _NonLocalNd(3, norm_cfg=dict(type='BN'), zeros_init=False)
 
 
 def test_nonlocal3d():
