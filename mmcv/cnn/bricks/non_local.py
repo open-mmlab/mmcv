@@ -171,29 +171,22 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
         g_x = self.g(x).view(n, self.inter_channels, -1)
         g_x = g_x.permute(0, 2, 1)
 
-        # NonLocal1d theta_x: [N, H, C]
-        # NonLocal2d theta_x: [N, HxW, C]
-        # NonLocal3d theta_x: [N, TxHxW, C]
+        # NonLocal1d theta_x: [N, H, C], phi_x: [N, C, H]
+        # NonLocal2d theta_x: [N, HxW, C], phi_x: [N, C, HxW]
+        # NonLocal3d theta_x: [N, TxHxW, C], phi_x: [N, C, TxHxW]
         if self.mode == 'gaussian':
             theta_x = x.view(n, self.in_channels, -1)
             theta_x = theta_x.permute(0, 2, 1)
-        elif self.mode == 'concatenation':
-            theta_x = self.theta(x).view(n, self.inter_channels, -1, 1)
-        else:
-            theta_x = self.theta(x).view(n, self.inter_channels, -1)
-            theta_x = theta_x.permute(0, 2, 1)
-
-        # NonLocal1d phi_x: [N, C, H]
-        # NonLocal2d phi_x: [N, C, HxW]
-        # NonLocal3d phi_x: [N, C, TxHxW]
-        if self.mode == 'gaussian':
             if self.sub_sample:
                 phi_x = self.phi(x).view(n, self.in_channels, -1)
             else:
                 phi_x = x.view(n, self.in_channels, -1)
         elif self.mode == 'concatenation':
+            theta_x = self.theta(x).view(n, self.inter_channels, -1, 1)
             phi_x = self.phi(x).view(n, self.inter_channels, 1, -1)
         else:
+            theta_x = self.theta(x).view(n, self.inter_channels, -1)
+            theta_x = theta_x.permute(0, 2, 1)
             phi_x = self.phi(x).view(n, self.inter_channels, -1)
 
         pairwise_func = getattr(self, self.mode)
