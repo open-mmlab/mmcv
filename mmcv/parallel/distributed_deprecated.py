@@ -5,9 +5,12 @@ import torch.nn as nn
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from mmcv.utils import TORCH_VERSION
+from .registry import MODULE_WRAPPERS
 from .scatter_gather import scatter_kwargs
 
 
+@MODULE_WRAPPERS.register_module()
 class MMDistributedDataParallel(nn.Module):
 
     def __init__(self,
@@ -37,7 +40,7 @@ class MMDistributedDataParallel(nn.Module):
             self._dist_broadcast_coalesced(module_states,
                                            self.broadcast_bucket_size)
         if self.broadcast_buffers:
-            if torch.__version__ < '1.0':
+            if TORCH_VERSION < '1.0':
                 buffers = [b.data for b in self.module._all_buffers()]
             else:
                 buffers = [b.data for b in self.module.buffers()]
@@ -52,3 +55,15 @@ class MMDistributedDataParallel(nn.Module):
         inputs, kwargs = self.scatter(inputs, kwargs,
                                       [torch.cuda.current_device()])
         return self.module(*inputs[0], **kwargs[0])
+
+    def train_step(self, *inputs, **kwargs):
+        inputs, kwargs = self.scatter(inputs, kwargs,
+                                      [torch.cuda.current_device()])
+        output = self.module.train_step(*inputs[0], **kwargs[0])
+        return output
+
+    def val_step(self, *inputs, **kwargs):
+        inputs, kwargs = self.scatter(inputs, kwargs,
+                                      [torch.cuda.current_device()])
+        output = self.module.val_step(*inputs[0], **kwargs[0])
+        return output

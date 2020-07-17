@@ -4,8 +4,7 @@ from torch.nn.parallel._functions import _get_stream
 
 
 def scatter(input, devices, streams=None):
-    """Scatters tensor across multiple GPUs.
-    """
+    """Scatters tensor across multiple GPUs."""
     if streams is None:
         streams = [None] * len(devices)
 
@@ -24,7 +23,7 @@ def scatter(input, devices, streams=None):
             output = output.cuda(devices[0], non_blocking=True)
         return output
     else:
-        raise Exception('Unknown type {}.'.format(type(input)))
+        raise Exception(f'Unknown type {type(input)}.')
 
 
 def synchronize_stream(output, devices, streams):
@@ -41,7 +40,7 @@ def synchronize_stream(output, devices, streams):
                 main_stream.wait_stream(streams[0])
                 output.record_stream(main_stream)
     else:
-        raise Exception('Unknown type {}.'.format(type(output)))
+        raise Exception(f'Unknown type {type(output)}.')
 
 
 def get_input_device(input):
@@ -54,10 +53,10 @@ def get_input_device(input):
     elif isinstance(input, torch.Tensor):
         return input.get_device() if input.is_cuda else -1
     else:
-        raise Exception('Unknown type {}.'.format(type(input)))
+        raise Exception(f'Unknown type {type(input)}.')
 
 
-class Scatter(object):
+class Scatter:
 
     @staticmethod
     def forward(target_gpus, input):

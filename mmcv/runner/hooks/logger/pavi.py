@@ -5,7 +5,7 @@ import os.path as osp
 import numpy as np
 import torch
 
-from mmcv.runner import master_only
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -31,7 +31,7 @@ def is_scalar(val, include_np=True, include_torch=True):
         return False
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
 
     def __init__(self,
@@ -40,8 +40,10 @@ class PaviLoggerHook(LoggerHook):
                  add_last_ckpt=False,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
-        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag)
+                 reset_flag=True,
+                 by_epoch=True):
+        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag,
+                                             by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt
@@ -71,6 +73,22 @@ class PaviLoggerHook(LoggerHook):
         for tag, val in runner.log_buffer.output.items():
             if tag not in ['time', 'data_time'] and is_scalar(val):
                 tags[tag] = val
+        # add learning rate
+        lrs = runner.current_lr()
+        if isinstance(lrs, dict):
+            for name, value in lrs.items():
+                tags[f'learning_rate/{name}'] = value[0]
+        else:
+            tags['learning_rate'] = lrs[0]
+
+        # add momentum
+        momentums = runner.current_momentum()
+        if isinstance(momentums, dict):
+            for name, value in momentums.items():
+                tags[f'momentum/{name}'] = value[0]
+        else:
+            tags['momentum'] = momentums[0]
+
         if tags:
             self.writer.add_scalars(runner.mode, tags, runner.iter)
 

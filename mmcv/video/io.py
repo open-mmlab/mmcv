@@ -11,7 +11,7 @@ from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
                         track_progress)
 
 
-class Cache(object):
+class Cache:
 
     def __init__(self, capacity):
         self._cache = OrderedDict()
@@ -39,7 +39,7 @@ class Cache(object):
         return val
 
 
-class VideoReader(object):
+class VideoReader:
     """Video class with similar usage to a list object.
 
     This video warpper class provides convenient apis to access frames.
@@ -166,8 +166,7 @@ class VideoReader(object):
         """
         if frame_id < 0 or frame_id >= self._frame_cnt:
             raise IndexError(
-                '"frame_id" must be between 0 and {}'.format(self._frame_cnt -
-                                                             1))
+                f'"frame_id" must be between 0 and {self._frame_cnt - 1}')
         if frame_id == self._position:
             return self.read()
         if self._cache:
@@ -201,7 +200,7 @@ class VideoReader(object):
                    start=0,
                    max_num=0,
                    show_progress=True):
-        """Convert a video to frame images
+        """Convert a video to frame images.
 
         Args:
             frame_dir (str): Output directory to store all the frame images.
@@ -283,7 +282,7 @@ def frames2video(frame_dir,
                  start=0,
                  end=0,
                  show_progress=True):
-    """Read the frame images from a directory and join them as a video
+    """Read the frame images from a directory and join them as a video.
 
     Args:
         frame_dir (str): The directory containing video frames.

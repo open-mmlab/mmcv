@@ -15,17 +15,26 @@ class LoggerHook(Hook):
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`.
         reset_flag (bool): Whether to clear the output buffer after logging.
+        by_epoch (bool): Whether EpochBasedRunner is used.
     """
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, interval=10, ignore_last=True, reset_flag=False):
+    def __init__(self,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=False,
+                 by_epoch=True):
         self.interval = interval
         self.ignore_last = ignore_last
         self.reset_flag = reset_flag
+<<<<<<< HEAD
         _rank, _world_size = get_dist_info()
         self.rank = _rank
         self.world_size = _world_size
+=======
+        self.by_epoch = by_epoch
+>>>>>>> upstream/master
 
     @abstractmethod
     def log(self, runner):
@@ -41,7 +50,9 @@ class LoggerHook(Hook):
         runner.log_buffer.clear()  # clear logs of last epoch
 
     def after_train_iter(self, runner):
-        if self.every_n_inner_iters(runner, self.interval):
+        if self.by_epoch and self.every_n_inner_iters(runner, self.interval):
+            runner.log_buffer.average(self.interval)
+        elif not self.by_epoch and self.every_n_iters(runner, self.interval):
             runner.log_buffer.average(self.interval)
             self.sync_buffer_output(runner)
         elif self.end_of_epoch(runner) and not self.ignore_last:

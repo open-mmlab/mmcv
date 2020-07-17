@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 
 
-class LogBuffer(object):
+class LogBuffer:
 
     def __init__(self):
         self.val_history = OrderedDict()
@@ -31,7 +31,7 @@ class LogBuffer(object):
             self.n_history[key].append(count)
 
     def average(self, n=0):
-        """Average latest n values or all values"""
+        """Average latest n values or all values."""
         assert n >= 0
         for key in self.val_history:
             values = np.array(self.val_history[key][-n:])

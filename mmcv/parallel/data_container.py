@@ -9,14 +9,15 @@ def assert_tensor_type(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if not isinstance(args[0].data, torch.Tensor):
-            raise AttributeError('{} has no attribute {} for type {}'.format(
-                args[0].__class__.__name__, func.__name__, args[0].datatype))
+            raise AttributeError(
+                f'{args[0].__class__.__name__} has no attribute '
+                f'{func.__name__} for type {args[0].datatype}')
         return func(*args, **kwargs)
 
     return wrapper
 
 
-class DataContainer(object):
+class DataContainer:
     """A container for any type of objects.
 
     Typically tensors will be stacked in the collate function and sliced along
@@ -47,7 +48,10 @@ class DataContainer(object):
         self._pad_dims = pad_dims
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, repr(self.data))
+        return f'{self.__class__.__name__}({repr(self.data)})'
+
+    def __len__(self):
+        return len(self._data)
 
     @property
     def data(self):

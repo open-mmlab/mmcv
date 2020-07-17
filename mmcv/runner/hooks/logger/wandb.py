@@ -1,12 +1,12 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 
-from mmcv.runner import master_only
+from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
 
-@HOOKS.register_module
+@HOOKS.register_module()
 class WandbLoggerHook(LoggerHook):
 
     def __init__(self,
@@ -42,9 +42,11 @@ class WandbLoggerHook(LoggerHook):
         for var, val in runner.log_buffer.output.items():
             if var in ['time', 'data_time']:
                 continue
-            tag = '{}/{}'.format(var, runner.mode)
+            tag = f'{var}/{runner.mode}'
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
+        metrics['learning_rate'] = runner.current_lr()[0]
+        metrics['momentum'] = runner.current_momentum()[0]
         if metrics:
             self.wandb.log(metrics, step=runner.iter)
 

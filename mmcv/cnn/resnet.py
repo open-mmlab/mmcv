@@ -5,11 +5,11 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 
 from ..runner import load_checkpoint
-from .weight_init import constant_init, kaiming_init
+from .utils import constant_init, kaiming_init
 
 
 def conv3x3(in_planes, out_planes, stride=1, dilation=1):
-    """3x3 convolution with padding"""
+    """3x3 convolution with padding."""
     return nn.Conv2d(
         in_planes,
         out_planes,
@@ -32,6 +32,7 @@ class BasicBlock(nn.Module):
                  style='pytorch',
                  with_cp=False):
         super(BasicBlock, self).__init__()
+        assert style in ['pytorch', 'caffe']
         self.conv1 = conv3x3(inplanes, planes, stride, dilation)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
@@ -74,8 +75,8 @@ class Bottleneck(nn.Module):
                  with_cp=False):
         """Bottleneck block.
 
-        If style is "pytorch", the stride-two layer is the 3x3 conv layer,
-        if it is "caffe", the stride-two layer is the first 1x1 conv layer.
+        If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
+        it is "caffe", the stride-two layer is the first 1x1 conv layer.
         """
         super(Bottleneck, self).__init__()
         assert style in ['pytorch', 'caffe']
@@ -171,7 +172,7 @@ def make_res_layer(block,
             style=style,
             with_cp=with_cp))
     inplanes = planes * block.expansion
-    for i in range(1, blocks):
+    for _ in range(1, blocks):
         layers.append(
             block(inplanes, planes, 1, dilation, style=style, with_cp=with_cp))
 
@@ -220,7 +221,7 @@ class ResNet(nn.Module):
                  with_cp=False):
         super(ResNet, self).__init__()
         if depth not in self.arch_settings:
-            raise KeyError('invalid depth {} for resnet'.format(depth))
+            raise KeyError(f'invalid depth {depth} for resnet')
         assert num_stages >= 1 and num_stages <= 4
         block, stage_blocks = self.arch_settings[depth]
         stage_blocks = stage_blocks[:num_stages]
@@ -256,7 +257,7 @@ class ResNet(nn.Module):
                 style=self.style,
                 with_cp=with_cp)
             self.inplanes = planes * block.expansion
-            layer_name = 'layer{}'.format(i + 1)
+            layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)
 
@@ -309,7 +310,7 @@ class ResNet(nn.Module):
             self.bn1.weight.requires_grad = False
             self.bn1.bias.requires_grad = False
             for i in range(1, self.frozen_stages + 1):
-                mod = getattr(self, 'layer{}'.format(i))
+                mod = getattr(self, f'layer{i}')
                 mod.eval()
                 for param in mod.parameters():
                     param.requires_grad = False
