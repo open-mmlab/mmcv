@@ -12,8 +12,11 @@ def test_nonlocal():
         _NonLocalNd(3, mode='unsupport_mode')
 
     # _NonLocalNd
+    _NonLocalNd(3)
     _NonLocalNd(3, norm_cfg=dict(type='BN'))
-    # Not Zero initialization
+
+    # _NonLocalNd with zero initialization
+    _NonLocalNd(3, zeros_init=True)
     _NonLocalNd(3, norm_cfg=dict(type='BN'), zeros_init=True)
 
 
