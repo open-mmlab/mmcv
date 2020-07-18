@@ -4,6 +4,7 @@ import os.path as osp
 import re
 import shutil
 import sys
+import platform
 import tempfile
 from argparse import Action, ArgumentParser
 from collections import abc
@@ -120,6 +121,8 @@ class Config:
         with tempfile.TemporaryDirectory() as temp_config_dir:
             temp_config_file = tempfile.NamedTemporaryFile(
                 dir=temp_config_dir, suffix=fileExtname)
+            if platform.system() == "Windows":
+                temp_config_file.close()
             temp_config_name = osp.basename(temp_config_file.name)
             # Substitute predefined variables
             if use_predefined_variables:
