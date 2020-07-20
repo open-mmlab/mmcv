@@ -59,7 +59,7 @@ def test_ema_hook():
     runner = _build_demo_runner()
     demo_model = DemoModel()
     runner.model = demo_model
-    emahook = EmaHook(momentum=0.1, interval=2, warm_up=100, resume_from=None)
+    emahook = EmaHook(momentum=0.1, interval=2, warm_up=100, checkpoint=None)
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(emahook, priority='HIGHEST')
     runner.register_hook(checkpointhook)
@@ -77,7 +77,7 @@ def test_ema_hook():
     torch.save(checkpoint, f'{runner.work_dir}/epoch_1.pth')
     work_dir = runner.work_dir
     resume_ema_hook = EmaHook(
-        momentum=0.5, warm_up=0, resume_from=f'{work_dir}/epoch_1.pth')
+        momentum=0.5, warm_up=0, checkpoint=f'{work_dir}/epoch_1.pth')
     runner = _build_demo_runner()
     runner.model = demo_model
     runner.register_hook(resume_ema_hook, priority='HIGHEST')
