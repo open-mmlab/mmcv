@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import os.path as osp
+import platform
 import re
 import shutil
 import sys
@@ -120,6 +121,8 @@ class Config:
         with tempfile.TemporaryDirectory() as temp_config_dir:
             temp_config_file = tempfile.NamedTemporaryFile(
                 dir=temp_config_dir, suffix=fileExtname)
+            if platform.system() == 'Windows':
+                temp_config_file.close()
             temp_config_name = osp.basename(temp_config_file.name)
             # Substitute predefined variables
             if use_predefined_variables:

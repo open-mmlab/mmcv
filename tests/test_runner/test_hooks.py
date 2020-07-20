@@ -20,11 +20,11 @@ from torch.utils.data import DataLoader
 from mmcv.runner import (CheckpointHook, EmaHook, EpochBasedRunner,
                          IterTimerHook, MlflowLoggerHook, PaviLoggerHook,
                          WandbLoggerHook)
-from mmcv.runner.hooks.lr_updater import (CosineAnealingLrUpdaterHook,
+from mmcv.runner.hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
                                           CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook)
 from mmcv.runner.hooks.momentum_updater import (
-    CosineAnealingMomentumUpdaterHook, CyclicMomentumUpdaterHook)
+    CosineAnnealingMomentumUpdaterHook, CyclicMomentumUpdaterHook)
 
 
 def test_ema_hook():
@@ -173,7 +173,7 @@ def test_cosine_runner_hook():
     runner = _build_demo_runner()
 
     # add momentum scheduler
-    hook = CosineAnealingMomentumUpdaterHook(
+    hook = CosineAnnealingMomentumUpdaterHook(
         min_momentum_ratio=0.99 / 0.95,
         by_epoch=False,
         warmup_iters=2,
@@ -181,7 +181,7 @@ def test_cosine_runner_hook():
     runner.register_hook(hook)
 
     # add momentum LR scheduler
-    hook = CosineAnealingLrUpdaterHook(
+    hook = CosineAnnealingLrUpdaterHook(
         by_epoch=False, min_lr_ratio=0, warmup_iters=2, warmup_ratio=0.9)
     runner.register_hook(hook)
     runner.register_hook(IterTimerHook())

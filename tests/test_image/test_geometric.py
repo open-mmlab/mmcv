@@ -35,6 +35,18 @@ class TestGeometric:
                 self.img, (1000, 600), interpolation=mode)
             assert resized_img.shape == (600, 1000, 3)
 
+        # test pillow resize
+        for mode in [
+                'nearest', 'bilinear', 'bicubic', 'box', 'lanczos', 'hamming'
+        ]:
+            resized_img = mmcv.imresize(
+                self.img, (1000, 600), interpolation=mode, backend='pillow')
+            assert resized_img.shape == (600, 1000, 3)
+
+        # resize backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.imresize(self.img, (1000, 600), backend='not support')
+
     def test_imresize_like(self):
         a = np.zeros((100, 200, 3))
         resized_img = mmcv.imresize_like(self.img, a)

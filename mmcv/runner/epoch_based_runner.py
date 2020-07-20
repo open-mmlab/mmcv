@@ -147,8 +147,13 @@ class EpochBasedRunner(BaseRunner):
         """
         if meta is None:
             meta = dict(epoch=self.epoch + 1, iter=self.iter)
-        else:
+        elif isinstance(meta, dict):
             meta.update(epoch=self.epoch + 1, iter=self.iter)
+        else:
+            raise TypeError(
+                f'meta should be a dict or None, but got {type(meta)}')
+        if self.meta is not None:
+            meta.update(self.meta)
 
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
