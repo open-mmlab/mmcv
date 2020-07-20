@@ -1,9 +1,5 @@
-import logging
-
 from ...parallel import is_module_wrapper
 from ..hooks.hook import HOOKS, Hook
-
-logger = logging.getLogger('global')
 
 
 @HOOKS.register_module()
@@ -63,7 +59,7 @@ class EmaHook(Hook):
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
         curr_step = runner.iter
-        # We warm up the momentum considering the instability at beginning
+        # We warm up the momentum considering the instabilitygit  at beginning
         momentum = min(self.momentum,
                        (1 + curr_step) / (self.warm_up + curr_step))
         if curr_step % self.interval != 0:
