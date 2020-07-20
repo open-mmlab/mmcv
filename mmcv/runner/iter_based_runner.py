@@ -183,7 +183,8 @@ class IterBasedRunner(BaseRunner):
         else:
             raise TypeError(
                 f'meta should be a dict or None, but got {type(meta)}')
-        meta.update(self.meta)
+        if self.meta is not None:
+            meta.update(self.meta)
 
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)
