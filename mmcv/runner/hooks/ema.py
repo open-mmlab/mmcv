@@ -7,7 +7,7 @@ class EmaHook(Hook):
     r"""Exponential Moving Average Hook
 
     Use Exponential Moving Average on all parameters of model in training
-    process.all parameter has a ema backup, which update by the formula
+    process. All parameters have a ema backup, which update by the formula
     as below. The hook must have priority than EvalHook and
     CheckpointSaverHook.
 
@@ -59,7 +59,7 @@ class EmaHook(Hook):
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
         curr_step = runner.iter
-        # We warm up the momentum considering the instability  at beginning
+        # We warm up the momentum considering the instability at beginning
         momentum = min(self.momentum,
                        (1 + curr_step) / (self.warm_up + curr_step))
         if curr_step % self.interval != 0:
