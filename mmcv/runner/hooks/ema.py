@@ -23,19 +23,19 @@ class EmaHook(Hook):
             Default to 1.
         warm_up (int): During first warm_up steps, we may use smaller momentum
             to update ema parameters more slowly. Default to 100.
-        resume_from (str): The checkpoint path.
+        checkpoint (str): The checkpoint path.
     """
 
     def __init__(self,
                  momentum=0.9998,
                  interval=1,
                  warm_up=100,
-                 resume_from=None):
+                 checkpoint=None):
         assert isinstance(interval, int) and interval > 0
         self.warm_up = warm_up
         self.interval = interval
         self.momentum = momentum**interval
-        self.resume_from = resume_from
+        self.checkpoint = checkpoint
 
     def before_run(self, runner):
         """To resume model with it's ema parameters more friendly.
@@ -53,13 +53,13 @@ class EmaHook(Hook):
             self.param_ema_buffer[name] = buffer_name
             model.register_buffer(buffer_name, value.data.clone())
         self.model_buffers = dict(model.named_buffers(recurse=True))
-        if self.resume_from is not None:
-            runner.resume(self.resume_from)
+        if self.checkpoint is not None:
+            runner.resume(self.checkpoint)
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
         curr_step = runner.iter
-        # We warm up the momentum considering the instabilitygit  at beginning
+        # We warm up the momentum considering the instability  at beginning
         momentum = min(self.momentum,
                        (1 + curr_step) / (self.warm_up + curr_step))
         if curr_step % self.interval != 0:
