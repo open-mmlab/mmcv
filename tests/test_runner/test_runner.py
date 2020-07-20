@@ -131,6 +131,10 @@ def test_save_checkpoint():
     model = Model()
     runner = EpochBasedRunner(model=model, logger=logging.getLogger())
 
+    with pytest.raises(TypeError):
+        # meta should be None or dict
+        runner.save_checkpoint('.', meta=list())
+
     with tempfile.TemporaryDirectory() as root:
         runner.save_checkpoint(root)
 
