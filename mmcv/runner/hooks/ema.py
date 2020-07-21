@@ -3,13 +3,12 @@ from ..hooks.hook import HOOKS, Hook
 
 
 @HOOKS.register_module()
-class EmaHook(Hook):
+class EMAHook(Hook):
     r"""Exponential Moving Average Hook
 
     Use Exponential Moving Average on all parameters of model in training
     process. All parameters have a ema backup, which update by the formula
-    as below. The hook must have priority than EvalHook and
-    CheckpointSaverHook.
+    as below. EMAHook takes priority over EvalHook and CheckpointSaverHook.
 
         .. math::
 
@@ -18,12 +17,12 @@ class EmaHook(Hook):
 
     Args:
         momentum (float): The momentum used for update ema parameter.
-            Default to 0.9998.
+            Defaults to 0.9998.
         interval (int): Update ema parameter every interval iteration.
-            Default to 1.
+            Defaults to 1.
         warm_up (int): During first warm_up steps, we may use smaller momentum
-            to update ema parameters more slowly. Default to 100.
-        checkpoint (str): The checkpoint path.
+            to update ema parameters more slowly. Defaults to 100.
+        checkpoint (str): The checkpoint path. Defaults to None.
     """
 
     def __init__(self,
@@ -34,13 +33,14 @@ class EmaHook(Hook):
         assert isinstance(interval, int) and interval > 0
         self.warm_up = warm_up
         self.interval = interval
+        assert momentum > 0 and momentum < 1
         self.momentum = momentum**interval
         self.checkpoint = checkpoint
 
     def before_run(self, runner):
         """To resume model with it's ema parameters more friendly.
 
-        Register ema parameter as named_buffer to model
+        Register ema parameter as ``named_buffer`` to model
         """
         model = runner.model
         if is_module_wrapper(model):

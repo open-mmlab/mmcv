@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
-from .ema import EmaHook
+from .ema import EMAHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
 from .logger import (LoggerHook, MlflowLoggerHook, PaviLoggerHook,
@@ -17,5 +17,5 @@ __all__ = [
     'OptimizerHook', 'Fp16OptimizerHook', 'IterTimerHook',
     'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
-    'WandbLoggerHook', 'MomentumUpdaterHook', 'EmaHook'
+    'WandbLoggerHook', 'MomentumUpdaterHook', 'EMAHook'
 ]
