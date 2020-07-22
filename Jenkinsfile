@@ -4,7 +4,7 @@ def torch_versions = ["1.3.0", "1.5.0"]
 def torchvision_versions = ["0.4.2", "0.6.0"]
 
 
-def get_stages(docker_image, torch, torchvision, folder) {
+def get_stages(docker_image, folder) {
     def pip_mirror = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all --net host') {
@@ -45,11 +45,11 @@ node('master') {
     def stages = [:]
     for (int i = 0; i < docker_images.size(); i++) {
         def docker_image = docker_images[i]
-        def torch = torch_versions[j]
-        def torchvision = torchvision_versions[j]
+        def torch = torch_versions[i]
+        def torchvision = torchvision_versions[i]
         def tag = docker_image + '_' + torch + '_' + torchvision
         def folder = "${i}"
-        stages[tag] = get_stages(docker_image, torch, torchvision, folder)
+        stages[tag] = get_stages(docker_image, folder)
     }
     parallel stages
 }
