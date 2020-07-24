@@ -272,11 +272,11 @@ class BaseRunner(metaclass=ABCMeta):
             self._hooks.insert(0, hook)
 
     def register_hook_from_cfg(self, hook_cfg):
-        """
+        """Register a hook from its cfg.
 
         Args:
             hook_cfg (:obj:`mmcv.Config`): Hook config. It has keys 'type'
-              indicating the hook type and 'priority' indicating its priority.
+              and 'priority' indicating its type and priority.
 
         Notes:
             The specific hook class to register should not use 'type' and
