@@ -19,7 +19,7 @@ def get_stages(docker_image, folder) {
                         // torch and torchvision are pre-installed in dockers
                         sh "pip list | grep torch"
                         sh "apt-get install -y ffmpeg libturbojpeg"
-                        sh "pip install pytest coverage lmdb PyTurboJPEG ${pip_mirror}"
+                        sh "pip install pytest coverage lmdb PyTurboJPEG Cython ${pip_mirror}"
                     }
                     stage("build") {
                         sh "MMCV_WITH_OPS=1 pip install -e . ${pip_mirror}"
