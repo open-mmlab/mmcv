@@ -271,6 +271,22 @@ class BaseRunner(metaclass=ABCMeta):
         if not inserted:
             self._hooks.insert(0, hook)
 
+    def register_hook_from_cfg(self, hook_cfg):
+        """
+
+        Args:
+            hook_cfg (:obj:`mmcv.Config`): Hook config. It has keys 'type'
+              indicating the hook type and 'priority' indicating its priority.
+
+        Notes:
+            The specific hook class to register should not use 'type' and
+            'priority' arguments during initialization.
+        """
+        hook_cfg = hook_cfg.copy()
+        priority = hook_cfg.pop('priority', 'NORMAL')
+        hook = mmcv.build_from_cfg(hook_cfg, HOOKS)
+        self.register_hook(hook, priority=priority)
+
     def call_hook(self, fn_name):
         """Call all hooks.
 
