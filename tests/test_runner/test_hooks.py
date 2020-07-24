@@ -18,11 +18,7 @@ from torch.utils.data import DataLoader
 
 from mmcv.runner import (EpochBasedRunner, IterTimerHook, MlflowLoggerHook,
                          PaviLoggerHook, WandbLoggerHook)
-from mmcv.runner.hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
-                                          CosineRestartLrUpdaterHook,
-                                          CyclicLrUpdaterHook)
-from mmcv.runner.hooks.momentum_updater import (
-    CosineAnnealingMomentumUpdaterHook, CyclicMomentumUpdaterHook)
+from mmcv.runner.hooks.lr_updater import CosineRestartLrUpdaterHook
 
 
 def test_pavi_hook():
@@ -53,21 +49,23 @@ def test_momentum_runner_hook():
     runner = _build_demo_runner()
 
     # add momentum scheduler
-    hook = CyclicMomentumUpdaterHook(
+    hook_cfg = dict(
+        type='CyclicMomentumUpdaterHook',
         by_epoch=False,
         target_ratio=(0.85 / 0.95, 1),
         cyclic_times=1,
         step_ratio_up=0.4)
-    runner.register_hook(hook)
+    runner.register_hook_from_cfg(hook_cfg)
 
     # add momentum LR scheduler
-    hook = CyclicLrUpdaterHook(
+    hook_cfg = dict(
+        type='CyclicLrUpdaterHook',
         by_epoch=False,
         target_ratio=(10, 1),
         cyclic_times=1,
         step_ratio_up=0.4)
-    runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
 
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
@@ -101,19 +99,25 @@ def test_cosine_runner_hook():
     runner = _build_demo_runner()
 
     # add momentum scheduler
-    hook = CosineAnnealingMomentumUpdaterHook(
+
+    hook_cfg = dict(
+        type='CosineAnnealingMomentumUpdaterHook',
         min_momentum_ratio=0.99 / 0.95,
         by_epoch=False,
         warmup_iters=2,
         warmup_ratio=0.9 / 0.95)
-    runner.register_hook(hook)
+    runner.register_hook_from_cfg(hook_cfg)
 
     # add momentum LR scheduler
-    hook = CosineAnnealingLrUpdaterHook(
-        by_epoch=False, min_lr_ratio=0, warmup_iters=2, warmup_ratio=0.9)
-    runner.register_hook(hook)
+    hook_cfg = dict(
+        type='CosineAnnealingLrUpdaterHook',
+        by_epoch=False,
+        min_lr_ratio=0,
+        warmup_iters=2,
+        warmup_ratio=0.9)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
-
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
