@@ -5,9 +5,10 @@ def torchvision_versions = ["0.4.2", "0.6.0"]
 
 
 def get_stages(docker_image, folder) {
-    def pip_mirror = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
+    def pip_mirror = "-i https://mirrors.aliyun.com/pypi/simple"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all --net host') {
+            sh "rm -rf ${env.WORKSPACE}-${folder}"
             sh "cp -r ${env.WORKSPACE} ${env.WORKSPACE}-${folder}"
             try {
                 dir("${env.WORKSPACE}-${folder}") {
