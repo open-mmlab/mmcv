@@ -1,8 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import torch.distributed as dist
 
-from .hook import HOOKS, Hook
 from ..dist_utils import get_dist_info
+from .hook import HOOKS, Hook
 
 
 @HOOKS.register_module()

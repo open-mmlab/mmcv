@@ -41,6 +41,7 @@ def test_pavi_hook():
         snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
         iteration=5)
 
+
 def test_sync_buffers_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
