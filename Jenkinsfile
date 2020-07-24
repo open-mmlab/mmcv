@@ -5,9 +5,10 @@ def torchvision_versions = ["0.4.2", "0.6.0"]
 
 
 def get_stages(docker_image, folder) {
-    def pip_mirror = "-i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com"
+    def pip_mirror = "-i https://mirrors.aliyun.com/pypi/simple"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all --net host') {
+            sh "rm -rf ${env.WORKSPACE}-${folder} ${env.WORKSPACE}-${folder}@tmp"
             sh "cp -r ${env.WORKSPACE} ${env.WORKSPACE}-${folder}"
             try {
                 dir("${env.WORKSPACE}-${folder}") {
@@ -18,7 +19,7 @@ def get_stages(docker_image, folder) {
                         // torch and torchvision are pre-installed in dockers
                         sh "pip list | grep torch"
                         sh "apt-get install -y ffmpeg libturbojpeg"
-                        sh "pip install pytest coverage lmdb PyTurboJPEG ${pip_mirror}"
+                        sh "pip install pytest coverage lmdb PyTurboJPEG Cython ${pip_mirror}"
                     }
                     stage("build") {
                         sh "MMCV_WITH_OPS=1 pip install -e . ${pip_mirror}"
