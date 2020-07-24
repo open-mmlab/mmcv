@@ -8,7 +8,7 @@ def get_stages(docker_image, folder) {
     def pip_mirror = "-i https://mirrors.aliyun.com/pypi/simple"
     stages = {
         docker.image(docker_image).inside('-u root --gpus all --net host') {
-            sh "rm -rf ${env.WORKSPACE}-${folder}"
+            sh "rm -rf ${env.WORKSPACE}-${folder} ${env.WORKSPACE}-${folder}@tmp"
             sh "cp -r ${env.WORKSPACE} ${env.WORKSPACE}-${folder}"
             try {
                 dir("${env.WORKSPACE}-${folder}") {
