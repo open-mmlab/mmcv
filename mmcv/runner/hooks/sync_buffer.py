@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import torch.distributed as dist
 
+from ..dist_utils import get_dist_info
 from .hook import HOOKS, Hook
 
 
@@ -19,7 +20,8 @@ class SyncBuffersHook(Hook):
 
     def after_epoch(self, runner):
         """All-reduce model buffers at the end of each epoch."""
-        if self.distributed:
+        _, world_size = get_dist_info()
+        if self.distributed and world_size > 1:
             buffers = runner.model.buffers()
             world_size = dist.get_world_size()
             for tensor in buffers:
