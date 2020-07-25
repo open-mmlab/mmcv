@@ -11,11 +11,12 @@ from .memory import EmptyCacheHook
 from .momentum_updater import MomentumUpdaterHook
 from .optimizer import Fp16OptimizerHook, OptimizerHook
 from .sampler_seed import DistSamplerSeedHook
+from .sync_buffer import SyncBuffersHook
 
 __all__ = [
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
     'OptimizerHook', 'Fp16OptimizerHook', 'IterTimerHook',
     'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
-    'WandbLoggerHook', 'MomentumUpdaterHook', 'EMAHook'
+    'WandbLoggerHook', 'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook'
 ]

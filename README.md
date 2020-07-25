@@ -7,7 +7,7 @@
 ## Introduction
 
 MMCV is a foundational python library for computer vision research and supports many
-research projects in MMLAB as below:
+research projects as below:
 
 - [MMDetection](https://github.com/open-mmlab/mmdetection): Detection toolbox and benchmark
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): General 3D object detection toolbox and benchmark
@@ -38,6 +38,8 @@ There are two versions of MMCV:
 - **mmcv**: lite, without CUDA ops but all other features, similar to mmcv<1.0.0. It is useful when you do not need those CUDA ops.
 - **mmcv-full**: comprehensive, with full features and various CUDA ops out of box. It takes longer time to build.
 
+**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other.
+
 ### Install with pip
 
 a. Install the lite version.
@@ -48,7 +50,9 @@ pip install mmcv
 
 b. Install the full version.
 
-We provide the pre-built mmcv package with different PyTorch and CUDA versions to simplify the building.
+Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/).
+
+We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building.
 
 <table class="docutils"><tbody><tr><th width="80"> CUDA </th><th valign="bottom" align="left" width="100">torch 1.5</th><th valign="bottom" align="left" width="100">torch 1.4</th><th valign="bottom" align="left" width="100">torch 1.3</th></tr>
 <tr><td align="left">10.2</td><td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==latest+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
