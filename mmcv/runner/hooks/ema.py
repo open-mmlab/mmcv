@@ -4,7 +4,7 @@ from ..hooks.hook import HOOKS, Hook
 
 @HOOKS.register_module()
 class EMAHook(Hook):
-    r"""Exponential Moving Average Hook
+    r"""Exponential Moving Average Hook.
 
     Use Exponential Moving Average on all parameters of model in training
     process. All parameters have a ema backup, which update by the formula
@@ -22,20 +22,20 @@ class EMAHook(Hook):
             Defaults to 1.
         warm_up (int): During first warm_up steps, we may use smaller momentum
             to update ema parameters more slowly. Defaults to 100.
-        checkpoint (str): The checkpoint path. Defaults to None.
+        resume_from (str): The checkpoint path. Defaults to None.
     """
 
     def __init__(self,
                  momentum=0.9998,
                  interval=1,
                  warm_up=100,
-                 checkpoint=None):
+                 resume_from=None):
         assert isinstance(interval, int) and interval > 0
         self.warm_up = warm_up
         self.interval = interval
         assert momentum > 0 and momentum < 1
         self.momentum = momentum**interval
-        self.checkpoint = checkpoint
+        self.checkpoint = resume_from
 
     def before_run(self, runner):
         """To resume model with it's ema parameters more friendly.
@@ -72,14 +72,14 @@ class EMAHook(Hook):
     def after_train_epoch(self, runner):
         """We load parameter values from ema backup to model before the
         EvalHook."""
-        self.swap_ema_parameters()
+        self._swap_ema_parameters()
 
     def before_train_epoch(self, runner):
         """We recover model's parameter from ema backup after last epoch's the
         EvalHook."""
-        self.swap_ema_parameters()
+        self._swap_ema_parameters()
 
-    def swap_ema_parameters(self):
+    def _swap_ema_parameters(self):
         """Swap the parameter of model with parameter in ema_buffer."""
         for name, value in self.model_parameters.items():
             temp = value.data.clone()
