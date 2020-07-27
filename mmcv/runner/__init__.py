@@ -6,10 +6,10 @@ from .dist_utils import get_dist_info, init_dist, master_only
 from .epoch_based_runner import EpochBasedRunner, Runner
 from .fp16_utils import auto_fp16, force_fp32
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistSamplerSeedHook,
-                    Fp16OptimizerHook, Hook, IterTimerHook, LoggerHook,
-                    LrUpdaterHook, MlflowLoggerHook, OptimizerHook,
+                    EMAHook, Fp16OptimizerHook, Hook, IterTimerHook,
+                    LoggerHook, LrUpdaterHook, MlflowLoggerHook, OptimizerHook,
                     PaviLoggerHook, SyncBuffersHook, TensorboardLoggerHook,
-                    TextLoggerHook, WandbLoggerHook, EMAHook)
+                    TextLoggerHook, WandbLoggerHook)
 from .iter_based_runner import IterBasedRunner, IterLoader
 from .log_buffer import LogBuffer
 from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
