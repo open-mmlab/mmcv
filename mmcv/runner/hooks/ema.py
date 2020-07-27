@@ -16,8 +16,8 @@ class EMAHook(Hook):
             \text{Xema_{t}} +  \text{momentum} \times X_t
 
     Args:
-        momentum (float): The momentum used for update ema parameter.
-            Defaults to 0.9998.
+        momentum (float): The momentum used for updating ema parameter.
+            Defaults to 0.0002.
         interval (int): Update ema parameter every interval iteration.
             Defaults to 1.
         warm_up (int): During first warm_up steps, we may use smaller momentum
@@ -26,7 +26,7 @@ class EMAHook(Hook):
     """
 
     def __init__(self,
-                 momentum=0.9998,
+                 momentum=0.0002,
                  interval=1,
                  warm_up=100,
                  resume_from=None):
@@ -75,7 +75,7 @@ class EMAHook(Hook):
         self._swap_ema_parameters()
 
     def before_train_epoch(self, runner):
-        """We recover model's parameter from ema backup after last epoch's the
+        """We recover model's parameter from ema backup after last epoch's
         EvalHook."""
         self._swap_ema_parameters()
 
