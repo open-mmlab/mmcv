@@ -2,10 +2,11 @@ import sys
 
 import numpy as np
 import torch
-from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
 
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
+# from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+from ..utils.parrots_wrapper import select, squeeze, unsqueeze
 
 ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 

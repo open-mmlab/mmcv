@@ -72,12 +72,23 @@ def _get_norm():
     return _BatchNorm, _InstanceNorm, SyncBatchNorm_
 
 
+def _get_onnx_symbolic_opset9():
+    if TORCH_VERSION == 'parrots':
+        select = None
+        squeeze = None
+        unsqueeze = None
+    else:
+        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+    return select, squeeze, unsqueeze
+
+
 CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
 DataLoader, PoolDataLoader = _get_dataloader()
 BuildExtension, CppExtension, CUDAExtension = _get_extension()
 _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_norm()
 _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
+select, squeeze, unsqueeze = _get_onnx_symbolic_opset9()
 
 
 class SyncBatchNorm(SyncBatchNorm_):
