@@ -2,7 +2,6 @@ import sys
 
 import numpy as np
 import torch
-from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
 
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
@@ -21,6 +20,8 @@ class NMSop(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
+        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+
         boxes = unsqueeze(g, bboxes, 0)
         scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
         max_output_per_class = g.op(
