@@ -5,8 +5,6 @@ import torch
 
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
-# from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-from ..utils.parrots_wrapper import select, squeeze, unsqueeze
 
 ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 
@@ -22,6 +20,8 @@ class NMSop(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
+        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+
         boxes = unsqueeze(g, bboxes, 0)
         scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
         max_output_per_class = g.op(
