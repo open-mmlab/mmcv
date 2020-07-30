@@ -6,8 +6,8 @@ from .dist_utils import get_dist_info, init_dist, master_only
 from .epoch_based_runner import EpochBasedRunner, Runner
 from .fp16_utils import auto_fp16, force_fp32
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistSamplerSeedHook,
-                    Fp16OptimizerHook, Hook, IterTimerHook, LoggerHook,
-                    LrUpdaterHook, MlflowLoggerHook, OptimizerHook,
+                    EMAHook, Fp16OptimizerHook, Hook, IterTimerHook,
+                    LoggerHook, LrUpdaterHook, MlflowLoggerHook, OptimizerHook,
                     PaviLoggerHook, SyncBuffersHook, TensorboardLoggerHook,
                     TextLoggerHook, WandbLoggerHook)
 from .iter_based_runner import IterBasedRunner, IterLoader
@@ -30,5 +30,5 @@ __all__ = [
     'OPTIMIZER_BUILDERS', 'OPTIMIZERS', 'DefaultOptimizerConstructor',
     'build_optimizer', 'build_optimizer_constructor', 'IterLoader',
     'set_random_seed', 'auto_fp16', 'force_fp32', 'Fp16OptimizerHook',
-    'SyncBuffersHook'
+    'SyncBuffersHook', 'EMAHook'
 ]
