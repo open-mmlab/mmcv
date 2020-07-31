@@ -271,6 +271,22 @@ class BaseRunner(metaclass=ABCMeta):
         if not inserted:
             self._hooks.insert(0, hook)
 
+    def register_hook_from_cfg(self, hook_cfg):
+        """Register a hook from its cfg.
+
+        Args:
+            hook_cfg (dict): Hook config. It should have at least keys 'type'
+              and 'priority' indicating its type and priority.
+
+        Notes:
+            The specific hook class to register should not use 'type' and
+            'priority' arguments during initialization.
+        """
+        hook_cfg = hook_cfg.copy()
+        priority = hook_cfg.pop('priority', 'NORMAL')
+        hook = mmcv.build_from_cfg(hook_cfg, HOOKS)
+        self.register_hook(hook, priority=priority)
+
     def call_hook(self, fn_name):
         """Call all hooks.
 
@@ -291,10 +307,13 @@ class BaseRunner(metaclass=ABCMeta):
                resume_optimizer=True,
                map_location='default'):
         if map_location == 'default':
-            device_id = torch.cuda.current_device()
-            checkpoint = self.load_checkpoint(
-                checkpoint,
-                map_location=lambda storage, loc: storage.cuda(device_id))
+            if torch.cuda.is_available():
+                device_id = torch.cuda.current_device()
+                checkpoint = self.load_checkpoint(
+                    checkpoint,
+                    map_location=lambda storage, loc: storage.cuda(device_id))
+            else:
+                checkpoint = self.load_checkpoint(checkpoint)
         else:
             checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
@@ -313,7 +332,8 @@ class BaseRunner(metaclass=ABCMeta):
             # If the type of policy is all in lower case, e.g., 'cyclic',
             # then its first letter will be capitalized, e.g., to be 'Cyclic'.
             # This is for the convenient usage of Lr updater.
-            # Since this is not applicable for `CosineAnealingLrUpdater`,
+            # Since this is not applicable for `
+            # CosineAnnealingLrUpdater`,
             # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
@@ -333,7 +353,8 @@ class BaseRunner(metaclass=ABCMeta):
             # If the type of policy is all in lower case, e.g., 'cyclic',
             # then its first letter will be capitalized, e.g., to be 'Cyclic'.
             # This is for the convenient usage of momentum updater.
-            # Since this is not applicable for `CosineAnealingMomentumUpdater`,
+            # Since this is not applicable for
+            # `CosineAnnealingMomentumUpdater`,
             # the string will not be changed if it contains capital letters.
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()

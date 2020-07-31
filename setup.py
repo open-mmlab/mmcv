@@ -210,7 +210,7 @@ setup(
     ],
     url='https://github.com/open-mmlab/mmcv',
     author='MMCV Authors',
-    author_email='chenkaidev@gmail.com',
+    author_email='openmmlab@gmail.com',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=install_requires,
