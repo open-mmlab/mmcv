@@ -34,9 +34,16 @@
   "regnetx_6.4gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_6.4gf-006af45d.pth",
   "regnetx_8.0gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_8.0gf-3c68abe7.pth",
   "regnetx_12gf": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/regnetx_12gf-4c2a3350.pth",
+  "resnet18_v1c": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnet18_v1c-b5776b93.pth",
+  "resnet50_1by4_v1c": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnet50_v1c_1by4-db399f5b.pth",
+  "resnet50_1by2_v1c": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnet50_v1c_1by2-22072673.pth",
   "resnet50_v1c": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/resnet50_v1c-2cccc1ad.pth",
   "resnet101_v1c": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/resnet101_v1c-e67eebb6.pth",
   "mmedit/vgg16": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/vgg_state_dict.pth",
   "mmedit/res34_en_nomixup": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/model_best_resnet34_En_nomixup.pth",
-  "mmedit/mobilenet_v2": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/mobilenet_v2.pth"
+  "mmedit/mobilenet_v2": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/mobilenet_v2.pth",
+  "resnest50": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest50_d2-7497a55b.pth",
+  "resnest101": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest101_d2-f3b931b2.pth",
+  "resnest200": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest200_d2-ca88e41f.pth",
+  "darknet53": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/darknet53-7aecc596.pth"
 }
