@@ -38,5 +38,9 @@
   "resnet101_v1c": "https://open-mmlab.s3.ap-northeast-2.amazonaws.com/pretrain/third_party/resnet101_v1c-e67eebb6.pth",
   "mmedit/vgg16": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/vgg_state_dict.pth",
   "mmedit/res34_en_nomixup": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/model_best_resnet34_En_nomixup.pth",
-  "mmedit/mobilenet_v2": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/mobilenet_v2.pth"
+  "mmedit/mobilenet_v2": "https://openmmlab.oss-accelerate.aliyuncs.com/mmediting/third_party/mobilenet_v2.pth",
+  "resnest50": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest50_d2-7497a55b.pth",
+  "resnest101": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest101_d2-f3b931b2.pth",
+  "resnest200": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest200_d2-ca88e41f.pth",
+  "darknet53": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/darknet53-7aecc596.pth"
 }
