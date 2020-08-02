@@ -1,10 +1,9 @@
 import glob
 import os
+import re
 import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import dist, find_packages, setup
-
-import regex as re
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
 
@@ -60,7 +59,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
     """
     import sys
     from os.path import exists
-    import regex as re
+    import re
     require_fpath = fname
 
     def parse_line(line):
