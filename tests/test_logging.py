@@ -1,11 +1,16 @@
 import logging
+import platform
 import tempfile
 from unittest.mock import patch
 
 import pytest
-import regex as re
 
 from mmcv import get_logger, print_log
+
+if platform.system() == 'Windows':
+    import regex as re
+else:
+    import re
 
 
 @patch('torch.distributed.get_rank', lambda: 0)

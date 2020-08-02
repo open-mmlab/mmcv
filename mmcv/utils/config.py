@@ -9,11 +9,15 @@ from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
 
-import regex as re
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
 from .path import check_file_exist
+
+if platform.system() == 'Windows':
+    import regex as re
+else:
+    import re
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
