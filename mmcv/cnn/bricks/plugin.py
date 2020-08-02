@@ -1,5 +1,6 @@
 import inspect
-import re
+
+import regex as re
 
 from .registry import PLUGIN_LAYERS
 

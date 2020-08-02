@@ -1,7 +1,7 @@
 import os
-import re
 
 import numpy as np
+import regex as re
 import torch
 import torch.distributed as dist
 import torch.nn as nn

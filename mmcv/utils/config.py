@@ -2,7 +2,6 @@
 import ast
 import os.path as osp
 import platform
-import re
 import shutil
 import sys
 import tempfile
@@ -10,6 +9,7 @@ from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
 
+import regex as re
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 

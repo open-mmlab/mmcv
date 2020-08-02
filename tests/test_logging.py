@@ -1,9 +1,9 @@
 import logging
-import re
 import tempfile
 from unittest.mock import patch
 
 import pytest
+import regex as re
 
 from mmcv import get_logger, print_log
 
