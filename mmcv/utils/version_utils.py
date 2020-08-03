@@ -2,8 +2,8 @@ import os
 import subprocess
 
 
-def get_git_hash():
-    # Get git hash version of the current repo
+def get_git_hash(fallback='unknown'):
+    # Get git hash of the current repo
 
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
@@ -24,6 +24,6 @@ def get_git_hash():
         out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
         sha = out.strip().decode('ascii')
     except OSError:
-        sha = 'unknown'
+        sha = fallback
 
     return sha
