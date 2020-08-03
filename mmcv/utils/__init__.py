@@ -10,6 +10,7 @@ from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
 from .progressbar import (ProgressBar, track_iter_progress,
                           track_parallel_progress, track_progress)
 from .timer import Timer, TimerError, check_time
+from .version_utils import get_git_hash
 
 try:
     import torch
@@ -21,7 +22,8 @@ except ImportError:
         'requires_executable', 'is_filepath', 'fopen', 'check_file_exist',
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
-        'Timer', 'TimerError', 'check_time', 'deprecated_api_warning'
+        'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
+        'get_git_hash'
     ]
 else:
     from .env import TORCH_VERSION
@@ -46,5 +48,5 @@ else:
         '_AvgPoolNd', '_BatchNorm', '_ConvNd', '_ConvTransposeMixin',
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
-        'TORCH_VERSION', 'deprecated_api_warning'
+        'TORCH_VERSION', 'deprecated_api_warning', 'get_git_hash'
     ]
