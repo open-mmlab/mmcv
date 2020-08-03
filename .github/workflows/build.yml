@@ -210,7 +210,7 @@ jobs:
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}}
+        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install
         run: |
           rm -rf .eggs
