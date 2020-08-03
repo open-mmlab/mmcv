@@ -1,10 +1,15 @@
 import os
-import re
+import platform
 
 import numpy as np
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+
+if platform.system() == 'Windows':
+    import regex as re
+else:
+    import re
 
 
 class TestSyncBN(object):
