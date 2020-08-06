@@ -110,11 +110,11 @@ class LrUpdaterHook(Hook):
                 group['initial_lr'] for group in runner.optimizer.param_groups
             ]
 
-        if self.warmup_by_epoch:
+    def before_train_epoch(self, runner):
+        if self.warmup_iters is None:
             epoch_len = len(runner.data_loader)
             self.warmup_iters = self.warmup_epochs * epoch_len
 
-    def before_train_epoch(self, runner):
         if not self.by_epoch:
             return
 
