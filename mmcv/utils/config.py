@@ -119,7 +119,7 @@ class Config:
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         fileExtname = osp.splitext(filename)[1]
-        if fileExtname not in ['.py', '.json', '.yaml', 'yml']:
+        if fileExtname not in ['.py', '.json', '.yaml', '.yml']:
             raise IOError('Only py/yml/yaml/json type are supported now!')
 
         with tempfile.TemporaryDirectory() as temp_config_dir:
