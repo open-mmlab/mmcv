@@ -1,6 +1,6 @@
 ## CNN
 
-We provide some building bricks for CNNs, includeing layer building, module bundles and weight initialization.
+We provide some building bricks for CNNs, including layer building, module bundles and weight initialization.
 
 ### Layer building
 
