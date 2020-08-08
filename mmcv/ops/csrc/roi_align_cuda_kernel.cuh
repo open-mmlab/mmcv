@@ -3,8 +3,12 @@
 
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
-#else
+#endif
+#ifdef MMCV_WITH_CUDA
 #include "pytorch_cuda_helper.hpp"
+#endif
+#ifdef MMCV_WITH_HIP
+#include "pytorch_rocm_helper.hpp"
 #endif
 
 /*** Forward ***/

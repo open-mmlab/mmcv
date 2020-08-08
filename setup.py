@@ -170,10 +170,17 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
-            define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
+            # add for rocm
+            rocm_home = os.environ.get('ROCM_HOME')
+            if rocm_home is not None:
+                print(f'Compiling with ROCM')
+                define_macros += [('MMCV_WITH_HIP', None)]
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch_rocm/*')
+            else:
+                define_macros += [('MMCV_WITH_CUDA', None)]
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
             extension = CUDAExtension
         else:
             print(f'Compiling {ext_name} without CUDA')
