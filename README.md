@@ -105,9 +105,9 @@ You can either
 
 If you are on ROCM, use the following command 
 
-    ```bash
-    FORCE_CUDA=1 ROCM_HOME=/opt/rocm-3.3.0 MMCV_WITH_OPS=1 python3 setup.py install
-    ```
+```bash
+FORCE_CUDA=1 ROCM_HOME=/opt/rocm-3.3.0 MMCV_WITH_OPS=1 python3 setup.py install
+```
 
 note: for torch1.5.0 and rocm3.3
 
