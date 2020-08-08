@@ -222,5 +222,6 @@ class IterBasedRunner(BaseRunner):
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())
         if log_config is not None:
-            log_config.setdefault('by_epoch', False)
+            for info in log_config['hooks']:
+                info.setdefault('by_epoch', False)
         self.register_logger_hooks(log_config)
