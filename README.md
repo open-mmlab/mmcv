@@ -122,13 +122,13 @@ You can either
 If you are on macOS, add the following environment variables before the installing command.
 
 ```bash
-CC=lang CXX=clang++ CFLAGS='-stdlib=libc++'
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
 ```
 
 e.g.,
 
 ```bash
-CC=lang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 ```
 
 Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
