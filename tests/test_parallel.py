@@ -9,8 +9,12 @@ from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
 
-@patch('torch.distributed._broadcast_coalesced', MagicMock)
-@patch('torch.distributed.broadcast', MagicMock)
+def mock(*args, **kwargs):
+    pass
+
+
+@patch('torch.distributed._broadcast_coalesced', mock)
+@patch('torch.distributed.broadcast', mock)
 @patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', MagicMock)
 def test_is_module_wrapper():
 
