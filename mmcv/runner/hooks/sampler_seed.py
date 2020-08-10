@@ -2,6 +2,7 @@
 from .hook import HOOKS, Hook
 
 
+
 @HOOKS.register_module()
 class DistSamplerSeedHook(Hook):
 
