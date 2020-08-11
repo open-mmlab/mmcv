@@ -110,7 +110,7 @@ def test_pavi_hook():
     }, 5)
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
+        snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
         iteration=5)
 
 
@@ -378,6 +378,6 @@ def _build_demo_runner():
         work_dir=tmp_dir,
         optimizer=optimizer,
         logger=logging.getLogger())
-
+    runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner
