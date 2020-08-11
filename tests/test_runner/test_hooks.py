@@ -107,7 +107,7 @@ def test_pavi_hook():
     hook.writer.add_scalars.assert_called_with('val', {
         'learning_rate': 0.02,
         'momentum': 0.95
-    }, 5)
+    }, 1)
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
         snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
