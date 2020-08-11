@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
+import os
 import os.path as osp
 
 import numpy as np
@@ -69,10 +70,11 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        tags = {}
+        returned_tags = {}
         for tag, val in runner.log_buffer.output.items():
             if tag not in ['time', 'data_time'] and is_scalar(val):
-                tags[tag] = val
+                returned_tags[tag] = val
+        tags = {}
         # add learning rate
         lrs = runner.current_lr()
         if isinstance(lrs, dict):
@@ -89,14 +91,22 @@ class PaviLoggerHook(LoggerHook):
         else:
             tags['momentum'] = momentums[0]
 
-        if tags:
-            self.writer.add_scalars(runner.mode, tags, runner.iter)
+        if tags or returned_tags:
+            if runner.mode == 'val':
+                self.writer.add_scalars(runner.mode, returned_tags,
+                                        runner.epoch)
+                self.writer.add_scalars(runner.mode, tags, runner.iter)
+            else:
+                tags.update(returned_tags)
+                self.writer.add_scalars(runner.mode, tags, runner.iter)
 
     @master_only
     def after_run(self, runner):
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
-            self.writer.add_snapshot_file(
-                tag=self.run_name,
-                snapshot_file_path=ckpt_path,
-                iteration=runner.iter)
+            if osp.isfile(ckpt_path):
+                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+                return self.writer.add_snapshot_file(
+                    tag=self.run_name,
+                    snapshot_file_path=ckpt_path,
+                    iteration=runner.iter)
