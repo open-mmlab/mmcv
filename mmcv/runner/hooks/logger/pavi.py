@@ -91,7 +91,7 @@ class PaviLoggerHook(LoggerHook):
         else:
             tags['momentum'] = momentums[0]
 
-        if tags or returned_tags:
+        if len(tags) > 0 or len(returned_tags) > 0:
             if runner.mode == 'val':
                 self.writer.add_scalars(runner.mode, returned_tags,
                                         runner.epoch)
