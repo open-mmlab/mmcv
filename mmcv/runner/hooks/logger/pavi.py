@@ -70,11 +70,10 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        returned_tags = {}
+        tags = {}
         for tag, val in runner.log_buffer.output.items():
             if tag not in ['time', 'data_time'] and is_scalar(val):
-                returned_tags[tag] = val
-        tags = {}
+                tags[tag] = val
         # add learning rate
         lrs = runner.current_lr()
         if isinstance(lrs, dict):
@@ -91,13 +90,11 @@ class PaviLoggerHook(LoggerHook):
         else:
             tags['momentum'] = momentums[0]
 
-        if len(tags) > 0 or len(returned_tags) > 0:
+        if tags:
+            # TODO: Design the logger for evaluation hook as well.
             if runner.mode == 'val':
-                self.writer.add_scalars(runner.mode, returned_tags,
-                                        runner.epoch)
-                self.writer.add_scalars(runner.mode, tags, runner.iter)
+                self.writer.add_scalars(runner.mode, tags, runner.epoch)
             else:
-                tags.update(returned_tags)
                 self.writer.add_scalars(runner.mode, tags, runner.iter)
 
     @master_only
