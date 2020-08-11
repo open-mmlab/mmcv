@@ -20,7 +20,7 @@ from .roi_align import RoIAlign, roi_align
 from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
-from .tin_shift import TINShiftFunction
+from .tin_shift import TINShift, tin_shift
 from .wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 __all__ = [
@@ -35,5 +35,5 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShiftFunction'
+    'SAConv2d', 'TINShift', 'tin_shift'
 ]

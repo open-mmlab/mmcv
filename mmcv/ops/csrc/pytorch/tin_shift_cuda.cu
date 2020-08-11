@@ -16,11 +16,11 @@ void TINShiftForwardCUDAKernelLauncher(Tensor input, Tensor shift,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "tin_shift_forward_cuda_kernel", [&] {
-        tin_shift_forward_cuda_kernel<scalar_t><<<
-            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-            output_size, input.data_ptr<scalar_t>(), shift.data_ptr<int>(),
-            output.data_ptr<scalar_t>(), batch_size, channels, t_size, hw_size,
-            group_size, group_channel);
+        tin_shift_forward_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
+                output_size, input.data_ptr<scalar_t>(), shift.data_ptr<int>(),
+                output.data_ptr<scalar_t>(), batch_size, channels, t_size,
+                hw_size, group_size, group_channel);
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -41,11 +41,12 @@ void TINShiftBackwardCUDAKernelLauncher(Tensor grad_output, Tensor shift,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "tin_shift_backward_cuda_kernel", [&] {
-        tin_shift_backward_cuda_kernel<scalar_t><<<
-            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-            output_size, grad_output.data_ptr<scalar_t>(),
-            shift.data_ptr<int>(), grad_input.data_ptr<scalar_t>(), batch_size,
-            channels, t_size, hw_size, group_size, group_channel);
+        tin_shift_backward_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
+                output_size, grad_output.data_ptr<scalar_t>(),
+                shift.data_ptr<int>(), grad_input.data_ptr<scalar_t>(),
+                batch_size, channels, t_size, hw_size, group_size,
+                group_channel);
       });
 
   AT_CUDA_CHECK(cudaGetLastError());

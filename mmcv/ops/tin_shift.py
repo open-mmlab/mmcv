@@ -4,6 +4,7 @@
 # shaoh19@mails.tsinghua.edu.cn, sjqian@cse.cuhk.edu.hk, yuliu@ee.cuhk.edu.hk
 
 import torch
+import torch.nn as nn
 from torch.autograd import Function
 
 from ..utils import ext_loader
@@ -34,3 +35,12 @@ class TINShiftFunction(Function):
         ext_module.tin_shift_backward(grad_output, shift, data_grad_input)
 
         return data_grad_input, shift_grad_input
+
+
+tin_shift = TINShiftFunction.apply
+
+
+class TINShift(nn.Module):
+
+    def forward(self, input, shift):
+        return tin_shift(input, shift)
