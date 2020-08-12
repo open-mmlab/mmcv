@@ -12,4 +12,3 @@ class DistSamplerSeedHook(Hook):
         if hasattr(runner.data_loader.batch_sampler.sampler, 'set_epoch'):
             # batch sampler in pytorch warps a sampler as its attributes.
             runner.data_loader.batch_sampler.sampler.set_epoch(runner.epoch)
-
