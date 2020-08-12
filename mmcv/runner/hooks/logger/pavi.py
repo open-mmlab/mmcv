@@ -91,8 +91,10 @@ class PaviLoggerHook(LoggerHook):
             tags['momentum'] = momentums[0]
 
         if tags:
-            # TODO: Design the logger for evaluation hook as well.
-            if runner.mode == 'val':
+            # TODO: A better design for evaluation hook and EpochBasedRunner
+            # Importing EpochBasedRunner triggers recursive importing error.
+            if (runner.mode == 'val'
+                    and runner.__class__.__name__ == 'EpochBasedRunner'):
                 self.writer.add_scalars(runner.mode, tags, runner.epoch)
             else:
                 self.writer.add_scalars(runner.mode, tags, runner.iter)
