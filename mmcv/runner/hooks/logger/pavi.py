@@ -63,7 +63,7 @@ class PaviLoggerHook(LoggerHook):
             self.init_kwargs = dict()
         self.init_kwargs['task'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
-        if 'config_dict' in runner.meta:
+        if runner.meta is not None and 'config_dict' in runner.meta:
             session_text = yaml.dump(runner.meta['config_dict'])
             self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
