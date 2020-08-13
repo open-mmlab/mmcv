@@ -41,6 +41,17 @@ tin_shift = TINShiftFunction.apply
 
 
 class TINShift(nn.Module):
+    """Temporal Interlace Shift.
+
+    Temporal Interlace shift is a differentiable temporal-wise frame shifting
+    which is proposed in "Temporal Interlacing Network"
+
+    Please refer to https://arxiv.org/abs/2001.06499 for more details.
+    Code is modified from https://github.com/mit-han-lab/temporal-shift-module
+
+    Returns:
+        Feature map after temporal interlace shifting.
+    """
 
     def forward(self, input, shift):
         return tin_shift(input, shift)
