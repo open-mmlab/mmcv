@@ -15,8 +15,8 @@ Contents
    runner.md
    cnn.md
    ops.md
-   api.rst
    trouble_shooting.md
+   api.rst
 
 
 
