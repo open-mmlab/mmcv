@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
 from mmcv.ops.deform_conv import deform_conv2d
+from mmcv.utils import TORCH_VERSION
 
 
 @CONV_LAYERS.register_module(name='SAC')
@@ -113,7 +114,10 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            out_l = super().conv2d_forward(x, weight)
+            if TORCH_VERSION < 1.6:
+                out_l = super().conv2d_forward(x, weight)
+            else:
+                out_l = super()._conv_forward(x, weight)
         out = switch * out_s + (1 - switch) * out_l
         self.padding = ori_p
         self.dilation = ori_d
