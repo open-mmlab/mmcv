@@ -48,10 +48,16 @@ class TINShift(nn.Module):
 
     Please refer to https://arxiv.org/abs/2001.06499 for more details.
     Code is modified from https://github.com/mit-han-lab/temporal-shift-module
-
-    Returns:
-        Feature map after temporal interlace shifting.
     """
 
     def forward(self, input, shift):
+        """Perform temporal interlace shift.
+
+        Args:
+            input (Tensor): Feature map with shape [N, num_segments, C, H * W].
+            shift (Tensor): Shift tensor with shape [N, num_segments].
+
+        Returns:
+            Feature map after temporal interlace shift.
+        """
         return tin_shift(input, shift)
