@@ -7,7 +7,7 @@ from .base import BaseFileHandler
 
 
 def set_default(obj):
-    """Set default json values for unserializable values.
+    """Set default json values for non-serializable values.
 
     It helps convert ``set``, ``range`` and ``np.ndarray`` data types to list.
     """
@@ -24,7 +24,9 @@ class JsonHandler(BaseFileHandler):
         return json.load(file)
 
     def dump_to_fileobj(self, obj, file, **kwargs):
-        json.dump(obj, file, default=set_default, **kwargs)
+        kwargs.setdefault('default', set_default)
+        json.dump(obj, file, **kwargs)
 
     def dump_to_str(self, obj, **kwargs):
-        return json.dumps(obj, default=set_default, **kwargs)
+        kwargs.setdefault('default', set_default)
+        return json.dumps(obj, **kwargs)
