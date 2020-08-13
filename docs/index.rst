@@ -16,6 +16,7 @@ Contents
    cnn.md
    ops.md
    api.rst
+   trouble_shooting.md
 
 
 
