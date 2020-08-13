@@ -134,3 +134,8 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
+
+
+### TroubleShooting
+
+If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING.md](docs/trouble_shooting.md).
