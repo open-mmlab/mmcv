@@ -52,14 +52,10 @@ class SyncBatchNormFunction(Function):
             input3d.size(1), dtype=torch.float, device=input3d.device)
         var = torch.empty(
             input3d.size(1), dtype=torch.float, device=input3d.device)
-        if input3d.requires_grad or weight.requires_grad or bias.requires_grad:
-            norm = torch.empty_like(
-                input3d, dtype=torch.float, device=input3d.device)
-            std = torch.empty(
-                input3d.size(1), dtype=torch.float, device=input3d.device)
-        else:
-            norm = torch.empty(0, dtype=torch.float, device=input3d.device)
-            std = torch.empty(0, dtype=torch.float, device=input3d.device)
+        norm = torch.empty_like(
+            input3d, dtype=torch.float, device=input3d.device)
+        std = torch.empty(
+            input3d.size(1), dtype=torch.float, device=input3d.device)
 
         ext_module.sync_bn_forward_mean(input3d, mean)
         if self.group_size > 1:
@@ -73,10 +69,10 @@ class SyncBatchNormFunction(Function):
             input3d,
             mean,
             var,
-            running_mean,
-            running_var,
             weight,
             bias,
+            running_mean,
+            running_var,
             norm,
             std,
             output3d,

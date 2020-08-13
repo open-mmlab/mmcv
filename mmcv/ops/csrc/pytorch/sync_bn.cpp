@@ -89,9 +89,9 @@ void sync_bn_forward_var(const Tensor input, const Tensor mean, Tensor var) {
 }
 
 void sync_bn_forward_output(const Tensor input, const Tensor mean,
-                            const Tensor var, Tensor running_mean,
-                            Tensor running_var, const Tensor weight,
-                            const Tensor bias, Tensor norm, Tensor std,
+                            const Tensor var, const Tensor weight,
+                            const Tensor bias, Tensor running_mean,
+                            Tensor running_var, Tensor norm, Tensor std,
                             Tensor output, float eps, float momentum,
                             int group_size) {
   if (input.device().is_cuda()) {
@@ -99,10 +99,10 @@ void sync_bn_forward_output(const Tensor input, const Tensor mean,
     CHECK_CUDA_INPUT(input);
     CHECK_CUDA_INPUT(mean);
     CHECK_CUDA_INPUT(var);
-    CHECK_CUDA_INPUT(running_mean);
-    CHECK_CUDA_INPUT(running_var);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(bias);
+    CHECK_CUDA_INPUT(running_mean);
+    CHECK_CUDA_INPUT(running_var);
     CHECK_CUDA_INPUT(norm);
     CHECK_CUDA_INPUT(std);
     CHECK_CUDA_INPUT(output);
