@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import os.path as osp
+import itertools
 import platform
 import shutil
 import sys
@@ -188,23 +189,35 @@ class Config:
         return cfg_dict, cfg_text
 
     @staticmethod
-    def _merge_a_into_b(a, b):
+    def _merge_a_into_b(a, b, key=''):
         # merge dict `a` into dict `b` (non-inplace). values in `a` will
         # overwrite `b`.
-        # copy first to avoid inplace modification
-        b = b.copy()
-        for k, v in a.items():
-            if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
-                if not isinstance(b[k], dict):
-                    raise TypeError(
-                        f'{k}={v} in child config cannot inherit from base '
-                        f'because {k} is a dict in the child config but is of '
-                        f'type {type(b[k])} in base config. You may set '
-                        f'`{DELETE_KEY}=True` to ignore the base config')
-                b[k] = Config._merge_a_into_b(v, b[k])
+        if b is None:
+            return a
+        if isinstance(a, dict):
+            if isinstance(b, dict):
+                if a.pop(DELETE_KEY, False):
+                    d = dict()
+                else:
+                    d = dict(b)
+                d.update({k: Config._merge_a_into_b(a[k], b.get(k, None), k) for k in a})
+                return d
             else:
-                b[k] = v
-        return b
+                raise TypeError(
+                    f'{key}={a} in child config cannot inherit from base '
+                    f'because {key} is a dict in the child config but is of '
+                    f'type {type(b)} in base config. You may set '
+                    f'`{DELETE_KEY}=True` to ignore the base config')
+
+        if isinstance(a, list):
+            if isinstance(b, list):
+                if len(a) > 0 and a[0] == DELETE_KEY:
+                    return [a[1:]]
+                else:
+                    return [Config._merge_a_into_b(x, y, key + '[]') for x, y in itertools.zip_longest(a, b)]
+            else:
+                return a
+        return b if a is None else a
 
     @staticmethod
     def fromfile(filename, use_predefined_variables=True):
