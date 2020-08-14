@@ -88,7 +88,7 @@ class Config:
 
     @staticmethod
     def _validate_py_syntax(filename):
-        with open(filename) as f:
+        with open(filename, 'r') as f:
             content = f.read()
         try:
             ast.parse(content)
@@ -107,7 +107,8 @@ class Config:
             fileBasename=file_basename,
             fileBasenameNoExtension=file_basename_no_extension,
             fileExtname=file_extname)
-        config_file = open(filename).read()
+        with open(filename, 'r') as f:
+            config_file = f.read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
             config_file = re.sub(regexp, value, config_file)

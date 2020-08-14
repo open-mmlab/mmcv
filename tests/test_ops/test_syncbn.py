@@ -21,13 +21,13 @@ class TestSyncBN(object):
         node_list = str(os.environ['SLURM_NODELIST'])
 
         node_parts = re.findall('[0-9]+', node_list)
-        host_ip = '{}.{}.{}.{}'.format(node_parts[1], node_parts[2],
-                                       node_parts[3], node_parts[4])
-        port = '12341'
-        init_method = 'tcp://{}:{}'.format(host_ip, port)
+        os.environ['MASTER_ADDR'] = (f'{node_parts[1]}.{node_parts[2]}' +
+                                     f'.{node_parts[3]}.{node_parts[4]}')
+        os.environ['MASTER_PORT'] = '12341'
+        os.environ['WORLD_SIZE'] = str(world_size)
+        os.environ['RANK'] = str(rank)
 
-        dist.init_process_group(
-            'nccl', init_method=init_method, world_size=world_size, rank=rank)
+        dist.init_process_group('nccl')
         torch.cuda.set_device(local_rank)
 
     def _test_syncbn_train(self, size=1, half=False):
