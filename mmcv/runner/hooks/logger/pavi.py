@@ -100,7 +100,7 @@ class PaviLoggerHook(LoggerHook):
         if tags:
             if runner.mode == 'val':
                 mode = runner.mode
-                # runner.epoch has already +1 before val workflow
+                # runner.epoch += 1 has been done before val workflow
                 epoch = runner.epoch
             else:
                 mode = 'train' if 'time' in runner.log_buffer.output else 'val'
@@ -116,6 +116,7 @@ class PaviLoggerHook(LoggerHook):
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             if osp.isfile(ckpt_path):
                 ckpt_path = osp.realpath(ckpt_path)
+                # runner.epoch += 1 has been done before `after_run`.
                 iteration = runner.epoch if self.by_epoch else runner.iter
                 return self.writer.add_snapshot_file(
                     tag=self.run_name,
