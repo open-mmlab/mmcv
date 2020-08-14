@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
+import os
 import os.path as osp
 
 import numpy as np
@@ -115,7 +116,7 @@ class PaviLoggerHook(LoggerHook):
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             if osp.isfile(ckpt_path):
-                ckpt_path = osp.realpath(ckpt_path)
+                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
                 # runner.epoch += 1 has been done before `after_run`.
                 iteration = runner.epoch if self.by_epoch else runner.iter
                 return self.writer.add_snapshot_file(
