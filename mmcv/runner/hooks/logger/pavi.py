@@ -103,7 +103,7 @@ class PaviLoggerHook(LoggerHook):
             else:
                 mode = 'train' if 'time' in runner.log_buffer.output else 'val'
             if mode == 'val' and self.by_epoch:
-                self.writer.add_scalars(mode, tags, runner.epoch)
+                self.writer.add_scalars(mode, tags, runner.epoch + 1)
             else:
                 self.writer.add_scalars(mode, tags, runner.iter)
 
