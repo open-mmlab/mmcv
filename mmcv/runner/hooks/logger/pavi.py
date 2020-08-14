@@ -101,10 +101,7 @@ class PaviLoggerHook(LoggerHook):
                 mode = runner.mode
             else:
                 mode = 'train' if 'time' in runner.log_buffer.output else 'val'
-            # TODO: A better design for evaluation hook and EpochBasedRunner
-            # Importing EpochBasedRunner triggers recursive importing error.
-            if (mode == 'val'
-                    and runner.__class__.__name__ == 'EpochBasedRunner'):
+            if mode == 'val' and self.by_epoch:
                 self.writer.add_scalars(mode, tags, runner.epoch)
             else:
                 self.writer.add_scalars(mode, tags, runner.iter)
@@ -115,7 +112,8 @@ class PaviLoggerHook(LoggerHook):
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             if osp.isfile(ckpt_path):
                 ckpt_path = osp.realpath(ckpt_path)
+                iteration = runner.epoch if self.by_epoch else runner.iter
                 return self.writer.add_snapshot_file(
                     tag=self.run_name,
                     snapshot_file_path=ckpt_path,
-                    iteration=runner.iter)
+                    iteration=iteration)
