@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
-import os
 import os.path as osp
 
 import numpy as np
@@ -94,20 +93,24 @@ class PaviLoggerHook(LoggerHook):
             tags['momentum'] = momentums[0]
 
         if tags:
+            if runner.mode == 'val':
+                mode = runner.mode
+            else:
+                mode = 'train' if 'time' in runner.log_buffer.output else 'val'
             # TODO: A better design for evaluation hook and EpochBasedRunner
             # Importing EpochBasedRunner triggers recursive importing error.
-            if (runner.mode == 'val'
+            if (mode == 'val'
                     and runner.__class__.__name__ == 'EpochBasedRunner'):
-                self.writer.add_scalars(runner.mode, tags, runner.epoch)
+                self.writer.add_scalars(mode, tags, runner.epoch)
             else:
-                self.writer.add_scalars(runner.mode, tags, runner.iter)
+                self.writer.add_scalars(mode, tags, runner.iter)
 
     @master_only
     def after_run(self, runner):
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             if osp.isfile(ckpt_path):
-                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+                ckpt_path = osp.realpath(ckpt_path)
                 return self.writer.add_snapshot_file(
                     tag=self.run_name,
                     snapshot_file_path=ckpt_path,
