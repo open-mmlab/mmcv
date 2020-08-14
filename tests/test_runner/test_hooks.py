@@ -111,7 +111,7 @@ def test_pavi_hook():
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
         snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
-        iteration=5)
+        iteration=1)
 
 
 def test_sync_buffers_hook():
