@@ -142,8 +142,7 @@ class TextLoggerHook(LoggerHook):
 
     def log(self, runner):
         log_dict = OrderedDict()
-        mode = runner.mode
-        log_dict['mode'] = mode
+        log_dict['mode'] = runner.mode
         log_dict['epoch'] = runner.epoch + 1
         if self.by_epoch:
             log_dict['iter'] = runner.inner_iter + 1
@@ -160,17 +159,12 @@ class TextLoggerHook(LoggerHook):
                 assert isinstance(lr_, list)
                 log_dict['lr'].update({k: lr_[0]})
 
-        if mode == 'train':
-            log_dict['time'] = runner.log_buffer.output['time']
-            log_dict['data_time'] = runner.log_buffer.output['data_time']
-
+        if 'time' in runner.log_buffer.output:
             # statistic memory
             if torch.cuda.is_available():
                 log_dict['memory'] = self._get_max_memory(runner)
-        for name, val in runner.log_buffer.output.items():
-            if name in ['time', 'data_time']:
-                continue
-            log_dict[name] = val
+
+        log_dict = dict(log_dict, **runner.log_buffer.output)
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)

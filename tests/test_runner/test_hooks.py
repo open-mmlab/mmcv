@@ -59,7 +59,6 @@ def test_ema_hook():
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(emahook, priority='HIGHEST')
     runner.register_hook(checkpointhook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     checkpoint = torch.load(f'{runner.work_dir}/epoch_1.pth')
     contain_ema_buffer = False
@@ -75,13 +74,11 @@ def test_ema_hook():
     work_dir = runner.work_dir
     resume_ema_hook = EMAHook(
         momentum=0.5, warm_up=0, resume_from=f'{work_dir}/epoch_1.pth')
-
     runner = _build_demo_runner()
     runner.model = demo_model
     runner.register_hook(resume_ema_hook, priority='HIGHEST')
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(checkpointhook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader, loader], [('train', 1), ('val', 1)], 2)
     checkpoint = torch.load(f'{runner.work_dir}/epoch_2.pth')
     contain_ema_buffer = False
@@ -103,7 +100,6 @@ def test_pavi_hook():
     runner = _build_demo_runner()
     hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
 
@@ -122,7 +118,6 @@ def test_sync_buffers_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
     runner.register_hook_from_cfg(dict(type='SyncBuffersHook'))
-    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
 
@@ -284,7 +279,6 @@ def test_cosine_restart_lr_update_hook():
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader], [('train', 1)], 1)
     shutil.rmtree(runner.work_dir)
 
@@ -317,7 +311,6 @@ def test_mlflow_hook(log_model):
 
     hook = MlflowLoggerHook(exp_name='test', log_model=log_model)
     runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
 
@@ -341,7 +334,6 @@ def test_wandb_hook():
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
     shutil.rmtree(runner.work_dir)
 
