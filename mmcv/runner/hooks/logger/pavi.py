@@ -100,10 +100,13 @@ class PaviLoggerHook(LoggerHook):
         if tags:
             if runner.mode == 'val':
                 mode = runner.mode
+                # runner.epoch has already +1 before val workflow
+                epoch = runner.epoch
             else:
                 mode = 'train' if 'time' in runner.log_buffer.output else 'val'
+                epoch = runner.epoch + 1
             if mode == 'val' and self.by_epoch:
-                self.writer.add_scalars(mode, tags, runner.epoch + 1)
+                self.writer.add_scalars(mode, tags, epoch)
             else:
                 self.writer.add_scalars(mode, tags, runner.iter)
 
