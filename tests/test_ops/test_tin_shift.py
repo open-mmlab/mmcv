@@ -68,8 +68,10 @@ def _test_tinshift_gradcheck(dtype):
         x = torch.tensor(
             np_input, dtype=dtype, device='cuda', requires_grad=True)
         shift = torch.tensor(np_shift, device='cuda').int()
-
-        gradcheck(tin_shift, (x, shift), atol=1, rtol=0.1)
+        if torch.__version__ == 'parrots':
+            gradcheck(tin_shift, (x, shift))
+        else:
+            gradcheck(tin_shift, (x, shift), atol=1, rtol=0.1)
 
 
 def _test_tinshift_allclose(dtype):
