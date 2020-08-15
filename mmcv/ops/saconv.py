@@ -103,7 +103,10 @@ class SAConv2d(ConvAWS2d):
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            out_s = super().conv2d_forward(x, weight)
+            if TORCH_VERSION < '1.6.0' or TORCH_VERSION == 'parrots':
+                out_s = super().conv2d_forward(x, weight)
+            else:
+                out_s = super()._conv_forward(x, weight)
         ori_p = self.padding
         ori_d = self.dilation
         self.padding = tuple(3 * p for p in self.padding)
@@ -114,7 +117,7 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if TORCH_VERSION < 1.6 or TORCH_VERSION == 'parrots':
+            if TORCH_VERSION < '1.6.0' or TORCH_VERSION == 'parrots':
                 out_l = super().conv2d_forward(x, weight)
             else:
                 out_l = super()._conv_forward(x, weight)
