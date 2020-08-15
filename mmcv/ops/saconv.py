@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
 from mmcv.ops.deform_conv import deform_conv2d
+from mmcv.utils import TORCH_VERSION
 
 
 @CONV_LAYERS.register_module(name='SAC')
@@ -102,7 +103,10 @@ class SAConv2d(ConvAWS2d):
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            out_s = super().conv2d_forward(x, weight)
+            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+                out_s = super().conv2d_forward(x, weight)
+            else:
+                out_s = super()._conv_forward(x, weight)
         ori_p = self.padding
         ori_d = self.dilation
         self.padding = tuple(3 * p for p in self.padding)
@@ -113,7 +117,10 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            out_l = super().conv2d_forward(x, weight)
+            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+                out_l = super().conv2d_forward(x, weight)
+            else:
+                out_l = super()._conv_forward(x, weight)
         out = switch * out_s + (1 - switch) * out_l
         self.padding = ori_p
         self.dilation = ori_d
