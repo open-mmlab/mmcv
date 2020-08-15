@@ -3,7 +3,8 @@
 
 
 
-void TINShiftForwardCUDAKernelLauncher(const DArrayLite input, const DArrayLite shift,
+void TINShiftForwardCUDAKernelLauncher(const DArrayLite input,
+                                       const DArrayLite shift,
                                        DArrayLite output, cudaStream_t stream) {
   int output_size = output.size();
   int batch_size = input.dim(0);
@@ -19,15 +20,17 @@ void TINShiftForwardCUDAKernelLauncher(const DArrayLite input, const DArrayLite 
         tin_shift_forward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size, input.ptr<scalar_t>(), shift.ptr<int>(),
-                output.ptr<scalar_t>(), batch_size, channels, t_size,
-                hw_size, group_size, group_channel);
+                output.ptr<scalar_t>(), batch_size, channels, t_size, hw_size,
+                group_size, group_channel);
       }));
 
   PARROTS_CUDA_CHECK(cudaGetLastError());
 }
 
-void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output, const DArrayLite shift,
-                                        DArrayLite grad_input, cudaStream_t stream) {
+void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output,
+                                        const DArrayLite shift,
+                                        DArrayLite grad_input,
+                                        cudaStream_t stream) {
   int output_size = grad_output.size();
   int batch_size = grad_output.dim(0);
   int t_size = grad_output.dim(1);
@@ -41,10 +44,9 @@ void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output, const DArr
       grad_output.elemType().prim(), ([&] {
         tin_shift_backward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-                output_size, grad_output.ptr<scalar_t>(),
-                shift.ptr<int>(), grad_input.ptr<scalar_t>(),
-                batch_size, channels, t_size, hw_size, group_size,
-                group_channel);
+                output_size, grad_output.ptr<scalar_t>(), shift.ptr<int>(),
+                grad_input.ptr<scalar_t>(), batch_size, channels, t_size,
+                hw_size, group_size, group_channel);
       }));
 
   PARROTS_CUDA_CHECK(cudaGetLastError());

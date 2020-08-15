@@ -1,10 +1,13 @@
 #include "parrots_cpp_helper.hpp"
 
-void TINShiftForwardCUDAKernelLauncher(const DArrayLite input, const DArrayLite shift,
+void TINShiftForwardCUDAKernelLauncher(const DArrayLite input,
+                                       const DArrayLite shift,
                                        DArrayLite output, cudaStream_t stream);
 
-void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output, const DArrayLite shift,
-                                        DArrayLite grad_input, cudaStream_t stream);
+void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output,
+                                        const DArrayLite shift,
+                                        DArrayLite grad_input,
+                                        cudaStream_t stream);
 
 void tin_shift_forward_cuda(CudaContext &ctx, const SSElement &attr,
                             const OperatorBase::in_list_t &ins,
