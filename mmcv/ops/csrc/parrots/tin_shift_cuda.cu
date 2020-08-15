@@ -1,8 +1,6 @@
 #include "parrots_cuda_helper.hpp"
 #include "tin_shift_cuda_kernel.cuh"
 
-
-
 void TINShiftForwardCUDAKernelLauncher(const DArrayLite input,
                                        const DArrayLite shift,
                                        DArrayLite output, cudaStream_t stream) {
