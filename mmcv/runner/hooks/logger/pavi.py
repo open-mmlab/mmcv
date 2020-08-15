@@ -67,6 +67,8 @@ class PaviLoggerHook(LoggerHook):
         self.init_kwargs['model'] = runner._model_name
         if runner.meta is not None and 'config_dict' in runner.meta:
             config_dict = runner.meta['config_dict'].copy()
+            # 'max_.*iter' is parsed in pavi sdk as the maximum iterations
+            #  to properly set up the progress bar.
             config_dict.setdefault('max_iter', runner.max_iters)
             # non-serializable values are first converted in mmcv.dump to json
             config_dict = json.loads(
