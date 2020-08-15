@@ -18,8 +18,7 @@ class TINShiftFunction(Function):
     @staticmethod
     def forward(ctx, input, shift):
 
-        if input.requires_grad:
-            ctx.save_for_backward(shift)
+        ctx.save_for_backward(shift)
 
         out = torch.zeros_like(input)
         ext_module.tin_shift_forward(input, shift, out)
