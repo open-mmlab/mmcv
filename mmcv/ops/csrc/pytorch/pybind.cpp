@@ -155,6 +155,11 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask);
 
+void tin_shift_forward(const Tensor input, const Tensor shift, Tensor output);
+
+void tin_shift_backward(Tensor grad_output, const Tensor shift,
+                        const Tensor grad_input);
+
 Tensor bottom_pool_forward(Tensor input);
 
 Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
@@ -329,6 +334,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),
         py::arg("h_mask"), py::arg("w_mask"), py::arg("half_h_mask"),
         py::arg("half_w_mask"));
+  m.def("tin_shift_forward", &tin_shift_forward, "tin_shift forward",
+        py::arg("input"), py::arg("shift"), py::arg("output"));
+  m.def("tin_shift_backward", &tin_shift_backward, "tin_shift backward",
+        py::arg("grad_output"), py::arg("shift"), py::arg("grad_input"));
   m.def("bottom_pool_forward", &bottom_pool_forward, "Bottom Pool Forward",
         py::arg("input"), py::call_guard<py::gil_scoped_release>());
   m.def("bottom_pool_backward", &bottom_pool_backward, "Bottom Pool Backward",
