@@ -66,11 +66,12 @@ class PaviLoggerHook(LoggerHook):
         self.init_kwargs['task'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
         if runner.meta is not None and 'config_dict' in runner.meta:
-            meta = runner.meta['config_dict'].copy()
-            meta.setdefault('max_iter', runner.max_iters)
+            config_dict = runner.meta['config_dict'].copy()
+            config_dict.setdefault('max_iter', runner.max_iters)
             # non-serializable values are first converted in mmcv.dump to json
-            meta_json = json.loads(mmcv.dump(meta, file_format='json'))
-            session_text = yaml.dump(meta_json)
+            config_dict = json.loads(
+                mmcv.dump(config_dict, file_format='json'))
+            session_text = yaml.dump(config_dict)
             self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
