@@ -68,7 +68,7 @@ class TextLoggerHook(LoggerHook):
                 exp_info = f'Exp name: {runner.meta["exp_name"]}'
                 runner.logger.info(exp_info)
 
-        if runner.mode == 'train':
+        if log_dict['mode'] == 'train':
             if isinstance(log_dict['lr'], dict):
                 lr_str = []
                 for k, val in log_dict['lr'].items():
@@ -101,7 +101,7 @@ class TextLoggerHook(LoggerHook):
         else:
             if self.by_epoch:
                 log_str = f'Epoch({log_dict["mode"]}) ' \
-                        f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
+                    f'[{log_dict["epoch"]}][{log_dict["iter"]}]\t'
             else:
                 log_str = f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
 
@@ -142,8 +142,22 @@ class TextLoggerHook(LoggerHook):
 
     def log(self, runner):
         log_dict = OrderedDict()
-        log_dict['mode'] = runner.mode
-        log_dict['epoch'] = runner.epoch + 1
+
+        if 'time' in runner.log_buffer.output and runner.mode == 'train':
+            # normal train mode
+            log_dict['mode'] = 'train'
+            log_dict['epoch'] = runner.epoch + 1
+        elif runner.mode == 'val':
+            # normal val mode
+            # runner.epoch += 1 has been done before val workflow
+            log_dict['mode'] = 'val'
+            log_dict['epoch'] = runner.epoch
+        else:
+            # Evaluation hook during train mode
+            # runner.epoch += 1 should be done since training has ended
+            log_dict['mode'] = 'val'
+            log_dict['epoch'] = runner.epoch + 1
+
         if self.by_epoch:
             log_dict['iter'] = runner.inner_iter + 1
         else:
