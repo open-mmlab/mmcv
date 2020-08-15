@@ -98,6 +98,7 @@ def test_pavi_hook():
 
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
+    runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
@@ -107,11 +108,11 @@ def test_pavi_hook():
     hook.writer.add_scalars.assert_called_with('val', {
         'learning_rate': 0.02,
         'momentum': 0.95
-    }, 5)
+    }, 1)
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
-        iteration=5)
+        snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
+        iteration=1)
 
 
 def test_sync_buffers_hook():
@@ -378,6 +379,6 @@ def _build_demo_runner():
         work_dir=tmp_dir,
         optimizer=optimizer,
         logger=logging.getLogger())
-
+    runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner
