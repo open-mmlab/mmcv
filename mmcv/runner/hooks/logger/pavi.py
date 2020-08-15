@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import json
 import numbers
 import os
 import os.path as osp
@@ -68,7 +69,7 @@ class PaviLoggerHook(LoggerHook):
             meta = runner.meta['config_dict'].copy()
             meta.setdefault('max_iter', runner.max_iters)
             # non-serializable values are first converted in mmcv.dump to json
-            meta_json = yaml.load(mmcv.dump(meta, file_format='json'))
+            meta_json = json.loads(mmcv.dump(meta, file_format='json'))
             session_text = yaml.dump(meta_json)
             self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)

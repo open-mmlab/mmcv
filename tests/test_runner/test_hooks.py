@@ -98,6 +98,7 @@ def test_pavi_hook():
 
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
+    runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
