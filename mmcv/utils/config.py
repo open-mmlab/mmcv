@@ -372,6 +372,15 @@ class Config:
     def __iter__(self):
         return iter(self._cfg_dict)
 
+    def __getstate__(self):
+        return (self._cfg_dict, self._filename, self._text)
+
+    def __setstate__(self, state):
+        _cfg_dict, _filename, _text = state
+        super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
+        super(Config, self).__setattr__('_filename', _filename)
+        super(Config, self).__setattr__('_text', _text)
+
     def dump(self, file=None):
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
         if self.filename.endswith('.py'):

@@ -7,7 +7,7 @@ import tempfile
 import pytest
 import yaml
 
-from mmcv import Config, DictAction
+from mmcv import Config, DictAction, dump, load
 
 
 def test_construct():
@@ -354,3 +354,15 @@ def test_syntax_error():
             f'file {temp_cfg_path}'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
+
+
+def test_pickle_support():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg = Config.fromfile(cfg_file)
+
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        pkl_cfg_filename = osp.join(temp_config_dir, '_pickle.pkl')
+        dump(cfg, pkl_cfg_filename)
+        pkl_cfg = load(pkl_cfg_filename)
+
+    assert pkl_cfg._cfg_dict == cfg._cfg_dict
