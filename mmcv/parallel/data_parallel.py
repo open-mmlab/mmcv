@@ -85,7 +85,9 @@ class MMDataParallel(DataParallel):
 
     def train_step(self, *inputs, **kwargs):
         if not self.device_ids:
-            inputs, kwargs = self.scatter(inputs, kwargs, -1)
+            # We add the following line thus the module could gather and
+            # convert data containers as those in GPU inference
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module.train_step(*inputs, **kwargs)
 
         assert len(self.device_ids) == 1, \
@@ -105,7 +107,9 @@ class MMDataParallel(DataParallel):
 
     def val_step(self, *inputs, **kwargs):
         if not self.device_ids:
-            inputs, kwargs = self.scatter(inputs, kwargs, -1)
+            # We add the following line thus the module could gather and
+            # convert data containers as those in GPU inference
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module.val_step(*inputs, **kwargs)
 
         assert len(self.device_ids) == 1, \
