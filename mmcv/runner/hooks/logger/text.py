@@ -143,9 +143,9 @@ class TextLoggerHook(LoggerHook):
     def log(self, runner):
         log_dict = OrderedDict()
 
-        if 'time' in runner.log_buffer.output and runner.mode == 'train':
-            # normal train mode
-            log_dict['mode'] = 'train'
+        if runner.mode == 'train':
+            log_dict['mode'] = 'train' if 'time' in runner.log_buffer.output \
+                else 'val'
             log_dict['epoch'] = runner.epoch + 1
         elif runner.mode == 'val':
             # normal val mode
@@ -153,10 +153,8 @@ class TextLoggerHook(LoggerHook):
             log_dict['mode'] = 'val'
             log_dict['epoch'] = runner.epoch
         else:
-            # Evaluation hook during train mode
-            # runner.epoch += 1 should be done since training has ended
-            log_dict['mode'] = 'val'
-            log_dict['epoch'] = runner.epoch + 1
+            raise ValueError(f"runner mode should be 'train' or 'val', "
+                             f'but got {runner.mode}')
 
         if self.by_epoch:
             log_dict['iter'] = runner.inner_iter + 1
