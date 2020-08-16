@@ -10,6 +10,20 @@ from .scatter_gather import scatter_kwargs
 
 
 class MMDataParallel(DataParallel):
+    """The DataParallel module that supports DataContainer.
+
+    MMDataParallel has two main differences with PyTorch DataParallel:
+
+    - It supports a custom type :class:`DataContainer` which allows more
+      flexible control of input data during both GPU and CPU inference.
+    - It implement two more APIs ``train_step()`` and ``val_step()``.
+
+    Args:
+        module (:class:`nn.Module`): Module to be encapsulated.
+        device_ids (list[int]): Device IDS of modules to be scattered to.
+        output_device (str | int): Device ID for output
+        dim (int): Dimension used to scatter the data.
+    """
 
     def __init__(self, module, device_ids=None, output_device=None, dim=0):
         super(DataParallel, self).__init__()
@@ -17,6 +31,7 @@ class MMDataParallel(DataParallel):
         if not torch.cuda.is_available():
             self.module = module
             self.device_ids = []
+            # we add this line from the original DP to enable CPU inference.
             self.dim = dim
             return
 
@@ -41,9 +56,12 @@ class MMDataParallel(DataParallel):
     def forward(self, *inputs, **kwargs):
         """Override the original forward function.
 
-        The main difference lies in the CPU inference
+        The main difference lies in the CPU inference where the datas in
+        :class:`DataContainers` will still be gathered.
         """
         if not self.device_ids:
+            # We add the following line thus the module could gather and
+            # convert data containers as those in GPU inference
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module(*inputs[0], **kwargs[0])
 
