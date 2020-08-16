@@ -21,8 +21,9 @@ class MMDataParallel(DataParallel):
     Args:
         module (:class:`nn.Module`): Module to be encapsulated.
         device_ids (list[int]): Device IDS of modules to be scattered to.
-        output_device (str | int): Device ID for output
-        dim (int): Dimension used to scatter the data.
+            Defaults to None when GPU is not available.
+        output_device (str | int): Device ID for output. Defaults to None.
+        dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
     def __init__(self, module, device_ids=None, output_device=None, dim=0):
