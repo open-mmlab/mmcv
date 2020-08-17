@@ -68,7 +68,7 @@ class TextLoggerHook(LoggerHook):
                 exp_info = f'Exp name: {runner.meta["exp_name"]}'
                 runner.logger.info(exp_info)
 
-        if runner.mode == 'train':
+        if log_dict['mode'] == 'train':
             if isinstance(log_dict['lr'], dict):
                 lr_str = []
                 for k, val in log_dict['lr'].items():
@@ -101,7 +101,7 @@ class TextLoggerHook(LoggerHook):
         else:
             if self.by_epoch:
                 log_str = f'Epoch({log_dict["mode"]}) ' \
-                        f'[{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
+                    f'[{log_dict["epoch"]}][{log_dict["iter"]}]\t'
             else:
                 log_str = f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
 
@@ -142,10 +142,20 @@ class TextLoggerHook(LoggerHook):
 
     def log(self, runner):
         log_dict = OrderedDict()
-        # training mode if the output contains the key "time"
-        mode = 'train' if 'time' in runner.log_buffer.output else 'val'
-        log_dict['mode'] = mode
-        log_dict['epoch'] = runner.epoch + 1
+
+        if runner.mode == 'train':
+            log_dict['mode'] = 'train' if 'time' in runner.log_buffer.output \
+                else 'val'
+            log_dict['epoch'] = runner.epoch + 1
+        elif runner.mode == 'val':
+            # normal val mode
+            # runner.epoch += 1 has been done before val workflow
+            log_dict['mode'] = 'val'
+            log_dict['epoch'] = runner.epoch
+        else:
+            raise ValueError(f"runner mode should be 'train' or 'val', "
+                             f'but got {runner.mode}')
+
         if self.by_epoch:
             log_dict['iter'] = runner.inner_iter + 1
         else:
@@ -161,17 +171,12 @@ class TextLoggerHook(LoggerHook):
                 assert isinstance(lr_, list)
                 log_dict['lr'].update({k: lr_[0]})
 
-        if mode == 'train':
-            log_dict['time'] = runner.log_buffer.output['time']
-            log_dict['data_time'] = runner.log_buffer.output['data_time']
-
+        if 'time' in runner.log_buffer.output:
             # statistic memory
             if torch.cuda.is_available():
                 log_dict['memory'] = self._get_max_memory(runner)
-        for name, val in runner.log_buffer.output.items():
-            if name in ['time', 'data_time']:
-                continue
-            log_dict[name] = val
+
+        log_dict = dict(log_dict, **runner.log_buffer.output)
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)

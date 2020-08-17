@@ -213,12 +213,14 @@ def test_merge_delete():
     assert cfg.item4 == 'test'
     assert '_delete_' not in cfg.item2
 
+
 def test_merge_from_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item1': [None, 4, 3]}
     cfg.merge_from_dict(input_options)
     assert cfg.item1 == [1, 4, 3]
+
 
 def test_merge_delete_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
@@ -227,13 +229,22 @@ def test_merge_delete_list():
     cfg.merge_from_dict(input_options)
     assert cfg.item1 == [4, 3]
 
+
 def test_merge_dict_in_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'dict_list_item6.x/x': [{'b.0': 4.}, {'b.0': 4.}]}
     cfg.merge_from_dict(input_options)
-    assert cfg.dict_list_item6 == {'x/x': [{'a.0': 1., 'b.0': 4.},
-                                 {'c/3': 3., 'b.0': 4.}]}
+    assert cfg.dict_list_item6 == {
+        'x/x': [{
+            'a.0': 1.,
+            'b.0': 4.
+        }, {
+            'c/3': 3.,
+            'b.0': 4.
+        }]
+    }
+
 
 def test_merge_intermediate_variable():
 

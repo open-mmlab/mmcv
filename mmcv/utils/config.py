@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
-import os.path as osp
 import itertools
+import os.path as osp
 import platform
 import shutil
 import sys
@@ -199,7 +199,10 @@ class Config:
                 d = b.copy()
                 if a.pop(DELETE_KEY, False):
                     d.clear()
-                d.update({k: Config._merge_a_into_b(a[k], b.get(k, None), k) for k in a})
+                d.update({
+                    k: Config._merge_a_into_b(a[k], b.get(k, None), k)
+                    for k in a
+                })
                 return d
             else:
                 raise TypeError(
@@ -213,7 +216,10 @@ class Config:
                 if len(a) > 0 and a[0] == DELETE_KEY:
                     return a[1:]
                 else:
-                    return [Config._merge_a_into_b(x, y, key + '[]') for x, y in itertools.zip_longest(a, b)]
+                    return [
+                        Config._merge_a_into_b(x, y, key + '[]')
+                        for x, y in itertools.zip_longest(a, b)
+                    ]
             else:
                 return a
         return b if a is None else a
