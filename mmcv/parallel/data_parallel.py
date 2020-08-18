@@ -39,7 +39,7 @@ class MMDataParallel(DataParallel):
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module(*inputs[0], **kwargs[0])
         else:
-            super().forward(*inputs, **kwargs)
+            return super().forward(*inputs, **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)

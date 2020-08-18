@@ -19,7 +19,7 @@ def scatter(inputs, target_gpus, dim=0):
                 return OrigScatter.apply(target_gpus, None, dim, obj)
             else:
                 # for CPU inference we use self-implemented scatter
-                return Scatter.forward(target_gpus, obj.data)
+                return Scatter.forward(target_gpus, obj)
         if isinstance(obj, DataContainer):
             if obj.cpu_only:
                 return obj.data
