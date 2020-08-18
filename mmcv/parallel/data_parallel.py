@@ -1,10 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from itertools import chain
 
-import torch
-from torch.cuda._utils import _get_device_index
 from torch.nn.parallel import DataParallel
-from torch.nn.parallel.data_parallel import _check_balance
 
 from .scatter_gather import scatter_kwargs
 
@@ -26,33 +23,9 @@ class MMDataParallel(DataParallel):
         dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
-    def __init__(self, module, device_ids=None, output_device=None, dim=0):
-        super(DataParallel, self).__init__()
-
-        if not torch.cuda.is_available():
-            self.module = module
-            self.device_ids = []
-            # we add this line from the original DP to enable CPU inference.
-            self.dim = dim
-            return
-
-        if device_ids is None:
-            device_ids = list(range(torch.cuda.device_count()))
-        if output_device is None:
-            output_device = device_ids[0]
-
+    def __init__(self, *args, dim=0, **kwargs):
+        super(MMDataParallel, self).__init__(*args, dim=dim, **kwargs)
         self.dim = dim
-        self.module = module
-        self.device_ids = list(
-            map(lambda x: _get_device_index(x, True), device_ids))
-        self.output_device = _get_device_index(output_device, True)
-        self.src_device_obj = torch.device('cuda:{}'.format(
-            self.device_ids[0]))
-
-        _check_balance(self.device_ids)
-
-        if len(self.device_ids) == 1:
-            self.module.cuda(device_ids[0])
 
     def forward(self, *inputs, **kwargs):
         """Override the original forward function.
@@ -65,20 +38,8 @@ class MMDataParallel(DataParallel):
             # convert data containers as those in GPU inference
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module(*inputs[0], **kwargs[0])
-
-        for t in chain(self.module.parameters(), self.module.buffers()):
-            if t.device != self.src_device_obj:
-                raise RuntimeError(
-                    'module must have its parameters and buffers '
-                    f'on device {self.src_device_obj} (device_ids[0]) but '
-                    f'found one of them on device: {t.device}')
-
-        inputs, kwargs = self.scatter(inputs, kwargs, self.device_ids)
-        if len(self.device_ids) == 1:
-            return self.module(*inputs[0], **kwargs[0])
-        replicas = self.replicate(self.module, self.device_ids[:len(inputs)])
-        outputs = self.parallel_apply(replicas, inputs, kwargs)
-        return self.gather(outputs, self.output_device)
+        else:
+            super().forward(*inputs, **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
