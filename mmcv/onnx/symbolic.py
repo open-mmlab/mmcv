@@ -309,16 +309,16 @@ def _adaptive_pool(name, type, tuple_fn, fn=None):
 
     @parse_args('v', 'is')
     def symbolic_fn(g, input, output_size):
-        if output_size == [1] * len(output_size) and type == "AveragePool":
-            return g.op("GlobalAveragePool", input)
+        if output_size == [1] * len(output_size) and type == 'AveragePool':
+            return g.op('GlobalAveragePool', input)
         if not input.isCompleteTensor():
             if output_size == [1] * len(output_size):
-                return g.op("GlobalMaxPool", input), None
+                return g.op('GlobalMaxPool', input), None
             raise NotImplementedError(
                 '[Adaptive pool]:input size not accessible')
         dim = input.type().sizes()[2:]
-        if output_size == [1] * len(output_size) and type == "MaxPool":
-            return g.op("GlobalMaxPool", input), None
+        if output_size == [1] * len(output_size) and type == 'MaxPool':
+            return g.op('GlobalMaxPool', input), None
 
         # compute stride = floor(input_size / output_size)
         s = [int(dim[i] / output_size[i]) for i in range(0, len(dim))]
@@ -327,7 +327,7 @@ def _adaptive_pool(name, type, tuple_fn, fn=None):
         k = [dim[i] - (output_size[i] - 1) * s[i] for i in range(0, len(dim))]
 
         # call max_poolxd_with_indices to get indices in the output
-        if type == "MaxPool":
+        if type == 'MaxPool':
             return fn(g, input, k, k, (0, ) * len(dim), (1, ) * len(dim),
                       False)
         output = g.op(
@@ -341,11 +341,11 @@ def _adaptive_pool(name, type, tuple_fn, fn=None):
     return symbolic_fn
 
 
-adaptive_avg_pool1d = _adaptive_pool('adaptive_avg_pool1d', "AveragePool",
+adaptive_avg_pool1d = _adaptive_pool('adaptive_avg_pool1d', 'AveragePool',
                                      _single)
-adaptive_avg_pool2d = _adaptive_pool('adaptive_avg_pool2d', "AveragePool",
+adaptive_avg_pool2d = _adaptive_pool('adaptive_avg_pool2d', 'AveragePool',
                                      _pair)
-adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', "AveragePool",
+adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
                                      _triple)
 
 
