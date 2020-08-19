@@ -5,6 +5,7 @@
 #include <float.h>
 
 #include <parrots/darray/darraymath.hpp>
+#include <parrots/darray/mathfunctions.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/darrayutil.hpp>
 #include <parrots/foundation/exceptions.hpp>
