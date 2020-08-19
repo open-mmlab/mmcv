@@ -2,7 +2,9 @@
 import os
 import os.path as osp
 import pkgutil
+import re
 import time
+import urllib.request
 import warnings
 from collections import OrderedDict
 from importlib import import_module
@@ -21,6 +23,7 @@ from .dist_utils import get_dist_info
 ENV_MMCV_HOME = 'MMCV_HOME'
 ENV_XDG_CACHE_HOME = 'XDG_CACHE_HOME'
 DEFAULT_CACHE_DIR = '~/.cache'
+MMCLS_MODELZOO = 'https://raw.githubusercontent.com/open-mmlab/mmclassification/master/docs/model_zoo.md'  # noqa
 
 
 def _get_mmcv_home():
@@ -142,6 +145,21 @@ def get_external_models():
     return default_urls
 
 
+def get_mmcls_models():
+    model_urls = dict()
+    for line in urllib.request.urlopen(MMCLS_MODELZOO):
+        print(line.decode('utf-8'))
+        model_url = line[line.find('[model](') + 1:line.find(')')]
+        model_filename = model_url.split('/')[-1]
+        model_shortname = model_filename.split('_')[0]
+        # check if there is version number
+        version_str = re.findall('v[0-9]+', model_filename.split('_')[1])[0]
+        model_shortname += '_' + version_str
+        model_urls[model_shortname] = model_url
+
+    return model_urls
+
+
 def get_deprecated_model_names():
     deprecate_json_path = osp.join(mmcv.__path__[0],
                                    'model_zoo/deprecated.json')
@@ -149,6 +167,17 @@ def get_deprecated_model_names():
     assert isinstance(deprecate_urls, dict)
 
     return deprecate_urls
+
+
+def _process_mmcls_checkpoint(checkpoint):
+    state_dict = checkpoint['state_dict']
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if k.startswith('backbone.'):
+            new_state_dict[k[9:]] = v
+    new_checkpoint = dict(state_dict=new_state_dict)
+
+    return new_checkpoint
 
 
 def _load_checkpoint(filename, map_location=None):
@@ -192,6 +221,11 @@ def _load_checkpoint(filename, map_location=None):
             if not osp.isfile(filename):
                 raise IOError(f'{filename} is not a checkpoint file')
             checkpoint = torch.load(filename, map_location=map_location)
+    elif filename.startswith('mmcls://'):
+        model_urls = get_mmcls_models()
+        model_name = filename[8:]
+        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = _process_mmcls_checkpoint(checkpoint)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
     else:
