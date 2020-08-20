@@ -42,5 +42,5 @@
   "resnest50": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest50_d2-7497a55b.pth",
   "resnest101": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest101_d2-f3b931b2.pth",
   "resnest200": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/resnest200_d2-ca88e41f.pth",
-  "darknet53": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/darknet53-7aecc596.pth"
+  "darknet53": "https://openmmlab.oss-accelerate.aliyuncs.com/pretrain/third_party/darknet53-a628ea1b.pth"
 }

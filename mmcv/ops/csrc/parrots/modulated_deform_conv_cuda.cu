@@ -219,14 +219,26 @@ void ModulatedDeformConvBackwardCUDAKernelLauncher(
                           weight.dim(2), weight.dim(3)});
 
     for (size_t g = 0; g < group; g++) {
-      auto columns_g = columns[g];
-      gemm(ctx, 1, true,
-           weight[g].view(
-               {weight.dim(1), weight.dim(2) * weight.dim(3) * weight.dim(4)}),
-           false,
-           grad_output[b][g].view(
-               {grad_output.dim(2), grad_output.dim(3) * grad_output.dim(4)}),
-           0, columns_g);
+      auto columns_g = ctx.createDArrayLite(
+          weight.elemType(), DArrayShape(columns.dim(1), columns.dim(2)));
+      copy(ctx, columns_g, columns[g]);
+      auto weight_g = weight[g].view(
+          {weight.dim(1), weight.dim(2) * weight.dim(3) * weight.dim(4)});
+      weight_g = transpose(ctx, weight_g, 0, 1);
+
+      auto grad_output_bg = ctx.createDArrayLite(
+          grad_output.elemType(),
+          DArrayShape(grad_output.dim(2), grad_output.dim(3),
+                      grad_output.dim(4)));
+      copy(ctx, grad_output_bg, grad_output[b][g]);
+      grad_output_bg =
+          grad_output_bg.view({grad_output_bg.dim(0),
+                               grad_output_bg.dim(1) * grad_output_bg.dim(2)});
+
+      columns_g =
+          parrots::op::addmm(ctx, columns[g], weight_g, grad_output_bg, 0, 1);
+      auto columns_out = columns[g];
+      copy(ctx, columns_out, columns_g);
     }
 
     columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
