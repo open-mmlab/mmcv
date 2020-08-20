@@ -148,14 +148,18 @@ def get_external_models():
 def get_mmcls_models():
     model_urls = dict()
     for line in urllib.request.urlopen(MMCLS_MODELZOO):
-        print(line.decode('utf-8'))
-        model_url = line[line.find('[model](') + 1:line.find(')')]
-        model_filename = model_url.split('/')[-1]
-        model_shortname = model_filename.split('_')[0]
-        # check if there is version number
-        version_str = re.findall('v[0-9]+', model_filename.split('_')[1])[0]
-        model_shortname += '_' + version_str
-        model_urls[model_shortname] = model_url
+        line = line.decode('utf-8')
+        m_model = re.search(r'\[model\]\(([^)]+)\)', line)
+        if m_model is not None:
+            model_url = m_model.group(1)
+            model_filename = model_url.split('/')[-1]
+            model_shortname = model_filename.split('_')[0]
+            # check if there is version number
+            m_version = re.search(r'v[0-9]+', model_filename.split('_')[1])
+            if m_version is not None:
+                version_str = '_' + m_version.group(0)
+                model_shortname += version_str
+            model_urls[model_shortname] = model_url
 
     return model_urls
 
