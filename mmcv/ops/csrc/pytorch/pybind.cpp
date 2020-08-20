@@ -155,10 +155,9 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask);
 
-void tin_shift_forward(const Tensor input, const Tensor shift, Tensor output);
+void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
-void tin_shift_backward(Tensor grad_output, const Tensor shift,
-                        const Tensor grad_input);
+void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
 Tensor bottom_pool_forward(Tensor input);
 
