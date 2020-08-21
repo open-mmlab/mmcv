@@ -111,6 +111,7 @@ class Config:
             config_file = f.read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+            value = value.replace('\\', '/')
             config_file = re.sub(regexp, value, config_file)
         with open(temp_config_name, 'w') as tmp_config_file:
             tmp_config_file.write(config_file)
