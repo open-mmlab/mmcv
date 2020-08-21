@@ -1,12 +1,17 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numpy as np
 import pytest
-import torch
 from numpy.testing import assert_array_equal
 
 import mmcv
 
+try:
+    import torch
+except ImportError:
+    torch = None
 
+
+@pytest.mark.skipif(torch is None, reason='requires torch library')
 def test_tensor2imgs():
 
     # test tensor obj

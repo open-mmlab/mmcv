@@ -32,8 +32,9 @@ class ProgressBar:
         self.file.flush()
         self.timer = Timer()
 
-    def update(self):
-        self.completed += 1
+    def update(self, num_tasks=1):
+        assert num_tasks > 0
+        self.completed += num_tasks
         elapsed = self.timer.since_start()
         if elapsed > 0:
             fps = self.completed / elapsed

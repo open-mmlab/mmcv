@@ -121,9 +121,9 @@ void sync_bn_forward_mean(const Tensor input, Tensor mean);
 void sync_bn_forward_var(const Tensor input, const Tensor mean, Tensor var);
 
 void sync_bn_forward_output(const Tensor input, const Tensor mean,
-                            const Tensor var, Tensor running_mean,
-                            Tensor running_var, const Tensor weight,
-                            const Tensor bias, Tensor norm, Tensor std,
+                            const Tensor var, const Tensor weight,
+                            const Tensor bias, Tensor running_mean,
+                            Tensor running_var, Tensor norm, Tensor std,
                             Tensor output, float eps, float momentum,
                             int group_size);
 
@@ -154,6 +154,11 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int psa_type, const int num_, const int h_feature,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask);
+
+void tin_shift_forward(const Tensor input, const Tensor shift, Tensor output);
+
+void tin_shift_backward(Tensor grad_output, const Tensor shift,
+                        const Tensor grad_input);
 
 Tensor bottom_pool_forward(Tensor input);
 
@@ -299,9 +304,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("mean"), py::arg("var"));
   m.def("sync_bn_forward_output", &sync_bn_forward_output,
         "sync_bn forward_output", py::arg("input"), py::arg("mean"),
-        py::arg("var"), py::arg("running_mean"), py::arg("running_var"),
-        py::arg("weight"), py::arg("bias"), py::arg("norm"), py::arg("std"),
-        py::arg("output"), py::arg("eps"), py::arg("momentum"),
+        py::arg("var"), py::arg("weight"), py::arg("bias"),
+        py::arg("running_mean"), py::arg("running_var"), py::arg("norm"),
+        py::arg("std"), py::arg("output"), py::arg("eps"), py::arg("momentum"),
         py::arg("group_size"));
   m.def("sync_bn_backward_param", &sync_bn_backward_param,
         "sync_bn backward_param", py::arg("grad_output"), py::arg("norm"),
@@ -329,6 +334,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),
         py::arg("h_mask"), py::arg("w_mask"), py::arg("half_h_mask"),
         py::arg("half_w_mask"));
+  m.def("tin_shift_forward", &tin_shift_forward, "tin_shift forward",
+        py::arg("input"), py::arg("shift"), py::arg("output"));
+  m.def("tin_shift_backward", &tin_shift_backward, "tin_shift backward",
+        py::arg("grad_output"), py::arg("shift"), py::arg("grad_input"));
   m.def("bottom_pool_forward", &bottom_pool_forward, "Bottom Pool Forward",
         py::arg("input"), py::call_guard<py::gil_scoped_release>());
   m.def("bottom_pool_backward", &bottom_pool_backward, "Bottom Pool Backward",

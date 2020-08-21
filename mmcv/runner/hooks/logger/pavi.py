@@ -1,10 +1,14 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import json
 import numbers
+import os
 import os.path as osp
 
 import numpy as np
 import torch
+import yaml
 
+import mmcv
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -61,7 +65,16 @@ class PaviLoggerHook(LoggerHook):
             self.init_kwargs = dict()
         self.init_kwargs['task'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
-
+        if runner.meta is not None and 'config_dict' in runner.meta:
+            config_dict = runner.meta['config_dict'].copy()
+            # 'max_.*iter' is parsed in pavi sdk as the maximum iterations
+            #  to properly set up the progress bar.
+            config_dict.setdefault('max_iter', runner.max_iters)
+            # non-serializable values are first converted in mmcv.dump to json
+            config_dict = json.loads(
+                mmcv.dump(config_dict, file_format='json'))
+            session_text = yaml.dump(config_dict)
+            self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
         if self.add_graph:
@@ -90,13 +103,27 @@ class PaviLoggerHook(LoggerHook):
             tags['momentum'] = momentums[0]
 
         if tags:
-            self.writer.add_scalars(runner.mode, tags, runner.iter)
+            if runner.mode == 'val':
+                mode = runner.mode
+                # runner.epoch += 1 has been done before val workflow
+                epoch = runner.epoch
+            else:
+                mode = 'train' if 'time' in runner.log_buffer.output else 'val'
+                epoch = runner.epoch + 1
+            if mode == 'val' and self.by_epoch:
+                self.writer.add_scalars(mode, tags, epoch)
+            else:
+                self.writer.add_scalars(mode, tags, runner.iter)
 
     @master_only
     def after_run(self, runner):
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
-            self.writer.add_snapshot_file(
-                tag=self.run_name,
-                snapshot_file_path=ckpt_path,
-                iteration=runner.iter)
+            if osp.isfile(ckpt_path):
+                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+                # runner.epoch += 1 has been done before `after_run`.
+                iteration = runner.epoch if self.by_epoch else runner.iter
+                return self.writer.add_snapshot_file(
+                    tag=self.run_name,
+                    snapshot_file_path=ckpt_path,
+                    iteration=iteration)

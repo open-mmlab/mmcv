@@ -1,6 +1,6 @@
 ## CNN
 
-We provide some building bricks for CNNs, includeing layer building, module bundles and weight initialization.
+We provide some building bricks for CNNs, including layer building, module bundles and weight initialization.
 
 ### Layer building
 
@@ -12,6 +12,7 @@ which can be written in configs or specified via command line arguments.
 #### Usage
 
 A simplest example is
+
 ```python
 cfg = dict(type='Conv3d')
 layer = build_norm_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
@@ -117,7 +118,7 @@ An example json file could be like:
 }
 ```
 
-The default links of the pre-trained models hosted on Open-MMLab AWS could be found [here](../mmcv/model_zoo/open_mmlab.json).
+The default links of the pre-trained models hosted on OpenMMLab AWS could be found [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/model_zoo/open_mmlab.json).
 
 You may override default links by putting `open-mmlab.json` under `MMCV_HOME`. If `MMCV_HOME` is not find in the environment, `~/.cache/mmcv` will be used by default. You may `export MMCV_HOME=/your/path` to use your own path.
 
