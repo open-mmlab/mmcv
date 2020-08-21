@@ -1,11 +1,45 @@
+import sys
+
 import numpy as np
 import torch
 
+from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
 
 
+# This function is modified from: https://github.com/pytorch/vision/
+class NMSop(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, bboxes, scores, iou_threshold, offset):
+        inds = ext_module.nms(
+            bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+        return inds
+
+    @staticmethod
+    def symbolic(g, bboxes, scores, iou_threshold, offset):
+        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+
+        boxes = unsqueeze(g, bboxes, 0)
+        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
+        max_output_per_class = g.op(
+            'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+        iou_threshold = g.op(
+            'Constant',
+            value_t=torch.tensor([iou_threshold], dtype=torch.float))
+        nms_out = g.op('NonMaxSuppression', boxes, scores,
+                       max_output_per_class, iou_threshold)
+        return squeeze(
+            g,
+            select(
+                g, nms_out, 1,
+                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
+            1)
+
+
+@deprecated_api_warning({'iou_thr': 'iou_threshold'})
 def nms(boxes, scores, iou_threshold, offset=0):
     """Dispatch to either CPU or GPU NMS implementations.
 
@@ -73,11 +107,10 @@ def nms(boxes, scores, iou_threshold, offset=0):
             select = ext_module.nms(*indata_list, **indata_dict)
         inds = order.masked_select(select)
     else:
-        inds = ext_module.nms(
-            boxes,
-            scores,
-            iou_threshold=float(iou_threshold),
-            offset=int(offset))
+        if torch.onnx.is_in_onnx_export() and offset == 0:
+            # ONNX only support offset == 1
+            boxes[:, -2:] -= 1
+        inds = NMSop.apply(boxes, scores, iou_threshold, offset)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -85,6 +118,7 @@ def nms(boxes, scores, iou_threshold, offset=0):
     return dets, inds
 
 
+@deprecated_api_warning({'iou_thr': 'iou_threshold'})
 def soft_nms(boxes,
              scores,
              iou_threshold=0.3,

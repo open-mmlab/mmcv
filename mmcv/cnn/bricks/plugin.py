@@ -1,7 +1,12 @@
 import inspect
-import re
+import platform
 
 from .registry import PLUGIN_LAYERS
+
+if platform.system() == 'Windows':
+    import regex as re
+else:
+    import re
 
 
 def infer_abbr(class_type):

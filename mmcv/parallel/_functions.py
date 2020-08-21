@@ -19,8 +19,13 @@ def scatter(input, devices, streams=None):
         output = input.contiguous()
         # TODO: copy to a pinned buffer first (if copying from CPU)
         stream = streams[0] if output.numel() > 0 else None
-        with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
-            output = output.cuda(devices[0], non_blocking=True)
+        if devices != [-1]:
+            with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
+                output = output.cuda(devices[0], non_blocking=True)
+        else:
+            # unsquzee the first dimension thus the tensor's shape is the
+            # same as those scattered with GPU.
+            output = output.unsqueeze(0)
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')
@@ -62,7 +67,7 @@ class Scatter:
     def forward(target_gpus, input):
         input_device = get_input_device(input)
         streams = None
-        if input_device == -1:
+        if input_device == -1 and target_gpus != [-1]:
             # Perform CPU to GPU copies in a background stream
             streams = [_get_stream(device) for device in target_gpus]
 

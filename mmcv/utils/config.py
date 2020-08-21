@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import os.path as osp
+import platform
 import shutil
 import sys
 import tempfile
@@ -12,6 +13,11 @@ from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
 from .path import check_file_exist
+
+if platform.system() == 'Windows':
+    import regex as re
+else:
+    import re
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
@@ -82,25 +88,56 @@ class Config:
 
     @staticmethod
     def _validate_py_syntax(filename):
-        with open(filename) as f:
+        with open(filename, 'r') as f:
             content = f.read()
         try:
             ast.parse(content)
-        except SyntaxError:
+        except SyntaxError as e:
             raise SyntaxError('There are syntax errors in config '
-                              f'file {filename}')
+                              f'file {filename}: {e}')
 
     @staticmethod
-    def _file2dict(filename):
+    def _substitute_predefined_vars(filename, temp_config_name):
+        file_dirname = osp.dirname(filename)
+        file_basename = osp.basename(filename)
+        file_basename_no_extension = osp.splitext(file_basename)[0]
+        file_extname = osp.splitext(filename)[1]
+        support_templates = dict(
+            fileDirname=file_dirname,
+            fileBasename=file_basename,
+            fileBasenameNoExtension=file_basename_no_extension,
+            fileExtname=file_extname)
+        with open(filename, 'r') as f:
+            config_file = f.read()
+        for key, value in support_templates.items():
+            regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+            value = value.replace('\\', '/')
+            config_file = re.sub(regexp, value, config_file)
+        with open(temp_config_name, 'w') as tmp_config_file:
+            tmp_config_file.write(config_file)
+
+    @staticmethod
+    def _file2dict(filename, use_predefined_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
-        if filename.endswith('.py'):
-            with tempfile.TemporaryDirectory() as temp_config_dir:
-                temp_config_file = tempfile.NamedTemporaryFile(
-                    dir=temp_config_dir, suffix='.py')
-                temp_config_name = osp.basename(temp_config_file.name)
-                shutil.copyfile(filename,
-                                osp.join(temp_config_dir, temp_config_name))
+        fileExtname = osp.splitext(filename)[1]
+        if fileExtname not in ['.py', '.json', '.yaml', '.yml']:
+            raise IOError('Only py/yml/yaml/json type are supported now!')
+
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            temp_config_file = tempfile.NamedTemporaryFile(
+                dir=temp_config_dir, suffix=fileExtname)
+            if platform.system() == 'Windows':
+                temp_config_file.close()
+            temp_config_name = osp.basename(temp_config_file.name)
+            # Substitute predefined variables
+            if use_predefined_variables:
+                Config._substitute_predefined_vars(filename,
+                                                   temp_config_file.name)
+            else:
+                shutil.copyfile(filename, temp_config_file.name)
+
+            if filename.endswith('.py'):
                 temp_module_name = osp.splitext(temp_config_name)[0]
                 sys.path.insert(0, temp_config_dir)
                 Config._validate_py_syntax(filename)
@@ -113,13 +150,11 @@ class Config:
                 }
                 # delete imported module
                 del sys.modules[temp_module_name]
-                # close temp file
-                temp_config_file.close()
-        elif filename.endswith(('.yml', '.yaml', '.json')):
-            import mmcv
-            cfg_dict = mmcv.load(filename)
-        else:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
+            elif filename.endswith(('.yml', '.yaml', '.json')):
+                import mmcv
+                cfg_dict = mmcv.load(temp_config_file.name)
+            # close temp file
+            temp_config_file.close()
 
         cfg_text = filename + '\n'
         with open(filename, 'r') as f:
@@ -173,8 +208,9 @@ class Config:
         return b
 
     @staticmethod
-    def fromfile(filename):
-        cfg_dict, cfg_text = Config._file2dict(filename)
+    def fromfile(filename, use_predefined_variables=True):
+        cfg_dict, cfg_text = Config._file2dict(filename,
+                                               use_predefined_variables)
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod
@@ -336,6 +372,15 @@ class Config:
 
     def __iter__(self):
         return iter(self._cfg_dict)
+
+    def __getstate__(self):
+        return (self._cfg_dict, self._filename, self._text)
+
+    def __setstate__(self, state):
+        _cfg_dict, _filename, _text = state
+        super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
+        super(Config, self).__setattr__('_filename', _filename)
+        super(Config, self).__setattr__('_text', _text)
 
     def dump(self, file=None):
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()

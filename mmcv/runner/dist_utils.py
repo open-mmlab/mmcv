@@ -63,6 +63,7 @@ def _init_dist_slurm(backend, port=None):
         os.environ['MASTER_PORT'] = '29500'
     os.environ['MASTER_ADDR'] = addr
     os.environ['WORLD_SIZE'] = str(ntasks)
+    os.environ['LOCAL_RANK'] = str(proc_id % num_gpus)
     os.environ['RANK'] = str(proc_id)
     dist.init_process_group(backend=backend)
 

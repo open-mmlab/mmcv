@@ -6,6 +6,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
+from mmcv.utils import deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
@@ -56,9 +57,7 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.with_bias = bias is not None
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
-        if weight.requires_grad or mask.requires_grad or offset.requires_grad \
-           or input.requires_grad:
-            ctx.save_for_backward(input, offset, mask, weight, bias)
+        ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
@@ -147,6 +146,8 @@ modulated_deform_conv2d = ModulatedDeformConv2dFunction.apply
 
 class ModulatedDeformConv2d(nn.Module):
 
+    @deprecated_api_warning({'deformable_groups': 'deform_groups'},
+                            cls_name='ModulatedDeformConv2d')
     def __init__(self,
                  in_channels,
                  out_channels,

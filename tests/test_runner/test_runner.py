@@ -131,6 +131,10 @@ def test_save_checkpoint():
     model = Model()
     runner = EpochBasedRunner(model=model, logger=logging.getLogger())
 
+    with pytest.raises(TypeError):
+        # meta should be None or dict
+        runner.save_checkpoint('.', meta=list())
+
     with tempfile.TemporaryDirectory() as root:
         runner.save_checkpoint(root)
 
@@ -150,7 +154,7 @@ def test_build_lr_momentum_hook():
 
     # test policy that is already title
     lr_config = dict(
-        policy='CosineAnealing',
+        policy='CosineAnnealing',
         by_epoch=False,
         min_lr_ratio=0,
         warmup_iters=2,
@@ -200,7 +204,7 @@ def test_build_lr_momentum_hook():
 
     # test policy that is already title
     mom_config = dict(
-        policy='CosineAnealing',
+        policy='CosineAnnealing',
         min_momentum_ratio=0.99 / 0.95,
         by_epoch=False,
         warmup_iters=2,

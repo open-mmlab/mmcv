@@ -21,10 +21,10 @@ class EpochBasedRunner(BaseRunner):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(data_loader)
+        self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
-        for i, data_batch in enumerate(data_loader):
+        for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
             if self.batch_processor is None:
@@ -52,7 +52,7 @@ class EpochBasedRunner(BaseRunner):
         self.data_loader = data_loader
         self.call_hook('before_val_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
-        for i, data_batch in enumerate(data_loader):
+        for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
             self.call_hook('before_val_iter')
             with torch.no_grad():
@@ -118,7 +118,7 @@ class EpochBasedRunner(BaseRunner):
 
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= max_epochs:
-                        return
+                        break
                     epoch_runner(data_loaders[i], **kwargs)
 
         time.sleep(1)  # wait for some hooks like loggers to finish
@@ -147,8 +147,13 @@ class EpochBasedRunner(BaseRunner):
         """
         if meta is None:
             meta = dict(epoch=self.epoch + 1, iter=self.iter)
-        else:
+        elif isinstance(meta, dict):
             meta.update(epoch=self.epoch + 1, iter=self.iter)
+        else:
+            raise TypeError(
+                f'meta should be a dict or None, but got {type(meta)}')
+        if self.meta is not None:
+            meta.update(self.meta)
 
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
