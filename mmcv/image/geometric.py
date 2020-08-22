@@ -187,16 +187,19 @@ def imflip(img, direction='horizontal'):
 
     Args:
         img (ndarray): Image to be flipped.
-        direction (str): The flip direction, either "horizontal" or "vertical".
+        direction (str): The flip direction, either "horizontal" or
+            "vertical" or "diagonal".
 
     Returns:
         ndarray: The flipped image.
     """
-    assert direction in ['horizontal', 'vertical']
+    assert direction in ['horizontal', 'vertical', 'diagonal']
     if direction == 'horizontal':
         return np.flip(img, axis=1)
-    else:
+    elif direction == 'vertical':
         return np.flip(img, axis=0)
+    else:
+        return np.flip(img, axis=(0, 1))
 
 
 def imflip_(img, direction='horizontal'):
@@ -204,16 +207,19 @@ def imflip_(img, direction='horizontal'):
 
     Args:
         img (ndarray): Image to be flipped.
-        direction (str): The flip direction, either "horizontal" or "vertical".
+        direction (str): The flip direction, either "horizontal" or
+            "vertical" or "diagonal".
 
     Returns:
         ndarray: The flipped image (inplace).
     """
-    assert direction in ['horizontal', 'vertical']
+    assert direction in ['horizontal', 'vertical', 'diagonal']
     if direction == 'horizontal':
         return cv2.flip(img, 1, img)
-    else:
+    elif direction == 'vertical':
         return cv2.flip(img, 0, img)
+    else:
+        return cv2.flip(img, -1, img)
 
 
 def imrotate(img,

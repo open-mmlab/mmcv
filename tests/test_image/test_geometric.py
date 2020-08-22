@@ -108,6 +108,10 @@ class TestGeometric:
             mmcv.imrescale(self.img, [100, 100])
 
     def test_imflip(self):
+        # direction must be "horizontal" or "vertical" or "diagonal"
+        with pytest.raises(AssertionError):
+            mmcv.imflip(np.random.rand(80, 60, 3), direction='random')
+
         # test horizontal flip (color image)
         img = np.random.rand(80, 60, 3)
         h, w, c = img.shape
@@ -117,6 +121,7 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[i, w - 1 - j, k]
+
         # test vertical flip (color image)
         flipped_img = mmcv.imflip(img, direction='vertical')
         assert flipped_img.shape == img.shape
@@ -124,6 +129,15 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+
+        # test diagonal flip (color image)
+        flipped_img = mmcv.imflip(img, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[h - 1 - i, w - 1 - j, k]
+
         # test horizontal flip (grayscale image)
         img = np.random.rand(80, 60)
         h, w = img.shape
@@ -132,6 +146,7 @@ class TestGeometric:
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[i, w - 1 - j]
+
         # test vertical flip (grayscale image)
         flipped_img = mmcv.imflip(img, direction='vertical')
         assert flipped_img.shape == img.shape
@@ -139,7 +154,18 @@ class TestGeometric:
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
 
+        # test diagonal flip (grayscale image)
+        flipped_img = mmcv.imflip(img, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[h - 1 - i, w - 1 - j]
+
     def test_imflip_(self):
+        # direction must be "horizontal" or "vertical" or "diagonal"
+        with pytest.raises(AssertionError):
+            mmcv.imflip_(np.random.rand(80, 60, 3), direction='random')
+
         # test horizontal flip (color image)
         img = np.random.rand(80, 60, 3)
         h, w, c = img.shape
@@ -164,6 +190,18 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+                    assert flipped_img[i, j, k] == img_for_flip[i, j, k]
+
+        # test diagonal flip (color image)
+        img_for_flip = img.copy()
+        flipped_img = mmcv.imflip_(img_for_flip, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[h - 1 - i, w - 1 - j, k]
                     assert flipped_img[i, j, k] == img_for_flip[i, j, k]
 
         # test horizontal flip (grayscale image)
@@ -188,6 +226,17 @@ class TestGeometric:
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
+                assert flipped_img[i, j] == img_for_flip[i, j]
+
+        # test diagonal flip (grayscale image)
+        img_for_flip = img.copy()
+        flipped_img = mmcv.imflip_(img_for_flip, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[h - 1 - i, w - 1 - j]
                 assert flipped_img[i, j] == img_for_flip[i, j]
 
     def test_imcrop(self):
