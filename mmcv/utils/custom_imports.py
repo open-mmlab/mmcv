@@ -25,10 +25,9 @@ def custom_imports(imports):
     if isinstance(imports, str):
         single_import = True
         imports = [imports]
-
-    assert isinstance(
-        imports,
-        list), (f'custom_imports must be a list but got {type(imports)}')
+    if not isinstance(imports, list):
+        raise TypeError(
+            f'custom_imports must be a list but got type {type(imports)}')
     imported = [importlib.import_module(imp) for imp in imports]
     if single_import:
         imported = imported[0]
