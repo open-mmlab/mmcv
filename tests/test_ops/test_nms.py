@@ -146,13 +146,13 @@ class Testnms(object):
             nms_cfg,
             class_agnostic=False)
 
+        nms_cfg.update(split_thr=100)
         seq_boxes, seq_keep = batched_nms(
             results['boxes'],
             results['scores'],
             results['idxs'],
             nms_cfg,
-            class_agnostic=False,
-            split_thr=100)
+            class_agnostic=False)
 
         assert torch.equal(keep, seq_keep)
         assert torch.equal(boxes, seq_boxes)

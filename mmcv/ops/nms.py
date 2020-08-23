@@ -207,12 +207,7 @@ def soft_nms(boxes,
         return dets.to(device=boxes.device), inds.to(device=boxes.device)
 
 
-def batched_nms(boxes,
-                scores,
-                idxs,
-                nms_cfg,
-                class_agnostic=False,
-                split_thr=10000):
+def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     """Performs non-maximum suppression in a batched fashion.
 
     Modified from https://github.com/pytorch/vision/blob
@@ -228,12 +223,15 @@ def batched_nms(boxes,
             and NMS will not be applied between elements of different idxs,
             shape (N, ).
         nms_cfg (dict): specify nms type and other parameters like iou_thr.
+            Possible keys includes the following.
+
+            - iou_thr (float): IoU threshold used for NMS.
+            - split_thr (float): threshold number of boxes.
+                If the number of boxes is greater than the threshold, it will
+                perform NMS on each group of boxes separately and sequentially.
         class_agnostic (bool): if true, nms is class agnostic,
             i.e. IoU thresholding happens over all boxes,
             regardless of the predicted class.
-        split_thr (int): threshold number for performing NMS separately.
-            If the number of boxes is greater than the threshold, it will
-            perform NMS on each group of boxes separately and sequentially.
 
     Returns:
         tuple: kept dets and indice.
@@ -250,6 +248,7 @@ def batched_nms(boxes,
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = eval(nms_type)
 
+    split_thr = nms_cfg_.pop('split_thr', 10000)
     if len(boxes_for_nms) < split_thr:
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
