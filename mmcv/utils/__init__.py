@@ -26,14 +26,13 @@ except ImportError:
         'get_git_hash'
     ]
 else:
-    from .env import TORCH_VERSION
+    from .env import collect_env
     from .logging import get_logger, print_log
-    from .parrots_wrapper import (CUDA_HOME, BuildExtension, CppExtension,
-                                  CUDAExtension, DataLoader, PoolDataLoader,
-                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
-                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
-                                  _ConvNd, _ConvTransposeMixin, _InstanceNorm,
-                                  _MaxPoolNd, get_build_config)
+    from .parrots_wrapper import (
+        CUDA_HOME, TORCH_VERSION, BuildExtension, CppExtension, CUDAExtension,
+        DataLoader, PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd,
+        _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm, _ConvNd,
+        _ConvTransposeMixin, _InstanceNorm, _MaxPoolNd, get_build_config)
     from .registry import Registry, build_from_cfg
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'get_logger', 'print_log',
