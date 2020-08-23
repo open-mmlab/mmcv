@@ -116,3 +116,6 @@ def test_custom_imports():
     assert mmcv.custom_imports(None) is None
     assert mmcv.custom_imports([]) is None
     assert mmcv.custom_imports('') is None
+    # Unsupported type
+    with pytest.raises(TypeError):
+        mmcv.custom_imports(1)
