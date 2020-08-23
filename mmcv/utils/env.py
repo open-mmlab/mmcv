@@ -26,7 +26,7 @@ def collect_env():
             - NVCC (optional): NVCC version.
             - GCC: GCC version, "n/a" if GCC is not installed.
             - PyTorch: PyTorch version.
-            - PyTorch compiling details: The output of
+            - PyTorch compiling details: The output of \
                 ``torch.__config__.show()``.
             - TorchVision (optional): TorchVision version.
             - OpenCV: OpenCV version.
