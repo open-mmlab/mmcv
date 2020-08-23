@@ -3,7 +3,6 @@ import sys
 import pytest
 
 import mmcv
-from mmcv.utils import collect_env
 
 
 def test_collect_env():
@@ -12,14 +11,19 @@ def test_collect_env():
     except ModuleNotFoundError:
         pytest.skip('skipping tests that require PyTorch')
 
+    from mmcv.utils import collect_env
     env_info = collect_env()
     expected_keys = [
-        'sys.platform', 'Python', 'CUDA available', 'CUDA_HOME', 'NVCC',
-        'PyTorch', 'PyTorch compiling details', 'OpenCV', 'MMCV',
-        'MMCV Compiler', 'MMCV CUDA Compiler'
+        'sys.platform', 'Python', 'CUDA available', 'PyTorch',
+        'PyTorch compiling details', 'OpenCV', 'MMCV', 'MMCV Compiler',
+        'MMCV CUDA Compiler'
     ]
     for key in expected_keys:
         assert key in env_info
+
+    if env_info['CUDA available']:
+        for key in ['CUDA_HOME', 'NVCC']:
+            assert key in env_info
 
     if sys.platform != 'win32':
         assert 'GCC' in env_info

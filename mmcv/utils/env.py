@@ -45,8 +45,8 @@ def collect_env():
         devices = defaultdict(list)
         for k in range(torch.cuda.device_count()):
             devices[torch.cuda.get_device_name(k)].append(str(k))
-        for name, devids in devices.items():
-            env_info['GPU ' + ','.join(devids)] = name
+        for name, device_ids in devices.items():
+            env_info['GPU ' + ','.join(device_ids)] = name
 
         from torch.utils.cpp_extension import CUDA_HOME
         env_info['CUDA_HOME'] = CUDA_HOME
