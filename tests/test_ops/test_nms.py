@@ -132,3 +132,28 @@ class Testnms(object):
         wrong_dets = np.zeros((2, 3))
         with pytest.raises(AssertionError):
             nms_match(wrong_dets, iou_thr)
+
+    def test_batched_nms(self):
+        import mmcv
+        from mmcv.ops import batched_nms
+        results = mmcv.load('./tests/data/batched_nms_data.pkl')
+
+        nms_cfg = dict(type='nms', iou_threshold=0.7)
+        boxes, keep = batched_nms(
+            results['boxes'],
+            results['scores'],
+            results['idxs'],
+            nms_cfg,
+            class_agnostic=False)
+
+        nms_cfg.update(split_thr=100)
+        seq_boxes, seq_keep = batched_nms(
+            results['boxes'],
+            results['scores'],
+            results['idxs'],
+            nms_cfg,
+            class_agnostic=False)
+
+        assert torch.equal(keep, seq_keep)
+        assert torch.equal(boxes, seq_boxes)
+        assert torch.equal(keep, results['keep'])
