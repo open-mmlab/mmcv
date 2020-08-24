@@ -102,7 +102,7 @@ def test_requires_executable(capsys):
     assert func_c() == 1
 
 
-def test_custom_imports():
+def test_import_modules_from_strings():
     # multiple imports
     runner, image = mmcv.import_modules_from_strings(
         ['mmcv.runner', 'mmcv.image'])
