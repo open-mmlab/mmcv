@@ -336,6 +336,19 @@ def test_dump_mapping():
     assert text_cfg._cfg_dict == cfg._cfg_dict
 
 
+def test_dump_multi_line_string():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/multi_line.py')
+    cfg = Config.fromfile(cfg_file)
+
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
+        print(cfg.dump())
+        cfg.dump(text_cfg_filename)
+        text_cfg = Config.fromfile(text_cfg_filename)
+
+    assert text_cfg._cfg_dict == cfg._cfg_dict
+
+
 def test_reserved_key():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/g.py')
     with pytest.raises(KeyError):
