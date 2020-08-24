@@ -1,11 +1,10 @@
 # flake8: noqa
 # Copyright (c) Open-MMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
-from .custom_imports import import_modules_from_strings
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
-                   is_list_of, is_seq_of, is_str, is_tuple_of, iter_cast,
-                   list_cast, requires_executable, requires_package,
-                   slice_list, tuple_cast)
+                   import_modules_from_strings, is_list_of, is_seq_of, is_str,
+                   is_tuple_of, iter_cast, list_cast, requires_executable,
+                   requires_package, slice_list, tuple_cast)
 from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
                    scandir, symlink)
 from .progressbar import (ProgressBar, track_iter_progress,

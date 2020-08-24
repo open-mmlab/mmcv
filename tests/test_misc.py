@@ -106,13 +106,13 @@ def test_custom_imports():
     # multiple imports
     runner, image = mmcv.import_modules_from_strings(
         ['mmcv.runner', 'mmcv.image'])
-    import mmcv.runner as runner2
-    import mmcv.image as image2
-    assert runner == runner2
-    assert image == image2
+    import mmcv.runner as runner_
+    import mmcv.image as image_
+    assert runner == runner_
+    assert image == image_
     # single imports
     runner = mmcv.import_modules_from_strings('mmcv.runner')
-    assert runner == runner2
+    assert runner == runner_
     # No imports
     assert mmcv.import_modules_from_strings(None) is None
     assert mmcv.import_modules_from_strings([]) is None
@@ -122,3 +122,15 @@ def test_custom_imports():
         mmcv.import_modules_from_strings(1)
     with pytest.raises(TypeError):
         mmcv.import_modules_from_strings([1])
+    # Failed imports
+    with pytest.raises(ImportError):
+        mmcv.import_modules_from_strings('_not_implemented_module')
+    with pytest.warns(UserWarning):
+        imported = mmcv.import_modules_from_strings(
+            '_not_implemented_module', allow_failed_imports=True)
+        assert imported is None
+    with pytest.warns(UserWarning):
+        imported = mmcv.import_modules_from_strings(
+            ['mmcv.runner', '_not_implemented'], allow_failed_imports=True)
+        assert imported[0] == runner_
+        assert imported[1] is None
