@@ -1,11 +1,11 @@
 #include "carafe_naive_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-int CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
-                                         const Tensor masks, Tensor output,
-                                         const int kernel_size,
-                                         const int group_size,
-                                         const int scale_factor) {
+void CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
+                                          const Tensor masks, Tensor output,
+                                          const int kernel_size,
+                                          const int group_size,
+                                          const int scale_factor) {
   int output_size = output.numel();
   int channels = output.size(1);
   int height = output.size(2);
@@ -23,10 +23,9 @@ int CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
       }));
 
   AT_CUDA_CHECK(cudaGetLastError());
-  return 0;
 }
 
-int CARAFENAIVEBackwardCUDAKernelLauncher(
+void CARAFENAIVEBackwardCUDAKernelLauncher(
     const Tensor top_grad, const Tensor features, const Tensor masks,
     Tensor bottom_grad, Tensor mask_grad, const int kernel_size,
     const int group_size, const int scale_factor) {
@@ -49,5 +48,4 @@ int CARAFENAIVEBackwardCUDAKernelLauncher(
       }));
 
   AT_CUDA_CHECK(cudaGetLastError());
-  return 0;
 }
