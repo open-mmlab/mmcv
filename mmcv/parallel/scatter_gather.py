@@ -15,7 +15,11 @@ def scatter(inputs, target_gpus, dim=0):
 
     def scatter_map(obj):
         if isinstance(obj, torch.Tensor):
-            return OrigScatter.apply(target_gpus, None, dim, obj)
+            if target_gpus != [-1]:
+                return OrigScatter.apply(target_gpus, None, dim, obj)
+            else:
+                # for CPU inference we use self-implemented scatter
+                return Scatter.forward(target_gpus, obj)
         if isinstance(obj, DataContainer):
             if obj.cpu_only:
                 return obj.data
@@ -43,7 +47,7 @@ def scatter(inputs, target_gpus, dim=0):
 
 
 def scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
-    """Scatter with support for kwargs dictionary"""
+    """Scatter with support for kwargs dictionary."""
     inputs = scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []
     if len(inputs) < len(kwargs):

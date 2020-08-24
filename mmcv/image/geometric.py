@@ -1,6 +1,15 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import numbers
+
 import cv2
 import numpy as np
+
+from .io import imread_backend
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 
 def _scale_size(size, scale):
@@ -17,7 +26,7 @@ def _scale_size(size, scale):
     return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
 
 
-interp_codes = {
+cv2_interp_codes = {
     'nearest': cv2.INTER_NEAREST,
     'bilinear': cv2.INTER_LINEAR,
     'bicubic': cv2.INTER_CUBIC,
@@ -25,12 +34,23 @@ interp_codes = {
     'lanczos': cv2.INTER_LANCZOS4
 }
 
+if Image is not None:
+    pillow_interp_codes = {
+        'nearest': Image.NEAREST,
+        'bilinear': Image.BILINEAR,
+        'bicubic': Image.BICUBIC,
+        'box': Image.BOX,
+        'lanczos': Image.LANCZOS,
+        'hamming': Image.HAMMING
+    }
+
 
 def imresize(img,
              size,
              return_scale=False,
              interpolation='bilinear',
-             out=None):
+             out=None,
+             backend=None):
     """Resize image to a given size.
 
     Args:
@@ -38,16 +58,32 @@ def imresize(img,
         size (tuple[int]): Target size (w, h).
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Interpolation method, accepted values are
-            "nearest", "bilinear", "bicubic", "area", "lanczos".
+            "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
+            backend, "nearest", "bilinear" for 'pillow' backend.
         out (ndarray): The output destination.
+        backend (str | None): The image resize backend type. Options are `cv2`,
+            `pillow`, `None`. If backend is None, the global imread_backend
+            specified by ``mmcv.use_backend()`` will be used. Default: None.
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = img.shape[:2]
-    resized_img = cv2.resize(
-        img, size, dst=out, interpolation=interp_codes[interpolation])
+    if backend is None:
+        backend = imread_backend
+    if backend not in ['cv2', 'pillow']:
+        raise ValueError(f'backend: {backend} is not supported for resize.'
+                         f"Supported backends are 'cv2', 'pillow'")
+
+    if backend == 'pillow':
+        assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
+        pil_image = Image.fromarray(img)
+        pil_image = pil_image.resize(size, pillow_interp_codes[interpolation])
+        resized_img = np.array(pil_image)
+    else:
+        resized_img = cv2.resize(
+            img, size, dst=out, interpolation=cv2_interp_codes[interpolation])
     if not return_scale:
         return resized_img
     else:
@@ -56,7 +92,11 @@ def imresize(img,
         return resized_img, w_scale, h_scale
 
 
-def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
+def imresize_like(img,
+                  dst_img,
+                  return_scale=False,
+                  interpolation='bilinear',
+                  backend=None):
     """Resize image to the same size of a given image.
 
     Args:
@@ -64,13 +104,14 @@ def imresize_like(img, dst_img, return_scale=False, interpolation='bilinear'):
         dst_img (ndarray): The target image.
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
         interpolation (str): Same as :func:`resize`.
+        backend (str | None): Same as :func:`resize`.
 
     Returns:
         tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = dst_img.shape[:2]
-    return imresize(img, (w, h), return_scale, interpolation)
+    return imresize(img, (w, h), return_scale, interpolation, backend=backend)
 
 
 def rescale_size(old_size, scale, return_scale=False):
@@ -110,7 +151,11 @@ def rescale_size(old_size, scale, return_scale=False):
         return new_size
 
 
-def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
+def imrescale(img,
+              scale,
+              return_scale=False,
+              interpolation='bilinear',
+              backend=None):
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -122,13 +167,15 @@ def imrescale(img, scale, return_scale=False, interpolation='bilinear'):
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image.
         interpolation (str): Same as :func:`resize`.
+        backend (str | None): Same as :func:`resize`.
 
     Returns:
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
     new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
-    rescaled_img = imresize(img, new_size, interpolation=interpolation)
+    rescaled_img = imresize(
+        img, new_size, interpolation=interpolation, backend=backend)
     if return_scale:
         return rescaled_img, scale_factor
     else:
@@ -140,16 +187,19 @@ def imflip(img, direction='horizontal'):
 
     Args:
         img (ndarray): Image to be flipped.
-        direction (str): The flip direction, either "horizontal" or "vertical".
+        direction (str): The flip direction, either "horizontal" or
+            "vertical" or "diagonal".
 
     Returns:
         ndarray: The flipped image.
     """
-    assert direction in ['horizontal', 'vertical']
+    assert direction in ['horizontal', 'vertical', 'diagonal']
     if direction == 'horizontal':
         return np.flip(img, axis=1)
-    else:
+    elif direction == 'vertical':
         return np.flip(img, axis=0)
+    else:
+        return np.flip(img, axis=(0, 1))
 
 
 def imflip_(img, direction='horizontal'):
@@ -157,16 +207,19 @@ def imflip_(img, direction='horizontal'):
 
     Args:
         img (ndarray): Image to be flipped.
-        direction (str): The flip direction, either "horizontal" or "vertical".
+        direction (str): The flip direction, either "horizontal" or
+            "vertical" or "diagonal".
 
     Returns:
         ndarray: The flipped image (inplace).
     """
-    assert direction in ['horizontal', 'vertical']
+    assert direction in ['horizontal', 'vertical', 'diagonal']
     if direction == 'horizontal':
         return cv2.flip(img, 1, img)
-    else:
+    elif direction == 'vertical':
         return cv2.flip(img, 0, img)
+    else:
+        return cv2.flip(img, -1, img)
 
 
 def imrotate(img,
@@ -311,29 +364,86 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         return patches
 
 
-def impad(img, shape, pad_val=0):
-    """Pad an image to a certain shape.
+def impad(img,
+          *,
+          shape=None,
+          padding=None,
+          pad_val=0,
+          padding_mode='constant'):
+    """Pad the given image to a certain shape or pad on all sides with
+    specified padding mode and padding value.
 
     Args:
         img (ndarray): Image to be padded.
-        shape (tuple[int]): Expected padding shape (h, w).
+        shape (tuple[int]): Expected padding shape (h, w). Default: None.
+        padding (int or tuple[int]): Padding on each border. If a single int is
+            provided this is used to pad all borders. If tuple of length 2 is
+            provided this is the padding on left/right and top/bottom
+            respectively. If a tuple of length 4 is provided this is the
+            padding for the left, top, right and bottom borders respectively.
+            Default: None. Note that `shape` and `padding` can not be both
+            set.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
-            areas. Default: 0.
+            areas when padding_mode is 'constant'. Default: 0.
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Default: constant.
+
+            - constant: pads with a constant value, this value is specified
+                with pad_val.
+            - edge: pads with the last value at the edge of the image.
+            - reflect: pads with reflection of image without repeating the
+                last value on the edge. For example, padding [1, 2, 3, 4]
+                with 2 elements on both sides in reflect mode will result
+                in [3, 2, 1, 2, 3, 4, 3, 2].
+            - symmetric: pads with reflection of image repeating the last
+                value on the edge. For example, padding [1, 2, 3, 4] with
+                2 elements on both sides in symmetric mode will result in
+                [2, 1, 1, 2, 3, 4, 4, 3]
 
     Returns:
         ndarray: The padded image.
     """
-    if not isinstance(pad_val, (int, float)):
+
+    assert (shape is not None) ^ (padding is not None)
+    if shape is not None:
+        padding = (0, 0, shape[1] - img.shape[1], shape[0] - img.shape[0])
+
+    # check pad_val
+    if isinstance(pad_val, tuple):
         assert len(pad_val) == img.shape[-1]
-    if len(shape) < len(img.shape):
-        shape = shape + (img.shape[-1], )
-    assert len(shape) == len(img.shape)
-    for s, img_s in zip(shape, img.shape):
-        assert s >= img_s
-    pad = np.empty(shape, dtype=img.dtype)
-    pad[...] = pad_val
-    pad[:img.shape[0], :img.shape[1], ...] = img
-    return pad
+    elif not isinstance(pad_val, numbers.Number):
+        raise TypeError('pad_val must be a int or a tuple. '
+                        f'But received {type(pad_val)}')
+
+    # check padding
+    if isinstance(padding, tuple) and len(padding) in [2, 4]:
+        if len(padding) == 2:
+            padding = (padding[0], padding[1], padding[0], padding[1])
+    elif isinstance(padding, numbers.Number):
+        padding = (padding, padding, padding, padding)
+    else:
+        raise ValueError('Padding must be a int or a 2, or 4 element tuple.'
+                         f'But received {padding}')
+
+    # check padding mode
+    assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+
+    border_type = {
+        'constant': cv2.BORDER_CONSTANT,
+        'edge': cv2.BORDER_REPLICATE,
+        'reflect': cv2.BORDER_REFLECT_101,
+        'symmetric': cv2.BORDER_REFLECT
+    }
+    img = cv2.copyMakeBorder(
+        img,
+        padding[1],
+        padding[3],
+        padding[0],
+        padding[2],
+        border_type[padding_mode],
+        value=pad_val)
+
+    return img
 
 
 def impad_to_multiple(img, divisor, pad_val=0):
@@ -349,4 +459,4 @@ def impad_to_multiple(img, divisor, pad_val=0):
     """
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
-    return impad(img, (pad_h, pad_w), pad_val)
+    return impad(img, shape=(pad_h, pad_w))

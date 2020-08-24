@@ -35,6 +35,18 @@ class TestGeometric:
                 self.img, (1000, 600), interpolation=mode)
             assert resized_img.shape == (600, 1000, 3)
 
+        # test pillow resize
+        for mode in [
+                'nearest', 'bilinear', 'bicubic', 'box', 'lanczos', 'hamming'
+        ]:
+            resized_img = mmcv.imresize(
+                self.img, (1000, 600), interpolation=mode, backend='pillow')
+            assert resized_img.shape == (600, 1000, 3)
+
+        # resize backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.imresize(self.img, (1000, 600), backend='not support')
+
     def test_imresize_like(self):
         a = np.zeros((100, 200, 3))
         resized_img = mmcv.imresize_like(self.img, a)
@@ -96,6 +108,10 @@ class TestGeometric:
             mmcv.imrescale(self.img, [100, 100])
 
     def test_imflip(self):
+        # direction must be "horizontal" or "vertical" or "diagonal"
+        with pytest.raises(AssertionError):
+            mmcv.imflip(np.random.rand(80, 60, 3), direction='random')
+
         # test horizontal flip (color image)
         img = np.random.rand(80, 60, 3)
         h, w, c = img.shape
@@ -105,6 +121,7 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[i, w - 1 - j, k]
+
         # test vertical flip (color image)
         flipped_img = mmcv.imflip(img, direction='vertical')
         assert flipped_img.shape == img.shape
@@ -112,6 +129,15 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+
+        # test diagonal flip (color image)
+        flipped_img = mmcv.imflip(img, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[h - 1 - i, w - 1 - j, k]
+
         # test horizontal flip (grayscale image)
         img = np.random.rand(80, 60)
         h, w = img.shape
@@ -120,6 +146,7 @@ class TestGeometric:
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[i, w - 1 - j]
+
         # test vertical flip (grayscale image)
         flipped_img = mmcv.imflip(img, direction='vertical')
         assert flipped_img.shape == img.shape
@@ -127,7 +154,18 @@ class TestGeometric:
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
 
+        # test diagonal flip (grayscale image)
+        flipped_img = mmcv.imflip(img, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[h - 1 - i, w - 1 - j]
+
     def test_imflip_(self):
+        # direction must be "horizontal" or "vertical" or "diagonal"
+        with pytest.raises(AssertionError):
+            mmcv.imflip_(np.random.rand(80, 60, 3), direction='random')
+
         # test horizontal flip (color image)
         img = np.random.rand(80, 60, 3)
         h, w, c = img.shape
@@ -152,6 +190,18 @@ class TestGeometric:
             for j in range(w):
                 for k in range(c):
                     assert flipped_img[i, j, k] == img[h - 1 - i, j, k]
+                    assert flipped_img[i, j, k] == img_for_flip[i, j, k]
+
+        # test diagonal flip (color image)
+        img_for_flip = img.copy()
+        flipped_img = mmcv.imflip_(img_for_flip, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
+        for i in range(h):
+            for j in range(w):
+                for k in range(c):
+                    assert flipped_img[i, j, k] == img[h - 1 - i, w - 1 - j, k]
                     assert flipped_img[i, j, k] == img_for_flip[i, j, k]
 
         # test horizontal flip (grayscale image)
@@ -176,6 +226,17 @@ class TestGeometric:
         for i in range(h):
             for j in range(w):
                 assert flipped_img[i, j] == img[h - 1 - i, j]
+                assert flipped_img[i, j] == img_for_flip[i, j]
+
+        # test diagonal flip (grayscale image)
+        img_for_flip = img.copy()
+        flipped_img = mmcv.imflip_(img_for_flip, direction='diagonal')
+        assert flipped_img.shape == img.shape
+        assert flipped_img.shape == img_for_flip.shape
+        assert id(flipped_img) == id(img_for_flip)
+        for i in range(h):
+            for j in range(w):
+                assert flipped_img[i, j] == img[h - 1 - i, w - 1 - j]
                 assert flipped_img[i, j] == img_for_flip[i, j]
 
     def test_imcrop(self):
@@ -201,29 +262,29 @@ class TestGeometric:
         patches = mmcv.imcrop(self.img, bboxes)
         assert len(patches) == bboxes.shape[0]
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and no padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2)
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/scale_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/scale_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
         # crop with scaling and padding
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=[255, 255, 0])
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/pad_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/pad_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
         patches = mmcv.imcrop(self.img, bboxes, 1.2, pad_fill=0)
         for i in range(len(patches)):
-            ref_patch = np.load(patch_path + '/pad0_{}.npy'.format(i))
+            ref_patch = np.load(patch_path + f'/pad0_{i}.npy')
             assert_array_equal(patches[i], ref_patch)
 
     def test_impad(self):
         # grayscale image
         img = np.random.rand(10, 10).astype(np.float32)
-        padded_img = mmcv.impad(img, (15, 12), 0)
+        padded_img = mmcv.impad(img, padding=(0, 0, 2, 5), pad_val=0)
         assert_array_equal(img, padded_img[:10, :10])
         assert_array_equal(
             np.zeros((5, 12), dtype='float32'), padded_img[10:, :])
@@ -232,15 +293,17 @@ class TestGeometric:
 
         # RGB image
         img = np.random.rand(10, 10, 3).astype(np.float32)
-        padded_img = mmcv.impad(img, (15, 12), 0)
+        padded_img = mmcv.impad(img, padding=(0, 0, 2, 5), pad_val=0)
         assert_array_equal(img, padded_img[:10, :10, :])
         assert_array_equal(
             np.zeros((5, 12, 3), dtype='float32'), padded_img[10:, :, :])
         assert_array_equal(
             np.zeros((15, 2, 3), dtype='float32'), padded_img[:, 10:, :])
 
+        # RGB image with different values for three channels.
         img = np.random.randint(256, size=(10, 10, 3)).astype('uint8')
-        padded_img = mmcv.impad(img, (15, 12, 3), [100, 110, 120])
+        padded_img = mmcv.impad(
+            img, padding=(0, 0, 2, 5), pad_val=(100, 110, 120))
         assert_array_equal(img, padded_img[:10, :10, :])
         assert_array_equal(
             np.array([100, 110, 120], dtype='uint8') * np.ones(
@@ -249,12 +312,105 @@ class TestGeometric:
             np.array([100, 110, 120], dtype='uint8') * np.ones(
                 (15, 2, 3), dtype='uint8'), padded_img[:, 10:, :])
 
+        # Pad the grayscale image to shape (15, 12)
+        img = np.random.rand(10, 10).astype(np.float32)
+        padded_img = mmcv.impad(img, shape=(15, 12))
+        assert_array_equal(img, padded_img[:10, :10])
+        assert_array_equal(
+            np.zeros((5, 12), dtype='float32'), padded_img[10:, :])
+        assert_array_equal(
+            np.zeros((15, 2), dtype='float32'), padded_img[:, 10:])
+
+        # Pad the RGB image to shape (15, 12)
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        padded_img = mmcv.impad(img, shape=(15, 12))
+        assert_array_equal(img, padded_img[:10, :10, :])
+        assert_array_equal(
+            np.zeros((5, 12, 3), dtype='float32'), padded_img[10:, :, :])
+        assert_array_equal(
+            np.zeros((15, 2, 3), dtype='float32'), padded_img[:, 10:, :])
+
+        # Pad the RGB image to shape (15, 12) with different values for
+        # three channels.
+        img = np.random.randint(256, size=(10, 10, 3)).astype('uint8')
+        padded_img = mmcv.impad(img, shape=(15, 12), pad_val=(100, 110, 120))
+        assert_array_equal(img, padded_img[:10, :10, :])
+        assert_array_equal(
+            np.array([100, 110, 120], dtype='uint8') * np.ones(
+                (5, 12, 3), dtype='uint8'), padded_img[10:, :, :])
+        assert_array_equal(
+            np.array([100, 110, 120], dtype='uint8') * np.ones(
+                (15, 2, 3), dtype='uint8'), padded_img[:, 10:, :])
+
+        # RGB image with padding=[5, 2]
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        padded_img = mmcv.impad(img, padding=(5, 2), pad_val=0)
+
+        assert padded_img.shape == (14, 20, 3)
+        assert_array_equal(img, padded_img[2:12, 5:15, :])
+        assert_array_equal(
+            np.zeros((2, 5, 3), dtype='float32'), padded_img[:2, :5, :])
+        assert_array_equal(
+            np.zeros((2, 5, 3), dtype='float32'), padded_img[12:, :5, :])
+        assert_array_equal(
+            np.zeros((2, 5, 3), dtype='float32'), padded_img[:2, 15:, :])
+        assert_array_equal(
+            np.zeros((2, 5, 3), dtype='float32'), padded_img[12:, 15:, :])
+
+        # RGB image with type(pad_val) = tuple
+        pad_val = (0, 1, 2)
+        img = np.random.rand(10, 10, 3).astype(np.float32)
+        padded_img = mmcv.impad(img, padding=(0, 0, 5, 2), pad_val=pad_val)
+
+        assert padded_img.shape == (12, 15, 3)
+        assert_array_equal(img, padded_img[:10, :10, :])
+        assert_array_equal(pad_val[0] * np.ones((2, 15, 1), dtype='float32'),
+                           padded_img[10:, :, 0:1])
+        assert_array_equal(pad_val[1] * np.ones((2, 15, 1), dtype='float32'),
+                           padded_img[10:, :, 1:2])
+        assert_array_equal(pad_val[2] * np.ones((2, 15, 1), dtype='float32'),
+                           padded_img[10:, :, 2:3])
+
+        assert_array_equal(pad_val[0] * np.ones((12, 5, 1), dtype='float32'),
+                           padded_img[:, 10:, 0:1])
+        assert_array_equal(pad_val[1] * np.ones((12, 5, 1), dtype='float32'),
+                           padded_img[:, 10:, 1:2])
+        assert_array_equal(pad_val[2] * np.ones((12, 5, 1), dtype='float32'),
+                           padded_img[:, 10:, 2:3])
+
+        # test different padding mode with channel number = 3
+        for mode in ['constant', 'edge', 'reflect', 'symmetric']:
+            img = np.random.rand(10, 10, 3).astype(np.float32)
+            padded_img = mmcv.impad(
+                img, padding=(0, 0, 5, 2), pad_val=pad_val, padding_mode=mode)
+            assert padded_img.shape == (12, 15, 3)
+
+        # test different padding mode with channel number = 1
+        for mode in ['constant', 'edge', 'reflect', 'symmetric']:
+            img = np.random.rand(10, 10).astype(np.float32)
+            padded_img = mmcv.impad(
+                img, padding=(0, 0, 5, 2), pad_val=0, padding_mode=mode)
+            assert padded_img.shape == (12, 15)
+
+        # Padding must be a int or a 2, or 4 element tuple.
+        with pytest.raises(ValueError):
+            mmcv.impad(img, padding=(1, 1, 1))
+
+        # pad_val must be a int or a tuple
+        with pytest.raises(TypeError):
+            mmcv.impad(img, padding=(1, 1, 1, 1), pad_val='wrong')
+
+        # When pad_val is a tuple,
+        # len(pad_val) should be equal to img.shape[-1]
+        img = np.random.rand(10, 10, 3).astype(np.float32)
         with pytest.raises(AssertionError):
-            mmcv.impad(img, (15, ), 0)
+            mmcv.impad(img, padding=3, pad_val=(100, 200))
+
         with pytest.raises(AssertionError):
-            mmcv.impad(img, (5, 5), 0)
+            mmcv.impad(img, padding=2, pad_val=0, padding_mode='unknown')
+
         with pytest.raises(AssertionError):
-            mmcv.impad(img, (5, 5), [0, 1])
+            mmcv.impad(img, shape=(12, 15), padding=(0, 0, 5, 2))
 
     def test_impad_to_multiple(self):
         img = np.random.rand(11, 14, 3).astype(np.float32)

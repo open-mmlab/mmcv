@@ -200,7 +200,7 @@ class VideoReader:
                    start=0,
                    max_num=0,
                    show_progress=True):
-        """Convert a video to frame images
+        """Convert a video to frame images.
 
         Args:
             frame_dir (str): Output directory to store all the frame images.
@@ -282,7 +282,7 @@ def frames2video(frame_dir,
                  start=0,
                  end=0,
                  show_progress=True):
-    """Read the frame images from a directory and join them as a video
+    """Read the frame images from a directory and join them as a video.
 
     Args:
         frame_dir (str): The directory containing video frames.

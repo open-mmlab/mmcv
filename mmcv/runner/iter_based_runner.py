@@ -115,7 +115,7 @@ class IterBasedRunner(BaseRunner):
                 iter_runner = getattr(self, mode)
                 for _ in range(iters):
                     if mode == 'train' and self.iter >= max_iters:
-                        return
+                        break
                     iter_runner(iter_loaders[i], **kwargs)
 
         time.sleep(1)  # wait for some hooks like loggers to finish
@@ -183,7 +183,8 @@ class IterBasedRunner(BaseRunner):
         else:
             raise TypeError(
                 f'meta should be a dict or None, but got {type(meta)}')
-        meta.update(self.meta)
+        if self.meta is not None:
+            meta.update(self.meta)
 
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)
@@ -221,5 +222,6 @@ class IterBasedRunner(BaseRunner):
         self.register_checkpoint_hook(checkpoint_config)
         self.register_hook(IterTimerHook())
         if log_config is not None:
-            log_config.setdefault('by_epoch', False)
+            for info in log_config['hooks']:
+                info.setdefault('by_epoch', False)
         self.register_logger_hooks(log_config)

@@ -26,6 +26,39 @@ To load and use configs
 ...      d='string')
 ```
 
+For all format configs, some predefined variables are supported. It will convert the variable in `{{ var }}` with its real value.
+
+Currently, it supports four predefined variables:
+
+`{{ fileDirname }}` - the current opened file's dirname, e.g. /home/your-username/your-project/folder
+
+`{{ fileBasename }}` - the current opened file's basename, e.g. file.ext
+
+`{{ fileBasenameNoExtension }}` - the current opened file's basename with no file extension, e.g. file
+
+`{{ fileExtname }}` - the current opened file's extension, e.g. .ext
+
+These variable names are referred from https://code.visualstudio.com/docs/editor/variables-reference.
+
+Here is one examples of config with predefined variables.
+
+`config_a.py`
+
+```python
+a = 1
+b = './work_dir/{{ fileBasenameNoExtension }}'
+c = '{{ fileExtname }}'
+```
+
+```python
+>>> cfg = Config.fromfile('./config_a.py')
+>>> print(cfg)
+>>> dict(a=1,
+...      b='./work_dir/config_a',
+...      c='.py')
+```
+
+
 For all format configs, inheritance is supported. To reuse fields in other config files,
 specify `_base_='./config_a.py'` or a list of configs `_base_=['./config_a.py', './config_b.py']`.
 Here are 4 examples of config inheritance.

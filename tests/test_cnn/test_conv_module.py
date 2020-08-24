@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import CONV_LAYERS, ConvModule
+from mmcv.cnn.bricks import CONV_LAYERS, ConvModule, HSigmoid, HSwish
 
 
 @CONV_LAYERS.register_module()
@@ -132,6 +132,18 @@ def test_conv_module():
     # PReLU
     conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='PReLU'))
     assert isinstance(conv.activate, nn.PReLU)
+    output = conv(x)
+    assert output.shape == (1, 8, 256, 256)
+
+    # HSwish
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='HSwish'))
+    assert isinstance(conv.activate, HSwish)
+    output = conv(x)
+    assert output.shape == (1, 8, 256, 256)
+
+    # HSigmoid
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='HSigmoid'))
+    assert isinstance(conv.activate, HSigmoid)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 

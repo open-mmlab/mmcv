@@ -53,7 +53,7 @@ def imdenormalize(img, mean, std, to_bgr=True):
 
 
 def iminvert(img):
-    """Invert (negate) an image
+    """Invert (negate) an image.
 
     Args:
         img (ndarray): Image to be inverted.

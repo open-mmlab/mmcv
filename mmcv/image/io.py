@@ -70,7 +70,7 @@ def _jpegflag(flag='color', channel_order='bgr'):
 
 
 def _pillow2array(img, flag='color', channel_order='bgr'):
-    """Convert a pillow image to numpy array
+    """Convert a pillow image to numpy array.
 
     Args:
         img (:obj:`PIL.Image.Image`): The image loaded using PIL
@@ -131,10 +131,10 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
             candidates are `color`, `grayscale` and `unchanged`.
             Note that the `turbojpeg` backened does not support `unchanged`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
-        backend (str|None): The image decoding backend type. Options are `cv2`,
-            `pillow`, `turbojpeg`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Default: None.
+        backend (str | None): The image decoding backend type. Options are
+            `cv2`, `pillow`, `turbojpeg`, `None`. If backend is None, the
+            global imread_backend specified by ``mmcv.use_backend()`` will be
+            used. Default: None.
 
     Returns:
         ndarray: Loaded image array.
@@ -181,10 +181,10 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
     Args:
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
-        backend (str|None): The image decoding backend type. Options are `cv2`,
-            `pillow`, `turbojpeg`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Default: None.
+        backend (str | None): The image decoding backend type. Options are
+            `cv2`, `pillow`, `turbojpeg`, `None`. If backend is None, the
+            global imread_backend specified by ``mmcv.use_backend()`` will be
+            used. Default: None.
 
     Returns:
         ndarray: Loaded image array.
@@ -215,7 +215,7 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
 
 
 def imwrite(img, file_path, params=None, auto_mkdir=True):
-    """Write image to file
+    """Write image to file.
 
     Args:
         img (ndarray): Image array to be written.

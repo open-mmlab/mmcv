@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+# cython: language_level=3
 STUFF = "Hi"
 
 import numpy as np

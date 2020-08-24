@@ -5,11 +5,11 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 
 from ..runner import load_checkpoint
-from .weight_init import constant_init, kaiming_init
+from .utils import constant_init, kaiming_init
 
 
 def conv3x3(in_planes, out_planes, stride=1, dilation=1):
-    """3x3 convolution with padding"""
+    """3x3 convolution with padding."""
     return nn.Conv2d(
         in_planes,
         out_planes,
@@ -75,8 +75,8 @@ class Bottleneck(nn.Module):
                  with_cp=False):
         """Bottleneck block.
 
-        If style is "pytorch", the stride-two layer is the 3x3 conv layer,
-        if it is "caffe", the stride-two layer is the first 1x1 conv layer.
+        If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
+        it is "caffe", the stride-two layer is the first 1x1 conv layer.
         """
         super(Bottleneck, self).__init__()
         assert style in ['pytorch', 'caffe']
