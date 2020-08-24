@@ -10,7 +10,7 @@ from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
 from .progressbar import (ProgressBar, track_iter_progress,
                           track_parallel_progress, track_progress)
 from .timer import Timer, TimerError, check_time
-from .version_utils import get_git_hash
+from .version_utils import digit_version, get_git_hash, parse_version_info
 
 try:
     import torch
@@ -23,7 +23,8 @@ except ImportError:
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
-        'get_git_hash', 'import_modules_from_strings'
+        'digit_version', 'get_git_hash', 'parse_version_info',
+        'import_modules_from_strings'
     ]
 else:
     from .env import collect_env
@@ -47,6 +48,6 @@ else:
         '_AvgPoolNd', '_BatchNorm', '_ConvNd', '_ConvTransposeMixin',
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
-        'TORCH_VERSION', 'deprecated_api_warning', 'get_git_hash',
-        'import_modules_from_strings'
+        'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
+        'get_git_hash', 'parse_version_info', 'import_modules_from_strings'
     ]
