@@ -1,7 +1,7 @@
 # flake8: noqa
 # Copyright (c) Open-MMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
-from .custom_imports import custom_imports
+from .custom_imports import import_modules_from_strings
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
                    is_list_of, is_seq_of, is_str, is_tuple_of, iter_cast,
                    list_cast, requires_executable, requires_package,
@@ -24,7 +24,7 @@ except ImportError:
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
-        'get_git_hash', 'custom_imports'
+        'get_git_hash', 'import_modules_from_strings'
     ]
 else:
     from .env import TORCH_VERSION
@@ -50,5 +50,5 @@ else:
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION', 'deprecated_api_warning', 'get_git_hash',
-        'custom_imports'
+        'import_modules_from_strings'
     ]

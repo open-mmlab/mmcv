@@ -104,18 +104,21 @@ def test_requires_executable(capsys):
 
 def test_custom_imports():
     # multiple imports
-    runner, image = mmcv.custom_imports(['mmcv.runner', 'mmcv.image'])
+    runner, image = mmcv.import_modules_from_strings(
+        ['mmcv.runner', 'mmcv.image'])
     import mmcv.runner as runner2
     import mmcv.image as image2
     assert runner == runner2
     assert image == image2
     # single imports
-    runner = mmcv.custom_imports('mmcv.runner')
+    runner = mmcv.import_modules_from_strings('mmcv.runner')
     assert runner == runner2
     # No imports
-    assert mmcv.custom_imports(None) is None
-    assert mmcv.custom_imports([]) is None
-    assert mmcv.custom_imports('') is None
-    # Unsupported type
+    assert mmcv.import_modules_from_strings(None) is None
+    assert mmcv.import_modules_from_strings([]) is None
+    assert mmcv.import_modules_from_strings('') is None
+    # Unsupported types
     with pytest.raises(TypeError):
-        mmcv.custom_imports(1)
+        mmcv.import_modules_from_strings(1)
+    with pytest.raises(TypeError):
+        mmcv.import_modules_from_strings([1])
