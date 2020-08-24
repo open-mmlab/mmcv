@@ -3,6 +3,7 @@ import warnings
 import torch
 from torch.nn import GroupNorm, LayerNorm
 
+from mmcv.ops import DeformConv2d
 from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
 from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
@@ -175,13 +176,15 @@ class DefaultOptimizerConstructor:
                         decay_mult = custom_keys[key].get('decay_mult', 1.)
                         param_group['weight_decay'] = self.base_wd * decay_mult
                     break
+
             if not is_custom:
                 # bias_lr_mult affects all bias parameters except for norm.bias
                 if name == 'bias' and not is_norm:
                     param_group['lr'] = self.base_lr * bias_lr_mult
-                
-                if prefix.find('conv_offset') != -1 \
-                    and isinstance(module, torch.nn.Conv2d):
+
+                if (prefix.find('offset') != -1
+                        and isinstance(module, DeformConv2d)
+                        and isinstance(module, torch.nn.Conv2d)):
                     # deal with both dcn_offset's bias & weight
                     param_group['lr'] = self.base_lr * dcn_offset_lr_mult
 
