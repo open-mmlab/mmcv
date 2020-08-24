@@ -104,15 +104,15 @@ def test_requires_executable(capsys):
 
 def test_import_modules_from_strings():
     # multiple imports
-    runner, image = mmcv.import_modules_from_strings(
-        ['mmcv.runner', 'mmcv.image'])
-    import mmcv.runner as runner_
-    import mmcv.image as image_
-    assert runner == runner_
-    assert image == image_
+    import os.path as osp_
+    import sys as sys_
+    osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
+    assert osp == osp_
+    assert sys == sys_
+
     # single imports
-    runner = mmcv.import_modules_from_strings('mmcv.runner')
-    assert runner == runner_
+    osp = mmcv.import_modules_from_strings('os.path')
+    assert osp == osp_
     # No imports
     assert mmcv.import_modules_from_strings(None) is None
     assert mmcv.import_modules_from_strings([]) is None
@@ -131,6 +131,6 @@ def test_import_modules_from_strings():
         assert imported is None
     with pytest.warns(UserWarning):
         imported = mmcv.import_modules_from_strings(
-            ['mmcv.runner', '_not_implemented'], allow_failed_imports=True)
-        assert imported[0] == runner_
+            ['os.path', '_not_implemented'], allow_failed_imports=True)
+        assert imported[0] == osp
         assert imported[1] is None

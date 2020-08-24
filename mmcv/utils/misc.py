@@ -28,12 +28,12 @@ def import_modules_from_strings(imports, allow_failed_imports=False):
         list[module] | module | None: The imported modules.
 
     Examples:
-        >>> runner, image = import_modules_from_strings(
-        ...     ['mmcv.runner', 'mmcv.image'])
-        >>> import mmcv.runner as runner2
-        >>> import mmcv.image as image2
-        >>> assert runner == runner2
-        >>> assert image == image2
+        >>> osp, sys = import_modules_from_strings(
+        ...     ['os.path', 'sys'])
+        >>> import os.path as osp_
+        >>> import sys as sys_
+        >>> assert osp == osp_
+        >>> assert sys == sys_
     """
     if not imports:
         return
