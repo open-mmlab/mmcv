@@ -100,3 +100,37 @@ def test_requires_executable(capsys):
         ' please install them first.\n')
 
     assert func_c() == 1
+
+
+def test_import_modules_from_strings():
+    # multiple imports
+    import os.path as osp_
+    import sys as sys_
+    osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
+    assert osp == osp_
+    assert sys == sys_
+
+    # single imports
+    osp = mmcv.import_modules_from_strings('os.path')
+    assert osp == osp_
+    # No imports
+    assert mmcv.import_modules_from_strings(None) is None
+    assert mmcv.import_modules_from_strings([]) is None
+    assert mmcv.import_modules_from_strings('') is None
+    # Unsupported types
+    with pytest.raises(TypeError):
+        mmcv.import_modules_from_strings(1)
+    with pytest.raises(TypeError):
+        mmcv.import_modules_from_strings([1])
+    # Failed imports
+    with pytest.raises(ImportError):
+        mmcv.import_modules_from_strings('_not_implemented_module')
+    with pytest.warns(UserWarning):
+        imported = mmcv.import_modules_from_strings(
+            '_not_implemented_module', allow_failed_imports=True)
+        assert imported is None
+    with pytest.warns(UserWarning):
+        imported = mmcv.import_modules_from_strings(
+            ['os.path', '_not_implemented'], allow_failed_imports=True)
+        assert imported[0] == osp
+        assert imported[1] is None
