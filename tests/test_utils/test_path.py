@@ -26,7 +26,7 @@ def test_check_file_exist():
 
 
 def test_scandir():
-    folder = osp.join(osp.dirname(__file__), 'data/for_scan')
+    folder = osp.join(osp.dirname(osp.dirname(__file__)), 'data/for_scan')
     filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json']
     assert set(mmcv.scandir(folder)) == set(filenames)
     assert set(mmcv.scandir(Path(folder))) == set(filenames)
