@@ -231,4 +231,4 @@ jobs:
       - name: Run unittests
         run: |
           # The timing on macos VMs is not precise, so we skip the progressbar tests
-          pytest tests/ --ignore tests/test_progressbar.py --ignore tests/test_timer.py
+          pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
