@@ -57,9 +57,7 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.with_bias = bias is not None
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
-        if weight.requires_grad or mask.requires_grad or offset.requires_grad \
-           or input.requires_grad:
-            ctx.save_for_backward(input, offset, mask, weight, bias)
+        ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
