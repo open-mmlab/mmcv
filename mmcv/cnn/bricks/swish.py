@@ -17,9 +17,8 @@ class Swish(nn.Module):
         Tensor: The output tensor.
     """
 
-    def __init__(self, inplace):
+    def __init__(self):
         super(Swish, self).__init__()
-        self.inplace = inplace
 
     def forward(self, x):
         return x * torch.sigmoid(x)
