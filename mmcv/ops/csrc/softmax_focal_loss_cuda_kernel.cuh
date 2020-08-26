@@ -59,8 +59,8 @@ __global__ void softmax_focal_loss_backward_cuda2_kernel(
     int c = index % num_classes;
     int64_t label = target[n];
 
-    T flag = (label == c) * (T)1.;
     if (label >= 0) {
+      T flag = (label == c ? (T)1. : (T)0.);
       grad_input[index] = buff[n] * (flag - softmax[index]);
     } else {
       grad_input[index] = 0;
