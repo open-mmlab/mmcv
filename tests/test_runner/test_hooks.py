@@ -91,7 +91,6 @@ def test_ema_hook():
     assert contain_ema_buffer
     shutil.rmtree(runner.work_dir)
     shutil.rmtree(work_dir)
->>>>>>> 5e7f785364243d4292c517e0bad2e84bb9ced0d1
 
 
 def test_pavi_hook():
@@ -383,25 +382,3 @@ def _build_demo_runner():
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner
-
-
-def test_linear_lr_update_hook():
-    """Test LinearLrUpdaterHook."""
-    sys.modules['pavi'] = MagicMock()
-    loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner()
-
-    with pytest.raises(AssertionError):
-        # either `min_lr` or `min_lr_ratio` should be specified
-        LinearLrUpdaterHook(by_epoch=False, min_lr=0.1, min_lr_ratio=0)
-
-    # add cosine restart LR scheduler
-    hook = LinearLrUpdaterHook(by_epoch=False, min_lr_ratio=0)
-    runner.register_hook(hook)
-    runner.register_hook(IterTimerHook())
-
-    # add pavi hook
-    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
-    runner.register_hook(hook)
-    runner.run([loader], [('train', 1)], 1)
-    shutil.rmtree(runner.work_dir)

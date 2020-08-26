@@ -14,6 +14,7 @@ from .plugin import build_plugin_layer
 from .registry import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                        PADDING_LAYERS, PLUGIN_LAYERS, UPSAMPLE_LAYERS)
 from .scale import Scale
+from .swish import Swish
 from .upsample import build_upsample_layer
 
 __all__ = [
@@ -23,5 +24,5 @@ __all__ = [
     'NonLocal2d', 'NonLocal3d', 'ContextBlock', 'GeneralizedAttention',
     'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS',
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
-    'conv_ws_2d', 'DepthwiseSeparableConvModule'
+    'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish'
 ]
