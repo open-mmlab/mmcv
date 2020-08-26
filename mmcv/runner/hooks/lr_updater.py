@@ -414,4 +414,3 @@ def annealing_cos(start, end, factor, weight=1):
     """
     cos_out = cos(pi * factor) + 1
     return end + 0.5 * weight * (start - end) * cos_out
-
