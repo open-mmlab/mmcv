@@ -22,6 +22,7 @@ else:
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
+MERGE_KEY = '_merge_'
 RESERVED_KEYS = ['filename', 'text', 'pretty_text']
 
 
@@ -211,18 +212,13 @@ class Config:
                     f'type {type(b)} in base config. You may set '
                     f'`{DELETE_KEY}=True` to ignore the base config')
 
-        if isinstance(a, list):
-            if isinstance(b, list):
-                if len(a) > 0 and a[0] == DELETE_KEY:
-                    return a[1:]
-                else:
-                    return [
-                        Config._merge_a_into_b(x, y, key + '[]')
-                        for x, y in itertools.zip_longest(a, b)
-                    ]
-            else:
-                return a
-        return b if a is None else a
+        if isinstance(a, list) and isinstance(b, list) and \
+                len(a) > 0 and a[0] == MERGE_KEY:
+            return [
+                y if x is None else Config._merge_a_into_b(x, y, key + '[]')
+                for x, y in itertools.zip_longest(a[1:], b)
+            ]
+        return a
 
     @staticmethod
     def fromfile(filename, use_predefined_variables=True):
@@ -457,6 +453,8 @@ class DictAction(Action):
             pass
         if val.lower() in ['true', 'false']:
             return True if val.lower() == 'true' else False
+        if val.lower() == 'none':
+            return None
         return val
 
     def __call__(self, parser, namespace, values, option_string=None):

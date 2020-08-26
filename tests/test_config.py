@@ -217,7 +217,7 @@ def test_merge_delete():
 def test_merge_from_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
-    input_options = {'item1': [None, 4, 3]}
+    input_options = {'item1': ['_merge_', None, 4, 3]}
     cfg.merge_from_dict(input_options)
     assert cfg.item1 == [1, 4, 3]
 
@@ -225,7 +225,7 @@ def test_merge_from_list():
 def test_merge_delete_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
     cfg = Config.fromfile(cfg_file)
-    input_options = {'item1': ['_delete_', 4, 3]}
+    input_options = {'item1': [4, 3]}
     cfg.merge_from_dict(input_options)
     assert cfg.item1 == [4, 3]
 
@@ -233,7 +233,13 @@ def test_merge_delete_list():
 def test_merge_dict_in_list():
     cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
     cfg = Config.fromfile(cfg_file)
-    input_options = {'dict_list_item6.x/x': [{'b.0': 4.}, {'b.0': 4.}]}
+    input_options = {
+        'dict_list_item6.x/x': ['_merge_', {
+            'b.0': 4.
+        }, {
+            'b.0': 4.
+        }]
+    }
     cfg.merge_from_dict(input_options)
     assert cfg.dict_list_item6 == {
         'x/x': [{
@@ -354,6 +360,20 @@ def test_dict_action():
     cfg.merge_from_dict(args.options)
     assert cfg.item2 == dict(a=1, b=0.1, c='x')
     assert cfg.item3 is False
+
+
+def test_merge_set_None():
+    parser = argparse.ArgumentParser(description='Train a detector')
+    parser.add_argument(
+        '--options', nargs='+', action=DictAction, help='custom options')
+    args = parser.parse_args(['--options', 'dict_item4.c.9=None'])
+    out_dict = {'dict_item4.c.9': None}
+    assert args.options == out_dict
+
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    cfg.merge_from_dict(args.options)
+    assert cfg.dict_item4.c['9'] is None
 
 
 def test_dump_mapping():
