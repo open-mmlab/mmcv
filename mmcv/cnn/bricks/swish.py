@@ -6,7 +6,7 @@ from .registry import ACTIVATION_LAYERS
 
 @ACTIVATION_LAYERS.register_module()
 class Swish(nn.Module):
-    """ wish Module.
+    """Swish Module.
 
     This module applies the swish function:
 
