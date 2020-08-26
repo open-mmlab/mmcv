@@ -217,7 +217,7 @@ def test_merge_delete():
 
 
 def test_merge_from_list():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item1': ['_merge_', None, 4, 3]}
     cfg.merge_from_dict(input_options)
@@ -225,7 +225,7 @@ def test_merge_from_list():
 
 
 def test_merge_delete_list():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item1': [4, 3]}
     cfg.merge_from_dict(input_options)
@@ -233,7 +233,7 @@ def test_merge_delete_list():
 
 
 def test_merge_dict_in_list():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg_file = osp.join(data_path, 'config/n.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {
         'dict_list_item6.x/x': ['_merge_', {
@@ -372,7 +372,7 @@ def test_merge_set_None():
     out_dict = {'dict_item4.c.9': None}
     assert args.options == out_dict
 
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg_file = osp.join(data_path, 'config/n.py')
     cfg = Config.fromfile(cfg_file)
     cfg.merge_from_dict(args.options)
     assert cfg.dict_item4.c['9'] is None
