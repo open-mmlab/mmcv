@@ -125,7 +125,7 @@ jobs:
           coverage report -m
 
   build_cuda92:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     env:
       CUDA: 9.2.148-1
       CUDA_SHORT: 9.2
