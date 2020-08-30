@@ -1,6 +1,6 @@
 import pytest
 
-from mmcv.runner import TRANSFORMS, BaseTransform, DataPipeline
+from mmcv.data_pipeline import TRANSFORMS, BaseTransform, DataPipeline
 
 
 @TRANSFORMS.register_module()
