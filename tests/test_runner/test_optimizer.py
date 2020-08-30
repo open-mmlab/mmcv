@@ -1,3 +1,4 @@
+import sys
 import warnings
 from unittest.mock import MagicMock
 
@@ -8,9 +9,11 @@ import torch.nn as nn
 from mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
 from mmcv.runner.optimizer import build_optimizer, build_optimizer_constructor
 from mmcv.runner.optimizer.builder import TORCH_OPTIMIZERS
+from mmcv.utils.ext_loader import check_ops_exist
 
-if not torch.cuda.is_available():
-    MagicMock('mmcv.ops.DeformConv2d')
+OPS_AVAILABLE = check_ops_exist()
+if not OPS_AVAILABLE:
+    sys.modules['mmcv.ops'] = MagicMock(DeformConv2d=dict)
 
 
 class SubModel(nn.Module):
@@ -34,7 +37,7 @@ class ExampleModel(nn.Module):
         self.conv2 = nn.Conv2d(4, 2, kernel_size=1)
         self.bn = nn.BatchNorm2d(2)
         self.sub = SubModel()
-        if torch.cuda.is_available():
+        if OPS_AVAILABLE:
             from mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
                 3, 4, kernel_size=3, deformable_groups=1)
@@ -54,7 +57,7 @@ class ExampleDuplicateModel(nn.Module):
         self.sub = SubModel()
         self.conv3 = nn.Sequential(nn.Conv2d(3, 4, kernel_size=1, bias=False))
         self.conv3[0] = self.conv1[0]
-        if torch.cuda.is_available():
+        if OPS_AVAILABLE:
             from mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
                 3, 4, kernel_size=3, deformable_groups=1)
@@ -84,7 +87,7 @@ def check_default_optimizer(optimizer, model, prefix=''):
     assert optimizer.defaults['momentum'] == momentum
     assert optimizer.defaults['weight_decay'] == base_wd
     param_groups = optimizer.param_groups[0]
-    if torch.cuda.is_available():
+    if OPS_AVAILABLE:
         param_names = [
             'param1', 'conv1.weight', 'conv2.weight', 'conv2.bias',
             'bn.weight', 'bn.bias', 'sub.param1', 'sub.conv1.weight',
@@ -309,7 +312,7 @@ def test_default_optimizer_constructor():
     # sub.gn.bias
     assert param_groups[10]['lr'] == base_lr
 
-    if torch.cuda.is_available():
+    if OPS_AVAILABLE:
         # dcn.weight
         assert param_groups[11]['lr'] == base_lr
         # dcn.conv_offset.weight
@@ -398,7 +401,7 @@ def test_default_optimizer_constructor():
         assert str(w[0].message) == 'conv3.0 is duplicate. It is skipped ' \
                                     'since bypass_duplicate=True'
     model_parameters = list(model.parameters())
-    num_params = 14 if torch.cuda.is_available() else 11
+    num_params = 14 if OPS_AVAILABLE else 11
     assert len(optimizer.param_groups) == len(model_parameters) == num_params
     check_optimizer(optimizer, model, **paramwise_cfg)
 
@@ -482,7 +485,7 @@ def test_default_optimizer_constructor():
         'weight_decay': base_wd
     })
 
-    num_params = 14 if torch.cuda.is_available() else 11
+    num_params = 14 if OPS_AVAILABLE else 11
     assert len(param_groups) == num_params
     for i, (name, param) in enumerate(model.named_parameters()):
         assert torch.equal(param_groups[i]['params'][0], param)
@@ -529,7 +532,7 @@ def test_default_optimizer_constructor():
         'weight_decay': 0
     })
 
-    num_params = 14 if torch.cuda.is_available() else 11
+    num_params = 14 if OPS_AVAILABLE else 11
     assert len(param_groups) == num_params
     for i, (name, param) in enumerate(model.named_parameters()):
         assert torch.equal(param_groups[i]['params'][0], param)

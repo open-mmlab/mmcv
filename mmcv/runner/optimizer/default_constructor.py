@@ -3,7 +3,6 @@ import warnings
 import torch
 from torch.nn import GroupNorm, LayerNorm
 
-from mmcv.ops import DeformConv2d
 from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
 from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
@@ -205,6 +204,7 @@ class DefaultOptimizerConstructor:
                             'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
+        from mmcv.ops import DeformConv2d
         is_dcn_submodule = isinstance(module, DeformConv2d)
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
