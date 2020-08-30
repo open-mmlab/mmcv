@@ -1,5 +1,4 @@
 from torch import nn
-
 from .registry import CONV_LAYERS
 
 CONV_LAYERS.register_module('Conv1d', module=nn.Conv1d)
