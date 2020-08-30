@@ -28,10 +28,10 @@ class DefaultOptimizerConstructor:
       and ``decay_mult``. See Example 2 below.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
-      layers).
+      layers and offset layers of DCN).
     - ``bias_decay_mult`` (float): It will be multiplied to the weight
       decay for all bias parameters (except for those in
-      normalization layers and depthwise conv layers).
+      normalization layers, depthwise conv layers, offset layers of DCN).
     - ``norm_decay_mult`` (float): It will be multiplied to the weight
       decay for all weight and bias parameters of normalization
       layers.
@@ -125,7 +125,7 @@ class DefaultOptimizerConstructor:
 
         return not param.isdisjoint(param_set)
 
-    def add_params(self, params, module, prefix=''):
+    def add_params(self, params, module, prefix='', is_dcn_submodule=False):
         """Add all parameters of module to the params list.
 
         The parameters of the given module will be added to the list of param
@@ -178,12 +178,12 @@ class DefaultOptimizerConstructor:
                     break
 
             if not is_custom:
-                # bias_lr_mult affects all bias parameters except for norm.bias
-                if name == 'bias' and not is_norm:
+                # bias_lr_mult affects all bias parameters
+                # except for norm.bias dcn.conv_offset.bias
+                if name == 'bias' and not (is_norm or is_dcn_submodule):
                     param_group['lr'] = self.base_lr * bias_lr_mult
 
-                if (prefix.find('offset') != -1
-                        and isinstance(module, DeformConv2d)
+                if (prefix.find('offset') != -1 and is_dcn_submodule
                         and isinstance(module, torch.nn.Conv2d)):
                     # deal with both dcn_offset's bias & weight
                     param_group['lr'] = self.base_lr * dcn_offset_lr_mult
@@ -199,14 +199,20 @@ class DefaultOptimizerConstructor:
                         param_group[
                             'weight_decay'] = self.base_wd * dwconv_decay_mult
                     # bias lr and decay
-                    elif name == 'bias':
+                    elif name == 'bias' and not is_dcn_submodule:
+                        # TODO: current bias_decay_mult will have affect on DCN
                         param_group[
                             'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
+        is_dcn_submodule = isinstance(module, DeformConv2d)
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
-            self.add_params(params, child_mod, prefix=child_prefix)
+            self.add_params(
+                params,
+                child_mod,
+                prefix=child_prefix,
+                is_dcn_submodule=is_dcn_submodule)
 
     def __call__(self, model):
         if hasattr(model, 'module'):
