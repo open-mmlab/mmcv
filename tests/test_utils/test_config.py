@@ -7,7 +7,9 @@ import tempfile
 import pytest
 import yaml
 
-from mmcv import Config, DictAction
+from mmcv import Config, DictAction, dump, load
+
+data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 
 
 def test_construct():
@@ -22,7 +24,7 @@ def test_construct():
 
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
     # test a.py
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -35,7 +37,7 @@ def test_construct():
         assert Config.fromfile(dump_file)
 
     # test b.json
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/b.json')
+    cfg_file = osp.join(data_path, 'config/b.json')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -48,7 +50,7 @@ def test_construct():
         assert Config.fromfile(dump_file)
 
     # test c.yaml
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/c.yaml')
+    cfg_file = osp.join(data_path, 'config/c.yaml')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -61,7 +63,7 @@ def test_construct():
         assert Config.fromfile(dump_file)
 
     # test h.py
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/h.py')
+    cfg_file = osp.join(data_path, 'config/h.py')
     cfg_dict = dict(
         item1='h.py',
         item2=f'{osp.dirname(__file__)}/data/config',
@@ -91,7 +93,7 @@ def test_construct():
     assert Config.fromfile(cfg_file, False)['item3'] == cfg_dict['item3']
 
     # test p.yaml
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/p.yaml')
+    cfg_file = osp.join(data_path, 'config/p.yaml')
     cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
@@ -110,7 +112,7 @@ def test_construct():
     assert Config.fromfile(cfg_file, False)['item1'] == '{{ fileDirname }}'
 
     # test o.json
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/o.json')
+    cfg_file = osp.join(data_path, 'config/o.json')
     cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
@@ -131,7 +133,7 @@ def test_construct():
 
 def test_fromfile():
     for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
+        cfg_file = osp.join(data_path, 'config', filename)
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
@@ -141,15 +143,15 @@ def test_fromfile():
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
     with pytest.raises(IOError):
-        Config.fromfile(osp.join(osp.dirname(__file__), 'data/color.jpg'))
+        Config.fromfile(osp.join(data_path, 'color.jpg'))
 
 
 def test_merge_from_base():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/d.py')
+    cfg_file = osp.join(data_path, 'config/d.py')
     cfg = Config.fromfile(cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    base_cfg_file = osp.join(osp.dirname(__file__), 'data/config/base.py')
+    base_cfg_file = osp.join(data_path, 'config/base.py')
     merge_text = osp.abspath(osp.expanduser(base_cfg_file)) + '\n' + \
         open(base_cfg_file, 'r').read()
     merge_text += '\n' + osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
@@ -161,11 +163,11 @@ def test_merge_from_base():
     assert cfg.item4 == 'test_base'
 
     with pytest.raises(TypeError):
-        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/e.py'))
+        Config.fromfile(osp.join(data_path, 'config/e.py'))
 
 
 def test_merge_from_multiple_bases():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/l.py')
+    cfg_file = osp.join(data_path, 'config/l.py')
     cfg = Config.fromfile(cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -179,11 +181,11 @@ def test_merge_from_multiple_bases():
     assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
 
     with pytest.raises(KeyError):
-        Config.fromfile(osp.join(osp.dirname(__file__), 'data/config/m.py'))
+        Config.fromfile(osp.join(data_path, 'config/m.py'))
 
 
 def test_merge_recursive_bases():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/f.py')
+    cfg_file = osp.join(data_path, 'config/f.py')
     cfg = Config.fromfile(cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -195,7 +197,7 @@ def test_merge_recursive_bases():
 
 
 def test_merge_from_dict():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
     input_options = {'item2.a': 1, 'item2.b': 0.1, 'item3': False}
     cfg.merge_from_dict(input_options)
@@ -204,7 +206,7 @@ def test_merge_from_dict():
 
 
 def test_merge_delete():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/delete.py')
+    cfg_file = osp.join(data_path, 'config/delete.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
     assert cfg.item1 == [1, 2]
@@ -216,7 +218,7 @@ def test_merge_delete():
 
 def test_merge_intermediate_variable():
 
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/i_child.py')
+    cfg_file = osp.join(data_path, 'config/i_child.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
     assert cfg.item1 == [1, 2]
@@ -229,7 +231,7 @@ def test_merge_intermediate_variable():
 
 
 def test_fromfile_in_config():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/code.py')
+    cfg_file = osp.join(data_path, 'config/code.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
     assert cfg.cfg.item1 == [1, 2]
@@ -243,7 +245,7 @@ def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
     for filename in ['a.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
+        cfg_file = osp.join(data_path, 'config', filename)
         cfg = Config.fromfile(cfg_file)
 
         # len(cfg)
@@ -298,7 +300,7 @@ def test_setattr():
 
 
 def test_pretty_text():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/l.py')
+    cfg_file = osp.join(data_path, 'config/l.py')
     cfg = Config.fromfile(cfg_file)
     with tempfile.TemporaryDirectory() as temp_config_dir:
         text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
@@ -317,7 +319,7 @@ def test_dict_action():
     out_dict = {'item2.a': 1, 'item2.b': 0.1, 'item2.c': 'x', 'item3': False}
     assert args.options == out_dict
 
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/a.py')
+    cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
     cfg.merge_from_dict(args.options)
     assert cfg.item2 == dict(a=1, b=0.1, c='x')
@@ -325,7 +327,7 @@ def test_dict_action():
 
 
 def test_dump_mapping():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg_file = osp.join(data_path, 'config/n.py')
     cfg = Config.fromfile(cfg_file)
 
     with tempfile.TemporaryDirectory() as temp_config_dir:
@@ -337,7 +339,7 @@ def test_dump_mapping():
 
 
 def test_reserved_key():
-    cfg_file = osp.join(osp.dirname(__file__), 'data/config/g.py')
+    cfg_file = osp.join(data_path, 'config/g.py')
     with pytest.raises(KeyError):
         Config.fromfile(cfg_file)
 
@@ -354,3 +356,15 @@ def test_syntax_error():
             f'file {temp_cfg_path}'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
+
+
+def test_pickle_support():
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        pkl_cfg_filename = osp.join(temp_config_dir, '_pickle.pkl')
+        dump(cfg, pkl_cfg_filename)
+        pkl_cfg = load(pkl_cfg_filename)
+
+    assert pkl_cfg._cfg_dict == cfg._cfg_dict

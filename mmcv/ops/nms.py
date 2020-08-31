@@ -223,9 +223,18 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
             and NMS will not be applied between elements of different idxs,
             shape (N, ).
         nms_cfg (dict): specify nms type and other parameters like iou_thr.
+            Possible keys includes the following.
+
+            - iou_thr (float): IoU threshold used for NMS.
+            - split_thr (float): threshold number of boxes. In some cases the
+                number of boxes is large (e.g., 200k). To avoid OOM during
+                training, the users could set `split_thr` to a small value.
+                If the number of boxes is greater than the threshold, it will
+                perform NMS on each group of boxes separately and sequentially.
+                Defaults to 10000.
         class_agnostic (bool): if true, nms is class agnostic,
             i.e. IoU thresholding happens over all boxes,
-            regardless of the predicted class
+            regardless of the predicted class.
 
     Returns:
         tuple: kept dets and indice.
@@ -238,11 +247,27 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         max_coordinate = boxes.max()
         offsets = idxs.to(boxes) * (max_coordinate + 1)
         boxes_for_nms = boxes + offsets[:, None]
+
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = eval(nms_type)
-    dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
-    boxes = boxes[keep]
-    scores = dets[:, -1]
+
+    split_thr = nms_cfg_.pop('split_thr', 10000)
+    if len(boxes_for_nms) < split_thr:
+        dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
+        boxes = boxes[keep]
+        scores = dets[:, -1]
+    else:
+        total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
+        for id in torch.unique(idxs):
+            mask = (idxs == id).nonzero(as_tuple=False).view(-1)
+            dets, keep = nms_op(boxes_for_nms[mask], scores[mask], **nms_cfg_)
+            total_mask[mask[keep]] = True
+
+        keep = total_mask.nonzero(as_tuple=False).view(-1)
+        keep = keep[scores[keep].argsort(descending=True)]
+        boxes = boxes[keep]
+        scores = scores[keep]
+
     return torch.cat([boxes, scores[:, None]], -1), keep
 
 

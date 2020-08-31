@@ -2,7 +2,7 @@ from functools import partial
 
 import torch
 
-from .env import TORCH_VERSION
+TORCH_VERSION = torch.__version__
 
 
 def _get_cuda_home():

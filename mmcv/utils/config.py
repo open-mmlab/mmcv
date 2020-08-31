@@ -111,6 +111,7 @@ class Config:
             config_file = f.read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
+            value = value.replace('\\', '/')
             config_file = re.sub(regexp, value, config_file)
         with open(temp_config_name, 'w') as tmp_config_file:
             tmp_config_file.write(config_file)
@@ -371,6 +372,15 @@ class Config:
 
     def __iter__(self):
         return iter(self._cfg_dict)
+
+    def __getstate__(self):
+        return (self._cfg_dict, self._filename, self._text)
+
+    def __setstate__(self, state):
+        _cfg_dict, _filename, _text = state
+        super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
+        super(Config, self).__setattr__('_filename', _filename)
+        super(Config, self).__setattr__('_text', _text)
 
     def dump(self, file=None):
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
