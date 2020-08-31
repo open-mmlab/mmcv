@@ -2,9 +2,7 @@
 import os
 import os.path as osp
 import pkgutil
-import re
 import time
-import urllib.request
 import warnings
 from collections import OrderedDict
 from importlib import import_module
@@ -23,7 +21,6 @@ from .dist_utils import get_dist_info
 ENV_MMCV_HOME = 'MMCV_HOME'
 ENV_XDG_CACHE_HOME = 'XDG_CACHE_HOME'
 DEFAULT_CACHE_DIR = '~/.cache'
-MMCLS_MODELZOO = 'https://raw.githubusercontent.com/open-mmlab/mmclassification/master/docs/model_zoo.md'  # noqa
 
 
 def _get_mmcv_home():
@@ -146,22 +143,10 @@ def get_external_models():
 
 
 def get_mmcls_models():
-    model_urls = dict()
-    for line in urllib.request.urlopen(MMCLS_MODELZOO):
-        line = line.decode('utf-8')
-        m_model = re.search(r'\[model\]\(([^)]+)\)', line)
-        if m_model is not None:
-            model_url = m_model.group(1)
-            model_filename = model_url.split('/')[-1]
-            model_shortname = model_filename.split('_')[0]
-            # check if there is version number
-            m_version = re.search(r'v[0-9]+', model_filename.split('_')[1])
-            if m_version is not None:
-                version_str = '_' + m_version.group(0)
-                model_shortname += version_str
-            model_urls[model_shortname] = model_url
+    mmcls_json_path = osp.join(mmcv.__path__[0], 'model_zoo/mmcls.json')
+    mmcls_urls = load_file(mmcls_json_path)
 
-    return model_urls
+    return mmcls_urls
 
 
 def get_deprecated_model_names():
