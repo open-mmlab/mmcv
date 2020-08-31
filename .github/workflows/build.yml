@@ -219,6 +219,7 @@ jobs:
           sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
           sudo apt clean
           /usr/local/cuda/bin/nvcc -V
+          export CUDA_ROOT=/usr/local/cuda-${CUDA_SHORT}
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:/usr/include/
           echo ${LD_LIBRARY_PATH}
