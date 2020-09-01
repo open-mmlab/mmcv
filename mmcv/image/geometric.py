@@ -506,5 +506,5 @@ def imshear(img,
         img,
         shear_matrix, (w, h),
         borderValue=border_value,
-        flags=interpolation)
+        flags=cv2_interp_codes[interpolation])
     return sheared
