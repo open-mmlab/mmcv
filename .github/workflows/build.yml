@@ -216,7 +216,13 @@ jobs:
           wget https://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/7fa2af80.pub
           sudo apt-key add 7fa2af80.pub
           sudo apt update -qq
-          sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-} libcublas10=10.1.0.105-1
+          sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
+          export CUBLAS_INSTALLER=libcublas10_10.1.0.105-1_amd64.deb
+          export CUBLASDEV_INSTALLER=libcublas-dev_10.1.0.105-1_amd64.deb
+          wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${CUBLAS_INSTALLER}
+          wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${CUBLASDEV_INSTALLER}
+          sudo dpkg -i ${CUBLAS_INSTALLER}
+          sudo dpkg -i ${CUBLASDEV_INSTALLER}
           sudo apt clean
           /usr/local/cuda/bin/nvcc -V
           export CUDA_ROOT=/usr/local/cuda-${CUDA_SHORT}
