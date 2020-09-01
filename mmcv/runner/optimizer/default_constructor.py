@@ -135,6 +135,8 @@ class DefaultOptimizerConstructor:
                 in place.
             module (nn.Module): The module to be added.
             prefix (str): The prefix of the module
+            is_dcn_submodule (bool): Wether the current module is a submodule
+                of DCN. Defaults to False.
         """
         # get param-wise options
         custom_keys = self.paramwise_cfg.get('custom_keys', {})
@@ -204,8 +206,9 @@ class DefaultOptimizerConstructor:
                             'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
-        from mmcv.ops import DeformConv2d
-        is_dcn_submodule = isinstance(module, DeformConv2d)
+        from mmcv.ops import DeformConv2d, ModulatedDeformConv2d
+        is_dcn_submodule = isinstance(module,
+                                      (DeformConv2d, ModulatedDeformConv2d))
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
             self.add_params(

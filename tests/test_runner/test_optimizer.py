@@ -13,7 +13,8 @@ from mmcv.utils.ext_loader import check_ops_exist
 
 OPS_AVAILABLE = check_ops_exist()
 if not OPS_AVAILABLE:
-    sys.modules['mmcv.ops'] = MagicMock(DeformConv2d=dict)
+    sys.modules['mmcv.ops'] = MagicMock(
+        DeformConv2d=dict, ModulatedDeformConv2d=dict)
 
 
 class SubModel(nn.Module):
