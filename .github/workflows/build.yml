@@ -222,6 +222,7 @@ jobs:
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
           find /usr/local/ -name cublas_v2.h
           find /usr/include/ -name cublas_v2.h
+          sudo apt install -y tree
           tree /usr/local/cuda-10.2
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:/usr/local/cuda-10.2/include:/usr/local/cuda-10.2/lib64:/usr/include/
           echo ${LD_LIBRARY_PATH}
