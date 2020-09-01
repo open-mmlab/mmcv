@@ -500,7 +500,8 @@ def imshear(img,
     Returns:
         ndarray: The sheared image.
     """
-    assert direction in ['horizontal', 'vertical']
+    assert direction in ['horizontal',
+                         'vertical'], f'Invalid direction: {direction}'
     h, w = img.shape[:2]
     if img.ndim == 2:
         c = 1
@@ -509,7 +510,9 @@ def imshear(img,
     if isinstance(border_value, int):
         border_value = tuple([border_value] * c)
     elif isinstance(border_value, tuple):
-        assert len(border_value) == c
+        assert len(border_value) == c, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(len(border_value), c)
     else:
         raise ValueError('Invalid type for `border_value`')
     shear_matrix = _get_shear_matrix(magnitude, direction)
