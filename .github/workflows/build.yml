@@ -221,6 +221,7 @@ jobs:
           /usr/local/cuda/bin/nvcc -V
           export CUDA_ROOT=/usr/local/cuda-${CUDA_SHORT}
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+          find /usr/local/ -name cublas_v2.h
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:/usr/include/
           echo ${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
