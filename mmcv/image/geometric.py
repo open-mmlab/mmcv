@@ -460,3 +460,66 @@ def impad_to_multiple(img, divisor, pad_val=0):
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
     return impad(img, shape=(pad_h, pad_w))
+
+
+def _get_shear_matrix(magnitude, direction='horizontal'):
+    """Generate the shear matrix for transformation.
+
+    Args:
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal"
+            or "vertical".
+
+    Returns:
+        ndarray: The shear matrix with dtype float32.
+    """
+    if direction == 'horizontal':
+        shear_matrix = np.float32([[1, magnitude, 0], [0, 1, 0]])
+    elif direction == 'vertical':
+        shear_matrix = np.float32([[1, 0, 0], [magnitude, 1, 0]])
+    return shear_matrix
+
+
+def imshear(img,
+            magnitude,
+            direction='horizontal',
+            border_value=0,
+            interpolation='bilinear'):
+    """Shear an image.
+
+    Args:
+        img (ndarray): Image to be sheared with format (h, w)
+            or (h, w, c).
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal"
+            or "vertical".
+        border_value (int | tuple[int]): Value used in case of a
+            constant border.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The sheared image.
+    """
+    assert direction in ['horizontal',
+                         'vertical'], f'Invalid direction: {direction}'
+    height, width = img.shape[:2]
+    if img.ndim == 2:
+        channels = 1
+    elif img.ndim == 3:
+        channels = img.shape[-1]
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(border_value), channels)
+    else:
+        raise ValueError('Invalid type for `border_value`')
+    shear_matrix = _get_shear_matrix(magnitude, direction)
+    sheared = cv2.warpAffine(
+        img,
+        shear_matrix, (width, height),
+        borderValue=border_value,
+        flags=cv2_interp_codes[interpolation])
+    return sheared
