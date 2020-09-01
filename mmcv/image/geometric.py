@@ -502,23 +502,24 @@ def imshear(img,
     """
     assert direction in ['horizontal',
                          'vertical'], f'Invalid direction: {direction}'
-    h, w = img.shape[:2]
+    height, width = img.shape[:2]
     if img.ndim == 2:
-        c = 1
+        channels = 1
     elif img.ndim == 3:
-        c = img.shape[-1]
+        channels = img.shape[-1]
     if isinstance(border_value, int):
-        border_value = tuple([border_value] * c)
+        border_value = tuple([border_value] * channels)
     elif isinstance(border_value, tuple):
-        assert len(border_value) == c, \
+        assert len(border_value) == channels, \
             'Expected the num of elements in tuple equals the channels' \
-            'of input image. Found {} vs {}'.format(len(border_value), c)
+            'of input image. Found {} vs {}'.format(
+                len(border_value), channels)
     else:
         raise ValueError('Invalid type for `border_value`')
     shear_matrix = _get_shear_matrix(magnitude, direction)
     sheared = cv2.warpAffine(
         img,
-        shear_matrix, (w, h),
+        shear_matrix, (width, height),
         borderValue=border_value,
         flags=cv2_interp_codes[interpolation])
     return sheared
