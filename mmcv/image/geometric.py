@@ -515,7 +515,7 @@ def imshear(img,
             'of input image. Found {} vs {}'.format(
                 len(border_value), channels)
     else:
-        raise ValueError('Invalid type for `border_value`')
+        raise ValueError(f'Invalid type {type(border_value)} for `border_value`')
     shear_matrix = _get_shear_matrix(magnitude, direction)
     sheared = cv2.warpAffine(
         img,
