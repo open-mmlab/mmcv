@@ -226,7 +226,7 @@ jobs:
           tree /usr/local/cuda-10.2
           ls -l /usr/local/cuda
           sudo cp /usr/local/cuda-10.2/include/* /usr/local/cuda/include
-          sudo cp /usr/local/cuda-10.2/lib64/* /usr/local/cuda/lib64/
+          sudo cp -r /usr/local/cuda-10.2/lib64/* /usr/local/cuda/lib64/
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:/usr/local/cuda-10.2/include:/usr/local/cuda-10.2/lib64:/usr/include/
           echo ${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
