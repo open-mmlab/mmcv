@@ -493,7 +493,8 @@ def imshear(img,
         magnitude (int | float): The magnitude used for shear.
         direction (str): Thie flip direction, either "horizontal"
             or "vertical".
-        border_value (int): Value used in case of a constant border.
+        border_value (int | tuple[int]): Value used in case of a
+            constant border.
         interpolation (str): Same as :func:`resize`.
 
     Returns:
@@ -501,6 +502,16 @@ def imshear(img,
     """
     assert direction in ['horizontal', 'vertical']
     h, w = img.shape[:2]
+    if img.ndim == 2:
+        c = 1
+    elif img.ndim == 3:
+        c = img.shape[-1]
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * c)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == c
+    else:
+        raise ValueError('Invalid type for `border_value`')
     shear_matrix = _get_shear_matrix(magnitude, direction)
     sheared = cv2.warpAffine(
         img,

@@ -462,6 +462,24 @@ class TestGeometric:
             dtype=np.uint8)
         assert_array_equal(
             mmcv.imshear(img, 1, 'vertical', borderValue), img_sheared)
+        # magnitude=1, vertical, borderValue=100, img shape (h,w,3)
+        img = np.stack([img, img, img], axis=-1)
+        img_sheared = np.stack([img_sheared, img_sheared, img_sheared],
+                               axis=-1)
+        assert_array_equal(
+            mmcv.imshear(img, 1, 'vertical', borderValue), img_sheared)
+        # test tuple format of borderValue
+        assert_array_equal(
+            mmcv.imshear(img, 1, 'vertical',
+                         (borderValue, borderValue, borderValue)), img_sheared)
+
+        # test invalid length of borderValue
+        with pytest.raises(AssertionError):
+            mmcv.imshear(img, 0.5, 'horizontal', (borderValue, ))
+
+        # test invalid type of borderValue
+        with pytest.raises(ValueError):
+            mmcv.imshear(img, 0.5, 'horizontal', [borderValue])
 
         # test invalid value of direction
         with pytest.raises(AssertionError):
