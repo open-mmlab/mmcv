@@ -460,3 +460,40 @@ def impad_to_multiple(img, divisor, pad_val=0):
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
     return impad(img, shape=(pad_h, pad_w))
+
+
+def _get_shear_matrix(magnitude, direction='horizontal'):
+    """Generate the shear matrix for transformation.
+    
+    Args:
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The shear matrix with dtype float32.
+    """
+    if direction == 'horizontal':
+        shear_matrix = np.float32([[1, magnitude, 0], [0, 1, 0]])
+    elif direction == 'vertical':
+        shear_matrix = np.float32([[1, 0, 0], [magnitude, 1, 0]])
+    return shear_matrix
+
+
+def imshear(img, magnitude, direction='horizontal', border_value=0, interpolation='bilinear'):
+    """Shear an image.
+
+    Args:
+        img (ndarray): Image to be sheared with format (h, w) or (h, w, c).
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal" or "vertical".
+        border_value (int): Value used in case of a constant border.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The sheared image.
+    """
+    assert direction in ['horizontal', 'vertical']
+    h, w = img.shape[:2]
+    shear_matrix = _get_shear_matrix(magnitude, direction)
+    sheared = cv2.warpAffine(img, shear_matrix, (w, h), borderValue=border_value, flags=interpolation)
+    return sheared

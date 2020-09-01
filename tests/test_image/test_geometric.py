@@ -443,3 +443,21 @@ class TestGeometric:
 
         with pytest.raises(ValueError):
             mmcv.imrotate(img, 90, center=(0, 0), auto_bound=True)
+
+    def test_imshear(self):
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
+        assert_array_equal(mmcv.imshear(img, 0), img)
+        # magnitude=1, horizontal
+        img_sheared = np.array([[1, 2, 3], [0, 4, 5], [0, 0, 7]], dtype=np.uint8)
+        assert_array_equal(mmcv.imshear(img, 1), img_sheared)
+        # magnitude=-1, vertical
+        img_sheared = np.array([[1, 5, 9], [4, 8, 0], [7, 0, 0]], dtype=np.uint8)
+        assert_array_equal(mmcv.imshear(img, -1, 'vertical'), img_sheared)
+        # magnitude=1, vertical, borderValue=100
+        borderValue = 100
+        img_sheared = np.array([[1, borderValue, borderValue], [4, 2, borderValue], [7, 5, 3]], dtype=np.uint8)
+        assert_array_equal(mmcv.imshear(img, 1, 'vertical', borderValue), img_sheared)
+
+        # test invalid value of direction
+        with pytest.raises(AssertionError):
+            mmcv.imshear(img, 0.5, 'diagonal')
