@@ -62,7 +62,9 @@ class VideoReader:
     """
 
     def __init__(self, filename, cache_capacity=10):
-        check_file_exist(filename, 'Video file not found: ' + filename)
+        if not (filename.startswith('https://')
+                or filename.startswith('http://')):
+            check_file_exist(filename, 'Video file not found: ' + filename)
         self._vcap = cv2.VideoCapture(filename)
         assert cache_capacity > 0
         self._cache = Cache(cache_capacity)
