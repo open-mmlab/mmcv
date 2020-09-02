@@ -1,9 +1,4 @@
 {
-  "resnet18": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/cifar10/resnet18_b16x8_20200823-f906fa4e.pth",
-  "resnet34": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/cifar10/resnet34_b16x8_20200823-52d5d832.pth",
-  "resnet50": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/cifar10/resnet50_b16x8_20200823-882aa7b1.pth",
-  "resnet101": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/cifar10/resnet101_b16x8_20200823-d9501bbc.pth",
-  "resnet152": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/cifar10/resnet152_b16x8_20200823-ad4d5d0c.pth",
   "resnet50_v1d": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnetv1d50_batch256_20200708-1ad0ce94.pth",
   "resnet101_v1d": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnetv1d101_batch256_20200708-9cb302ef.pth",
   "resnet152_v1d": "https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnetv1d152_batch256_20200708-e79cb6a2.pth",
