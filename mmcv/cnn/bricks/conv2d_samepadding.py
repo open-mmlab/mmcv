@@ -8,11 +8,11 @@ from .registry import CONV_LAYERS
 
 @CONV_LAYERS.register_module('Conv2dSamePadding')
 class Conv2dSamePadding(nn.Conv2d):
-    """ 2D Convolutions like TensorFloutput_w with `padding` as "same", which
-     applys padding to input (if needed) so that input image gets fully covered
-     by filter and stride you specified. For stride 1, this will ensure that
-     output image size is same as input. For stride of 2, output dimensions
-     will be half, for example.
+    """ Implementation of 2D convolution in tensorflow with `padding` as
+    "same", which applies padding to input (if needed) so that input image
+    gets fully covered by filter and stride you specified. For stride 1, this
+    will ensure that output image size is same as input. For stride of 2,
+    output dimensions will be half, for example.
 
     Args:
         in_channels (int): Number of channels in the input image
