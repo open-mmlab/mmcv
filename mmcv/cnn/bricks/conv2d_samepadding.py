@@ -6,7 +6,7 @@ from torch.nn import functional as F
 from .registry import CONV_LAYERS
 
 
-@CONV_LAYERS.register_module('Conv2dSamePadding')
+@CONV_LAYERS.register_module()
 class Conv2dSamePadding(nn.Conv2d):
     """ Implementation of 2D convolution in tensorflow with `padding` as
     "same", which applies padding to input (if needed) so that input image
