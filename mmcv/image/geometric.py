@@ -520,7 +520,10 @@ def imshear(img,
     shear_matrix = _get_shear_matrix(magnitude, direction)
     sheared = cv2.warpAffine(
         img,
-        shear_matrix, (width, height),
-        borderValue=border_value,
+        shear_matrix,
+        (width, height),
+        # fix TypeError: Scalar value for argument 'borderValue'
+        # is longer than 4
+        borderValue=border_value[:3],
         flags=cv2_interp_codes[interpolation])
     return sheared
