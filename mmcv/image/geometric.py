@@ -522,8 +522,10 @@ def imshear(img,
         img,
         shear_matrix,
         (width, height),
-        # fix TypeError: Scalar value for argument 'borderValue'
-        # is longer than 4
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. shearing masks whose channels large
+        # than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
         borderValue=border_value[:3],
         flags=cv2_interp_codes[interpolation])
     return sheared
