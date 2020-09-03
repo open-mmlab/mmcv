@@ -520,7 +520,12 @@ def imshear(img,
     shear_matrix = _get_shear_matrix(magnitude, direction)
     sheared = cv2.warpAffine(
         img,
-        shear_matrix, (width, height),
-        borderValue=border_value,
+        shear_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. shearing masks whose channels large
+        # than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
+        borderValue=border_value[:3],
         flags=cv2_interp_codes[interpolation])
     return sheared
