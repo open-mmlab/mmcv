@@ -48,6 +48,9 @@ def imshow_bboxes(img,
         win_name (str): The window name.
         wait_time (int): Value of waitKey param.
         out_file (str, optional): The filename to write the image.
+
+    Returns:
+        ndarray: The image with bboxes drawn on it.
     """
     img = imread(img)
 
@@ -74,6 +77,7 @@ def imshow_bboxes(img,
         imshow(img, win_name, wait_time)
     if out_file is not None:
         imwrite(img, out_file)
+    return img
 
 
 def imshow_det_bboxes(img,
@@ -106,6 +110,9 @@ def imshow_det_bboxes(img,
         win_name (str): The window name.
         wait_time (int): Value of waitKey param.
         out_file (str or None): The filename to write the image.
+
+    Returns:
+        ndarray: The image with bboxes drawn on it.
     """
     assert bboxes.ndim == 2
     assert labels.ndim == 1
@@ -140,3 +147,4 @@ def imshow_det_bboxes(img,
         imshow(img, win_name, wait_time)
     if out_file is not None:
         imwrite(img, out_file)
+    return img

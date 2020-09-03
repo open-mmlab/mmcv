@@ -142,6 +142,13 @@ def get_external_models():
     return default_urls
 
 
+def get_mmcls_models():
+    mmcls_json_path = osp.join(mmcv.__path__[0], 'model_zoo/mmcls.json')
+    mmcls_urls = load_file(mmcls_json_path)
+
+    return mmcls_urls
+
+
 def get_deprecated_model_names():
     deprecate_json_path = osp.join(mmcv.__path__[0],
                                    'model_zoo/deprecated.json')
@@ -149,6 +156,17 @@ def get_deprecated_model_names():
     assert isinstance(deprecate_urls, dict)
 
     return deprecate_urls
+
+
+def _process_mmcls_checkpoint(checkpoint):
+    state_dict = checkpoint['state_dict']
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if k.startswith('backbone.'):
+            new_state_dict[k[9:]] = v
+    new_checkpoint = dict(state_dict=new_state_dict)
+
+    return new_checkpoint
 
 
 def _load_checkpoint(filename, map_location=None):
@@ -192,6 +210,11 @@ def _load_checkpoint(filename, map_location=None):
             if not osp.isfile(filename):
                 raise IOError(f'{filename} is not a checkpoint file')
             checkpoint = torch.load(filename, map_location=map_location)
+    elif filename.startswith('mmcls://'):
+        model_urls = get_mmcls_models()
+        model_name = filename[8:]
+        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = _process_mmcls_checkpoint(checkpoint)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
     else:

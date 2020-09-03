@@ -1,6 +1,6 @@
 include mmcv/video/optflow_warp/*.hpp mmcv/video/optflow_warp/*.pyx
 include requirements.txt
-include mmcv/model_zoo/open_mmlab.json mmcv/model_zoo/deprecated.json
+include mmcv/model_zoo/open_mmlab.json mmcv/model_zoo/deprecated.json mmcv/model_zoo/mmcls.json
 include mmcv/ops/csrc/*.cuh mmcv/ops/csrc/*.hpp
 include mmcv/ops/csrc/pytorch/*.cu mmcv/ops/csrc/pytorch/*.cpp
 include mmcv/ops/csrc/parrots/*.cu mmcv/ops/csrc/parrots/*.cpp
