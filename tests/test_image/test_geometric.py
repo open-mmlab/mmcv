@@ -486,7 +486,7 @@ class TestGeometric:
             mmcv.imshear(img, 0.5, 'diagonal')
 
     def test_imtranslate(self):
-        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
         assert_array_equal(mmcv.imtranslate(img, 0), img)
         # offset=1, horizontal
         img_translated = np.array([[128, 1, 2], [128, 4, 5], [128, 7, 8]],
