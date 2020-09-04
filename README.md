@@ -131,6 +131,19 @@ e.g.,
 CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 ```
 
+If you are on Windows10, set the following environment variable before the installing command.
+
+```bash
+set MMCV_WITH_OPS=1
+```
+
+e.g.,
+
+```bash
+set MMCV_WITH_OPS=1
+pip install -e .
+```
+
 Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
