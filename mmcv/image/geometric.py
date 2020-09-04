@@ -557,8 +557,8 @@ def imtranslate(img,
     """Translate an image.
 
     Args:
-        img (ndarray): Image to be sheared with format (h, w)
-            or (h, w, c).
+        img (ndarray): Image to be translated with format
+            (h, w) or (h, w, c).
         offset (int | float): The offset used for translate.
         direction (str): The translate direction, either "horizontal"
             or "vertical".
