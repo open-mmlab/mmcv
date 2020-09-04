@@ -589,7 +589,12 @@ def imtranslate(img,
     translate_matrix = _get_translate_matrix(offset, direction)
     translated = cv2.warpAffine(
         img,
-        translate_matrix, (width, height),
+        translate_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. translating masks whose channels
+        # large than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
         borderValue=border_value[:3],
         flags=cv2_interp_codes[interpolation])
     return translated
