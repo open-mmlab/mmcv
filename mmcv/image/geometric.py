@@ -459,7 +459,7 @@ def impad_to_multiple(img, divisor, pad_val=0):
     """
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
-    return impad(img, shape=(pad_h, pad_w))
+    return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
 def _get_shear_matrix(magnitude, direction='horizontal'):
