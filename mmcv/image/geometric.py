@@ -529,3 +529,67 @@ def imshear(img,
         borderValue=border_value[:3],
         flags=cv2_interp_codes[interpolation])
     return sheared
+
+
+def _get_translate_matrix(offset, direction='horizontal'):
+    """Generate the translate matrix.
+
+    Args:
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either
+            "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The translate matrix with dtype float32.
+    """
+    if direction == 'horizontal':
+        translate_matrix = np.float32([[1, 0, offset], [0, 1, 0]])
+    elif direction == 'vertical':
+        translate_matrix = np.float32([[1, 0, 0], [0, 1, offset]])
+    return translate_matrix
+
+
+def imtranslate(img,
+                offset,
+                direction='horizontal',
+                border_value=0,
+                interpolation='bilinear'):
+    """Translate an image.
+
+    Args:
+        img (ndarray): Image to be sheared with format (h, w)
+            or (h, w, c).
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either "horizontal"
+            or "vertical".
+        border_value (int | tuple[int]): Value used in case of a
+            constant border.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The translated image.
+    """
+    assert direction in ['horizontal',
+                         'vertical'], f'Invalid direction: {direction}'
+    height, width = img.shape[:2]
+    if img.ndim == 2:
+        channels = 1
+    elif img.ndim == 3:
+        channels = img.shape[-1]
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(border_value), channels)
+    else:
+        raise ValueError(
+            f'Invalid type {type(border_value)} for `border_value`.')
+    translate_matrix = _get_translate_matrix(offset, direction)
+    translated = cv2.warpAffine(
+        img,
+        translate_matrix, (width, height),
+        borderValue=border_value[:3],
+        flags=cv2_interp_codes[interpolation])
+    return translated
