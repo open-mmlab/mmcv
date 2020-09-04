@@ -8,7 +8,7 @@ void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
                                                const float alpha) {
   int output_size = output.numel();
   int num_classes = input.size(1);
-  AT_ASSERTM(target.max().item<long>() <= (long)num_classes,
+  AT_ASSERTM(target.max().item<int64_t>() <= (int64_t)num_classes,
              "target label should smaller or equal than num classes");
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -53,7 +53,7 @@ void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor softmax, Tensor target,
   int output_size = output.numel();
   int num_classes = softmax.size(1);
 
-  AT_ASSERTM(target.max().item<long>() <= (long)num_classes,
+  AT_ASSERTM(target.max().item<int64_t>() <= (int64_t)num_classes,
              "target label should smaller or equal than num classes");
   at::cuda::CUDAGuard device_guard(softmax.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -80,7 +80,9 @@ void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor softmax, Tensor target,
   at::cuda::CUDAGuard device_guard(grad_input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_input.scalar_type(), "softmax_focal_loss_backward_cuda1_kernel",
+      grad_input.scalar_type(),
+      "softmax_focal_loss_backward_cuda1_"
+      "kernel",
       [&] {
         softmax_focal_loss_backward_cuda1_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
@@ -93,7 +95,9 @@ void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor softmax, Tensor target,
 
   output_size = grad_input.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_input.scalar_type(), "softmax_focal_loss_backward_cuda2_kernel",
+      grad_input.scalar_type(),
+      "softmax_focal_loss_backward_cuda2_"
+      "kernel",
       [&] {
         softmax_focal_loss_backward_cuda2_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
