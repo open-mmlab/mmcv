@@ -45,8 +45,10 @@ class TestVideoReader:
     def setup_class(cls):
         cls.video_path = osp.join(osp.dirname(__file__), '../data/test.mp4')
         cls.num_frames = 168
+        cls.video_url = 'https://www.sample-videos.com/video/mp4/240/big_buck_bunny_240p_1mb.mp4'  # noqa: E501
 
     def test_load(self):
+        # read from video file
         v = mmcv.VideoReader(self.video_path)
         assert v.width == 294
         assert v.height == 240
@@ -55,6 +57,16 @@ class TestVideoReader:
         assert len(v) == self.num_frames
         assert v.opened
         import cv2
+        assert isinstance(v.vcap, type(cv2.VideoCapture()))
+
+        # read from video url
+        v = mmcv.VideoReader(self.video_url)
+        assert v.width == 320
+        assert v.height == 240
+        assert v.fps == 15
+        assert v.frame_cnt == 205
+        assert len(v) == 205
+        assert v.opened
         assert isinstance(v.vcap, type(cv2.VideoCapture()))
 
     def test_read(self):
