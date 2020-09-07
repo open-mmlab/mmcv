@@ -3,7 +3,6 @@ import os.path as osp
 
 import cv2
 import numpy as np
-import pytest
 from numpy.testing import assert_array_equal
 
 import mmcv
@@ -81,18 +80,11 @@ class TestPhotometric:
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                        dtype=np.uint8)
         img = np.stack([img, img, img], axis=-1)
-        assert_array_equal(mmcv.color(img, 1, None), img)
+        assert_array_equal(mmcv.color(img), img)
         img_gray = mmcv.bgr2gray(img)
         img_r = np.stack([img_gray, img_gray, img_gray], axis=-1)
-        assert_array_equal(mmcv.color(img, 0, None), img_r)
+        assert_array_equal(mmcv.color(img, 0), img_r)
+        assert_array_equal(mmcv.color(img, 0, 1), img_r)
         assert_array_equal(
             mmcv.color(img, 0.5, 0.5),
             (img * 0.5 + img_r * 0.5).astype(img.dtype))
-
-        # test ValueError for invalid value of backend
-        with pytest.raises(ValueError):
-            mmcv.color(img, 1, backend='invalid')
-
-        # test NotImplementedError for pillow backend
-        with pytest.raises(NotImplementedError):
-            mmcv.color(img, 1, backend='pillow')

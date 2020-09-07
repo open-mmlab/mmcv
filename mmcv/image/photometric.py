@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 
 from .colorspace import bgr2gray
-from .io import imread_backend
 
 
 def imnormalize(img, mean, std, to_rgb=True):
@@ -96,36 +95,25 @@ def posterize(img, bits):
     return img
 
 
-def color(img, beta, alpha=None, gamma=0, backend=None):
-    """Color the image.
+def color(img, alpha=1, beta=None, gamma=0):
+    """Color the image. It blends the source image and its gray.
+
+    image with the format: `img * alpha + gray_img * beta + gamma`.
 
     Args:
         img (ndarray): The input source image.
-        beta (int | float): Weight of the second array elements (e.g.
-            `gray_img`). Same as :func:`cv2.addWeighted`.
-        alpha (int | float): Weight of the first array elements (e.g.
-            `img`). Default None. If None, it's assigned to value
-            (1 - `beta`).
+        alpha (int | float): Weight for the source image. Default 1.
+        beta (int | float): Weight for the converted gray image.
+            If None, it's assigned the value (1 - `alpha`).
         gamma (int | float): Scalar added to each sum.
-            Same as :func:`cv2.addWeighted`.
-        backend (str | None): Same as :func:`mmcv.imresize`.
+            Same as :func:`cv2.addWeighted`. Default 0.
 
     Returns:
         ndarray: Colored image.
     """
-    h, w = img.shape[:2]
-    if backend is None:
-        backend = imread_backend
-    if backend not in ['cv2', 'pillow']:
-        raise ValueError(f'backend: {backend} is not supported for resize.'
-                         f"Supported backends are 'cv2', 'pillow'")
-
-    if backend == 'pillow':
-        raise NotImplementedError
-    else:
-        gray_img = bgr2gray(img)
-        gray_img = np.tile(gray_img[..., None], [1, 1, 3])
-        if alpha is None:
-            alpha = 1 - beta
-        colored_img = cv2.addWeighted(gray_img, alpha, img, beta, gamma)
-        return colored_img
+    gray_img = bgr2gray(img)
+    gray_img = np.tile(gray_img[..., None], [1, 1, 3])
+    if beta is None:
+        beta = 1 - alpha
+    colored_img = cv2.addWeighted(img, alpha, gray_img, beta, gamma)
+    return colored_img
