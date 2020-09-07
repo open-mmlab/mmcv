@@ -100,7 +100,3 @@ class TestPhotometric:
             mmcv.color(img, 0.8, -0.6, gamma=-0.6),
             np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0,
                              255)).astype(img.dtype))
-
-
-obj = TestPhotometric()
-obj.test_color()
