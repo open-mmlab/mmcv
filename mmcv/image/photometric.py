@@ -103,8 +103,9 @@ def color(img, beta, alpha=None, gamma=0, backend=None):
         img (ndarray): The input source image.
         beta (int | float): Weight of the second array elements (e.g.
             `gray_img`). Same as :func:`cv2.addWeighted`.
-        alpha (int | float): Weight of the first array elements (e.g. `img`).
-            Default None. If None, it's assigned to value (1 - `beta`).
+        alpha (int | float): Weight of the first array elements (e.g.
+            `img`). Default None. If None, it's assigned to value
+            (1 - `beta`).
         gamma (int | float): Scalar added to each sum.
             Same as :func:`cv2.addWeighted`.
         backend (str | None): Same as :func:`mmcv.imresize`.
@@ -124,7 +125,6 @@ def color(img, beta, alpha=None, gamma=0, backend=None):
     else:
         gray_img = bgr2gray(img)
         gray_img = np.tile(gray_img[..., None], [1, 1, 3])
-        # print('shape: ', gray_img.shape)
         if alpha is None:
             alpha = 1 - beta
         colored_img = cv2.addWeighted(gray_img, alpha, img, beta, gamma)
