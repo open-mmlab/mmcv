@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 
+from .colorspace import bgr2gray
+from .io import imread_backend
+
 
 def imnormalize(img, mean, std, to_rgb=True):
     """Normalize an image with mean and std.
@@ -91,3 +94,38 @@ def posterize(img, bits):
     shift = 8 - bits
     img = np.left_shift(np.right_shift(img, shift), shift)
     return img
+
+
+def color(img, beta, alpha=None, gamma=0, backend=None):
+    """Color the image.
+
+    Args:
+        img (ndarray): The input source image.
+        beta (int | float): Weight of the second array elements (e.g.
+            `gray_img`). Same as :func:`cv2.addWeighted`.
+        alpha (int | float): Weight of the first array elements (e.g. `img`).
+            Default None. If None, it's assigned to value (1 - `beta`).
+        gamma (int | float): Scalar added to each sum.
+            Same as :func:`cv2.addWeighted`.
+        backend (str | None): Same as :func:`mmcv.imresize`.
+
+    Returns:
+        ndarray: Colored image.
+    """
+    h, w = img.shape[:2]
+    if backend is None:
+        backend = imread_backend
+    if backend not in ['cv2', 'pillow']:
+        raise ValueError(f'backend: {backend} is not supported for resize.'
+                         f"Supported backends are 'cv2', 'pillow'")
+
+    if backend == 'pillow':
+        raise NotImplementedError
+    else:
+        gray_img = bgr2gray(img)
+        gray_img = np.tile(gray_img[..., None], [1, 1, 3])
+        # print('shape: ', gray_img.shape)
+        if alpha is None:
+            alpha = 1 - beta
+        colored_img = cv2.addWeighted(gray_img, alpha, img, beta, gamma)
+        return colored_img
