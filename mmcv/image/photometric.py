@@ -109,7 +109,7 @@ def color(img, alpha=1, beta=None, gamma=0):
             Same as :func:`cv2.addWeighted`. Default 0.
 
     Returns:
-        ndarray: Colored image.
+        ndarray: Colored image which has the same size and dtype as input.
     """
     gray_img = bgr2gray(img)
     gray_img = np.tile(gray_img[..., None], [1, 1, 3])
