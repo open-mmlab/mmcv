@@ -116,4 +116,10 @@ def color(img, alpha=1, beta=None, gamma=0):
     if beta is None:
         beta = 1 - alpha
     colored_img = cv2.addWeighted(img, alpha, gray_img, beta, gamma)
+    if not colored_img.dtype == np.uint8:
+        # Note when the dtype of `img` is not defaultly `np.uint8`
+        # (e.g. np.float32), the value in `colored_img` got from cv2
+        # is not guaranteed to be in range [0, 255], so here clip
+        # is needed.
+        colored_img = np.clip(colored_img, 0, 255)
     return colored_img

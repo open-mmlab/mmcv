@@ -100,3 +100,9 @@ class TestPhotometric:
             mmcv.color(img, 0.8, -0.6, gamma=-0.6),
             np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0,
                              255)).astype(img.dtype))
+
+        # test float type of image
+        img = img.astype(np.float32)
+        assert_array_equal(
+            np.round(mmcv.color(img, 0.8, -0.6, gamma=-0.6)),
+            np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0, 255)))
