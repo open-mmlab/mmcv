@@ -96,9 +96,9 @@ def posterize(img, bits):
 
 
 def color(img, alpha=1, beta=None, gamma=0):
-    """Color the image. It blends the source image and its gray.
+    """It blends the source image and its gray image with format:
 
-    image with the format: `img * alpha + gray_img * beta + gamma`.
+    `img * alpha + gray_img * beta + gamma`.
 
     Args:
         img (ndarray): The input source image.
