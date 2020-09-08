@@ -122,6 +122,7 @@ class TestPhotometric:
         equalized_img = mmcv.equalize(img)
         assert_array_equal(equalized_img, _equalize(img))
 
+        # test equalize with case step=0
         img = np.array([[0, 0, 0], [120, 120, 120], [255, 255, 255]],
                        dtype=np.uint8)
         img = np.stack([img, img, img], axis=-1)
