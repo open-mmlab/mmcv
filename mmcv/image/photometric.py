@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from .colorspace import bgr2gray
+
 
 def imnormalize(img, mean, std, to_rgb=True):
     """Normalize an image with mean and std.
@@ -91,3 +93,33 @@ def posterize(img, bits):
     shift = 8 - bits
     img = np.left_shift(np.right_shift(img, shift), shift)
     return img
+
+
+def adjust_color(img, alpha=1, beta=None, gamma=0):
+    """It blends the source image and its gray image:
+
+    ``output = img * alpha + gray_img * beta + gamma``
+
+    Args:
+        img (ndarray): The input source image.
+        alpha (int | float): Weight for the source image. Default 1.
+        beta (int | float): Weight for the converted gray image.
+            If None, it's assigned the value (1 - `alpha`).
+        gamma (int | float): Scalar added to each sum.
+            Same as :func:`cv2.addWeighted`. Default 0.
+
+    Returns:
+        ndarray: Colored image which has the same size and dtype as input.
+    """
+    gray_img = bgr2gray(img)
+    gray_img = np.tile(gray_img[..., None], [1, 1, 3])
+    if beta is None:
+        beta = 1 - alpha
+    colored_img = cv2.addWeighted(img, alpha, gray_img, beta, gamma)
+    if not colored_img.dtype == np.uint8:
+        # Note when the dtype of `img` is not defaultly `np.uint8`
+        # (e.g. np.float32), the value in `colored_img` got from cv2
+        # is not guaranteed to be in range [0, 255], so here clip
+        # is needed.
+        colored_img = np.clip(colored_img, 0, 255)
+    return colored_img
