@@ -95,10 +95,10 @@ def posterize(img, bits):
     return img
 
 
-def color(img, alpha=1, beta=None, gamma=0):
+def adjust_color(img, alpha=1, beta=None, gamma=0):
     """It blends the source image and its gray image:
 
-    `output = img * alpha + gray_img * beta + gamma`.
+    ``output = img * alpha + gray_img * beta + gamma``
 
     Args:
         img (ndarray): The input source image.
