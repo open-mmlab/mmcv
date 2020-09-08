@@ -94,9 +94,11 @@ def posterize(img, bits):
 
 
 def equalize(img):
-    """Equalize the image histogram. This function applies a non-linear mapping
-    to the input image, in order to create a uniform distribution of grayscale
-    values in the output image.
+    """Equalize the image histogram.
+
+    This function applies a non-linear mapping to the input image,
+    in order to create a uniform distribution of grayscale values
+    in the output image.
 
     Args:
         img (ndarray): Image to be equalized.
@@ -105,7 +107,7 @@ def equalize(img):
         ndarray: The equalized image.
     """
 
-    def _scale_channel(im, c):
+    def _scale_channel(im, c, eps=1e-5):
         """Scale the data in the corresponding channel."""
         im = im[:, :, c]
         # Compute the histogram of the image channel.
@@ -114,23 +116,18 @@ def equalize(img):
         nonzero_histo = histo[histo > 0]
         step = (np.sum(nonzero_histo) - nonzero_histo[-1]) // 255
 
-        def _build_lut(histo, step, eps=1e-5):
-            # Compute the cumulative sum, shifted by step // 2
-            # and then normalized by step.
-            if step:
-                lut = (np.cumsum(histo) + (step // 2)) // step
-            else:
-                lut = (np.cumsum(histo) + (step // 2)) // (step + eps)
-            # Shift lut, prepending with 0.
-            lut = np.concatenate([[0], lut[:-1]], 0)
+        # Build lut from the full histogram and step.
+        # Compute the cumulative sum, shifted by step // 2
+        # and then normalized by step.
+        lut = (np.cumsum(histo) + (step // 2)) // max(step, eps)
+        # Shift lut, prepending with 0.
+        lut = np.concatenate([[0], lut[:-1]], 0)
+        if step:
             # Clip the counts to be in range.
-            return np.clip(lut, 0, 255)
-
-        # If step is zero, return the original image. Otherwise,
-        # build lut from the full histogram and step, and then
-        # index from it.
-        result = np.where(np.equal(step, 0), im, _build_lut(histo, step)[im])
-        return result
+            lut = np.clip(lut, 0, 255)
+        # If step is zero, return the original image.
+        # Otherwise, index from lut.
+        return np.where(np.equal(step, 0), im, lut[im])
 
     # Scales each channel independently and then stacks
     # the result.
