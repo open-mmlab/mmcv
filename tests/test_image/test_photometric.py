@@ -98,7 +98,3 @@ class TestPhotometric:
                 255).astype(np.uint8)
             equalized_img = mmcv.equalize(img)
             assert_array_equal(equalized_img, _equalize(img))
-
-
-obj = TestPhotometric()
-obj.test_equalize()
