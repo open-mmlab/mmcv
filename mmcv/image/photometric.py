@@ -93,51 +93,6 @@ def posterize(img, bits):
     return img
 
 
-# def equalize(img):
-#     """Equalize the image histogram.
-
-#     This function applies a non-linear mapping to the input image,
-#     in order to create a uniform distribution of grayscale values
-#     in the output image.
-
-#     Args:
-#         img (ndarray): Image to be equalized.
-
-#     Returns:
-#         ndarray: The equalized image.
-#     """
-
-#     def _scale_channel(im, c, eps=1e-5):
-#         """Scale the data in the corresponding channel."""
-#         im = im[:, :, c]
-#         # Compute the histogram of the image channel.
-#         histo = np.histogram(im, 256, (0, 255))[0]
-#         # For computing the step, filter out the nonzeros.
-#         nonzero_histo = histo[histo > 0]
-#         step = (np.sum(nonzero_histo) - nonzero_histo[-1]) // 255
-
-#         # Build lut from the full histogram and step.
-#         # Compute the cumulative sum, shifted by step // 2
-#         # and then normalized by step.
-#         lut = (np.cumsum(histo) + (step // 2)) // max(step, eps)
-#         # Shift lut, prepending with 0.
-#         lut = np.concatenate([[0], lut[:-1]], 0)
-#         if not step:
-#             # Clip the counts to be in range.
-#             lut = np.clip(lut, 0, 255)
-#         # If step is zero, return the original image.
-#         # Otherwise, index from lut.
-#         return np.where(np.equal(step, 0), im, lut[im])
-
-#     # Scales each channel independently and then stacks
-#     # the result.
-#     s1 = _scale_channel(img, 0)
-#     s2 = _scale_channel(img, 1)
-#     s3 = _scale_channel(img, 2)
-#     equalized_img = np.stack([s1, s2, s3], axis=-1)
-#     return equalized_img
-
-
 def equalize(img):
     """Equalize the image histogram.
 
