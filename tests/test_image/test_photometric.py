@@ -75,3 +75,30 @@ class TestPhotometric:
         img_r = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
                          dtype=np.uint8)
         assert_array_equal(mmcv.posterize(img, 3), img_r)
+
+    def test_equalize(self, nb_rand_test=100):
+
+        def _equalize(img):
+            # equalize the image using PIL.ImageOps.equalize
+            from PIL import ImageOps, Image
+            img = Image.fromarray(img)
+            equalized_img = np.asarray(ImageOps.equalize(img))
+            return equalized_img
+
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+        equalized_img = mmcv.equalize(img)
+        assert_array_equal(equalized_img, _equalize(img))
+
+        # test equalize with randomly sampled image.
+        for _ in range(nb_rand_test):
+            img = np.clip(
+                np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
+                255).astype(np.uint8)
+            equalized_img = mmcv.equalize(img)
+            assert_array_equal(equalized_img, _equalize(img))
+
+
+obj = TestPhotometric()
+obj.test_equalize()
