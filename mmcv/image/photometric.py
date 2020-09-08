@@ -123,3 +123,46 @@ def adjust_color(img, alpha=1, beta=None, gamma=0):
         # is needed.
         colored_img = np.clip(colored_img, 0, 255)
     return colored_img
+
+
+def imequalize(img):
+    """Equalize the image histogram.
+
+    This function applies a non-linear mapping to the input image,
+    in order to create a uniform distribution of grayscale values
+    in the output image.
+
+    Args:
+        img (ndarray): Image to be equalized.
+
+    Returns:
+        ndarray: The equalized image.
+    """
+
+    def _scale_channel(im, c):
+        """Scale the data in the corresponding channel."""
+        im = im[:, :, c]
+        # Compute the histogram of the image channel.
+        histo = np.histogram(im, 256, (0, 255))[0]
+        # For computing the step, filter out the nonzeros.
+        nonzero_histo = histo[histo > 0]
+        step = (np.sum(nonzero_histo) - nonzero_histo[-1]) // 255
+        if not step:
+            lut = np.array(range(256))
+        else:
+            # Compute the cumulative sum, shifted by step // 2
+            # and then normalized by step.
+            lut = (np.cumsum(histo) + (step // 2)) // step
+            # Shift lut, prepending with 0.
+            lut = np.concatenate([[0], lut[:-1]], 0)
+        # If step is zero, return the original image.
+        # Otherwise, index from lut.
+        return np.where(np.equal(step, 0), im, lut[im])
+
+    # Scales each channel independently and then stacks
+    # the result.
+    s1 = _scale_channel(img, 0)
+    s2 = _scale_channel(img, 1)
+    s3 = _scale_channel(img, 2)
+    equalized_img = np.stack([s1, s2, s3], axis=-1)
+    return equalized_img
