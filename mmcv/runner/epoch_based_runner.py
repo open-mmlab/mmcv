@@ -21,8 +21,8 @@ class EpochBasedRunner(BaseRunner):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
+        self._max_iters = self._max_epochs * len(self.data_loader)
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
@@ -90,6 +90,8 @@ class EpochBasedRunner(BaseRunner):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
+        self.call_hook('before_run')
+
         for i, flow in enumerate(workflow):
             mode, epochs = flow
             if mode == 'train':
@@ -99,10 +101,10 @@ class EpochBasedRunner(BaseRunner):
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
-        self.logger.info('workflow: %s, max: %d epochs', workflow, max_epochs)
-        self.call_hook('before_run')
+        self.logger.info('workflow: %s, max: %d epochs', workflow,
+                         self._max_epochs)
 
-        while self.epoch < max_epochs:
+        while self.epoch < self._max_epochs:
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
@@ -117,7 +119,7 @@ class EpochBasedRunner(BaseRunner):
                             type(mode)))
 
                 for _ in range(epochs):
-                    if mode == 'train' and self.epoch >= max_epochs:
+                    if mode == 'train' and self.epoch >= self._max_epochs:
                         break
                     epoch_runner(data_loaders[i], **kwargs)
 
