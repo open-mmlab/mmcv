@@ -99,6 +99,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0):
     """It blends the source image and its gray image:
 
     ``output = img * alpha + gray_img * beta + gamma``
+
     Args:
         img (ndarray): The input source image.
         alpha (int | float): Weight for the source image. Default 1.
@@ -106,6 +107,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0):
             If None, it's assigned the value (1 - `alpha`).
         gamma (int | float): Scalar added to each sum.
             Same as :func:`cv2.addWeighted`. Default 0.
+
     Returns:
         ndarray: Colored image which has the same size and dtype as input.
     """
@@ -123,7 +125,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0):
     return colored_img
 
 
-def equalize(img):
+def imequalize(img):
     """Equalize the image histogram.
 
     This function applies a non-linear mapping to the input image,
