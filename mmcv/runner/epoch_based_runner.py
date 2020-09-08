@@ -90,18 +90,19 @@ class EpochBasedRunner(BaseRunner):
         assert len(data_loaders) == len(workflow)
 
         self._max_epochs = max_epochs
-
         for i, flow in enumerate(workflow):
             mode, epochs = flow
             if mode == 'train':
                 self._max_iters = self._max_epochs * len(data_loaders[i])
                 break
+
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
         self.logger.info('workflow: %s, max: %d epochs', workflow,
                          self._max_epochs)
         self.call_hook('before_run')
+
         while self.epoch < self._max_epochs:
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
