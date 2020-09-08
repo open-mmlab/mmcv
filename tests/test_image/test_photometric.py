@@ -91,6 +91,11 @@ class TestPhotometric:
         equalized_img = mmcv.equalize(img)
         assert_array_equal(equalized_img, _equalize(img))
 
+        img = np.array([[0, 0, 0], [120, 120, 120], [255, 255, 255]],
+                       dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+        assert_array_equal(mmcv.equalize(img), img)
+
         # test equalize with randomly sampled image.
         for _ in range(nb_rand_test):
             img = np.clip(
