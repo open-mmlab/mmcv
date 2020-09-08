@@ -76,6 +76,37 @@ class TestPhotometric:
                          dtype=np.uint8)
         assert_array_equal(mmcv.posterize(img, 3), img_r)
 
+    def test_adjust_color(self):
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+        assert_array_equal(mmcv.adjust_color(img), img)
+        img_gray = mmcv.bgr2gray(img)
+        img_r = np.stack([img_gray, img_gray, img_gray], axis=-1)
+        assert_array_equal(mmcv.adjust_color(img, 0), img_r)
+        assert_array_equal(mmcv.adjust_color(img, 0, 1), img_r)
+        assert_array_equal(
+            mmcv.adjust_color(img, 0.5, 0.5),
+            np.round(np.clip((img * 0.5 + img_r * 0.5), 0,
+                             255)).astype(img.dtype))
+        assert_array_equal(
+            mmcv.adjust_color(img, 1, 1.5),
+            np.round(np.clip(img * 1 + img_r * 1.5, 0, 255)).astype(img.dtype))
+        assert_array_equal(
+            mmcv.adjust_color(img, 0.8, -0.6, gamma=2),
+            np.round(np.clip(img * 0.8 - 0.6 * img_r + 2, 0,
+                             255)).astype(img.dtype))
+        assert_array_equal(
+            mmcv.adjust_color(img, 0.8, -0.6, gamma=-0.6),
+            np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0,
+                             255)).astype(img.dtype))
+
+        # test float type of image
+        img = img.astype(np.float32)
+        assert_array_equal(
+            np.round(mmcv.adjust_color(img, 0.8, -0.6, gamma=-0.6)),
+            np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0, 255)))
+
     def test_equalize(self, nb_rand_test=100):
 
         def _equalize(img):
