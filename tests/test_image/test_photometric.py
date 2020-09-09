@@ -196,4 +196,4 @@ class TestPhotometric:
             delta = np.absolute(
                 mmcv.adjust_contrast(img, factor) -
                 _adjust_contrast(img, factor))
-            assert np.less_equal(delta, 1).all(), delta
+            assert np.less_equal(delta, 1).all()
