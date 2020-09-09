@@ -7,8 +7,9 @@ from .geometric import (imcrop, imflip, imflip_, impad, impad_to_multiple,
                         imtranslate, rescale_size)
 from .io import imfrombytes, imread, imwrite, supported_backends, use_backend
 from .misc import tensor2imgs
-from .photometric import (adjust_color, imdenormalize, imequalize, iminvert,
-                          imnormalize, imnormalize_, posterize, solarize)
+from .photometric import (adjust_brightness, adjust_color, adjust_contrast,
+                          imdenormalize, imequalize, iminvert, imnormalize,
+                          imnormalize_, posterize, solarize)
 
 __all__ = [
     'bgr2gray', 'bgr2hls', 'bgr2hsv', 'bgr2rgb', 'gray2bgr', 'gray2rgb',
@@ -18,5 +19,6 @@ __all__ = [
     'imwrite', 'supported_backends', 'use_backend', 'imdenormalize',
     'imnormalize', 'imnormalize_', 'iminvert', 'posterize', 'solarize',
     'rgb2ycbcr', 'bgr2ycbcr', 'ycbcr2rgb', 'ycbcr2bgr', 'tensor2imgs',
-    'imshear', 'imtranslate', 'adjust_color', 'imequalize'
+    'imshear', 'imtranslate', 'adjust_color', 'imequalize',
+    'adjust_brightness', 'adjust_contrast'
 ]
