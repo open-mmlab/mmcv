@@ -1,7 +1,7 @@
 from .activation import build_activation_layer
 from .context_block import ContextBlock
 from .conv import build_conv_layer
-from .conv2d_samepadding import Conv2dSamePadding
+from .conv2d_adaptive_padding import Conv2dAdaptivePadding
 from .conv_module import ConvModule
 from .conv_ws import ConvAWS2d, ConvWS2d, conv_ws_2d
 from .depthwise_separable_conv_module import DepthwiseSeparableConvModule
@@ -25,5 +25,6 @@ __all__ = [
     'NonLocal2d', 'NonLocal3d', 'ContextBlock', 'GeneralizedAttention',
     'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS',
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
-    'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish', 'Conv2dSamePadding'
+    'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish',
+    'Conv2dAdaptivePadding'
 ]
