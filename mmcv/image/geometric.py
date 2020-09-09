@@ -264,10 +264,11 @@ def imrotate(img,
         matrix[1, 2] += (new_h - h) * 0.5
         w = int(np.round(new_w))
         h = int(np.round(new_h))
-    rotated = cv2.warpAffine(img,
-                             matrix, (w, h),
-                             flags=cv2_interp_codes[interpolation],
-                             borderValue=border_value)
+    rotated = cv2.warpAffine(
+        img,
+        matrix, (w, h),
+        flags=cv2_interp_codes[interpolation],
+        borderValue=border_value)
     return rotated
 
 
