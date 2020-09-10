@@ -164,7 +164,7 @@ class TestPhotometric:
                 mmcv.adjust_brightness(img, factor),
                 _adjust_brightness(img, factor))
 
-    def test_adjust_contrast(self, nb_rand_test=100):
+    def test_adjust_contrast(self, nb_rand_test=10):
 
         def _adjust_contrast(img, factor):
             from PIL.ImageEnhance import Contrast

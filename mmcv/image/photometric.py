@@ -174,7 +174,7 @@ def adjust_brightness(img, alpha=1.):
     This function controls the brightness of an image. An
     enhancement factor (alpha) of 0.0 gives a black image.
     A factor of 1.0 gives the original image. This function
-    blends the source image and the degenerated image:
+    blends the source image and the degenerated black image:
 
     ``output = img * alpha + degenerated * (1 - alpha)``
 
@@ -183,7 +183,7 @@ def adjust_brightness(img, alpha=1.):
         alpha (float): A value controls the enhancement.
             Factor 1.0 returns the original image, lower
             factors mean less color (brightness, contrast,
-            etc), and higher values more.
+            etc), and higher values more. Default 1.
 
     Returns:
         ndarray: The brightened image.
@@ -204,7 +204,7 @@ def adjust_contrast(img, alpha=1.):
     This function controls the contrast of an image. An
     enhancement factor (alpha) of 0.0 gives a solid grey
     image. A factor of 1.0 gives the original image. It
-    blends the source image and the degenerated image:
+    blends the source image and the degenerated mean image:
 
     ``output = img * alpha + degenerated * (1 - alpha)``
 
