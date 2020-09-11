@@ -160,9 +160,10 @@ class TestPhotometric:
                 np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
                 255).astype(np.uint8)
             factor = np.random.uniform()
-            assert_array_equal(
-                mmcv.adjust_brightness(img, factor),
+            delta = np.absolute(
+                mmcv.adjust_brightness(img, factor) -
                 _adjust_brightness(img, factor))
+            assert np.less_equal(delta, 1).all()
 
     def test_adjust_contrast(self, nb_rand_test=10):
 

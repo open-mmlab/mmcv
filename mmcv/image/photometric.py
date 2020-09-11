@@ -190,7 +190,7 @@ def adjust_brightness(img, alpha=1.):
     """
     degenerated = np.zeros_like(img)
     # Note manually convert the dtype to np.float32, to
-    # achieve same results with PIL.ImageEnhance.Brightness.
+    # achieve as close results as PIL.ImageEnhance.Brightness.
     # Set beta=1-alpha, and gamma=0
     brightened_img = cv2.addWeighted(
         img.astype(np.float32), alpha, degenerated.astype(np.float32),
