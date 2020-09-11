@@ -271,10 +271,14 @@ def test_default_optimizer_constructor():
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
+    if OPS_AVAILABLE:
+        dcn_offset_lr_mult = model.dcn.offset_lr_mult
+    else:
+        dcn_offset_lr_mult = 1
     check_optimizer(
         optimizer,
         model,
-        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        dcn_offset_lr_mult=dcn_offset_lr_mult,
         **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel, weight decay is None
@@ -336,11 +340,15 @@ def test_default_optimizer_constructor():
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
+    if OPS_AVAILABLE:
+        dcn_offset_lr_mult = model.module.dcn.offset_lr_mult
+    else:
+        dcn_offset_lr_mult = 1
     check_optimizer(
         optimizer,
         model,
         prefix='module.',
-        dcn_offset_lr_mult=model.module.dcn.offset_lr_mult,
+        dcn_offset_lr_mult=dcn_offset_lr_mult,
         **paramwise_cfg)
 
     # paramwise_cfg with DataParallel
@@ -360,7 +368,7 @@ def test_default_optimizer_constructor():
             optimizer,
             model,
             prefix='module.',
-            dcn_offset_lr_mult=model.module.dcn.offset_lr_mult,
+            dcn_offset_lr_mult=dcn_offset_lr_mult,
             **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel and no grad
@@ -417,7 +425,7 @@ def test_default_optimizer_constructor():
     check_optimizer(
         optimizer,
         model,
-        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        dcn_offset_lr_mult=dcn_offset_lr_mult,
         **paramwise_cfg)
 
     # test DefaultOptimizerConstructor with custom_keys and ExampleModel
@@ -581,10 +589,14 @@ def test_build_optimizer_constructor():
         paramwise_cfg=paramwise_cfg)
     optim_constructor = build_optimizer_constructor(optim_constructor_cfg)
     optimizer = optim_constructor(model)
+    if OPS_AVAILABLE:
+        dcn_offset_lr_mult = model.dcn.offset_lr_mult
+    else:
+        dcn_offset_lr_mult = 1
     check_optimizer(
         optimizer,
         model,
-        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        dcn_offset_lr_mult=dcn_offset_lr_mult,
         **paramwise_cfg)
 
     from mmcv.runner import OPTIMIZERS
@@ -650,8 +662,12 @@ def test_build_optimizer():
             norm_decay_mult=0,
             dwconv_decay_mult=0.1))
     optimizer = build_optimizer(model, optimizer_cfg)
+    if OPS_AVAILABLE:
+        dcn_offset_lr_mult = model.dcn.offset_lr_mult
+    else:
+        dcn_offset_lr_mult = 1
     check_optimizer(
         optimizer,
         model,
-        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        dcn_offset_lr_mult=dcn_offset_lr_mult,
         **optimizer_cfg['paramwise_cfg'])
