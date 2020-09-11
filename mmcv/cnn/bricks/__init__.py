@@ -17,6 +17,7 @@ from .registry import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
 from .scale import Scale
 from .swish import Swish
 from .upsample import build_upsample_layer
+from .wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 __all__ = [
     'ConvModule', 'build_activation_layer', 'build_conv_layer',
@@ -25,6 +26,6 @@ __all__ = [
     'NonLocal2d', 'NonLocal3d', 'ContextBlock', 'GeneralizedAttention',
     'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS',
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
-    'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish',
-    'Conv2dAdaptivePadding'
+    'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish', 'Linear',
+    'Conv2dAdaptivePadding', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d'
 ]
