@@ -5,7 +5,7 @@ from unittest.mock import patch
 import torch
 import torch.nn as nn
 
-from mmcv.ops import Conv2d, ConvTranspose2d, Linear, MaxPool2d
+from mmcv.cnn.bricks import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 torch.__version__ = '1.1'  # force test
 

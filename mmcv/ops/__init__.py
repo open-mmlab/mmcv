@@ -1,3 +1,5 @@
+import warnings
+
 # This is for backward compatibility
 from ..cnn.bricks.wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 from .bbox import bbox_overlaps
@@ -23,6 +25,11 @@ from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
+
+warnings.warn(
+    'Importing Conv2d, ConvTranspose2d, Linear, and MaxPool2d wrappers'
+    'from "mmcv.ops" will be deprecated in the future.'
+    'Please import them from "mmcv.cnn" instead')
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
