@@ -10,12 +10,16 @@ def set_default(obj):
     """Set default json values for non-serializable values.
 
     It helps convert ``set``, ``range`` and ``np.ndarray`` data types to list.
+    It also converts ``np.generic`` (including ``np.int32``, ``np.float32``,
+    etc.) into plain numbers of plain python built-in types.
     """
     if isinstance(obj, (set, range)):
         return list(obj)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
-    raise TypeError
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    raise TypeError(f'{type(obj)} is unsupported for json dump')
 
 
 class JsonHandler(BaseFileHandler):

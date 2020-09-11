@@ -443,3 +443,85 @@ class TestGeometric:
 
         with pytest.raises(ValueError):
             mmcv.imrotate(img, 90, center=(0, 0), auto_bound=True)
+
+    def test_imshear(self):
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
+        assert_array_equal(mmcv.imshear(img, 0), img)
+        # magnitude=1, horizontal
+        img_sheared = np.array([[1, 2, 3], [0, 4, 5], [0, 0, 7]],
+                               dtype=np.uint8)
+        assert_array_equal(mmcv.imshear(img, 1), img_sheared)
+        # magnitude=-1, vertical
+        img_sheared = np.array([[1, 5, 9], [4, 8, 0], [7, 0, 0]],
+                               dtype=np.uint8)
+        assert_array_equal(mmcv.imshear(img, -1, 'vertical'), img_sheared)
+        # magnitude=1, vertical, borderValue=100
+        borderValue = 100
+        img_sheared = np.array(
+            [[1, borderValue, borderValue], [4, 2, borderValue], [7, 5, 3]],
+            dtype=np.uint8)
+        assert_array_equal(
+            mmcv.imshear(img, 1, 'vertical', borderValue), img_sheared)
+        # magnitude=1, vertical, borderValue=100, img shape (h,w,3)
+        img = np.stack([img, img, img], axis=-1)
+        img_sheared = np.stack([img_sheared, img_sheared, img_sheared],
+                               axis=-1)
+        assert_array_equal(
+            mmcv.imshear(img, 1, 'vertical', borderValue), img_sheared)
+        # test tuple format of borderValue
+        assert_array_equal(
+            mmcv.imshear(img, 1, 'vertical',
+                         (borderValue, borderValue, borderValue)), img_sheared)
+
+        # test invalid length of borderValue
+        with pytest.raises(AssertionError):
+            mmcv.imshear(img, 0.5, 'horizontal', (borderValue, ))
+
+        # test invalid type of borderValue
+        with pytest.raises(ValueError):
+            mmcv.imshear(img, 0.5, 'horizontal', [borderValue])
+
+        # test invalid value of direction
+        with pytest.raises(AssertionError):
+            mmcv.imshear(img, 0.5, 'diagonal')
+
+    def test_imtranslate(self):
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
+        assert_array_equal(mmcv.imtranslate(img, 0), img)
+        # offset=1, horizontal
+        img_translated = np.array([[128, 1, 2], [128, 4, 5], [128, 7, 8]],
+                                  dtype=np.uint8)
+        assert_array_equal(
+            mmcv.imtranslate(img, 1, border_value=128), img_translated)
+        # offset=-1, vertical
+        img_translated = np.array([[4, 5, 6], [7, 8, 9], [0, 0, 0]],
+                                  dtype=np.uint8)
+        assert_array_equal(
+            mmcv.imtranslate(img, -1, 'vertical'), img_translated)
+        # offset=-2, horizontal
+        img = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+        img_translated = [[3, 4, 128, 128], [7, 8, 128, 128]]
+        img_translated = np.stack(
+            [img_translated, img_translated, img_translated], axis=-1)
+        assert_array_equal(
+            mmcv.imtranslate(img, -2, border_value=128), img_translated)
+        # offset=2, vertical
+        border_value = (110, 120, 130)
+        img_translated = np.stack([
+            np.ones((2, 4)) * border_value[0],
+            np.ones((2, 4)) * border_value[1],
+            np.ones((2, 4)) * border_value[2]
+        ],
+                                  axis=-1).astype(np.uint8)
+        assert_array_equal(
+            mmcv.imtranslate(img, 2, 'vertical', border_value), img_translated)
+        # test invalid number elements in border_value
+        with pytest.raises(AssertionError):
+            mmcv.imtranslate(img, 1, border_value=(1, ))
+        # test invalid type of border_value
+        with pytest.raises(ValueError):
+            mmcv.imtranslate(img, 1, border_value=[1, 2, 3])
+        # test invalid value of direction
+        with pytest.raises(AssertionError):
+            mmcv.imtranslate(img, 1, 'diagonal')

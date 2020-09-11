@@ -99,10 +99,11 @@ class EpochBasedRunner(BaseRunner):
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
-        self.logger.info('workflow: %s, max: %d epochs', workflow, max_epochs)
+        self.logger.info('workflow: %s, max: %d epochs', workflow,
+                         self._max_epochs)
         self.call_hook('before_run')
 
-        while self.epoch < max_epochs:
+        while self.epoch < self._max_epochs:
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
@@ -117,7 +118,7 @@ class EpochBasedRunner(BaseRunner):
                             type(mode)))
 
                 for _ in range(epochs):
-                    if mode == 'train' and self.epoch >= max_epochs:
+                    if mode == 'train' and self.epoch >= self._max_epochs:
                         break
                     epoch_runner(data_loaders[i], **kwargs)
 

@@ -227,6 +227,7 @@ def imrotate(img,
              center=None,
              scale=1.0,
              border_value=0,
+             interpolation='bilinear',
              auto_bound=False):
     """Rotate an image.
 
@@ -239,6 +240,7 @@ def imrotate(img,
             used.
         scale (float): Isotropic scale factor.
         border_value (int): Border value.
+        interpolation (str): Same as :func:`resize`.
         auto_bound (bool): Whether to adjust the image size to cover the whole
             rotated image.
 
@@ -262,7 +264,11 @@ def imrotate(img,
         matrix[1, 2] += (new_h - h) * 0.5
         w = int(np.round(new_w))
         h = int(np.round(new_h))
-    rotated = cv2.warpAffine(img, matrix, (w, h), borderValue=border_value)
+    rotated = cv2.warpAffine(
+        img,
+        matrix, (w, h),
+        flags=cv2_interp_codes[interpolation],
+        borderValue=border_value)
     return rotated
 
 
@@ -459,4 +465,142 @@ def impad_to_multiple(img, divisor, pad_val=0):
     """
     pad_h = int(np.ceil(img.shape[0] / divisor)) * divisor
     pad_w = int(np.ceil(img.shape[1] / divisor)) * divisor
-    return impad(img, shape=(pad_h, pad_w))
+    return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
+
+
+def _get_shear_matrix(magnitude, direction='horizontal'):
+    """Generate the shear matrix for transformation.
+
+    Args:
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal"
+            or "vertical".
+
+    Returns:
+        ndarray: The shear matrix with dtype float32.
+    """
+    if direction == 'horizontal':
+        shear_matrix = np.float32([[1, magnitude, 0], [0, 1, 0]])
+    elif direction == 'vertical':
+        shear_matrix = np.float32([[1, 0, 0], [magnitude, 1, 0]])
+    return shear_matrix
+
+
+def imshear(img,
+            magnitude,
+            direction='horizontal',
+            border_value=0,
+            interpolation='bilinear'):
+    """Shear an image.
+
+    Args:
+        img (ndarray): Image to be sheared with format (h, w)
+            or (h, w, c).
+        magnitude (int | float): The magnitude used for shear.
+        direction (str): Thie flip direction, either "horizontal"
+            or "vertical".
+        border_value (int | tuple[int]): Value used in case of a
+            constant border.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The sheared image.
+    """
+    assert direction in ['horizontal',
+                         'vertical'], f'Invalid direction: {direction}'
+    height, width = img.shape[:2]
+    if img.ndim == 2:
+        channels = 1
+    elif img.ndim == 3:
+        channels = img.shape[-1]
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(border_value), channels)
+    else:
+        raise ValueError(
+            f'Invalid type {type(border_value)} for `border_value`')
+    shear_matrix = _get_shear_matrix(magnitude, direction)
+    sheared = cv2.warpAffine(
+        img,
+        shear_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. shearing masks whose channels large
+        # than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
+        borderValue=border_value[:3],
+        flags=cv2_interp_codes[interpolation])
+    return sheared
+
+
+def _get_translate_matrix(offset, direction='horizontal'):
+    """Generate the translate matrix.
+
+    Args:
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either
+            "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The translate matrix with dtype float32.
+    """
+    if direction == 'horizontal':
+        translate_matrix = np.float32([[1, 0, offset], [0, 1, 0]])
+    elif direction == 'vertical':
+        translate_matrix = np.float32([[1, 0, 0], [0, 1, offset]])
+    return translate_matrix
+
+
+def imtranslate(img,
+                offset,
+                direction='horizontal',
+                border_value=0,
+                interpolation='bilinear'):
+    """Translate an image.
+
+    Args:
+        img (ndarray): Image to be translated with format
+            (h, w) or (h, w, c).
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either "horizontal"
+            or "vertical".
+        border_value (int | tuple[int]): Value used in case of a
+            constant border.
+        interpolation (str): Same as :func:`resize`.
+
+    Returns:
+        ndarray: The translated image.
+    """
+    assert direction in ['horizontal',
+                         'vertical'], f'Invalid direction: {direction}'
+    height, width = img.shape[:2]
+    if img.ndim == 2:
+        channels = 1
+    elif img.ndim == 3:
+        channels = img.shape[-1]
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(border_value), channels)
+    else:
+        raise ValueError(
+            f'Invalid type {type(border_value)} for `border_value`.')
+    translate_matrix = _get_translate_matrix(offset, direction)
+    translated = cv2.warpAffine(
+        img,
+        translate_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. translating masks whose channels
+        # large than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
+        borderValue=border_value[:3],
+        flags=cv2_interp_codes[interpolation])
+    return translated
