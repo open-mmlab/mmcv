@@ -168,7 +168,7 @@ def test_linear():
 
 
 def test_nn_op_forward_called():
-    torch.__version__ = '1.4.1'
+    torch.__version__ = '1.6.1'
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
         with patch(f'torch.nn.{m}.forward') as nn_module_forward:
