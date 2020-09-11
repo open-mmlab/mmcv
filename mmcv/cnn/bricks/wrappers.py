@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.utils import _pair
 
-from ..cnn import CONV_LAYERS
+from .registry import CONV_LAYERS, UPSAMPLE_LAYERS
 
 
 class NewEmptyTensorOp(torch.autograd.Function):
@@ -47,6 +47,7 @@ class Conv2d(nn.Conv2d):
         return super().forward(x)
 
 
+@UPSAMPLE_LAYERS.register_module('deconv', force=True)
 class ConvTranspose2d(nn.ConvTranspose2d):
 
     def forward(self, x):
