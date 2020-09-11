@@ -41,7 +41,7 @@ class ExampleModel(nn.Module):
         if OPS_AVAILABLE:
             from mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
-                3, 4, kernel_size=3, deformable_groups=1)
+                3, 4, kernel_size=3, deformable_groups=1, offset_lr_mult=0.1)
 
     def forward(self, x):
         return x
@@ -61,7 +61,7 @@ class ExampleDuplicateModel(nn.Module):
         if OPS_AVAILABLE:
             from mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
-                3, 4, kernel_size=3, deformable_groups=1)
+                3, 4, kernel_size=3, deformable_groups=1, offset_lr_mult=0.1)
 
     def forward(self, x):
         return x
@@ -267,17 +267,20 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1,
-        dcn_offset_lr_mult=0.1)
+        dwconv_decay_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    check_optimizer(
+        optimizer,
+        model,
+        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel, weight decay is None
     model = ExampleModel()
     optimizer_cfg = dict(type='Rprop', lr=base_lr)
-    paramwise_cfg = dict(bias_lr_mult=2, dcn_offset_lr_mult=0.1)
+    paramwise_cfg = dict(bias_lr_mult=2)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
@@ -317,11 +320,9 @@ def test_default_optimizer_constructor():
         # dcn.weight
         assert param_groups[11]['lr'] == base_lr
         # dcn.conv_offset.weight
-        assert param_groups[12][
-            'lr'] == base_lr * paramwise_cfg['dcn_offset_lr_mult']
+        assert param_groups[12]['lr'] == base_lr * model.dcn.offset_lr_mult
         # dcn.conv_offset.bias
-        assert param_groups[13][
-            'lr'] == base_lr * paramwise_cfg['dcn_offset_lr_mult']
+        assert param_groups[13]['lr'] == base_lr * model.dcn.offset_lr_mult
 
     # paramwise_cfg with pseudo data parallel
     model = PseudoDataParallel()
@@ -331,12 +332,16 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1,
-        dcn_offset_lr_mult=0.1)
+        dwconv_decay_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, prefix='module.', **paramwise_cfg)
+    check_optimizer(
+        optimizer,
+        model,
+        prefix='module.',
+        dcn_offset_lr_mult=model.module.dcn.offset_lr_mult,
+        **paramwise_cfg)
 
     # paramwise_cfg with DataParallel
     if torch.cuda.is_available():
@@ -351,7 +356,12 @@ def test_default_optimizer_constructor():
         optim_constructor = DefaultOptimizerConstructor(
             optimizer_cfg, paramwise_cfg)
         optimizer = optim_constructor(model)
-        check_optimizer(optimizer, model, prefix='module.', **paramwise_cfg)
+        check_optimizer(
+            optimizer,
+            model,
+            prefix='module.',
+            dcn_offset_lr_mult=model.module.dcn.offset_lr_mult,
+            **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel and no grad
     for param in model.parameters():
@@ -404,7 +414,11 @@ def test_default_optimizer_constructor():
     model_parameters = list(model.parameters())
     num_params = 14 if OPS_AVAILABLE else 11
     assert len(optimizer.param_groups) == len(model_parameters) == num_params
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    check_optimizer(
+        optimizer,
+        model,
+        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        **paramwise_cfg)
 
     # test DefaultOptimizerConstructor with custom_keys and ExampleModel
     model = ExampleModel()
@@ -567,7 +581,11 @@ def test_build_optimizer_constructor():
         paramwise_cfg=paramwise_cfg)
     optim_constructor = build_optimizer_constructor(optim_constructor_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    check_optimizer(
+        optimizer,
+        model,
+        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        **paramwise_cfg)
 
     from mmcv.runner import OPTIMIZERS
     from mmcv.utils import build_from_cfg
@@ -630,7 +648,10 @@ def test_build_optimizer():
             bias_lr_mult=2,
             bias_decay_mult=0.5,
             norm_decay_mult=0,
-            dcn_offset_lr_mult=0.1,
             dwconv_decay_mult=0.1))
     optimizer = build_optimizer(model, optimizer_cfg)
-    check_optimizer(optimizer, model, **optimizer_cfg['paramwise_cfg'])
+    check_optimizer(
+        optimizer,
+        model,
+        dcn_offset_lr_mult=model.dcn.offset_lr_mult,
+        **optimizer_cfg['paramwise_cfg'])
