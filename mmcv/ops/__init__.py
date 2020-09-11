@@ -1,3 +1,5 @@
+# This is for backward compatibility
+from ..cnn.bricks.wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 from .bbox import bbox_overlaps
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
@@ -21,7 +23,6 @@ from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
-from .wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
