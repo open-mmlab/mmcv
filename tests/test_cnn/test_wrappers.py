@@ -7,9 +7,8 @@ import torch.nn as nn
 
 from mmcv.cnn.bricks import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
-torch.__version__ = '1.1'  # force test
 
-
+@patch('torch.__version__', '1.1')
 def test_conv2d():
     """
     CommandLine:
@@ -52,6 +51,7 @@ def test_conv2d():
     wrapper(x_empty)
 
 
+@patch('torch.__version__', '1.1')
 def test_conv_transposed_2d():
     test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
                               ('in_channel', [1, 3]), ('out_channel', [1, 3]),
@@ -105,6 +105,7 @@ def test_conv_transposed_2d():
     wrapper(x_empty)
 
 
+@patch('torch.__version__', '1.1')
 def test_max_pool_2d():
     test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
                               ('in_channel', [1, 3]), ('out_channel', [1, 3]),
@@ -129,6 +130,7 @@ def test_max_pool_2d():
         assert torch.equal(wrapper(x_normal), ref_out)
 
 
+@patch('torch.__version__', '1.1')
 def test_linear():
     test_cases = OrderedDict([
         ('in_w', [10, 20]),
@@ -167,8 +169,8 @@ def test_linear():
     wrapper(x_empty)
 
 
+@patch('torch.__version__', '1.6.1')
 def test_nn_op_forward_called():
-    torch.__version__ = '1.6.1'
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
         with patch(f'torch.nn.{m}.forward') as nn_module_forward:
