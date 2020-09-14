@@ -198,8 +198,3 @@ class TestPhotometric:
                 mmcv.adjust_contrast(img, factor).astype(np.int32) -
                 _adjust_contrast(img, factor).astype(np.int32))
             assert np.less_equal(delta, 1).all()
-
-
-obj = TestPhotometric()
-obj.test_adjust_brightness()
-obj.test_adjust_contrast()
