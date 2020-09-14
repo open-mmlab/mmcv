@@ -160,10 +160,11 @@ class TestPhotometric:
                 np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
                 255).astype(np.uint8)
             factor = np.random.uniform()
-            delta = np.absolute(
-                mmcv.adjust_brightness(img, factor).astype(np.int32) -
-                _adjust_brightness(img, factor).astype(np.int32))
-            assert np.less_equal(delta, 1).all()
+            np.testing.assert_allclose(
+                mmcv.adjust_brightness(img, factor).astype(np.int32),
+                _adjust_brightness(img, factor).astype(np.int32),
+                rtol=0,
+                atol=1)
 
     def test_adjust_contrast(self, nb_rand_test=100):
 
@@ -194,7 +195,8 @@ class TestPhotometric:
             # Note the gap (less_equal 1) between PIL.ImageEnhance.Contrast
             # and mmcv.adjust_contrast comes from the gap that converts from
             # a color image to gray image using mmcv or PIL.
-            delta = np.absolute(
-                mmcv.adjust_contrast(img, factor).astype(np.int32) -
-                _adjust_contrast(img, factor).astype(np.int32))
-            assert np.less_equal(delta, 1).all()
+            np.testing.assert_allclose(
+                mmcv.adjust_contrast(img, factor).astype(np.int32),
+                _adjust_contrast(img, factor).astype(np.int32),
+                rtol=0,
+                atol=1)
