@@ -17,9 +17,26 @@ class EpochBasedRunner(BaseRunner):
     This runner train models epoch by epoch.
     """
 
+    def run_iter(self, data_batch, **kwargs):
+        if self.batch_processor is not None:
+            outputs = self.batch_processor(
+                self.model, data_batch, train_mode=self.train_mode, **kwargs)
+        elif self.train_mode:
+            outputs = self.model.train_step(data_batch, self.optimizer,
+                                            **kwargs)
+        else:
+            outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
+        if not isinstance(outputs, dict):
+            raise TypeError('"batch_processor()" or "model.train_step()"'
+                            'and "model.val_step()" must return a dict')
+        if 'log_vars' in outputs:
+            self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
+        self.outputs = outputs
+
     def train(self, data_loader, **kwargs):
         self.model.train()
         self.mode = 'train'
+        self.train_model = True
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
@@ -27,19 +44,7 @@ class EpochBasedRunner(BaseRunner):
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
             self.call_hook('before_train_iter')
-            if self.batch_processor is None:
-                outputs = self.model.train_step(data_batch, self.optimizer,
-                                                **kwargs)
-            else:
-                outputs = self.batch_processor(
-                    self.model, data_batch, train_mode=True, **kwargs)
-            if not isinstance(outputs, dict):
-                raise TypeError('"batch_processor()" or "model.train_step()"'
-                                ' must return a dict')
-            if 'log_vars' in outputs:
-                self.log_buffer.update(outputs['log_vars'],
-                                       outputs['num_samples'])
-            self.outputs = outputs
+            self.run_iter(data_batch)
             self.call_hook('after_train_iter')
             self._iter += 1
 
@@ -49,6 +54,7 @@ class EpochBasedRunner(BaseRunner):
     def val(self, data_loader, **kwargs):
         self.model.eval()
         self.mode = 'val'
+        self.train_model = False
         self.data_loader = data_loader
         self.call_hook('before_val_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
@@ -56,19 +62,7 @@ class EpochBasedRunner(BaseRunner):
             self._inner_iter = i
             self.call_hook('before_val_iter')
             with torch.no_grad():
-                if self.batch_processor is None:
-                    outputs = self.model.val_step(data_batch, self.optimizer,
-                                                  **kwargs)
-                else:
-                    outputs = self.batch_processor(
-                        self.model, data_batch, train_mode=False, **kwargs)
-            if not isinstance(outputs, dict):
-                raise TypeError('"batch_processor()" or "model.val_step()"'
-                                ' must return a dict')
-            if 'log_vars' in outputs:
-                self.log_buffer.update(outputs['log_vars'],
-                                       outputs['num_samples'])
-            self.outputs = outputs
+                self.run_iter(data_batch)
             self.call_hook('after_val_iter')
 
         self.call_hook('after_val_epoch')

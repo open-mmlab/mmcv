@@ -98,6 +98,7 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
+        self.train_mode = False
 
         # create work_dir
         if mmcv.is_str(work_dir):
@@ -171,6 +172,10 @@ class BaseRunner(metaclass=ABCMeta):
     def max_iters(self):
         """int: Maximum training iterations."""
         return self._max_iters
+
+    @abstractmethod
+    def run_iter(self, data_batch, **kwargs):
+        pass
 
     @abstractmethod
     def train(self):
