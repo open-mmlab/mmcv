@@ -6,7 +6,6 @@ from .registry import UPSAMPLE_LAYERS
 
 UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
 UPSAMPLE_LAYERS.register_module('bilinear', module=nn.Upsample)
-UPSAMPLE_LAYERS.register_module('deconv', module=nn.ConvTranspose2d)
 
 
 @UPSAMPLE_LAYERS.register_module(name='pixel_shuffle')

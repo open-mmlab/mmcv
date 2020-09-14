@@ -5,6 +5,10 @@ from .corner_pool import CornerPool
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
 from .deform_roi_pool import (DeformRoIPool, DeformRoIPoolPack,
                               ModulatedDeformRoIPoolPack, deform_roi_pool)
+from .deprecated_wrappers import Conv2d_deprecated as Conv2d
+from .deprecated_wrappers import ConvTranspose2d_deprecated as ConvTranspose2d
+from .deprecated_wrappers import Linear_deprecated as Linear
+from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
 from .info import get_compiler_version, get_compiling_cuda_version
@@ -21,7 +25,6 @@ from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
-from .wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
