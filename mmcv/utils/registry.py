@@ -139,7 +139,7 @@ def build_from_cfg(cfg, registry, default_args=None):
     if not isinstance(cfg, dict):
         raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
     if 'type' not in cfg:
-        if default_args is not None and 'type' not in default_args:
+        if default_args is None or 'type' not in default_args:
             raise KeyError(
                 '`cfg` or `default_args` must contain the key "type", '
                 f'but got {cfg}\n{default_args}')

@@ -191,9 +191,15 @@ def test_build_from_cfg():
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # cfg should contain the key "type"
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50, stages=4)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
+
+    # cfg or default_args should contain the key "type"
+    with pytest.raises(KeyError, match='must contain the key "type"'):
+        cfg = dict(depth=50)
+        model = mmcv.build_from_cfg(
+            cfg, BACKBONES, default_args=dict(stages=4))
 
     # incorrect registry type
     with pytest.raises(TypeError):
