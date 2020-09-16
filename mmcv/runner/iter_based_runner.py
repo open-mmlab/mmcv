@@ -1,5 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+import platform
+import shutil
 import time
 
 import torch
@@ -193,7 +195,11 @@ class IterBasedRunner(BaseRunner):
         # in some environments, `os.symlink` is not supported, you may need to
         # set `create_symlink` to False
         if create_symlink:
-            mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
+            dst_file = osp.join(out_dir, 'latest.pth')
+            if platform.system() != 'Windows':
+                mmcv.symlink(filename, dst_file)
+            else:
+                shutil.copy(filename, dst_file)
 
     def register_training_hooks(self,
                                 lr_config,
