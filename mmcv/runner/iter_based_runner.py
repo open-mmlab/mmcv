@@ -7,6 +7,7 @@ from torch.optim import Optimizer
 
 import mmcv
 from .base_runner import BaseRunner
+from .builder import RUNNERS
 from .checkpoint import save_checkpoint
 from .hooks import IterTimerHook
 from .utils import get_host_info
@@ -39,6 +40,7 @@ class IterLoader:
         return len(self._dataloader)
 
 
+@RUNNERS.register_module()
 class IterBasedRunner(BaseRunner):
     """Iteration-based Runner.
 

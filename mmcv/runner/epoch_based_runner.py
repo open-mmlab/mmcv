@@ -7,10 +7,12 @@ import torch
 
 import mmcv
 from .base_runner import BaseRunner
+from .builder import RUNNERS
 from .checkpoint import save_checkpoint
 from .utils import get_host_info
 
 
+@RUNNERS.register_module()
 class EpochBasedRunner(BaseRunner):
     """Epoch-based Runner.
 
@@ -165,7 +167,7 @@ class EpochBasedRunner(BaseRunner):
         if create_symlink:
             mmcv.symlink(filename, osp.join(out_dir, 'latest.pth'))
 
-
+@RUNNERS.register_module()
 class Runner(EpochBasedRunner):
     """Deprecated name of EpochBasedRunner."""
 
