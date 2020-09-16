@@ -190,6 +190,11 @@ def test_build_from_cfg():
         cfg = dict(type=1000)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
+    # cfg should contain the key "type"
+    with pytest.raises(KeyError):
+        cfg = dict(depth=50, stages=4)
+        model = mmcv.build_from_cfg(cfg, BACKBONES)
+
     # incorrect registry type
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
