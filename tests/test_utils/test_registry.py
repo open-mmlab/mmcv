@@ -160,7 +160,8 @@ def test_build_from_cfg():
 
     # type defined using default_args
     cfg = dict(depth=50)
-    model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=dict(type="ResNet"))
+    model = mmcv.build_from_cfg(
+        cfg, BACKBONES, default_args=dict(type='ResNet'))
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
