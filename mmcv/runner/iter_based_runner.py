@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os.path as osp
+import platform
 import shutil
-import sys
 import time
 
 import torch
@@ -196,7 +196,7 @@ class IterBasedRunner(BaseRunner):
         # set `create_symlink` to False
         if create_symlink:
             dst_file = osp.join(out_dir, 'latest.pth')
-            if sys.platform != 'win32':
+            if platform.system() != 'Windows':
                 mmcv.symlink(filename, dst_file)
             else:
                 shutil.copy(filename, dst_file)
