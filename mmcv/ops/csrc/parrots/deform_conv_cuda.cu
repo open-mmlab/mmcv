@@ -267,6 +267,7 @@ void DeformConvForwardCUDAKernelLauncher(
       auto columns_g = columns[g];
       gemm(ctx, 1, false, weight_g, false, columns_g, 1, output_g);
     }
+    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
   }
 
   output_buffer = output_buffer.view(
