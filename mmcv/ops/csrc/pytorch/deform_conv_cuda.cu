@@ -276,6 +276,8 @@ void DeformConvForwardCUDAKernelLauncher(Tensor input, Tensor weight,
                                   .addmm_(weight[g].flatten(1), columns[g])
                                   .view_as(output_buffer[elt][g]);
     }
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
   }
 
   output_buffer = output_buffer.view(
