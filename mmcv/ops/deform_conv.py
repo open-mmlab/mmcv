@@ -263,15 +263,12 @@ class DeformConv2dPack(DeformConv2d):
         bias (bool or str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if norm_cfg is None, otherwise
             False.
-        offset_lr_mult (int|float): The learning rate rescaling factor of
-            `self.conv_offset` layer's weight and bias. Defaults to 1.
     """
 
     _version = 2
 
-    def __init__(self, *args, offset_lr_mult=1, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(DeformConv2dPack, self).__init__(*args, **kwargs)
-        self.offset_lr_mult = offset_lr_mult
         self.conv_offset = nn.Conv2d(
             self.in_channels,
             self.deform_groups * 2 * self.kernel_size[0] * self.kernel_size[1],
