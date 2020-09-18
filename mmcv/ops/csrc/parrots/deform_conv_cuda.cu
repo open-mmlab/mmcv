@@ -267,6 +267,8 @@ void DeformConvForwardCUDAKernelLauncher(
       auto columns_g = columns[g];
       gemm(ctx, 1, false, weight_g, false, columns_g, 1, output_g);
     }
+    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
+    weight = weight.view({nOutputPlane, nInputPlane, kH, kW});
   }
 
   output_buffer = output_buffer.view(
@@ -371,6 +373,7 @@ void DeformConvBackwardInputCUDAKernelLauncher(
     gradOutput = gradOutput.view({gradOutput.dim(0),
                                   gradOutput.dim(1) * gradOutput.dim(2),
                                   im2col_step, outputHeight, outputWidth});
+    weight = weight.view({nOutputPlane, nInputPlane, kH, kW});
 
     deformable_col2im_coord(columns, input[elt], offset[elt], nInputPlane,
                             inputHeight, inputWidth, kH, kW, padH, padW, dH, dW,

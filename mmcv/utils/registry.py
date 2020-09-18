@@ -139,8 +139,10 @@ def build_from_cfg(cfg, registry, default_args=None):
     if not isinstance(cfg, dict):
         raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
     if 'type' not in cfg:
-        raise KeyError(
-            f'the cfg dict must contain the key "type", but got {cfg}')
+        if default_args is None or 'type' not in default_args:
+            raise KeyError(
+                '`cfg` or `default_args` must contain the key "type", '
+                f'but got {cfg}\n{default_args}')
     if not isinstance(registry, Registry):
         raise TypeError('registry must be an mmcv.Registry object, '
                         f'but got {type(registry)}')
@@ -149,6 +151,11 @@ def build_from_cfg(cfg, registry, default_args=None):
                         f'but got {type(default_args)}')
 
     args = cfg.copy()
+
+    if default_args is not None:
+        for name, value in default_args.items():
+            args.setdefault(name, value)
+
     obj_type = args.pop('type')
     if is_str(obj_type):
         obj_cls = registry.get(obj_type)
@@ -161,7 +168,4 @@ def build_from_cfg(cfg, registry, default_args=None):
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
 
-    if default_args is not None:
-        for name, value in default_args.items():
-            args.setdefault(name, value)
     return obj_cls(**args)

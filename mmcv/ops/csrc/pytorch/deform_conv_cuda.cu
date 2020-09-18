@@ -276,6 +276,10 @@ void DeformConvForwardCUDAKernelLauncher(Tensor input, Tensor weight,
                                   .addmm_(weight[g].flatten(1), columns[g])
                                   .view_as(output_buffer[elt][g]);
     }
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
+                          weight.size(3), weight.size(4)});
   }
 
   output_buffer = output_buffer.view(
@@ -373,6 +377,7 @@ void DeformConvBackwardInputCUDAKernelLauncher(
     gradOutput = gradOutput.view(
         {gradOutput.size(0), gradOutput.size(1) * gradOutput.size(2),
          gradOutput.size(3), gradOutput.size(4), gradOutput.size(5)});
+    weight = weight.view({nOutputPlane, nInputPlane, kH, kW});
 
     deformable_col2im_coord(columns, input[elt], offset[elt], nInputPlane,
                             inputHeight, inputWidth, kH, kW, padH, padW, dH, dW,

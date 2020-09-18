@@ -158,6 +158,18 @@ def test_build_from_cfg():
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
+    # type defined using default_args
+    cfg = dict(depth=50)
+    model = mmcv.build_from_cfg(
+        cfg, BACKBONES, default_args=dict(type='ResNet'))
+    assert isinstance(model, ResNet)
+    assert model.depth == 50 and model.stages == 4
+
+    cfg = dict(depth=50)
+    model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=dict(type=ResNet))
+    assert isinstance(model, ResNet)
+    assert model.depth == 50 and model.stages == 4
+
     # not a registry
     with pytest.raises(TypeError):
         cfg = dict(type='VGG')
@@ -179,9 +191,15 @@ def test_build_from_cfg():
         model = mmcv.build_from_cfg(cfg, BACKBONES)
 
     # cfg should contain the key "type"
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50, stages=4)
         model = mmcv.build_from_cfg(cfg, BACKBONES)
+
+    # cfg or default_args should contain the key "type"
+    with pytest.raises(KeyError, match='must contain the key "type"'):
+        cfg = dict(depth=50)
+        model = mmcv.build_from_cfg(
+            cfg, BACKBONES, default_args=dict(stages=4))
 
     # incorrect registry type
     with pytest.raises(TypeError):
