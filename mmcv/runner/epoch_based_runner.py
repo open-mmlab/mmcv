@@ -91,7 +91,8 @@ class EpochBasedRunner(BaseRunner):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
-        assert self._max_epochs is not None
+        assert self._max_epochs is not None, (
+            'max_epochs must be specified during instantiation')
 
         for i, flow in enumerate(workflow):
             mode, epochs = flow

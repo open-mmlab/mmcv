@@ -95,7 +95,8 @@ class IterBasedRunner(BaseRunner):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
-        assert self._max_iters is not None
+        assert self._max_iters is not None, (
+            'max_iters must be specified during instantiation')
 
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
