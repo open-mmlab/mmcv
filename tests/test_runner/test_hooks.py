@@ -17,9 +17,9 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.runner import (CheckpointHook, EMAHook, EpochBasedRunner,
-                         IterTimerHook, MlflowLoggerHook, PaviLoggerHook,
-                         WandbLoggerHook)
+from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
+                         MlflowLoggerHook, PaviLoggerHook, WandbLoggerHook,
+                         build_runner)
 from mmcv.runner.hooks.lr_updater import CosineRestartLrUpdaterHook
 
 
@@ -59,7 +59,7 @@ def test_ema_hook():
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(emahook, priority='HIGHEST')
     runner.register_hook(checkpointhook)
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     checkpoint = torch.load(f'{runner.work_dir}/epoch_1.pth')
     contain_ema_buffer = False
     for name, value in checkpoint['state_dict'].items():
@@ -74,12 +74,12 @@ def test_ema_hook():
     work_dir = runner.work_dir
     resume_ema_hook = EMAHook(
         momentum=0.5, warm_up=0, resume_from=f'{work_dir}/epoch_1.pth')
-    runner = _build_demo_runner()
+    runner = _build_demo_runner(max_epochs=2)
     runner.model = demo_model
     runner.register_hook(resume_ema_hook, priority='HIGHEST')
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(checkpointhook)
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 2)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     checkpoint = torch.load(f'{runner.work_dir}/epoch_2.pth')
     contain_ema_buffer = False
     for name, value in checkpoint['state_dict'].items():
@@ -101,7 +101,7 @@ def test_pavi_hook():
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
     assert hasattr(hook, 'writer')
@@ -119,7 +119,7 @@ def test_sync_buffers_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
     runner.register_hook_from_cfg(dict(type='SyncBuffersHook'))
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
 
@@ -151,7 +151,7 @@ def test_momentum_runner_hook():
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.run([loader], [('train', 1)], 1)
+    runner.run([loader], [('train', 1)])
     shutil.rmtree(runner.work_dir)
 
     # TODO: use a more elegant way to check values
@@ -202,7 +202,7 @@ def test_cosine_runner_hook():
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.run([loader], [('train', 1)], 1)
+    runner.run([loader], [('train', 1)])
     shutil.rmtree(runner.work_dir)
 
     # TODO: use a more elegant way to check values
@@ -261,7 +261,7 @@ def test_cosine_restart_lr_update_hook():
         # add pavi hook
         hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
         runner.register_hook(hook)
-        runner.run([loader], [('train', 1)], 1)
+        runner.run([loader], [('train', 1)])
         shutil.rmtree(runner.work_dir)
 
     sys.modules['pavi'] = MagicMock()
@@ -280,7 +280,7 @@ def test_cosine_restart_lr_update_hook():
     # add pavi hook
     hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
     runner.register_hook(hook)
-    runner.run([loader], [('train', 1)], 1)
+    runner.run([loader], [('train', 1)])
     shutil.rmtree(runner.work_dir)
 
     # TODO: use a more elegant way to check values
@@ -312,7 +312,7 @@ def test_mlflow_hook(log_model):
 
     hook = MlflowLoggerHook(exp_name='test', log_model=log_model)
     runner.register_hook(hook)
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
     hook.mlflow.set_experiment.assert_called_with('test')
@@ -335,7 +335,7 @@ def test_wandb_hook():
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
-    runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
@@ -347,7 +347,9 @@ def test_wandb_hook():
     hook.wandb.join.assert_called_with()
 
 
-def _build_demo_runner():
+def _build_demo_runner(runner_type='EpochBasedRunner',
+                       max_epochs=1,
+                       max_iters=None):
 
     class Model(nn.Module):
 
@@ -374,11 +376,15 @@ def _build_demo_runner():
         ])
 
     tmp_dir = tempfile.mkdtemp()
-    runner = EpochBasedRunner(
-        model=model,
-        work_dir=tmp_dir,
-        optimizer=optimizer,
-        logger=logging.getLogger())
+    runner = build_runner(
+        dict(type=runner_type),
+        default_args=dict(
+            model=model,
+            work_dir=tmp_dir,
+            optimizer=optimizer,
+            logger=logging.getLogger(),
+            max_epochs=max_epochs,
+            max_iters=max_iters))
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner

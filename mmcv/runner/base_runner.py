@@ -43,6 +43,8 @@ class BaseRunner(metaclass=ABCMeta):
         meta (dict | None): A dict records some import information such as
             environment info and seed, which will be logged in logger hook.
             Defaults to None.
+        max_epochs (int, optional): Total training epochs.
+        max_iters (int, optional): Total training iterations.
     """
 
     def __init__(self,
@@ -51,7 +53,9 @@ class BaseRunner(metaclass=ABCMeta):
                  optimizer=None,
                  work_dir=None,
                  logger=None,
-                 meta=None):
+                 meta=None,
+                 max_iters=None,
+                 max_epochs=None):
         if batch_processor is not None:
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
@@ -121,8 +125,8 @@ class BaseRunner(metaclass=ABCMeta):
         self._epoch = 0
         self._iter = 0
         self._inner_iter = 0
-        self._max_epochs = 0
-        self._max_iters = 0
+        self._max_epochs = max_epochs
+        self._max_iters = max_iters
         # TODO: Redesign LogBuffer, it is not flexible and elegant enough
         self.log_buffer = LogBuffer()
 

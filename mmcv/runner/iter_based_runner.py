@@ -81,7 +81,7 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('after_val_iter')
         self._inner_iter += 1
 
-    def run(self, data_loaders, workflow, max_iters, **kwargs):
+    def run(self, data_loaders, workflow, **kwargs):
         """Start running.
 
         Args:
@@ -91,24 +91,24 @@ class IterBasedRunner(BaseRunner):
                 running order and iterations. E.g, [('train', 10000),
                 ('val', 1000)] means running 10000 iterations for training and
                 1000 iterations for validation, iteratively.
-            max_iters (int): Total training iterations.
         """
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
+        assert self._max_iters is not None
 
-        self._max_iters = max_iters
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
-        self.logger.info('workflow: %s, max: %d iters', workflow, max_iters)
+        self.logger.info('workflow: %s, max: %d iters', workflow,
+                         self._max_iters)
         self.call_hook('before_run')
 
         iter_loaders = [IterLoader(x) for x in data_loaders]
 
         self.call_hook('before_epoch')
 
-        while self.iter < max_iters:
+        while self.iter < self._max_iters:
             for i, flow in enumerate(workflow):
                 self._inner_iter = 0
                 mode, iters = flow
@@ -118,7 +118,7 @@ class IterBasedRunner(BaseRunner):
                         format(mode))
                 iter_runner = getattr(self, mode)
                 for _ in range(iters):
-                    if mode == 'train' and self.iter >= max_iters:
+                    if mode == 'train' and self.iter >= self._max_iters:
                         break
                     iter_runner(iter_loaders[i], **kwargs)
 

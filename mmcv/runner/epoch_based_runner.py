@@ -77,7 +77,7 @@ class EpochBasedRunner(BaseRunner):
 
         self.call_hook('after_val_epoch')
 
-    def run(self, data_loaders, workflow, max_epochs, **kwargs):
+    def run(self, data_loaders, workflow, **kwargs):
         """Start running.
 
         Args:
@@ -87,13 +87,12 @@ class EpochBasedRunner(BaseRunner):
                 running order and epochs. E.g, [('train', 2), ('val', 1)] means
                 running 2 epochs for training and 1 epoch for validation,
                 iteratively.
-            max_epochs (int): Total training epochs.
         """
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
+        assert self._max_epochs is not None
 
-        self._max_epochs = max_epochs
         for i, flow in enumerate(workflow):
             mode, epochs = flow
             if mode == 'train':
@@ -172,6 +171,7 @@ class EpochBasedRunner(BaseRunner):
                 mmcv.symlink(filename, dst_file)
             else:
                 shutil.copy(filename, dst_file)
+
 
 @RUNNERS.register_module()
 class Runner(EpochBasedRunner):
