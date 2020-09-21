@@ -11,7 +11,8 @@ import torch
 import torch.nn as nn
 
 from mmcv.parallel import MMDataParallel
-from mmcv.runner import RUNNERS, EpochBasedRunner, IterBasedRunner
+from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
+                         build_runner)
 
 
 class OldStyleModel(nn.Module):
@@ -28,6 +29,23 @@ class Model(OldStyleModel):
 
     def val_step(self):
         pass
+
+
+def test_build_runner():
+    temp_root = tempfile.gettempdir()
+    dir_name = ''.join(
+        [random.choice(string.ascii_letters) for _ in range(10)])
+
+    default_args = dict(
+        model=Model(),
+        work_dir=osp.join(temp_root, dir_name),
+        logger=logging.getLogger())
+    cfg = dict(type='EpochBasedRunner', max_epochs=1)
+    runner = build_runner(cfg, default_args=default_args)
+    assert runner._max_epochs == 1
+    cfg = dict(type='IterBasedRunner', max_iters=1)
+    runner = build_runner(cfg, default_args=default_args)
+    assert runner._max_iters == 1
 
 
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
