@@ -173,10 +173,6 @@ class BaseRunner(metaclass=ABCMeta):
         return self._max_iters
 
     @abstractmethod
-    def run_iter(self, data_batch, **kwargs):
-        pass
-
-    @abstractmethod
     def train(self):
         pass
 
