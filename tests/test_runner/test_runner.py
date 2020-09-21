@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 from mmcv.parallel import MMDataParallel
-from mmcv.runner import EpochBasedRunner
+from mmcv.runner import RUNNERS, EpochBasedRunner, IterBasedRunner
 
 
 class OldStyleModel(nn.Module):
@@ -30,7 +30,8 @@ class Model(OldStyleModel):
         pass
 
 
-def test_epoch_based_runner():
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_epoch_based_runner(runner_class):
 
     with pytest.warns(UserWarning):
         # batch_processor is deprecated
@@ -39,48 +40,46 @@ def test_epoch_based_runner():
         def batch_processor():
             pass
 
-        _ = EpochBasedRunner(
-            model, batch_processor, logger=logging.getLogger())
+        _ = runner_class(model, batch_processor, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # batch_processor must be callable
         model = OldStyleModel()
-        _ = EpochBasedRunner(
-            model, batch_processor=0, logger=logging.getLogger())
+        _ = runner_class(model, batch_processor=0, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # optimizer must be a optimizer or a dict of optimizers
         model = Model()
         optimizer = 'NotAOptimizer'
-        _ = EpochBasedRunner(
+        _ = runner_class(
             model, optimizer=optimizer, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # optimizer must be a optimizer or a dict of optimizers
         model = Model()
         optimizers = dict(optim1=torch.optim.Adam(), optim2='NotAOptimizer')
-        _ = EpochBasedRunner(
+        _ = runner_class(
             model, optimizer=optimizers, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # logger must be a logging.Logger
         model = Model()
-        _ = EpochBasedRunner(model, logger=None)
+        _ = runner_class(model, logger=None)
 
     with pytest.raises(TypeError):
         # meta must be a dict or None
         model = Model()
-        _ = EpochBasedRunner(model, logger=logging.getLogger(), meta=['list'])
+        _ = runner_class(model, logger=logging.getLogger(), meta=['list'])
 
     with pytest.raises(AssertionError):
         # model must implement the method train_step()
         model = OldStyleModel()
-        _ = EpochBasedRunner(model, logger=logging.getLogger())
+        _ = runner_class(model, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # work_dir must be a str or None
         model = Model()
-        _ = EpochBasedRunner(model, work_dir=1, logger=logging.getLogger())
+        _ = runner_class(model, work_dir=1, logger=logging.getLogger())
 
     with pytest.raises(RuntimeError):
         # batch_processor and train_step() cannot be both set
@@ -89,8 +88,7 @@ def test_epoch_based_runner():
             pass
 
         model = Model()
-        _ = EpochBasedRunner(
-            model, batch_processor, logger=logging.getLogger())
+        _ = runner_class(model, batch_processor, logger=logging.getLogger())
 
     # test work_dir
     model = Model()
@@ -98,23 +96,24 @@ def test_epoch_based_runner():
     dir_name = ''.join(
         [random.choice(string.ascii_letters) for _ in range(10)])
     work_dir = osp.join(temp_root, dir_name)
-    _ = EpochBasedRunner(model, work_dir=work_dir, logger=logging.getLogger())
+    _ = runner_class(model, work_dir=work_dir, logger=logging.getLogger())
     assert osp.isdir(work_dir)
-    _ = EpochBasedRunner(model, work_dir=work_dir, logger=logging.getLogger())
+    _ = runner_class(model, work_dir=work_dir, logger=logging.getLogger())
     assert osp.isdir(work_dir)
     os.removedirs(work_dir)
 
 
-def test_runner_with_parallel():
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_runner_with_parallel(runner_class):
 
     def batch_processor():
         pass
 
     model = MMDataParallel(OldStyleModel())
-    _ = EpochBasedRunner(model, batch_processor, logger=logging.getLogger())
+    _ = runner_class(model, batch_processor, logger=logging.getLogger())
 
     model = MMDataParallel(Model())
-    _ = EpochBasedRunner(model, logger=logging.getLogger())
+    _ = runner_class(model, logger=logging.getLogger())
 
     with pytest.raises(RuntimeError):
         # batch_processor and train_step() cannot be both set
@@ -123,13 +122,13 @@ def test_runner_with_parallel():
             pass
 
         model = MMDataParallel(Model())
-        _ = EpochBasedRunner(
-            model, batch_processor, logger=logging.getLogger())
+        _ = runner_class(model, batch_processor, logger=logging.getLogger())
 
 
-def test_save_checkpoint():
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_save_checkpoint(runner_class):
     model = Model()
-    runner = EpochBasedRunner(model=model, logger=logging.getLogger())
+    runner = runner_class(model=model, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # meta should be None or dict
@@ -139,18 +138,23 @@ def test_save_checkpoint():
         runner.save_checkpoint(root)
 
         latest_path = osp.join(root, 'latest.pth')
-        epoch1_path = osp.join(root, 'epoch_1.pth')
-
         assert osp.exists(latest_path)
-        assert osp.exists(epoch1_path)
-        assert osp.realpath(latest_path) == osp.realpath(epoch1_path)
+
+        if isinstance(runner, EpochBasedRunner):
+            first_ckp_path = osp.join(root, 'epoch_1.pth')
+        elif isinstance(runner, IterBasedRunner):
+            first_ckp_path = osp.join(root, 'iter_1.pth')
+
+        assert osp.exists(first_ckp_path)
+        assert osp.realpath(latest_path) == osp.realpath(first_ckp_path)
 
         torch.load(latest_path)
 
 
-def test_build_lr_momentum_hook():
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_build_lr_momentum_hook(runner_class):
     model = Model()
-    runner = EpochBasedRunner(model=model, logger=logging.getLogger())
+    runner = runner_class(model=model, logger=logging.getLogger())
 
     # test policy that is already title
     lr_config = dict(
