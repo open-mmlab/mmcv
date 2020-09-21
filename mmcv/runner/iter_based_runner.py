@@ -3,6 +3,7 @@ import os.path as osp
 import platform
 import shutil
 import time
+import warnings
 
 import torch
 from torch.optim import Optimizer
@@ -81,7 +82,7 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('after_val_iter')
         self._inner_iter += 1
 
-    def run(self, data_loaders, workflow, **kwargs):
+    def run(self, data_loaders, workflow, max_iters=None, **kwargs):
         """Start running.
 
         Args:
@@ -95,6 +96,11 @@ class IterBasedRunner(BaseRunner):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
+        if max_iters is not None:
+            warnings.warn(
+                'setting max_iters in run is deprecated, '
+                'please set max_iters in runner_config', DeprecationWarning)
+            self._max_iters = max_iters
         assert self._max_iters is not None, (
             'max_iters must be specified during instantiation')
 

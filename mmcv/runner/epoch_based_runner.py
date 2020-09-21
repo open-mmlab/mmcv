@@ -77,7 +77,7 @@ class EpochBasedRunner(BaseRunner):
 
         self.call_hook('after_val_epoch')
 
-    def run(self, data_loaders, workflow, **kwargs):
+    def run(self, data_loaders, workflow, max_epochs=None, **kwargs):
         """Start running.
 
         Args:
@@ -91,6 +91,12 @@ class EpochBasedRunner(BaseRunner):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)
+        if max_epochs is not None:
+            warnings.warn(
+                'setting max_epochs in run is deprecated, '
+                'please set max_epochs in runner_config', DeprecationWarning)
+            self._max_epochs = max_epochs
+
         assert self._max_epochs is not None, (
             'max_epochs must be specified during instantiation')
 
