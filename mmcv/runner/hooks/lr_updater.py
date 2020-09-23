@@ -318,7 +318,7 @@ def get_position_from_periods(iteration, cumulative_periods):
         int: The position of the right-closest number in the period list.
     """
     for i, period in enumerate(cumulative_periods):
-        if iteration <= period:
+        if iteration < period:
             return i
     raise ValueError(f'Current iteration {iteration} exceeds '
                      f'cumulative_periods {cumulative_periods}')
