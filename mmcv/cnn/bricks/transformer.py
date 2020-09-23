@@ -1,104 +1,146 @@
+import torch
 import torch.nn as nn
 
 from .activation import build_activation_layer
 from .norm import build_norm_layer
 from .wrappers import Linear
 
+# class SelfAttentionModule(nn.Module):
 
-class SelfAttentionModule(nn.Module):
+#     def __init__(self, feat_channels, num_heads, dropout=0.1):
+#         super(SelfAttentionModule, self).__init__()
+#         self.attn = nn.MultiheadAttention(feat_channels,
+#                       num_heads, dropout=dropout)
+#         self.dropout = nn.Dropout(dropout)
 
-    def __init__(self, dim_feat, nhead, dropout=0.1):
-        super(SelfAttentionModule, self).__init__()
-        self.attn = nn.MultiheadAttention(dim_feat, nhead, dropout=dropout)
-        self.dropout1 = nn.Dropout(dropout)
+#     def forward(self,
+#                 x,
+#                 residual=None,
+#                 pos=None,
+#                 attn_mask=None,
+#                 key_padding_mask=None):
+#         if residual is None:
+#             residual = x
+#         q = k = x
+#         if pos is not None:
+#             q += pos
+#             k += pos
+#         out = self.attn(
+#             q,
+#             k,
+#             value=x,
+#             attn_mask=attn_mask,
+#             key_padding_mask=key_padding_mask)[0]
+#         return residual + self.dropout(out)
+
+
+class MultiheadAttention(nn.Module):
+
+    def __init__(self, feat_channels, num_heads, dropout=0.1):
+        super(MultiheadAttention, self).__init__()
+        self.attn = nn.MultiheadAttention(feat_channels, num_heads, dropout)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self,
                 x,
+                key=None,
+                value=None,
                 residual=None,
-                pos=None,
+                query_pos=None,
+                key_pos=None,
                 attn_mask=None,
                 key_padding_mask=None):
+        query = x
+        if key is None:
+            key = query
+        if value is None:
+            value = query
         if residual is None:
             residual = x
-        q = k = x
-        if pos is not None:
-            q += pos
-            k += pos
+        if key_pos is None:
+            key_pos = query_pos
+        if query_pos is not None:
+            query += query_pos
+        if key_pos is not None:
+            key += key_pos
         out = self.attn(
-            q,
-            k,
-            value=x,
+            query,
+            key,
+            value=value,
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask)[0]
-        return residual + self.dropout1(out)
+        return residual + self.dropout(out)
 
 
 class FFN(nn.Module):
 
     def __init__(self,
-                 dim_feat,
-                 dim_feedforward=2048,
-                 nrepeat=2,
-                 act_cfg=dict(type='ReLU'),
-                 dropout=0.1,
-                 inplace=True):
+                 feat_channels,
+                 feedforward_channels=2048,
+                 num_fcs=2,
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 dropout=0.1):
         super(FFN, self).__init__()
-        act_cfg_ = act_cfg.copy()
-        if act_cfg_['type'] not in [
-                'Tanh', 'PReLU', 'Sigmoid', 'HSigmoid', 'Swish'
-        ]:
-            act_cfg_.setdefault('inplace', inplace)
-        self.activate = build_activation_layer(act_cfg_)
+        assert num_fcs >= 2, 'num_fcs should be no less ' \
+            f'than 2. got {num_fcs}.'
+        # NOTE only when act_cfg['type'] not in ['Tanh', 'PReLU',
+        # 'Sigmoid', 'HSigmoid', 'Swish'], can we set inplace in act_cfg.
+        self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
-        dim_inp = dim_feat
-        for _ in range(nrepeat - 1):
+        in_channels = feat_channels
+        for _ in range(num_fcs - 1):
             layers.append(
                 nn.Sequential(
-                    Linear(dim_inp, dim_feedforward), self.activate,
+                    Linear(in_channels, feedforward_channels), self.activate,
                     nn.Dropout(dropout)))
-            dim_inp = dim_feedforward
-        layers.append(Linear(dim_feedforward, dim_feat))
+            in_channels = feedforward_channels
+        layers.append(Linear(feedforward_channels, feat_channels))
         self.layers = nn.Sequential(*layers)
-        self.dropout2 = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, residual=None):
         if residual is None:
             residual = x
         x = self.layers(x)
-        return residual + self.dropout2(x)
+        return residual + self.dropout(x)
 
 
 class TransformerEncoderLayer(nn.Module):
 
     def __init__(self,
-                 dim_feat,
-                 nhead=8,
-                 dim_feedforward=2048,
-                 num_ffn=2,
+                 feat_channels,
+                 num_heads=8,
+                 feedforward_channels=2048,
                  dropout=0.1,
-                 act_cfg=dict(type='ReLU'),
-                 norm_cfg=dict(type='BN', requires_grad=True),
-                 inplace=True,
-                 order=('selfattn', 'norm', 'ffn', 'norm')):
+                 order=('selfattn', 'norm', 'ffn', 'norm'),
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 num_ffn=2):
         super(TransformerEncoderLayer, self).__init__()
         self.order = order  # or order ('norm', 'selfattn', 'norm', 'ffn')
         self.normalize_before = order[0] == 'norm'
-        self.self_attn = SelfAttentionModule(dim_feat, nhead, dropout)
-        self.ffn = FFN(dim_feat, dim_feedforward, num_ffn, act_cfg, dropout,
-                       inplace)
+        self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
+        self.ffn = FFN(feat_channels, feedforward_channels, num_ffn, act_cfg,
+                       dropout)
         self.norms = nn.ModuleList()
-        self.norms.append(build_norm_layer(norm_cfg, dim_feat)[1])
-        self.norms.append(build_norm_layer(norm_cfg, dim_feat)[1])
+        self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
+        self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
         norm_cnt = 0
         inp_residual = x
         for layer in self.order:
             if layer == 'selfattn':
+                # self attention
                 x = self.self_attn(
-                    x, inp_residual if self.normalize_before else None, pos,
-                    attn_mask, key_padding_mask)
+                    x,
+                    x,
+                    x,
+                    inp_residual if self.normalize_before else None,
+                    query_pos=pos,
+                    attn_mask=attn_mask,
+                    key_padding_mask=key_padding_mask)
                 inp_residual = x
             elif layer == 'norm':
                 x = self.norms[norm_cnt](x)
@@ -106,22 +148,215 @@ class TransformerEncoderLayer(nn.Module):
             elif layer == 'ffn':
                 x = self.ffn(x,
                              inp_residual if self.normalize_before else None)
+            else:
+                raise ValueError(f'Unsupported layer type {layer}.')
         return x
 
 
-# class Transformer(nn.Module):
-#     def __init__(self, ):
-#         super(Transformer, self).__init__()
+class TransformerDecoderLayer(nn.Module):
 
-#     def forward(self, hid_dim, nhead=8, num_encoder_laters=6,
-#                   num_decoder_layers=6, dim_feedforward=2048,
-#                   dropout=0.1, activation='relu'):
-#         for layer in self.order:
-#             if layer == 'selfattn':
-#                 x = self.self_attn(x, None, pos, attn_mask, key_padding_mask)
-#             elif layer == 'norm':
-#                 x = self.norm1(x)
-#             elif layer == 'ffn':
-#                 pass
-#             pass
-#         pass
+    def __init__(self,
+                 feat_channels,
+                 num_heads=8,
+                 feedforward_channels=2048,
+                 dropout=0.1,
+                 order=('selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
+                        'norm'),
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 num_ffn=2):
+        super(TransformerDecoderLayer, self).__init__()
+        # or order ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
+        self.order = order
+        self.normalize_before = order[0] == 'norm'
+        self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
+        self.multihead_attn = MultiheadAttention(feat_channels, num_heads,
+                                                 dropout)
+        self.ffn = FFN(feat_channels, feedforward_channels, num_ffn, act_cfg,
+                       dropout)
+        self.norms = nn.ModuleList()
+        # 3 norm layers in official DETR's TransformerDecoderLayer
+        for _ in range(3):
+            self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
+
+    def forward(self,
+                x,
+                memory,
+                memory_pos=None,
+                query_pos=None,
+                memory_attn_mask=None,
+                tgt_attn_mask=None,
+                memory_key_padding_mask=None,
+                tgt_key_padding_mask=None):
+        norm_cnt = 0
+        inp_residual = x
+        for layer in self.order:
+            if layer == 'selfattn':
+                x = self.self_attn(
+                    x,
+                    x,
+                    x,
+                    inp_residual if self.normalize_before else None,
+                    query_pos,
+                    attn_mask=tgt_attn_mask,
+                    key_padding_mask=tgt_key_padding_mask)
+                inp_residual = x
+            elif layer == 'norm':
+                x = self.norms[norm_cnt](x)
+                norm_cnt += 1
+            elif layer == 'multiheadattn':
+                x = self.multihead_attn(
+                    x,
+                    memory,
+                    memory,
+                    inp_residual if self.normalize_before else None,
+                    query_pos,
+                    key_pos=memory_pos,
+                    attn_mask=memory_attn_mask,
+                    key_padding_mask=memory_key_padding_mask)
+                inp_residual = x
+            elif layer == 'ffn':
+                x = self.ffn(x,
+                             inp_residual if self.normalize_before else None)
+            else:
+                raise ValueError(f'Unsupported layer type {layer}.')
+        return x
+
+
+class TransformerEncoder(nn.Module):
+
+    def __init__(self,
+                 num_layers,
+                 feat_channels,
+                 num_heads,
+                 feedforward_channels=2048,
+                 dropout=0.1,
+                 order=('selfattn', 'norm', 'ffn', 'norm'),
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 num_ffn=2):
+        super(TransformerEncoder, self).__init__()
+        self.num_layers = num_layers
+        self.normalize_before = order[0] == 'norm'
+        layers = nn.ModuleList()
+        for _ in range(num_layers):
+            layers.append(
+                TransformerEncoderLayer(feat_channels, num_heads,
+                                        feedforward_channels, dropout, order,
+                                        act_cfg, norm_cfg, num_ffn))
+        self.layers = nn.Sequential(*layers)
+        self.norm = build_norm_layer(
+            norm_cfg, feat_channels)[1] if self.normalize_before else None
+
+    def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
+        x = self.layers(x, pos, attn_mask, key_padding_mask)
+        if self.norm is not None:
+            x = self.norm(x)
+        return x
+
+
+class TransformerDecoder(nn.Module):
+
+    def __init__(self,
+                 num_layers,
+                 feat_channels,
+                 num_heads,
+                 feedforward_channels=2048,
+                 dropout=0.1,
+                 order=('selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
+                        'norm'),
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 num_ffn=2,
+                 return_intermediate=False):
+        super(TransformerDecoder, self).__init__()
+        self.num_layers = num_layers
+        self.return_intermediate = return_intermediate
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.layers.append(
+                TransformerDecoderLayer(feat_channels, num_heads,
+                                        feedforward_channels, dropout, order,
+                                        act_cfg, norm_cfg, num_ffn))
+        self.norm = build_norm_layer(norm_cfg, feat_channels)[1]
+
+    def forward(self,
+                x,
+                memory,
+                memory_pos=None,
+                query_pos=None,
+                memory_attn_mask=None,
+                tgt_attn_mask=None,
+                memory_key_padding_mask=None,
+                tgt_key_padding_mask=None):
+        intermediate = []
+        for layer in self.layers:
+            x = layer(x, memory, memory_pos, query_pos, memory_attn_mask,
+                      tgt_attn_mask, memory_key_padding_mask,
+                      tgt_key_padding_mask)
+            if self.return_intermediate:
+                intermediate.append(self.norm(x))
+        if self.norm is not None:
+            x = self.norm(x)
+            if self.return_intermediate:
+                intermediate.pop()
+                intermediate.append(x)
+        if self.return_intermediate:
+            return torch.stack(intermediate)
+        return x.unsqueeze(0)
+
+
+class Transformer(nn.Module):
+
+    def __init__(self,
+                 feat_channels=512,
+                 num_heads=8,
+                 feedforward_channels=2048,
+                 num_encoder_layers=6,
+                 num_decoder_layers=6,
+                 dropout=0.1,
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 num_ffn=2,
+                 normalize_before=False,
+                 return_intermediate_dec=False):
+        super(Transformer, self).__init__()
+        if self.normalize_before:
+            encoder_order = ('norm', 'selfattn', 'norm', 'ffn')
+            decoder_order = ('norm', 'selfattn', 'norm', 'multiheadattn',
+                             'norm', 'ffn')
+        else:
+            encoder_order = ('selfattn', 'norm', 'ffn', 'norm')
+            decoder_order = ('selfattn', 'norm', 'multiheadattn', 'norm',
+                             'ffn', 'norm')
+        self.encoder = TransformerEncoder(num_encoder_layers, feat_channels,
+                                          num_heads, feedforward_channels,
+                                          dropout, encoder_order, act_cfg,
+                                          norm_cfg, num_ffn)
+        self.decoder = TransformerDecoder(num_decoder_layers, feat_channels,
+                                          num_heads, feedforward_channels,
+                                          dropout, decoder_order, act_cfg,
+                                          norm_cfg, num_ffn,
+                                          return_intermediate_dec)
+        # TODO init parameters.
+
+    def forward(self, x, mask, query_embed, pos_embed):
+        bs, c, h, w = x.shape
+        x = x.flatten(2).permute(2, 0, 1)  # [bs,c,h,w] -> [h*w,bs,c]
+        pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
+        query_embed = query_embed.unsqueeze(1).repeat(
+            1, bs, 1)  # [num_query,dim] -> [num_query,bs,dim]
+        mask = mask.flatten(1)  # [h,w] -> [h*w]
+        memory = self.encoder(
+            x, pos=pos_embed, attn_mask=None, key_padding_mask=mask)
+        tgt = torch.zeros_like(query_embed)
+        hs = self.decoder(
+            tgt,
+            memory,
+            memory_pos=pos_embed,
+            query_pos=query_embed,
+            memory_attn_mask=None,
+            tgt_attn_mask=None,
+            memory_key_padding_mask=mask,
+            tgt_key_padding_mask=None)
+        return hs.transpose(1, 2), memory.permute(1, 2, 0).view(bs, c, h, w)
