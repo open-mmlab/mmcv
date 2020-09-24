@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 import torch
 
 from mmcv.cnn.bricks import (FFN, MultiheadAttention, Transformer,
@@ -152,6 +153,10 @@ def test_ffn(feat_channels=256,
              feedforward_channels=2048,
              num_fcs=2,
              batch_size=2):
+    # test invalid num_fcs
+    with pytest.raises(AssertionError):
+        module = FFN(feat_channels, feedforward_channels, 1)
+
     module = FFN(feat_channels, feedforward_channels, num_fcs)
     x = torch.rand(batch_size, feat_channels)
     out = module(x)
@@ -167,9 +172,20 @@ def test_transformer_encoder_layer(feat_channels=256,
                                    feedforward_channels=2048,
                                    num_key=1000,
                                    batch_size=2):
+    x = torch.rand(num_key, batch_size, feat_channels)
+    # test invalid number of order
+    with pytest.raises(AssertionError):
+        order = ('norm', 'selfattn', 'norm', 'ffn', 'norm')
+        module = TransformerEncoderLayer(feat_channels, num_heads, order=order)
+
+    # test invalid value of order
+    with pytest.raises(AssertionError):
+        order = ('norm', 'selfattn', 'norm', 'unknown')
+        module = TransformerEncoderLayer(feat_channels, num_heads, order=order)
+
     module = TransformerEncoderLayer(feat_channels, num_heads,
                                      feedforward_channels)
-    x = torch.rand(num_key, batch_size, feat_channels)
+
     key_padding_mask = torch.rand(batch_size, num_key) > 0.5
     out = module(x, key_padding_mask=key_padding_mask)
     assert not module.normalize_before
@@ -220,9 +236,20 @@ def test_transformer_decoder_layer(feat_channels=256,
                                    num_key=1000,
                                    num_query=100,
                                    batch_size=2):
+    query = torch.rand(num_query, batch_size, feat_channels)
+    # test invalid number of order
+    with pytest.raises(AssertionError):
+        order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
+                 'norm')
+        module = TransformerDecoderLayer(feat_channels, num_heads, order=order)
+
+    # test invalid value of order
+    with pytest.raises(AssertionError):
+        order = ('norm', 'selfattn', 'unknown', 'multiheadattn', 'norm', 'ffn')
+        module = TransformerDecoderLayer(feat_channels, num_heads, order=order)
+
     module = TransformerDecoderLayer(feat_channels, num_heads,
                                      feedforward_channels)
-    query = torch.rand(num_query, batch_size, feat_channels)
     memory = torch.rand(num_key, batch_size, feat_channels)
     assert not module.normalize_before
     out = module(query, memory)
@@ -478,12 +505,3 @@ def test_transformer(num_enc_layers=2,
     hs, mem = module(x, mask, query_embed, pos_embed)
     assert hs.shape == (num_dec_layers, batch_size, num_query, feat_channels)
     assert mem.shape == (batch_size, feat_channels, height, width)
-
-
-# test_multihead_attention()
-# test_ffn()
-# test_transformer_encoder_layer()
-# test_transformer_decoder_layer()
-# test_transformer_encoder()
-# test_transformer_decoder()
-# test_transformer()
