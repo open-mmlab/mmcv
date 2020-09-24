@@ -125,6 +125,11 @@ class BaseRunner(metaclass=ABCMeta):
         self._epoch = 0
         self._iter = 0
         self._inner_iter = 0
+
+        if max_epochs is not None and max_iters is not None:
+            raise ValueError(
+                'Only one of `max_epochs` or `max_iters` can be set.')
+
         self._max_epochs = max_epochs
         self._max_iters = max_iters
         # TODO: Redesign LogBuffer, it is not flexible and elegant enough

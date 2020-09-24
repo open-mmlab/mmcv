@@ -47,6 +47,10 @@ def test_build_runner():
     runner = build_runner(cfg, default_args=default_args)
     assert runner._max_iters == 1
 
+    with pytest.raises(ValueError, match='Only one of'):
+        cfg = dict(type='IterBasedRunner', max_epochs=1, max_iters=1)
+        runner = build_runner(cfg, default_args=default_args)
+
 
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
 def test_epoch_based_runner(runner_class):
