@@ -49,7 +49,7 @@ def _encoder_layer_forward(self,
                 x,
                 x,
                 x,
-                inp_residual if self.normalize_before else None,
+                inp_residual if self.pre_norm else None,
                 query_pos=pos,
                 attn_mask=attn_mask,
                 key_padding_mask=key_padding_mask)
@@ -58,7 +58,7 @@ def _encoder_layer_forward(self,
             x = x + '_norm{}'.format(norm_cnt)
             norm_cnt += 1
         elif layer == 'ffn':
-            x = self.ffn(x, inp_residual if self.normalize_before else None)
+            x = self.ffn(x, inp_residual if self.pre_norm else None)
         else:
             raise ValueError(f'Unsupported layer type {layer}.')
     return x
@@ -81,7 +81,7 @@ def _decoder_layer_forward(self,
                 x,
                 x,
                 x,
-                inp_residual if self.normalize_before else None,
+                inp_residual if self.pre_norm else None,
                 query_pos,
                 attn_mask=tgt_attn_mask,
                 key_padding_mask=tgt_key_padding_mask)
@@ -94,7 +94,7 @@ def _decoder_layer_forward(self,
                 x,
                 memory,
                 memory,
-                inp_residual if self.normalize_before else None,
+                inp_residual if self.pre_norm else None,
                 query_pos,
                 key_pos=memory_pos,
                 attn_mask=memory_attn_mask,
@@ -102,7 +102,7 @@ def _decoder_layer_forward(self,
                 selfattn=False)
             inp_residual = x
         elif layer == 'ffn':
-            x = self.ffn(x, inp_residual if self.normalize_before else None)
+            x = self.ffn(x, inp_residual if self.pre_norm else None)
         else:
             raise ValueError(f'Unsupported layer type {layer}.')
     return x
@@ -176,19 +176,21 @@ def test_transformer_encoder_layer(feat_channels=256,
     # test invalid number of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'ffn', 'norm')
-        module = TransformerEncoderLayer(feat_channels, num_heads, order=order)
+        module = TransformerEncoderLayer(
+            feat_channels, num_heads, feedforward_channels, order=order)
 
     # test invalid value of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'unknown')
-        module = TransformerEncoderLayer(feat_channels, num_heads, order=order)
+        module = TransformerEncoderLayer(
+            feat_channels, num_heads, feedforward_channels, order=order)
 
     module = TransformerEncoderLayer(feat_channels, num_heads,
                                      feedforward_channels)
 
     key_padding_mask = torch.rand(batch_size, num_key) > 0.5
     out = module(x, key_padding_mask=key_padding_mask)
-    assert not module.normalize_before
+    assert not module.pre_norm
     assert out.shape == (num_key, batch_size, feat_channels)
 
     # set pos
@@ -201,11 +203,11 @@ def test_transformer_encoder_layer(feat_channels=256,
     out = module(x, pos, attn_mask, key_padding_mask)
     assert out.shape == (num_key, batch_size, feat_channels)
 
-    # set normalize_before
+    # set pre_norm
     order = ('norm', 'selfattn', 'norm', 'ffn')
     module = TransformerEncoderLayer(
         feat_channels, num_heads, feedforward_channels, order=order)
-    assert module.normalize_before
+    assert module.pre_norm
     out = module(x, pos, attn_mask, key_padding_mask)
     assert out.shape == (num_key, batch_size, feat_channels)
 
@@ -215,14 +217,16 @@ def test_transformer_encoder_layer(feat_channels=256,
     @patch('mmcv.cnn.bricks.MultiheadAttention.forward',
            _multihead_attention_forward)
     def test_order():
-        module = TransformerEncoderLayer(feat_channels)
+        module = TransformerEncoderLayer(feat_channels, num_heads,
+                                         feedforward_channels)
         out = module('input')
         assert out == 'input_selfattn(residual=input)_norm0_ffn' \
             '(residual=norm0)_norm1'
 
-        # normalize_before
+        # pre_norm
         order = ('norm', 'selfattn', 'norm', 'ffn')
-        module = TransformerEncoderLayer(feat_channels, order=order)
+        module = TransformerEncoderLayer(
+            feat_channels, num_heads, feedforward_channels, order=order)
         out = module('input')
         assert out == 'input_norm0_selfattn(residual=input)_' \
             'norm1_ffn(residual=selfattn)'
@@ -241,17 +245,19 @@ def test_transformer_decoder_layer(feat_channels=256,
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
                  'norm')
-        module = TransformerDecoderLayer(feat_channels, num_heads, order=order)
+        module = TransformerDecoderLayer(
+            feat_channels, num_heads, feedforward_channels, order=order)
 
     # test invalid value of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'unknown', 'multiheadattn', 'norm', 'ffn')
-        module = TransformerDecoderLayer(feat_channels, num_heads, order=order)
+        module = TransformerDecoderLayer(
+            feat_channels, num_heads, feedforward_channels, order=order)
 
     module = TransformerDecoderLayer(feat_channels, num_heads,
                                      feedforward_channels)
     memory = torch.rand(num_key, batch_size, feat_channels)
-    assert not module.normalize_before
+    assert not module.pre_norm
     out = module(query, memory)
     assert out.shape == (num_query, batch_size, feat_channels)
 
@@ -304,11 +310,11 @@ def test_transformer_decoder_layer(feat_channels=256,
                  tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
-    # normalize_before
+    # pre_norm
     order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
     module = TransformerDecoderLayer(
         feat_channels, num_heads, feedforward_channels, order=order)
-    assert module.normalize_before
+    assert module.pre_norm
     out = module(
         query,
         memory,
@@ -331,7 +337,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         assert out == 'input_selfattn(residual=input)_norm0_multiheadattn' \
             '(residual=norm0)_norm1_ffn(residual=norm1)_norm2'
 
-        # normalize_before
+        # pre_norm
         order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
         module = TransformerDecoderLayer(
             feat_channels, num_heads, feedforward_channels, order=order)
@@ -346,10 +352,12 @@ def test_transformer_decoder_layer(feat_channels=256,
 def test_transformer_encoder(num_layers=4,
                              feat_channels=256,
                              num_heads=8,
+                             feedforward_channels=2048,
                              num_key=1000,
                              batch_size=2):
-    module = TransformerEncoder(num_layers, feat_channels, num_heads)
-    assert not module.normalize_before
+    module = TransformerEncoder(num_layers, feat_channels, num_heads,
+                                feedforward_channels)
+    assert not module.pre_norm
     assert module.norm is None
     x = torch.rand(num_key, batch_size, feat_channels)
     out = module(x)
@@ -370,11 +378,15 @@ def test_transformer_encoder(num_layers=4,
     out = module(x, pos, attn_mask, key_padding_mask)
     assert out.shape == (num_key, batch_size, feat_channels)
 
-    # normalize_before
+    # pre_norm
     order = ('norm', 'selfattn', 'norm', 'ffn')
     module = TransformerEncoder(
-        num_layers, feat_channels, num_heads, order=order)
-    assert module.normalize_before
+        num_layers,
+        feat_channels,
+        num_heads,
+        feedforward_channels,
+        order=order)
+    assert module.pre_norm
     assert module.norm is not None
     out = module(x, pos, attn_mask, key_padding_mask)
     assert out.shape == (num_key, batch_size, feat_channels)
@@ -383,10 +395,12 @@ def test_transformer_encoder(num_layers=4,
 def test_transformer_decoder(num_layers=3,
                              feat_channels=256,
                              num_heads=8,
+                             feedforward_channels=2048,
                              num_key=1000,
                              num_query=100,
                              batch_size=2):
-    module = TransformerDecoder(num_layers, feat_channels, num_heads)
+    module = TransformerDecoder(num_layers, feat_channels, num_heads,
+                                feedforward_channels)
     query = torch.rand(num_query, batch_size, feat_channels)
     memory = torch.rand(num_key, batch_size, feat_channels)
     out = module(query, memory)
@@ -435,10 +449,14 @@ def test_transformer_decoder(num_layers=3,
                  tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
-    # normalize_before
+    # pre_norm
     order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
     module = TransformerDecoder(
-        num_layers, feat_channels, num_heads, order=order)
+        num_layers,
+        feat_channels,
+        num_heads,
+        feedforward_channels,
+        order=order)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
                  tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
@@ -448,6 +466,7 @@ def test_transformer_decoder(num_layers=3,
         num_layers,
         feat_channels,
         num_heads,
+        feedforward_channels,
         order=order,
         return_intermediate=True)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
@@ -472,13 +491,13 @@ def test_transformer(num_enc_layers=2,
     assert hs.shape == (1, batch_size, num_query, feat_channels)
     assert mem.shape == (batch_size, feat_channels, height, width)
 
-    # normalize_before
+    # pre_norm
     module = Transformer(
         feat_channels,
         num_heads,
         num_enc_layers,
         num_dec_layers,
-        normalize_before=True)
+        pre_norm=True)
     hs, mem = module(x, mask, query_embed, pos_embed)
     assert hs.shape == (1, batch_size, num_query, feat_channels)
     assert mem.shape == (batch_size, feat_channels, height, width)
@@ -494,13 +513,13 @@ def test_transformer(num_enc_layers=2,
     assert hs.shape == (num_dec_layers, batch_size, num_query, feat_channels)
     assert mem.shape == (batch_size, feat_channels, height, width)
 
-    # normalize_before and return_intermediate
+    # pre_norm and return_intermediate
     module = Transformer(
         feat_channels,
         num_heads,
         num_enc_layers,
         num_dec_layers,
-        normalize_before=True,
+        pre_norm=True,
         return_intermediate_dec=True)
     hs, mem = module(x, mask, query_embed, pos_embed)
     assert hs.shape == (num_dec_layers, batch_size, num_query, feat_channels)

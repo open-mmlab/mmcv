@@ -63,6 +63,7 @@ class MultiheadAttention(nn.Module):
         return residual + self.dropout(out)
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(feat_channels={self.feat_channels}, '
         repr_str += f'num_heads={self.num_heads}, '
@@ -84,7 +85,7 @@ class FFN(nn.Module):
 
     def __init__(self,
                  feat_channels,
-                 feedforward_channels=2048,
+                 feedforward_channels,
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
                  dropout=0.0):
@@ -96,8 +97,6 @@ class FFN(nn.Module):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
-        # NOTE only when act_cfg['type'] not in ['Tanh', 'PReLU',
-        # 'Sigmoid', 'HSigmoid', 'Swish'], can we set inplace in act_cfg.
         self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
@@ -120,6 +119,7 @@ class FFN(nn.Module):
         return residual + self.dropout(x)
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(feat_channels={self.feat_channels}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
@@ -149,8 +149,8 @@ class TransformerEncoderLayer(nn.Module):
 
     def __init__(self,
                  feat_channels,
-                 num_heads=8,
-                 feedforward_channels=2048,
+                 num_heads,
+                 feedforward_channels,
                  dropout=0.0,
                  order=('selfattn', 'norm', 'ffn', 'norm'),
                  act_cfg=dict(type='ReLU', inplace=True),
@@ -158,7 +158,7 @@ class TransformerEncoderLayer(nn.Module):
                  num_fcs=2):
         super(TransformerEncoderLayer, self).__init__()
         assert isinstance(order, tuple) and len(order) == 4
-        assert set(order) == set(['selfattn', 'norm', 'ffn', 'norm'])
+        assert set(order) == set(['selfattn', 'norm', 'ffn'])
         self.feat_channels = feat_channels
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
@@ -167,7 +167,7 @@ class TransformerEncoderLayer(nn.Module):
         self.act_cfg = act_cfg
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
-        self.normalize_before = order[0] == 'norm'
+        self.pre_norm = order[0] == 'norm'
         self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
         self.ffn = FFN(feat_channels, feedforward_channels, num_fcs, act_cfg,
                        dropout)
@@ -182,11 +182,12 @@ class TransformerEncoderLayer(nn.Module):
         for layer in self.order:
             if layer == 'selfattn':
                 # self attention
+                query = key = value = x
                 x = self.self_attn(
-                    x,
-                    x,
-                    x,
-                    inp_residual if self.normalize_before else None,
+                    query,
+                    key,
+                    value,
+                    inp_residual if self.pre_norm else None,
                     query_pos=pos,
                     attn_mask=attn_mask,
                     key_padding_mask=key_padding_mask)
@@ -195,11 +196,11 @@ class TransformerEncoderLayer(nn.Module):
                 x = self.norms[norm_cnt](x)
                 norm_cnt += 1
             elif layer == 'ffn':
-                x = self.ffn(x,
-                             inp_residual if self.normalize_before else None)
+                x = self.ffn(x, inp_residual if self.pre_norm else None)
         return x
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(feat_channels={self.feat_channels}, '
         repr_str += f'num_heads={self.num_heads}, '
@@ -233,8 +234,8 @@ class TransformerDecoderLayer(nn.Module):
 
     def __init__(self,
                  feat_channels,
-                 num_heads=8,
-                 feedforward_channels=2048,
+                 num_heads,
+                 feedforward_channels,
                  dropout=0.0,
                  order=('selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
                         'norm'),
@@ -243,8 +244,7 @@ class TransformerDecoderLayer(nn.Module):
                  num_fcs=2):
         super(TransformerDecoderLayer, self).__init__()
         assert isinstance(order, tuple) and len(order) == 6
-        assert set(order) == set(
-            ['selfattn', 'norm', 'multiheadattn', 'norm', 'ffn', 'norm'])
+        assert set(order) == set(['selfattn', 'norm', 'multiheadattn', 'ffn'])
         self.feat_channels = feat_channels
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
@@ -253,7 +253,7 @@ class TransformerDecoderLayer(nn.Module):
         self.act_cfg = act_cfg
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
-        self.normalize_before = order[0] == 'norm'
+        self.pre_norm = order[0] == 'norm'
         self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
         self.multihead_attn = MultiheadAttention(feat_channels, num_heads,
                                                  dropout)
@@ -278,11 +278,12 @@ class TransformerDecoderLayer(nn.Module):
         inp_residual = x
         for layer in self.order:
             if layer == 'selfattn':
+                query = key = value = x
                 x = self.self_attn(
-                    x,
-                    x,
-                    x,
-                    inp_residual if self.normalize_before else None,
+                    query,
+                    key,
+                    value,
+                    inp_residual if self.pre_norm else None,
                     query_pos,
                     attn_mask=tgt_attn_mask,
                     key_padding_mask=tgt_key_padding_mask)
@@ -291,22 +292,24 @@ class TransformerDecoderLayer(nn.Module):
                 x = self.norms[norm_cnt](x)
                 norm_cnt += 1
             elif layer == 'multiheadattn':
+                query = x
+                key = value = memory
                 x = self.multihead_attn(
-                    x,
-                    memory,
-                    memory,
-                    inp_residual if self.normalize_before else None,
+                    query,
+                    key,
+                    value,
+                    inp_residual if self.pre_norm else None,
                     query_pos,
                     key_pos=memory_pos,
                     attn_mask=memory_attn_mask,
                     key_padding_mask=memory_key_padding_mask)
                 inp_residual = x
             elif layer == 'ffn':
-                x = self.ffn(x,
-                             inp_residual if self.normalize_before else None)
+                x = self.ffn(x, inp_residual if self.pre_norm else None)
         return x
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(feat_channels={self.feat_channels}, '
         repr_str += f'num_heads={self.num_heads}, '
@@ -323,7 +326,7 @@ class TransformerEncoder(nn.Module):
     """Implements the encoder in transformer.
 
     Args:
-        num_layers (int): The number of TransformerEncoderLayer.
+        num_layers (int): The number of `TransformerEncoderLayer`.
         feat_channels (int): Same as `TransformerEncoderLayer`.
         num_heads (int): Same as `TransformerEncoderLayer`.
         feedforward_channels (int): Same as `TransformerEncoderLayer`.
@@ -339,7 +342,7 @@ class TransformerEncoder(nn.Module):
                  num_layers,
                  feat_channels,
                  num_heads,
-                 feedforward_channels=2048,
+                 feedforward_channels,
                  dropout=0.0,
                  order=('selfattn', 'norm', 'ffn', 'norm'),
                  act_cfg=dict(type='ReLU', inplace=True),
@@ -347,7 +350,7 @@ class TransformerEncoder(nn.Module):
                  num_fcs=2):
         super(TransformerEncoder, self).__init__()
         assert isinstance(order, tuple) and len(order) == 4
-        assert set(order) == set(['selfattn', 'norm', 'ffn', 'norm'])
+        assert set(order) == set(['selfattn', 'norm', 'ffn'])
         self.num_layers = num_layers
         self.feat_channels = feat_channels
         self.num_heads = num_heads
@@ -357,7 +360,7 @@ class TransformerEncoder(nn.Module):
         self.act_cfg = act_cfg
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
-        self.normalize_before = order[0] == 'norm'
+        self.pre_norm = order[0] == 'norm'
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
             self.layers.append(
@@ -365,7 +368,7 @@ class TransformerEncoder(nn.Module):
                                         feedforward_channels, dropout, order,
                                         act_cfg, norm_cfg, num_fcs))
         self.norm = build_norm_layer(
-            norm_cfg, feat_channels)[1] if self.normalize_before else None
+            norm_cfg, feat_channels)[1] if self.pre_norm else None
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
         """Forward function for TransformerEncoder."""
@@ -376,6 +379,7 @@ class TransformerEncoder(nn.Module):
         return x
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(num_layers={self.num_layers}, '
         repr_str += f'feat_channels={self.feat_channels}, '
@@ -393,7 +397,7 @@ class TransformerDecoder(nn.Module):
     """Implements the decoder in transformer.
 
     Args:
-        num_layers (int): The number of TransformerDecoderLayer.
+        num_layers (int): The number of `TransformerDecoderLayer`.
         feat_channels (int): Same as `TransformerDecoderLayer`.
         num_heads (int): Same as `TransformerDecoderLayer`.
         feedforward_channels (int): Same as `TransformerDecoderLayer`.
@@ -409,7 +413,7 @@ class TransformerDecoder(nn.Module):
                  num_layers,
                  feat_channels,
                  num_heads,
-                 feedforward_channels=2048,
+                 feedforward_channels,
                  dropout=0.0,
                  order=('selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
                         'norm'),
@@ -419,8 +423,7 @@ class TransformerDecoder(nn.Module):
                  return_intermediate=False):
         super(TransformerDecoder, self).__init__()
         assert isinstance(order, tuple) and len(order) == 6
-        assert set(order) == set(
-            ['selfattn', 'norm', 'multiheadattn', 'norm', 'ffn', 'norm'])
+        assert set(order) == set(['selfattn', 'norm', 'multiheadattn', 'ffn'])
         self.num_layers = num_layers
         self.feat_channels = feat_channels
         self.num_heads = num_heads
@@ -466,6 +469,7 @@ class TransformerDecoder(nn.Module):
         return x.unsqueeze(0)
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(num_layers={self.num_layers}, '
         repr_str += f'feat_channels={self.feat_channels}, '
@@ -490,8 +494,8 @@ class Transformer(nn.Module):
         feat_channels (int): The feature dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        num_encoder_layers (int): Number of TransformerEncoderLayer.
-        num_decoder_layers (int): Number of TransformerDecoderLayer.
+        num_encoder_layers (int): Number of `TransformerEncoderLayer`.
+        num_decoder_layers (int): Number of `TransformerDecoderLayer`.
         feedforward_channels (int): The hidden dimension for FFNs used in both
             encoder and decoder.
         dropout (float): Probability of an element to be zeroed. Default 0.0.
@@ -501,7 +505,7 @@ class Transformer(nn.Module):
             and decoder. Default layer normalization.
         num_fcs (int): The number of fully-connected layers in FFNs, which is
             used for both encoder and decoder.
-        normalize_before (bool): Whether the normalization layer is ordered
+        pre_norm (bool): Whether the normalization layer is ordered
             first in the encoder and decoder. Default False.
         return_intermediate_dec (bool): Whether to return the intermediate
             output from each TransformerDecoderLayer or only the last
@@ -521,7 +525,7 @@ class Transformer(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  norm_cfg=dict(type='LN'),
                  num_fcs=2,
-                 normalize_before=False,
+                 pre_norm=False,
                  return_intermediate_dec=False):
         super(Transformer, self).__init__()
         self.feat_channels = feat_channels
@@ -533,9 +537,9 @@ class Transformer(nn.Module):
         self.act_cfg = act_cfg
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
-        self.normalize_before = normalize_before
+        self.pre_norm = pre_norm
         self.return_intermediate_dec = return_intermediate_dec
-        if self.normalize_before:
+        if self.pre_norm:
             encoder_order = ('norm', 'selfattn', 'norm', 'ffn')
             decoder_order = ('norm', 'selfattn', 'norm', 'multiheadattn',
                              'norm', 'ffn')
@@ -581,9 +585,10 @@ class Transformer(nn.Module):
             tgt_attn_mask=None,
             memory_key_padding_mask=mask,
             tgt_key_padding_mask=None)
-        return hs.transpose(1, 2), memory.permute(1, 2, 0).view(bs, c, h, w)
+        return hs.transpose(1, 2), memory.permute(1, 2, 0).reshape(bs, c, h, w)
 
     def __repr__(self):
+        """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(feat_channels={self.feat_channels}, '
         repr_str += f'num_heads={self.num_heads}, '
@@ -594,6 +599,6 @@ class Transformer(nn.Module):
         repr_str += f'act_cfg={self.act_cfg}, '
         repr_str += f'norm_cfg={self.norm_cfg}, '
         repr_str += f'num_fcs={self.num_fcs}, '
-        repr_str += f'normalize_before={self.normalize_before}, '
+        repr_str += f'pre_norm={self.pre_norm}, '
         repr_str += f'return_intermediate_dec={self.return_intermediate_dec})'
         return repr_str
