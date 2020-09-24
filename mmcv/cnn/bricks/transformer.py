@@ -5,34 +5,6 @@ from .activation import build_activation_layer
 from .norm import build_norm_layer
 from .wrappers import Linear
 
-# class SelfAttentionModule(nn.Module):
-
-#     def __init__(self, feat_channels, num_heads, dropout=0.1):
-#         super(SelfAttentionModule, self).__init__()
-#         self.attn = nn.MultiheadAttention(feat_channels,
-#                       num_heads, dropout=dropout)
-#         self.dropout = nn.Dropout(dropout)
-
-#     def forward(self,
-#                 x,
-#                 residual=None,
-#                 pos=None,
-#                 attn_mask=None,
-#                 key_padding_mask=None):
-#         if residual is None:
-#             residual = x
-#         q = k = x
-#         if pos is not None:
-#             q += pos
-#             k += pos
-#         out = self.attn(
-#             q,
-#             k,
-#             value=x,
-#             attn_mask=attn_mask,
-#             key_padding_mask=key_padding_mask)[0]
-#         return residual + self.dropout(out)
-
 
 class MultiheadAttention(nn.Module):
 
@@ -54,11 +26,13 @@ class MultiheadAttention(nn.Module):
         if key is None:
             key = query
         if value is None:
-            value = query
+            value = key
         if residual is None:
             residual = x
         if key_pos is None:
-            key_pos = query_pos
+            if query_pos is not None and key is not None:
+                if query_pos.shape == key.shape:
+                    key_pos = query_pos
         if query_pos is not None:
             query += query_pos
         if key_pos is not None:
@@ -238,18 +212,18 @@ class TransformerEncoder(nn.Module):
         super(TransformerEncoder, self).__init__()
         self.num_layers = num_layers
         self.normalize_before = order[0] == 'norm'
-        layers = nn.ModuleList()
+        self.layers = nn.ModuleList()
         for _ in range(num_layers):
-            layers.append(
+            self.layers.append(
                 TransformerEncoderLayer(feat_channels, num_heads,
                                         feedforward_channels, dropout, order,
                                         act_cfg, norm_cfg, num_ffn))
-        self.layers = nn.Sequential(*layers)
         self.norm = build_norm_layer(
             norm_cfg, feat_channels)[1] if self.normalize_before else None
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
-        x = self.layers(x, pos, attn_mask, key_padding_mask)
+        for layer in self.layers:
+            x = layer(x, pos, attn_mask, key_padding_mask)
         if self.norm is not None:
             x = self.norm(x)
         return x
@@ -311,9 +285,9 @@ class Transformer(nn.Module):
     def __init__(self,
                  feat_channels=512,
                  num_heads=8,
-                 feedforward_channels=2048,
                  num_encoder_layers=6,
                  num_decoder_layers=6,
+                 feedforward_channels=2048,
                  dropout=0.1,
                  act_cfg=dict(type='ReLU', inplace=True),
                  norm_cfg=dict(type='LN'),
@@ -321,6 +295,7 @@ class Transformer(nn.Module):
                  normalize_before=False,
                  return_intermediate_dec=False):
         super(Transformer, self).__init__()
+        self.normalize_before = normalize_before
         if self.normalize_before:
             encoder_order = ('norm', 'selfattn', 'norm', 'ffn')
             decoder_order = ('norm', 'selfattn', 'norm', 'multiheadattn',
@@ -346,10 +321,11 @@ class Transformer(nn.Module):
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
         query_embed = query_embed.unsqueeze(1).repeat(
             1, bs, 1)  # [num_query,dim] -> [num_query,bs,dim]
-        mask = mask.flatten(1)  # [h,w] -> [h*w]
+        mask = mask.flatten(1)  # [bs, h,w] -> [bs, h*w]
         memory = self.encoder(
             x, pos=pos_embed, attn_mask=None, key_padding_mask=mask)
         tgt = torch.zeros_like(query_embed)
+        # hs: [num_layers,num_query,bs,dim]
         hs = self.decoder(
             tgt,
             memory,

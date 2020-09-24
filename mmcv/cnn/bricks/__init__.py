@@ -16,6 +16,9 @@ from .registry import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                        PADDING_LAYERS, PLUGIN_LAYERS, UPSAMPLE_LAYERS)
 from .scale import Scale
 from .swish import Swish
+from .transformer import (FFN, MultiheadAttention, Transformer,
+                          TransformerDecoder, TransformerDecoderLayer,
+                          TransformerEncoder, TransformerEncoderLayer)
 from .upsample import build_upsample_layer
 from .wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
@@ -27,5 +30,7 @@ __all__ = [
     'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS', 'PADDING_LAYERS',
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
     'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish', 'Linear',
-    'Conv2dAdaptivePadding', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d'
+    'Conv2dAdaptivePadding', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d',
+    'MultiheadAttention', 'FFN', 'TransformerEncoder', 'TransformerDecoder',
+    'Transformer', 'TransformerEncoderLayer', 'TransformerDecoderLayer'
 ]
