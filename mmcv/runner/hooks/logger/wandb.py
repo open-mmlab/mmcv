@@ -13,9 +13,10 @@ class WandbLoggerHook(LoggerHook):
                  init_kwargs=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
+                 reset_flag=True,
+                 by_epoch=True):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
-                                              reset_flag)
+                                              reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
 
