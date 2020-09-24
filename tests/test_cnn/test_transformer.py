@@ -70,9 +70,9 @@ def _decoder_layer_forward(self,
                            memory_pos=None,
                            query_pos=None,
                            memory_attn_mask=None,
-                           tgt_attn_mask=None,
+                           target_attn_mask=None,
                            memory_key_padding_mask=None,
-                           tgt_key_padding_mask=None):
+                           target_key_padding_mask=None):
     norm_cnt = 0
     inp_residual = x
     for layer in self.order:
@@ -83,8 +83,8 @@ def _decoder_layer_forward(self,
                 x,
                 inp_residual if self.pre_norm else None,
                 query_pos,
-                attn_mask=tgt_attn_mask,
-                key_padding_mask=tgt_key_padding_mask)
+                attn_mask=target_attn_mask,
+                key_padding_mask=target_key_padding_mask)
             inp_residual = x
         elif layer == 'norm':
             x = x + '_norm{}'.format(norm_cnt)
@@ -281,15 +281,15 @@ def test_transformer_decoder_layer(feat_channels=256,
         memory_key_padding_mask=memory_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
-    # set tgt_key_padding_mask
-    tgt_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
+    # set target_key_padding_mask
+    target_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
     out = module(
         query,
         memory,
         memory_pos,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask,
-        tgt_key_padding_mask=tgt_key_padding_mask)
+        target_key_padding_mask=target_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
     # set memory_attn_mask
@@ -301,13 +301,14 @@ def test_transformer_decoder_layer(feat_channels=256,
         query_pos,
         memory_attn_mask,
         memory_key_padding_mask=memory_key_padding_mask,
-        tgt_key_padding_mask=tgt_key_padding_mask)
+        target_key_padding_mask=target_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
-    # set tgt_attn_mask
-    tgt_attn_mask = torch.rand(num_query, num_query)
+    # set target_attn_mask
+    target_attn_mask = torch.rand(num_query, num_query)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
-                 tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
+                 target_attn_mask, memory_key_padding_mask,
+                 target_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
     # pre_norm
@@ -322,7 +323,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         query_pos,
         memory_attn_mask,
         memory_key_padding_mask=memory_key_padding_mask,
-        tgt_key_padding_mask=tgt_key_padding_mask)
+        target_key_padding_mask=target_key_padding_mask)
     assert out.shape == (num_query, batch_size, feat_channels)
 
     @patch('mmcv.cnn.bricks.TransformerDecoderLayer.forward',
@@ -426,27 +427,28 @@ def test_transformer_decoder(num_layers=3,
         memory_key_padding_mask=memory_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
-    # set tgt_key_padding_mask
-    tgt_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
+    # set target_key_padding_mask
+    target_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
     out = module(
         query,
         memory,
         memory_pos,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask,
-        tgt_key_padding_mask=tgt_key_padding_mask)
+        target_key_padding_mask=target_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
     # set memory_attn_mask
     memory_attn_mask = torch.rand(num_query, num_key) > 0.5
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask, None,
-                 memory_key_padding_mask, tgt_key_padding_mask)
+                 memory_key_padding_mask, target_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
-    # set tgt_attn_mask
-    tgt_attn_mask = torch.rand(num_query, num_query) > 0.5
+    # set target_attn_mask
+    target_attn_mask = torch.rand(num_query, num_query) > 0.5
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
-                 tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
+                 target_attn_mask, memory_key_padding_mask,
+                 target_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
     # pre_norm
@@ -458,7 +460,8 @@ def test_transformer_decoder(num_layers=3,
         feedforward_channels,
         order=order)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
-                 tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
+                 target_attn_mask, memory_key_padding_mask,
+                 target_key_padding_mask)
     assert out.shape == (1, num_query, batch_size, feat_channels)
 
     # return_intermediate
@@ -470,7 +473,8 @@ def test_transformer_decoder(num_layers=3,
         order=order,
         return_intermediate=True)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
-                 tgt_attn_mask, memory_key_padding_mask, tgt_key_padding_mask)
+                 target_attn_mask, memory_key_padding_mask,
+                 target_key_padding_mask)
     assert out.shape == (num_layers, num_query, batch_size, feat_channels)
 
 

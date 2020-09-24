@@ -314,9 +314,9 @@ class TransformerDecoderLayer(nn.Module):
                 memory_pos=None,
                 query_pos=None,
                 memory_attn_mask=None,
-                tgt_attn_mask=None,
+                target_attn_mask=None,
                 memory_key_padding_mask=None,
-                tgt_key_padding_mask=None):
+                target_key_padding_mask=None):
         """Forward function for `TransformerDecoderLayer`.
 
         Args:
@@ -330,13 +330,13 @@ class TransformerDecoderLayer(nn.Module):
             memory_attn_mask (Tensor): ByteTensor mask for `memory`, with
                 shape [num_key,num_key]. Same as `attn_mask` in
                 `MultiheadAttention.forward`. Default None.
-            tgt_attn_mask (Tensor): ByteTensor mask for `x`, with shape
+            target_attn_mask (Tensor): ByteTensor mask for `x`, with shape
                 [num_query,num_query]. Same as `attn_mask` in
                 `MultiheadAttention.forward`. Default None.
             memory_key_padding_mask (Tensor): ByteTensor for `memory`, with
                 shape [bs,num_key]. Same as `key_padding_mask` in
                 `MultiheadAttention.forward`. Default None.
-            tgt_key_padding_mask (Tensor): ByteTensor for `x`, with shape
+            target_key_padding_mask (Tensor): ByteTensor for `x`, with shape
                 [bs,num_query]. Same as `key_padding_mask` in
                 `MultiheadAttention.forward`. Default None.
 
@@ -355,8 +355,8 @@ class TransformerDecoderLayer(nn.Module):
                     inp_residual if self.pre_norm else None,
                     query_pos,
                     key_pos=query_pos,
-                    attn_mask=tgt_attn_mask,
-                    key_padding_mask=tgt_key_padding_mask)
+                    attn_mask=target_attn_mask,
+                    key_padding_mask=target_key_padding_mask)
                 inp_residual = x
             elif layer == 'norm':
                 x = self.norms[norm_cnt](x)
@@ -531,9 +531,9 @@ class TransformerDecoder(nn.Module):
                 memory_pos=None,
                 query_pos=None,
                 memory_attn_mask=None,
-                tgt_attn_mask=None,
+                target_attn_mask=None,
                 memory_key_padding_mask=None,
-                tgt_key_padding_mask=None):
+                target_key_padding_mask=None):
         """Forward function for `TransformerDecoder`.
 
         Args:
@@ -545,11 +545,11 @@ class TransformerDecoder(nn.Module):
                 Default None.
             memory_attn_mask (Tensor): Same in
                 `TransformerDecoderLayer.forward`. Default None.
-            tgt_attn_mask (Tensor): Same in `TransformerDecoderLayer.forward`.
-                Default None.
+            target_attn_mask (Tensor): Same in
+                `TransformerDecoderLayer.forward`. Default None.
             memory_key_padding_mask (Tensor): Same in
                 `TransformerDecoderLayer.forward`. Default None.
-            tgt_key_padding_mask (Tensor): Same in
+            target_key_padding_mask (Tensor): Same in
                 `TransformerDecoderLayer.forward`. Default None.
 
         Returns:
@@ -558,8 +558,8 @@ class TransformerDecoder(nn.Module):
         intermediate = []
         for layer in self.layers:
             x = layer(x, memory, memory_pos, query_pos, memory_attn_mask,
-                      tgt_attn_mask, memory_key_padding_mask,
-                      tgt_key_padding_mask)
+                      target_attn_mask, memory_key_padding_mask,
+                      target_key_padding_mask)
             if self.return_intermediate:
                 intermediate.append(self.norm(x))
         if self.norm is not None:
@@ -691,17 +691,17 @@ class Transformer(nn.Module):
         mask = mask.flatten(1)  # [bs,h,w] -> [bs, h*w]
         memory = self.encoder(
             x, pos=pos_embed, attn_mask=None, key_padding_mask=mask)
-        tgt = torch.zeros_like(query_embed)
+        target = torch.zeros_like(query_embed)
         # hs: [num_layers,num_query,bs,dim]
         hs = self.decoder(
-            tgt,
+            target,
             memory,
             memory_pos=pos_embed,
             query_pos=query_embed,
             memory_attn_mask=None,
-            tgt_attn_mask=None,
+            target_attn_mask=None,
             memory_key_padding_mask=mask,
-            tgt_key_padding_mask=None)
+            target_key_padding_mask=None)
         return hs.transpose(1, 2), memory.permute(1, 2, 0).reshape(bs, c, h, w)
 
     def __repr__(self):
