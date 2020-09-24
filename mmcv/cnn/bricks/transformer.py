@@ -38,7 +38,36 @@ class MultiheadAttention(nn.Module):
                 key_pos=None,
                 attn_mask=None,
                 key_padding_mask=None):
-        """Forward function for MultiheadAttention."""
+        """Forward function for `MultiheadAttention`.
+
+        Args:
+            x (Tensor): The input query with shape [num_query,bs,
+                feat_channels]. Same in `nn.MultiheadAttention.forward`.
+            key (Tensor): The key tensor with shape [num_key,bs,
+                feat_channels]. Same in `nn.MultiheadAttention.forward`.
+                Default None. If None, the `query` will be used.
+            value (Tensor): The value tensor with same shape as `key`.
+                Same in `nn.MultiheadAttention.forward`. Default None.
+                If None, the `key` will be used.
+            residual (Tensor): The tensor used for addition, with the
+                same shape as `x`. Default None. If None, `x` will be used.
+            query_pos (Tensor): The positional encoding for query, with
+                the same shape as `x`. Default None. If not None, it will
+                be added to `x` before forward function.
+            key_pos (Tensor): The positional encoding for `key`, with the
+                same shape as `key`. Default None. If not None, it will
+                be added to `key` before forward function. If None, and
+                `query_pos` has the same shape as `key`, then `query_pos`
+                will be used for `key_pos`.
+            attn_mask (Tensor): ByteTensor mask with shape [num_query,
+                num_key]. Same in `nn.MultiheadAttention.forward`.
+                Default None.
+            key_padding_mask (Tensor): ByteTensor with shape [bs,num_key].
+                Same in `nn.MultiheadAttention.forward`. Default None.
+
+        Returns:
+            Tensor: forwarded results from `MultiheadAttention`.
+        """
         query = x
         if key is None:
             key = query
@@ -112,7 +141,7 @@ class FFN(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, residual=None):
-        """Forward function for FFNs."""
+        """Forward function for `FFN`."""
         if residual is None:
             residual = x
         x = self.layers(x)
@@ -176,7 +205,21 @@ class TransformerEncoderLayer(nn.Module):
         self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
-        """Forward function for TransformerEncoderLayer."""
+        """Forward function for `TransformerEncoderLayer`.
+
+        Args:
+            x (Tensor): The input query with shape [num_query,bs,
+                feat_channels]. Same in `MultiheadAttention.forward`.
+            pos (Tensor): The positional encoding for query. Default None.
+                Same as `query_pos` in `MultiheadAttention.forward`.
+            attn_mask (Tensor): ByteTensor mask with shape [num_key,
+                num_key]. Same in `MultiheadAttention.forward`. Default None.
+            key_padding_mask (Tensor): ByteTensor with shape [bs,num_key].
+                Same in `MultiheadAttention.forward`. Default None.
+
+        Returns:
+            Tensor: forwarded results from `TransformerEncoderLayer`.
+        """
         norm_cnt = 0
         inp_residual = x
         for layer in self.order:
@@ -189,6 +232,7 @@ class TransformerEncoderLayer(nn.Module):
                     value,
                     inp_residual if self.pre_norm else None,
                     query_pos=pos,
+                    key_pos=pos,
                     attn_mask=attn_mask,
                     key_padding_mask=key_padding_mask)
                 inp_residual = x
@@ -273,7 +317,32 @@ class TransformerDecoderLayer(nn.Module):
                 tgt_attn_mask=None,
                 memory_key_padding_mask=None,
                 tgt_key_padding_mask=None):
-        """Forward function for TransformerDecoderLayer."""
+        """Forward function for `TransformerDecoderLayer`.
+
+        Args:
+            x (Tensor): Input query with shape [num_query,bs,feat_channels].
+            memory (Tensor): Tensor got from `TransformerEncoder`, with shape
+                [num_key,bs,feat_channels].
+            memory_pos (Tensor): The positional encoding for `memory`. Default
+                None. Same as `key_pos` in `MultiheadAttention.forward`.
+            query_pos (Tensor): The positional encoding for `query`. Default
+                None. Same as `query_pos` in `MultiheadAttention.forward`.
+            memory_attn_mask (Tensor): ByteTensor mask for `memory`, with
+                shape [num_key,num_key]. Same as `attn_mask` in
+                `MultiheadAttention.forward`. Default None.
+            tgt_attn_mask (Tensor): ByteTensor mask for `x`, with shape
+                [num_query,num_query]. Same as `attn_mask` in
+                `MultiheadAttention.forward`. Default None.
+            memory_key_padding_mask (Tensor): ByteTensor for `memory`, with
+                shape [bs,num_key]. Same as `key_padding_mask` in
+                `MultiheadAttention.forward`. Default None.
+            tgt_key_padding_mask (Tensor): ByteTensor for `x`, with shape
+                [bs,num_query]. Same as `key_padding_mask` in
+                `MultiheadAttention.forward`. Default None.
+
+        Returns:
+            Tensor: forwarded results from `TransformerDecoderLayer`.
+        """
         norm_cnt = 0
         inp_residual = x
         for layer in self.order:
@@ -285,6 +354,7 @@ class TransformerDecoderLayer(nn.Module):
                     value,
                     inp_residual if self.pre_norm else None,
                     query_pos,
+                    key_pos=query_pos,
                     attn_mask=tgt_attn_mask,
                     key_padding_mask=tgt_key_padding_mask)
                 inp_residual = x
@@ -371,7 +441,20 @@ class TransformerEncoder(nn.Module):
             norm_cfg, feat_channels)[1] if self.pre_norm else None
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
-        """Forward function for TransformerEncoder."""
+        """Forward function for `TransformerEncoder`.
+
+        Args:
+            x (Tensor): Input query. Same in `TransformerEncoderLayer.forward`.
+            pos (Tensor): Positional encoding for query. Default None.
+                Same in `TransformerEncoderLayer.forward`.
+            attn_mask (Tensor): ByteTensor attention mask. Default None.
+                Same in `TransformerEncoderLayer.forward`.
+            key_padding_mask (Tensor): Same in
+                `TransformerEncoderLayer.forward`. Default None.
+
+        Returns:
+            Tensor: forwarded results from `TransformerEncoder`.
+        """
         for layer in self.layers:
             x = layer(x, pos, attn_mask, key_padding_mask)
         if self.norm is not None:
@@ -451,7 +534,27 @@ class TransformerDecoder(nn.Module):
                 tgt_attn_mask=None,
                 memory_key_padding_mask=None,
                 tgt_key_padding_mask=None):
-        """Forward function for TransformerDecoder."""
+        """Forward function for `TransformerDecoder`.
+
+        Args:
+            x (Tensor): Input query. Same in `TransformerDecoderLayer.forward`.
+            memory (Tensor): Same in `TransformerDecoderLayer.forward`.
+            memory_pos (Tensor): Same in `TransformerDecoderLayer.forward`.
+                Default None.
+            query_pos (Tensor): Same in `TransformerDecoderLayer.forward`.
+                Default None.
+            memory_attn_mask (Tensor): Same in
+                `TransformerDecoderLayer.forward`. Default None.
+            tgt_attn_mask (Tensor): Same in `TransformerDecoderLayer.forward`.
+                Default None.
+            memory_key_padding_mask (Tensor): Same in
+                `TransformerDecoderLayer.forward`. Default None.
+            tgt_key_padding_mask (Tensor): Same in
+                `TransformerDecoderLayer.forward`. Default None.
+
+        Returns:
+            Tensor: forwarded results from `TransformerDecoder`.
+        """
         intermediate = []
         for layer in self.layers:
             x = layer(x, memory, memory_pos, query_pos, memory_attn_mask,
@@ -565,13 +668,27 @@ class Transformer(nn.Module):
                 xavier_init(m, distribution=distribution)
 
     def forward(self, x, mask, query_embed, pos_embed):
-        """Forward function for Transformer."""
+        """Forward function for `Transformer`.
+
+        Args:
+            x (Tensor): Input query with shape [bs,c,h,w] where
+                c=feat_channels.
+            mask (Tensor): The key_padding_mask used for encoder and decoder,
+                with shape [bs,h,w].
+            query_embed (Tensor): The query embedding for decoder, with shape
+                [num_query,c].
+            pos_embed (Tensor): The positional encoding for encoder and
+                decoder, with the same shape as `x`.
+
+        Returns:
+            Tensor: forwarded results from `Transformer`.
+        """
         bs, c, h, w = x.shape
         x = x.flatten(2).permute(2, 0, 1)  # [bs,c,h,w] -> [h*w,bs,c]
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
         query_embed = query_embed.unsqueeze(1).repeat(
             1, bs, 1)  # [num_query,dim] -> [num_query,bs,dim]
-        mask = mask.flatten(1)  # [bs, h,w] -> [bs, h*w]
+        mask = mask.flatten(1)  # [bs,h,w] -> [bs, h*w]
         memory = self.encoder(
             x, pos=pos_embed, attn_mask=None, key_padding_mask=mask)
         tgt = torch.zeros_like(query_embed)
