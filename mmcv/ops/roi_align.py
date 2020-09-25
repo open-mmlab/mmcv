@@ -168,7 +168,8 @@ class RoIAlign(nn.Module):
                                     self.aligned)
             else:
                 if self.aligned:
-                    rois -= rois.new_tensor([0.] + [0.5/self.spatial_scale]*4)
+                    rois -= rois.new_tensor([0.] +
+                                            [0.5 / self.spatial_scale] * 4)
                 return tv_roi_align(input, rois, self.output_size,
                                     self.spatial_scale, self.sampling_ratio)
         else:
