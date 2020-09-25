@@ -152,8 +152,6 @@ class RoIAlign(nn.Module):
         self.pool_mode = pool_mode
         self.aligned = aligned
         self.use_torchvision = use_torchvision
-        assert not (use_torchvision and
-                    aligned), 'Torchvision does not support aligned RoIAlgin'
 
     def forward(self, input, rois):
         """
@@ -164,8 +162,16 @@ class RoIAlign(nn.Module):
         """
         if self.use_torchvision:
             from torchvision.ops import roi_align as tv_roi_align
-            return tv_roi_align(input, rois, self.output_size,
-                                self.spatial_scale, self.sampling_ratio)
+            if 'aligned' in tv_roi_align.__code__.co_varnames:
+                return tv_roi_align(input, rois, self.output_size,
+                                    self.spatial_scale, self.sampling_ratio,
+                                    self.aligned)
+            else:
+                if self.aligned:
+                    rois -= rois.new_tensor([0.] +
+                                            [0.5 / self.spatial_scale] * 4)
+                return tv_roi_align(input, rois, self.output_size,
+                                    self.spatial_scale, self.sampling_ratio)
         else:
             return roi_align(input, rois, self.output_size, self.spatial_scale,
                              self.sampling_ratio, self.pool_mode, self.aligned)
