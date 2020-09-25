@@ -164,10 +164,11 @@ class RoIAlign(nn.Module):
             from torchvision.ops import roi_align as tv_roi_align
             if 'aligned' in tv_roi_align.__code__.co_varnames:
                 return tv_roi_align(input, rois, self.output_size,
-                                    self.spatial_scale, self.sampling_ratio, self.aligned)
+                                    self.spatial_scale, self.sampling_ratio, 
+                                    self.aligned)
             else:
                 if self.aligned:
-                    rois = rois-rois.new_tensor([0.]+[0.5/self.spatial_scale]*4)
+                    rois -= rois.new_tensor([0.] + [0.5/self.spatial_scale]*4)
                 return tv_roi_align(input, rois, self.output_size,
                                     self.spatial_scale, self.sampling_ratio)
         else:
