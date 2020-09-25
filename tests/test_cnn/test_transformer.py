@@ -108,108 +108,108 @@ def _decoder_layer_forward(self,
     return x
 
 
-def test_multihead_attention(feat_channels=256,
+def test_multihead_attention(embed_dims=256,
                              num_heads=8,
                              dropout=0.1,
                              num_query=100,
                              num_key=1000,
                              batch_size=2):
-    module = MultiheadAttention(feat_channels, num_heads, dropout)
+    module = MultiheadAttention(embed_dims, num_heads, dropout)
     # self attention
-    query = torch.rand(num_query, batch_size, feat_channels)
+    query = torch.rand(num_query, batch_size, embed_dims)
     out = module(query)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set key
-    key = torch.rand(num_key, batch_size, feat_channels)
+    key = torch.rand(num_key, batch_size, embed_dims)
     out = module(query, key)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set residual
-    residual = torch.rand(num_query, batch_size, feat_channels)
+    residual = torch.rand(num_query, batch_size, embed_dims)
     out = module(query, key, key, residual)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set query_pos and key_pos
-    query_pos = torch.rand(num_query, batch_size, feat_channels)
-    key_pos = torch.rand(num_key, batch_size, feat_channels)
+    query_pos = torch.rand(num_query, batch_size, embed_dims)
+    key_pos = torch.rand(num_key, batch_size, embed_dims)
     out = module(query, key, None, residual, query_pos, key_pos)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set key_padding_mask
     key_padding_mask = torch.rand(batch_size, num_key) > 0.5
     out = module(query, key, None, residual, query_pos, key_pos, None,
                  key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set attn_mask
     attn_mask = torch.rand(num_query, num_key) > 0.5
     out = module(query, key, key, residual, query_pos, key_pos, attn_mask,
                  key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
 
-def test_ffn(feat_channels=256,
+def test_ffn(embed_dims=256,
              feedforward_channels=2048,
              num_fcs=2,
              batch_size=2):
     # test invalid num_fcs
     with pytest.raises(AssertionError):
-        module = FFN(feat_channels, feedforward_channels, 1)
+        module = FFN(embed_dims, feedforward_channels, 1)
 
-    module = FFN(feat_channels, feedforward_channels, num_fcs)
-    x = torch.rand(batch_size, feat_channels)
+    module = FFN(embed_dims, feedforward_channels, num_fcs)
+    x = torch.rand(batch_size, embed_dims)
     out = module(x)
-    assert out.shape == (batch_size, feat_channels)
+    assert out.shape == (batch_size, embed_dims)
     # set residual
-    residual = torch.rand(batch_size, feat_channels)
+    residual = torch.rand(batch_size, embed_dims)
     out = module(x, residual)
-    assert out.shape == (batch_size, feat_channels)
+    assert out.shape == (batch_size, embed_dims)
 
 
-def test_transformer_encoder_layer(feat_channels=256,
+def test_transformer_encoder_layer(embed_dims=256,
                                    num_heads=8,
                                    feedforward_channels=2048,
                                    num_key=1000,
                                    batch_size=2):
-    x = torch.rand(num_key, batch_size, feat_channels)
+    x = torch.rand(num_key, batch_size, embed_dims)
     # test invalid number of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'ffn', 'norm')
         module = TransformerEncoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
 
     # test invalid value of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'unknown')
         module = TransformerEncoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
 
-    module = TransformerEncoderLayer(feat_channels, num_heads,
+    module = TransformerEncoderLayer(embed_dims, num_heads,
                                      feedforward_channels)
 
     key_padding_mask = torch.rand(batch_size, num_key) > 0.5
     out = module(x, key_padding_mask=key_padding_mask)
     assert not module.pre_norm
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set pos
-    pos = torch.rand(num_key, batch_size, feat_channels)
+    pos = torch.rand(num_key, batch_size, embed_dims)
     out = module(x, pos, key_padding_mask=key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set attn_mask
     attn_mask = torch.rand(num_key, num_key) > 0.5
     out = module(x, pos, attn_mask, key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set pre_norm
     order = ('norm', 'selfattn', 'norm', 'ffn')
     module = TransformerEncoderLayer(
-        feat_channels, num_heads, feedforward_channels, order=order)
+        embed_dims, num_heads, feedforward_channels, order=order)
     assert module.pre_norm
     out = module(x, pos, attn_mask, key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     @patch('mmcv.cnn.bricks.TransformerEncoderLayer.forward',
            _encoder_layer_forward)
@@ -217,7 +217,7 @@ def test_transformer_encoder_layer(feat_channels=256,
     @patch('mmcv.cnn.bricks.MultiheadAttention.forward',
            _multihead_attention_forward)
     def test_order():
-        module = TransformerEncoderLayer(feat_channels, num_heads,
+        module = TransformerEncoderLayer(embed_dims, num_heads,
                                          feedforward_channels)
         out = module('input')
         assert out == 'input_selfattn(residual=input)_norm0_ffn' \
@@ -226,7 +226,7 @@ def test_transformer_encoder_layer(feat_channels=256,
         # pre_norm
         order = ('norm', 'selfattn', 'norm', 'ffn')
         module = TransformerEncoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
         out = module('input')
         assert out == 'input_norm0_selfattn(residual=input)_' \
             'norm1_ffn(residual=selfattn)'
@@ -234,42 +234,42 @@ def test_transformer_encoder_layer(feat_channels=256,
     test_order()
 
 
-def test_transformer_decoder_layer(feat_channels=256,
+def test_transformer_decoder_layer(embed_dims=256,
                                    num_heads=8,
                                    feedforward_channels=2048,
                                    num_key=1000,
                                    num_query=100,
                                    batch_size=2):
-    query = torch.rand(num_query, batch_size, feat_channels)
+    query = torch.rand(num_query, batch_size, embed_dims)
     # test invalid number of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn',
                  'norm')
         module = TransformerDecoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
 
     # test invalid value of order
     with pytest.raises(AssertionError):
         order = ('norm', 'selfattn', 'unknown', 'multiheadattn', 'norm', 'ffn')
         module = TransformerDecoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
 
-    module = TransformerDecoderLayer(feat_channels, num_heads,
+    module = TransformerDecoderLayer(embed_dims, num_heads,
                                      feedforward_channels)
-    memory = torch.rand(num_key, batch_size, feat_channels)
+    memory = torch.rand(num_key, batch_size, embed_dims)
     assert not module.pre_norm
     out = module(query, memory)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set query_pos
-    query_pos = torch.rand(num_query, batch_size, feat_channels)
+    query_pos = torch.rand(num_query, batch_size, embed_dims)
     out = module(query, memory, memory_pos=None, query_pos=query_pos)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set memory_pos
-    memory_pos = torch.rand(num_key, batch_size, feat_channels)
+    memory_pos = torch.rand(num_key, batch_size, embed_dims)
     out = module(query, memory, memory_pos, query_pos)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set memory_key_padding_mask
     memory_key_padding_mask = torch.rand(batch_size, num_key) > 0.5
@@ -279,7 +279,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         memory_pos,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set target_key_padding_mask
     target_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
@@ -290,7 +290,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask,
         target_key_padding_mask=target_key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set memory_attn_mask
     memory_attn_mask = torch.rand(num_query, num_key)
@@ -302,19 +302,19 @@ def test_transformer_decoder_layer(feat_channels=256,
         memory_attn_mask,
         memory_key_padding_mask=memory_key_padding_mask,
         target_key_padding_mask=target_key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # set target_attn_mask
     target_attn_mask = torch.rand(num_query, num_query)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
                  target_attn_mask, memory_key_padding_mask,
                  target_key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     # pre_norm
     order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
     module = TransformerDecoderLayer(
-        feat_channels, num_heads, feedforward_channels, order=order)
+        embed_dims, num_heads, feedforward_channels, order=order)
     assert module.pre_norm
     out = module(
         query,
@@ -324,7 +324,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         memory_attn_mask,
         memory_key_padding_mask=memory_key_padding_mask,
         target_key_padding_mask=target_key_padding_mask)
-    assert out.shape == (num_query, batch_size, feat_channels)
+    assert out.shape == (num_query, batch_size, embed_dims)
 
     @patch('mmcv.cnn.bricks.TransformerDecoderLayer.forward',
            _decoder_layer_forward)
@@ -332,7 +332,7 @@ def test_transformer_decoder_layer(feat_channels=256,
     @patch('mmcv.cnn.bricks.MultiheadAttention.forward',
            _multihead_attention_forward)
     def test_order():
-        module = TransformerDecoderLayer(feat_channels, num_heads,
+        module = TransformerDecoderLayer(embed_dims, num_heads,
                                          feedforward_channels)
         out = module('input', 'memory')
         assert out == 'input_selfattn(residual=input)_norm0_multiheadattn' \
@@ -341,7 +341,7 @@ def test_transformer_decoder_layer(feat_channels=256,
         # pre_norm
         order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
         module = TransformerDecoderLayer(
-            feat_channels, num_heads, feedforward_channels, order=order)
+            embed_dims, num_heads, feedforward_channels, order=order)
         out = module('input', 'memory')
         assert out == 'input_norm0_selfattn(residual=input)_norm1_' \
             'multiheadattn(residual=selfattn)_norm2_ffn(residual=' \
@@ -351,71 +351,67 @@ def test_transformer_decoder_layer(feat_channels=256,
 
 
 def test_transformer_encoder(num_layers=4,
-                             feat_channels=256,
+                             embed_dims=256,
                              num_heads=8,
                              feedforward_channels=2048,
                              num_key=1000,
                              batch_size=2):
-    module = TransformerEncoder(num_layers, feat_channels, num_heads,
+    module = TransformerEncoder(num_layers, embed_dims, num_heads,
                                 feedforward_channels)
     assert not module.pre_norm
     assert module.norm is None
-    x = torch.rand(num_key, batch_size, feat_channels)
+    x = torch.rand(num_key, batch_size, embed_dims)
     out = module(x)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set pos
-    pos = torch.rand(num_key, batch_size, feat_channels)
+    pos = torch.rand(num_key, batch_size, embed_dims)
     out = module(x, pos)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set key_padding_mask
     key_padding_mask = torch.rand(batch_size, num_key) > 0.5
     out = module(x, pos, None, key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # set attn_mask
     attn_mask = torch.rand(num_key, num_key) > 0.5
     out = module(x, pos, attn_mask, key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
     # pre_norm
     order = ('norm', 'selfattn', 'norm', 'ffn')
     module = TransformerEncoder(
-        num_layers,
-        feat_channels,
-        num_heads,
-        feedforward_channels,
-        order=order)
+        num_layers, embed_dims, num_heads, feedforward_channels, order=order)
     assert module.pre_norm
     assert module.norm is not None
     out = module(x, pos, attn_mask, key_padding_mask)
-    assert out.shape == (num_key, batch_size, feat_channels)
+    assert out.shape == (num_key, batch_size, embed_dims)
 
 
 def test_transformer_decoder(num_layers=3,
-                             feat_channels=256,
+                             embed_dims=256,
                              num_heads=8,
                              feedforward_channels=2048,
                              num_key=1000,
                              num_query=100,
                              batch_size=2):
-    module = TransformerDecoder(num_layers, feat_channels, num_heads,
+    module = TransformerDecoder(num_layers, embed_dims, num_heads,
                                 feedforward_channels)
-    query = torch.rand(num_query, batch_size, feat_channels)
-    memory = torch.rand(num_key, batch_size, feat_channels)
+    query = torch.rand(num_query, batch_size, embed_dims)
+    memory = torch.rand(num_key, batch_size, embed_dims)
     out = module(query, memory)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set query_pos
-    query_pos = torch.rand(num_query, batch_size, feat_channels)
+    query_pos = torch.rand(num_query, batch_size, embed_dims)
     out = module(query, memory, query_pos=query_pos)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set memory_pos
-    memory_pos = torch.rand(num_key, batch_size, feat_channels)
+    memory_pos = torch.rand(num_key, batch_size, embed_dims)
     out = module(query, memory, memory_pos, query_pos)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set memory_key_padding_mask
     memory_key_padding_mask = torch.rand(batch_size, num_key) > 0.5
@@ -425,7 +421,7 @@ def test_transformer_decoder(num_layers=3,
         memory_pos,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set target_key_padding_mask
     target_key_padding_mask = torch.rand(batch_size, num_query) > 0.5
@@ -436,38 +432,34 @@ def test_transformer_decoder(num_layers=3,
         query_pos,
         memory_key_padding_mask=memory_key_padding_mask,
         target_key_padding_mask=target_key_padding_mask)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set memory_attn_mask
     memory_attn_mask = torch.rand(num_query, num_key) > 0.5
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask, None,
                  memory_key_padding_mask, target_key_padding_mask)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # set target_attn_mask
     target_attn_mask = torch.rand(num_query, num_query) > 0.5
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
                  target_attn_mask, memory_key_padding_mask,
                  target_key_padding_mask)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # pre_norm
     order = ('norm', 'selfattn', 'norm', 'multiheadattn', 'norm', 'ffn')
     module = TransformerDecoder(
-        num_layers,
-        feat_channels,
-        num_heads,
-        feedforward_channels,
-        order=order)
+        num_layers, embed_dims, num_heads, feedforward_channels, order=order)
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
                  target_attn_mask, memory_key_padding_mask,
                  target_key_padding_mask)
-    assert out.shape == (1, num_query, batch_size, feat_channels)
+    assert out.shape == (1, num_query, batch_size, embed_dims)
 
     # return_intermediate
     module = TransformerDecoder(
         num_layers,
-        feat_channels,
+        embed_dims,
         num_heads,
         feedforward_channels,
         order=order,
@@ -475,56 +467,51 @@ def test_transformer_decoder(num_layers=3,
     out = module(query, memory, memory_pos, query_pos, memory_attn_mask,
                  target_attn_mask, memory_key_padding_mask,
                  target_key_padding_mask)
-    assert out.shape == (num_layers, num_query, batch_size, feat_channels)
+    assert out.shape == (num_layers, num_query, batch_size, embed_dims)
 
 
 def test_transformer(num_enc_layers=2,
                      num_dec_layers=3,
-                     feat_channels=256,
+                     embed_dims=256,
                      num_heads=4,
                      num_query=100,
                      batch_size=2):
-    module = Transformer(feat_channels, num_heads, num_enc_layers,
-                         num_dec_layers)
+    module = Transformer(embed_dims, num_heads, num_enc_layers, num_dec_layers)
     height, width = 80, 60
-    x = torch.rand(batch_size, feat_channels, height, width)
+    x = torch.rand(batch_size, embed_dims, height, width)
     mask = torch.rand(batch_size, height, width) > 0.5
-    query_embed = torch.rand(num_query, feat_channels)
-    pos_embed = torch.rand(batch_size, feat_channels, height, width)
+    query_embed = torch.rand(num_query, embed_dims)
+    pos_embed = torch.rand(batch_size, embed_dims, height, width)
     hs, mem = module(x, mask, query_embed, pos_embed)
-    assert hs.shape == (1, batch_size, num_query, feat_channels)
-    assert mem.shape == (batch_size, feat_channels, height, width)
+    assert hs.shape == (1, batch_size, num_query, embed_dims)
+    assert mem.shape == (batch_size, embed_dims, height, width)
 
     # pre_norm
     module = Transformer(
-        feat_channels,
-        num_heads,
-        num_enc_layers,
-        num_dec_layers,
-        pre_norm=True)
+        embed_dims, num_heads, num_enc_layers, num_dec_layers, pre_norm=True)
     hs, mem = module(x, mask, query_embed, pos_embed)
-    assert hs.shape == (1, batch_size, num_query, feat_channels)
-    assert mem.shape == (batch_size, feat_channels, height, width)
+    assert hs.shape == (1, batch_size, num_query, embed_dims)
+    assert mem.shape == (batch_size, embed_dims, height, width)
 
     # return_intermediate
     module = Transformer(
-        feat_channels,
+        embed_dims,
         num_heads,
         num_enc_layers,
         num_dec_layers,
         return_intermediate_dec=True)
     hs, mem = module(x, mask, query_embed, pos_embed)
-    assert hs.shape == (num_dec_layers, batch_size, num_query, feat_channels)
-    assert mem.shape == (batch_size, feat_channels, height, width)
+    assert hs.shape == (num_dec_layers, batch_size, num_query, embed_dims)
+    assert mem.shape == (batch_size, embed_dims, height, width)
 
     # pre_norm and return_intermediate
     module = Transformer(
-        feat_channels,
+        embed_dims,
         num_heads,
         num_enc_layers,
         num_dec_layers,
         pre_norm=True,
         return_intermediate_dec=True)
     hs, mem = module(x, mask, query_embed, pos_embed)
-    assert hs.shape == (num_dec_layers, batch_size, num_query, feat_channels)
-    assert mem.shape == (batch_size, feat_channels, height, width)
+    assert hs.shape == (num_dec_layers, batch_size, num_query, embed_dims)
+    assert mem.shape == (batch_size, embed_dims, height, width)

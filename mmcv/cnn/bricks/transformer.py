@@ -13,20 +13,20 @@ class MultiheadAttention(nn.Module):
     This module implements MultiheadAttention with residual connection.
 
     Args:
-        feat_channels (int): The embedding dimension.
+        embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
         dropout (float): A Dropout layer on attn_output_weights. Default 0.0.
     """
 
-    def __init__(self, feat_channels, num_heads, dropout=0.0):
+    def __init__(self, embed_dims, num_heads, dropout=0.0):
         super(MultiheadAttention, self).__init__()
-        assert feat_channels % num_heads == 0, 'feat_channels must be ' \
-            f'divisible by num_heads. got {feat_channels} and {num_heads}.'
-        self.feat_channels = feat_channels
+        assert embed_dims % num_heads == 0, 'embed_dims must be ' \
+            f'divisible by num_heads. got {embed_dims} and {num_heads}.'
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.dropout = dropout
-        self.attn = nn.MultiheadAttention(feat_channels, num_heads, dropout)
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self,
@@ -42,9 +42,9 @@ class MultiheadAttention(nn.Module):
 
         Args:
             x (Tensor): The input query with shape [num_query,bs,
-                feat_channels]. Same in `nn.MultiheadAttention.forward`.
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
             key (Tensor): The key tensor with shape [num_key,bs,
-                feat_channels]. Same in `nn.MultiheadAttention.forward`.
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
                 Default None. If None, the `query` will be used.
             value (Tensor): The value tensor with same shape as `key`.
                 Same in `nn.MultiheadAttention.forward`. Default None.
@@ -94,7 +94,7 @@ class MultiheadAttention(nn.Module):
     def __repr__(self):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
-        repr_str += f'(feat_channels={self.feat_channels}, '
+        repr_str += f'(embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'dropout={self.dropout})'
         return repr_str
@@ -104,7 +104,7 @@ class FFN(nn.Module):
     """Implements feed-forward networks (FFNs) with residual connection.
 
     Args:
-        feat_channels (int): The feature dimension. Same as
+        embed_dims (int): The feature dimension. Same as
             `MultiheadAttention`.
         feedforward_channels (int): The hidden dimension of FFNs.
         num_fcs (int): The number of fully-connected layers in FFNs.
@@ -113,7 +113,7 @@ class FFN(nn.Module):
     """
 
     def __init__(self,
-                 feat_channels,
+                 embed_dims,
                  feedforward_channels,
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
@@ -121,7 +121,7 @@ class FFN(nn.Module):
         super(FFN, self).__init__()
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
@@ -129,14 +129,14 @@ class FFN(nn.Module):
         self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
-        in_channels = feat_channels
+        in_channels = embed_dims
         for _ in range(num_fcs - 1):
             layers.append(
                 nn.Sequential(
                     Linear(in_channels, feedforward_channels), self.activate,
                     nn.Dropout(dropout)))
             in_channels = feedforward_channels
-        layers.append(Linear(feedforward_channels, feat_channels))
+        layers.append(Linear(feedforward_channels, embed_dims))
         self.layers = nn.Sequential(*layers)
         self.dropout = nn.Dropout(dropout)
 
@@ -150,7 +150,7 @@ class FFN(nn.Module):
     def __repr__(self):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
-        repr_str += f'(feat_channels={self.feat_channels}, '
+        repr_str += f'(embed_dims={self.embed_dims}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
         repr_str += f'num_fcs={self.num_fcs}, '
         repr_str += f'act_cfg={self.act_cfg}, '
@@ -162,7 +162,7 @@ class TransformerEncoderLayer(nn.Module):
     """Implements one encoder layer in transformer.
 
     Args:
-        feat_channels (int): The feature dimension. Same as `FFN`.
+        embed_dims (int): The feature dimension. Same as `FFN`.
         num_heads (int): Parallel attention heads.
         feedforward_channels (int): The hidden dimension for FFNs.
         dropout (float): Probability of an element to be zeroed. Default 0.0.
@@ -177,7 +177,7 @@ class TransformerEncoderLayer(nn.Module):
     """
 
     def __init__(self,
-                 feat_channels,
+                 embed_dims,
                  num_heads,
                  feedforward_channels,
                  dropout=0.0,
@@ -188,7 +188,7 @@ class TransformerEncoderLayer(nn.Module):
         super(TransformerEncoderLayer, self).__init__()
         assert isinstance(order, tuple) and len(order) == 4
         assert set(order) == set(['selfattn', 'norm', 'ffn'])
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
         self.dropout = dropout
@@ -197,19 +197,19 @@ class TransformerEncoderLayer(nn.Module):
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
         self.pre_norm = order[0] == 'norm'
-        self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
-        self.ffn = FFN(feat_channels, feedforward_channels, num_fcs, act_cfg,
+        self.self_attn = MultiheadAttention(embed_dims, num_heads, dropout)
+        self.ffn = FFN(embed_dims, feedforward_channels, num_fcs, act_cfg,
                        dropout)
         self.norms = nn.ModuleList()
-        self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
-        self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
+        self.norms.append(build_norm_layer(norm_cfg, embed_dims)[1])
+        self.norms.append(build_norm_layer(norm_cfg, embed_dims)[1])
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
         """Forward function for `TransformerEncoderLayer`.
 
         Args:
             x (Tensor): The input query with shape [num_query,bs,
-                feat_channels]. Same in `MultiheadAttention.forward`.
+                embed_dims]. Same in `MultiheadAttention.forward`.
             pos (Tensor): The positional encoding for query. Default None.
                 Same as `query_pos` in `MultiheadAttention.forward`.
             attn_mask (Tensor): ByteTensor mask with shape [num_key,
@@ -246,7 +246,7 @@ class TransformerEncoderLayer(nn.Module):
     def __repr__(self):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
-        repr_str += f'(feat_channels={self.feat_channels}, '
+        repr_str += f'(embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
         repr_str += f'dropout={self.dropout}, '
@@ -261,7 +261,7 @@ class TransformerDecoderLayer(nn.Module):
     """Implements one decoder layer in transformer.
 
     Args:
-        feat_channels (int): The feature dimension. Same as
+        embed_dims (int): The feature dimension. Same as
             `TransformerEncoderLayer`.
         num_heads (int): Parallel attention heads.
         feedforward_channels (int): Same as `TransformerEncoderLayer`.
@@ -277,7 +277,7 @@ class TransformerDecoderLayer(nn.Module):
     """
 
     def __init__(self,
-                 feat_channels,
+                 embed_dims,
                  num_heads,
                  feedforward_channels,
                  dropout=0.0,
@@ -289,7 +289,7 @@ class TransformerDecoderLayer(nn.Module):
         super(TransformerDecoderLayer, self).__init__()
         assert isinstance(order, tuple) and len(order) == 6
         assert set(order) == set(['selfattn', 'norm', 'multiheadattn', 'ffn'])
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
         self.dropout = dropout
@@ -298,15 +298,15 @@ class TransformerDecoderLayer(nn.Module):
         self.norm_cfg = norm_cfg
         self.num_fcs = num_fcs
         self.pre_norm = order[0] == 'norm'
-        self.self_attn = MultiheadAttention(feat_channels, num_heads, dropout)
-        self.multihead_attn = MultiheadAttention(feat_channels, num_heads,
+        self.self_attn = MultiheadAttention(embed_dims, num_heads, dropout)
+        self.multihead_attn = MultiheadAttention(embed_dims, num_heads,
                                                  dropout)
-        self.ffn = FFN(feat_channels, feedforward_channels, num_fcs, act_cfg,
+        self.ffn = FFN(embed_dims, feedforward_channels, num_fcs, act_cfg,
                        dropout)
         self.norms = nn.ModuleList()
         # 3 norm layers in official DETR's TransformerDecoderLayer
         for _ in range(3):
-            self.norms.append(build_norm_layer(norm_cfg, feat_channels)[1])
+            self.norms.append(build_norm_layer(norm_cfg, embed_dims)[1])
 
     def forward(self,
                 x,
@@ -320,9 +320,9 @@ class TransformerDecoderLayer(nn.Module):
         """Forward function for `TransformerDecoderLayer`.
 
         Args:
-            x (Tensor): Input query with shape [num_query,bs,feat_channels].
+            x (Tensor): Input query with shape [num_query,bs,embed_dims].
             memory (Tensor): Tensor got from `TransformerEncoder`, with shape
-                [num_key,bs,feat_channels].
+                [num_key,bs,embed_dims].
             memory_pos (Tensor): The positional encoding for `memory`. Default
                 None. Same as `key_pos` in `MultiheadAttention.forward`.
             query_pos (Tensor): The positional encoding for `query`. Default
@@ -381,7 +381,7 @@ class TransformerDecoderLayer(nn.Module):
     def __repr__(self):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
-        repr_str += f'(feat_channels={self.feat_channels}, '
+        repr_str += f'(embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
         repr_str += f'dropout={self.dropout}, '
@@ -397,7 +397,7 @@ class TransformerEncoder(nn.Module):
 
     Args:
         num_layers (int): The number of `TransformerEncoderLayer`.
-        feat_channels (int): Same as `TransformerEncoderLayer`.
+        embed_dims (int): Same as `TransformerEncoderLayer`.
         num_heads (int): Same as `TransformerEncoderLayer`.
         feedforward_channels (int): Same as `TransformerEncoderLayer`.
         dropout (float): Same as `TransformerEncoderLayer`. Default 0.0.
@@ -410,7 +410,7 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self,
                  num_layers,
-                 feat_channels,
+                 embed_dims,
                  num_heads,
                  feedforward_channels,
                  dropout=0.0,
@@ -422,7 +422,7 @@ class TransformerEncoder(nn.Module):
         assert isinstance(order, tuple) and len(order) == 4
         assert set(order) == set(['selfattn', 'norm', 'ffn'])
         self.num_layers = num_layers
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
         self.dropout = dropout
@@ -434,11 +434,11 @@ class TransformerEncoder(nn.Module):
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
             self.layers.append(
-                TransformerEncoderLayer(feat_channels, num_heads,
+                TransformerEncoderLayer(embed_dims, num_heads,
                                         feedforward_channels, dropout, order,
                                         act_cfg, norm_cfg, num_fcs))
-        self.norm = build_norm_layer(
-            norm_cfg, feat_channels)[1] if self.pre_norm else None
+        self.norm = build_norm_layer(norm_cfg,
+                                     embed_dims)[1] if self.pre_norm else None
 
     def forward(self, x, pos=None, attn_mask=None, key_padding_mask=None):
         """Forward function for `TransformerEncoder`.
@@ -465,7 +465,7 @@ class TransformerEncoder(nn.Module):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(num_layers={self.num_layers}, '
-        repr_str += f'feat_channels={self.feat_channels}, '
+        repr_str += f'embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
         repr_str += f'dropout={self.dropout}, '
@@ -481,7 +481,7 @@ class TransformerDecoder(nn.Module):
 
     Args:
         num_layers (int): The number of `TransformerDecoderLayer`.
-        feat_channels (int): Same as `TransformerDecoderLayer`.
+        embed_dims (int): Same as `TransformerDecoderLayer`.
         num_heads (int): Same as `TransformerDecoderLayer`.
         feedforward_channels (int): Same as `TransformerDecoderLayer`.
         dropout (float): Same as `TransformerDecoderLayer`. Default 0.0.
@@ -494,7 +494,7 @@ class TransformerDecoder(nn.Module):
 
     def __init__(self,
                  num_layers,
-                 feat_channels,
+                 embed_dims,
                  num_heads,
                  feedforward_channels,
                  dropout=0.0,
@@ -508,7 +508,7 @@ class TransformerDecoder(nn.Module):
         assert isinstance(order, tuple) and len(order) == 6
         assert set(order) == set(['selfattn', 'norm', 'multiheadattn', 'ffn'])
         self.num_layers = num_layers
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.feedforward_channels = feedforward_channels
         self.dropout = dropout
@@ -520,10 +520,10 @@ class TransformerDecoder(nn.Module):
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
             self.layers.append(
-                TransformerDecoderLayer(feat_channels, num_heads,
+                TransformerDecoderLayer(embed_dims, num_heads,
                                         feedforward_channels, dropout, order,
                                         act_cfg, norm_cfg, num_fcs))
-        self.norm = build_norm_layer(norm_cfg, feat_channels)[1]
+        self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
 
     def forward(self,
                 x,
@@ -575,7 +575,7 @@ class TransformerDecoder(nn.Module):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
         repr_str += f'(num_layers={self.num_layers}, '
-        repr_str += f'feat_channels={self.feat_channels}, '
+        repr_str += f'embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'feedforward_channels={self.feedforward_channels}, '
         repr_str += f'dropout={self.dropout}, '
@@ -594,7 +594,7 @@ class Transformer(nn.Module):
     (https://arxiv.org/pdf/2005.12872) for details.
 
     Args:
-        feat_channels (int): The feature dimension.
+        embed_dims (int): The feature dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
         num_encoder_layers (int): Number of `TransformerEncoderLayer`.
@@ -613,13 +613,13 @@ class Transformer(nn.Module):
         return_intermediate_dec (bool): Whether to return the intermediate
             output from each TransformerDecoderLayer or only the last
             TransformerDecoderLayer. Default False. If False, the returned
-            `hs` has shape [num_decoder_layers, bs, num_query, feat_channels].
+            `hs` has shape [num_decoder_layers, bs, num_query, embed_dims].
             If True, the returned `hs` will have shape [1, bs, num_query,
-            feat_channels].
+            embed_dims].
     """
 
     def __init__(self,
-                 feat_channels=512,
+                 embed_dims=512,
                  num_heads=8,
                  num_encoder_layers=6,
                  num_decoder_layers=6,
@@ -631,7 +631,7 @@ class Transformer(nn.Module):
                  pre_norm=False,
                  return_intermediate_dec=False):
         super(Transformer, self).__init__()
-        self.feat_channels = feat_channels
+        self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.num_encoder_layers = num_encoder_layers
         self.num_decoder_layers = num_decoder_layers
@@ -650,11 +650,11 @@ class Transformer(nn.Module):
             encoder_order = ('selfattn', 'norm', 'ffn', 'norm')
             decoder_order = ('selfattn', 'norm', 'multiheadattn', 'norm',
                              'ffn', 'norm')
-        self.encoder = TransformerEncoder(num_encoder_layers, feat_channels,
+        self.encoder = TransformerEncoder(num_encoder_layers, embed_dims,
                                           num_heads, feedforward_channels,
                                           dropout, encoder_order, act_cfg,
                                           norm_cfg, num_fcs)
-        self.decoder = TransformerDecoder(num_decoder_layers, feat_channels,
+        self.decoder = TransformerDecoder(num_decoder_layers, embed_dims,
                                           num_heads, feedforward_channels,
                                           dropout, decoder_order, act_cfg,
                                           norm_cfg, num_fcs,
@@ -672,7 +672,7 @@ class Transformer(nn.Module):
 
         Args:
             x (Tensor): Input query with shape [bs,c,h,w] where
-                c=feat_channels.
+                c=embed_dims.
             mask (Tensor): The key_padding_mask used for encoder and decoder,
                 with shape [bs,h,w].
             query_embed (Tensor): The query embedding for decoder, with shape
@@ -707,7 +707,7 @@ class Transformer(nn.Module):
     def __repr__(self):
         """str: a string that describes the module"""
         repr_str = self.__class__.__name__
-        repr_str += f'(feat_channels={self.feat_channels}, '
+        repr_str += f'(embed_dims={self.embed_dims}, '
         repr_str += f'num_heads={self.num_heads}, '
         repr_str += f'num_encoder_layers={self.num_encoder_layers}, '
         repr_str += f'num_decoder_layers={self.num_decoder_layers}, '
