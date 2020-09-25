@@ -4,6 +4,7 @@ import torch
 from torch.nn import GroupNorm, LayerNorm
 
 from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
+from mmcv.utils.ext_loader import check_ops_exist
 from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
 
@@ -46,7 +47,7 @@ class DefaultOptimizerConstructor:
     Note:
         1. If the option ``dcn_offset_lr_mult`` is used, the constructor will
             override the effect of ``bias_lr_mult`` in the bias of offset
-            layer. So be careful when use both ``bias_lr_mult`` and
+            layer. So be careful when using both ``bias_lr_mult`` and
             ``dcn_offset_lr_mult``. If you wish to apply both of them to the
             offset layer in deformable convs, set ``dcn_offset_lr_mult``
             to the original ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
@@ -132,7 +133,7 @@ class DefaultOptimizerConstructor:
 
         return not param.isdisjoint(param_set)
 
-    def add_params(self, params, module, prefix='', is_dcn_submodule=None):
+    def add_params(self, params, module, prefix='', is_dcn_module=None):
         """Add all parameters of module to the params list.
 
         The parameters of the given module will be added to the list of param
@@ -143,8 +144,8 @@ class DefaultOptimizerConstructor:
                 in place.
             module (nn.Module): The module to be added.
             prefix (str): The prefix of the module
-            is_dcn_submodule (int|float|None): If the current module is a
-                submodule of DCN, `is_dcn_submodule` will be passed to
+            is_dcn_module (int|float|None): If the current module is a
+                submodule of DCN, `is_dcn_module` will be passed to
                 control conv_offset layer's learning rate. Defaults to None.
         """
         # get param-wise options
@@ -190,10 +191,10 @@ class DefaultOptimizerConstructor:
             if not is_custom:
                 # bias_lr_mult affects all bias parameters
                 # except for norm.bias dcn.conv_offset.bias
-                if name == 'bias' and not (is_norm or is_dcn_submodule):
+                if name == 'bias' and not (is_norm or is_dcn_module):
                     param_group['lr'] = self.base_lr * bias_lr_mult
 
-                if (prefix.find('conv_offset') != -1 and is_dcn_submodule
+                if (prefix.find('conv_offset') != -1 and is_dcn_module
                         and isinstance(module, torch.nn.Conv2d)):
                     # deal with both dcn_offset's bias & weight
                     param_group['lr'] = self.base_lr * dcn_offset_lr_mult
@@ -209,22 +210,25 @@ class DefaultOptimizerConstructor:
                         param_group[
                             'weight_decay'] = self.base_wd * dwconv_decay_mult
                     # bias lr and decay
-                    elif name == 'bias' and not is_dcn_submodule:
+                    elif name == 'bias' and not is_dcn_module:
                         # TODO: current bias_decay_mult will have affect on DCN
                         param_group[
                             'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
-        from mmcv.ops import DeformConv2d, ModulatedDeformConv2d
-        is_dcn_submodule = isinstance(module,
-                                      (DeformConv2d, ModulatedDeformConv2d))
+        if check_ops_exist():
+            from mmcv.ops import DeformConv2d, ModulatedDeformConv2d
+            is_dcn_module = isinstance(module,
+                                       (DeformConv2d, ModulatedDeformConv2d))
+        else:
+            is_dcn_module = False
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
             self.add_params(
                 params,
                 child_mod,
                 prefix=child_prefix,
-                is_dcn_submodule=is_dcn_submodule)
+                is_dcn_module=is_dcn_module)
 
     def __call__(self, model):
         if hasattr(model, 'module'):
