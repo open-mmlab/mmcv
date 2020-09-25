@@ -10,7 +10,8 @@ from .wrappers import Linear
 class MultiheadAttention(nn.Module):
     """A warpper for torch.nn.MultiheadAttention.
 
-    This module implements MultiheadAttention with residual connection.
+    This module implements MultiheadAttention with residual connection,
+    and positional encoding used in DETR is also passed as input.
 
     Args:
         embed_dims (int): The embedding dimension.
@@ -159,7 +160,7 @@ class FFN(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
-    """Implements one encoder layer in transformer.
+    """Implements one encoder layer in DETR transformer.
 
     Args:
         embed_dims (int): The feature dimension. Same as `FFN`.
@@ -258,7 +259,7 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerDecoderLayer(nn.Module):
-    """Implements one decoder layer in transformer.
+    """Implements one decoder layer in DETR transformer.
 
     Args:
         embed_dims (int): The feature dimension. Same as
@@ -393,7 +394,7 @@ class TransformerDecoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    """Implements the encoder in transformer.
+    """Implements the encoder in DETR transformer.
 
     Args:
         num_layers (int): The number of `TransformerEncoderLayer`.
@@ -477,7 +478,7 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerDecoder(nn.Module):
-    """Implements the decoder in transformer.
+    """Implements the decoder in DETR transformer.
 
     Args:
         num_layers (int): The number of `TransformerDecoderLayer`.
@@ -590,6 +591,12 @@ class TransformerDecoder(nn.Module):
 class Transformer(nn.Module):
     """Implements the DETR transformer.
 
+    Following the official DETR implementation, this module copy-paste
+    from torch.nn.Transformer with modifications:
+        * positional encodings are passed in MultiheadAttention
+        * extra LN at the end of encoder is removed
+        * decoder returns a stack of activations from all decoding layers
+
     See 'End-to-End Object Detection with Transformers'
     (https://arxiv.org/pdf/2005.12872) for details.
 
@@ -688,7 +695,7 @@ class Transformer(nn.Module):
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
         query_embed = query_embed.unsqueeze(1).repeat(
             1, bs, 1)  # [num_query,dim] -> [num_query,bs,dim]
-        mask = mask.flatten(1)  # [bs,h,w] -> [bs, h*w]
+        mask = mask.flatten(1)  # [bs,h,w] -> [bs,h*w]
         memory = self.encoder(
             x, pos=pos_embed, attn_mask=None, key_padding_mask=mask)
         target = torch.zeros_like(query_embed)
