@@ -1,4 +1,6 @@
+import sys
 import warnings
+from unittest.mock import MagicMock
 
 import pytest
 import torch
@@ -7,6 +9,12 @@ import torch.nn as nn
 from mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
 from mmcv.runner.optimizer import build_optimizer, build_optimizer_constructor
 from mmcv.runner.optimizer.builder import TORCH_OPTIMIZERS
+from mmcv.utils.ext_loader import check_ops_exist
+
+OPS_AVAILABLE = check_ops_exist()
+if not OPS_AVAILABLE:
+    sys.modules['mmcv.ops'] = MagicMock(
+        DeformConv2d=dict, ModulatedDeformConv2d=dict)
 
 
 class SubModel(nn.Module):
@@ -30,6 +38,10 @@ class ExampleModel(nn.Module):
         self.conv2 = nn.Conv2d(4, 2, kernel_size=1)
         self.bn = nn.BatchNorm2d(2)
         self.sub = SubModel()
+        if OPS_AVAILABLE:
+            from mmcv.ops import DeformConv2dPack
+            self.dcn = DeformConv2dPack(
+                3, 4, kernel_size=3, deformable_groups=1)
 
     def forward(self, x):
         return x
@@ -46,6 +58,10 @@ class ExampleDuplicateModel(nn.Module):
         self.sub = SubModel()
         self.conv3 = nn.Sequential(nn.Conv2d(3, 4, kernel_size=1, bias=False))
         self.conv3[0] = self.conv1[0]
+        if OPS_AVAILABLE:
+            from mmcv.ops import DeformConv2dPack
+            self.dcn = DeformConv2dPack(
+                3, 4, kernel_size=3, deformable_groups=1)
 
     def forward(self, x):
         return x
@@ -72,11 +88,19 @@ def check_default_optimizer(optimizer, model, prefix=''):
     assert optimizer.defaults['momentum'] == momentum
     assert optimizer.defaults['weight_decay'] == base_wd
     param_groups = optimizer.param_groups[0]
-    param_names = [
-        'param1', 'conv1.weight', 'conv2.weight', 'conv2.bias', 'bn.weight',
-        'bn.bias', 'sub.param1', 'sub.conv1.weight', 'sub.conv1.bias',
-        'sub.gn.weight', 'sub.gn.bias'
-    ]
+    if OPS_AVAILABLE:
+        param_names = [
+            'param1', 'conv1.weight', 'conv2.weight', 'conv2.bias',
+            'bn.weight', 'bn.bias', 'sub.param1', 'sub.conv1.weight',
+            'sub.conv1.bias', 'sub.gn.weight', 'sub.gn.bias', 'dcn.weight',
+            'dcn.conv_offset.weight', 'dcn.conv_offset.bias'
+        ]
+    else:
+        param_names = [
+            'param1', 'conv1.weight', 'conv2.weight', 'conv2.bias',
+            'bn.weight', 'bn.bias', 'sub.param1', 'sub.conv1.weight',
+            'sub.conv1.bias', 'sub.gn.weight', 'sub.gn.bias'
+        ]
     param_dict = dict(model.named_parameters())
     assert len(param_groups['params']) == len(param_names)
     for i in range(len(param_groups['params'])):
@@ -84,14 +108,15 @@ def check_default_optimizer(optimizer, model, prefix=''):
                            param_dict[prefix + param_names[i]])
 
 
-def check_optimizer(optimizer,
-                    model,
-                    prefix='',
-                    bias_lr_mult=1,
-                    bias_decay_mult=1,
-                    norm_decay_mult=1,
-                    dwconv_decay_mult=1,
-                    bypass_duplicate=False):
+def check_sgd_optimizer(optimizer,
+                        model,
+                        prefix='',
+                        bias_lr_mult=1,
+                        bias_decay_mult=1,
+                        norm_decay_mult=1,
+                        dwconv_decay_mult=1,
+                        dcn_offset_lr_mult=1,
+                        bypass_duplicate=False):
     param_groups = optimizer.param_groups
     assert isinstance(optimizer, torch.optim.SGD)
     assert optimizer.defaults['lr'] == base_lr
@@ -103,6 +128,7 @@ def check_optimizer(optimizer,
         param_group = param_groups[i]
         assert torch.equal(param_group['params'][0], param)
         assert param_group['momentum'] == momentum
+
     # param1
     param1 = param_groups[0]
     assert param1['lr'] == base_lr
@@ -147,6 +173,19 @@ def check_optimizer(optimizer,
     sub_gn_bias = param_groups[10]
     assert sub_gn_bias['lr'] == base_lr
     assert sub_gn_bias['weight_decay'] == base_wd * norm_decay_mult
+
+    if torch.cuda.is_available():
+        dcn_conv_weight = param_groups[11]
+        assert dcn_conv_weight['lr'] == base_lr
+        assert dcn_conv_weight['weight_decay'] == base_wd
+
+        dcn_offset_weight = param_groups[12]
+        assert dcn_offset_weight['lr'] == base_lr * dcn_offset_lr_mult
+        assert dcn_offset_weight['weight_decay'] == base_wd
+
+        dcn_offset_bias = param_groups[13]
+        assert dcn_offset_bias['lr'] == base_lr * dcn_offset_lr_mult
+        assert dcn_offset_bias['weight_decay'] == base_wd
 
 
 def test_default_optimizer_constructor():
@@ -229,11 +268,12 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1)
+        dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    check_sgd_optimizer(optimizer, model, **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel, weight decay is None
     model = ExampleModel()
@@ -274,6 +314,14 @@ def test_default_optimizer_constructor():
     # sub.gn.bias
     assert param_groups[10]['lr'] == base_lr
 
+    if OPS_AVAILABLE:
+        # dcn.weight
+        assert param_groups[11]['lr'] == base_lr
+        # dcn.conv_offset.weight
+        assert param_groups[12]['lr'] == base_lr
+        # dcn.conv_offset.bias
+        assert param_groups[13]['lr'] == base_lr
+
     # paramwise_cfg with pseudo data parallel
     model = PseudoDataParallel()
     optimizer_cfg = dict(
@@ -282,11 +330,12 @@ def test_default_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1)
+        dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, prefix='module.', **paramwise_cfg)
+    check_sgd_optimizer(optimizer, model, prefix='module.', **paramwise_cfg)
 
     # paramwise_cfg with DataParallel
     if torch.cuda.is_available():
@@ -297,11 +346,13 @@ def test_default_optimizer_constructor():
             bias_lr_mult=2,
             bias_decay_mult=0.5,
             norm_decay_mult=0,
-            dwconv_decay_mult=0.1)
+            dwconv_decay_mult=0.1,
+            dcn_offset_lr_mult=0.1)
         optim_constructor = DefaultOptimizerConstructor(
             optimizer_cfg, paramwise_cfg)
         optimizer = optim_constructor(model)
-        check_optimizer(optimizer, model, prefix='module.', **paramwise_cfg)
+        check_sgd_optimizer(
+            optimizer, model, prefix='module.', **paramwise_cfg)
 
     # paramwise_cfg with ExampleModel and no grad
     for param in model.parameters():
@@ -342,6 +393,7 @@ def test_default_optimizer_constructor():
         bias_decay_mult=0.5,
         norm_decay_mult=0,
         dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1,
         bypass_duplicate=True)
     optim_constructor = DefaultOptimizerConstructor(optimizer_cfg,
                                                     paramwise_cfg)
@@ -352,8 +404,9 @@ def test_default_optimizer_constructor():
         assert str(w[0].message) == 'conv3.0 is duplicate. It is skipped ' \
                                     'since bypass_duplicate=True'
     model_parameters = list(model.parameters())
-    assert len(optimizer.param_groups) == len(model_parameters) == 11
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    num_params = 14 if OPS_AVAILABLE else 11
+    assert len(optimizer.param_groups) == len(model_parameters) == num_params
+    check_sgd_optimizer(optimizer, model, **paramwise_cfg)
 
     # test DefaultOptimizerConstructor with custom_keys and ExampleModel
     model = ExampleModel()
@@ -435,7 +488,8 @@ def test_default_optimizer_constructor():
         'weight_decay': base_wd
     })
 
-    assert len(param_groups) == 11
+    num_params = 14 if OPS_AVAILABLE else 11
+    assert len(param_groups) == num_params
     for i, (name, param) in enumerate(model.named_parameters()):
         assert torch.equal(param_groups[i]['params'][0], param)
         for group, settings in zip(groups, group_settings):
@@ -481,7 +535,8 @@ def test_default_optimizer_constructor():
         'weight_decay': 0
     })
 
-    assert len(param_groups) == 11
+    num_params = 14 if OPS_AVAILABLE else 11
+    assert len(param_groups) == num_params
     for i, (name, param) in enumerate(model.named_parameters()):
         assert torch.equal(param_groups[i]['params'][0], param)
         for group, settings in zip(groups, group_settings):
@@ -507,14 +562,15 @@ def test_build_optimizer_constructor():
         bias_lr_mult=2,
         bias_decay_mult=0.5,
         norm_decay_mult=0,
-        dwconv_decay_mult=0.1)
+        dwconv_decay_mult=0.1,
+        dcn_offset_lr_mult=0.1)
     optim_constructor_cfg = dict(
         type='DefaultOptimizerConstructor',
         optimizer_cfg=optimizer_cfg,
         paramwise_cfg=paramwise_cfg)
     optim_constructor = build_optimizer_constructor(optim_constructor_cfg)
     optimizer = optim_constructor(model)
-    check_optimizer(optimizer, model, **paramwise_cfg)
+    check_sgd_optimizer(optimizer, model, **paramwise_cfg)
 
     from mmcv.runner import OPTIMIZERS
     from mmcv.utils import build_from_cfg
@@ -577,6 +633,7 @@ def test_build_optimizer():
             bias_lr_mult=2,
             bias_decay_mult=0.5,
             norm_decay_mult=0,
-            dwconv_decay_mult=0.1))
+            dwconv_decay_mult=0.1,
+            dcn_offset_lr_mult=0.1))
     optimizer = build_optimizer(model, optimizer_cfg)
-    check_optimizer(optimizer, model, **optimizer_cfg['paramwise_cfg'])
+    check_sgd_optimizer(optimizer, model, **optimizer_cfg['paramwise_cfg'])

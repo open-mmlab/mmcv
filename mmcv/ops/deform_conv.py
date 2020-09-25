@@ -186,6 +186,8 @@ class DeformConv2d(nn.Module):
                  bias=False):
         super(DeformConv2d, self).__init__()
 
+        assert not bias, \
+            f'bias={bias} is not supported in DeformConv2d.'
         assert in_channels % groups == 0, \
             f'in_channels {in_channels} cannot be divisible by groups {groups}'
         assert out_channels % groups == 0, \
@@ -267,7 +269,6 @@ class DeformConv2dPack(DeformConv2d):
 
     def __init__(self, *args, **kwargs):
         super(DeformConv2dPack, self).__init__(*args, **kwargs)
-
         self.conv_offset = nn.Conv2d(
             self.in_channels,
             self.deform_groups * 2 * self.kernel_size[0] * self.kernel_size[1],

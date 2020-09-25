@@ -1,5 +1,6 @@
 import importlib
 import os
+import pkgutil
 from collections import namedtuple
 
 import torch
@@ -25,3 +26,8 @@ else:
                 ext_list.append(
                     extension.load(fun, name, lib_dir=lib_root).op_)
         return ExtModule(*ext_list)
+
+
+def check_ops_exist():
+    ext_loader = pkgutil.find_loader('mmcv._ext')
+    return ext_loader is not None

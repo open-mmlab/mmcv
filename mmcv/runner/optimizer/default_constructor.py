@@ -4,6 +4,7 @@ import torch
 from torch.nn import GroupNorm, LayerNorm
 
 from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
+from mmcv.utils.ext_loader import check_ops_exist
 from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
 
@@ -27,18 +28,33 @@ class DefaultOptimizerConstructor:
       and ``decay_mult``. See Example 2 below.
     - ``bias_lr_mult`` (float): It will be multiplied to the learning
       rate for all bias parameters (except for those in normalization
-      layers).
+      layers and offset layers of DCN).
     - ``bias_decay_mult`` (float): It will be multiplied to the weight
       decay for all bias parameters (except for those in
-      normalization layers and depthwise conv layers).
+      normalization layers, depthwise conv layers, offset layers of DCN).
     - ``norm_decay_mult`` (float): It will be multiplied to the weight
       decay for all weight and bias parameters of normalization
       layers.
     - ``dwconv_decay_mult`` (float): It will be multiplied to the weight
       decay for all weight and bias parameters of depthwise conv
       layers.
+    - ``dcn_offset_lr_mult`` (float): It will be multiplied to the learning
+      rate for parameters of offset layer in the deformable convs
+      of a model.
     - ``bypass_duplicate`` (bool): If true, the duplicate parameters
       would not be added into optimizer. Default: False.
+
+    Note:
+        1. If the option ``dcn_offset_lr_mult`` is used, the constructor will
+            override the effect of ``bias_lr_mult`` in the bias of offset
+            layer. So be careful when using both ``bias_lr_mult`` and
+            ``dcn_offset_lr_mult``. If you wish to apply both of them to the
+            offset layer in deformable convs, set ``dcn_offset_lr_mult``
+            to the original ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
+        2. If the option ``dcn_offset_lr_mult`` is used, the construtor will
+            apply it to all the DCN layers in the model. So be carefull when
+            the model contains multiple DCN layers in places other than
+            backbone.
 
     Args:
         model (:obj:`nn.Module`): The model with parameters to be optimized.
@@ -117,7 +133,7 @@ class DefaultOptimizerConstructor:
 
         return not param.isdisjoint(param_set)
 
-    def add_params(self, params, module, prefix=''):
+    def add_params(self, params, module, prefix='', is_dcn_module=None):
         """Add all parameters of module to the params list.
 
         The parameters of the given module will be added to the list of param
@@ -128,6 +144,9 @@ class DefaultOptimizerConstructor:
                 in place.
             module (nn.Module): The module to be added.
             prefix (str): The prefix of the module
+            is_dcn_module (int|float|None): If the current module is a
+                submodule of DCN, `is_dcn_module` will be passed to
+                control conv_offset layer's learning rate. Defaults to None.
         """
         # get param-wise options
         custom_keys = self.paramwise_cfg.get('custom_keys', {})
@@ -139,6 +158,7 @@ class DefaultOptimizerConstructor:
         norm_decay_mult = self.paramwise_cfg.get('norm_decay_mult', 1.)
         dwconv_decay_mult = self.paramwise_cfg.get('dwconv_decay_mult', 1.)
         bypass_duplicate = self.paramwise_cfg.get('bypass_duplicate', False)
+        dcn_offset_lr_mult = self.paramwise_cfg.get('dcn_offset_lr_mult', 1.)
 
         # special rules for norm layers and depth-wise conv layers
         is_norm = isinstance(module,
@@ -167,10 +187,18 @@ class DefaultOptimizerConstructor:
                         decay_mult = custom_keys[key].get('decay_mult', 1.)
                         param_group['weight_decay'] = self.base_wd * decay_mult
                     break
+
             if not is_custom:
-                # bias_lr_mult affects all bias parameters except for norm.bias
-                if name == 'bias' and not is_norm:
+                # bias_lr_mult affects all bias parameters
+                # except for norm.bias dcn.conv_offset.bias
+                if name == 'bias' and not (is_norm or is_dcn_module):
                     param_group['lr'] = self.base_lr * bias_lr_mult
+
+                if (prefix.find('conv_offset') != -1 and is_dcn_module
+                        and isinstance(module, torch.nn.Conv2d)):
+                    # deal with both dcn_offset's bias & weight
+                    param_group['lr'] = self.base_lr * dcn_offset_lr_mult
+
                 # apply weight decay policies
                 if self.base_wd is not None:
                     # norm decay
@@ -182,14 +210,25 @@ class DefaultOptimizerConstructor:
                         param_group[
                             'weight_decay'] = self.base_wd * dwconv_decay_mult
                     # bias lr and decay
-                    elif name == 'bias':
+                    elif name == 'bias' and not is_dcn_module:
+                        # TODO: current bias_decay_mult will have affect on DCN
                         param_group[
                             'weight_decay'] = self.base_wd * bias_decay_mult
             params.append(param_group)
 
+        if check_ops_exist():
+            from mmcv.ops import DeformConv2d, ModulatedDeformConv2d
+            is_dcn_module = isinstance(module,
+                                       (DeformConv2d, ModulatedDeformConv2d))
+        else:
+            is_dcn_module = False
         for child_name, child_mod in module.named_children():
             child_prefix = f'{prefix}.{child_name}' if prefix else child_name
-            self.add_params(params, child_mod, prefix=child_prefix)
+            self.add_params(
+                params,
+                child_mod,
+                prefix=child_prefix,
+                is_dcn_module=is_dcn_module)
 
     def __call__(self, model):
         if hasattr(model, 'module'):
