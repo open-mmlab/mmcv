@@ -15,7 +15,8 @@ class MlflowLoggerHook(LoggerHook):
                  log_model=True,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True):
+                 reset_flag=True,
+                 by_epoch=True):
         """Class to log metrics and (optionally) a trained model to MLflow.
 
         It requires `MLflow`_ to be installed.
@@ -33,12 +34,17 @@ class MlflowLoggerHook(LoggerHook):
                 Default True.
                 If True, log runner.model as an MLflow artifact
                 for the current run.
+            interval (int): Logging interval (every k iterations).
+            ignore_last (bool): Ignore the log of last iterations in each epoch
+                if less than `interval`.
+            reset_flag (bool): Whether to clear the output buffer after logging
+            by_epoch (bool): Whether EpochBasedRunner is used.
 
         .. _MLflow:
             https://www.mlflow.org/docs/latest/index.html
         """
         super(MlflowLoggerHook, self).__init__(interval, ignore_last,
-                                               reset_flag)
+                                               reset_flag, by_epoch)
         self.import_mlflow()
         self.exp_name = exp_name
         self.tags = tags
