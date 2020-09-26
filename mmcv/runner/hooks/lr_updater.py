@@ -308,7 +308,7 @@ def get_position_from_periods(iteration, cumulative_periods):
     For example, the cumulative_periods = [100, 200, 300, 400],
     if iteration == 50, return 0;
     if iteration == 210, return 2;
-    if iteration == 300, return 2.
+    if iteration == 300, return 3.
 
     Args:
         iteration (int): Current iteration.
