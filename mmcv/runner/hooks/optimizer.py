@@ -113,7 +113,11 @@ class Fp16OptimizerHook(OptimizerHook):
             if param.grad is not None:
                 param.grad.div_(self.loss_scale)
         if self.grad_clip is not None:
-            self.clip_grads(fp32_weights)
+            grad_norm = self.clip_grads(fp32_weights)
+            if grad_norm is not None:
+                # Add grad norm to the logger
+                runner.log_buffer.update({'grad_norm': float(grad_norm)},
+                                         runner.outputs['num_samples'])
         # update fp32 params
         runner.optimizer.step()
         # copy fp32 params to the fp16 model
