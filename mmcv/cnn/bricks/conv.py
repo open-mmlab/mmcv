@@ -6,7 +6,7 @@ CONV_LAYERS.register_module('Conv1d', module=nn.Conv1d)
 CONV_LAYERS.register_module('Conv2d', module=nn.Conv2d)
 CONV_LAYERS.register_module('Conv3d', module=nn.Conv3d)
 CONV_LAYERS.register_module('Conv', module=nn.Conv2d)
-CONV_LAYERS.register_module('ConvTranspose2d', module=nn.ConvTranspose2d)
+CONV_LAYERS.register_module('deconv', module=nn.ConvTranspose2d)
 
 
 def build_conv_layer(cfg, *args, **kwargs):

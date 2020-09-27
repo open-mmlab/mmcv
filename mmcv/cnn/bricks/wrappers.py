@@ -47,6 +47,7 @@ class Conv2d(nn.Conv2d):
         return super().forward(x)
 
 
+@CONV_LAYERS.register_module('deconv', force=True)
 @UPSAMPLE_LAYERS.register_module('deconv', force=True)
 class ConvTranspose2d(nn.ConvTranspose2d):
 
