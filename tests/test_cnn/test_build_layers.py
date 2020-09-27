@@ -49,6 +49,15 @@ def test_build_conv_layer():
     assert layer.groups == kwargs['groups']
     assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
 
+    cfg = dict(type='deconv')
+    layer = build_conv_layer(cfg, **kwargs)
+    assert isinstance(layer, nn.ConvTranspose2d)
+    assert layer.in_channels == kwargs['in_channels']
+    assert layer.out_channels == kwargs['out_channels']
+    assert layer.kernel_size == (kwargs['kernel_size'], kwargs['kernel_size'])
+    assert layer.groups == kwargs['groups']
+    assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
+
     for type_name, module in CONV_LAYERS.module_dict.items():
         cfg = dict(type=type_name)
         layer = build_conv_layer(cfg, **kwargs)
