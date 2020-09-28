@@ -73,9 +73,12 @@ class Fp16OptimizerHook(OptimizerHook):
         runner.optimizer.param_groups = copy.deepcopy(
             runner.optimizer.param_groups)
         state = defaultdict(dict)
-        p_map = {old_p: p for old_p, p in
-                 zip(chain(*(g['params'] for g in old_groups)),
-                     chain(*(g['params'] for g in runner.optimizer.param_groups)))}
+        p_map = {
+            old_p: p
+            for old_p, p in zip(
+                chain(*(g['params'] for g in old_groups)),
+                chain(*(g['params'] for g in runner.optimizer.param_groups)))
+        }
         for k, v in runner.optimizer.state.items():
             state[p_map[k]] = v
         runner.optimizer.state = state
