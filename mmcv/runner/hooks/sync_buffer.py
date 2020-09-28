@@ -18,7 +18,7 @@ class SyncBuffersHook(Hook):
     def __init__(self, distributed=True):
         self.distributed = distributed
 
-    def after_epoch(self, runner):
+    def sync_buffers(self, runner):
         """All-reduce model buffers at the end of each epoch."""
         _, world_size = get_dist_info()
         if self.distributed and world_size > 1:
@@ -26,3 +26,7 @@ class SyncBuffersHook(Hook):
             world_size = dist.get_world_size()
             for tensor in buffers:
                 dist.all_reduce(tensor.div_(world_size))
+
+    def after_epoch(self, runner):
+        """All-reduce model buffers at the end of each epoch."""
+        self.sync_buffers(runner)
