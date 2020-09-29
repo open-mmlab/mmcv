@@ -6,7 +6,6 @@ This module provides the following functionalities.
 - Some methods for editing (cut, concat, resize) videos.
 - Optical flow read/write/warp.
 
-
 ### VideoReader
 
 The `VideoReader` class provides sequence like apis to access video frames.

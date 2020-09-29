@@ -38,7 +38,7 @@ Currently, it supports four predefined variables:
 
 `{{ fileExtname }}` - the current opened file's extension, e.g. .ext
 
-These variable names are referred from https://code.visualstudio.com/docs/editor/variables-reference.
+These variable names are referred from [VS Code](https://code.visualstudio.com/docs/editor/variables-reference).
 
 Here is one examples of config with predefined variables.
 
@@ -58,7 +58,6 @@ c = '{{ fileExtname }}'
 ...      c='.py')
 ```
 
-
 For all format configs, inheritance is supported. To reuse fields in other config files,
 specify `_base_='./config_a.py'` or a list of configs `_base_=['./config_a.py', './config_b.py']`.
 Here are 4 examples of config inheritance.
@@ -70,7 +69,7 @@ a = 1
 b = dict(b1=[0, 1, 2], b2=None)
 ```
 
-#### Inherit from base config without overlaped keys.
+#### Inherit from base config without overlaped keys
 
 `config_b.py`
 
@@ -91,7 +90,7 @@ d = 'string'
 
 New fields in `config_b.py` are combined with old fields in `config_a.py`
 
-#### Inherit from base config with overlaped keys.
+#### Inherit from base config with overlaped keys
 
 `config_c.py`
 
@@ -111,7 +110,7 @@ c = (1, 2)
 
 `b.b2=None` in `config_a` is replaced with `b.b2=1` in `config_c.py`.
 
-#### Inherit from base config with ignored fields.
+#### Inherit from base config with ignored fields
 
 `config_d.py`
 
@@ -131,7 +130,7 @@ c = (1, 2)
 
 You may also set `_delete_=True` to ignore some fields in base configs. All old keys `b1, b2, b3` in `b` are replaced with new keys `b2, b3`.
 
-#### Inherit from multiple base configs (the base configs should not contain the same keys).
+#### Inherit from multiple base configs (the base configs should not contain the same keys)
 
 `config_e.py`
 
