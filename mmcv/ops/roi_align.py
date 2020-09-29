@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -14,16 +15,34 @@ class RoIAlignFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
+        from torch.onnx.symbolic_opset9 import sub, squeeze
+        from torch.onnx.symbolic_helper import _slice_helper
+        from torch.onnx import TensorProtoDataType
+        # batch_indices = rois[:, 0].long()
+        batch_indices = _slice_helper(g, rois, axes=[1], starts=[0], ends=[1])
+        batch_indices = squeeze(g, batch_indices, 1)
+        batch_indices = g.op(
+            'Cast', batch_indices, to_i=TensorProtoDataType.INT64)
+        # rois = rois[:, 1:]
+        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        if aligned:
+            # rois -= 0.5/spatial_scale
+            aligned_offset = g.op(
+                'Constant',
+                value_t=torch.tensor([0.5 / spatial_scale],
+                                     dtype=torch.float32))
+            rois = sub(g, rois, aligned_offset)
+        # roi align
         return g.op(
-            'MMCVRoIAlign',
+            'RoiAlign',
             input,
             rois,
-            aligned_height=output_size[0],
-            aligned_weight=output_size[1],
-            spatial_scale=spatial_scale,
-            sampling_ratio=sampling_ratio,
-            pool_mode=pool_mode,
-            aligned=aligned)
+            batch_indices,
+            output_height_i=output_size[0],
+            output_width_i=output_size[1],
+            spatial_scale_f=spatial_scale,
+            sampling_ratio_i=max(0, sampling_ratio),
+            mode_s=pool_mode)
 
     @staticmethod
     def forward(ctx,
