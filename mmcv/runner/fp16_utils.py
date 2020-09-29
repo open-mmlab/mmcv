@@ -241,6 +241,26 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
             dist.all_reduce(tensor.div_(world_size))
 
 
+def allreduce_params(params, coalesce=True, bucket_size_mb=-1):
+    """Allreduce parameters.
+
+    Args:
+        params (list[torch.Parameters]): List of parameters or buffers of a
+            model.
+        coalesce (bool, optional): Whether allreduce parameters as a whole.
+            Defaults to True.
+        bucket_size_mb (int, optional): Size of bucket, the unit is MB.
+            Defaults to -1.
+    """
+    params = [param.data for param in params]
+    world_size = dist.get_world_size()
+    if coalesce:
+        _allreduce_coalesced(params, world_size, bucket_size_mb)
+    else:
+        for tensor in params:
+            dist.all_reduce(tensor.div_(world_size))
+
+
 def wrap_fp16_model(model):
     """Wrap the FP32 model to FP16.
 

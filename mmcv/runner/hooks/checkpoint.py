@@ -2,8 +2,8 @@
 import os
 
 from ..dist_utils import master_only
+from ..fp16_utils import allreduce_params
 from .hook import HOOKS, Hook
-from .sync_buffer import SyncBuffersHook
 
 
 @HOOKS.register_module()
@@ -44,7 +44,6 @@ class CheckpointHook(Hook):
         self.max_keep_ckpts = max_keep_ckpts
         self.args = kwargs
         self.sync_buffer = sync_buffer
-        self.sync_buffer_hook = SyncBuffersHook()
 
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
@@ -52,7 +51,7 @@ class CheckpointHook(Hook):
 
         runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
         if self.sync_buffer:
-            self.sync_buffer_hook.sync_buffers(runner)
+            allreduce_params(runner.model.buffers())
 
     @master_only
     def save_checkpoint(self, runner):
@@ -88,4 +87,4 @@ class CheckpointHook(Hook):
         runner.logger.info(
             f'Saving checkpoint at {runner.iter + 1} iterations')
         if self.sync_buffer:
-            self.sync_buffer_hook.sync_buffers(runner)
+            allreduce_params(runner.model.buffers())
