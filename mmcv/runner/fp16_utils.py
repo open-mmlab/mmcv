@@ -234,8 +234,6 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
         if param.requires_grad and param.grad is not None
     ]
     world_size = dist.get_world_size()
-    if world_size == 1:
-        return
     if coalesce:
         _allreduce_coalesced(grads, world_size, bucket_size_mb)
     else:
@@ -255,8 +253,6 @@ def allreduce_params(params, coalesce=True, bucket_size_mb=-1):
             Defaults to -1.
     """
     world_size = dist.get_world_size()
-    if world_size == 1:
-        return
     params = [param.data for param in params]
     if coalesce:
         _allreduce_coalesced(params, world_size, bucket_size_mb)
