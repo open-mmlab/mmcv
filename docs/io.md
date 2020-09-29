@@ -3,6 +3,7 @@
 This module provides two universal API to load and dump files of different formats.
 
 ### Load and dump data
+
 `mmcv` provides a universal api for loading and dumping data, currently
 supported formats are json, yaml and pickle.
 
@@ -82,6 +83,7 @@ class PickleHandler(mmcv.BaseFileHandler):
 ### Load a text file as a list or dict
 
 For example `a.txt` is a text file with 5 lines.
+
 ```
 a
 b
@@ -104,6 +106,7 @@ Then use `list_from_file` to load the list from a.txt.
 ```
 
 For example `b.txt` is a text file with 5 lines.
+
 ```
 1 cat
 2 dog cow
