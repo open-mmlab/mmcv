@@ -26,7 +26,7 @@ class CheckpointHook(Hook):
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
         sync_buffer (bool): Whether to synchronize buffers in different
-            processors. Default: False.
+            processors. Default: True.
     """
 
     def __init__(self,
@@ -35,7 +35,7 @@ class CheckpointHook(Hook):
                  save_optimizer=True,
                  out_dir=None,
                  max_keep_ckpts=-1,
-                 sync_buffer=False,
+                 sync_buffer=True,
                  **kwargs):
         self.interval = interval
         self.by_epoch = by_epoch
@@ -52,6 +52,7 @@ class CheckpointHook(Hook):
         runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
+        self.save_checkpoint(runner)
 
     @master_only
     def save_checkpoint(self, runner):
@@ -88,3 +89,5 @@ class CheckpointHook(Hook):
             f'Saving checkpoint at {runner.iter + 1} iterations')
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
+        self.save_checkpoint(runner)
+
