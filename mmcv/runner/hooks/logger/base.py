@@ -89,8 +89,7 @@ class LoggerHook(Hook):
         return current_iter
 
     def get_step(self, runner):
-        mode, epoch, current_iter = self.get_mode_epoch_iter(runner)
-        if mode == 'val' and self.by_epoch:
+        if self.get_mode(runner) == 'val' and self.by_epoch:
             return epoch
         else:
             return current_iter
