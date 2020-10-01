@@ -90,9 +90,9 @@ class LoggerHook(Hook):
 
     def get_step(self, runner):
         if self.get_mode(runner) == 'val' and self.by_epoch:
-            return epoch
+            return self.get_epoch(runner)
         else:
-            return current_iter
+            return self.get_iter(runner)
 
     def get_lr_tags(self, runner):
         tags = {}
