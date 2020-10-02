@@ -434,8 +434,30 @@ class Config:
             d = option_cfg_dict
             key_list = full_key.split('.')
             for subkey in key_list[:-1]:
-                d.setdefault(subkey, ConfigDict())
-                d = d[subkey]
+                if subkey[-1] == ']':
+                    delim_pos = subkey.find('[')
+                    ind = int(subkey[delim_pos + 1:-1])
+                    subd = ConfigDict()
+                    subkey = subkey[:delim_pos]
+                    if subkey in d:
+                        val = d[subkey]
+                        assert type(val) is list, \
+                            'Attempted to list index into dict'
+                        if len(val) < (ind + 2):
+                            d[subkey] = val + [None] * (ind + 1 - len(val)) \
+                                        + [subd]
+                        else:
+                            if d[subkey][ind + 1] is None:
+                                d[subkey][ind + 1] = subd
+                            else:
+                                subd = d[subkey][ind + 1]
+                    else:
+                        val = ['_merge_'] + [None] * ind + [subd]
+                        d[subkey] = val
+                    d = subd
+                else:
+                    d.setdefault(subkey, ConfigDict())
+                    d = d[subkey]
             subkey = key_list[-1]
             d[subkey] = v
 
