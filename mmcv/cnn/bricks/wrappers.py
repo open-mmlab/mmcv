@@ -43,8 +43,8 @@ class Conv2d(nn.Conv2d):
                 return empty + dummy
             else:
                 return empty
-        assert x.numel() > 0
-        assert torch.__version__ > '1.4.0', f'{torch.__version__}'
+        assert x.numel() > 0 and torch.__version__ > '1.4.0', \
+            f'{x.numel()}, {torch.__version__}'
         return super().forward(x)
 
 
@@ -67,8 +67,8 @@ class ConvTranspose2d(nn.ConvTranspose2d):
                 return empty + dummy
             else:
                 return empty
-        assert x.numel() > 0
-        assert torch.__version__ > '1.4.0', f'{torch.__version__}'
+        assert x.numel() > 0 and torch.__version__ > '1.4.0', \
+            f'{x.numel()}, {torch.__version__}'
         return super(ConvTranspose2d, self).forward(x)
 
 
@@ -86,8 +86,8 @@ class MaxPool2d(nn.MaxPool2d):
                 out_shape.append(o)
             empty = NewEmptyTensorOp.apply(x, out_shape)
             return empty
-        assert x.numel() > 0
-        assert torch.__version__ > '1.6.0', f'{torch.__version__}'
+        assert x.numel() > 0 and torch.__version__ > '1.6.0', \
+            f'{x.numel()}, {torch.__version__}'
         return super().forward(x)
 
 
@@ -104,6 +104,6 @@ class Linear(torch.nn.Linear):
             else:
                 return empty
 
-        assert x.numel() > 0
-        assert torch.__version__ > '1.5.0', f'{torch.__version__}'
+        assert x.numel() > 0 and torch.__version__ > '1.5.0', \
+            f'{x.numel()}, {torch.__version__}'
         return super().forward(x)
