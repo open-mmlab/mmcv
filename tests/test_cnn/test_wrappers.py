@@ -169,7 +169,7 @@ def test_linear():
     wrapper(x_empty)
 
 
-@patch('torch.__version__', '1.6.1')
+@patch('torch.__version__', '1.6.2')
 def test_nn_op_forward_called():
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
