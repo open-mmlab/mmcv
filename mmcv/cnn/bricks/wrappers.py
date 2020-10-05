@@ -48,7 +48,7 @@ class Conv2d(nn.Conv2d):
             else:
                 return empty
 
-        return super(Conv2d, self).forward(x)
+        return super().forward(x)
 
 
 @CONV_LAYERS.register_module()
@@ -89,12 +89,13 @@ class MaxPool2d(nn.MaxPool2d):
             empty = NewEmptyTensorOp.apply(x, out_shape)
             return empty
 
-        return super(MaxPool2d, self).forward(x)
+        return super().forward(x)
 
 
 class Linear(torch.nn.Linear):
 
     def forward(self, x):
+        # empty tensor forward of Linear layer is supported in Pytorch 1.6
         if x.numel() == 0 and TORCH_VERSION <= (1, 5):
             out_shape = [x.shape[0], self.out_features]
             empty = NewEmptyTensorOp.apply(x, out_shape)
@@ -105,4 +106,4 @@ class Linear(torch.nn.Linear):
             else:
                 return empty
 
-        return super(Linear, self).forward(x)
+        return super().forward(x)
