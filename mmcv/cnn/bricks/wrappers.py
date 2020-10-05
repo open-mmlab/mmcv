@@ -12,10 +12,9 @@ from torch.nn.modules.utils import _pair
 
 from .registry import CONV_LAYERS, UPSAMPLE_LAYERS
 
-
-# torch.__version__ could be 1.3.1+cu92, we only need the first two
+# torch.__version__ could be 1.3.1+cu92, we only need the first three
 # for comparison
-TORCH_VERSION = tuple(int(x) for x in torch.__version__.split(".")[:3])
+TORCH_VERSION = tuple(int(x) for x in torch.__version__.split('.')[:3])
 
 
 class NewEmptyTensorOp(torch.autograd.Function):
