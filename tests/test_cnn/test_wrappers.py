@@ -169,7 +169,7 @@ def test_linear():
     wrapper(x_empty)
 
 
-@patch('torch.__version__', '1.6.1')
+@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 7))
 def test_nn_op_forward_called():
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
@@ -191,7 +191,7 @@ def test_nn_op_forward_called():
         x_empty = torch.randn(0, 3)
         wrapper = Linear(3, 3)
         wrapper(x_empty)
-        nn_module_forward.assert_not_called()
+        nn_module_forward.assert_called_with(x_empty)
 
         # non-randn input
         x_normal = torch.randn(1, 3)
