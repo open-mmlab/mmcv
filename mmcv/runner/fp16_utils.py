@@ -9,6 +9,8 @@ import torch.nn as nn
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from .dist_utils import get_dist_info
+
 
 def cast_tensor_type(inputs, src_type, dst_type):
     """Recursively convert Tensor in inputs from src_type to dst_type.
@@ -233,7 +235,9 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
         param.grad.data for param in params
         if param.requires_grad and param.grad is not None
     ]
-    world_size = dist.get_world_size()
+    _, world_size = get_dist_info()
+    if world_size == 1:
+        return
     if coalesce:
         _allreduce_coalesced(grads, world_size, bucket_size_mb)
     else:
@@ -252,7 +256,9 @@ def allreduce_params(params, coalesce=True, bucket_size_mb=-1):
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.
             Defaults to -1.
     """
-    world_size = dist.get_world_size()
+    _, world_size = get_dist_info()
+    if world_size == 1:
+        return
     params = [param.data for param in params]
     if coalesce:
         _allreduce_coalesced(params, world_size, bucket_size_mb)

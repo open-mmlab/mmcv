@@ -90,4 +90,3 @@ class CheckpointHook(Hook):
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
         self.save_checkpoint(runner)
-
