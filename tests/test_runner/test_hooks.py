@@ -160,15 +160,15 @@ def test_momentum_runner_hook():
         call('train', {
             'learning_rate': 0.01999999999999999,
             'momentum': 0.95
-        }, 0),
+        }, 1),
         call('train', {
             'learning_rate': 0.2,
             'momentum': 0.85
-        }, 4),
+        }, 5),
         call('train', {
             'learning_rate': 0.155,
             'momentum': 0.875
-        }, 6),
+        }, 7),
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
