@@ -132,7 +132,7 @@ def test_construct():
 
 
 def test_fromfile():
-    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml', 'q.py']:
         cfg_file = osp.join(data_path, 'config', filename)
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
