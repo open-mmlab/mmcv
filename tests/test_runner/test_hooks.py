@@ -342,7 +342,8 @@ def test_wandb_hook():
     hook.wandb.log.assert_called_with({
         'learning_rate': 0.02,
         'momentum': 0.95
-    }, step=1)
+    },
+                                      step=1)
     hook.wandb.join.assert_called_with()
 
 
