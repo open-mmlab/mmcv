@@ -108,6 +108,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install ONNX
+        run: pip install onnx==1.6.0 onnxruntime==1.2.0
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
@@ -171,6 +173,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install ONNX
+        run: pip install onnx==1.6.0 onnxruntime==1.2.0
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
@@ -220,6 +224,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install ONNX
+        run: pip install onnx==1.6.0 onnxruntime==1.2.0
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install
