@@ -165,6 +165,10 @@ class IterBasedRunner(BaseRunner):
                 for k in self.optimizer.keys():
                     self.optimizer[k].load_state_dict(
                         checkpoint['optimizer'][k])
+            else:
+                raise TypeError(
+                    'Optimizer should be dict or torch.optim.Optimizer '
+                    f'but got {type(self.optimizer)}')
 
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
 

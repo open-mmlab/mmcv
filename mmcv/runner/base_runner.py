@@ -337,8 +337,9 @@ class BaseRunner(metaclass=ABCMeta):
                     self.optimizer[k].load_state_dict(
                         checkpoint['optimizer'][k])
             else:
-                raise TypeError('Optimizer should be dict or torch.Optimizer '
-                                f'but got {type(self.optimizer)}')
+                raise TypeError(
+                    'Optimizer should be dict or torch.optim.Optimizer '
+                    f'but got {type(self.optimizer)}')
 
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
