@@ -330,7 +330,16 @@ class BaseRunner(metaclass=ABCMeta):
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
         if 'optimizer' in checkpoint and resume_optimizer:
-            self.optimizer.load_state_dict(checkpoint['optimizer'])
+            if isinstance(self.optimizer, Optimizer):
+                self.optimizer.load_state_dict(checkpoint['optimizer'])
+            elif isinstance(self.optimizer, dict):
+                for k in self.optimizer.keys():
+                    self.optimizer[k].load_state_dict(
+                        checkpoint['optimizer'][k])
+            else:
+                raise TypeError(
+                    'Optimizer should be dict or torch.optim.Optimizer '
+                    f'but got {type(self.optimizer)}')
 
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
