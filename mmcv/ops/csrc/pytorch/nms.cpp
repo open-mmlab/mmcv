@@ -77,10 +77,11 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 }
 
 std::vector<Tensor> softnms_cpu(Tensor boxes, Tensor scores,
-                   float iou_threshold, float sigma, float min_score,
-                   int method, int offset) {
+                                float iou_threshold, float sigma,
+                                float min_score, int method, int offset) {
   if (boxes.numel() == 0) {
-    return {at::empty({0, 5}, boxes.options()), at::empty({0}, boxes.options().dtype(at::kLong))};
+    return {at::empty({0, 5}, boxes.options()),
+            at::empty({0}, boxes.options().dtype(at::kLong))};
   }
 
   auto x1_t = boxes.select(1, 0).contiguous();
@@ -183,12 +184,13 @@ std::vector<Tensor> softnms_cpu(Tensor boxes, Tensor scores,
 }
 
 std::vector<Tensor> softnms(Tensor boxes, Tensor scores, float iou_threshold,
-               float sigma, float min_score, int method, int offset) {
+                            float sigma, float min_score, int method,
+                            int offset) {
   if (boxes.device().is_cuda()) {
     AT_ERROR("softnms is not implemented on GPU");
   } else {
-    return softnms_cpu(boxes, scores, iou_threshold, sigma, min_score,
-                       method, offset);
+    return softnms_cpu(boxes, scores, iou_threshold, sigma, min_score, method,
+                       offset);
   }
 }
 

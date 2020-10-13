@@ -95,7 +95,8 @@ void modulated_deform_conv_backward(
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
 std::vector<Tensor> softnms(Tensor boxes, Tensor scores, float iou_threshold,
-               float sigma, float min_score, int method, int offset);
+                            float sigma, float min_score, int method,
+                            int offset);
 
 std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
 
@@ -274,9 +275,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms", &nms, "nms (CPU/CUDA) ", py::arg("boxes"), py::arg("scores"),
         py::arg("iou_threshold"), py::arg("offset"));
   m.def("softnms", &softnms, "softnms (CPU) ", py::arg("boxes"),
-        py::arg("scores"), py::arg("iou_threshold"),
-        py::arg("sigma"), py::arg("min_score"), py::arg("method"),
-        py::arg("offset"));
+        py::arg("scores"), py::arg("iou_threshold"), py::arg("sigma"),
+        py::arg("min_score"), py::arg("method"), py::arg("offset"));
   m.def("nms_match", &nms_match, "nms_match (CPU) ", py::arg("dets"),
         py::arg("iou_threshold"));
   m.def("roi_align_forward", &roi_align_forward, "roi_align forward",
