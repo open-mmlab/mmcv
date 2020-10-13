@@ -1,5 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from ..fp16_utils import allreduce_params
+from ..dist_utils import allreduce_params
 from .hook import HOOKS, Hook
 
 
