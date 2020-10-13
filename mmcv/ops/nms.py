@@ -42,8 +42,8 @@ class NMSop(torch.autograd.Function):
 class SoftNMSop(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, boxes, scores, iou_threshold, sigma, min_score,
-                method, offset):
+    def forward(ctx, boxes, scores, iou_threshold, sigma, min_score, method,
+                offset):
         dets, inds = ext_module.softnms(
             boxes.cpu(),
             scores.cpu(),
@@ -58,8 +58,8 @@ class SoftNMSop(torch.autograd.Function):
         return torch.cat([dets, inds.to(dets.dtype).unsqueeze(1)], dim=1)
 
     @staticmethod
-    def symbolic(g, boxes, scores, iou_threshold, sigma, min_score,
-                 method, offset):
+    def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
+                 offset):
         nms_out = g.op(
             'mmcv::SoftNonMaxSuppression',
             boxes,
@@ -232,11 +232,11 @@ def soft_nms(boxes,
         #     method=method_dict[method],
         #     offset=int(offset))
         nms_out = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
-                               float(iou_threshold), float(sigma),
-                               float(min_score), method_dict[method],
-                               int(offset))
-        dets = nms_out[:,:5]
-        inds = nms_out[:,5].long()
+                                  float(iou_threshold), float(sigma),
+                                  float(min_score), method_dict[method],
+                                  int(offset))
+        dets = nms_out[:, :5]
+        inds = nms_out[:, 5].long()
     # dets = dets[:inds.size(0)]
     if is_numpy:
         dets = dets.cpu().numpy()
