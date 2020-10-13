@@ -1,10 +1,13 @@
 import functools
+import warnings
 from collections import abc
 from inspect import getfullargspec
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+from .dist_utils import allreduce_grads as _allreduce_grads
 
 
 def cast_tensor_type(inputs, src_type, dst_type):
@@ -192,6 +195,13 @@ def force_fp32(apply_to=None, out_fp16=False):
         return new_func
 
     return force_fp32_wrapper
+
+
+def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
+    warnings.warning(
+        '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated. Please switch'
+        ' to "mmcv.runner.dist_utils.allreduce_grads".', UserWarning)
+    _allreduce_grads(params, clalesce=coalesce, bucket_size_mb=bucket_size_mb)
 
 
 def wrap_fp16_model(model):
