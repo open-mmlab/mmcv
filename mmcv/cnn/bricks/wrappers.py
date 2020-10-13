@@ -13,7 +13,7 @@ from torch.nn.modules.utils import _pair
 from .registry import CONV_LAYERS, UPSAMPLE_LAYERS
 
 if torch.__version__ == 'parrots':
-    TORCH_VERSION = 'parrots'
+    TORCH_VERSION = torch.__version__
 else:
     # torch.__version__ could be 1.3.1+cu92, we only need the first two
     # for comparison
@@ -61,8 +61,8 @@ class Conv2d(nn.Conv2d):
 class ConvTranspose2d(nn.ConvTranspose2d):
 
     def forward(self, x):
-        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION
-                               <= (1, 4)):
+        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION <=
+                               (1, 4)):
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d, op in zip(x.shape[-2:], self.kernel_size,
                                          self.padding, self.stride,
@@ -83,8 +83,8 @@ class MaxPool2d(nn.MaxPool2d):
 
     def forward(self, x):
         # PyTorch 1.6 does not support empty tensor inference yet
-        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION
-                               <= (1, 6)):
+        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION <=
+                               (1, 6)):
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-2:], _pair(self.kernel_size),
                                      _pair(self.padding), _pair(self.stride),
@@ -102,8 +102,8 @@ class Linear(torch.nn.Linear):
 
     def forward(self, x):
         # empty tensor forward of Linear layer is supported in Pytorch 1.6
-        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION
-                               <= (1, 5)):
+        if x.numel() == 0 and (TORCH_VERSION == 'parrots' or TORCH_VERSION <=
+                               (1, 5)):
             out_shape = [x.shape[0], self.out_features]
             empty = NewEmptyTensorOp.apply(x, out_shape)
             if self.training:
