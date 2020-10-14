@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import argparse
 import json
+import os
 import os.path as osp
 import tempfile
 
@@ -132,13 +133,30 @@ def test_construct():
 
 
 def test_fromfile():
-    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml', 'q.py']:
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(data_path, 'config', filename)
         cfg = Config.fromfile(cfg_file)
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
         assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
             open(cfg_file, 'r').read()
+
+    # test custom_imports for Config.fromfile
+    cfg_file = osp.join(data_path, 'config', 'q.py')
+    imported_file = osp.join(data_path, 'config', 'r.py')
+    target_pkg = osp.join(osp.dirname(__file__), 'r.py')
+    target_txt = osp.join(osp.dirname(__file__), 'test_import_modules.txt')
+
+    # Since the imported config will be regarded as a tmp file
+    # it should be copied to the directory at the same level
+    os.system(f'cp {imported_file} {target_pkg}')
+    Config.fromfile(cfg_file, import_custom_modules=True)
+    content = open(target_txt).read()
+
+    assert content == 'test_import_modules'
+    assert osp.exists(target_txt)
+    os.remove(target_pkg)
+    os.remove(target_txt)
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
