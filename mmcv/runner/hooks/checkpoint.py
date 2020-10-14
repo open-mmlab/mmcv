@@ -25,7 +25,7 @@ class CheckpointHook(Hook):
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
         sync_buffer (bool): Whether to synchronize buffers in different
-            processors. Default: False.
+            gpus. Default: False.
     """
 
     def __init__(self,
@@ -51,10 +51,10 @@ class CheckpointHook(Hook):
         runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
-        self.save_checkpoint(runner)
+        self._save_checkpoint(runner)
 
     @master_only
-    def save_checkpoint(self, runner):
+    def _save_checkpoint(self, runner):
         """Save the current checkpoint and delete unwanted checkpoint."""
         if not self.out_dir:
             self.out_dir = runner.work_dir
@@ -62,17 +62,17 @@ class CheckpointHook(Hook):
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
-            if runner.by_epoch:
+            if self.by_epoch:
                 name = 'epoch_{}.pth'
                 current_ckpt = runner.epoch + 1
             else:
                 name = 'iter_{}.pth'
                 current_ckpt = runner.iter + 1
-            existing_ckpts = range(
+            redundant_ckpts = range(
                 current_ckpt - self.max_keep_ckpts * self.interval, 0,
                 -self.interval)
             filename_tmpl = self.args.get('filename_tmpl', name)
-            for _step in existing_ckpts:
+            for _step in redundant_ckpts:
                 ckpt_path = os.path.join(self.out_dir,
                                          filename_tmpl.format(_step))
                 if os.path.exists(ckpt_path):
@@ -88,4 +88,4 @@ class CheckpointHook(Hook):
             f'Saving checkpoint at {runner.iter + 1} iterations')
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
-        self.save_checkpoint(runner)
+        self._save_checkpoint(runner)
