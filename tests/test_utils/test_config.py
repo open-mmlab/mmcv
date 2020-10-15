@@ -145,18 +145,14 @@ def test_fromfile():
     cfg_file = osp.join(data_path, 'config', 'q.py')
     imported_file = osp.join(data_path, 'config', 'r.py')
     target_pkg = osp.join(osp.dirname(__file__), 'r.py')
-    target_txt = osp.join(osp.dirname(__file__), 'test_import_modules.txt')
 
     # Since the imported config will be regarded as a tmp file
     # it should be copied to the directory at the same level
     os.system(f'cp {imported_file} {target_pkg}')
     Config.fromfile(cfg_file, import_custom_modules=True)
-    content = open(target_txt).read()
 
-    assert content == 'test_import_modules'
-    assert osp.exists(target_txt)
+    assert os.environ.pop('TEST_VALUE') == 'test'
     os.remove(target_pkg)
-    os.remove(target_txt)
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')
