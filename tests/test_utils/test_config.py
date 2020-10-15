@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import os.path as osp
+import shutil
 import tempfile
 
 import pytest
@@ -148,7 +149,7 @@ def test_fromfile():
 
     # Since the imported config will be regarded as a tmp file
     # it should be copied to the directory at the same level
-    os.system(f'cp {imported_file} {target_pkg}')
+    shutil.copy(imported_file, target_pkg)
     Config.fromfile(cfg_file, import_custom_modules=True)
 
     assert os.environ.pop('TEST_VALUE') == 'test'
