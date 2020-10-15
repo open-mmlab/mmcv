@@ -5,7 +5,8 @@ from itertools import chain
 
 from torch.nn.utils import clip_grad
 
-from ..fp16_utils import allreduce_grads, wrap_fp16_model
+from ..dist_utils import allreduce_grads
+from ..fp16_utils import wrap_fp16_model
 from .hook import HOOKS, Hook
 
 
