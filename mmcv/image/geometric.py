@@ -82,7 +82,7 @@ def imresize(img,
         pil_image = pil_image.resize(size, pillow_interp_codes[interpolation])
         resized_img = np.array(pil_image)
     else:
-        resized_img = cv2.resize(
+        resized_img = resize(
             img, size, dst=out, interpolation=cv2_interp_codes[interpolation])
     if not return_scale:
         return resized_img
@@ -90,6 +90,42 @@ def imresize(img,
         w_scale = size[0] / w
         h_scale = size[1] / h
         return resized_img, w_scale, h_scale
+
+def resize(img, size, dst=None, interpolation=cv2.INTER_LINEAR):
+    resize_fn = _maybe_process_in_chunks(cv2.resize, size=size, dst = dst, interpolation=interpolation)
+    return resize_fn(img) 
+
+def _maybe_process_in_chunks(process_fn, **kwargs):
+    """
+    Wrap OpenCV function to enable processing images with more than 4 channels.
+
+    Limitations:
+        This wrapper requires image to be the first argument and rest must be sent via named arguments.
+
+    Args:
+        process_fn: Transform function (e.g cv2.resize).
+        kwargs: Additional parameters.
+
+    Returns:
+        numpy.ndarray: Transformed image.
+
+    """
+    def get_num_channels(image):
+        return image.shape[2] if len(image.shape) == 3 else 1
+    def __process_fn(img):
+        num_channels = get_num_channels(img)
+        if num_channels > 3:
+            chunks = []
+            for index in range(0, num_channels, 3):
+                chunk = img[:, :, index : index + 3]
+                chunk = process_fn(chunk, **kwargs)
+                chunks.append(chunk)
+            img = np.dstack(chunks)
+        else:
+            img = process_fn(img, **kwargs)
+        return img
+
+    return __process_fn
 
 
 def imresize_like(img,
