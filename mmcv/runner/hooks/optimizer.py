@@ -67,7 +67,7 @@ class Fp16OptimizerHook(OptimizerHook):
         elif isinstance(loss_scale, float):
             self.loss_scaler = LossScaler(init_scale=loss_scale, mode='static')
         else:
-            raise ValueError(f'loss_scale must be of type float or str')
+            raise ValueError('loss_scale must be of type float or str')
 
     def before_run(self, runner):
         """Preparing steps before Mixed Precision Training.
