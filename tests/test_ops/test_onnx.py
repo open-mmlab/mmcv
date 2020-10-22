@@ -1,3 +1,4 @@
+import os
 from functools import partial
 
 import numpy as np
@@ -58,3 +59,4 @@ class Testonnx(object):
         })
         onnx_score = onnx_dets[:, 4]
         assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
+        os.remove(onnx_file)
