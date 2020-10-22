@@ -1,7 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import argparse
 import json
+import os
 import os.path as osp
+import shutil
 import tempfile
 
 import pytest
@@ -139,6 +141,19 @@ def test_fromfile():
         assert cfg.filename == cfg_file
         assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
             open(cfg_file, 'r').read()
+
+    # test custom_imports for Config.fromfile
+    cfg_file = osp.join(data_path, 'config', 'q.py')
+    imported_file = osp.join(data_path, 'config', 'r.py')
+    target_pkg = osp.join(osp.dirname(__file__), 'r.py')
+
+    # Since the imported config will be regarded as a tmp file
+    # it should be copied to the directory at the same level
+    shutil.copy(imported_file, target_pkg)
+    Config.fromfile(cfg_file, import_custom_modules=True)
+
+    assert os.environ.pop('TEST_VALUE') == 'test'
+    os.remove(target_pkg)
 
     with pytest.raises(FileNotFoundError):
         Config.fromfile('no_such_file.py')

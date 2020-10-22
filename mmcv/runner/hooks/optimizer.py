@@ -1,9 +1,12 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import copy
+from collections import defaultdict
+from itertools import chain
 
 from torch.nn.utils import clip_grad
 
-from ..fp16_utils import LossScaler, allreduce_grads, wrap_fp16_model
+from ..dist_utils import allreduce_grads
+from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
 
 
@@ -73,8 +76,19 @@ class Fp16OptimizerHook(OptimizerHook):
         2. Convert the main model from fp32 to fp16.
         """
         # keep a copy of fp32 weights
+        old_groups = runner.optimizer.param_groups
         runner.optimizer.param_groups = copy.deepcopy(
             runner.optimizer.param_groups)
+        state = defaultdict(dict)
+        p_map = {
+            old_p: p
+            for old_p, p in zip(
+                chain(*(g['params'] for g in old_groups)),
+                chain(*(g['params'] for g in runner.optimizer.param_groups)))
+        }
+        for k, v in runner.optimizer.state.items():
+            state[p_map[k]] = v
+        runner.optimizer.state = state
         # convert model to fp16
         wrap_fp16_model(runner.model)
 

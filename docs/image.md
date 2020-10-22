@@ -3,6 +3,7 @@
 This module provides some image processing methods, which requires `opencv` to be installed.
 
 ### Read/Write/Show
+
 To read or write images files, use `imread` or `imwrite`.
 
 ```python
@@ -34,7 +35,9 @@ for i in range(10):
 ```
 
 ### Color space conversion
+
 Supported conversion methods:
+
 - bgr2gray
 - gray2bgr
 - bgr2rgb
@@ -50,6 +53,7 @@ img3 = mmcv.bgr2hsv(img)
 ```
 
 ### Resize
+
 There are three resize methods. All `imresize_*` methods have an argument `return_scale`,
 if this argument is `False`, then the return value is merely the resized image, otherwise
 is a tuple `(resized_img, scale)`.
@@ -70,6 +74,7 @@ mmcv.imrescale(img, (1000, 800))
 ```
 
 ### Rotate
+
 To rotate an image by some angle, use `imrotate`. The center can be specified,
 which is the center of original image by default. There are two modes of rotating,
 one is to keep the image size unchanged so that some parts of the image will be
@@ -96,6 +101,7 @@ img_ = mmcv.imrotate(img, 30, auto_bound=True)
 ```
 
 ### Flip
+
 To flip an image, use `imflip`.
 
 ```python
@@ -109,6 +115,7 @@ mmcv.imflip(img, direction='vertical')
 ```
 
 ### Crop
+
 `imcrop` can crop the image with one or some regions, represented as (x1, y1, x2, y2).
 
 ```python
@@ -130,6 +137,7 @@ patches = mmcv.imcrop(img, bboxes, scale_ratio=1.2)
 ```
 
 ### Padding
+
 There are two methods `impad` and `impad_to_multiple` to pad an image to the
 specific size with given values.
 
