@@ -27,11 +27,11 @@ class ModulatedDeformConv2dFunction(Function):
             mask,
             weight,
             bias,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=groups,
-            deform_groups=deform_groups)
+            stride_i=stride,
+            padding_i=padding,
+            dilation_i=dilation,
+            groups_i=groups,
+            deform_groups_i=deform_groups)
 
     @staticmethod
     def forward(ctx,
