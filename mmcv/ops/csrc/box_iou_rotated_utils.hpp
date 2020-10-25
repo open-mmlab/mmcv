@@ -51,12 +51,11 @@ HOST_DEVICE_INLINE T cross_2d(const Point<T>& A, const Point<T>& B) {
 }
 
 template <typename T>
-HOST_DEVICE_INLINE void get_rotated_vertices(
-    const RotatedBox<T>& box,
-    Point<T> (&pts)[4]) {
+HOST_DEVICE_INLINE void get_rotated_vertices(const RotatedBox<T>& box,
+                                             Point<T> (&pts)[4]) {
   // M_PI / 180. == 0.01745329251
-  //double theta = box.a * 0.01745329251;
-  //MODIFIED
+  // double theta = box.a * 0.01745329251;
+  // MODIFIED
   double theta = box.a;
   T cosTheta2 = (T)cos(theta) * 0.5f;
   T sinTheta2 = (T)sin(theta) * 0.5f;
@@ -73,10 +72,9 @@ HOST_DEVICE_INLINE void get_rotated_vertices(
 }
 
 template <typename T>
-HOST_DEVICE_INLINE int get_intersection_points(
-    const Point<T> (&pts1)[4],
-    const Point<T> (&pts2)[4],
-    Point<T> (&intersections)[24]) {
+HOST_DEVICE_INLINE int get_intersection_points(const Point<T> (&pts1)[4],
+                                               const Point<T> (&pts2)[4],
+                                               Point<T> (&intersections)[24]) {
   // Line vector
   // A line from p1 to p2 is: p1 + (p2-p1)*t, t=[0,1]
   Point<T> vec1[4], vec2[4];
@@ -86,7 +84,7 @@ HOST_DEVICE_INLINE int get_intersection_points(
   }
 
   // Line test - test all line combos for intersection
-  int num = 0; // number of intersections
+  int num = 0;  // number of intersections
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       // Solve for 2x2 Ax=b
@@ -154,11 +152,9 @@ HOST_DEVICE_INLINE int get_intersection_points(
 }
 
 template <typename T>
-HOST_DEVICE_INLINE int convex_hull_graham(
-    const Point<T> (&p)[24],
-    const int& num_in,
-    Point<T> (&q)[24],
-    bool shift_to_zero = false) {
+HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
+                                          const int& num_in, Point<T> (&q)[24],
+                                          bool shift_to_zero = false) {
   assert(num_in >= 2);
 
   // Step 1:
@@ -171,7 +167,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(
       t = i;
     }
   }
-  auto& start = p[t]; // starting point
+  auto& start = p[t];  // starting point
 
   // Step 2:
   // Subtract starting point from every points (for sorting in the next step)
@@ -213,21 +209,21 @@ HOST_DEVICE_INLINE int convex_hull_graham(
   }
 #else
   // CPU version
-  std::sort(
-      q + 1, q + num_in, [](const Point<T>& A, const Point<T>& B) -> bool {
-        T temp = cross_2d<T>(A, B);
-        if (fabs(temp) < 1e-6) {
-          return dot_2d<T>(A, A) < dot_2d<T>(B, B);
-        } else {
-          return temp > 0;
-        }
-      });
+  std::sort(q + 1, q + num_in,
+            [](const Point<T>& A, const Point<T>& B) -> bool {
+              T temp = cross_2d<T>(A, B);
+              if (fabs(temp) < 1e-6) {
+                return dot_2d<T>(A, A) < dot_2d<T>(B, B);
+              } else {
+                return temp > 0;
+              }
+            });
 #endif
 
   // Step 4:
   // Make sure there are at least 2 points (that don't overlap with each other)
   // in the stack
-  int k; // index of the non-overlapped second point
+  int k;  // index of the non-overlapped second point
   for (k = 1; k < num_in; k++) {
     if (dist[k] > 1e-8) {
       break;
@@ -239,7 +235,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(
     return 1;
   }
   q[1] = q[k];
-  int m = 2; // 2 points in the stack
+  int m = 2;  // 2 points in the stack
   // Step 5:
   // Finally we can start the scanning process.
   // When a non-convex relationship between the 3 points is found
@@ -283,9 +279,8 @@ HOST_DEVICE_INLINE T polygon_area(const Point<T> (&q)[24], const int& m) {
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T rotated_boxes_intersection(
-    const RotatedBox<T>& box1,
-    const RotatedBox<T>& box2) {
+HOST_DEVICE_INLINE T rotated_boxes_intersection(const RotatedBox<T>& box1,
+                                                const RotatedBox<T>& box2) {
   // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
   // from rotated_rect_intersection_pts
   Point<T> intersectPts[24], orderedPts[24];
@@ -307,11 +302,11 @@ HOST_DEVICE_INLINE T rotated_boxes_intersection(
   return polygon_area<T>(orderedPts, num_convex);
 }
 
-} // namespace
+}  // namespace
 
 template <typename T>
-HOST_DEVICE_INLINE T
-single_box_iou_rotated(T const* const box1_raw, T const* const box2_raw) {
+HOST_DEVICE_INLINE T single_box_iou_rotated(T const* const box1_raw,
+                                            T const* const box2_raw) {
   // shift center to the middle point to achieve higher precision in result
   RotatedBox<T> box1, box2;
   auto center_shift_x = (box1_raw[0] + box2_raw[0]) / 2.0;
@@ -337,4 +332,3 @@ single_box_iou_rotated(T const* const box1_raw, T const* const box2_raw) {
   const T iou = intersection / (area1 + area2 - intersection);
   return iou;
 }
-

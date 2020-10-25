@@ -9,19 +9,19 @@
 #endif
 #include "box_iou_rotated_utils.hpp"
 
-
-__host__ __device__ inline int divideUP(const int x, const int y) { return (((x) + (y)-1) / (y)); }
+__host__ __device__ inline int divideUP(const int x, const int y) {
+  return (((x) + (y)-1) / (y));
+}
 
 namespace {
 int const threadsPerBlock = sizeof(unsigned long long) * 8;
 }
 
 template <typename T>
-__global__ void nms_rotated_cuda_kernel(
-    const int n_boxes,
-    const float iou_threshold,
-    const T* dev_boxes,
-    unsigned long long* dev_mask) {
+__global__ void nms_rotated_cuda_kernel(const int n_boxes,
+                                        const float iou_threshold,
+                                        const T* dev_boxes,
+                                        unsigned long long* dev_mask) {
   // nms_rotated_cuda_kernel is modified from torchvision's nms_cuda_kernel
 
   const int row_start = blockIdx.y;

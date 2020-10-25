@@ -1,4 +1,5 @@
 import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['ml_nms_rotated', 'nms_rotated'])

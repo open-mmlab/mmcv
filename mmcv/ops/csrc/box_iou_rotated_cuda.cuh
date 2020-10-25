@@ -16,12 +16,10 @@ const int BLOCK_DIM_Y = 16;
 inline int divideUP(const int x, const int y) { return (((x) + (y)-1) / (y)); }
 
 template <typename T>
-__global__ void box_iou_rotated_cuda_kernel(
-    const int n_boxes1,
-    const int n_boxes2,
-    const T* dev_boxes1,
-    const T* dev_boxes2,
-    T* dev_ious) {
+__global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
+                                            const int n_boxes2,
+                                            const T* dev_boxes1,
+                                            const T* dev_boxes2, T* dev_ious) {
   const int row_start = blockIdx.x * blockDim.x;
   const int col_start = blockIdx.y * blockDim.y;
 
