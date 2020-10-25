@@ -41,4 +41,3 @@ Tensor box_iou_rotated_cpu(
   auto shape = std::vector<int64_t>{num_boxes1, num_boxes2};
   return ious.reshape(shape);
 }
-
