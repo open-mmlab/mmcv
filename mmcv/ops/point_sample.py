@@ -79,8 +79,7 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
     return abs_img_points
 
 
-def abs_img_point_to_rel_img_point(abs_img_points,
-                                   img_shape,
+def abs_img_point_to_rel_img_point(abs_img_points, img_shape,
                                    spatial_scale=1.):
     """Convert image based absolute point coordinates to image based relative
     coordinates for sampling.

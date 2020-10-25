@@ -1,10 +1,8 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-#include "pytorch_cuda_helper.hpp"
 #include "box_iou_rotated_cuda.cuh"
+#include "pytorch_cuda_helper.hpp"
 
-Tensor box_iou_rotated_cuda(
-    const Tensor boxes1,
-    const Tensor boxes2) {
+Tensor box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2) {
   using scalar_t = float;
   AT_ASSERTM(boxes1.type().is_cuda(), "boxes1 must be a CUDA tensor");
   AT_ASSERTM(boxes2.type().is_cuda(), "boxes2 must be a CUDA tensor");
@@ -26,11 +24,8 @@ Tensor box_iou_rotated_cuda(
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     box_iou_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
-        num_boxes1,
-        num_boxes2,
-        boxes1.data_ptr<scalar_t>(),
-        boxes2.data_ptr<scalar_t>(),
-        (scalar_t*)ious.data_ptr<scalar_t>());
+        num_boxes1, num_boxes2, boxes1.data_ptr<scalar_t>(),
+        boxes2.data_ptr<scalar_t>(), (scalar_t*)ious.data_ptr<scalar_t>());
 
     AT_CUDA_CHECK(cudaGetLastError());
   }

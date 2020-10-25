@@ -1,12 +1,9 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-#include "pytorch_cuda_helper.hpp"
 #include "ml_nms_rotated_cuda.cuh"
+#include "pytorch_cuda_helper.hpp"
 
-Tensor nms_rotated_cuda(
-    const Tensor dets,
-    const Tensor scores,
-    const Tensor labels,
-    const float iou_threshold) {
+Tensor nms_rotated_cuda(const Tensor dets, const Tensor scores,
+                        const Tensor labels, const float iou_threshold) {
   // using scalar_t = float;
   AT_ASSERTM(dets.type().is_cuda(), "dets must be a CUDA tensor");
   AT_ASSERTM(scores.type().is_cuda(), "scores must be a CUDA tensor");
@@ -31,9 +28,7 @@ Tensor nms_rotated_cuda(
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       dets_sorted.type(), "nms_rotated_kernel_cuda", [&] {
         nms_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
-            dets_num,
-            iou_threshold,
-            dets_sorted.data<scalar_t>(),
+            dets_num, iou_threshold, dets_sorted.data<scalar_t>(),
             (unsigned long long*)mask.data<int64_t>());
       });
 

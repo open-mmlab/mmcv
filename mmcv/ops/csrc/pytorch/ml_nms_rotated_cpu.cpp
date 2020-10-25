@@ -1,21 +1,18 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-#include "pytorch_cpp_helper.hpp"
 #include "box_iou_rotated_utils.hpp"
-
+#include "pytorch_cpp_helper.hpp"
 
 template <typename scalar_t>
-Tensor nms_rotated_cpu_kernel(
-    const Tensor dets,
-    const Tensor scores,
-    const float iou_threshold) {
+Tensor nms_rotated_cpu_kernel(const Tensor dets, const Tensor scores,
+                              const float iou_threshold) {
   // nms_rotated_cpu_kernel is modified from torchvision's nms_cpu_kernel,
   // however, the code in this function is much shorter because
   // we delegate the IoU computation for rotated boxes to
   // the single_box_iou_rotated function in box_iou_rotated_utils.h
   AT_ASSERTM(!dets.type().is_cuda(), "dets must be a CPU tensor");
   AT_ASSERTM(!scores.type().is_cuda(), "scores must be a CPU tensor");
-  AT_ASSERTM(
-      dets.type() == scores.type(), "dets should have the same type as scores");
+  AT_ASSERTM(dets.type() == scores.type(),
+             "dets should have the same type as scores");
 
   if (dets.numel() == 0) {
     return at::empty({0}, dets.options().dtype(at::kLong));
@@ -47,8 +44,8 @@ Tensor nms_rotated_cpu_kernel(
         continue;
       }
 
-      auto ovr = single_box_iou_rotated<scalar_t>(
-          dets[i].data_ptr<scalar_t>(), dets[j].data_ptr<scalar_t>());
+      auto ovr = single_box_iou_rotated<scalar_t>(dets[i].data_ptr<scalar_t>(),
+                                                  dets[j].data_ptr<scalar_t>());
       if (ovr >= iou_threshold) {
         suppressed[j] = 1;
       }
@@ -57,11 +54,8 @@ Tensor nms_rotated_cpu_kernel(
   return keep_t.narrow(/*dim=*/0, /*start=*/0, /*length=*/num_to_keep);
 }
 
-Tensor nms_rotated_cpu(
-    const Tensor dets,
-    const Tensor scores,
-    const Tensor labels,
-    const float iou_threshold) {
+Tensor nms_rotated_cpu(const Tensor dets, const Tensor scores,
+                       const Tensor labels, const float iou_threshold) {
   auto result = at::empty({0}, dets.options());
   auto dets_wl = at::cat({dets, labels.unsqueeze(1)}, 1);
   AT_DISPATCH_FLOATING_TYPES(dets.type(), "nms_rotated", [&] {
