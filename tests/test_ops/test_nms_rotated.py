@@ -8,17 +8,17 @@ class TestNmsRotated(object):
         if not torch.cuda.is_available():
             return
         from mmcv.ops import ml_nms_rotated
-        np_boxes = np.array([[6.0, 3.0, 8.0, 7.0, 0.5, 0.7],
-                             [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
-                             [3.0, 7.0, 10.0, 12.0, 0.3, 0.5],
-                             [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]],
-                            dtype=np.float32)
+        np_boxes = np.array(
+            [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
+             [3.0, 7.0, 10.0, 12.0, 0.3, 0.5], [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]
+             ],
+            dtype=np.float32)
         np_labels = np.array([1, 0, 1, 0], dtype=np.float32)
 
-        np_expect_dets = np.array([[1.0,  4.0, 13.0,  7.0,  0.6],
-                                   [3.0,  6.0,  9.0, 11.0,  0.6],
-                                   [6.0,  3.0,  8.0,  7.0,  0.5]],
-                                  dtype=np.float32)
+        np_expect_dets = np.array(
+            [[1.0, 4.0, 13.0, 7.0, 0.6], [3.0, 6.0, 9.0, 11.0, 0.6],
+             [6.0, 3.0, 8.0, 7.0, 0.5]],
+            dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 0], dtype=np.int64)
 
         boxes = torch.from_numpy(np_boxes).cuda()
@@ -33,17 +33,16 @@ class TestNmsRotated(object):
         if not torch.cuda.is_available():
             return
         from mmcv.ops import nms_rotated
-        np_boxes = np.array([[6.0, 3.0, 8.0, 7.0, 0.5, 0.7],
-                             [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
-                             [3.0, 7.0, 10.0, 12.0, 0.3, 0.5],
-                             [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]],
-                            dtype=np.float32)
+        np_boxes = np.array(
+            [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
+             [3.0, 7.0, 10.0, 12.0, 0.3, 0.5], [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]
+             ],
+            dtype=np.float32)
 
-        np_expect_dets = np.array([[1.0,  4.0, 13.0,  7.0,  0.6],
-                                   [3.0,  6.0,  9.0, 11.0,  0.6],
-                                   [6.0,  3.0,  8.0,  7.0,  0.5],
-                                   [3.0,  7.0, 10.0, 12.0,  0.3]],
-                                  dtype=np.float32)
+        np_expect_dets = np.array(
+            [[1.0, 4.0, 13.0, 7.0, 0.6], [3.0, 6.0, 9.0, 11.0, 0.6],
+             [6.0, 3.0, 8.0, 7.0, 0.5], [3.0, 7.0, 10.0, 12.0, 0.3]],
+            dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 0, 2], dtype=np.int64)
 
         boxes = torch.from_numpy(np_boxes).cuda()
