@@ -175,6 +175,13 @@ Tensor top_pool_forward(Tensor input);
 
 Tensor top_pool_backward(Tensor input, Tensor grad_output);
 
+Tensor box_iou_rotated(const Tensor boxes1, const Tensor boxes2);
+
+Tensor ml_nms_rotated(const Tensor dets, const Tensor scores,
+                      const Tensor labels, const float iou_threshold);
+
+Tensor nms_rotated(const Tensor dets, Tensor scores, const float iou_threshold);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
@@ -357,4 +364,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("top_pool_backward", &top_pool_backward, "Top Pool Backward",
         py::arg("input"), py::arg("grad_output"),
         py::call_guard<py::gil_scoped_release>());
+  m.def("box_iou_rotated", &box_iou_rotated, "IoU for rotated boxes",
+        py::arg("boxes1"), py::arg("boxes2"));
+  m.def("ml_nms_rotated", &ml_nms_rotated, "multi label NMS for rotated boxes",
+        py::arg("dets"), py::arg("scores"), py::arg("labels"), py::arg("iou_threshold"));
+  m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes",
+        py::arg("dets"), py::arg("scores"), py::arg("iou_threshold"));
 }
