@@ -367,7 +367,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("box_iou_rotated", &box_iou_rotated, "IoU for rotated boxes",
         py::arg("boxes1"), py::arg("boxes2"));
   m.def("ml_nms_rotated", &ml_nms_rotated, "multi label NMS for rotated boxes",
-        py::arg("dets"), py::arg("scores"), py::arg("labels"), py::arg("iou_threshold"));
-  m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes",
-        py::arg("dets"), py::arg("scores"), py::arg("iou_threshold"));
+        py::arg("dets"), py::arg("scores"), py::arg("labels"),
+        py::arg("iou_threshold"));
+  m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
+        py::arg("scores"), py::arg("iou_threshold"));
 }
