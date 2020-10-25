@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from ..utils import ext_loader
 
