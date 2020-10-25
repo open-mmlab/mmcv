@@ -1,4 +1,5 @@
 from .bbox import bbox_overlaps
+from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .corner_pool import CornerPool
@@ -17,6 +18,7 @@ from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
 from .nms import batched_nms, nms, nms_match, soft_nms
+from .nms_rotated import ml_nms_rotated, nms_rotated
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .psa_mask import PSAMask
@@ -25,8 +27,6 @@ from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
-from .box_iou_rotated import box_iou_rotated
-from .nms_rotated import ml_nms_rotated, nms_rotated
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
