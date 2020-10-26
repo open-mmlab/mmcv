@@ -55,8 +55,8 @@ class IterBasedRunner(BaseRunner):
         self.mode = 'train'
         self.data_loader = data_loader
         self._epoch = data_loader.epoch
-        self.call_hook('before_train_iter')
         data_batch = next(data_loader)
+        self.call_hook('before_train_iter')
         outputs = self.model.train_step(data_batch, self.optimizer, **kwargs)
         if not isinstance(outputs, dict):
             raise TypeError('model.train_step() must return a dict')
@@ -71,8 +71,8 @@ class IterBasedRunner(BaseRunner):
         self.model.eval()
         self.mode = 'val'
         self.data_loader = data_loader
-        self.call_hook('before_val_iter')
         data_batch = next(data_loader)
+        self.call_hook('before_val_iter')
         outputs = self.model.val_step(data_batch, **kwargs)
         if not isinstance(outputs, dict):
             raise TypeError('model.val_step() must return a dict')
