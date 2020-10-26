@@ -111,7 +111,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
-        run: pip install pytest coverage lmdb PyTurboJPEG
+        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.6.0 onnxruntime==1.2.0
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -181,7 +181,7 @@ jobs:
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.5
@@ -220,6 +220,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install ONNX
+        run: pip install onnx==1.6.0 onnxruntime==1.2.0
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install
