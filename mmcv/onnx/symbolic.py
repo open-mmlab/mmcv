@@ -363,6 +363,21 @@ adaptive_avg_pool2d = _adaptive_pool('adaptive_avg_pool2d', 'AveragePool',
 adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
                                      _triple)
 
+def new_full(g,
+             self,
+             size,
+             fill_value,
+             dtype,
+             layout,
+             device,
+             pin_memory=False):
+    from torch.onnx.symbolic_opset9 import full
+    if dtype is None and self.isCompleteTensor():
+        dtype = self.type().scalarType()
+        dtype = sym_help.scalar_type_to_onnx.index(
+            sym_help.cast_pytorch_to_onnx[dtype])
+    return full(g, size, fill_value, dtype, layout, device, pin_memory)
+
 
 def register_extra_symbolics(opset=11):
     register_op('one_hot', one_hot, '', opset)
@@ -387,3 +402,4 @@ def register_extra_symbolics(opset=11):
     register_op('upsample_bilinear2d', upsample_bilinear2d, '', opset)
     register_op('upsample_trilinear3d', upsample_trilinear3d, '', opset)
     register_op('upsample_bicubic2d', upsample_bicubic2d, '', opset)
+    register_op('new_full', new_full, '', opset)

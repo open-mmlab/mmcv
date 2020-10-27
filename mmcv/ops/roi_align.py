@@ -1,3 +1,7 @@
+import os
+import warnings
+
+import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -12,18 +16,59 @@ ext_module = ext_loader.load_ext('_ext',
 class RoIAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
-                 pool_mode, aligned):
+    def symbolic(g,
+                 input,
+                 rois,
+                 output_size,
+                 spatial_scale=1.0,
+                 sampling_ratio=0,
+                 pool_mode='avg',
+                 aligned=True):
+        if 'ONNX_BACKEND' in os.environ and os.environ[
+                'ONNX_BACKEND'] == 'TensorRT':
+            return g.op(
+                'MMCVRoIAlign',
+                input,
+                rois,
+                aligned_height_i=output_size[0],
+                aligned_width_i=output_size[1],
+                spatial_scale_f=spatial_scale,
+                sampling_ratio_i=sampling_ratio,
+                pool_mode_s=pool_mode,
+                aligned_i=aligned)
+        # This code is from https://github.com/pytorch/vision
+        from torch.onnx.symbolic_opset9 import select, squeeze, _cast_Long
+        batch_indices = _cast_Long(
+            g,
+            squeeze(
+                g,
+                select(
+                    g, rois, 1,
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([0], dtype=torch.long))), 1),
+            False)
+        rois = select(
+            g, rois, 1,
+            g.op(
+                'Constant',
+                value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
+        if aligned:
+            warnings.warn(
+                "ONNX export of ROIAlign with aligned=True does not match PyTorch when using malformed boxes,"
+                " ONNX forces ROIs to be 1x1 or larger.")
+            scale = torch.tensor(0.5 / spatial_scale).to(dtype=torch.float)
+            rois = g.op("Sub", rois, scale)
         return g.op(
-            'MMCVRoIAlign',
+            'RoiAlign',
             input,
             rois,
-            aligned_height=output_size[0],
-            aligned_weight=output_size[1],
-            spatial_scale=spatial_scale,
-            sampling_ratio=sampling_ratio,
-            pool_mode=pool_mode,
-            aligned=aligned)
+            batch_indices,
+            mode_s=pool_mode,
+            sampling_ratio_i=sampling_ratio,
+            spatial_scale_f=spatial_scale,
+            output_height_i=output_size[0],
+            output_width_i=output_size[1])
 
     @staticmethod
     def forward(ctx,
