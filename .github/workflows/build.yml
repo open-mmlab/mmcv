@@ -14,16 +14,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: Install linting dependencies
+      - name: Install pre-commit hook
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8 yapf isort==4.3.21
-      - name: Lint with flake8
-        run: flake8 --max-complexity 20 .
-      - name: Lint with isort
-        run: isort --recursive --check-only --diff mmcv/ tests/ examples/
-      - name: Format python codes with yapf
-        run: yapf -r -d mmcv/ tests/ examples/
+          pip install pre-commit
+          pre-commit install
+      - name: Linting
+        run: pre-commit run --all-files
       - name: Format c/cuda codes with clang-format
         uses: DoozyX/clang-format-lint-action@v0.6
         with:
@@ -115,7 +111,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
-        run: pip install pytest coverage lmdb PyTurboJPEG
+        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.6.0 onnxruntime==1.2.0
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -185,7 +181,7 @@ jobs:
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.5
@@ -224,6 +220,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
+      - name: Install ONNX
+        run: pip install onnx==1.6.0 onnxruntime==1.2.0
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install

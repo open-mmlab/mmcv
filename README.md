@@ -148,7 +148,6 @@ Note: If you would like to use `opencv-python-headless` instead of `opencv-pytho
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
 
-
 ### TroubleShooting
 
 If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING.md](docs/trouble_shooting.md).
