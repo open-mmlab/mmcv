@@ -1,38 +1,14 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import json
-import numbers
 import os
 import os.path as osp
 
-import numpy as np
-import torch
 import yaml
 
 import mmcv
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
-
-
-def is_scalar(val, include_np=True, include_torch=True):
-    """Tell the input variable is a scalar or not.
-
-    Args:
-        val: Input variable.
-        include_np (bool): Whether include 0-d np.ndarray as a scalar.
-        include_torch (bool): Whether include 0-d torch.Tensor as a scalar.
-
-    Returns:
-        bool: True or False.
-    """
-    if isinstance(val, numbers.Number):
-        return True
-    elif include_np and isinstance(val, np.ndarray) and val.ndim == 0:
-        return True
-    elif include_torch and isinstance(val, torch.Tensor) and len(val) == 1:
-        return True
-    else:
-        return False
 
 
 @HOOKS.register_module()
@@ -82,38 +58,10 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        tags = {}
-        for tag, val in runner.log_buffer.output.items():
-            if tag not in ['time', 'data_time'] and is_scalar(val):
-                tags[tag] = val
-        # add learning rate
-        lrs = runner.current_lr()
-        if isinstance(lrs, dict):
-            for name, value in lrs.items():
-                tags[f'learning_rate/{name}'] = value[0]
-        else:
-            tags['learning_rate'] = lrs[0]
-
-        # add momentum
-        momentums = runner.current_momentum()
-        if isinstance(momentums, dict):
-            for name, value in momentums.items():
-                tags[f'momentum/{name}'] = value[0]
-        else:
-            tags['momentum'] = momentums[0]
-
+        tags = self.get_loggable_tags(runner)
         if tags:
-            if runner.mode == 'val':
-                mode = runner.mode
-                # runner.epoch += 1 has been done before val workflow
-                epoch = runner.epoch
-            else:
-                mode = 'train' if 'time' in runner.log_buffer.output else 'val'
-                epoch = runner.epoch + 1
-            if mode == 'val' and self.by_epoch:
-                self.writer.add_scalars(mode, tags, epoch)
-            else:
-                self.writer.add_scalars(mode, tags, runner.iter)
+            self.writer.add_scalars(
+                self.get_mode(runner), tags, self.get_step(runner))
 
     @master_only
     def after_run(self, runner):

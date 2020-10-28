@@ -43,32 +43,12 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        for var in runner.log_buffer.output:
-            if var in ['time', 'data_time']:
-                continue
-            tag = f'{var}/{runner.mode}'
-            record = runner.log_buffer.output[var]
-            if isinstance(record, str):
-                self.writer.add_text(tag, record, runner.iter)
+        tags = self.get_loggable_tags(runner, allow_text=True)
+        for tag, val in tags.items():
+            if isinstance(val, str):
+                self.writer.add_text(tag, val, self.get_step(runner))
             else:
-                self.writer.add_scalar(tag, runner.log_buffer.output[var],
-                                       runner.iter)
-        # add learning rate
-        lrs = runner.current_lr()
-        if isinstance(lrs, dict):
-            for name, value in lrs.items():
-                self.writer.add_scalar(f'learning_rate/{name}', value[0],
-                                       runner.iter)
-        else:
-            self.writer.add_scalar('learning_rate', lrs[0], runner.iter)
-        # add momentum
-        momentums = runner.current_momentum()
-        if isinstance(momentums, dict):
-            for name, value in momentums.items():
-                self.writer.add_scalar(f'momentum/{name}', value[0],
-                                       runner.iter)
-        else:
-            self.writer.add_scalar('momentum', momentums[0], runner.iter)
+                self.writer.add_scalar(tag, val, self.get_step(runner))
 
     @master_only
     def after_run(self, runner):
