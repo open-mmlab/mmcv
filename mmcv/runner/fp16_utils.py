@@ -322,6 +322,7 @@ class LossScaler:
     detected,:class:`LossScaler` increases the loss scale once more.
     In this way :class:`LossScaler` attempts to "ride the edge" of always
     using the highest loss scale possible without incurring overflow.
+
     Args:
         init_scale (float): Initial loss scale value, default: 2**32.
         scale_factor (float): Factor used when adjusting the loss scale.
@@ -338,6 +339,8 @@ class LossScaler:
                  scale_window=1000):
         self.cur_scale = init_scale
         self.cur_iter = 0
+        assert mode in ('dynamic',
+                        'static'), 'mode can only be dynamic or static'
         self.mode = mode
         self.last_overflow_iter = -1
         self.scale_factor = scale_factor
