@@ -41,16 +41,29 @@ class PaviLoggerHook(LoggerHook):
             self.init_kwargs = dict()
         self.init_kwargs['task'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
-        if runner.meta is not None and 'config_dict' in runner.meta:
-            config_dict = runner.meta['config_dict'].copy()
-            # 'max_.*iter' is parsed in pavi sdk as the maximum iterations
-            #  to properly set up the progress bar.
-            config_dict.setdefault('max_iter', runner.max_iters)
-            # non-serializable values are first converted in mmcv.dump to json
-            config_dict = json.loads(
-                mmcv.dump(config_dict, file_format='json'))
-            session_text = yaml.dump(config_dict)
-            self.init_kwargs['session_text'] = session_text
+        if runner.meta is not None:
+            if 'config_dict' in runner.meta:
+                config_dict = runner.meta['config_dict']
+                assert isinstance(
+                    config_dict,
+                    dict), ('meta["config_dict"] has to be of a dict, '
+                            f'but got {type(config_dict)}')
+            elif 'config_file' in runner.meta:
+                config_file = runner.meta['config_file']
+                config_dict = dict(mmcv.Config.fromfile(config_file))
+            else:
+                config_dict = None
+            if config_dict is not None:
+                # 'max_.*iter' is parsed in pavi sdk as the maximum iterations
+                #  to properly set up the progress bar.
+                config_dict = config_dict.copy()
+                config_dict.setdefault('max_iter', runner.max_iters)
+                # non-serializable values are first converted in
+                # mmcv.dump to json
+                config_dict = json.loads(
+                    mmcv.dump(config_dict, file_format='json'))
+                session_text = yaml.dump(config_dict)
+                self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
         if self.add_graph:
