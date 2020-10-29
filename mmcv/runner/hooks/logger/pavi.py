@@ -48,12 +48,9 @@ class PaviLoggerHook(LoggerHook):
                     config_dict,
                     dict), ('meta["config_dict"] has to be of a dict, '
                             f'but got {type(config_dict)}')
-            elif 'config' in runner.meta:
-                config = runner.meta['config']
-                assert isinstance(
-                    config, str), ('meta["config"] has to be of str format, '
-                                   f'but got {type(config)}')
-                config_dict = dict(mmcv.Config(cfg_text=config))
+            elif 'config_file' in runner.meta:
+                config_file = runner.meta['config_file']
+                config_dict = dict(mmcv.Config.fromfile(config_file))
             else:
                 config_dict = None
             if config_dict is not None:
