@@ -21,7 +21,7 @@ jobs:
       - name: Linting
         run: pre-commit run --all-files
       - name: Format c/cuda codes with clang-format
-        uses: DoozyX/clang-format-lint-action@v0.6
+        uses: DoozyX/clang-format-lint-action@v0.11
         with:
           source: mmcv/ops/csrc
           extensions: h,c,cpp,hpp,cu,cuh
@@ -113,7 +113,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
-        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.7.0 onnxruntime==1.5.3
+        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.7.0 onnxruntime==1.5.2
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -227,7 +227,7 @@ jobs:
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install ONNX
-        run: pip install onnx==1.7.0 onnxruntime==1.5.3
+        run: pip install onnx==1.7.0 onnxruntime==1.5.2
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install
