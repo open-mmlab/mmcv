@@ -58,10 +58,10 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.6.0]
+        torch: [1.7.0]
         include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -87,7 +87,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.3.1, 1.4.0, 1.5.1, 1.6.0]
+        torch: [1.3.1, 1.4.0, 1.5.1, 1.6.0, 1.7.0]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
@@ -97,6 +97,8 @@ jobs:
             torchvision: 0.6.1
           - torch: 1.6.0
             torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -111,7 +113,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
-        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.6.0 onnxruntime==1.2.0
+        run: pip install pytest coverage lmdb PyTurboJPEG onnx==1.7.0 onnxruntime==1.5.3
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -131,7 +133,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.3.1, 1.5.1+cu101, 1.6.0+cu101]
+        torch: [1.3.1, 1.5.1+cu101, 1.6.0+cu101, 1.7.0+cu101]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
@@ -139,12 +141,14 @@ jobs:
             torchvision: 0.6.1+cu101
           - torch: 1.6.0+cu101
             torchvision: 0.7.0+cu101
+          - torch: 1.7.0+cu101
+            torchvision: 0.8.1+cu101
           - python-version: 3.6
-            torch: 1.6.0+cu101
-            torchvision: 0.7.0+cu101
+            torch: 1.7.0+cu101
+            torchvision: 0.8.1+cu101
           - python-version: 3.8
-            torch: 1.6.0+cu101
-            torchvision: 0.7.0+cu101
+            torch: 1.7.0+cu101
+            torchvision: 0.8.1+cu101
 
     steps:
       - uses: actions/checkout@v2
@@ -184,10 +188,10 @@ jobs:
           coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
           coverage xml
           coverage report -m
-      # Only upload coverage report for python3.7 && pytorch1.5
+      # Only upload coverage report for python3.7 && pytorch1.6
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.5.1+cu101' && matrix.python-version == '3.7'}}
-        uses: codecov/codecov-action@v1.0.10
+        if: ${{matrix.torch == '1.6.0+cu101' && matrix.python-version == '3.7'}}
+        uses: codecov/codecov-action@v1.0.14
         with:
           file: ./coverage.xml
           flags: unittests
@@ -199,7 +203,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        torch: [1.3.1, 1.5.1, 1.6.0]
+        torch: [1.3.1, 1.5.1, 1.6.0, 1.7.0]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
@@ -207,6 +211,8 @@ jobs:
             torchvision: 0.6.1
           - torch: 1.6.0
             torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -221,7 +227,7 @@ jobs:
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install ONNX
-        run: pip install onnx==1.6.0 onnxruntime==1.2.0
+        run: pip install onnx==1.7.0 onnxruntime==1.5.3
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Build and install
