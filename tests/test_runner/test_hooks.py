@@ -291,7 +291,7 @@ def test_cosine_restart_lr_update_hook():
             'momentum': 0.95
         }, 0),
         call('train', {
-            'learning_rate': 0.0,
+            'learning_rate': 0.01,
             'momentum': 0.95
         }, 5),
         call('train', {
