@@ -1,6 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import numbers
-
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -69,16 +67,9 @@ class MlflowLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        metrics = {}
-        for var, val in runner.log_buffer.output.items():
-            if var in ['time', 'data_time']:
-                continue
-            tag = f'{var}/{runner.mode}'
-            if isinstance(val, numbers.Number):
-                metrics[tag] = val
-        metrics['learning_rate'] = runner.current_lr()[0]
-        metrics['momentum'] = runner.current_momentum()[0]
-        self.mlflow.log_metrics(metrics, step=runner.iter)
+        tags = self.get_loggable_tags(runner)
+        if tags:
+            self.mlflow.log_metrics(tags, step=self.get_step(runner))
 
     @master_only
     def after_run(self, runner):

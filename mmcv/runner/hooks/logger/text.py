@@ -141,25 +141,11 @@ class TextLoggerHook(LoggerHook):
             return items
 
     def log(self, runner):
-        log_dict = OrderedDict()
+        log_dict = OrderedDict(
+            mode=self.get_mode(runner),
+            epoch=self.get_epoch(runner),
+            iter=self.get_iter(runner))
 
-        if runner.mode == 'train':
-            log_dict['mode'] = 'train' if 'time' in runner.log_buffer.output \
-                else 'val'
-            log_dict['epoch'] = runner.epoch + 1
-        elif runner.mode == 'val':
-            # normal val mode
-            # runner.epoch += 1 has been done before val workflow
-            log_dict['mode'] = 'val'
-            log_dict['epoch'] = runner.epoch
-        else:
-            raise ValueError(f"runner mode should be 'train' or 'val', "
-                             f'but got {runner.mode}')
-
-        if self.by_epoch:
-            log_dict['iter'] = runner.inner_iter + 1
-        else:
-            log_dict['iter'] = runner.iter + 1
         # only record lr of the first param group
         cur_lr = runner.current_lr()
         if isinstance(cur_lr, list):

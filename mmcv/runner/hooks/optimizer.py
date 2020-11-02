@@ -6,7 +6,7 @@ from itertools import chain
 from torch.nn.utils import clip_grad
 
 from ..dist_utils import allreduce_grads
-from ..fp16_utils import wrap_fp16_model
+from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
 
 
@@ -48,7 +48,8 @@ class Fp16OptimizerHook(OptimizerHook):
     Refer to https://arxiv.org/abs/1710.03740 for more details.
 
     Args:
-        loss_scale (float): Scale factor multiplied with loss.
+        loss_scale (float | str): Scale factor multiplied with loss. If
+            'dynamic' is specified, then dynamic loss scaling will be used.
     """
 
     def __init__(self,
@@ -60,8 +61,13 @@ class Fp16OptimizerHook(OptimizerHook):
         self.grad_clip = grad_clip
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
-        self.loss_scale = loss_scale
         self.distributed = distributed
+        if loss_scale == 'dynamic':
+            self.loss_scaler = LossScaler(mode='dynamic')
+        elif isinstance(loss_scale, float):
+            self.loss_scaler = LossScaler(init_scale=loss_scale, mode='static')
+        else:
+            raise ValueError('loss_scale must be of type float or str')
 
     def before_run(self, runner):
         """Preparing steps before Mixed Precision Training.
@@ -100,7 +106,8 @@ class Fp16OptimizerHook(OptimizerHook):
             fp16_param.data.copy_(fp32_param.data)
 
     def after_train_iter(self, runner):
-        """Backward optimization steps for Mixed Precision Training.
+        """Backward optimization steps for Mixed Precision Training. For
+        dynamic loss scaling, please refer `loss_scalar.py`
 
         1. Scale the loss by a scale factor.
         2. Backward the loss to obtain the gradients (fp16).
@@ -112,9 +119,10 @@ class Fp16OptimizerHook(OptimizerHook):
         runner.model.zero_grad()
         runner.optimizer.zero_grad()
         # scale the loss value
-        scaled_loss = runner.outputs['loss'] * self.loss_scale
+        scaled_loss = runner.outputs['loss'] * self.loss_scaler.loss_scale
         scaled_loss.backward()
         # copy fp16 grads in the model to fp32 params in the optimizer
+
         fp32_weights = []
         for param_group in runner.optimizer.param_groups:
             fp32_weights += param_group['params']
@@ -122,17 +130,21 @@ class Fp16OptimizerHook(OptimizerHook):
         # allreduce grads
         if self.distributed:
             allreduce_grads(fp32_weights, self.coalesce, self.bucket_size_mb)
-        # scale the gradients back
-        for param in fp32_weights:
-            if param.grad is not None:
-                param.grad.div_(self.loss_scale)
-        if self.grad_clip is not None:
-            grad_norm = self.clip_grads(fp32_weights)
-            if grad_norm is not None:
-                # Add grad norm to the logger
-                runner.log_buffer.update({'grad_norm': float(grad_norm)},
-                                         runner.outputs['num_samples'])
-        # update fp32 params
-        runner.optimizer.step()
-        # copy fp32 params to the fp16 model
-        self.copy_params_to_fp16(runner.model, fp32_weights)
+
+        has_overflow = self.loss_scaler.has_overflow(fp32_weights)
+        # if has overflow, skip this iteration
+        if not has_overflow:
+            # scale the gradients back
+            for param in fp32_weights:
+                if param.grad is not None:
+                    param.grad.div_(self.loss_scaler.loss_scale)
+            if self.grad_clip is not None:
+                self.clip_grads(fp32_weights)
+            # update fp32 params
+            runner.optimizer.step()
+            # copy fp32 params to the fp16 model
+            self.copy_params_to_fp16(runner.model, fp32_weights)
+        self.loss_scaler.update_scale(has_overflow)
+        if has_overflow:
+            runner.logger.warning('Check overflow, downscale loss scale '
+                                  f'to {self.loss_scaler.cur_scale}')
