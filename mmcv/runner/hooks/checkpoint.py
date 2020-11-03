@@ -61,12 +61,15 @@ class CheckpointHook(Hook):
         runner.save_checkpoint(
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
         if runner.meta is not None:
-            runner.meta.setdefault('hook_msgs', dict())
             if self.by_epoch:
-                cur_ckpt_name = f'epoch_{runner.epoch+1}.pth'
+                cur_ckpt_filename = self.args.get(
+                    'filename_tmpl', 'epoch_{}.pth').format(runner.epoch + 1)
             else:
-                cur_ckpt_name = f'iter_{runner.iter + 1}.pth'
-            runner.meta['hook_msgs']['last_ckpt'] = cur_ckpt_name
+                cur_ckpt_filename = self.args.get(
+                    'filename_tmpl', 'iter_{}.pth').format(runner.iter + 1)
+            runner.meta.setdefault('hook_msgs', dict())
+            runner.meta['hook_msgs']['last_ckpt'] = os.path.join(
+                self.out_dir, cur_ckpt_filename)
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
             if self.by_epoch:
