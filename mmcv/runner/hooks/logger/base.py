@@ -118,6 +118,7 @@ class LoggerHook(Hook):
                           runner,
                           allow_scalar=True,
                           allow_text=False,
+                          add_mode=True,
                           tags_to_skip=('time', 'data_time')):
         tags = {}
         for var, val in runner.log_buffer.output.items():
@@ -127,8 +128,9 @@ class LoggerHook(Hook):
                 continue
             if isinstance(val, str) and not allow_text:
                 continue
-            tag = f'{var}/{self.get_mode(runner)}'
-            tags[tag] = val
+            if add_mode:
+                var = f'{self.get_mode(runner)}/{var}'
+            tags[var] = val
         tags.update(self.get_lr_tags(runner))
         tags.update(self.get_momentum_tags(runner))
         return tags
