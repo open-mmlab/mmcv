@@ -71,7 +71,7 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def log(self, runner):
-        tags = self.get_loggable_tags(runner)
+        tags = self.get_loggable_tags(runner, add_mode=False)
         if tags:
             self.writer.add_scalars(
                 self.get_mode(runner), tags, self.get_step(runner))
