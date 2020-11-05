@@ -81,14 +81,16 @@ class LoggerHook(Hook):
                              f'but got {runner.mode}')
         return epoch
 
-    def get_iter(self, runner):
-        if self.by_epoch:
+    def get_iter(self, runner, inner_iter=False):
+        """Get the current training iteration step."""
+        if self.by_epoch and inner_iter:
             current_iter = runner.inner_iter + 1
         else:
             current_iter = runner.iter + 1
         return current_iter
 
     def get_step(self, runner):
+        """Get the total training step/epoch."""
         if self.get_mode(runner) == 'val' and self.by_epoch:
             return self.get_epoch(runner)
         else:

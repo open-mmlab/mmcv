@@ -144,7 +144,7 @@ class TextLoggerHook(LoggerHook):
         log_dict = OrderedDict(
             mode=self.get_mode(runner),
             epoch=self.get_epoch(runner),
-            iter=self.get_iter(runner))
+            iter=self.get_iter(runner, inner_iter=True))
 
         # only record lr of the first param group
         cur_lr = runner.current_lr()
