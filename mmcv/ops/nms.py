@@ -52,10 +52,7 @@ class SoftNMSop(torch.autograd.Function):
             min_score=float(min_score),
             method=int(method),
             offset=int(offset))
-        # return dets, inds
-
-        # this return should be deprecated after torch update
-        return torch.cat([dets, inds.to(dets.dtype).unsqueeze(1)], dim=1)
+        return dets, inds
 
     @staticmethod
     def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
@@ -68,7 +65,8 @@ class SoftNMSop(torch.autograd.Function):
             sigma_f=float(sigma),
             min_score_f=float(min_score),
             method_i=int(method),
-            offset_i=int(offset))
+            offset_i=int(offset),
+            outputs=2)
         return nms_out
 
 
@@ -224,23 +222,10 @@ def soft_nms(boxes,
         dets, inds, num_out = ext_module.softnms(*indata_list, **indata_dict)
         inds = inds[:num_out]
     else:
-        # dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
-        # inds = ext_module.softnms(
-        #     boxes.cpu(),
-        #     scores.cpu(),
-        #     dets.cpu(),
-        #     iou_threshold=float(iou_threshold),
-        #     sigma=float(sigma),
-        #     min_score=float(min_score),
-        #     method=method_dict[method],
-        #     offset=int(offset))
-        nms_out = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
-                                  float(iou_threshold), float(sigma),
-                                  float(min_score), method_dict[method],
-                                  int(offset))
-        dets = nms_out[:, :5]
-        inds = nms_out[:, 5].long()
-    # dets = dets[:inds.size(0)]
+        dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
+                                     float(iou_threshold), float(sigma),
+                                     float(min_score), method_dict[method],
+                                     int(offset))
     if is_numpy:
         dets = dets.cpu().numpy()
         inds = inds.cpu().numpy()

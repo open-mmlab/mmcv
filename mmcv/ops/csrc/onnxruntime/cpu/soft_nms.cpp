@@ -140,30 +140,16 @@ void SoftNmsKernel::Compute(OrtKernelContext *context) {
     }
   }
 
-  // std::vector<int64_t> dets_dim({nboxes, 5});
-  // OrtValue *dets = ort_.KernelContext_GetOutput(context, 0, dets_dim.data(),
-  // dets_dim.size()); T *dets_data = ort_.GetTensorMutableData<T>(dets);
+  std::vector<int64_t> dets_dim({nboxes, 5});
+  OrtValue *dets = ort_.KernelContext_GetOutput(context, 0, dets_dim.data(),
+                                                dets_dim.size());
+  T *dets_data = ort_.GetTensorMutableData<T>(dets);
 
-  // std::vector<int64_t> inds_dim({nboxes});
-  // OrtValue *inds = ort_.KernelContext_GetOutput(context, 1, inds_dim.data(),
-  // inds_dim.size()); int64_t *inds_data =
-  // ort_.GetTensorMutableData<int64_t>(inds);
+  std::vector<int64_t> inds_dim({nboxes});
+  OrtValue *inds_ov = ort_.KernelContext_GetOutput(context, 1, inds_dim.data(),
+                                                   inds_dim.size());
+  int64_t *inds_data = ort_.GetTensorMutableData<int64_t>(inds_ov);
 
-  // memcpy(dets_data, de, sizeof(T)*nboxes*5);
-  // memcpy(inds_data, de, sizeof(T)*nboxes);
-
-  std::vector<int64_t> nmsout_dim({nboxes, 6});
-  OrtValue *nmsout = ort_.KernelContext_GetOutput(context, 0, nmsout_dim.data(),
-                                                  nmsout_dim.size());
-  T *nmsout_data = ort_.GetTensorMutableData<T>(nmsout);
-
-  // copy data to output(will be deprecated after pytorch update)
-  for (int64_t i = 0; i < nboxes; i++) {
-    nmsout_data[i * 6] = de[i * 5];
-    nmsout_data[i * 6 + 1] = de[i * 5 + 1];
-    nmsout_data[i * 6 + 2] = de[i * 5 + 2];
-    nmsout_data[i * 6 + 3] = de[i * 5 + 3];
-    nmsout_data[i * 6 + 4] = de[i * 5 + 4];
-    nmsout_data[i * 6 + 5] = T(inds[i]);
-  }
+  memcpy(dets_data, de, sizeof(T) * nboxes * 5);
+  memcpy(inds_data, inds, sizeof(int64_t) * nboxes);
 }

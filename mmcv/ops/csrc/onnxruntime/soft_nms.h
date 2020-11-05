@@ -31,8 +31,11 @@ struct SoftNmsOp : Ort::CustomOpBase<SoftNmsOp, SoftNmsKernel> {
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
   };
 
-  size_t GetOutputTypeCount() const { return 1; };
-  ONNXTensorElementDataType GetOutputType(size_t /*index*/) const {
+  size_t GetOutputTypeCount() const { return 2; };
+  ONNXTensorElementDataType GetOutputType(size_t index) const {
+    if (index == 1) {
+      return ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64;
+    }
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
   };
 
