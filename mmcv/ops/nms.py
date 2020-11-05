@@ -21,12 +21,6 @@ class NMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
         from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-        # Change bbox format from (x1,y1,x2,y2) to (y1,x1,y2,x2)
-        bboxes = select(
-            g, bboxes, 1,
-            g.op(
-                'Constant',
-                value_t=torch.tensor([1, 0, 3, 2], dtype=torch.long)))
         boxes = unsqueeze(g, bboxes, 0)
         scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
         max_output_per_class = g.op(
@@ -116,6 +110,10 @@ def nms(boxes, scores, iou_threshold, offset=0):
             # ONNX only support offset == 1
             boxes[:, -2:] -= 1
         inds = NMSop.apply(boxes, scores, iou_threshold, offset)
+        if torch.onnx.is_in_onnx_export() and offset == 0:
+            # ONNX only support offset == 1
+            boxes[:, -2:] += 1
+
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -249,10 +247,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     if class_agnostic:
         boxes_for_nms = boxes
     else:
-        # TODO fix torch.max　is not support in onnxruntime
-        # max_coordinate, _ = boxes.view(-1).topk(1, dim=0, sorted=False)
-        # max_coordinate = boxes.max()
-        max_coordinate = torch.tensor(2000).to(boxes)
+        max_coordinate = boxes.max()
         offsets = idxs.to(boxes) * (max_coordinate + torch.tensor(1).to(boxes))
         boxes_for_nms = boxes + offsets[:, None]
 

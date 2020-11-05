@@ -263,7 +263,7 @@ class CARAFEPack(nn.Module):
     def kernel_normalizer(self, mask):
         mask = F.pixel_shuffle(mask, self.scale_factor)
         n, mask_c, h, w = mask.size()
-        mask_channel = int(mask_c / (self.up_kernel * self.up_kernel))
+        mask_channel = int(float(mask_c) / float(self.up_kernel * self.up_kernel))
         mask = mask.view(n, mask_channel, -1, h, w)
 
         mask = F.softmax(mask, dim=2)
