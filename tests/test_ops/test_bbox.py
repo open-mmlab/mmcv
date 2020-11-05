@@ -1,13 +1,14 @@
 import numpy as np
+import pytest
 import torch
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 class TestBBox(object):
 
     def _test_bbox_overlaps(self, dtype=torch.float):
 
-        if not torch.cuda.is_available():
-            return
         from mmcv.ops import bbox_overlaps
         b1 = torch.tensor([[1.0, 1.0, 3.0, 4.0], [2.0, 2.0, 3.0, 4.0],
                            [7.0, 7.0, 8.0, 8.0]]).cuda().type(dtype)
