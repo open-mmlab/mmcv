@@ -3,14 +3,12 @@
 #include "pytorch_cuda_helper.hpp"
 
 Tensor nms_rotated_cuda(const Tensor dets, const Tensor scores,
-                        float iou_threshold) {
+                        const Tensor order_t, const Tensor dets_sorted,
+                        float iou_threshold, const int multi_label) {
   // using scalar_t = float;
   AT_ASSERTM(dets.type().is_cuda(), "dets must be a CUDA tensor");
   AT_ASSERTM(scores.type().is_cuda(), "scores must be a CUDA tensor");
   at::cuda::CUDAGuard device_guard(dets.device());
-
-  auto order_t = std::get<1>(scores.sort(0, /* descending=*/true));
-  auto dets_sorted = dets.index_select(0, order_t);
 
   int dets_num = dets.size(0);
 
@@ -27,7 +25,7 @@ Tensor nms_rotated_cuda(const Tensor dets, const Tensor scores,
       dets_sorted.type(), "nms_rotated_kernel_cuda", [&] {
         nms_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
             dets_num, iou_threshold, dets_sorted.data<scalar_t>(),
-            (unsigned long long*)mask.data<int64_t>());
+            (unsigned long long*)mask.data<int64_t>(), multi_label);
       });
 
   Tensor mask_cpu = mask.to(at::kCPU);

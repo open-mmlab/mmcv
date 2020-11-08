@@ -4,7 +4,8 @@
 
 DArrayLite nms_rotated_cuda(const DArrayLite dets, const DArrayLite scores,
                             const DArrayLite dets_sorted, float iou_threshold,
-                            cudaStream_t stream, CudaContext& ctx) {
+                            const int multi_label, cudaStream_t stream,
+                            CudaContext& ctx) {
   int dets_num = dets.dim(0);
 
   const int col_blocks = divideUP(dets_num, threadsPerBlock);
@@ -18,7 +19,7 @@ DArrayLite nms_rotated_cuda(const DArrayLite dets, const DArrayLite scores,
   PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(dets_sorted.elemType().prim(), [&] {
     nms_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
         dets_num, iou_threshold, dets_sorted.ptr<scalar_t>(),
-        (unsigned long long*)mask.ptr<int64_t>());
+        (unsigned long long*)mask.ptr<int64_t>(), multi_label);
   });
 
   DArrayLite mask_cpu = ctx.createDArrayLite(mask, getHostProxy());

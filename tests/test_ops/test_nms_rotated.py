@@ -7,7 +7,7 @@ class TestNmsRotated(object):
     def test_ml_nms_rotated(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ml_nms_rotated
+        from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
              [3.0, 7.0, 10.0, 12.0, 0.3, 0.5], [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]
@@ -24,7 +24,7 @@ class TestNmsRotated(object):
         boxes = torch.from_numpy(np_boxes).cuda()
         labels = torch.from_numpy(np_labels).cuda()
 
-        dets, keep_inds = ml_nms_rotated(boxes, labels, 0.5)
+        dets, keep_inds = nms_rotated(boxes, 0.5, labels, True)
 
         assert np.allclose(dets.cpu().numpy(), np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
@@ -41,9 +41,9 @@ class TestNmsRotated(object):
 
         np_expect_dets = np.array(
             [[1.0, 4.0, 13.0, 7.0, 0.6], [3.0, 6.0, 9.0, 11.0, 0.6],
-             [6.0, 3.0, 8.0, 7.0, 0.5], [3.0, 7.0, 10.0, 12.0, 0.3]],
+             [6.0, 3.0, 8.0, 7.0, 0.5]],
             dtype=np.float32)
-        np_expect_keep_inds = np.array([3, 1, 0, 2], dtype=np.int64)
+        np_expect_keep_inds = np.array([3, 1, 0], dtype=np.int64)
 
         boxes = torch.from_numpy(np_boxes).cuda()
 
