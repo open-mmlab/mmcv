@@ -28,14 +28,14 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
   if(multi_label == 1){
     const int row_start = blockIdx.y;
     const int col_start = blockIdx.x;
-  
+
     // if (row_start > col_start) return;
-  
+
     const int row_size =
         min(n_boxes - row_start * threadsPerBlock, threadsPerBlock);
     const int col_size =
         min(n_boxes - col_start * threadsPerBlock, threadsPerBlock);
-    
+
     // Compared to nms_cuda_kernel, where each box is represented with 4 values
     // (x1, y1, x2, y2), each rotated box is represented with 5 values
     // (x_center, y_center, width, height, angle_degrees) here.
@@ -55,7 +55,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
         dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 5];
     }
     __syncthreads();
-  
+
     if (threadIdx.x < row_size) {
       const int cur_box_idx = threadsPerBlock * row_start + threadIdx.x;
       const T* cur_box = dev_boxes + cur_box_idx * 6;
@@ -79,14 +79,14 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
   }else{
     const int row_start = blockIdx.y;
     const int col_start = blockIdx.x;
-  
+
     // if (row_start > col_start) return;
-  
+
     const int row_size =
         min(n_boxes - row_start * threadsPerBlock, threadsPerBlock);
     const int col_size =
         min(n_boxes - col_start * threadsPerBlock, threadsPerBlock);
-    
+
     // Compared to nms_cuda_kernel, where each box is represented with 4 values
     // (x1, y1, x2, y2), each rotated box is represented with 5 values
     // (x_center, y_center, width, height, angle_degrees) here.
@@ -104,7 +104,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 5 + 4];
     }
     __syncthreads();
-  
+
     if (threadIdx.x < row_size) {
       const int cur_box_idx = threadsPerBlock * row_start + threadIdx.x;
       const T* cur_box = dev_boxes + cur_box_idx * 5;
