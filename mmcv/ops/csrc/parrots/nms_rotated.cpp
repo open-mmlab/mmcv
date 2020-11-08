@@ -25,8 +25,8 @@ void nms_rotated(CudaContext& ctx, const SSElement& attr,
 
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
 
-  outs[0] =
-      nms_rotated_cuda(dets, scores, dets_sorted, iou_threshold, multi_label, stream, ctx);
+  outs[0] = nms_rotated_cuda(dets, scores, dets_sorted, iou_threshold,
+                             multi_label, stream, ctx);
 }
 
 PARROTS_EXTENSION_REGISTER(nms_rotated)
