@@ -2,7 +2,7 @@
 import copy
 from collections import defaultdict
 from itertools import chain
-
+import torch
 from torch.nn.utils import clip_grad
 
 from ..dist_utils import allreduce_grads
@@ -31,6 +31,10 @@ class OptimizerHook(Hook):
                 # Add grad norm to the logger
                 runner.log_buffer.update({'grad_norm': float(grad_norm)},
                                          runner.outputs['num_samples'])
+            elif torch.isnan(grad_norm).any():
+                runner.logger.warning(
+                    'Find Nan in gradients, skip this iteration')
+                return
         runner.optimizer.step()
 
 
