@@ -17,7 +17,7 @@ from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
-from .nms import batched_nms, nms, nms_match, soft_nms, nms_rotated
+from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .psa_mask import PSAMask
