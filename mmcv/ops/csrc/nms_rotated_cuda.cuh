@@ -25,7 +25,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
                                         const int multi_label) {
   // nms_rotated_cuda_kernel is modified from torchvision's nms_cuda_kernel
 
-  if(multi_label == 1){
+  if (multi_label == 1) {
     const int row_start = blockIdx.y;
     const int col_start = blockIdx.x;
 
@@ -52,7 +52,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
       block_boxes[threadIdx.x * 6 + 4] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 4];
       block_boxes[threadIdx.x * 6 + 5] =
-        dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 5];
+          dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 5];
     }
     __syncthreads();
 
@@ -67,7 +67,8 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
       }
       for (i = start; i < col_size; i++) {
         // Instead of devIoU used by original horizontal nms, here
-        // we use the single_box_iou_rotated function from box_iou_rotated_utils.h
+        // we use the single_box_iou_rotated function from
+        // box_iou_rotated_utils.h
         if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 6) >
             iou_threshold) {
           t |= 1ULL << i;
@@ -76,7 +77,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
       const int col_blocks = divideUP(n_boxes, threadsPerBlock);
       dev_mask[cur_box_idx * col_blocks + col_start] = t;
     }
-  }else{
+  } else {
     const int row_start = blockIdx.y;
     const int col_start = blockIdx.x;
 
@@ -116,7 +117,8 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
       }
       for (i = start; i < col_size; i++) {
         // Instead of devIoU used by original horizontal nms, here
-        // we use the single_box_iou_rotated function from box_iou_rotated_utils.h
+        // we use the single_box_iou_rotated function from
+        // box_iou_rotated_utils.h
         if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 5) >
             iou_threshold) {
           t |= 1ULL << i;
