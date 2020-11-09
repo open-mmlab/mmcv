@@ -239,11 +239,13 @@ def CLAHE(img, clip_limit=40.0, tile_grid_size=(8, 8)):
     Returns:
         ndarray: The processed image.
     """
-    assert isinstance(clip_limit, float) or isinstance(clip_limit, int)
+    assert isinstance(img, np.ndarray)
+    assert len(img.shape) == 2
+    assert isinstance(clip_limit, (float, int))
     assert isinstance(tile_grid_size, tuple)
     assert len(tile_grid_size) == 2
     for item in tile_grid_size:
         assert isinstance(item, int)
-    
+
     clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
     return clahe.apply(np.array(img, dtype=np.uint8))
