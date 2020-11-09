@@ -1,4 +1,6 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+// modified from
+// https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/nms_rotated/nms_rotated.h
 #include "parrots_cpp_helper.hpp"
 
 DArrayLite nms_rotated_cuda(const DArrayLite dets, const DArrayLite scores,

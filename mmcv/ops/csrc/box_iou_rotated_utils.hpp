@@ -1,4 +1,6 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+// modified from
+// https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated_utils.h
 #pragma once
 #include <cassert>
 #include <cmath>
