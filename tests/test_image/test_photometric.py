@@ -202,7 +202,7 @@ class TestPhotometric:
                 atol=1)
 
     def test_lut_transform(self):
-        lut_table = np.array(list(range(255)))
+        lut_table = np.array(list(range(256)))
 
         img = mmcv.lut_transform(self.img, lut_table)
         assert id(img) != id(self.img)
