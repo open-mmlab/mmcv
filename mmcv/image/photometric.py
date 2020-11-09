@@ -224,3 +224,26 @@ def adjust_contrast(img, factor=1.):
         img.astype(np.float32), factor, degenerated.astype(np.float32),
         1 - factor, 0)
     return contrasted_img.astype(img.dtype)
+
+
+def CLAHE(img, clip_limit=40.0, tile_grid_size=(8, 8)):
+    """Use CLAHE method to process the image.
+
+    Args:
+        img (ndarray): Image to be processed.
+        clip_limit (float): Threshold for contrast limiting. Default: 40.0.
+        tile_grid_size (tuple[int]): Size of grid for histogram equalization.
+            Input image will be divided into equally sized rectangular tiles.
+            It defines the number of tiles in row and column. Default: (8, 8).
+
+    Returns:
+        ndarray: The processed image.
+    """
+    assert isinstance(clip_limit, float) or isinstance(clip_limit, int)
+    assert isinstance(tile_grid_size, tuple)
+    assert len(tile_grid_size) == 2
+    for item in tile_grid_size:
+        assert isinstance(item, int)
+    
+    clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
+    return clahe.apply(np.array(img, dtype=np.uint8))
