@@ -23,6 +23,32 @@ from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
 from mmcv.runner.hooks.lr_updater import CosineRestartLrUpdaterHook
 
 
+def test_checkpoint_hook():
+    """xdoctest -m tests/test_runner/test_hooks.py test_checkpoint_hook."""
+
+    # test epoch based runner
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner('EpochBasedRunner', max_epochs=1)
+    runner.meta = dict()
+    checkpointhook = CheckpointHook(interval=1, by_epoch=True)
+    runner.register_hook(checkpointhook)
+    runner.run([loader], [('train', 1)])
+    assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
+        runner.work_dir, 'epoch_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+    # test iter based runner
+    runner = _build_demo_runner(
+        'IterBasedRunner', max_iters=1, max_epochs=None)
+    runner.meta = dict()
+    checkpointhook = CheckpointHook(interval=1, by_epoch=False)
+    runner.register_hook(checkpointhook)
+    runner.run([loader], [('train', 1)])
+    assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
+        runner.work_dir, 'iter_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+
 def test_ema_hook():
     """xdoctest -m tests/test_hooks.py test_ema_hook."""
 
@@ -160,15 +186,15 @@ def test_momentum_runner_hook():
         call('train', {
             'learning_rate': 0.01999999999999999,
             'momentum': 0.95
-        }, 0),
+        }, 1),
         call('train', {
             'learning_rate': 0.2,
             'momentum': 0.85
-        }, 4),
+        }, 5),
         call('train', {
             'learning_rate': 0.155,
             'momentum': 0.875
-        }, 6),
+        }, 7),
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
@@ -211,15 +237,15 @@ def test_cosine_runner_hook():
         call('train', {
             'learning_rate': 0.02,
             'momentum': 0.95
-        }, 0),
+        }, 1),
         call('train', {
             'learning_rate': 0.01,
             'momentum': 0.97
-        }, 5),
+        }, 6),
         call('train', {
             'learning_rate': 0.0004894348370484647,
             'momentum': 0.9890211303259032
-        }, 9)
+        }, 10)
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
@@ -289,15 +315,15 @@ def test_cosine_restart_lr_update_hook():
         call('train', {
             'learning_rate': 0.01,
             'momentum': 0.95
-        }, 0),
+        }, 1),
         call('train', {
-            'learning_rate': 0.0,
+            'learning_rate': 0.01,
             'momentum': 0.95
-        }, 5),
+        }, 6),
         call('train', {
             'learning_rate': 0.0009549150281252633,
             'momentum': 0.95
-        }, 9)
+        }, 10)
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
@@ -320,7 +346,7 @@ def test_mlflow_hook(log_model):
         {
             'learning_rate': 0.02,
             'momentum': 0.95
-        }, step=5)
+        }, step=1)
     if log_model:
         hook.mlflow_pytorch.log_model.assert_called_with(
             runner.model, 'models')
@@ -343,7 +369,7 @@ def test_wandb_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     },
-                                      step=5)
+                                      step=1)
     hook.wandb.join.assert_called_with()
 
 

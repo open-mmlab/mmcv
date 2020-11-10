@@ -20,20 +20,29 @@ ext_module = ext_loader.load_ext('_ext', [
 class DeformConv2dFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, offset, weight, stride, padding, dilation, groups,
-                 deform_groups, bias, im2col_step):
+    def symbolic(g,
+                 input,
+                 offset,
+                 weight,
+                 stride,
+                 padding,
+                 dilation,
+                 groups,
+                 deform_groups,
+                 bias=False,
+                 im2col_step=32):
         return g.op(
             'MMCVDeformConv2d',
             input,
             offset,
             weight,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=groups,
-            deform_groups=deform_groups,
-            bias=bias,
-            im2col_step=im2col_step)
+            stride_i=stride,
+            padding_i=padding,
+            dilation_i=dilation,
+            groups_i=groups,
+            deform_groups_i=deform_groups,
+            bias_i=bias,
+            im2col_step_i=im2col_step)
 
     @staticmethod
     def forward(ctx,
@@ -52,7 +61,6 @@ class DeformConv2dFunction(Function):
                 f'Expected 4D tensor as input, got {input.dim()}D tensor \
                   instead.')
         assert bias is False, 'Only support bias is False.'
-
         ctx.stride = _pair(stride)
         ctx.padding = _pair(padding)
         ctx.dilation = _pair(dilation)

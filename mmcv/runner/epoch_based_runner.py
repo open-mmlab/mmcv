@@ -169,7 +169,7 @@ class EpochBasedRunner(BaseRunner):
             if platform.system() != 'Windows':
                 mmcv.symlink(filename, dst_file)
             else:
-                shutil.copy(filename, dst_file)
+                shutil.copy(filepath, dst_file)
 
 
 @RUNNERS.register_module()

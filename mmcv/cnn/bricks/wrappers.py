@@ -84,8 +84,8 @@ class ConvTranspose2d(nn.ConvTranspose2d):
 class MaxPool2d(nn.MaxPool2d):
 
     def forward(self, x):
-        # PyTorch 1.6 does not support empty tensor inference yet
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 6)):
+        # PyTorch 1.7 does not support empty tensor inference yet
+        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 7)):
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-2:], _pair(self.kernel_size),
                                      _pair(self.padding), _pair(self.stride),
