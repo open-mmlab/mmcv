@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from ..utils import is_tuple_of
 from .colorspace import bgr2gray, gray2bgr
 
 
@@ -248,3 +249,29 @@ def lut_transform(img, lut_table):
     assert lut_table.shape == (256, )
 
     return cv2.LUT(np.array(img, dtype=np.uint8), lut_table)
+
+
+def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
+    """Use CLAHE method to process the image.
+
+    See `ZUIDERVELD,K. Contrast Limited Adaptive Histogram Equalization[J].
+    Graphics Gems, 1994:474-485.` for more information.
+
+    Args:
+        img (ndarray): Image to be processed.
+        clip_limit (float): Threshold for contrast limiting. Default: 40.0.
+        tile_grid_size (tuple[int]): Size of grid for histogram equalization.
+            Input image will be divided into equally sized rectangular tiles.
+            It defines the number of tiles in row and column. Default: (8, 8).
+
+    Returns:
+        ndarray: The processed image.
+    """
+    assert isinstance(img, np.ndarray)
+    assert img.ndim == 2
+    assert isinstance(clip_limit, (float, int))
+    assert is_tuple_of(tile_grid_size, int)
+    assert len(tile_grid_size) == 2
+
+    clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
+    return clahe.apply(np.array(img, dtype=np.uint8))
