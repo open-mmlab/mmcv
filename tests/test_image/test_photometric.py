@@ -245,11 +245,11 @@ class TestPhotometric:
 
         # test assertion tile_grid_size should be a tuple with 2 integers
         with pytest.raises(AssertionError):
-            mmcv.clahe(self.img[:, :, i], tile_grid_size=(8.0, 8.0))
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=(8.0, 8.0))
         with pytest.raises(AssertionError):
-            mmcv.clahe(self.img[:, :, i], tile_grid_size=(8, 8, 8))
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=(8, 8, 8))
         with pytest.raises(AssertionError):
-            mmcv.clahe(self.img[:, :, i], tile_grid_size=[8, 8])
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=[8, 8])
 
         # test with different channels
         for i in range(self.img.shape[-1]):
