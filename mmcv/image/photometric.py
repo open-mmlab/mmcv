@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from .colorspace import bgr2gray, gray2bgr
+from ..utils import is_tuple_of
 
 
 def imnormalize(img, mean, std, to_rgb=True):
@@ -269,10 +270,8 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
     assert isinstance(img, np.ndarray)
     assert img.ndim == 2
     assert isinstance(clip_limit, (float, int))
-    assert isinstance(tile_grid_size, tuple)
+    is_tuple_of(tile_grid_size, int)
     assert len(tile_grid_size) == 2
-    for item in tile_grid_size:
-        assert isinstance(item, int)
 
     clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
     return clahe.apply(np.array(img, dtype=np.uint8))
