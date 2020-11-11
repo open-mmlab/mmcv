@@ -227,7 +227,9 @@ def adjust_contrast(img, factor=1.):
 
 
 def CLAHE(img, clip_limit=40.0, tile_grid_size=(8, 8)):
-    """Use CLAHE method to process the image.
+    """Use CLAHE method to process the image. See `ZUIDERVELD,K. Contrast
+    Limited Adaptive Histogram Equalization[J]. Graphics Gems, 1994:474-485.`
+    for more information.
 
     Args:
         img (ndarray): Image to be processed.
