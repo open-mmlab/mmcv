@@ -270,7 +270,7 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
     assert isinstance(img, np.ndarray)
     assert img.ndim == 2
     assert isinstance(clip_limit, (float, int))
-    is_tuple_of(tile_grid_size, int)
+    assert is_tuple_of(tile_grid_size, int)
     assert len(tile_grid_size) == 2
 
     clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
