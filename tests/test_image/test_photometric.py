@@ -219,7 +219,7 @@ class TestPhotometric:
         assert id(baseline) != id(input_img)
         assert np.allclose(img, baseline)
 
-        input_img = np.random.randint(0, 256, size=(7, 8, 9, 10, 11))：
+        input_img = np.random.randint(0, 256, size=(7, 8, 9, 10, 11))
         img = mmcv.lut_transform(input_img, lut_table)
         assert id(img) != id(input_img)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
