@@ -227,7 +227,7 @@ def adjust_contrast(img, factor=1.):
 
 
 def lut_transform(img, lut_table):
-    """Performs a look-up table transform of an array.
+    """Transform array by look-up table.
 
     The function lut_transform fills the output array with values from the
     look-up table. Indices of the entries are taken from the input array.
