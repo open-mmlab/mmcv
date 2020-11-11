@@ -97,6 +97,9 @@ def resize(img, size, dst=None, interpolation=cv2.INTER_LINEAR):
 
 def _maybe_process_in_chunks(process_fn, **kwargs):
     """
+    This wrapper function is adopted from albumentations with the following link
+    https://github.com/albumentations-team/albumentations/blob/538f67d0b062905e114610b7af86d2b7f62bf902/albumentations/augmentations/functional.py#L154
+    
     Wrap OpenCV function to enable processing images with more than 4 channels.
 
     Limitations:
