@@ -23,6 +23,32 @@ from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
 from mmcv.runner.hooks.lr_updater import CosineRestartLrUpdaterHook
 
 
+def test_checkpoint_hook():
+    """xdoctest -m tests/test_runner/test_hooks.py test_checkpoint_hook."""
+
+    # test epoch based runner
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner('EpochBasedRunner', max_epochs=1)
+    runner.meta = dict()
+    checkpointhook = CheckpointHook(interval=1, by_epoch=True)
+    runner.register_hook(checkpointhook)
+    runner.run([loader], [('train', 1)])
+    assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
+        runner.work_dir, 'epoch_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+    # test iter based runner
+    runner = _build_demo_runner(
+        'IterBasedRunner', max_iters=1, max_epochs=None)
+    runner.meta = dict()
+    checkpointhook = CheckpointHook(interval=1, by_epoch=False)
+    runner.register_hook(checkpointhook)
+    runner.run([loader], [('train', 1)])
+    assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
+        runner.work_dir, 'iter_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+
 def test_ema_hook():
     """xdoctest -m tests/test_hooks.py test_ema_hook."""
 
@@ -291,7 +317,7 @@ def test_cosine_restart_lr_update_hook():
             'momentum': 0.95
         }, 1),
         call('train', {
-            'learning_rate': 0.0,
+            'learning_rate': 0.01,
             'momentum': 0.95
         }, 6),
         call('train', {

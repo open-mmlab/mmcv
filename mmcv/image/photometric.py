@@ -226,6 +226,30 @@ def adjust_contrast(img, factor=1.):
     return contrasted_img.astype(img.dtype)
 
 
+def lut_transform(img, lut_table):
+    """Transform array by look-up table.
+
+    The function lut_transform fills the output array with values from the
+    look-up table. Indices of the entries are taken from the input array.
+
+    Args:
+        img (ndarray): Image to be transformed.
+        lut_table (ndarray): look-up table of 256 elements; in case of
+            multi-channel input array, the table should either have a single
+            channel (in this case the same table is used for all channels) or
+            the same number of channels as in the input array.
+
+    Returns:
+        ndarray: The transformed image.
+    """
+    assert isinstance(img, np.ndarray)
+    assert 0 <= np.min(img) and np.max(img) <= 255
+    assert isinstance(lut_table, np.ndarray)
+    assert lut_table.shape == (256, )
+
+    return cv2.LUT(np.array(img, dtype=np.uint8), lut_table)
+
+
 def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
     """Use CLAHE method to process the image.
 

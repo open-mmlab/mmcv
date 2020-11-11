@@ -201,6 +201,27 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
+
+    def test_lut_transform(self):
+        lut_table = np.array(list(range(256)))
+
+        img = mmcv.lut_transform(self.img, lut_table)
+        baseline = cv2.LUT(self.img, lut_table)
+        assert np.allclose(img, baseline)
+
+        input_img = np.array(
+            [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
+            dtype=np.float)
+        img = mmcv.lut_transform(input_img, lut_table)
+        baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
+        assert np.allclose(img, baseline)
+
+        input_img = np.random.randint(0, 256, size=(7, 8, 9, 10, 11))
+        img = mmcv.lut_transform(input_img, lut_table)
+        baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
+        assert np.allclose(img, baseline)
+
+
     def test_clahe(self):
 
         def _clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
