@@ -201,24 +201,24 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
-    def test_CLAHE(self):
+    def test_clahe(self):
 
-        def _CLAHE(img, clip_limit=40.0, tile_grid_size=(8, 8)):
+        def _clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
             clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
             return clahe.apply(np.array(img, dtype=np.uint8))
 
         # test with different channels
         for i in range(self.img.shape[-1]):
-            img = mmcv.CLAHE(self.img[:, :, i])
-            img_std = _CLAHE(self.img[:, :, i])
+            img = mmcv.clahe(self.img[:, :, i])
+            img_std = _clahe(self.img[:, :, i])
             assert np.allclose(img, img_std)
             assert id(img) != id(self.img[:, :, i])
             assert id(img_std) != id(self.img[:, :, i])
 
         # test case with clip_limit=1.2
         for i in range(self.img.shape[-1]):
-            img = mmcv.CLAHE(self.img[:, :, i], 1.2)
-            img_std = _CLAHE(self.img[:, :, i], 1.2)
+            img = mmcv.clahe(self.img[:, :, i], 1.2)
+            img_std = _clahe(self.img[:, :, i], 1.2)
             assert np.allclose(img, img_std)
             assert id(img) != id(self.img[:, :, i])
             assert id(img_std) != id(self.img[:, :, i])
