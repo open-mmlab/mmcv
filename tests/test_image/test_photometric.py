@@ -205,23 +205,17 @@ class TestPhotometric:
         lut_table = np.array(list(range(256)))
 
         img = mmcv.lut_transform(self.img, lut_table)
-        assert id(img) != id(self.img)
         baseline = cv2.LUT(self.img, lut_table)
-        assert id(baseline) != id(self.img)
         assert np.allclose(img, baseline)
 
         input_img = np.array(
             [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
             dtype=np.float)
         img = mmcv.lut_transform(input_img, lut_table)
-        assert id(img) != id(input_img)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
-        assert id(baseline) != id(input_img)
         assert np.allclose(img, baseline)
 
         input_img = np.random.randint(0, 256, size=(7, 8, 9, 10, 11))
         img = mmcv.lut_transform(input_img, lut_table)
-        assert id(img) != id(input_img)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
-        assert id(baseline) != id(input_img)
         assert np.allclose(img, baseline)
