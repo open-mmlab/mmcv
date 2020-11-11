@@ -267,7 +267,7 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
         ndarray: The processed image.
     """
     assert isinstance(img, np.ndarray)
-    assert len(img.shape) == 2
+    assert img.ndim == 2
     assert isinstance(clip_limit, (float, int))
     assert isinstance(tile_grid_size, tuple)
     assert len(tile_grid_size) == 2
