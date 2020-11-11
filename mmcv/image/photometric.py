@@ -243,7 +243,8 @@ def lut_transform(img, lut_table):
         ndarray: The transformed image.
     """
     assert isinstance(img, np.ndarray)
-    assert 0 <= np.max(img) and np.max(img) <= 255
-    assert len(lut_table.shape) == 1 and lut_table.shape[0] == 256
+    assert 0 <= np.min(img) and np.max(img) <= 255
+    assert isinstance(lut_table, np.ndarray)
+    assert lut_table.shape == (256, )
 
     return cv2.LUT(np.array(img, dtype=np.uint8), lut_table)
