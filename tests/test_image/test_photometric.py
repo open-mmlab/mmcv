@@ -201,7 +201,6 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
-
     def test_lut_transform(self):
         lut_table = np.array(list(range(256)))
 
@@ -220,7 +219,6 @@ class TestPhotometric:
         img = mmcv.lut_transform(input_img, lut_table)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
         assert np.allclose(img, baseline)
-
 
     def test_clahe(self):
 
