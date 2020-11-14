@@ -65,6 +65,14 @@ We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA
       <th valign="bottom" align="left" width="100">torch 1.3</th>
     </tr>
     <tr>
+      <td align="left">11.0</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==latest+torch1.7.0+cu110 -f https://download.openmmlab.com/mmcv/dist/index.html</code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+    </tr>
+    <tr>
       <td align="left">10.2</td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==latest+torch1.7.0+cu102 -f https://download.openmmlab.com/mmcv/dist/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==latest+torch1.6.0+cu102 -f https://download.openmmlab.com/mmcv/dist/index.html</code></pre> </details> </td>
