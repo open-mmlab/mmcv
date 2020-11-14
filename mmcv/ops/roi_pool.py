@@ -15,12 +15,11 @@ class RoIPoolFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale):
         return g.op(
-            'MMCVRoIPool',
+            'MaxRoiPool',
             input,
             rois,
-            pooled_height=output_size[0],
-            pooled_width=output_size[1],
-            spatial_scale=spatial_scale)
+            pooled_shape_i=output_size,
+            spatial_scale_f=spatial_scale)
 
     @staticmethod
     def forward(ctx, input, rois, output_size, spatial_scale=1.0):
