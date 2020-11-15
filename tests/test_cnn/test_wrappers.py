@@ -5,7 +5,8 @@ from unittest.mock import patch
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import Conv2d, ConvTranspose2d, Linear, MaxPool2d
+from mmcv.cnn.bricks import (Conv2d, ConvTranspose2d, ConvTranspose3d, Linear,
+                             MaxPool2d)
 
 
 @patch('torch.__version__', '1.1')
@@ -100,6 +101,61 @@ def test_conv_transposed_2d():
     # eval mode
     x_empty = torch.randn(0, in_cha, in_h, in_w)
     wrapper = ConvTranspose2d(
+        in_cha, out_cha, k, stride=s, padding=p, dilation=d, output_padding=op)
+    wrapper.eval()
+    wrapper(x_empty)
+
+
+@patch('torch.__version__', '1.1')
+def test_conv_transposed_3d():
+    test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
+                              ('in_t', [10, 20]), ('in_channel', [1, 3]),
+                              ('out_channel', [1, 3]), ('kernel_size', [3, 5]),
+                              ('stride', [1, 2]), ('padding', [0, 1]),
+                              ('dilation', [1, 2])])
+
+    for in_h, in_w, in_t, in_cha, out_cha, k, s, p, d in product(
+            *list(test_cases.values())):
+        # wrapper op with 0-dim input
+        x_empty = torch.randn(0, in_cha, in_t, in_h, in_w, requires_grad=True)
+        # out padding must be smaller than either stride or dilation
+        op = min(s, d) - 1
+        torch.manual_seed(0)
+        wrapper = ConvTranspose3d(
+            in_cha,
+            out_cha,
+            k,
+            stride=s,
+            padding=p,
+            dilation=d,
+            output_padding=op)
+        wrapper_out = wrapper(x_empty)
+
+        # torch op with 3-dim input as shape reference
+        x_normal = torch.randn(3, in_cha, in_t, in_h, in_w)
+        torch.manual_seed(0)
+        ref = nn.ConvTranspose3d(
+            in_cha,
+            out_cha,
+            k,
+            stride=s,
+            padding=p,
+            dilation=d,
+            output_padding=op)
+        ref_out = ref(x_normal)
+
+        assert wrapper_out.shape[0] == 0
+        assert wrapper_out.shape[1:] == ref_out.shape[1:]
+
+        wrapper_out.sum().backward()
+        assert wrapper.weight.grad is not None
+        assert wrapper.weight.grad.shape == wrapper.weight.shape
+
+        assert torch.equal(wrapper(x_normal), ref_out)
+
+    # eval mode
+    x_empty = torch.randn(0, in_cha, in_t, in_h, in_w)
+    wrapper = ConvTranspose3d(
         in_cha, out_cha, k, stride=s, padding=p, dilation=d, output_padding=op)
     wrapper.eval()
     wrapper(x_empty)

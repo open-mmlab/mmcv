@@ -78,7 +78,30 @@ class ConvTranspose2d(nn.ConvTranspose2d):
             else:
                 return empty
 
-        return super(ConvTranspose2d, self).forward(x)
+        return super().forward(x)
+
+
+@CONV_LAYERS.register_module()
+@CONV_LAYERS.register_module('deconv3d')
+@UPSAMPLE_LAYERS.register_module('deconv3d', force=True)
+class ConvTranspose3d(nn.ConvTranspose3d):
+
+    def forward(self, x):
+        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+            out_shape = [x.shape[0], self.out_channels]
+            for i, k, p, s, d, op in zip(x.shape[-3:], self.kernel_size,
+                                         self.padding, self.stride,
+                                         self.dilation, self.output_padding):
+                out_shape.append((i - 1) * s - 2 * p + (d * (k - 1) + 1) + op)
+            empty = NewEmptyTensorOp.apply(x, out_shape)
+            if self.training:
+                # produce dummy gradient to avoid DDP warning.
+                dummy = sum(x.view(-1)[0] for x in self.parameters()) * 0.0
+                return empty + dummy
+            else:
+                return empty
+
+        return super().forward(x)
 
 
 class MaxPool2d(nn.MaxPool2d):
