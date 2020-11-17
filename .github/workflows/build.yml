@@ -34,7 +34,7 @@ jobs:
       image: registry.sensetime.com/parrots/parrots-mmcv:1.2
       credentials:
         username: wangshiguang
-        password: ${{  secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}      
+        password: ${{ secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
