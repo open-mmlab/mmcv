@@ -29,15 +29,17 @@ jobs:
 
   build_parrots:
     runs-on: ubuntu-latest
-    container:
-      # image: ghcr.io/<YOUR_USERNAME>/<IMAGE_NAME>:<IMAGE_TAG>
-      image: registry.sensetime.com/parrots/parrots-mmcv:1.2
-      credentials:
-        username: wangshiguang
-        password: Uestc0612@5
+#     container:
+#       # image: ghcr.io/<YOUR_USERNAME>/<IMAGE_NAME>:<IMAGE_TAG>
+#       image: registry.sensetime.com/parrots/parrots-mmcv:1.2
+#       credentials:
+#         username: wangshiguang
+#         password: Uestc0612@5
 
     steps:
       - uses: actions/checkout@v2
+      - name: example.com docker registry login
+        run: echo "Uestc0612@5" | docker login registry.sensetime.com -u wangshiguang --password-stdin        
       # - name: Install system dependencies
       #   run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install unittest dependencies
