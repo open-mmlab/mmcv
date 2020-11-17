@@ -1,6 +1,3 @@
-import os
-import warnings
-
 import torch
 import torch.nn as nn
 from torch.autograd import Function
@@ -16,59 +13,36 @@ ext_module = ext_loader.load_ext('_ext',
 class RoIAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g,
-                 input,
-                 rois,
-                 output_size,
-                 spatial_scale=1.0,
-                 sampling_ratio=0,
-                 pool_mode='avg',
-                 aligned=True):
-        if 'ONNX_BACKEND' in os.environ and os.environ[
-                'ONNX_BACKEND'] == 'TensorRT':
-            return g.op(
-                'MMCVRoIAlign',
-                input,
-                rois,
-                aligned_height_i=output_size[0],
-                aligned_width_i=output_size[1],
-                spatial_scale_f=spatial_scale,
-                sampling_ratio_i=sampling_ratio,
-                pool_mode_s=pool_mode,
-                aligned_i=aligned)
-        # This code is from https://github.com/pytorch/vision
-        from torch.onnx.symbolic_opset9 import select, squeeze, _cast_Long
-        batch_indices = _cast_Long(
-            g,
-            squeeze(
-                g,
-                select(
-                    g, rois, 1,
-                    g.op(
-                        'Constant',
-                        value_t=torch.tensor([0], dtype=torch.long))), 1),
-            False)
-        rois = select(
-            g, rois, 1,
-            g.op(
-                'Constant',
-                value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
+    def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
+                 pool_mode, aligned):
+        from torch.onnx.symbolic_opset9 import sub, squeeze
+        from torch.onnx.symbolic_helper import _slice_helper
+        from torch.onnx import TensorProtoDataType
+        # batch_indices = rois[:, 0].long()
+        batch_indices = _slice_helper(g, rois, axes=[1], starts=[0], ends=[1])
+        batch_indices = squeeze(g, batch_indices, 1)
+        batch_indices = g.op(
+            'Cast', batch_indices, to_i=TensorProtoDataType.INT64)
+        # rois = rois[:, 1:]
+        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
         if aligned:
-            warnings.warn(
-                "ONNX export of ROIAlign with aligned=True does not match PyTorch when using malformed boxes,"
-                " ONNX forces ROIs to be 1x1 or larger.")
-            scale = torch.tensor(0.5 / spatial_scale).to(dtype=torch.float)
-            rois = g.op("Sub", rois, scale)
+            # rois -= 0.5/spatial_scale
+            aligned_offset = g.op(
+                'Constant',
+                value_t=torch.tensor([0.5 / spatial_scale],
+                                     dtype=torch.float32))
+            rois = sub(g, rois, aligned_offset)
+        # roi align
         return g.op(
             'RoiAlign',
             input,
             rois,
             batch_indices,
-            mode_s=pool_mode,
-            sampling_ratio_i=sampling_ratio,
-            spatial_scale_f=spatial_scale,
             output_height_i=output_size[0],
-            output_width_i=output_size[1])
+            output_width_i=output_size[1],
+            spatial_scale_f=spatial_scale,
+            sampling_ratio_i=max(0, sampling_ratio),
+            mode_s=pool_mode)
 
     @staticmethod
     def forward(ctx,

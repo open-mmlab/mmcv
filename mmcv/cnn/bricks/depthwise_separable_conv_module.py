@@ -16,12 +16,18 @@ class DepthwiseSeparableConvModule(nn.Module):
     if `norm_cfg` and `act_cfg` are specified.
 
     Args:
-        in_channels (int): Same as nn.Conv2d.
-        out_channels (int): Same as nn.Conv2d.
-        kernel_size (int or tuple[int]): Same as nn.Conv2d.
-        stride (int or tuple[int]): Same as nn.Conv2d. Default: 1.
-        padding (int or tuple[int]): Same as nn.Conv2d. Default: 0.
-        dilation (int or tuple[int]): Same as nn.Conv2d. Default: 1.
+        in_channels (int): Number of channels in the input feature map.
+            Same as that in ``nn._ConvNd``.
+        out_channels (int): Number of channels produced by the convolution.
+            Same as that in ``nn._ConvNd``.
+        kernel_size (int | tuple[int]): Size of the convolving kernel.
+            Same as that in ``nn._ConvNd``.
+        stride (int | tuple[int]): Stride of the convolution.
+            Same as that in ``nn._ConvNd``. Default: 1.
+        padding (int | tuple[int]): Zero-padding added to both sides of
+            the input. Same as that in ``nn._ConvNd``. Default: 0.
+        dilation (int | tuple[int]): Spacing between kernel elements.
+            Same as that in ``nn._ConvNd``. Default: 1.
         norm_cfg (dict): Default norm config for both depthwise ConvModule and
             pointwise ConvModule. Default: None.
         act_cfg (dict): Default activation config for both depthwise ConvModule
