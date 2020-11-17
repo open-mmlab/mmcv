@@ -29,11 +29,11 @@ jobs:
 
   build_parrots:
     runs-on: ubuntu-latest
-      container:
-        image: ghcr.io/sunnyxiaohu/parrots-mmcv:1.2
-        credentials:
-          username: sunnyxiaohu
-          password: ${{ secrets.CR_PAT }}
+    container:
+      image: ghcr.io/sunnyxiaohu/parrots-mmcv:1.2.1
+      credentials:
+        username: sunnyxiaohu
+        password: ${{ secrets.CR_PAT }}
 
     steps:
       - uses: actions/checkout@v2
