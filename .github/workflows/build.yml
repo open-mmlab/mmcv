@@ -41,3 +41,8 @@ jobs:
         run: pip install -r requirements/test.txt
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
+          coverage xml
+          coverage report -m
