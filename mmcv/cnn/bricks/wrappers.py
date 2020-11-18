@@ -58,7 +58,7 @@ class Conv2d(nn.Conv2d):
         return super().forward(x)
 
 
-@CONV_LAYERS.register_module('Conv', force=True)
+@CONV_LAYERS.register_module('Conv3d', force=True)
 class Conv3d(nn.Conv3d):
 
     def forward(self, x):
