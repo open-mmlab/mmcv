@@ -58,6 +58,73 @@ def test_nms():
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
+def test_softnms():
+    if not torch.cuda.is_available():
+        return
+    from packaging import version
+    from mmcv.ops import soft_nms, get_onnxruntime_op_path
+
+    # only support onnxruntime >= 1.5.0
+    if version.parse(rt.__version__) < version.parse('1.5.0'):
+        return
+
+    ort_custom_op_path = get_onnxruntime_op_path()
+    assert os.path.exists(ort_custom_op_path)
+
+    np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
+                         [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
+                        dtype=np.float32)
+    np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
+
+    boxes = torch.from_numpy(np_boxes)
+    scores = torch.from_numpy(np_scores)
+
+    configs = [[0.3, 0.5, 0.01, 'linear'], [0.3, 0.5, 0.01, 'gaussian'],
+               [0.3, 0.5, 0.01, 'naive']]
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+
+    for iou, sig, mscore, m in configs:
+        pytorch_dets, pytorch_inds = soft_nms(
+            boxes,
+            scores,
+            iou_threshold=iou,
+            sigma=sig,
+            min_score=mscore,
+            method=m)
+        nms = partial(
+            soft_nms, iou_threshold=iou, sigma=sig, min_score=mscore, method=m)
+
+        wrapped_model = WrapFunction(nms)
+        wrapped_model.cpu().eval()
+        with torch.no_grad():
+            torch.onnx.export(
+                wrapped_model, (boxes, scores),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['boxes', 'scores'],
+                opset_version=11)
+        onnx_model = onnx.load(onnx_file)
+
+        # get onnx output
+        input_all = [node.name for node in onnx_model.graph.input]
+        input_initializer = [
+            node.name for node in onnx_model.graph.initializer
+        ]
+        net_feed_input = list(set(input_all) - set(input_initializer))
+        assert (len(net_feed_input) == 2)
+        sess = rt.InferenceSession(onnx_file, session_options)
+        onnx_dets, onnx_inds = sess.run(None, {
+            'scores': scores.detach().numpy(),
+            'boxes': boxes.detach().numpy()
+        })
+        os.remove(onnx_file)
+        assert np.allclose(pytorch_dets, onnx_dets, atol=1e-3)
+        assert np.allclose(onnx_inds, onnx_inds, atol=1e-3)
+
+
 def test_roialign():
     from mmcv.ops import roi_align
 

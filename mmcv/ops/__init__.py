@@ -11,7 +11,7 @@ from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
-from .info import get_compiler_version, get_compiling_cuda_version
+from .info import get_compiler_version, get_compiling_cuda_version, get_onnxruntime_op_path
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
