@@ -363,6 +363,7 @@ adaptive_avg_pool2d = _adaptive_pool('adaptive_avg_pool2d', 'AveragePool',
 adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
                                      _triple)
 
+
 def new_full(g,
              self,
              size,
