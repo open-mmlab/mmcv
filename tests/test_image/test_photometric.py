@@ -3,6 +3,7 @@ import os.path as osp
 
 import cv2
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal
 
 import mmcv
@@ -200,3 +201,68 @@ class TestPhotometric:
                 _adjust_contrast(img, factor).astype(np.int32),
                 rtol=0,
                 atol=1)
+
+    def test_lut_transform(self):
+        lut_table = np.array(list(range(256)))
+
+        # test assertion image values should between 0 and 255.
+        with pytest.raises(AssertionError):
+            mmcv.lut_transform(np.array([256]), lut_table)
+        with pytest.raises(AssertionError):
+            mmcv.lut_transform(np.array([-1]), lut_table)
+
+        # test assertion lut_table should be ndarray with shape (256, )
+        with pytest.raises(AssertionError):
+            mmcv.lut_transform(np.array([0]), list(range(256)))
+        with pytest.raises(AssertionError):
+            mmcv.lut_transform(np.array([1]), np.array(list(range(257))))
+
+        img = mmcv.lut_transform(self.img, lut_table)
+        baseline = cv2.LUT(self.img, lut_table)
+        assert np.allclose(img, baseline)
+
+        input_img = np.array(
+            [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
+            dtype=np.float)
+        img = mmcv.lut_transform(input_img, lut_table)
+        baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
+        assert np.allclose(img, baseline)
+
+        input_img = np.random.randint(0, 256, size=(7, 8, 9, 10, 11))
+        img = mmcv.lut_transform(input_img, lut_table)
+        baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
+        assert np.allclose(img, baseline)
+
+    def test_clahe(self):
+
+        def _clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
+            clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
+            return clahe.apply(np.array(img, dtype=np.uint8))
+
+        # test assertion image should have the right shape
+        with pytest.raises(AssertionError):
+            mmcv.clahe(self.img)
+
+        # test assertion tile_grid_size should be a tuple with 2 integers
+        with pytest.raises(AssertionError):
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=(8.0, 8.0))
+        with pytest.raises(AssertionError):
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=(8, 8, 8))
+        with pytest.raises(AssertionError):
+            mmcv.clahe(self.img[:, :, 0], tile_grid_size=[8, 8])
+
+        # test with different channels
+        for i in range(self.img.shape[-1]):
+            img = mmcv.clahe(self.img[:, :, i])
+            img_std = _clahe(self.img[:, :, i])
+            assert np.allclose(img, img_std)
+            assert id(img) != id(self.img[:, :, i])
+            assert id(img_std) != id(self.img[:, :, i])
+
+        # test case with clip_limit=1.2
+        for i in range(self.img.shape[-1]):
+            img = mmcv.clahe(self.img[:, :, i], 1.2)
+            img_std = _clahe(self.img[:, :, i], 1.2)
+            assert np.allclose(img, img_std)
+            assert id(img) != id(self.img[:, :, i])
+            assert id(img_std) != id(self.img[:, :, i])

@@ -26,13 +26,20 @@ class ConvModule(nn.Module):
     supports zero and circular padding, and we add "reflect" padding mode.
 
     Args:
-        in_channels (int): Same as nn.Conv2d.
-        out_channels (int): Same as nn.Conv2d.
-        kernel_size (int | tuple[int]): Same as nn.Conv2d.
-        stride (int | tuple[int]): Same as nn.Conv2d.
-        padding (int | tuple[int]): Same as nn.Conv2d.
-        dilation (int | tuple[int]): Same as nn.Conv2d.
-        groups (int): Same as nn.Conv2d.
+        in_channels (int): Number of channels in the input feature map.
+            Same as that in ``nn._ConvNd``.
+        out_channels (int): Number of channels produced by the convolution.
+            Same as that in ``nn._ConvNd``.
+        kernel_size (int | tuple[int]): Size of the convolving kernel.
+            Same as that in ``nn._ConvNd``.
+        stride (int | tuple[int]): Stride of the convolution.
+            Same as that in ``nn._ConvNd``.
+        padding (int | tuple[int]): Zero-padding added to both sides of
+            the input. Same as that in ``nn._ConvNd``.
+        dilation (int | tuple[int]): Spacing between kernel elements.
+            Same as that in ``nn._ConvNd``.
+        groups (int): Number of blocked connections from input channels to
+            output channels. Same as that in ``nn._ConvNd``.
         bias (bool | str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if `norm_cfg` is None, otherwise
             False. Default: "auto".
