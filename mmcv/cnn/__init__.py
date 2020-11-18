@@ -3,7 +3,7 @@ from .alexnet import AlexNet
 # yapf: disable
 from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                      PADDING_LAYERS, PLUGIN_LAYERS, UPSAMPLE_LAYERS,
-                     ContextBlock, Conv2d, ConvAWS2d, ConvModule,
+                     ContextBlock, Conv2d, Conv3d, ConvAWS2d, ConvModule,
                      ConvTranspose2d, ConvTranspose3d, ConvWS2d,
                      DepthwiseSeparableConvModule, GeneralizedAttention,
                      HSigmoid, HSwish, Linear, MaxPool2d, MaxPool3d,
@@ -30,5 +30,5 @@ __all__ = [
     'PLUGIN_LAYERS', 'Scale', 'get_model_complexity_info', 'conv_ws_2d',
     'ConvAWS2d', 'ConvWS2d', 'fuse_conv_bn', 'DepthwiseSeparableConvModule',
     'Linear', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d',
-    'MaxPool3d'
+    'MaxPool3d', 'Conv3d'
 ]

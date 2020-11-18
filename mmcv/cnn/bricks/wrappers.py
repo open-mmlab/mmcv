@@ -58,6 +58,27 @@ class Conv2d(nn.Conv2d):
         return super().forward(x)
 
 
+@CONV_LAYERS.register_module('Conv', force=True)
+class Conv3d(nn.Conv3d):
+
+    def forward(self, x):
+        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+            out_shape = [x.shape[0], self.out_channels]
+            for i, k, p, s, d in zip(x.shape[-3:], self.kernel_size,
+                                     self.padding, self.stride, self.dilation):
+                o = (i + 2 * p - (d * (k - 1) + 1)) // s + 1
+                out_shape.append(o)
+            empty = NewEmptyTensorOp.apply(x, out_shape)
+            if self.training:
+                # produce dummy gradient to avoid DDP warning.
+                dummy = sum(x.view(-1)[0] for x in self.parameters()) * 0.0
+                return empty + dummy
+            else:
+                return empty
+
+        return super().forward(x)
+
+
 @CONV_LAYERS.register_module()
 @CONV_LAYERS.register_module('deconv')
 @UPSAMPLE_LAYERS.register_module('deconv', force=True)
