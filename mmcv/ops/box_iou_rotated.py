@@ -12,8 +12,10 @@ def box_iou_rotated(bboxes1, bboxes2):
     (x_center, y_center, width, height, angle) format.
 
     Arguments:
-        boxes1 (Tensor[N, 5])
-        boxes2 (Tensor[M, 5])
+        boxes1 (Tensor): rotated bboxes 1. \
+            It has shape (N, 5), indicating (x, y, w, h, theta) for each row.
+        boxes2 (Tensor): rotated bboxes 2. \
+            It has shape (N, 5), indicating (x, y, w, h, theta) for each row.
 
     Returns:
         iou (Tensor[N, M]): the NxM matrix containing the pairwise

@@ -305,7 +305,7 @@ def nms_match(dets, iou_threshold):
         return [np.array(m, dtype=np.int) for m in matched]
 
 
-def nms_rotated(boxes, iou_threshold, labels=None, multi_label=False):
+def nms_rotated(boxes, scores, iou_threshold, labels=None, multi_label=False):
     """Performs non-maximum suppression (NMS) on the rotated boxes according to
     their intersection-over-union (IoU).
 
@@ -313,7 +313,7 @@ def nms_rotated(boxes, iou_threshold, labels=None, multi_label=False):
     IoU greater than iou_threshold with another (higher scoring) rotated box.
 
     Args:
-        boxes (Tensor[N, 5]): boxes in shape (N, 5).
+        boxes (Tensor):  Rotated boxes in shape (N, 5).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor[N]): boxes's label
         multi_label (bool): use multi label nms rotated
