@@ -315,8 +315,8 @@ def nms_rotated(boxes, scores, iou_threshold, labels=None, multi_label=False):
     Args:
         boxes (Tensor):  Rotated boxes in shape (N, 5).
         iou_threshold (float): IoU thresh for NMS.
-        labels (Tensor[N]): boxes's label
-        multi_label (bool): use multi label nms rotated
+        labels (Tensor): boxes's label in shape (N,).
+        multi_label (bool): use multi label nms rotated.
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the \
