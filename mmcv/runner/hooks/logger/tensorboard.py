@@ -46,9 +46,9 @@ class TensorboardLoggerHook(LoggerHook):
         tags = self.get_loggable_tags(runner, allow_text=True)
         for tag, val in tags.items():
             if isinstance(val, str):
-                self.writer.add_text(tag, val, self.get_step(runner))
+                self.writer.add_text(tag, val, self.get_iter(runner))
             else:
-                self.writer.add_scalar(tag, val, self.get_step(runner))
+                self.writer.add_scalar(tag, val, self.get_iter(runner))
 
     @master_only
     def after_run(self, runner):

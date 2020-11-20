@@ -39,7 +39,7 @@ class WandbLoggerHook(LoggerHook):
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         if tags:
-            self.wandb.log(tags, step=self.get_step(runner))
+            self.wandb.log(tags, step=self.get_iter(runner), commit=False)
 
     @master_only
     def after_run(self, runner):
