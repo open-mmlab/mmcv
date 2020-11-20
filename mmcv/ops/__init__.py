@@ -39,6 +39,5 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'ml_nms_rotated',
-    'nms_rotated'
+    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated'
 ]
