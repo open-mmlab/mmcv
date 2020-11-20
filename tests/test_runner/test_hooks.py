@@ -346,7 +346,7 @@ def test_mlflow_hook(log_model):
         {
             'learning_rate': 0.02,
             'momentum': 0.95
-        }, step=1)
+        }, step=6)
     if log_model:
         hook.mlflow_pytorch.log_model.assert_called_with(
             runner.model, 'models')
@@ -369,7 +369,8 @@ def test_wandb_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     },
-                                      step=1)
+                                      step=6,
+                                      commit=False)
     hook.wandb.join.assert_called_with()
 
 

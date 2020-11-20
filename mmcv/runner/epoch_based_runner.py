@@ -50,6 +50,7 @@ class EpochBasedRunner(BaseRunner):
             self.run_iter(data_batch, train_mode=True)
             self.call_hook('after_train_iter')
             self._iter += 1
+            print('train', self._iter)
 
         self.call_hook('after_train_epoch')
         self._epoch += 1
@@ -66,6 +67,7 @@ class EpochBasedRunner(BaseRunner):
             with torch.no_grad():
                 self.run_iter(data_batch, train_mode=False)
             self.call_hook('after_val_iter')
+            print('val', self._iter)
 
         self.call_hook('after_val_epoch')
 
