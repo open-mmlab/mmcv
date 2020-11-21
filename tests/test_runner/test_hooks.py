@@ -370,7 +370,7 @@ def test_wandb_hook():
         'momentum': 0.95
     },
                                       step=6,
-                                      commit=False)
+                                      commit=True)
     hook.wandb.join.assert_called_with()
 
 
