@@ -1,6 +1,7 @@
-import torch
-import os
 import glob
+import os
+
+import torch
 
 if torch.__version__ == 'parrots':
     import parrots
