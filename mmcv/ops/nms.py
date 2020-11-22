@@ -326,8 +326,8 @@ def nms_rotated(boxes, scores, iou_threshold, labels=None, multi_label=False):
         return boxes
     if multi_label:
         assert labels is not None
-    dets = boxes[:, :5]
-    scores = boxes[:, 5]
+    dets = boxes[:, :4]
+    scores = boxes[:, 4]
     if multi_label:
         dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
     else:
