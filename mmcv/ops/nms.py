@@ -305,7 +305,7 @@ def nms_match(dets, iou_threshold):
         return [np.array(m, dtype=np.int) for m in matched]
 
 
-def nms_rotated(dets, scores, iou_threshold, labels=None, multi_label=False):
+def nms_rotated(dets, scores, iou_threshold, labels=None):
     """Performs non-maximum suppression (NMS) on the rotated boxes according to
     their intersection-over-union (IoU).
 
@@ -314,11 +314,10 @@ def nms_rotated(dets, scores, iou_threshold, labels=None, multi_label=False):
 
     Args:
         boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to \
-            be in (x_ctr, y_ctr, width, height, angle_degrees) format.
+            be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor): boxes's label in shape (N,).
-        multi_label (bool): use multi label nms rotated.
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the \
@@ -326,8 +325,7 @@ def nms_rotated(dets, scores, iou_threshold, labels=None, multi_label=False):
     """
     if dets.shape[0] == 0:
         return dets, None
-    if multi_label:
-        assert labels is not None
+    multi_label = labels is not None
     if multi_label:
         dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
     else:
@@ -347,9 +345,10 @@ def nms_rotated(dets, scores, iou_threshold, labels=None, multi_label=False):
             multi_label=multi_label)
         keep_inds = order.masked_select(select == 1)
         dets = dets[keep_inds, :]
-        return dets, keep_inds
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
                                            iou_threshold, multi_label)
         dets = dets[keep_inds, :]
+    dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                     dim=1)
     return dets, keep_inds
