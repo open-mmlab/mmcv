@@ -263,6 +263,8 @@ class CARAFEPack(nn.Module):
     def kernel_normalizer(self, mask):
         mask = F.pixel_shuffle(mask, self.scale_factor)
         n, mask_c, h, w = mask.size()
+        # use float division explicitly,
+        # to void inconsistency while exporting to onnx
         mask_channel = int(mask_c / float(self.up_kernel**2))
         mask = mask.view(n, mask_channel, -1, h, w)
 
