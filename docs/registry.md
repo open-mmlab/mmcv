@@ -19,9 +19,9 @@ To manage your modules in the codebase by `Registry`, there are three steps as b
 ### A Simple Example
 
 Here we show a simple example of using registry to manage modules in a package.
-You can find many more complex examples in OpenMMLab's MM-started projects.
+You can find more practical examples in OpenMMLab projects.
 
-Assuming we wand to implement a series of Dataset Converter for converting different formats of data to the expected data format.
+Assuming we want to implement a series of Dataset Converter for converting different formats of data to the expected data format.
 We create directory as a package named `converters`.
 In the package, we first create a file to implement builders, named `converters/builder.py`, as below
 
@@ -58,7 +58,6 @@ class Converter1(object):
     def __init__(self, a, b):
         self.a = a
         self.b = b
-        return
 ```
 
 The key step to use registry for managing the modules is to register the implemented module into the registry `CONVERTERS` through
