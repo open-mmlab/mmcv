@@ -7,6 +7,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   build.md
    io.md
    image.md
    video.md

@@ -1,9 +1,50 @@
-# Build MMCV | MMCV-full on Windows
+## Build MMCV-lite and MMCV-full from source
+
+### Build on Linux or MACOS
+
+After cloning the repo with
+
+```bash
+git clone https://github.com/open-mmlab/mmcv.git
+cd mmcv
+```
+
+You can either
+
+- install the lite version
+
+  ```bash
+  pip install -e .
+  ```
+
+- install the full version
+
+  ```bash
+  MMCV_WITH_OPS=1 pip install -e .
+  ```
+
+If you are on macOS, add the following environment variables before the installing command.
+
+```bash
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
+```
+
+e.g.,
+
+```bash
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+```
+
+Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
+e.g., in a minimum container environment or servers without GUI,
+you can first install it before installing MMCV to skip the installation of `opencv-python`.
+
+### Build on Windows
 
 Building MMCV on Windows is a bit more complicated than that on Linux.
 The following instructions show how to get this accomplished.
 
-## Prerequisite
+#### Prerequisite
 
 The following software is required for building MMCV on windows.
 Install them first.
@@ -20,7 +61,7 @@ Install them first.
 
 **You should know how to set up environment variables, especially `Path`, on Windows. The following instruction relies heavily on this skill.**
 
-## Setup Python Environment
+#### Setup Python Environment
 
 1.  Launch Anaconda prompt from Windows Start menu
 
@@ -60,7 +101,7 @@ Install them first.
 
     - Or `conda install` all requirements.
 
-## Build and install MMCV
+#### Build and install MMCV
 
 MMCV can be built in three ways:
 
@@ -76,7 +117,7 @@ MMCV can be built in three ways:
 
    Both x86 and CUDA codes of `ops` module will be compiled. The compiled version can be run on both CPU and CUDA-enabled GPU (if implemented).
 
-### Common steps
+##### Common steps
 
 1. Set up MSVC compiler
 
@@ -93,7 +134,7 @@ MMCV can be built in three ways:
    - For compatibility, we use the x86-hosted and x64-targeted compiler. note `Hostx86\x64` in the path.
    - You may want to change the system language to English because pytorch will parse text output from `cl.exe` to check its version. However only utf-8 is recognized. Navigate to Control Panel -> Region -> Administrative -> Language for Non-Unicode programs and change it to English.
 
-### Build MMCV lite version
+##### Build MMCV lite version
 
 After finishing above common steps, launch Anaconda shell from Start menu and issue the following commands:
 
@@ -111,7 +152,7 @@ python setup.py develop
 pip list
 ```
 
-### Build MMCV full version with CPU
+##### Build MMCV full version with CPU
 
 1.  Finish above common steps
 1.  Set up environment variables
@@ -136,7 +177,7 @@ pip list
     pip list
     ```
 
-### Build MMCV full version with CUDA
+##### Build MMCV full version with CUDA
 
 1. Finish above common steps
 1. Make sure `CUDA_PATH` or `CUDA_HOME` is already set in `envs` via `ls env:`, desired output is shown as below:
@@ -185,3 +226,7 @@ pip list
    # check
    pip list
    ```
+
+### TroubleShooting
+
+If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING.md](docs/trouble_shooting.md).
