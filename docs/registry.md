@@ -1,7 +1,14 @@
 ## Registry
 
 MMCV implements [registry](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) to manage different modules that share similar functionalities, e.g., backbones, head, and necks, in detectors.
-Most MM-started projects in OpenMMLab use registry to manage modules of datasets and models, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting), etc.
+Most projects in OpenMMLab use registry to manage modules of datasets and models, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting), etc.
+
+### What is registry
+
+In MMCV, registry can be regarded as a mapping that maps a class to a string.
+These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
+With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
+One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
