@@ -21,7 +21,6 @@ class NMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
         from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-
         boxes = unsqueeze(g, bboxes, 0)
         scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
         max_output_per_class = g.op(
@@ -248,14 +247,14 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         boxes_for_nms = boxes
     else:
         max_coordinate = boxes.max()
-        offsets = idxs.to(boxes) * (max_coordinate + 1)
+        offsets = idxs.to(boxes) * (max_coordinate + torch.tensor(1).to(boxes))
         boxes_for_nms = boxes + offsets[:, None]
 
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = eval(nms_type)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
-    if len(boxes_for_nms) < split_thr:
+    if boxes_for_nms.shape[0] < split_thr:
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
         scores = dets[:, -1]
