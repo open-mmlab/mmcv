@@ -1,166 +1,314 @@
-from collections import OrderedDict
-from itertools import product
 from unittest.mock import patch
 
+import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import Conv2d, ConvTranspose2d, Linear, MaxPool2d
+from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
+                             Linear, MaxPool2d, MaxPool3d)
 
 
 @patch('torch.__version__', '1.1')
-def test_conv2d():
+@pytest.mark.parametrize(
+    'in_w,in_h,in_channel,out_channel,kernel_size,stride,padding,dilation',
+    [(10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 3, 3, 5, 2, 1, 2)])
+def test_conv2d(in_w, in_h, in_channel, out_channel, kernel_size, stride,
+                padding, dilation):
     """
     CommandLine:
         xdoctest -m tests/test_wrappers.py test_conv2d
     """
-
-    test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
-                              ('in_channel', [1, 3]), ('out_channel', [1, 3]),
-                              ('kernel_size', [3, 5]), ('stride', [1, 2]),
-                              ('padding', [0, 1]), ('dilation', [1, 2])])
-
     # train mode
-    for in_h, in_w, in_cha, out_cha, k, s, p, d in product(
-            *list(test_cases.values())):
-        # wrapper op with 0-dim input
-        x_empty = torch.randn(0, in_cha, in_h, in_w)
-        torch.manual_seed(0)
-        wrapper = Conv2d(in_cha, out_cha, k, stride=s, padding=p, dilation=d)
-        wrapper_out = wrapper(x_empty)
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_h, in_w)
+    torch.manual_seed(0)
+    wrapper = Conv2d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
+    wrapper_out = wrapper(x_empty)
 
-        # torch op with 3-dim input as shape reference
-        x_normal = torch.randn(3, in_cha, in_h, in_w).requires_grad_(True)
-        torch.manual_seed(0)
-        ref = nn.Conv2d(in_cha, out_cha, k, stride=s, padding=p, dilation=d)
-        ref_out = ref(x_normal)
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_h, in_w).requires_grad_(True)
+    torch.manual_seed(0)
+    ref = nn.Conv2d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
+    ref_out = ref(x_normal)
 
-        assert wrapper_out.shape[0] == 0
-        assert wrapper_out.shape[1:] == ref_out.shape[1:]
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
 
-        wrapper_out.sum().backward()
-        assert wrapper.weight.grad is not None
-        assert wrapper.weight.grad.shape == wrapper.weight.shape
+    wrapper_out.sum().backward()
+    assert wrapper.weight.grad is not None
+    assert wrapper.weight.grad.shape == wrapper.weight.shape
 
-        assert torch.equal(wrapper(x_normal), ref_out)
+    assert torch.equal(wrapper(x_normal), ref_out)
 
     # eval mode
-    x_empty = torch.randn(0, in_cha, in_h, in_w)
-    wrapper = Conv2d(in_cha, out_cha, k, stride=s, padding=p, dilation=d)
+    x_empty = torch.randn(0, in_channel, in_h, in_w)
+    wrapper = Conv2d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
     wrapper.eval()
     wrapper(x_empty)
 
 
 @patch('torch.__version__', '1.1')
-def test_conv_transposed_2d():
-    test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
-                              ('in_channel', [1, 3]), ('out_channel', [1, 3]),
-                              ('kernel_size', [3, 5]), ('stride', [1, 2]),
-                              ('padding', [0, 1]), ('dilation', [1, 2])])
+@pytest.mark.parametrize(
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
+def test_conv3d(in_w, in_h, in_t, in_channel, out_channel, kernel_size, stride,
+                padding, dilation):
+    """
+    CommandLine:
+        xdoctest -m tests/test_wrappers.py test_conv3d
+    """
+    # train mode
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_t, in_h, in_w)
+    torch.manual_seed(0)
+    wrapper = Conv3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
+    wrapper_out = wrapper(x_empty)
 
-    for in_h, in_w, in_cha, out_cha, k, s, p, d in product(
-            *list(test_cases.values())):
-        # wrapper op with 0-dim input
-        x_empty = torch.randn(0, in_cha, in_h, in_w, requires_grad=True)
-        # out padding must be smaller than either stride or dilation
-        op = min(s, d) - 1
-        torch.manual_seed(0)
-        wrapper = ConvTranspose2d(
-            in_cha,
-            out_cha,
-            k,
-            stride=s,
-            padding=p,
-            dilation=d,
-            output_padding=op)
-        wrapper_out = wrapper(x_empty)
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_t, in_h,
+                           in_w).requires_grad_(True)
+    torch.manual_seed(0)
+    ref = nn.Conv3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
+    ref_out = ref(x_normal)
 
-        # torch op with 3-dim input as shape reference
-        x_normal = torch.randn(3, in_cha, in_h, in_w)
-        torch.manual_seed(0)
-        ref = nn.ConvTranspose2d(
-            in_cha,
-            out_cha,
-            k,
-            stride=s,
-            padding=p,
-            dilation=d,
-            output_padding=op)
-        ref_out = ref(x_normal)
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
 
-        assert wrapper_out.shape[0] == 0
-        assert wrapper_out.shape[1:] == ref_out.shape[1:]
+    wrapper_out.sum().backward()
+    assert wrapper.weight.grad is not None
+    assert wrapper.weight.grad.shape == wrapper.weight.shape
 
-        wrapper_out.sum().backward()
-        assert wrapper.weight.grad is not None
-        assert wrapper.weight.grad.shape == wrapper.weight.shape
-
-        assert torch.equal(wrapper(x_normal), ref_out)
+    assert torch.equal(wrapper(x_normal), ref_out)
 
     # eval mode
-    x_empty = torch.randn(0, in_cha, in_h, in_w)
+    x_empty = torch.randn(0, in_channel, in_t, in_h, in_w)
+    wrapper = Conv3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation)
+    wrapper.eval()
+    wrapper(x_empty)
+
+
+@patch('torch.__version__', '1.1')
+@pytest.mark.parametrize(
+    'in_w,in_h,in_channel,out_channel,kernel_size,stride,padding,dilation',
+    [(10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 3, 3, 5, 2, 1, 2)])
+def test_conv_transposed_2d(in_w, in_h, in_channel, out_channel, kernel_size,
+                            stride, padding, dilation):
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_h, in_w, requires_grad=True)
+    # out padding must be smaller than either stride or dilation
+    op = min(stride, dilation) - 1
+    torch.manual_seed(0)
     wrapper = ConvTranspose2d(
-        in_cha, out_cha, k, stride=s, padding=p, dilation=d, output_padding=op)
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
+    wrapper_out = wrapper(x_empty)
+
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_h, in_w)
+    torch.manual_seed(0)
+    ref = nn.ConvTranspose2d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
+    ref_out = ref(x_normal)
+
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
+
+    wrapper_out.sum().backward()
+    assert wrapper.weight.grad is not None
+    assert wrapper.weight.grad.shape == wrapper.weight.shape
+
+    assert torch.equal(wrapper(x_normal), ref_out)
+
+    # eval mode
+    x_empty = torch.randn(0, in_channel, in_h, in_w)
+    wrapper = ConvTranspose2d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
     wrapper.eval()
     wrapper(x_empty)
 
 
 @patch('torch.__version__', '1.1')
-def test_max_pool_2d():
-    test_cases = OrderedDict([('in_w', [10, 20]), ('in_h', [10, 20]),
-                              ('in_channel', [1, 3]), ('out_channel', [1, 3]),
-                              ('kernel_size', [3, 5]), ('stride', [1, 2]),
-                              ('padding', [0, 1]), ('dilation', [1, 2])])
+@pytest.mark.parametrize(
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
+def test_conv_transposed_3d(in_w, in_h, in_t, in_channel, out_channel,
+                            kernel_size, stride, padding, dilation):
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_t, in_h, in_w, requires_grad=True)
+    # out padding must be smaller than either stride or dilation
+    op = min(stride, dilation) - 1
+    torch.manual_seed(0)
+    wrapper = ConvTranspose3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
+    wrapper_out = wrapper(x_empty)
 
-    for in_h, in_w, in_cha, out_cha, k, s, p, d in product(
-            *list(test_cases.values())):
-        # wrapper op with 0-dim input
-        x_empty = torch.randn(0, in_cha, in_h, in_w, requires_grad=True)
-        wrapper = MaxPool2d(k, stride=s, padding=p, dilation=d)
-        wrapper_out = wrapper(x_empty)
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_t, in_h, in_w)
+    torch.manual_seed(0)
+    ref = nn.ConvTranspose3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
+    ref_out = ref(x_normal)
 
-        # torch op with 3-dim input as shape reference
-        x_normal = torch.randn(3, in_cha, in_h, in_w)
-        ref = nn.MaxPool2d(k, stride=s, padding=p, dilation=d)
-        ref_out = ref(x_normal)
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
 
-        assert wrapper_out.shape[0] == 0
-        assert wrapper_out.shape[1:] == ref_out.shape[1:]
+    wrapper_out.sum().backward()
+    assert wrapper.weight.grad is not None
+    assert wrapper.weight.grad.shape == wrapper.weight.shape
 
-        assert torch.equal(wrapper(x_normal), ref_out)
+    assert torch.equal(wrapper(x_normal), ref_out)
+
+    # eval mode
+    x_empty = torch.randn(0, in_channel, in_t, in_h, in_w)
+    wrapper = ConvTranspose3d(
+        in_channel,
+        out_channel,
+        kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        output_padding=op)
+    wrapper.eval()
+    wrapper(x_empty)
 
 
 @patch('torch.__version__', '1.1')
-def test_linear():
-    test_cases = OrderedDict([
-        ('in_w', [10, 20]),
-        ('in_h', [10, 20]),
-        ('in_feature', [1, 3]),
-        ('out_feature', [1, 3]),
-    ])
+@pytest.mark.parametrize(
+    'in_w,in_h,in_channel,out_channel,kernel_size,stride,padding,dilation',
+    [(10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 3, 3, 5, 2, 1, 2)])
+def test_max_pool_2d(in_w, in_h, in_channel, out_channel, kernel_size, stride,
+                     padding, dilation):
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_h, in_w, requires_grad=True)
+    wrapper = MaxPool2d(
+        kernel_size, stride=stride, padding=padding, dilation=dilation)
+    wrapper_out = wrapper(x_empty)
 
-    for in_h, in_w, in_feature, out_feature in product(
-            *list(test_cases.values())):
-        # wrapper op with 0-dim input
-        x_empty = torch.randn(0, in_feature, requires_grad=True)
-        torch.manual_seed(0)
-        wrapper = Linear(in_feature, out_feature)
-        wrapper_out = wrapper(x_empty)
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_h, in_w)
+    ref = nn.MaxPool2d(
+        kernel_size, stride=stride, padding=padding, dilation=dilation)
+    ref_out = ref(x_normal)
 
-        # torch op with 3-dim input as shape reference
-        x_normal = torch.randn(3, in_feature)
-        torch.manual_seed(0)
-        ref = nn.Linear(in_feature, out_feature)
-        ref_out = ref(x_normal)
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
 
-        assert wrapper_out.shape[0] == 0
-        assert wrapper_out.shape[1:] == ref_out.shape[1:]
+    assert torch.equal(wrapper(x_normal), ref_out)
 
-        wrapper_out.sum().backward()
-        assert wrapper.weight.grad is not None
-        assert wrapper.weight.grad.shape == wrapper.weight.shape
 
-        assert torch.equal(wrapper(x_normal), ref_out)
+@patch('torch.__version__', '1.1')
+@pytest.mark.parametrize(
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
+def test_max_pool_3d(in_w, in_h, in_t, in_channel, out_channel, kernel_size,
+                     stride, padding, dilation):
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_channel, in_t, in_h, in_w, requires_grad=True)
+    wrapper = MaxPool3d(
+        kernel_size, stride=stride, padding=padding, dilation=dilation)
+    wrapper_out = wrapper(x_empty)
+
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_channel, in_t, in_h, in_w)
+    ref = nn.MaxPool3d(
+        kernel_size, stride=stride, padding=padding, dilation=dilation)
+    ref_out = ref(x_normal)
+
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
+
+    assert torch.equal(wrapper(x_normal), ref_out)
+
+
+@patch('torch.__version__', '1.1')
+@pytest.mark.parametrize('in_w,in_h,in_feature,out_feature', [(10, 10, 1, 1),
+                                                              (20, 20, 3, 3)])
+def test_linear(in_w, in_h, in_feature, out_feature):
+    # wrapper op with 0-dim input
+    x_empty = torch.randn(0, in_feature, requires_grad=True)
+    torch.manual_seed(0)
+    wrapper = Linear(in_feature, out_feature)
+    wrapper_out = wrapper(x_empty)
+
+    # torch op with 3-dim input as shape reference
+    x_normal = torch.randn(3, in_feature)
+    torch.manual_seed(0)
+    ref = nn.Linear(in_feature, out_feature)
+    ref_out = ref(x_normal)
+
+    assert wrapper_out.shape[0] == 0
+    assert wrapper_out.shape[1:] == ref_out.shape[1:]
+
+    wrapper_out.sum().backward()
+    assert wrapper.weight.grad is not None
+    assert wrapper.weight.grad.shape == wrapper.weight.shape
+
+    assert torch.equal(wrapper(x_normal), ref_out)
 
     # eval mode
     x_empty = torch.randn(0, in_feature)

@@ -13,6 +13,7 @@ Contents
    visualization.md
    utils.md
    runner.md
+   registry.md
    cnn.md
    ops.md
    trouble_shooting.md

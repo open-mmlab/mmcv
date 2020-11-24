@@ -69,6 +69,13 @@ class PaviLoggerHook(LoggerHook):
         if self.add_graph:
             self.writer.add_graph(runner.model)
 
+    def get_step(self, runner):
+        """Get the total training step/epoch."""
+        if self.get_mode(runner) == 'val' and self.by_epoch:
+            return self.get_epoch(runner)
+        else:
+            return self.get_iter(runner)
+
     @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner, add_mode=False)
