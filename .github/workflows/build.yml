@@ -6,15 +6,6 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    env:
-      PAT_IMG_KEY: ${{ secrets.CR_PAT }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: cridents debug
-        run: |
-          echo ${PAT_IMG_KEY}
   lint:
     runs-on: ubuntu-latest
     steps:
