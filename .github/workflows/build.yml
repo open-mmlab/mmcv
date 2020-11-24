@@ -6,6 +6,13 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cridents debug
+        run: |
+          echo ${{ secrets.CR_PAT }}
   lint:
     runs-on: ubuntu-latest
     steps:
