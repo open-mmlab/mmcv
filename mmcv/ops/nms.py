@@ -6,7 +6,8 @@ import torch
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', ['nms', 'softnms', 'nms_match'])
+ext_module = ext_loader.load_ext(
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated'])
 
 
 # This function is modified from: https://github.com/pytorch/vision/
@@ -304,3 +305,52 @@ def nms_match(dets, iou_threshold):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
     else:
         return [np.array(m, dtype=np.int) for m in matched]
+
+
+def nms_rotated(dets, scores, iou_threshold, labels=None):
+    """Performs non-maximum suppression (NMS) on the rotated boxes according to
+    their intersection-over-union (IoU).
+
+    Rotated NMS iteratively removes lower scoring rotated boxes which have an
+    IoU greater than iou_threshold with another (higher scoring) rotated box.
+
+    Args:
+        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to \
+            be in (x_ctr, y_ctr, width, height, angle_radian) format.
+        scores (Tensor): scores in shape (N, ).
+        iou_threshold (float): IoU thresh for NMS.
+        labels (Tensor): boxes's label in shape (N,).
+
+    Returns:
+        tuple: kept dets(boxes and scores) and indice, which is always the \
+            same data type as the input.
+    """
+    if dets.shape[0] == 0:
+        return dets, None
+    multi_label = labels is not None
+    if multi_label:
+        dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
+    else:
+        dets_wl = dets
+    _, order = scores.sort(0, descending=True)
+    dets_sorted = dets_wl.index_select(0, order)
+
+    if torch.__version__ == 'parrots':
+        select = torch.zeros((dets.shape[0]),
+                             dtype=torch.int64).to(dets.device)
+        ext_module.nms_rotated(
+            dets_wl,
+            scores,
+            dets_sorted,
+            select,
+            iou_threshold=iou_threshold,
+            multi_label=multi_label)
+        keep_inds = order.masked_select(select == 1)
+        dets = dets[keep_inds, :]
+    else:
+        keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
+                                           iou_threshold, multi_label)
+        dets = dets[keep_inds, :]
+    dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                     dim=1)
+    return dets, keep_inds
