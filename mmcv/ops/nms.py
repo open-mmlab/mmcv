@@ -346,11 +346,9 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
             iou_threshold=iou_threshold,
             multi_label=multi_label)
         keep_inds = order.masked_select(select == 1)
-        dets = dets[keep_inds, :]
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
                                            iou_threshold, multi_label)
-        dets = dets[keep_inds, :]
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds
