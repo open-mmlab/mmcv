@@ -7,7 +7,6 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   build.md
    io.md
    image.md
    video.md
@@ -16,6 +15,7 @@ Contents
    runner.md
    cnn.md
    ops.md
+   build.md
    trouble_shooting.md
    api.rst
 
