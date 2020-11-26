@@ -1,7 +1,11 @@
 import pytest
-import torch
+
 import mmcv
 
+try:
+    import torch  # noqa: F401
+except ModuleNotFoundError:
+    pytest.skip('skipping tests that require PyTorch')
 
 class TestJit(object):
     def test_add_dict(self):
