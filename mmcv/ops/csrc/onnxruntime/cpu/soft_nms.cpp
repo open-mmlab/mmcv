@@ -1,4 +1,4 @@
-#include "../soft_nms.h"
+#include "soft_nms.h"
 
 #include <assert.h>
 
