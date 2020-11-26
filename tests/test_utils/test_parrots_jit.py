@@ -5,11 +5,11 @@ import mmcv
 
 class TestJit(object):
     def test_add_dict(self):
+        @mmcv.jit
         def add_dict(oper):
             rets = oper['x'] + oper['y']
             return {'result': rets}
 
-        add_dict = mmcv.jit(add_dict)
         a = torch.rand((3, 4))
         b = torch.rand((3, 4))
         oper = {'x': a, 'y': b}
@@ -20,6 +20,7 @@ class TestJit(object):
         assert (rets_t['result'] == rets['result']).all()
 
     def test_add_list(self):
+        @mmcv.jit
         def add_list(oper, x, y):
             rets = {}
             for idx, pair in enumerate(oper):
@@ -27,7 +28,6 @@ class TestJit(object):
             rets[f'k{len(oper)}'] = x + y
             return rets
 
-        add_list = mmcv.jit(add_list)
         pair_num = 3
         oper = []
         for _ in range(pair_num):
@@ -128,10 +128,10 @@ class TestJit(object):
         assert b.grad is None
 
     def test_jit_optimize(self):
+        @mmcv.jit(optimize=True)
         def func(a, b):
             return torch.mean((a - b) * (a - b))
 
-        func = mmcv.jit(func, optimize=True)
         a = torch.rand((16, 32))
         b = torch.rand((16, 32))
 
@@ -139,6 +139,8 @@ class TestJit(object):
         d = func._pyfunc(a, b)
         assert torch.allclose(c, d)
 
+    @mmcv.skip_no_cuda
+    @mmcv.skip_no_elena
     def test_jit_coderize(self):
         @mmcv.jit(coderize=True)
         def func(a, b):
@@ -152,11 +154,11 @@ class TestJit(object):
         assert torch.allclose(c, d)
 
     def test_jit_value_dependent(self):
+        @mmcv.jit
         def func(a, b):
             torch.nonzero(a)
             return torch.mean((a - b) * (a - b))
 
-        func = mmcv.jit(func, optimize=True)
         a = torch.rand((16, 32))
         b = torch.rand((16, 32))
 

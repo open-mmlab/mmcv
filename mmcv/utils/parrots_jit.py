@@ -16,3 +16,15 @@ else:
             return wrapper
         else:
             return func
+
+
+if TORCH_VERSION == 'parrots':
+    from parrots.utils.tester import skip_no_cuda, skip_no_elena
+else:
+    def bypass_decorator(func):
+        def wraper(*args, **kargs):
+            return func(*args, **kargs)
+        return wrapper
+
+    skip_no_cuda = bypass_decorator
+    skip_no_elena = bypass_decorator

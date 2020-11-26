@@ -33,7 +33,7 @@ else:
         DataLoader, PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd,
         _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm, _ConvNd,
         _ConvTransposeMixin, _InstanceNorm, _MaxPoolNd, get_build_config)
-    from .parrots_jit import jit
+    from .parrots_jit import jit, skip_no_cuda, skip_no_elena
     from .registry import Registry, build_from_cfg
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
@@ -49,5 +49,6 @@ else:
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
-        'get_git_hash', 'import_modules_from_strings', 'jit'
+        'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_cuda',
+        'skip_no_elena'
     ]
