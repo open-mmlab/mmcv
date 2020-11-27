@@ -183,13 +183,16 @@ pip list
    Name                           Value
    ----                           -----
    <... omit some lines ...>
+   CUDA_PATH                      C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2
+   CUDA_PATH_V10_1                C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1
+   CUDA_PATH_V10_2                C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2
    <... omit some lines ...>
    ```
 
    This should already be done by CUDA installer. If not, or you have multiple version of CUDA tookit installed, set it with
 
    ```shell
-   $env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\"
+   $env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2"
    # OR
    $env:CUDA_HOME = $env:CUDA_PATH_V10_2 # if CUDA_PATH_V10_2 is in envs:
    ```
@@ -221,5 +224,10 @@ pip list
    # check
    pip list
    ```
+
+1. Modify PyTorch code if necessary
+
+   If you are compiling against PyTorch 1.6.0, you might meet some errors from PyTorch as described in [this issue](https://github.com/pytorch/pytorch/issues/42467).
+   Follow [this pull request](https://github.com/pytorch/pytorch/pull/43380/files) to modify the source code in your local PyTorch installation.
 
 If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING](./trouble_shooting.html).
