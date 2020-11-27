@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 TORCH_VERSION = torch.__version__
@@ -28,7 +29,7 @@ else:
 
 
 if TORCH_VERSION == 'parrots':
-    from parrots.utils.tester import skip_no_cuda, skip_no_elena
+    from parrots.utils.tester import skip_no_elena
 else:
 
     def bypass_decorator(func):
@@ -38,5 +39,12 @@ else:
 
         return wrapper
 
-    skip_no_cuda = bypass_decorator
     skip_no_elena = bypass_decorator
+
+
+def use_parrots():
+    return TORCH_VERSION == 'parrots'
+
+
+skip_no_parrots = pytest.mark.skipif(
+    not use_parrots, reason="this is a test case under parrots environment")

@@ -55,6 +55,7 @@ class TestJit(object):
             assert f'k{idx}' in rets_t
             assert (rets[f'k{idx}'] == rets_t[f'k{idx}']).all()
 
+    @mmcv.skip_no_parrots
     def test_jit_cache(self):
 
         @mmcv.jit
@@ -87,6 +88,7 @@ class TestJit(object):
         rets_a = (rets_minus_t + rets_plus_t) / 4
         assert torch.allclose(oper['x'], rets_a)
 
+    @mmcv.skip_no_parrots
     def test_jit_shape(self):
 
         @mmcv.jit
@@ -107,6 +109,7 @@ class TestJit(object):
         assert (r == 2).all()
         assert len(func._cache._cache) == 2
 
+    @mmcv.skip_no_parrots
     def test_jit_kwargs(self):
 
         @mmcv.jit
@@ -135,7 +138,9 @@ class TestJit(object):
 
         c = func(a, b)
         assert c.requires_grad
-        c.backward()
+        d = torch.empty_like(c)
+        d.fill_(1.0)
+        c.backward(d)
         assert torch.allclose(a.grad, (b - 2))
         assert b.grad is None
 
@@ -164,9 +169,10 @@ class TestJit(object):
         d = pyfunc(a, b)
         assert torch.allclose(c, d)
 
-    @mmcv.skip_no_cuda
     @mmcv.skip_no_elena
     def test_jit_coderize(self):
+        if not torch.cuda.is_available():
+            return
 
         @mmcv.jit(coderize=True)
         def func(a, b):
@@ -200,6 +206,7 @@ class TestJit(object):
         d = pyfunc(a, b)
         assert torch.allclose(c, d)
 
+    @mmcv.skip_no_parrots
     def test_jit_check_input(self):
 
         def func(x):
@@ -210,6 +217,7 @@ class TestJit(object):
         with pytest.raises(AssertionError):
             func = mmcv.jit(func, check_input=(a, ))
 
+    @mmcv.skip_no_parrots
     def test_jit_no_full_shape(self):
 
         @mmcv.jit(full_shape=False)
