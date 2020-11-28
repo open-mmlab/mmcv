@@ -57,6 +57,8 @@ class SoftNMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
                  offset):
+        from packaging import version
+        assert version.parse(torch.__version__) >= version.parse('1.7.0')
         nms_out = g.op(
             'mmcv::SoftNonMaxSuppression',
             boxes,

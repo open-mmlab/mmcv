@@ -64,6 +64,10 @@ def test_softnms():
     from packaging import version
     from mmcv.ops import soft_nms, get_onnxruntime_op_path
 
+    # only support pytorch >= 1.7.0
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        return
+
     # only support onnxruntime >= 1.5.0
     if version.parse(rt.__version__) < version.parse('1.5.0'):
         return
