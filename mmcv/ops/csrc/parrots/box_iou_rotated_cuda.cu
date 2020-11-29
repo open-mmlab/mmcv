@@ -4,8 +4,10 @@
 #include "box_iou_rotated_cuda.cuh"
 #include "parrots_cuda_helper.hpp"
 
-DArrayLite box_iou_rotated_cuda(const DArrayLite boxes1,
-                                const DArrayLite boxes2, cudaStream_t stream,
+DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
+                                const DArrayLite boxes2, 
+                                const bool aligned,
+                                cudaStream_t stream,
                                 CudaContext& ctx) {
   using scalar_t = float;
 
@@ -24,7 +26,7 @@ DArrayLite box_iou_rotated_cuda(const DArrayLite boxes1,
 
     box_iou_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
         num_boxes1, num_boxes2, boxes1.ptr<scalar_t>(), boxes2.ptr<scalar_t>(),
-        (scalar_t*)ious.ptr<scalar_t>());
+        (scalar_t*)ious.ptr<scalar_t>(), aligned);
 
     PARROTS_CUDA_CHECK(cudaGetLastError());
   }

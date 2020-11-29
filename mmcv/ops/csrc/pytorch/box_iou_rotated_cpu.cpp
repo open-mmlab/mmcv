@@ -7,13 +7,6 @@
 template <typename T>
 void box_iou_rotated_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
                                 Tensor ious) {
-  auto widths1 = boxes1.select(1, 2).contiguous();
-  auto heights1 = boxes1.select(1, 3).contiguous();
-  auto widths2 = boxes2.select(1, 2).contiguous();
-  auto heights2 = boxes2.select(1, 3).contiguous();
-
-  Tensor areas1 = widths1 * heights1;
-  Tensor areas2 = widths2 * heights2;
 
   auto num_boxes1 = boxes1.size(0);
   auto num_boxes2 = boxes2.size(0);

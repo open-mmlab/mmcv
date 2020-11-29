@@ -3,22 +3,50 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated.h
 #include "parrots_cpp_helper.hpp"
 
-DArrayLite box_iou_rotated_cuda(const DArrayLite boxes1,
-                                const DArrayLite boxes2, cudaStream_t stream,
+DArrayLite box_iou_rotated_cpu_launcher(const DArrayLite boxes1, const DArrayLite boxes2, HostContext& ctx);
+
+DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
+                                const DArrayLite boxes2, 
+                                const bool aligned,
+                                cudaStream_t stream,
                                 CudaContext& ctx);
 
-void box_iou_rotated(CudaContext& ctx, const SSElement& attr,
+
+void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
                      const OperatorBase::in_list_t& ins,
                      OperatorBase::out_list_t& outs) {
   const auto& boxes1 = ins[0];
   const auto& boxes2 = ins[1];
 
+  bool aligned;
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .done();
+
+  outs[0] = box_iou_rotated_cpu_launcher(boxes1, boxes2, ctx);
+}
+
+void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
+                     const OperatorBase::in_list_t& ins,
+                     OperatorBase::out_list_t& outs) {
+  const auto& boxes1 = ins[0];
+  const auto& boxes2 = ins[1];
+  
+  bool aligned;
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .done();
+
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  outs[0] = box_iou_rotated_cuda(boxes1, boxes2, stream, ctx);
+  outs[0] = box_iou_rotated_cuda_launcher(boxes1, boxes2, aligned, stream, ctx);
 }
 
 PARROTS_EXTENSION_REGISTER(box_iou_rotated)
+    .attr("aligned")
     .input(2)
     .output(1)
-    .apply(box_iou_rotated)
+    .apply(box_iou_rotated_cpu)
+#ifdef PARROTS_USE_CUDA
+    .apply(box_iou_rotated_cuda)
+#endif
     .done();

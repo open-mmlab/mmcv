@@ -5,7 +5,7 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['box_iou_rotated'])
 
 
-def box_iou_rotated(bboxes1, bboxes2):
+def box_iou_rotated(bboxes1, bboxes2, aligned=False):
     """Return intersection-over-union (Jaccard index) of boxes.
 
     Both sets of boxes are expected to be in
@@ -22,9 +22,10 @@ def box_iou_rotated(bboxes1, bboxes2):
             IoU values for every element in boxes1 and boxes2
     """
     if torch.__version__ == 'parrots':
+
         out = torch.zeros((bboxes1.shape[0], bboxes2.shape[0]),
                           dtype=torch.float32).to(bboxes1.device)
-        ext_module.box_iou_rotated(bboxes1, bboxes2, out)
+        ext_module.box_iou_rotated(bboxes1, bboxes2, out, aligned=aligned)
     else:
-        out = ext_module.box_iou_rotated(bboxes1, bboxes2)
+        out = ext_module.box_iou_rotated(bboxes1, bboxes2, aligned)
     return out
