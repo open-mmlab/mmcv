@@ -24,8 +24,8 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
                                             const T* dev_boxes2, T* dev_ious,
                                             const bool aligned) {
 
-  if (aligned){
-    CUDA_1D_KERNEL_LOOP(index, n_boxes1){
+  if (aligned) {
+    CUDA_1D_KERNEL_LOOP(index, n_boxes1) {
       int b1 = index;
       int b2 = index;
 
@@ -61,14 +61,15 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
       __syncthreads();
 
       if (threadIdx.x < row_size && threadIdx.y < col_size) {
-        int offset = (row_start + threadIdx.x) * n_boxes2 + col_start + threadIdx.y;
+        int offset =
+            (row_start + threadIdx.x) * n_boxes2 + col_start + threadIdx.y;
         dev_ious[offset] = single_box_iou_rotated<T>(
             block_boxes1 + threadIdx.x * 5, block_boxes2 + threadIdx.y * 5);
       }
 
     }
   } else {
-    CUDA_1D_KERNEL_LOOP(index, n_boxes1 * n_boxes2){
+    CUDA_1D_KERNEL_LOOP(index, n_boxes1 * n_boxes2) {
       int b1 = index / n_boxes2;
       int b2 = index % n_boxes2;
 
@@ -104,7 +105,8 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
       __syncthreads();
 
       if (threadIdx.x < row_size && threadIdx.y < col_size) {
-        int offset = (row_start + threadIdx.x) * n_boxes2 + col_start + threadIdx.y;
+        int offset =
+            (row_start + threadIdx.x) * n_boxes2 + col_start + threadIdx.y;
         dev_ious[offset] = single_box_iou_rotated<T>(
             block_boxes1 + threadIdx.x * 5, block_boxes2 + threadIdx.y * 5);
       }
