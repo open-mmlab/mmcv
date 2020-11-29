@@ -5,7 +5,7 @@
 #include "parrots_cuda_helper.hpp"
 
 DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
-                                const DArrayLite boxes2, 
+                                const DArrayLite boxes2,
                                 const bool aligned,
                                 cudaStream_t stream,
                                 CudaContext& ctx) {

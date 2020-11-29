@@ -6,7 +6,7 @@
 DArrayLite box_iou_rotated_cpu_launcher(const DArrayLite boxes1, const DArrayLite boxes2, HostContext& ctx);
 
 DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
-                                const DArrayLite boxes2, 
+                                const DArrayLite boxes2,
                                 const bool aligned,
                                 cudaStream_t stream,
                                 CudaContext& ctx);
@@ -31,7 +31,7 @@ void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
                      OperatorBase::out_list_t& outs) {
   const auto& boxes1 = ins[0];
   const auto& boxes2 = ins[1];
-  
+
   bool aligned;
   SSAttrs(attr)
       .get<bool>("aligned", aligned)
