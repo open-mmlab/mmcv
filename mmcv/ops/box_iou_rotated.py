@@ -16,6 +16,8 @@ def box_iou_rotated(bboxes1, bboxes2, aligned=False):
             It has shape (N, 5), indicating (x, y, w, h, theta) for each row.
         boxes2 (Tensor): rotated bboxes 2. \
             It has shape (N, 5), indicating (x, y, w, h, theta) for each row.
+        aligned (bool): if False, use the legacy implementation in
+            MMDetection. If True, align the results more perfectly.
 
     Returns:
         iou (Tensor[N, M]): the NxM matrix containing the pairwise
