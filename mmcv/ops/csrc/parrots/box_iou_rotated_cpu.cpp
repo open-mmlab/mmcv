@@ -5,8 +5,8 @@
 #include "parrots_cpp_helper.hpp"
 
 template <typename T>
-void box_iou_rotated_cpu_kernel(const DArrayLite boxes1, const DArrayLite boxes2,
-                                DArrayLite ious) {
+void box_iou_rotated_cpu_kernel(const DArrayLite boxes1,
+                                const DArrayLite boxes2, DArrayLite ious) {
   int num_boxes1 = boxes1.dim(0);
   int num_boxes2 = boxes2.dim(0);
 

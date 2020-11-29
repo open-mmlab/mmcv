@@ -12,7 +12,6 @@ DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
                                          const bool aligned,
                                          cudaStream_t stream, CudaContext& ctx);
 
-
 void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
                          const OperatorBase::in_list_t& ins,
                          OperatorBase::out_list_t& outs) {
