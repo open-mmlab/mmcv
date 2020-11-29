@@ -175,7 +175,8 @@ Tensor top_pool_forward(Tensor input);
 
 Tensor top_pool_backward(Tensor input, Tensor grad_output);
 
-Tensor box_iou_rotated(const Tensor boxes1, const Tensor boxes2, const bool aligned);
+Tensor box_iou_rotated(const Tensor boxes1, const Tensor boxes2,
+                       const bool aligned);
 
 Tensor nms_rotated(const Tensor dets, Tensor scores, Tensor order,
                    Tensor dets_sorted, const float iou_threshold,

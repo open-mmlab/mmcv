@@ -4,7 +4,8 @@
 #include "box_iou_rotated_cuda.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-Tensor box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, const bool aligned) {
+Tensor box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2,
+                            const bool aligned) {
   using scalar_t = float;
   AT_ASSERTM(boxes1.type().is_cuda(), "boxes1 must be a CUDA tensor");
   AT_ASSERTM(boxes2.type().is_cuda(), "boxes2 must be a CUDA tensor");
@@ -27,7 +28,8 @@ Tensor box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, const bool
 
     box_iou_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
         num_boxes1, num_boxes2, boxes1.data_ptr<scalar_t>(),
-        boxes2.data_ptr<scalar_t>(), (scalar_t*)ious.data_ptr<scalar_t>(), aligned);
+        boxes2.data_ptr<scalar_t>(), (scalar_t*)ious.data_ptr<scalar_t>(),
+        aligned);
 
     AT_CUDA_CHECK(cudaGetLastError());
   }
