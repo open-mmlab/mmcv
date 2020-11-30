@@ -46,4 +46,4 @@ def is_using_parrots():
 
 
 skip_no_parrots = pytest.mark.skipif(
-    not is_using_parrots(), reason='this is a test case under parrots environment')
+    not is_using_parrots(), reason='test case under parrots environment')
