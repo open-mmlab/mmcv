@@ -4,13 +4,12 @@ import torch
 TORCH_VERSION = torch.__version__
 
 if TORCH_VERSION == 'parrots':
-    from parrots.jit import pat
-    jit = pat
+    from parrots.jit import pat as jit
 else:
 
     def jit(func=None,
             check_input=None,
-            full_shape=True,
+            partial_shape=False,
             derivate=False,
             coderize=False,
             optimize=False):
@@ -42,9 +41,9 @@ else:
     skip_no_elena = bypass_decorator
 
 
-def use_parrots():
+def is_using_parrots():
     return TORCH_VERSION == 'parrots'
 
 
 skip_no_parrots = pytest.mark.skipif(
-    not use_parrots(), reason='this is a test case under parrots environment')
+    not is_using_parrots(), reason='this is a test case under parrots environment')

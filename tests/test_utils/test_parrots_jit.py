@@ -218,9 +218,9 @@ class TestJit(object):
             func = mmcv.jit(func, check_input=(a, ))
 
     @mmcv.skip_no_parrots
-    def test_jit_no_full_shape(self):
+    def test_jit_partial_shape(self):
 
-        @mmcv.jit(full_shape=False)
+        @mmcv.jit(partial_shape=True)
         def func(a, b):
             return torch.mean((a - b) * (a - b))
 
