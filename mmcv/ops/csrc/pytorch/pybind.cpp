@@ -155,6 +155,12 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask);
 
+int furthest_point_sampling(int b, int n, int m, const Tensor points,
+                            Tensor temp, Tensor idx);
+
+int furthest_point_sampling_with_dist(int b, int n, int m, const Tensor points,
+                                      Tensor temp, Tensor idx);
+
 void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
@@ -368,4 +374,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("furthest_point_sampling", &furthest_point_sampling,
+        "furthest_point_sampling", py::arg("b"), py::arg("n"), py::arg("m"),
+        py::arg("points"), py::arg("temp"), py::arg("idx"));
+  m.def("furthest_point_sampling_with_dist", &furthest_point_sampling_with_dist,
+        "furthest_point_sampling_with_dist", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("points"), py::arg("temp"), py::arg("idx"));
 }
