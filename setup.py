@@ -160,19 +160,22 @@ def get_extensions():
                                               'lib'))[0]
         library_dirs += [ort_lib_path]
         libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
+        libraries += ['cudart']
         kwargs = {}
         define_macros = []
         extra_compile_args = {'cxx': []}
 
         include_path = os.path.abspath('./mmcv/ops/csrc')
-        include_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
+        include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
         include_dirs.append(include_path)
+        include_dirs.append(include_trt_path)
         include_dirs.append(os.path.join(ort_path, 'include'))
         include_dirs += include_paths(cuda=True)
 
         op_files = glob.glob('./mmcv/ops/csrc/tensorrt/plugins/*')
         op_files += glob.glob('./mmcv/ops/csrc/tensorrt/common/*')
         define_macros += [('MMCV_WITH_CUDA', None)]
+        define_macros += [('MMCV_WITH_TRT', None)]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
         library_dirs += library_paths(cuda=True)

@@ -1,6 +1,6 @@
 #include "trt_plugin.hpp"
 
-#include "roi_align.hpp"
+#include "trt_roi_align.hpp"
 
 extern "C" {
 bool initLibMMCVInferPlugins() { return true; }

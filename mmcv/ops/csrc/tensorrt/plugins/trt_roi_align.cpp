@@ -1,10 +1,16 @@
-#include "roi_align.hpp"
+#include "trt_roi_align.hpp"
 
 #include <assert.h>
 
 #include <chrono>
 
-#include "serialize.hpp"
+#include "trt_serialize.hpp"
+
+extern void TRTROIAlignForwardCUDAKernelLauncher_float(
+    const float *input, const float *rois, float *output, float *argmax_y,
+    float *argmax_x, int output_size, int channels, int height, int width,
+    int aligned_height, int aligned_width, float spatial_scale,
+    int sampling_ratio, int pool_mode, bool aligned, cudaStream_t stream);
 
 namespace {
 static const char *PLUGIN_VERSION{"1"};
@@ -17,8 +23,8 @@ std::vector<nvinfer1::PluginField>
         {nvinfer1::PluginField("out_height"),
          nvinfer1::PluginField("out_width"),
          nvinfer1::PluginField("spatial_scale"),
-         nvinfer1::PluginField("sampling_ratio"),
-         nvinfer1::PluginField("pool_mode"), nvinfer1::PluginField("aligned")});
+         nvinfer1::PluginField("sampling_ratio"), nvinfer1::PluginField("mode"),
+         nvinfer1::PluginField("aligned")});
 
 RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string &name,
                                              int outWidth, int outHeight,
@@ -82,6 +88,21 @@ void RoiAlignPluginDynamic::configurePlugin(
 size_t RoiAlignPluginDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
+  size_t output_size = 0;
+  size_t word_size = 0;
+  switch (mPoolMode) {
+    case 0:  // max
+      output_size = outputs[0].dims.d[0] * outputs[0].dims.d[1] *
+                    outputs[0].dims.d[2] * outputs[0].dims.d[3];
+      word_size = mmcv::getElementSize(outputs[0].type);
+      return output_size * word_size * 2;
+      break;
+    case 1:
+      return 0;
+      break;
+    default:
+      return 0;
+  }
   return 0;
 }
 
@@ -90,29 +111,41 @@ int RoiAlignPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                                    const void *const *inputs,
                                    void *const *outputs, void *workSpace,
                                    cudaStream_t stream) {
-  //   int num_rois = inputDesc[0].dims.d[0];
-  //   int batch_size = inputDesc[1].dims.d[0];
-  //   int channels = inputDesc[1].dims.d[1];
+  int channels = inputDesc[0].dims.d[1];
+  int height = inputDesc[0].dims.d[2];
+  int width = inputDesc[0].dims.d[3];
 
-  //   const int kMaxFeatMap = 10;
-  //   int heights[kMaxFeatMap];
-  //   int widths[kMaxFeatMap];
-  //   float strides[kMaxFeatMap];
+  int output_size = outputDesc[0].dims.d[0] * outputDesc[0].dims.d[1] *
+                    outputDesc[0].dims.d[2] * outputDesc[0].dims.d[3];
+  int word_size = mmcv::getElementSize(outputDesc[0].type);
 
-  //   int num_feats = mFeatmapStrides.size();
-  //   for (int i = 0; i < num_feats; ++i) {
-  //     heights[i] = inputDesc[i + 1].dims.d[2];
-  //     widths[i] = inputDesc[i + 1].dims.d[3];
-  //     strides[i] = mFeatmapStrides[i];
-  //   }
+  const void *feat = inputs[0];
+  const void *rois = inputs[1];
+  void *output = outputs[0];
+  void *argmax_y = nullptr;
+  void *argmax_x = nullptr;
 
-  //   const void *rois = inputs[0];
-  //   const void *const *feats = inputs + 1;
+  switch (mPoolMode) {
+    case 0:  // max
+      argmax_y = workSpace;
+      argmax_x = argmax_y + output_size * word_size;
+      break;
+    case 1:  // avg
+      break;
+  }
 
-  //   roi_extractor<float>((float *)outputs[0], (const float *)rois, num_rois,
-  //                        feats, num_feats, batch_size, channels, &heights[0],
-  //                        &widths[0], &strides[0], mOutSize, mSampleNum,
-  //                        mRoiScaleFactor, mFinestScale, mAligned, stream);
+  switch (outputDesc[0].type) {
+    case nvinfer1::DataType::kFLOAT:
+      TRTROIAlignForwardCUDAKernelLauncher_float(
+          (const float *)feat, (const float *)rois, (float *)output,
+          (float *)argmax_y, (float *)argmax_x, output_size, channels, height,
+          width, mOutHeight, mOutWidth, mSpatialScale, mSampleRatio, mPoolMode,
+          mAligned, stream);
+      break;
+
+    default:
+      break;
+  }
 
   return 0;
 }
@@ -190,7 +223,8 @@ nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
   int sampleRatio = 0;
   int poolMode = -1;
   bool aligned = true;
-
+  // std::cout << "name: " << name << std::endl;
+  // std::cout << "num fields: " << fc->nbFields << std::endl;
   for (int i = 0; i < fc->nbFields; i++) {
     if (fc->fields[i].data == nullptr) {
       continue;
@@ -213,14 +247,14 @@ nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
       sampleRatio = static_cast<const int *>(fc->fields[i].data)[0];
     }
 
-    if (field_name.compare("pool_mode") == 0) {
+    if (field_name.compare("mode") == 0) {
       int data_size = fc->fields[i].length;
       const char *data_start = static_cast<const char *>(fc->fields[i].data);
       std::string poolModeStr(data_start, data_size);
       if (poolModeStr == "avg") {
-        poolMode = 0;
-      } else if (poolModeStr == "max") {
         poolMode = 1;
+      } else if (poolModeStr == "max") {
+        poolMode = 0;
       } else {
         std::cout << "Unknown pool mode \"" << poolModeStr << "\"."
                   << std::endl;

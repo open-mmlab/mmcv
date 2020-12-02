@@ -65,7 +65,7 @@ class RoiAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   int mOutHeight;
   float mSpatialScale;
   int mSampleRatio;
-  int mPoolMode;    // 0:avg 1:max
+  int mPoolMode;  // 1:avg 0:max
   bool mAligned;
 
  protected:
@@ -106,4 +106,5 @@ class RoiAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
   std::string mNamespace;
 };
 
-REGISTER_TENSORRT_PLUGIN_WITH_NSPACE(RoiAlignPluginDynamicCreator, "")
+// REGISTER_TENSORRT_PLUGIN_WITH_NSPACE(RoiAlignPluginDynamicCreator, "");
+REGISTER_TENSORRT_PLUGIN(RoiAlignPluginDynamicCreator);

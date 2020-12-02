@@ -1,8 +1,28 @@
 #pragma once
+#include <stdexcept>
 
 #include "NvInferPlugin.h"
 
 namespace mmcv {
+
+inline unsigned int getElementSize(nvinfer1::DataType t) {
+  switch (t) {
+    case nvinfer1::DataType::kINT32:
+      return 4;
+    case nvinfer1::DataType::kFLOAT:
+      return 4;
+    case nvinfer1::DataType::kHALF:
+      return 2;
+    // case nvinfer1::DataType::kBOOL:
+    case nvinfer1::DataType::kINT8:
+      return 1;
+    default:
+      throw std::runtime_error("Invalid DataType.");
+  }
+  throw std::runtime_error("Invalid DataType.");
+  return 0;
+}
+
 template <typename T>
 class PluginRegistrarWithNamespace {
  public:
@@ -16,6 +36,6 @@ class PluginRegistrarWithNamespace {
 
 #define REGISTER_TENSORRT_PLUGIN_WITH_NSPACE(name, nspace) \
   static mmcv::PluginRegistrarWithNamespace<name>          \
-      PluginRegistrarWithNamespace##name(#nspace);
+      PluginRegistrarWithNamespace##name(nspace);
 
 }  // namespace mmcv
