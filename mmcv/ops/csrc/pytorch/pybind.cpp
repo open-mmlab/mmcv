@@ -159,6 +159,12 @@ void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
+int group_points(int b, int c, int n, int npoints, int nsample, Tensor points,
+                 Tensor idx, Tensor out);
+
+int group_points_backward(int b, int c, int n, int npoints, int nsample,
+                          Tensor grad_out, Tensor idx, Tensor grad_points);
+
 Tensor bottom_pool_forward(Tensor input);
 
 Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
@@ -368,4 +374,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("group_points", &group_points, "Group Points", py::arg("b"),
+        py::arg("c"), py::arg("n"), py::arg("npoints"), py::arg("nsample"),
+        py::arg("points"), py::arg("idx"), py::arg("out"));
+  m.def("group_points_backward", &group_points_backward,
+        "Group Points Backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("nsample"), py::arg("grad_out"),
+        py::arg("idx"), py::arg("grad_points"));
 }
