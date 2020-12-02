@@ -155,6 +155,12 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
                       const int w_feature, const int h_mask, const int w_mask,
                       const int half_h_mask, const int half_w_mask);
 
+int gather_points(int b, int c, int n, int npoints, Tensor points, Tensor idx,
+                  Tensor out);
+
+int gather_points_backward(int b, int c, int n, int npoints, Tensor grad_out,
+                           Tensor idx, Tensor grad_points);
+
 void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
@@ -368,4 +374,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("gather_points", &gather_points, "Gather points", py::arg("b"),
+        py::arg("c"), py::arg("n"), py::arg("npoints"), py::arg("points"),
+        py::arg("idx"), py::arg("out"));
+  m.def("gather_points_backward", &gather_points_backward,
+        "Gather Points Backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("grad_out"), py::arg("idx"),
+        py::arg("grad_points"));
 }
