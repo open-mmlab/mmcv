@@ -3,9 +3,6 @@
 #include "ball_query_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-// #define THREADS_PER_BLOCK 256
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void BallQueryCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                  float max_radius, int nsample,
                                  const Tensor new_xyz, const Tensor xyz,
@@ -19,8 +16,7 @@ void BallQueryCUDAKernelLauncher(int b, int n, int m, float min_radius,
 
   cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-  dim3 blocks(DIVUP(m, THREADS_PER_BLOCK),
-              b);  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(GET_BLOCKS(m), b);  // blockIdx.x(col), blockIdx.y(row)
   dim3 threads(THREADS_PER_BLOCK);
 
   ball_query_cuda_kernel<<<blocks, threads, 0, stream>>>(
