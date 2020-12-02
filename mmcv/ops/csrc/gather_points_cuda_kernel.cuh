@@ -1,5 +1,5 @@
-#ifndef GATHER_POINTS_SAMPLE_CUDA_CUH
-#define GATHER_POINTS_SAMPLE_CUDA_CUH
+#ifndef GATHER_POINTS_CUDA_CUH
+#define GATHER_POINTS_CUDA_CUH
 
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
@@ -46,4 +46,4 @@ __global__ void gather_points_backward_cuda_kernel(
 
   atomicAdd(grad_points + idx[0], grad_out[0]);
 }
-#endif  // GATHER_POINTS_SAMPLE_CUDA_CUH
+#endif  // GATHER_POINTS_CUDA_CUH
