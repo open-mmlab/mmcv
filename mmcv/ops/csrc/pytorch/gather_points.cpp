@@ -5,8 +5,8 @@ void GatherPointsCUDAKernelLauncher(int b, int c, int n, int npoints,
                                     const Tensor points, const Tensor idx,
                                     Tensor out);
 
-int gather_points_cuda(int b, int c, int n, int npoints, const Tensor points,
-                       const Tensor idx, Tensor out) {
+void gather_points_cuda(int b, int c, int n, int npoints, const Tensor points,
+                        const Tensor idx, Tensor out) {
   GatherPointsCUDAKernelLauncher(b, c, n, npoints, points, idx, out);
 }
 
@@ -15,9 +15,9 @@ void GatherPointsBackwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                             const Tensor idx,
                                             Tensor grad_points);
 
-int gather_points_backward_cuda(int b, int c, int n, int npoints,
-                                const Tensor grad_out, const Tensor idx,
-                                Tensor grad_points) {
+void gather_points_backward_cuda(int b, int c, int n, int npoints,
+                                 const Tensor grad_out, const Tensor idx,
+                                 Tensor grad_points) {
   GatherPointsBackwardCUDAKernelLauncher(b, c, n, npoints, grad_out, idx,
                                          grad_points);
 }
