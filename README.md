@@ -40,8 +40,6 @@ There are two versions of MMCV:
 
 **Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other.
 
-### Install with pip
-
 a. Install the lite version.
 
 ```python
@@ -112,64 +110,9 @@ Another way is to compile locally by running
 ```python
 pip install mmcv-full
 ```
+c. Install full version with custom operators for onnxruntime
+- Check [here](docs/onnxruntime_op.md) for detailed instruction.
 
 Note that the local compiling may take up to 10 mins.
 
-### Install from source
-
-After cloning the repo with
-
-```bash
-git clone https://github.com/open-mmlab/mmcv.git
-cd mmcv
-```
-
-You can either
-
-- install the lite version
-
-    ```bash
-    pip install -e .
-    ```
-
-- install the full version
-
-    ```bash
-    MMCV_WITH_OPS=1 pip install -e .
-    ```
-
-If you are on macOS, add the following environment variables before the installing command.
-
-```bash
-CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
-```
-
-e.g.,
-
-```bash
-CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
-```
-
-If you are on Windows10, set the following environment variable before the installing command.
-
-```bash
-set MMCV_WITH_OPS=1
-```
-
-e.g.,
-
-```bash
-set MMCV_WITH_OPS=1
-pip install -e .
-```
-
-### Install with custom operators for onnxruntime
-- Check [here](docs/onnxruntime_op.md) for detailed instruction.
-
-Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
-e.g., in a minimum container environment or servers without GUI,
-you can first install it before installing MMCV to skip the installation of `opencv-python`.
-
-### TroubleShooting
-
-If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING.md](docs/trouble_shooting.md).
+If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).

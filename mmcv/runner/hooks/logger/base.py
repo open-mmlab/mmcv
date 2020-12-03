@@ -89,13 +89,6 @@ class LoggerHook(Hook):
             current_iter = runner.iter + 1
         return current_iter
 
-    def get_step(self, runner):
-        """Get the total training step/epoch."""
-        if self.get_mode(runner) == 'val' and self.by_epoch:
-            return self.get_epoch(runner)
-        else:
-            return self.get_iter(runner)
-
     def get_lr_tags(self, runner):
         tags = {}
         lrs = runner.current_lr()

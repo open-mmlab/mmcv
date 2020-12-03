@@ -12,11 +12,13 @@ class WandbLoggerHook(LoggerHook):
                  interval=10,
                  ignore_last=True,
                  reset_flag=True,
+                 commit=True,
                  by_epoch=True):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
+        self.commit = commit
 
     def import_wandb(self):
         try:
@@ -39,7 +41,8 @@ class WandbLoggerHook(LoggerHook):
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         if tags:
-            self.wandb.log(tags, step=self.get_step(runner))
+            self.wandb.log(
+                tags, step=self.get_iter(runner), commit=self.commit)
 
     @master_only
     def after_run(self, runner):
