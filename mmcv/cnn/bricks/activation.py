@@ -41,7 +41,7 @@ class ClampLayer(nn.Module):
         Returns:
             torch.Tensor: Clamped tensor.
         """
-        return torch.clamp(x, min=self.min_bound, max=self.max_bound)
+        return torch.clamp(x, min=self.min, max=self.max)
 
 
 def build_activation_layer(cfg):
