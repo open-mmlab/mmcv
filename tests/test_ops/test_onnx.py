@@ -1,4 +1,5 @@
 import os
+import warnings
 from functools import partial
 
 import numpy as np
@@ -60,16 +61,19 @@ def test_nms():
 
 def test_softnms():
     if not torch.cuda.is_available():
+        warnings.warn('test_softnms should be ran only if cuda is available.')
         return
     from packaging import version
     from mmcv.ops import soft_nms, get_onnxruntime_op_path
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
+        warnings.warn('test_softnms should be ran with pytorch >= 1.7.0')
         return
 
-    # only support onnxruntime >= 1.5.0
-    if version.parse(rt.__version__) < version.parse('1.5.0'):
+    # only support onnxruntime >= 1.5.1
+    if version.parse(rt.__version__) < version.parse('1.5.1'):
+        warnings.warn('test_softnms should be ran with onnxruntime >= 1.5.1')
         return
 
     ort_custom_op_path = get_onnxruntime_op_path()
