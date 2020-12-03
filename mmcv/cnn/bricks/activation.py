@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 from mmcv.utils import build_from_cfg
@@ -8,6 +9,38 @@ for module in [
         nn.Sigmoid, nn.Tanh
 ]:
     ACTIVATION_LAYERS.register_module(module=module)
+
+
+@ACTIVATION_LAYERS.register_module(name='clip')
+@ACTIVATION_LAYERS.register_module(name='clamp')
+@ACTIVATION_LAYERS.register_module(name='ClipLayer')
+@ACTIVATION_LAYERS.register_module()
+class ClampLayer(nn.Module):
+    """Clamp activation layer.
+
+    This activation function is to clamp the feature map value within
+    :math:`[min, max]`. More details can be found in ``torch.clamp()``.
+
+    Args:
+        min (Number): Lower-bound of the range to be clamped to.
+        max (Number): Upper-bound of the range to be clamped to.
+    """
+
+    def __init__(self, min, max):
+        super(ClampLayer, self).__init__()
+        self.min = min
+        self.max = max
+
+    def forward(self, x):
+        """Forward function.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: Clamped tensor.
+        """
+        return torch.clamp(x, min=self.min_bound, max=self.max_bound)
 
 
 def build_activation_layer(cfg):
