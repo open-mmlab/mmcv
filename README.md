@@ -110,7 +110,9 @@ Another way is to compile locally by running
 ```python
 pip install mmcv-full
 ```
+
 c. Install full version with custom operators for onnxruntime
+
 - Check [here](docs/onnxruntime_op.md) for detailed instruction.
 
 Note that the local compiling may take up to 10 mins.
