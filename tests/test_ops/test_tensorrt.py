@@ -3,7 +3,8 @@ import os
 import numpy as np
 import onnx
 import torch
-from mmcv.utils import TRTWraper, onnx2trt, save_trt_engine
+from mmcv.utils import (TRTWraper, onnx2trt, save_trt_engine,
+                        load_tensorrt_plugin)
 
 onnx_file = 'tmp.onnx'
 trt_file = 'tmp.engine'
@@ -11,6 +12,7 @@ trt_file = 'tmp.engine'
 
 def test_roialign():
     from mmcv.ops import RoIAlign
+    load_tensorrt_plugin()
 
     # trt config
     fp16_mode = False

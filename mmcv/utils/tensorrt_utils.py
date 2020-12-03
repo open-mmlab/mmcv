@@ -18,8 +18,19 @@ def get_tensorrt_op_path():
         return None
 
 
+plugin_is_loaded = False
+
+
+def is_tensorrt_plugin_loaded():
+    global plugin_is_loaded
+    return plugin_is_loaded
+
+
 def load_tensorrt_plugin():
-    ctypes.CDLL(get_tensorrt_op_path())
+    global plugin_is_loaded
+    if not plugin_is_loaded:
+        ctypes.CDLL(get_tensorrt_op_path())
+        plugin_is_loaded = True
 
 
 def onnx2trt(onnx_model,
