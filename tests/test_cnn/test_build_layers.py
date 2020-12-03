@@ -186,14 +186,14 @@ def test_build_activation_layer():
     act = build_activation_layer(dict(type='clamp'))
     x = torch.randn(10) * 1000
     y = act(x)
-    assert torch.all(-1 <= y <= 1)
+    assert torch.logical_and(y >= -1, y <= 1).all()
     act = build_activation_layer(dict(type='clip', min=0))
     y = act(x)
-    assert torch.all(0 <= y <= 1)
+    assert torch.logical_and(y >= 0, y <= 1).all()
 
     act = build_activation_layer(dict(type='ClampLayer', max=0))
     y = act(x)
-    assert torch.all(-1 <= y <= 0)
+    assert torch.logical_and(y >= -1, y <= 0).all()
 
 
 def test_build_padding_layer():
