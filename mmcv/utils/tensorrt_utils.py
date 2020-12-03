@@ -182,5 +182,5 @@ try:
 
             return outputs
 
-except:
+except ImportError:
     pass

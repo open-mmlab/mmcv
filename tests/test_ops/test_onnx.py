@@ -4,6 +4,7 @@ from functools import partial
 import numpy as np
 import onnx
 import onnxruntime as rt
+import pytest
 import torch
 import torch.nn as nn
 
@@ -11,7 +12,6 @@ onnx_file = 'tmp.onnx'
 
 
 class WrapFunction(nn.Module):
-
     def __init__(self, wrapped_function):
         super(WrapFunction, self).__init__()
         self.wrapped_function = wrapped_function
@@ -34,13 +34,12 @@ def test_nms():
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            opset_version=11)
+        torch.onnx.export(wrapped_model, (boxes, scores),
+                          onnx_file,
+                          export_params=True,
+                          keep_initializers_as_inputs=True,
+                          input_names=['boxes', 'scores'],
+                          opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
     # get onnx output
@@ -59,7 +58,12 @@ def test_nms():
 
 
 def test_roialign():
-    from mmcv.ops import roi_align
+    if not torch.cuda.is_available():
+        pytest.skip('test requires GPU')
+    try:
+        from mmcv.ops import roi_align
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('roi_align op is not successfully compiled')
 
     # roi align config
     pool_h = 2
@@ -92,13 +96,12 @@ def test_roialign():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (input, rois),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['input', 'rois'],
-                opset_version=11)
+            torch.onnx.export(wrapped_model, (input, rois),
+                              onnx_file,
+                              export_params=True,
+                              keep_initializers_as_inputs=True,
+                              input_names=['input', 'rois'],
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output
@@ -122,7 +125,7 @@ def test_roialign():
 
 def test_roipool():
     if not torch.cuda.is_available():
-        return
+        pytest.skip('test requires GPU')
     from mmcv.ops import roi_pool
 
     # roi pool config
@@ -155,13 +158,12 @@ def test_roipool():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (input, rois),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['input', 'rois'],
-                opset_version=11)
+            torch.onnx.export(wrapped_model, (input, rois),
+                              onnx_file,
+                              export_params=True,
+                              keep_initializers_as_inputs=True,
+                              input_names=['input', 'rois'],
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output
