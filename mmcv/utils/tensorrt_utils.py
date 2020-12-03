@@ -2,7 +2,6 @@ import ctypes
 import glob
 import os
 
-import onnx
 import tensorrt as trt
 
 

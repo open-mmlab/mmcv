@@ -4,18 +4,17 @@ import os
 import pytest
 import torch
 
-try:
-    from mmcv.utils import (TRTWraper, load_tensorrt_plugin, onnx2trt,
-                            save_trt_engine)
-except:
-    pytest.skip('test requires tensorrt')
-
 onnx_file = 'tmp.onnx'
 trt_file = 'tmp.engine'
 
 
 def test_roialign():
-    if not torch.cuda.is_available() and device == 'cuda':
+    try:
+        from mmcv.utils import (TRTWraper, load_tensorrt_plugin, onnx2trt,
+                                save_trt_engine)
+    except ModuleNotFoundError:
+        pytest.skip('test requires tensorrt')
+    if not torch.cuda.is_available():
         pytest.skip('test requires GPU')
     try:
         from mmcv.ops import RoIAlign

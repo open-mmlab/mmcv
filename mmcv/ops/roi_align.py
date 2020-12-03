@@ -3,7 +3,6 @@ import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
-from torch.onnx.symbolic_helper import parse_args
 
 from ..utils import deprecated_api_warning, ext_loader
 
