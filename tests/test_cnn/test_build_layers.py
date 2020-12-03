@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -186,14 +187,13 @@ def test_build_activation_layer():
     act = build_activation_layer(dict(type='clamp'))
     x = torch.randn(10) * 1000
     y = act(x)
-    assert torch.logical_and(y >= -1, y <= 1).all()
+    assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
     act = build_activation_layer(dict(type='clip', min=0))
     y = act(x)
-    assert torch.logical_and(y >= 0, y <= 1).all()
-
+    assert np.logical_and((y >= 0).numpy(), (y <= 1).numpy()).all()
     act = build_activation_layer(dict(type='ClampLayer', max=0))
     y = act(x)
-    assert torch.logical_and(y >= -1, y <= 0).all()
+    assert np.logical_and((y >= -1).numpy(), (y <= 0).numpy()).all()
 
 
 def test_build_padding_layer():
