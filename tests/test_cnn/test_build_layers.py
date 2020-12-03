@@ -182,6 +182,19 @@ def test_build_activation_layer():
         layer = build_activation_layer(cfg)
         assert isinstance(layer, module)
 
+    # sanity check for ClampLayer
+    act = build_activation_layer(dict(type='clamp'))
+    x = torch.randn(10) * 1000
+    y = act(x)
+    assert torch.all(-1 <= y <= 1)
+    act = build_activation_layer(dict(type='clip', min=0))
+    y = act(x)
+    assert torch.all(0 <= y <= 1)
+
+    act = build_activation_layer(dict(type='ClampLayer', max=0))
+    y = act(x)
+    assert torch.all(-1 <= y <= 0)
+
 
 def test_build_padding_layer():
     with pytest.raises(TypeError):

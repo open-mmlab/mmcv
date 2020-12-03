@@ -13,7 +13,6 @@ for module in [
 
 @ACTIVATION_LAYERS.register_module(name='clip')
 @ACTIVATION_LAYERS.register_module(name='clamp')
-@ACTIVATION_LAYERS.register_module(name='ClipLayer')
 @ACTIVATION_LAYERS.register_module()
 class ClampLayer(nn.Module):
     """Clamp activation layer.
@@ -22,11 +21,13 @@ class ClampLayer(nn.Module):
     :math:`[min, max]`. More details can be found in ``torch.clamp()``.
 
     Args:
-        min (Number): Lower-bound of the range to be clamped to.
-        max (Number): Upper-bound of the range to be clamped to.
+        min (Number | optional): Lower-bound of the range to be clamped to.
+            Default to -1.
+        max (Number | optional): Upper-bound of the range to be clamped to.
+            Default to 1.
     """
 
-    def __init__(self, min, max):
+    def __init__(self, min=-1., max=1.):
         super(ClampLayer, self).__init__()
         self.min = min
         self.max = max
