@@ -18,14 +18,20 @@ def get_tensorrt_op_path():
         return None
 
 
+def load_tensorrt_plugin():
+    ctypes.CDLL(get_tensorrt_op_path())
+
+
 def onnx2trt(onnx_model,
              opt_shape_dict,
              log_level=trt.Logger.ERROR,
              fp16_mode=False,
-             max_workspace_size=0):
+             max_workspace_size=0,
+             device_id=0):
     # import plugin
-    ctypes.CDLL(get_tensorrt_op_path())
+    load_tensorrt_plugin()
 
+    device = torch.device("cuda:{}".format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
@@ -61,7 +67,8 @@ def onnx2trt(onnx_model,
         config.set_flag(trt.BuilderFlag.FP16)
 
     # create engine
-    engine = builder.build_engine(network, config)
+    with torch.cuda.device(device):
+        engine = builder.build_engine(network, config)
 
     return engine
 
@@ -107,6 +114,7 @@ try:
     class TRTWraper(torch.nn.Module):
         def __init__(self, engine=None, input_names=None, output_names=None):
             super(TRTWraper, self).__init__()
+            load_tensorrt_plugin()
             self._register_state_dict_hook(TRTWraper._on_state_dict)
             self.engine = engine
             if isinstance(self.engine, str):

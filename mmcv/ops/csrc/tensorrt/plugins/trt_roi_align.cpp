@@ -19,12 +19,7 @@ static const char *PLUGIN_NAME{"MMCVRoiAlign"};
 
 nvinfer1::PluginFieldCollection RoiAlignPluginDynamicCreator::mFC{};
 std::vector<nvinfer1::PluginField>
-    RoiAlignPluginDynamicCreator::mPluginAttributes(
-        {nvinfer1::PluginField("out_height"),
-         nvinfer1::PluginField("out_width"),
-         nvinfer1::PluginField("spatial_scale"),
-         nvinfer1::PluginField("sampling_ratio"), nvinfer1::PluginField("mode"),
-         nvinfer1::PluginField("aligned")});
+    RoiAlignPluginDynamicCreator::mPluginAttributes;
 
 RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string &name,
                                              int outWidth, int outHeight,
@@ -198,6 +193,12 @@ const char *RoiAlignPluginDynamic::getPluginNamespace() const {
 ////////////////////// creator /////////////////////////////
 
 RoiAlignPluginDynamicCreator::RoiAlignPluginDynamicCreator() {
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("output_height"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("output_width"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("spatial_scale"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("sampling_ratio"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("mode"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("aligned"));
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
 }
@@ -223,19 +224,17 @@ nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
   int sampleRatio = 0;
   int poolMode = -1;
   bool aligned = true;
-  // std::cout << "name: " << name << std::endl;
-  // std::cout << "num fields: " << fc->nbFields << std::endl;
   for (int i = 0; i < fc->nbFields; i++) {
     if (fc->fields[i].data == nullptr) {
       continue;
     }
     std::string field_name(fc->fields[i].name);
 
-    if (field_name.compare("out_height") == 0) {
+    if (field_name.compare("output_height") == 0) {
       outHeight = static_cast<const int *>(fc->fields[i].data)[0];
     }
 
-    if (field_name.compare("out_width") == 0) {
+    if (field_name.compare("output_width") == 0) {
       outWidth = static_cast<const int *>(fc->fields[i].data)[0];
     }
 
@@ -243,7 +242,7 @@ nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
       spatialScale = static_cast<const float *>(fc->fields[i].data)[0];
     }
 
-    if (field_name.compare("sample_ratio") == 0) {
+    if (field_name.compare("sampling_ratio") == 0) {
       sampleRatio = static_cast<const int *>(fc->fields[i].data)[0];
     }
 

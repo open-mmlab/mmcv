@@ -22,20 +22,4 @@ inline unsigned int getElementSize(nvinfer1::DataType t) {
   throw std::runtime_error("Invalid DataType.");
   return 0;
 }
-
-template <typename T>
-class PluginRegistrarWithNamespace {
- public:
-  PluginRegistrarWithNamespace(const char* nspace) {
-    getPluginRegistry()->registerCreator(instance, nspace);
-  }
-
- private:
-  T instance{};
-};
-
-#define REGISTER_TENSORRT_PLUGIN_WITH_NSPACE(name, nspace) \
-  static mmcv::PluginRegistrarWithNamespace<name>          \
-      PluginRegistrarWithNamespace##name(nspace);
-
 }  // namespace mmcv

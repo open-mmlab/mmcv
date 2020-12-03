@@ -105,6 +105,3 @@ class RoiAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
   static std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
-
-// REGISTER_TENSORRT_PLUGIN_WITH_NSPACE(RoiAlignPluginDynamicCreator, "");
-REGISTER_TENSORRT_PLUGIN(RoiAlignPluginDynamicCreator);

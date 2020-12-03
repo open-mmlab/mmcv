@@ -1,11 +1,9 @@
 import os
-from functools import partial
-from mmcv.utils import onnx2trt, save_trt_engine, TRTWraper
 
 import numpy as np
 import onnx
 import torch
-import torch.nn as nn
+from mmcv.utils import TRTWraper, onnx2trt, save_trt_engine
 
 onnx_file = 'tmp.onnx'
 trt_file = 'tmp.engine'
@@ -16,7 +14,7 @@ def test_roialign():
 
     # trt config
     fp16_mode = False
-    max_workspace_size = 0
+    max_workspace_size = 1 << 30
 
     # roi align config
     pool_h = 2
@@ -45,8 +43,7 @@ def test_roialign():
                               keep_initializers_as_inputs=True,
                               input_names=['input', 'rois'],
                               output_names=['roi_feat'],
-                              opset_version=11
-                              )
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # create trt engine and wraper
@@ -76,8 +73,8 @@ def test_roialign():
             pytorch_roi_feat = pytorch_roi_feat.cpu().detach().numpy()
 
         # allclose
-        # if os.path.exists(onnx_file):
-        #     os.remove(onnx_file)
+        if os.path.exists(onnx_file):
+            os.remove(onnx_file)
         if os.path.exists(trt_file):
             os.remove(trt_file)
         assert np.allclose(pytorch_roi_feat, trt_roi_feat, atol=1e-3)

@@ -57,10 +57,10 @@ except:
     pass
 else:
     from .tensorrt_utils import (onnx2trt, save_trt_engine, load_trt_engine,
-                                 get_tensorrt_op_path)
+                                 get_tensorrt_op_path, load_tensorrt_plugin)
     __all__ += [
         'onnx2trt', 'save_trt_engine', 'load_trt_engine',
-        'get_tensorrt_op_path'
+        'get_tensorrt_op_path', 'load_tensorrt_plugin'
     ]
     try:
         import torch
