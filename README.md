@@ -163,6 +163,9 @@ set MMCV_WITH_OPS=1
 pip install -e .
 ```
 
+### Install with custom operators for onnxruntime
+- Check [here](docs/onnxruntime_op.md) for detailed instruction.
+
 Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.

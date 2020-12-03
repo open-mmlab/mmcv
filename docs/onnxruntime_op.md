@@ -1,6 +1,4 @@
-## <center> Custom operators for onnxruntime in mmcv </center>
-
-[toc]
+## Custom operators for onnxruntime in mmcv
 
 ### Introduction of onnxruntime    
 **ONNX RUNTIME** is a cross-platform inferencing and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
