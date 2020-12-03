@@ -42,7 +42,7 @@ def onnx2trt(onnx_model,
     # import plugin
     load_tensorrt_plugin()
 
-    device = torch.device("cuda:{}".format(device_id))
+    device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)

@@ -3,8 +3,8 @@ import os
 import numpy as np
 import onnx
 import torch
-from mmcv.utils import (TRTWraper, onnx2trt, save_trt_engine,
-                        load_tensorrt_plugin)
+from mmcv.utils import (TRTWraper, load_tensorrt_plugin, onnx2trt,
+                        save_trt_engine)
 
 onnx_file = 'tmp.onnx'
 trt_file = 'tmp.engine'
