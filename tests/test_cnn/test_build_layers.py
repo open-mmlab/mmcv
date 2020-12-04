@@ -184,14 +184,14 @@ def test_build_activation_layer():
         assert isinstance(layer, module)
 
     # sanity check for ClampLayer
-    act = build_activation_layer(dict(type='clamp'))
+    act = build_activation_layer(dict(type='Clamp'))
     x = torch.randn(10) * 1000
     y = act(x)
     assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
-    act = build_activation_layer(dict(type='clip', min=0))
+    act = build_activation_layer(dict(type='Clip', min=0))
     y = act(x)
     assert np.logical_and((y >= 0).numpy(), (y <= 1).numpy()).all()
-    act = build_activation_layer(dict(type='ClampLayer', max=0))
+    act = build_activation_layer(dict(type='Clamp', max=0))
     y = act(x)
     assert np.logical_and((y >= -1).numpy(), (y <= 0).numpy()).all()
 
