@@ -183,7 +183,7 @@ def test_build_activation_layer():
         layer = build_activation_layer(cfg)
         assert isinstance(layer, module)
 
-    # sanity check for ClampLayer
+    # sanity check for Clamp
     act = build_activation_layer(dict(type='Clamp'))
     x = torch.randn(10) * 1000
     y = act(x)
