@@ -48,8 +48,10 @@ class Fp16OptimizerHook(OptimizerHook):
     Refer to https://arxiv.org/abs/1710.03740 for more details.
 
     Args:
-        loss_scale (float | str): Scale factor multiplied with loss. If
-            'dynamic' is specified, then dynamic loss scaling will be used.
+        loss_scale (float | str | dict): Scale factor multiplied with loss.
+            If 'dynamic' is specified, then dynamic loss scaling will be used.
+            It can also be a dict containing arguments of LossScaler.
+            Defaults to 512.
     """
 
     def __init__(self,
@@ -66,8 +68,10 @@ class Fp16OptimizerHook(OptimizerHook):
             self.loss_scaler = LossScaler(mode='dynamic')
         elif isinstance(loss_scale, float):
             self.loss_scaler = LossScaler(init_scale=loss_scale, mode='static')
+        elif isinstance(loss_scale, dict):
+            self.loss_scaler = LossScaler(**loss_scale)
         else:
-            raise ValueError('loss_scale must be of type float or str')
+            raise ValueError('loss_scale must be of type float, dict, or str')
 
     def before_run(self, runner):
         """Preparing steps before Mixed Precision Training.
