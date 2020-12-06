@@ -55,7 +55,8 @@ class BaseRunner(metaclass=ABCMeta):
                  logger=None,
                  meta=None,
                  max_iters=None,
-                 max_epochs=None):
+                 max_epochs=None,
+                 timestamp=None):
         if batch_processor is not None:
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
@@ -119,7 +120,7 @@ class BaseRunner(metaclass=ABCMeta):
             self._model_name = self.model.__class__.__name__
 
         self._rank, self._world_size = get_dist_info()
-        self.timestamp = get_time_str()
+        self.timestamp = timestamp if timestamp is not None else get_time_str()
         self.mode = None
         self._hooks = []
         self._epoch = 0

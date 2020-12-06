@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 # flake8: noqa
 from .arraymisc import *
+from .engine import *
 from .fileio import *
 from .image import *
 from .utils import *
