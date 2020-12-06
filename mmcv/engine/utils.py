@@ -94,7 +94,10 @@ def default_args_parser():
         'in xxx=yyy format will be merged into config file.')
 
     # common arguments for testing
-    parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument(
+        '--test-only', action='store_true', help='whether to perform evaluate')
+    parser.add_argument(
+        '--checkpoint', help='checkpoint file used in evaluation')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--fuse-conv-bn',
@@ -161,8 +164,9 @@ def setup_cfg(args):
     else:
         cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
 
-    import_modules_from_strings(**cfg.get('custom_imports', []))
-    return Config
+    if cfg.get('custom_imports', None):
+        import_modules_from_strings(**cfg['custom_imports'])
+    return cfg
 
 
 def setup_envs(cfg, args):
