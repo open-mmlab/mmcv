@@ -466,7 +466,7 @@ class Config:
             allow_list_keys (bool): If True, int string keys (e.g. '0', '1')
               are allowed in ``options`` and will replace the element of the
               corresponding index in the config if the config is a list.
-              Default: False.
+              Default: True.
         """
         option_cfg_dict = {}
         for full_key, v in options.items():
