@@ -227,7 +227,7 @@ class Config:
             if allow_list_keys and k.isdigit() and isinstance(b, list):
                 k = int(k)
                 if len(b) <= k:
-                    raise KeyError(f'Index {k} exceeds the length of list {v}')
+                    raise KeyError(f'Index {k} exceeds the length of list {b}')
                 b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
             elif isinstance(v,
                             dict) and k in b and not v.pop(DELETE_KEY, False):
