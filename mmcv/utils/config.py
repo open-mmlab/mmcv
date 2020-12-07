@@ -199,7 +199,7 @@ class Config:
         Args:
             a (dict): The source dict to be merged into ``b``.
             b (dict): The origin dict to be fetch keys from ``a``.
-            allow_list_encoding (bool): If True, int string keys (e.g. '0', '1'
+            allow_list_keys (bool): If True, int string keys (e.g. '0', '1')
               are allowed in source ``a`` and will replace the element of the
               corresponding index in b if b is a list. Default: False.
 
@@ -214,12 +214,12 @@ class Config:
 
             # Delete b first and merge a into b.
             >>> Config._merge_a_into_b(
-            ... dict(obj=dict(_delete_=True, a=2)), dict(obj=dict(a=1, b=1)))
+            ...     dict(obj=dict(_delete_=True, a=2)), dict(obj=dict(a=1)))
             {'obj': {'a': 2}}
 
             # b is a list
             >>> Config._merge_a_into_b(
-            ... {'0': dict(a=2)}, [dict(a=1), dict(b=2)], allow_list_keys=True)
+            ...     {'0': dict(a=2)}, [dict(a=1), dict(b=2)], True)
             [{'a': 2}, {'b': 2}]
         """
         b = b.copy()
@@ -438,7 +438,7 @@ class Config:
             else:
                 mmcv.dump(cfg_dict, file)
 
-    def merge_from_dict(self, options, allow_list_keys=False):
+    def merge_from_dict(self, options, allow_list_keys=True):
         """Merge list into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
@@ -463,7 +463,7 @@ class Config:
 
         Args:
             options (dict): dict of configs to merge from.
-            allow_list_keys (bool): If True, int string keys (e.g. '0', '1'
+            allow_list_keys (bool): If True, int string keys (e.g. '0', '1')
               are allowed in ``options`` and will replace the element of the
               corresponding index in the config if the config is a list.
               Default: False.
