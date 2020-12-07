@@ -1,5 +1,4 @@
 import inspect
-import warnings
 from abc import ABCMeta, abstractmethod
 
 
@@ -32,7 +31,6 @@ class CephBackend(BaseStorageBackend):
     def __init__(self, path_mapping=None):
         try:
             import ceph
-            warnings.warn('Ceph is deprecate in favor of Petrel.')
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
