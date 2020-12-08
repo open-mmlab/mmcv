@@ -1,4 +1,4 @@
-name: build
+name: build_pat
 
 on:
   push:
