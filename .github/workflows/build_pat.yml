@@ -1,9 +1,6 @@
 name: build_pat
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
 env:
   MMCV_WITH_OPS: 1
