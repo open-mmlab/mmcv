@@ -3,7 +3,7 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated_cuda.cu
 #ifndef BOX_IOU_ROTATED_CUDA_CUH
 #define BOX_IOU_ROTATED_CUDA_CUH
-#include <iostream>
+
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
 #else
