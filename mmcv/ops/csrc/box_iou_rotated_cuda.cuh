@@ -24,8 +24,8 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
                                             const T* dev_boxes2, T* dev_ious,
                                             const bool aligned) {
 
-  if (aligned){
-    CUDA_1D_KERNEL_LOOP(index, n_boxes1){
+  if (aligned) {
+    CUDA_1D_KERNEL_LOOP(index, n_boxes1) {
       int b1 = index;
       int b2 = index;
 
@@ -51,7 +51,7 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
       dev_ious[index] = single_box_iou_rotated<T>(block_boxes1, block_boxes2);
     }
   } else {
-    CUDA_1D_KERNEL_LOOP(index, n_boxes1 * n_boxes2){
+    CUDA_1D_KERNEL_LOOP(index, n_boxes1 * n_boxes2) {
       int b1 = index / n_boxes2;
       int b2 = index % n_boxes2;
 
