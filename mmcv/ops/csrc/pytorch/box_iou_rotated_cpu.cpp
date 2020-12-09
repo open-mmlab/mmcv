@@ -7,7 +7,6 @@
 template <typename T>
 void box_iou_rotated_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
                                 Tensor ious, const bool aligned) {
-
   int output_size = ious.numel();
   auto num_boxes1 = boxes1.size(0);
   auto num_boxes2 = boxes2.size(0);
