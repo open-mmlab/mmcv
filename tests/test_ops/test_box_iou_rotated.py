@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import torch
 
 
@@ -31,6 +32,8 @@ class TestBoxIoURotated(object):
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
+    @pytest.mark.skipif(
+        not torch.cuda.is_available(), reason='requires CUDA support')
     def test_box_iou_rotated_cuda(self):
         from mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(

@@ -4,15 +4,12 @@
 #include "parrots_cpp_helper.hpp"
 
 void box_iou_rotated_cpu_launcher(const DArrayLite boxes1,
-                                 const DArrayLite boxes2,
-                                 DArrayLite ious,
+                                 const DArrayLite boxes2, DArrayLite ious,
                                  const bool aligned);
 
 void box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
-                                   const DArrayLite boxes2,
-                                   DArrayLite ious,
-                                   const bool aligned,
-                                   cudaStream_t stream);
+                                   const DArrayLite boxes2, DArrayLite ious,
+                                   const bool aligned, cudaStream_t stream);
 
 
 void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
@@ -22,9 +19,7 @@ void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
   const auto& boxes2 = ins[1];
 
   bool aligned;
-  SSAttrs(attr)
-      .get<bool>("aligned", aligned)
-      .done();
+  SSAttrs(attr).get<bool>("aligned", aligned).done();
   auto& ious = outs[0];
   box_iou_rotated_cpu_launcher(boxes1, boxes2, ious, aligned);
 }
