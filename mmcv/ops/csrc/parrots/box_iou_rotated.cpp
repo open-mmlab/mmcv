@@ -16,8 +16,8 @@ void box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
 
 
 void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
-                     const OperatorBase::in_list_t& ins,
-                     OperatorBase::out_list_t& outs) {
+                         const OperatorBase::in_list_t& ins,
+                         OperatorBase::out_list_t& outs) {
   const auto& boxes1 = ins[0];
   const auto& boxes2 = ins[1];
 
@@ -30,15 +30,13 @@ void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
 }
 
 void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
-                     const OperatorBase::in_list_t& ins,
-                     OperatorBase::out_list_t& outs) {
+                          const OperatorBase::in_list_t& ins,
+                          OperatorBase::out_list_t& outs) {
   const auto& boxes1 = ins[0];
   const auto& boxes2 = ins[1];
 
   bool aligned;
-  SSAttrs(attr)
-      .get<bool>("aligned", aligned)
-      .done();
+  SSAttrs(attr).get<bool>("aligned", aligned).done();
 
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
   auto& ious = outs[0];
