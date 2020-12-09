@@ -3,13 +3,16 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated.h
 #include "parrots_cpp_helper.hpp"
 
-DArrayLite box_iou_rotated_cpu_launcher(const DArrayLite boxes1, const DArrayLite boxes2, HostContext& ctx);
+void box_iou_rotated_cpu_launcher(const DArrayLite boxes1,
+                                 const DArrayLite boxes2,
+                                 DArrayLite ious,
+                                 const bool aligned);
 
-DArrayLite box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
-                                const DArrayLite boxes2, 
-                                const bool aligned,
-                                cudaStream_t stream,
-                                CudaContext& ctx);
+void box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
+                                   const DArrayLite boxes2,
+                                   DArrayLite ious,
+                                   const bool aligned,
+                                   cudaStream_t stream);
 
 
 void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
@@ -22,8 +25,8 @@ void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
   SSAttrs(attr)
       .get<bool>("aligned", aligned)
       .done();
-
-  outs[0] = box_iou_rotated_cpu_launcher(boxes1, boxes2, ctx);
+  auto& ious = outs[0];
+  box_iou_rotated_cpu_launcher(boxes1, boxes2, ious, aligned);
 }
 
 void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
@@ -31,14 +34,15 @@ void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
                      OperatorBase::out_list_t& outs) {
   const auto& boxes1 = ins[0];
   const auto& boxes2 = ins[1];
-  
+
   bool aligned;
   SSAttrs(attr)
       .get<bool>("aligned", aligned)
       .done();
 
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  outs[0] = box_iou_rotated_cuda_launcher(boxes1, boxes2, aligned, stream, ctx);
+  auto& ious = outs[0];
+  box_iou_rotated_cuda_launcher(boxes1, boxes2, ious, aligned, stream);
 }
 
 PARROTS_EXTENSION_REGISTER(box_iou_rotated)
