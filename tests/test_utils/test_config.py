@@ -219,6 +219,24 @@ def test_merge_from_dict():
     assert cfg.item2 == dict(a=1, b=0.1)
     assert cfg.item3 is False
 
+    cfg_file = osp.join(data_path, 'config/s.py')
+    cfg = Config.fromfile(cfg_file)
+
+    # Allow list keys
+    input_options = {'item.0.a': 1, 'item.1.b': 1}
+    cfg.merge_from_dict(input_options, allow_list_keys=True)
+    assert cfg.item == [{'a': 1}, {'b': 1, 'c': 0}]
+
+    # allow_list_keys is False
+    input_options = {'item.0.a': 1, 'item.1.b': 1}
+    with pytest.raises(TypeError):
+        cfg.merge_from_dict(input_options, allow_list_keys=False)
+
+    # Overflowed index number
+    input_options = {'item.2.a': 1}
+    with pytest.raises(KeyError):
+        cfg.merge_from_dict(input_options, allow_list_keys=True)
+
 
 def test_merge_delete():
     cfg_file = osp.join(data_path, 'config/delete.py')
