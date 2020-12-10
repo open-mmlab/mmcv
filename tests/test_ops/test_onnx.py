@@ -5,6 +5,7 @@ from functools import partial
 import numpy as np
 import onnx
 import onnxruntime as rt
+import pytest
 import torch
 import torch.nn as nn
 
@@ -12,7 +13,6 @@ onnx_file = 'tmp.onnx'
 
 
 class WrapFunction(nn.Module):
-
     def __init__(self, wrapped_function):
         super(WrapFunction, self).__init__()
         self.wrapped_function = wrapped_function
@@ -35,13 +35,12 @@ def test_nms():
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            opset_version=11)
+        torch.onnx.export(wrapped_model, (boxes, scores),
+                          onnx_file,
+                          export_params=True,
+                          keep_initializers_as_inputs=True,
+                          input_names=['boxes', 'scores'],
+                          opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
     # get onnx output
@@ -59,12 +58,11 @@ def test_nms():
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(),
+                    reason="CUDA is unavailable for test_softnms")
 def test_softnms():
-    if not torch.cuda.is_available():
-        warnings.warn('test_softnms should be ran only if cuda is available.')
-        return
+    from mmcv.ops import get_onnxruntime_op_path, soft_nms
     from packaging import version
-    from mmcv.ops import soft_nms, get_onnxruntime_op_path
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
@@ -93,27 +91,28 @@ def test_softnms():
     session_options = rt.SessionOptions()
     session_options.register_custom_ops_library(ort_custom_op_path)
 
-    for iou, sig, mscore, m in configs:
-        pytorch_dets, pytorch_inds = soft_nms(
-            boxes,
-            scores,
-            iou_threshold=iou,
-            sigma=sig,
-            min_score=mscore,
-            method=m)
-        nms = partial(
-            soft_nms, iou_threshold=iou, sigma=sig, min_score=mscore, method=m)
+    for _iou_threshold, _sigma, _min_score, _method in configs:
+        pytorch_dets, pytorch_inds = soft_nms(boxes,
+                                              scores,
+                                              iou_threshold=_iou_threshold,
+                                              sigma=_sigma,
+                                              min_score=_min_score,
+                                              method=_method)
+        nms = partial(soft_nms,
+                      iou_threshold=_iou_threshold,
+                      sigma=_sigma,
+                      min_score=_min_score,
+                      method=_method)
 
         wrapped_model = WrapFunction(nms)
         wrapped_model.cpu().eval()
         with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (boxes, scores),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['boxes', 'scores'],
-                opset_version=11)
+            torch.onnx.export(wrapped_model, (boxes, scores),
+                              onnx_file,
+                              export_params=True,
+                              keep_initializers_as_inputs=True,
+                              input_names=['boxes', 'scores'],
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # get onnx output
@@ -167,13 +166,12 @@ def test_roialign():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (input, rois),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['input', 'rois'],
-                opset_version=11)
+            torch.onnx.export(wrapped_model, (input, rois),
+                              onnx_file,
+                              export_params=True,
+                              keep_initializers_as_inputs=True,
+                              input_names=['input', 'rois'],
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output
@@ -230,13 +228,12 @@ def test_roipool():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (input, rois),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['input', 'rois'],
-                opset_version=11)
+            torch.onnx.export(wrapped_model, (input, rois),
+                              onnx_file,
+                              export_params=True,
+                              keep_initializers_as_inputs=True,
+                              input_names=['input', 'rois'],
+                              opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output

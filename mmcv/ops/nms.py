@@ -12,11 +12,12 @@ ext_module = ext_loader.load_ext(
 
 # This function is modified from: https://github.com/pytorch/vision/
 class NMSop(torch.autograd.Function):
-
     @staticmethod
     def forward(ctx, bboxes, scores, iou_threshold, offset):
-        inds = ext_module.nms(
-            bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+        inds = ext_module.nms(bboxes,
+                              scores,
+                              iou_threshold=float(iou_threshold),
+                              offset=offset)
         return inds
 
     @staticmethod
@@ -24,11 +25,12 @@ class NMSop(torch.autograd.Function):
         from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
         boxes = unsqueeze(g, bboxes, 0)
         scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-        max_output_per_class = g.op(
-            'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
+        max_output_per_class = g.op('Constant',
+                                    value_t=torch.tensor([sys.maxsize],
+                                                         dtype=torch.long))
+        iou_threshold = g.op('Constant',
+                             value_t=torch.tensor([iou_threshold],
+                                                  dtype=torch.float))
         nms_out = g.op('NonMaxSuppression', boxes, scores,
                        max_output_per_class, iou_threshold)
         return squeeze(
@@ -40,35 +42,34 @@ class NMSop(torch.autograd.Function):
 
 
 class SoftNMSop(torch.autograd.Function):
-
     @staticmethod
     def forward(ctx, boxes, scores, iou_threshold, sigma, min_score, method,
                 offset):
-        dets, inds = ext_module.softnms(
-            boxes.cpu(),
-            scores.cpu(),
-            iou_threshold=float(iou_threshold),
-            sigma=float(sigma),
-            min_score=float(min_score),
-            method=int(method),
-            offset=int(offset))
-        return dets, inds
+        dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
+        inds = ext_module.softnms(boxes.cpu(),
+                                  scores.cpu(),
+                                  dets.cpu(),
+                                  iou_threshold=float(iou_threshold),
+                                  sigma=float(sigma),
+                                  min_score=float(min_score),
+                                  method=int(method),
+                                  offset=int(offset))
+        return dets[:inds.size(0)], inds
 
     @staticmethod
     def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
                  offset):
         from packaging import version
         assert version.parse(torch.__version__) >= version.parse('1.7.0')
-        nms_out = g.op(
-            'mmcv::SoftNonMaxSuppression',
-            boxes,
-            scores,
-            iou_threshold_f=float(iou_threshold),
-            sigma_f=float(sigma),
-            min_score_f=float(min_score),
-            method_i=int(method),
-            offset_i=int(offset),
-            outputs=2)
+        nms_out = g.op('mmcv::SoftNonMaxSuppression',
+                       boxes,
+                       scores,
+                       iou_threshold_f=float(iou_threshold),
+                       sigma_f=float(sigma),
+                       min_score_f=float(min_score),
+                       method_i=int(method),
+                       offset_i=int(offset),
+                       outputs=2)
         return nms_out
 
 
@@ -364,13 +365,12 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     if torch.__version__ == 'parrots':
         select = torch.zeros((dets.shape[0]),
                              dtype=torch.int64).to(dets.device)
-        ext_module.nms_rotated(
-            dets_wl,
-            scores,
-            dets_sorted,
-            select,
-            iou_threshold=iou_threshold,
-            multi_label=multi_label)
+        ext_module.nms_rotated(dets_wl,
+                               scores,
+                               dets_sorted,
+                               select,
+                               iou_threshold=iou_threshold,
+                               multi_label=multi_label)
         keep_inds = order.masked_select(select == 1)
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
