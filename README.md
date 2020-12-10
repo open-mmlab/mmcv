@@ -107,7 +107,8 @@ We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA
 </table>
 
 **For pip >= 20.3, please refer to the following table:**
-Please refer to the Releases and replace ``{mmcv_version}`` a specified one.
+
+(NOTE: Please refer to the Releases and replace ``{mmcv_version}`` a specified one. e.g. ``1.2.1``)
 <table class="docutils">
   <tbody>
     <tr>
