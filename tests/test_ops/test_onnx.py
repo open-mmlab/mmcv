@@ -12,6 +12,7 @@ onnx_file = 'tmp.onnx'
 
 
 class WrapFunction(nn.Module):
+
     def __init__(self, wrapped_function):
         super(WrapFunction, self).__init__()
         self.wrapped_function = wrapped_function
@@ -34,12 +35,13 @@ def test_nms():
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
-        torch.onnx.export(wrapped_model, (boxes, scores),
-                          onnx_file,
-                          export_params=True,
-                          keep_initializers_as_inputs=True,
-                          input_names=['boxes', 'scores'],
-                          opset_version=11)
+        torch.onnx.export(
+            wrapped_model, (boxes, scores),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=['boxes', 'scores'],
+            opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
     # get onnx output
@@ -96,12 +98,13 @@ def test_roialign():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(wrapped_model, (input, rois),
-                              onnx_file,
-                              export_params=True,
-                              keep_initializers_as_inputs=True,
-                              input_names=['input', 'rois'],
-                              opset_version=11)
+            torch.onnx.export(
+                wrapped_model, (input, rois),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['input', 'rois'],
+                opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output
@@ -158,12 +161,13 @@ def test_roipool():
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
         with torch.no_grad():
-            torch.onnx.export(wrapped_model, (input, rois),
-                              onnx_file,
-                              export_params=True,
-                              keep_initializers_as_inputs=True,
-                              input_names=['input', 'rois'],
-                              opset_version=11)
+            torch.onnx.export(
+                wrapped_model, (input, rois),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['input', 'rois'],
+                opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # compute onnx_output

@@ -49,13 +49,14 @@ def test_roialign():
         rois = torch.from_numpy(np_rois).cuda()
 
         with torch.no_grad():
-            torch.onnx.export(wrapped_model, (input, rois),
-                              onnx_file,
-                              export_params=True,
-                              keep_initializers_as_inputs=True,
-                              input_names=['input', 'rois'],
-                              output_names=['roi_feat'],
-                              opset_version=11)
+            torch.onnx.export(
+                wrapped_model, (input, rois),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['input', 'rois'],
+                output_names=['roi_feat'],
+                opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
         # create trt engine and wraper
@@ -67,10 +68,11 @@ def test_roialign():
                      list(rois.shape),
                      list(rois.shape)]
         }
-        trt_engine = onnx2trt(onnx_model,
-                              opt_shape_dict,
-                              fp16_mode=fp16_mode,
-                              max_workspace_size=max_workspace_size)
+        trt_engine = onnx2trt(
+            onnx_model,
+            opt_shape_dict,
+            fp16_mode=fp16_mode,
+            max_workspace_size=max_workspace_size)
         save_trt_engine(trt_engine, trt_file)
         trt_model = TRTWraper(trt_file, ['input', 'rois'], ['roi_feat'])
 

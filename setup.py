@@ -156,8 +156,8 @@ def get_extensions():
         libraries = []
         include_dirs = []
         ort_path = os.getenv('TENSORRT_DIR', '0')
-        ort_lib_path = glob.glob(os.path.join(ort_path, 'targets', '*',
-                                              'lib'))[0]
+        ort_lib_path = glob.glob(
+            os.path.join(ort_path, 'targets', '*', 'lib'))[0]
         library_dirs += [ort_lib_path]
         libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
         libraries += ['cudart']
@@ -183,14 +183,15 @@ def get_extensions():
         kwargs['library_dirs'] = library_dirs
         kwargs['libraries'] = libraries
 
-        ext_ops = setuptools.Extension(name=ext_name,
-                                       sources=op_files,
-                                       include_dirs=include_dirs,
-                                       define_macros=define_macros,
-                                       extra_compile_args=extra_compile_args,
-                                       language='c++',
-                                       library_dirs=library_dirs,
-                                       libraries=libraries)
+        ext_ops = setuptools.Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=include_dirs,
+            define_macros=define_macros,
+            extra_compile_args=extra_compile_args,
+            language='c++',
+            library_dirs=library_dirs,
+            libraries=libraries)
         extensions.append(ext_ops)
 
     if os.getenv('MMCV_WITH_OPS', '0') == '0':
@@ -203,15 +204,16 @@ def get_extensions():
         op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
         include_path = os.path.abspath('./mmcv/ops/csrc')
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
-        ext_ops = Extension(name=ext_name,
-                            sources=op_files,
-                            include_dirs=[include_path],
-                            define_macros=define_macros,
-                            extra_compile_args={
-                                'nvcc': [cuda_args] if cuda_args else [],
-                                'cxx': [],
-                            },
-                            cuda=True)
+        ext_ops = Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=define_macros,
+            extra_compile_args={
+                'nvcc': [cuda_args] if cuda_args else [],
+                'cxx': [],
+            },
+            cuda=True)
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
@@ -233,37 +235,39 @@ def get_extensions():
             extension = CppExtension
 
         include_path = os.path.abspath('./mmcv/ops/csrc')
-        ext_ops = extension(name=ext_name,
-                            sources=op_files,
-                            include_dirs=[include_path],
-                            define_macros=define_macros,
-                            extra_compile_args=extra_compile_args)
+        ext_ops = extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=define_macros,
+            extra_compile_args=extra_compile_args)
         extensions.append(ext_ops)
     return extensions
 
 
-setup(name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
-      version=get_version(),
-      description='OpenMMLab Computer Vision Foundation',
-      keywords='computer vision',
-      packages=find_packages(),
-      include_package_data=True,
-      classifiers=[
-          'Development Status :: 4 - Beta',
-          'License :: OSI Approved :: Apache Software License',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Programming Language :: Python :: 3.8',
-          'Topic :: Utilities',
-      ],
-      url='https://github.com/open-mmlab/mmcv',
-      author='MMCV Authors',
-      author_email='openmmlab@gmail.com',
-      setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
-      install_requires=install_requires,
-      ext_modules=get_extensions(),
-      cmdclass={'build_ext': BuildExtension},
-      zip_safe=False)
+setup(
+    name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
+    version=get_version(),
+    description='OpenMMLab Computer Vision Foundation',
+    keywords='computer vision',
+    packages=find_packages(),
+    include_package_data=True,
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Utilities',
+    ],
+    url='https://github.com/open-mmlab/mmcv',
+    author='MMCV Authors',
+    author_email='openmmlab@gmail.com',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+    install_requires=install_requires,
+    ext_modules=get_extensions(),
+    cmdclass={'build_ext': BuildExtension},
+    zip_safe=False)

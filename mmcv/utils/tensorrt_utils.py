@@ -122,6 +122,7 @@ try:
             return TypeError('%s is not supported by torch' % device)
 
     class TRTWraper(torch.nn.Module):
+
         def __init__(self, engine=None, input_names=None, output_names=None):
             super(TRTWraper, self).__init__()
             load_tensorrt_plugin()
@@ -153,8 +154,8 @@ try:
             self.output_names = state_dict[prefix + 'output_names']
 
         def forward(self, inputs):
-            bindings = [None
-                        ] * (len(self.input_names) + len(self.output_names))
+            bindings = [None] * (
+                len(self.input_names) + len(self.output_names))
 
             for input_name, input_tensor in inputs.items():
                 idx = self.engine.get_binding_index(input_name)
