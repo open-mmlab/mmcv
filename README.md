@@ -52,7 +52,7 @@ Before installing mmcv-full, make sure that PyTorch has been successfully instal
 
 We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building.
 
-**For pip < 20.3 and mmcv <= 1.2.1, please refer to the following table:**
+**For pip < 20.3, please refer to the following table:**
 <table class="docutils">
   <tbody>
     <tr>
