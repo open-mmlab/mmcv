@@ -101,6 +101,13 @@ def test_roialign():
                 opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
+        from mmcv.ops import soft_nms, get_onnxruntime_op_path
+        ort_custom_op_path = get_onnxruntime_op_path()
+        assert os.path.exists(ort_custom_op_path)
+
+        session_options = rt.SessionOptions()
+        session_options.register_custom_ops_library(ort_custom_op_path)
+
         # compute onnx_output
         input_all = [node.name for node in onnx_model.graph.input]
         input_initializer = [
@@ -108,7 +115,7 @@ def test_roialign():
         ]
         net_feed_input = list(set(input_all) - set(input_initializer))
         assert (len(net_feed_input) == 2)
-        sess = rt.InferenceSession(onnx_file)
+        sess = rt.InferenceSession(onnx_file, session_options)
         onnx_output = sess.run(None, {
             'input': input.detach().numpy(),
             'rois': rois.detach().numpy()
@@ -182,3 +189,4 @@ def test_roipool():
         # allclose
         os.remove(onnx_file)
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+test_roialign()
