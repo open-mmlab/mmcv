@@ -16,6 +16,7 @@ Contents
    registry.md
    cnn.md
    ops.md
+   build.md
    trouble_shooting.md
    api.rst
 

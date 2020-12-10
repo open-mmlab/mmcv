@@ -1,0 +1,22 @@
+name: build_pat
+
+on: push
+
+env:
+  MMCV_WITH_OPS: 1
+
+jobs:
+  build_parrots:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sunnyxiaohu/parrots-mmcv:1.2.1
+      credentials:
+        username: sunnyxiaohu
+        password: ${{ secrets.CR_PAT }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install unittest dependencies
+        run: pip install -r requirements/test.txt
+      - name: Build and install
+        run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
