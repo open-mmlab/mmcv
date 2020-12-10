@@ -59,7 +59,7 @@ def test_nms():
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(),
-                    reason="CUDA is unavailable for test_softnms")
+                    reason='CUDA is unavailable for test_softnms')
 def test_softnms():
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
     from packaging import version
