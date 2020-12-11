@@ -299,7 +299,10 @@ def nms_match(dets, iou_threshold):
             dets_t = dets.detach().cpu()
         else:
             dets_t = torch.from_numpy(dets)
-        matched = ext_module.nms_match(dets_t, float(iou_threshold))
+        indata_list = [ dets_t ]
+        indata_dict = {'iou_threshold': float(iou_threshold)}
+        # matched = ext_module.nms_match(dets_t, float(iou_threshold))
+        matched = ext_module.nms_match(*indata_list, **indata_dict)
 
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
