@@ -170,6 +170,23 @@ def get_extensions():
             },
             cuda=True)
         extensions.append(ext_ops)
+
+        ext_name = 'mmcv._ext_pt'
+        op_files = glob.glob('./mmcv/ops/csrc/parrots_pt/*.cpp')
+        include_path = os.path.abspath('./mmcv/ops/csrc')
+        cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        ext_ops = Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=define_macros,
+            extra_compile_args={
+                'nvcc': [cuda_args] if cuda_args else [],
+                'cxx': [],
+            },
+            cuda=True,
+            pytorch=True)
+        extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
         from torch.utils.cpp_extension import (CUDAExtension, CppExtension)
