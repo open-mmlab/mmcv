@@ -20,7 +20,7 @@ else:
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         for fun in funcs:
-            if fun in ['nms', 'softnms']:
+            if fun in ['nms', 'softnms', 'nms_match']:
                 ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
             else:
                 ext_list.append(
