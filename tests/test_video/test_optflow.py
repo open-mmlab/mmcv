@@ -157,8 +157,8 @@ def test_flow_warp():
     flow[2, 2, :] = [0.5, 0.7]
 
     res_ = 0.5 * 0.3 + 0.75 * 0.5 * 0.7
-    res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear', decimal=5)
-    assert_array_almost_equal(res_, res_bi)
+    res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
+    assert_array_almost_equal(res_, res_bi, decimal=5)
 
     with pytest.raises(NotImplementedError):
         _ = mmcv.flow_warp(img, flow, interpolate_mode='xxx')
