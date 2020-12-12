@@ -148,7 +148,7 @@ def test_flow_warp():
     res_nn = mmcv.flow_warp(img, flow, interpolate_mode='nearest')
     res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
 
-    assert_array_equal(res_nn, res_bi)
+    assert_array_almost_equal(res_nn, res_bi)
 
     img = np.zeros((5, 5, 1))
     img[2, 2, 0] = 1
@@ -158,10 +158,13 @@ def test_flow_warp():
 
     res_ = 0.5 * 0.3 + 0.75 * 0.5 * 0.7
     res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
-    assert_array_equal(res_, res_bi)
+    assert_array_almost_equal(res_, res_bi)
 
     with pytest.raises(NotImplementedError):
         _ = mmcv.flow_warp(img, flow, interpolate_mode='xxx')
+
+    with pytest.raises(AssertionError):
+        _ = mmcv.flow_warp(img, flow[:, :, 0], interpolate_mode='xxx')
 
 
 def test_make_color_wheel():
