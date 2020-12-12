@@ -141,42 +141,27 @@ def test_flow2rgb():
 
 def test_flow_warp():
 
-    def np_flow_warp(flow, img):
-        output = np.zeros_like(img, dtype=img.dtype)
-        height = flow.shape[0]
-        width = flow.shape[1]
+    img = np.zeros((5, 5, 3))
+    img[2, 2, 0] = 1
+    flow = np.ones((5, 5, 2))
 
-        grid = np.indices((height, width)).swapaxes(0, 1).swapaxes(1, 2)
-        dx = grid[:, :, 0] + flow[:, :, 1]
-        dy = grid[:, :, 1] + flow[:, :, 0]
-        sx = np.floor(dx).astype(int)
-        sy = np.floor(dy).astype(int)
-        valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
+    res_nn = mmcv.flow_warp(img, flow, interpolate_mode='nearest')
+    res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
 
-        output[valid, :] = img[dx[valid].round().astype(int),
-                               dy[valid].round().astype(int), :]
+    assert_array_equal(res_nn, res_bi)
 
-        return output
+    img = np.zeros((5, 5, 1))
+    img[2, 2, 0] = 1
+    img[2, 3, 0] = 0.75
+    flow = np.zeros((5, 5, 2))
+    flow[2, 2, :] = [0.5, 0.7]
 
-    dim = 500
-    a = np.random.randn(dim, dim, 3) * 10 + 125
-    b = np.random.randn(dim, dim, 2) + 2 + 0.2
+    res_ = 0.5 * 0.3 + 0.75 * 0.5 * 0.7
+    res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
+    assert_array_equal(res_, res_bi)
 
-    c = mmcv.flow_warp(a, b, interpolate_mode='nearest')
-
-    d = np_flow_warp(b, a)
-
-    simple_a = np.zeros((5, 5, 3))
-    simple_a[2, 2, 0] = 1
-    simple_b = np.ones((5, 5, 2))
-
-    simple_res_c = np.zeros((5, 5, 3))
-    simple_res_c[1, 1, 0] = 1
-
-    res_c = mmcv.flow_warp(simple_a, simple_b, interpolate_mode='bilinear')
-
-    assert_array_equal(c, d)
-    assert_array_equal(res_c, simple_res_c)
+    with pytest.raises(NotImplementedError):
+        _ = mmcv.flow_warp(img, flow, interpolate_mode='xxx')
 
 
 def test_make_color_wheel():

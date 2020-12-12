@@ -151,19 +151,43 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     Returns:
         ndarray: Warped image with the same shape of img
     """
-    interpolate_mode_dict = {'bilinear': 0, 'nearest': 1}
-    assert len(img.shape) == 3
-    assert len(flow.shape) == 3 and flow.shape[2] == 2
-    assert flow.shape[:2] == img.shape[:2]
-    assert interpolate_mode in interpolate_mode_dict.keys()
+    height = flow.shape[0]
+    width = flow.shape[1]
+    channels = img.shape[2]
 
-    interpolate_mode = interpolate_mode_dict[interpolate_mode]
-    img_float = img.astype(np.float64)
+    output = np.ones(
+        (height, width, channels), dtype=img.dtype) * filling_value
 
-    out = flow_warp_c(
-        img_float,
-        flow.astype(np.float64),
-        filling_value=filling_value,
-        interpolate_mode=interpolate_mode)
+    grid = np.indices((height, width)).swapaxes(0, 1).swapaxes(1, 2)
+    dx = grid[:, :, 0] + flow[:, :, 1]
+    dy = grid[:, :, 1] + flow[:, :, 0]
+    sx = np.floor(dx).astype(int)
+    sy = np.floor(dy).astype(int)
+    valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
 
-    return out
+    if interpolate_mode == 'nearest':
+        output[valid, :] = img[dx[valid].round().astype(int),
+                               dy[valid].round().astype(int), :]
+    elif interpolate_mode == 'bilinear':
+        left_top_ = img[dx[valid].floor().astype(int),
+                        dy[valid].floor().astype(int), :] * (
+                            dx[valid].ceil() - dx[valid]) * (
+                                dy[valid].ceil() - dy[valid])
+        left_down_ = img[dx[valid].ceil().astype(int),
+                         dy[valid].floor().astype(int), :] * (
+                             dx[valid] - dx[valid].floor()) * (
+                                 dy[valid].ceil() - dy[valid])
+        right_top_ = img[dx[valid].floor().astype(int),
+                         dy[valid].ceil().astype(int), :] * (
+                             dx[valid].ceil() - dx[valid]) * (
+                                 dy[valid] - dy[valid].floor())
+        right_down_ = img[dx[valid].ceil().astype(int),
+                          dy[valid].ceil().astype(int), :] * (
+                              dx[valid] - dx[valid].floor()) * (
+                                  dy[valid] - dy[valid].floor())
+        output[valid, :] = left_top_ + left_down_ + right_top_ + right_down_
+    else:
+        raise NotImplementedError(
+            'We only support interpolation modes of nearest and bilinear, '
+            f'but got {interpolate_mode}.')
+    return output.astype(img.dtype)
