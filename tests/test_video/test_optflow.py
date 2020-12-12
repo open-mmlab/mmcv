@@ -156,7 +156,8 @@ def test_flow_warp():
     flow = np.zeros((5, 5, 2))
     flow[2, 2, :] = [0.5, 0.7]
 
-    res_ = 0.5 * 0.3 + 0.75 * 0.5 * 0.7
+    res_ = np.copy(img)
+    res_[2, 2] = 0.5 * 0.3 + 0.75 * 0.5 * 0.7
     res_bi = mmcv.flow_warp(img, flow, interpolate_mode='bilinear')
     assert_array_almost_equal(res_, res_bi, decimal=5)
 
