@@ -170,20 +170,20 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     elif interpolate_mode == 'bilinear':
         left_top_ = img[np.floor(dx[valid]).astype(int),
                         np.floor(dy[valid]).astype(int), :] * (
-                            np.ceil(dx[valid]) - dx[valid]) * (
-                                np.ceil(dy[valid]) - dy[valid])
+                            np.ceil(dx[valid]) - dx[valid])[:, None] * (
+                                np.ceil(dy[valid]) - dy[valid])[:, None]
         left_down_ = img[np.ceil(dx[valid]).astype(int),
                          np.floor(dy[valid]).astype(int), :] * (
-                             dx[valid] - np.floor(dx[valid])) * (
-                                 np.ceil(dy[valid]) - dy[valid])
+                             dx[valid] - np.floor(dx[valid]))[:, None] * (
+                                 np.ceil(dy[valid]) - dy[valid])[:, None]
         right_top_ = img[np.floor(dx[valid]).astype(int),
                          np.ceil(dy[valid]).astype(int), :] * (
-                             np.ceil(dx[valid]) - dx[valid]) * (
-                                 dy[valid] - np.floor(dy[valid]))
+                             np.ceil(dx[valid]) - dx[valid])[:, None] * (
+                                 dy[valid] - np.floor(dy[valid]))[:, None]
         right_down_ = img[np.ceil(dx[valid]).astype(int),
                           np.ceil(dy[valid]).astype(int), :] * (
-                              dx[valid] - np.floor(dx[valid])) * (
-                                  dy[valid] - np.floor(dy[valid]))
+                              dx[valid] - np.floor(dx[valid]))[:, None] * (
+                                  dy[valid] - np.floor(dy[valid]))[:, None]
         output[valid, :] = left_top_ + left_down_ + right_top_ + right_down_
     else:
         raise NotImplementedError(
