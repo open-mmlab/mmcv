@@ -173,7 +173,7 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
                                dy[valid].round().astype(int), :]
     elif interpolate_mode == 'bilinear':
         # dirty walkround for integer positions
-        eps_ = 1e-5
+        eps_ = 1e-6
         dx, dy = dx + eps_, dy + eps_
         left_top_ = img[np.floor(dx[valid]).astype(int),
                         np.floor(dy[valid]).astype(int), :] * (
