@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import warnings
 import numpy as np
 
 from mmcv.arraymisc import dequantize, quantize
@@ -150,6 +151,9 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     Returns:
         ndarray: Warped image with the same shape of img
     """
+    warnings.warn('This function is just for prototyping and cannot '
+                  'guarantee the computational efficiency.')
+    assert flow.ndim == 3, 'Flow must be in 3D arrays.'
     height = flow.shape[0]
     width = flow.shape[1]
     channels = img.shape[2]
