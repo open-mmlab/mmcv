@@ -168,22 +168,22 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
         output[valid, :] = img[dx[valid].round().astype(int),
                                dy[valid].round().astype(int), :]
     elif interpolate_mode == 'bilinear':
-        left_top_ = img[dx[valid].floor().astype(int),
-                        dy[valid].floor().astype(int), :] * (
-                            dx[valid].ceil() - dx[valid]) * (
-                                dy[valid].ceil() - dy[valid])
-        left_down_ = img[dx[valid].ceil().astype(int),
-                         dy[valid].floor().astype(int), :] * (
-                             dx[valid] - dx[valid].floor()) * (
-                                 dy[valid].ceil() - dy[valid])
-        right_top_ = img[dx[valid].floor().astype(int),
-                         dy[valid].ceil().astype(int), :] * (
-                             dx[valid].ceil() - dx[valid]) * (
-                                 dy[valid] - dy[valid].floor())
-        right_down_ = img[dx[valid].ceil().astype(int),
-                          dy[valid].ceil().astype(int), :] * (
-                              dx[valid] - dx[valid].floor()) * (
-                                  dy[valid] - dy[valid].floor())
+        left_top_ = img[np.floor(dx[valid]).astype(int),
+                        np.floor(dy[valid]).astype(int), :] * (
+                            np.ceil(dx[valid]) - dx[valid]) * (
+                                np.ceil(dy[valid]) - dy[valid])
+        left_down_ = img[np.ceil(dx[valid]).astype(int),
+                         np.floor(dy[valid]).astype(int), :] * (
+                             dx[valid] - np.floor(dx[valid])) * (
+                                 np.ceil(dy[valid]) - dy[valid])
+        right_top_ = img[np.floor(dx[valid]).astype(int),
+                         np.ceil(dy[valid]).astype(int), :] * (
+                             np.ceil(dx[valid]) - dx[valid]) * (
+                                 dy[valid] - np.floor(dy[valid]))
+        right_down_ = img[np.ceil(dx[valid]).astype(int),
+                          np.ceil(dy[valid]).astype(int), :] * (
+                              dx[valid] - np.floor(dx[valid])) * (
+                                  dy[valid] - np.floor(dy[valid]))
         output[valid, :] = left_top_ + left_down_ + right_top_ + right_down_
     else:
         raise NotImplementedError(
