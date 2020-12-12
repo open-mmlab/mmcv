@@ -139,16 +139,6 @@ except ImportError:
 def get_extensions():
     extensions = []
 
-    ext_flow = setuptools.Extension(
-        name='mmcv._flow_warp_ext',
-        sources=[
-            './mmcv/video/optflow_warp/flow_warp.cpp',
-            './mmcv/video/optflow_warp/flow_warp_module.pyx'
-        ],
-        include_dirs=[numpy.get_include()],
-        language='c++')
-    extensions.extend(cythonize(ext_flow))
-
     if os.getenv('MMCV_WITH_OPS', '0') == '0':
         return extensions
 
