@@ -1,14 +1,10 @@
 import glob
 import os
 import re
-import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import dist, find_packages, setup
 
 dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
-
-import numpy  # NOQA: E402  # isort:skip
-from Cython.Build import cythonize  # NOQA: E402  # isort:skip
 
 EXT_TYPE = ''
 try:

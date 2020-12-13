@@ -1,6 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import warnings
 import numpy as np
+import warnings
 
 from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
