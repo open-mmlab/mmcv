@@ -9,14 +9,15 @@ onnx_file = 'tmp.onnx'
 trt_file = 'tmp.engine'
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='CUDA is required for test_roialign')
 def test_roialign():
     try:
-        from mmcv.utils import (TRTWraper, load_tensorrt_plugin, onnx2trt,
-                                save_trt_engine)
+        from mmcv.tensorrt import (TRTWraper, load_tensorrt_plugin, onnx2trt,
+                                   save_trt_engine)
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires tensorrt')
-    if not torch.cuda.is_available():
-        pytest.skip('test requires GPU')
+
     try:
         from mmcv.ops import RoIAlign
     except (ImportError, ModuleNotFoundError):

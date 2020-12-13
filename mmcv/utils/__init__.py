@@ -50,25 +50,3 @@ else:
         'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
         'get_git_hash', 'import_modules_from_strings'
     ]
-
-try:
-    import tensorrt
-except ImportError:
-    pass
-else:
-    from .tensorrt_utils import (onnx2trt, save_trt_engine, load_trt_engine,
-                                 get_tensorrt_op_path,
-                                 is_tensorrt_plugin_loaded,
-                                 load_tensorrt_plugin)
-    __all__ += [
-        'onnx2trt', 'save_trt_engine', 'load_trt_engine',
-        'get_tensorrt_op_path', 'is_tensorrt_plugin_loaded',
-        'load_tensorrt_plugin'
-    ]
-    try:
-        import torch
-    except ImportError:
-        pass
-    else:
-        from .tensorrt_utils import TRTWraper
-        __all__ += ['TRTWraper']

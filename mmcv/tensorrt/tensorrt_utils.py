@@ -6,6 +6,7 @@ import tensorrt as trt
 
 
 def get_tensorrt_op_path():
+    """Get TensorRT plugins library path"""
     wildcard = os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
         '_ext_trt.*.so')
@@ -21,11 +22,17 @@ plugin_is_loaded = False
 
 
 def is_tensorrt_plugin_loaded():
+    """Check if TensorRT plugins library is loaded or not
+
+    Returns:
+        bool: plugin_is_loaded flag
+    """
     global plugin_is_loaded
     return plugin_is_loaded
 
 
 def load_tensorrt_plugin():
+    """load TensorRT plugins library"""
     global plugin_is_loaded
     if not plugin_is_loaded:
         ctypes.CDLL(get_tensorrt_op_path())
@@ -38,6 +45,32 @@ def onnx2trt(onnx_model,
              fp16_mode=False,
              max_workspace_size=0,
              device_id=0):
+    """Convert onnx model to tensorrt engine.
+
+    Arguments:
+        onnx_model (str or onnx.ModelProto): the onnx model to convert from
+        opt_shape_dict (dict): the min/opt/max shape of each input
+        log_level (TensorRT log level): the log level of TensorRT
+        fp16_mode (bool): enable fp16 mode
+        max_workspace_size (int): set max workspace size of TensorRT engine.
+            some tactic and layers need large workspace.
+        device_id (int): choice the device to create engine.
+
+    Returns:
+        tensorrt.ICudaEngine: the TensorRT engine created from onnx_model
+
+    Example:
+        >>> engine = onnx2trt(
+        >>>             "onnx_model.onnx",
+        >>>             {'input': [[1, 3, 160, 160], 
+        >>>                        [1, 3, 320, 320], 
+        >>>                        [1, 3, 640, 640]]},
+        >>>             log_level=trt.Logger.WARNING,
+        >>>             fp16_mode=True,
+        >>>             max_workspace_size=1 << 30,
+        >>>             device_id=0)   
+        >>>             })
+    """
     # import plugin
     load_tensorrt_plugin()
 
@@ -84,11 +117,25 @@ def onnx2trt(onnx_model,
 
 
 def save_trt_engine(engine, path):
+    """Serialize TensorRT engine to disk
+
+    Arguments:
+        engine (tensorrt.ICudaEngine): TensorRT engine to serialize
+        path (str): disk path to write the engine
+    """
     with open(path, mode='wb') as f:
         f.write(bytearray(engine.serialize()))
 
 
 def load_trt_engine(path):
+    """Deserialize TensorRT engine from disk
+
+    Arguments:
+        path (str): disk path to read the engine
+
+    Returns:
+        tensorrt.ICudaEngine: the TensorRT engine loaded from disk
+    """
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
@@ -100,6 +147,7 @@ try:
     import torch
 
     def torch_dtype_from_trt(dtype):
+        """Convert pytorch dtype to TensorRT dtype"""
         if dtype == trt.bool:
             return torch.bool
         elif dtype == trt.int8:
@@ -114,6 +162,7 @@ try:
             raise TypeError('%s is not supported by torch' % dtype)
 
     def torch_device_from_trt(device):
+        """Convert pytorch device to TensorRT device"""
         if device == trt.TensorLocation.DEVICE:
             return torch.device('cuda')
         elif device == trt.TensorLocation.HOST:
@@ -122,6 +171,17 @@ try:
             return TypeError('%s is not supported by torch' % device)
 
     class TRTWraper(torch.nn.Module):
+        """TensorRT engine Wraper.
+
+        Arguments:
+            engine (tensorrt.ICudaEngine): TensorRT engine to wrap
+            input_names (list[str]): names of each inputs
+            output_names (list[str]): names of each outputs
+
+        Note:
+            If the engine is converted from onnx model. The input_names and
+            output_names should be the same as onnx model.
+        """
 
         def __init__(self, engine=None, input_names=None, output_names=None):
             super(TRTWraper, self).__init__()
@@ -154,6 +214,15 @@ try:
             self.output_names = state_dict[prefix + 'output_names']
 
         def forward(self, inputs):
+            """
+            Arguments:
+                inputs (dict): dict of input name-tensors pair
+
+            Return:
+                dict: dict of output name-tensors pair
+            """
+            assert self.input_names is not None
+            assert self.output_names is not None
             bindings = [None] * (
                 len(self.input_names) + len(self.output_names))
 

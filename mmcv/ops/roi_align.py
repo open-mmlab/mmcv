@@ -15,8 +15,14 @@ class RoIAlignFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
-        from ..utils import is_tensorrt_plugin_loaded
-        if is_tensorrt_plugin_loaded():
+        trt_plugin_loaded = False
+        try:
+            from ..tensorrt import is_tensorrt_plugin_loaded
+        except:
+            pass
+        else:
+            trt_plugin_loaded = is_tensorrt_plugin_loaded()
+        if trt_plugin_loaded:
             return g.op(
                 'MMCV::MMCVRoiAlign',
                 input,
