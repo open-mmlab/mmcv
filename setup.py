@@ -159,20 +159,32 @@ def get_extensions():
         op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
         include_path = os.path.abspath('./mmcv/ops/csrc')
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        extra_compile_args={
+            'nvcc': [cuda_args] if cuda_args else [],
+            'cxx': [],
+        }
+        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
             include_dirs=[include_path],
             define_macros=define_macros,
-            extra_compile_args={
-                'nvcc': [cuda_args] if cuda_args else [],
-                'cxx': [],
-            },
+            extra_compile_args=extra_compile_args,
             cuda=True)
         extensions.append(ext_ops)
 
+        define_macros = []
+        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            extra_compile_args['nvcc'] += [
+                '-D__CUDA_NO_HALF_OPERATORS__',
+                '-D__CUDA_NO_HALF_CONVERSIONS__',
+                '-D__CUDA_NO_HALF2_OPERATORS__',
+            ]
         ext_name = 'mmcv._ext_pt'
-        op_files = glob.glob('./mmcv/ops/csrc/parrots_pt/*.cpp')
+        op_files = glob.glob('./mmcv/ops/csrc/parrots_pt/*.cpp') +\
+            glob.glob('./mmcv/ops/csrc/parrots_pt/*.cu')
         include_path = os.path.abspath('./mmcv/ops/csrc')
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         ext_ops = Extension(
@@ -180,10 +192,7 @@ def get_extensions():
             sources=op_files,
             include_dirs=[include_path],
             define_macros=define_macros,
-            extra_compile_args={
-                'nvcc': [cuda_args] if cuda_args else [],
-                'cxx': [],
-            },
+            extra_compile_args=extra_compile_args,
             cuda=True,
             pytorch=True)
         extensions.append(ext_ops)
