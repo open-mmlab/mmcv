@@ -1,7 +1,7 @@
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
 #include <parrots/compute/aten.hpp>
-#include "furthest_point_sample_ext_pytorch.h"
+#include "furthest_point_sample_pytorch.h"
 
 using namespace parrots;
 
