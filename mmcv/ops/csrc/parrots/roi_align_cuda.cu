@@ -1,8 +1,8 @@
 #include "parrots_cuda_helper.hpp"
 #include "roi_align_cuda_kernel.cuh"
 
-void ROIAlignForwardCUDAKernelLauncher(const DArrayLite input,
-                                       const DArrayLite rois, DArrayLite output,
+void ROIAlignForwardCUDAKernelLauncher(DArrayLite input,
+                                       DArrayLite rois, DArrayLite output,
                                        DArrayLite argmax_y, DArrayLite argmax_x,
                                        int aligned_height, int aligned_width,
                                        float spatial_scale, int sampling_ratio,
@@ -20,7 +20,7 @@ void ROIAlignForwardCUDAKernelLauncher(const DArrayLite input,
                 output_size, input.ptr<scalar_t>(), rois.ptr<scalar_t>(),
                 output.ptr<scalar_t>(), argmax_y.ptr<scalar_t>(),
                 argmax_x.ptr<scalar_t>(), aligned_height, aligned_width,
-                spatial_scale, sampling_ratio, pool_mode, aligned, channels,
+                static_cast<scalar_t>(spatial_scale), sampling_ratio, pool_mode, aligned, channels,
                 height, width);
       }));
 
@@ -28,8 +28,8 @@ void ROIAlignForwardCUDAKernelLauncher(const DArrayLite input,
 }
 
 void ROIAlignBackwardCUDAKernelLauncher(
-    const DArrayLite grad_output, const DArrayLite rois,
-    const DArrayLite argmax_y, const DArrayLite argmax_x, DArrayLite grad_input,
+    DArrayLite grad_output, DArrayLite rois,
+    DArrayLite argmax_y, DArrayLite argmax_x, DArrayLite grad_input,
     int aligned_height, int aligned_width, float spatial_scale,
     int sampling_ratio, int pool_mode, bool aligned, cudaStream_t stream) {
   int output_size = grad_output.size();
@@ -44,7 +44,7 @@ void ROIAlignBackwardCUDAKernelLauncher(
                 output_size, grad_output.ptr<scalar_t>(), rois.ptr<scalar_t>(),
                 argmax_y.ptr<scalar_t>(), argmax_x.ptr<scalar_t>(),
                 grad_input.ptr<scalar_t>(), aligned_height, aligned_width,
-                spatial_scale, sampling_ratio, pool_mode, aligned, channels,
+                static_cast<scalar_t>(spatial_scale), sampling_ratio, pool_mode, aligned, channels,
                 height, width);
       }));
 
