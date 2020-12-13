@@ -6,7 +6,7 @@ import tensorrt as trt
 
 
 def get_tensorrt_op_path():
-    """Get TensorRT plugins library path"""
+    """Get TensorRT plugins library path."""
     wildcard = os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
         '_ext_trt.*.so')
@@ -22,7 +22,7 @@ plugin_is_loaded = False
 
 
 def is_tensorrt_plugin_loaded():
-    """Check if TensorRT plugins library is loaded or not
+    """Check if TensorRT plugins library is loaded or not.
 
     Returns:
         bool: plugin_is_loaded flag
@@ -32,7 +32,7 @@ def is_tensorrt_plugin_loaded():
 
 
 def load_tensorrt_plugin():
-    """load TensorRT plugins library"""
+    """load TensorRT plugins library."""
     global plugin_is_loaded
     if not plugin_is_loaded:
         ctypes.CDLL(get_tensorrt_op_path())
@@ -117,7 +117,7 @@ def onnx2trt(onnx_model,
 
 
 def save_trt_engine(engine, path):
-    """Serialize TensorRT engine to disk
+    """Serialize TensorRT engine to disk.
 
     Arguments:
         engine (tensorrt.ICudaEngine): TensorRT engine to serialize
@@ -128,7 +128,7 @@ def save_trt_engine(engine, path):
 
 
 def load_trt_engine(path):
-    """Deserialize TensorRT engine from disk
+    """Deserialize TensorRT engine from disk.
 
     Arguments:
         path (str): disk path to read the engine
@@ -147,7 +147,7 @@ try:
     import torch
 
     def torch_dtype_from_trt(dtype):
-        """Convert pytorch dtype to TensorRT dtype"""
+        """Convert pytorch dtype to TensorRT dtype."""
         if dtype == trt.bool:
             return torch.bool
         elif dtype == trt.int8:
@@ -162,7 +162,7 @@ try:
             raise TypeError('%s is not supported by torch' % dtype)
 
     def torch_device_from_trt(device):
-        """Convert pytorch device to TensorRT device"""
+        """Convert pytorch device to TensorRT device."""
         if device == trt.TensorLocation.DEVICE:
             return torch.device('cuda')
         elif device == trt.TensorLocation.HOST:
