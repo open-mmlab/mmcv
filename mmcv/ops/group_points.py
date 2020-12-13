@@ -5,7 +5,12 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext',
+if torch.__version__ == 'parrots':
+    ext_load = '_ext_pt'
+else:
+    ext_load = '_ext'
+
+ext_module = ext_loader.load_ext(ext_load,
                                  ['group_points', 'group_points_backward'])
 
 
@@ -35,8 +40,14 @@ class GroupingOperation(Function):
         _, C, N = features.size()
         output = torch.cuda.FloatTensor(B, C, nfeatures, nsample)
 
-        ext_module.group_points(B, C, N, nfeatures, nsample, features, indices,
-                                output)
+        if torch.__version__ == 'parrots':
+            indata_list = [features, indices, output]
+            indata_dict = {'b' : B, 'c' : C, 'n' : N, 'npoints' : nfeatures, 
+                           'nsample' : nsample}
+            ext_module.group_points(*indata_list, **indata_dict)
+        else:
+            ext_module.group_points(B, C, N, nfeatures, nsample, features, 
+                                indices, output)
 
         ctx.for_backwards = (indices, N)
         return output
@@ -59,9 +70,15 @@ class GroupingOperation(Function):
         grad_features = torch.cuda.FloatTensor(B, C, N).zero_()
 
         grad_out_data = grad_out.data.contiguous()
-        ext_module.group_points_backward(B, C, N, npoint, nsample,
-                                         grad_out_data, idx,
-                                         grad_features.data)
+        if torch.__version__ == 'parrots':
+            indata_list = [grad_out_data, idx, grad_features.data]
+            indata_dict = {'b' : B, 'c' : C, 'n' : N,
+                           'npoints' : npoint, 'nsample' : nsample}
+            ext_module.group_points_backward(*indata_list, **indata_dict)
+        else:
+            ext_module.group_points_backward(B, C, N, npoint, nsample,
+                                             grad_out_data, idx,
+                                             grad_features.data)
         return grad_features, None
 
 
