@@ -60,7 +60,7 @@ class GatherPoints(Function):
         if torch.__version__ == 'parrots':
             indata_list = [grad_out_data, idx, grad_features.data]
             indata_dict = {'b' : B, 'c' : C, 'n' : N, 'npoints' : npoint}
-            ext_module.gather_points(*indata_list, **indata_dict)
+            ext_module.gather_points_backward(*indata_list, **indata_dict)
         else:
             ext_module.gather_points_backward(B, C, N, npoint, grad_out_data,
                                               idx, grad_features.data)
