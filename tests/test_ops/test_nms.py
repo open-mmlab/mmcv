@@ -136,7 +136,7 @@ class Testnms(object):
     def test_batched_nms(self):
         import mmcv
         from mmcv.ops import batched_nms
-        results = mmcv.load('../data/batched_nms_data.pkl')
+        results = mmcv.load('./tests/data/batched_nms_data.pkl')
 
         nms_cfg = dict(type='nms', iou_threshold=0.7)
         boxes, keep = batched_nms(
