@@ -53,8 +53,7 @@ extensions = [
 ]
 
 autodoc_mock_imports = [
-    'cv2', 'mmcv._ext', 'mmcv._flow_warp_ext', 'mmcv.utils.ext_loader',
-    'torchvision'
+    'cv2', 'mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision'
 ]
 autosectionlabel_prefix_document = True
 
