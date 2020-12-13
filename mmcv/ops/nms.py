@@ -6,8 +6,13 @@ import torch
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
+if torch.__version__ == 'parrots':
+    load_ext = '_ext_pt'
+else:
+    load_ext = '_ext'
+
 ext_module = ext_loader.load_ext(
-    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated'])
+    load_ext, ['nms', 'softnms', 'nms_match', 'nms_rotated'])
 
 
 # This function is modified from: https://github.com/pytorch/vision/
@@ -301,8 +306,9 @@ def nms_match(dets, iou_threshold):
             dets_t = torch.from_numpy(dets)
         indata_list = [ dets_t ]
         indata_dict = {'iou_threshold': float(iou_threshold)}
-        # matched = ext_module.nms_match(dets_t, float(iou_threshold))
         matched = ext_module.nms_match(*indata_list, **indata_dict)
+        if torch.__version__ == 'parrots':
+            matched = matched.tolist()
 
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
