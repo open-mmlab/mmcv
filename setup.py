@@ -14,7 +14,6 @@ try:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
 except ModuleNotFoundError:
-    from Cython.Distutils import build_ext as BuildExtension
     print('Skip building ext ops due to the absence of torch.')
 
 
