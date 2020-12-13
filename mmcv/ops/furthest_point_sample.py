@@ -3,8 +3,13 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
+if torch.__version__ == 'parrots':
+    load_ext = '_ext_pt'
+else:
+    load_ext = '_ext'
+
 ext_module = ext_loader.load_ext(
-    '_ext', ['furthest_point_sampling', 'furthest_point_sampling_with_dist'])
+    load_ext, ['furthest_point_sampling', 'furthest_point_sampling_with_dist'])
 
 
 class FurthestPointSampling(Function):
@@ -32,9 +37,18 @@ class FurthestPointSampling(Function):
         output = torch.cuda.IntTensor(B, num_points)
         temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
 
-        ext_module.furthest_point_sampling(B, N, num_points, points_xyz, temp,
-                                           output)
-        ctx.mark_non_differentiable(output)
+        if torch.__version__ == 'parrots':
+            indata_list = [points_xyz, temp, output]
+            indata_dict = {
+                "b" : B,
+                "n" : N,
+                "m" : num_points
+            }
+            ext_module.furthest_point_sampling(*indata_list, **indata_dict) 
+        else:
+            ext_module.furthest_point_sampling(B, N, num_points, points_xyz,
+                                               temp, output)
+            ctx.mark_non_differentiable(output)
         return output
 
     @staticmethod
@@ -67,9 +81,19 @@ class FurthestPointSamplingWithDist(Function):
         output = points_dist.new_zeros([B, num_points], dtype=torch.int32)
         temp = points_dist.new_zeros([B, N]).fill_(1e10)
 
-        ext_module.furthest_point_sampling_with_dist(B, N, num_points,
-                                                     points_dist, temp, output)
-        ctx.mark_non_differentiable(output)
+        if torch.__version__ == 'parrots':
+            indata_list = [points_dist, temp, output]
+            indata_dict = {
+                "b" : B,
+                "n" : N,
+                "m" : num_points
+            }
+            ext_module.furthest_point_sampling_with_dist(*indata_list,
+                **indata_dict)
+        else:
+            ext_module.furthest_point_sampling_with_dist(B, N, num_points,
+                                                         points_dist, temp, output)
+            ctx.mark_non_differentiable(output)
         return output
 
     @staticmethod
