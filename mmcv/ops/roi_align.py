@@ -19,7 +19,7 @@ class RoIAlignFunction(Function):
         try:
             from ..tensorrt import is_tensorrt_plugin_loaded
         except:
-            pass
+            trt_plugin_loaded = False
         else:
             trt_plugin_loaded = is_tensorrt_plugin_loaded()
         if trt_plugin_loaded:

@@ -62,13 +62,13 @@ def onnx2trt(onnx_model,
     Example:
         >>> engine = onnx2trt(
         >>>             "onnx_model.onnx",
-        >>>             {'input': [[1, 3, 160, 160], 
-        >>>                        [1, 3, 320, 320], 
+        >>>             {'input': [[1, 3, 160, 160],
+        >>>                        [1, 3, 320, 320],
         >>>                        [1, 3, 640, 640]]},
         >>>             log_level=trt.Logger.WARNING,
         >>>             fp16_mode=True,
         >>>             max_workspace_size=1 << 30,
-        >>>             device_id=0)   
+        >>>             device_id=0)
         >>>             })
     """
     # import plugin
