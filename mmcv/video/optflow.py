@@ -1,7 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import warnings
+
 import numpy as np
 
-from mmcv._flow_warp_ext import flow_warp_c
 from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
@@ -151,19 +152,49 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     Returns:
         ndarray: Warped image with the same shape of img
     """
-    interpolate_mode_dict = {'bilinear': 0, 'nearest': 1}
-    assert len(img.shape) == 3
-    assert len(flow.shape) == 3 and flow.shape[2] == 2
-    assert flow.shape[:2] == img.shape[:2]
-    assert interpolate_mode in interpolate_mode_dict.keys()
+    warnings.warn('This function is just for prototyping and cannot '
+                  'guarantee the computational efficiency.')
+    assert flow.ndim == 3, 'Flow must be in 3D arrays.'
+    height = flow.shape[0]
+    width = flow.shape[1]
+    channels = img.shape[2]
 
-    interpolate_mode = interpolate_mode_dict[interpolate_mode]
-    img_float = img.astype(np.float64)
+    output = np.ones(
+        (height, width, channels), dtype=img.dtype) * filling_value
 
-    out = flow_warp_c(
-        img_float,
-        flow.astype(np.float64),
-        filling_value=filling_value,
-        interpolate_mode=interpolate_mode)
+    grid = np.indices((height, width)).swapaxes(0, 1).swapaxes(1, 2)
+    dx = grid[:, :, 0] + flow[:, :, 1]
+    dy = grid[:, :, 1] + flow[:, :, 0]
+    sx = np.floor(dx).astype(int)
+    sy = np.floor(dy).astype(int)
+    valid = (sx >= 0) & (sx < height - 1) & (sy >= 0) & (sy < width - 1)
 
-    return out
+    if interpolate_mode == 'nearest':
+        output[valid, :] = img[dx[valid].round().astype(int),
+                               dy[valid].round().astype(int), :]
+    elif interpolate_mode == 'bilinear':
+        # dirty walkround for integer positions
+        eps_ = 1e-6
+        dx, dy = dx + eps_, dy + eps_
+        left_top_ = img[np.floor(dx[valid]).astype(int),
+                        np.floor(dy[valid]).astype(int), :] * (
+                            np.ceil(dx[valid]) - dx[valid])[:, None] * (
+                                np.ceil(dy[valid]) - dy[valid])[:, None]
+        left_down_ = img[np.ceil(dx[valid]).astype(int),
+                         np.floor(dy[valid]).astype(int), :] * (
+                             dx[valid] - np.floor(dx[valid]))[:, None] * (
+                                 np.ceil(dy[valid]) - dy[valid])[:, None]
+        right_top_ = img[np.floor(dx[valid]).astype(int),
+                         np.ceil(dy[valid]).astype(int), :] * (
+                             np.ceil(dx[valid]) - dx[valid])[:, None] * (
+                                 dy[valid] - np.floor(dy[valid]))[:, None]
+        right_down_ = img[np.ceil(dx[valid]).astype(int),
+                          np.ceil(dy[valid]).astype(int), :] * (
+                              dx[valid] - np.floor(dx[valid]))[:, None] * (
+                                  dy[valid] - np.floor(dy[valid]))[:, None]
+        output[valid, :] = left_top_ + left_down_ + right_top_ + right_down_
+    else:
+        raise NotImplementedError(
+            'We only support interpolation modes of nearest and bilinear, '
+            f'but got {interpolate_mode}.')
+    return output.astype(img.dtype)
