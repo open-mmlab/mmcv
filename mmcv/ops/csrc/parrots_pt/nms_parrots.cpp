@@ -97,10 +97,10 @@ void nms_rotated_parrots(T& ctx,
 PARROTS_EXTENSION_REGISTER(nms)
     .attr("iou_threshold")
     .attr("offset")
-    .input(3)
+    .input(2)
     .output(1)
     .apply(nms_parrots<HostContext>)
-#ifdef PARROTS_USE_CUDA
+#ifdef MMCV_WITH_CUDA
     .apply(nms_parrots<CudaContext>)
 #endif
     .done();
@@ -112,9 +112,9 @@ PARROTS_EXTENSION_REGISTER(softnms)
     .attr("method")
     .attr("offset")
     .input(3)
-    .output(3)
+    .output(1)
     .apply(softnms_parrots<HostContext>)
-#ifdef PARROTS_USE_CUDA
+#ifdef MMCV_WITH_CUDA
     .apply(softnms_parrots<CudaContext>)
 #endif
     .done();
@@ -124,7 +124,7 @@ PARROTS_EXTENSION_REGISTER(nms_match)
     .input(1)
     .output(1)
     .apply(nms_match_parrots<HostContext>)
-#ifdef PARROTS_USE_CUDA
+#ifdef MMCV_WITH_CUDA
     .apply(nms_match_parrots<CudaContext>)
 #endif
     .done();
@@ -135,7 +135,7 @@ PARROTS_EXTENSION_REGISTER(nms_rotated)
     .input(3)
     .output(1)
     .apply(nms_rotated_parrots<HostContext>)
-#ifdef PARROTS_USE_CUDA
+#ifdef MMCV_WITH_CUDA
     .apply(nms_rotated_parrots<CudaContext>)
 #endif
     .done();
