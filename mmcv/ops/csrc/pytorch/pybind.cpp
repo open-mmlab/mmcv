@@ -159,6 +159,16 @@ void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
+void three_nn(int b, int n, int m, const Tensor unknown, const Tensor known,
+              Tensor dist2, Tensor idx);
+
+void three_interpolate(int b, int c, int m, int n, const Tensor points,
+                       const Tensor idx, const Tensor weight, Tensor out);
+
+void three_interpolate_backward(int b, int c, int n, int m,
+                                const Tensor grad_out, const Tensor idx,
+                                const Tensor weight, Tensor grad_points);
+
 Tensor bottom_pool_forward(Tensor input);
 
 Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
@@ -368,4 +378,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("three_nn", &three_nn, "Three NN", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("unknown"), py::arg("known"), py::arg("dist2"),
+        py::arg("idx"));
+  m.def("three_interpolate", &three_interpolate, "Three Interpolate",
+        py::arg("b"), py::arg("c"), py::arg("m"), py::arg("n"),
+        py::arg("points"), py::arg("idx"), py::arg("weight"), py::arg("out"));
+  m.def("three_interpolate_backward", &three_interpolate_backward,
+        "Three Interpolate Backward", py::arg("b"), py::arg("c"), py::arg("m"),
+        py::arg("n"), py::arg("grad_out"), py::arg("idx"), py::arg("weight"),
+        py::arg("grad_points"));
 }
