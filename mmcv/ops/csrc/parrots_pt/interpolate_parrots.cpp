@@ -1,8 +1,7 @@
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
 #include <parrots/compute/aten.hpp>
-#include "interpolate_ext_pytorch.h"
-
+#include "interpolate_pytorch.h"
 using namespace parrots;
 
 void three_nn_parrots(CudaContext& ctx, const SSElement& attr,

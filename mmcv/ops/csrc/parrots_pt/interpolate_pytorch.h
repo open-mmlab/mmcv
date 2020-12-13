@@ -1,6 +1,5 @@
 #ifndef _INTERPOLATE_EXT_PYTORCH
 #define _INTERPOLATE_EXT_PYTORCH
-
 #include <torch/extension.h>
 using namespace at;
 
@@ -12,5 +11,5 @@ void three_interpolate(int b, int c, int m, int n, const Tensor points,
 
 void three_interpolate_backward(int b, int c, int n, int m,
                                 const Tensor grad_out, const Tensor idx,
-                                const Tensor weight, Tensor grad_points)
+                                const Tensor weight, Tensor grad_points);
 #endif //_INTERPOLATE_EXT_PYTORCH
