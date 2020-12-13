@@ -2,8 +2,8 @@
 // https://github.com/facebookresearch/detectron2/tree/master/detectron2/layers/csrc/ROIAlign
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 #include <iostream>
-#include "parrots_cpp_helper.hpp"
 
+#include "parrots_cpp_helper.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
@@ -133,8 +133,8 @@ void ROIAlignForward(const int nthreads, const T* input, const T* rois,
     T roi_width = roi_end_w - roi_start_w;
     T roi_height = roi_end_h - roi_start_h;
     if (aligned) {
-      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0) <<
-                        "ROIs in ROIAlign cannot have non-negative size!";
+      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0)
+          << "ROIs in ROIAlign cannot have non-negative size!";
     } else {  // for backward-compatibility only
       roi_width = std::max(roi_width, (T)1.);
       roi_height = std::max(roi_height, (T)1.);
@@ -294,8 +294,8 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
     T roi_width = roi_end_w - roi_start_w;
     T roi_height = roi_end_h - roi_start_h;
     if (aligned) {
-      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0) <<
-                 "ROIs in ROIAlign do not have non-negative size!";
+      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0)
+          << "ROIs in ROIAlign do not have non-negative size!";
     } else {  // for backward-compatibility only
       roi_width = std::max(roi_width, (T)1.);
       roi_height = std::max(roi_height, (T)1.);
@@ -379,10 +379,11 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
 }  // ROIAlignBackward
 
 void ROIAlignForwardCPULauncher(DArrayLite input, DArrayLite rois,
-                                DArrayLite output, DArrayLite argmax_y, 
-                                DArrayLite argmax_x, int aligned_height, 
-                                int aligned_width, float spatial_scale, 
-                                int sampling_ratio, int pool_mode, bool aligned) {
+                                DArrayLite output, DArrayLite argmax_y,
+                                DArrayLite argmax_x, int aligned_height,
+                                int aligned_width, float spatial_scale,
+                                int sampling_ratio, int pool_mode,
+                                bool aligned) {
   int output_size = output.size();
   int channels = input.dim(1);
   int height = input.dim(2);
@@ -419,11 +420,11 @@ void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
   PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.elemType().prim(), ([&] {
         ROIAlignBackward<scalar_t>(
-            output_size, grad_output.ptr<scalar_t>(),
-            rois.ptr<scalar_t>(), argmax_y.ptr<scalar_t>(),
-            argmax_x.ptr<scalar_t>(), grad_input.ptr<scalar_t>(),
-            aligned_height, aligned_width, static_cast<scalar_t>(spatial_scale),
-            sampling_ratio, pool_mode, aligned, channels, height, width,
-            n_stride, c_stride, h_stride, w_stride);
+            output_size, grad_output.ptr<scalar_t>(), rois.ptr<scalar_t>(),
+            argmax_y.ptr<scalar_t>(), argmax_x.ptr<scalar_t>(),
+            grad_input.ptr<scalar_t>(), aligned_height, aligned_width,
+            static_cast<scalar_t>(spatial_scale), sampling_ratio, pool_mode,
+            aligned, channels, height, width, n_stride, c_stride, h_stride,
+            w_stride);
       }));
 }

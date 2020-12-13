@@ -2,10 +2,11 @@
 #include "parrots_cpp_helper.hpp"
 
 void ROIAlignForwardCPULauncher(DArrayLite input, DArrayLite rois,
-                                DArrayLite output, DArrayLite argmax_y, 
-                                DArrayLite argmax_x, int aligned_height, 
-                                int aligned_width, float spatial_scale, 
-                                int sampling_ratio, int pool_mode, bool aligned);
+                                DArrayLite output, DArrayLite argmax_y,
+                                DArrayLite argmax_x, int aligned_height,
+                                int aligned_width, float spatial_scale,
+                                int sampling_ratio, int pool_mode,
+                                bool aligned);
 
 void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
                                  DArrayLite argmax_y, DArrayLite argmax_x,
@@ -14,22 +15,22 @@ void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
                                  int sampling_ratio, int pool_mode,
                                  bool aligned);
 
-void ROIAlignForwardCUDAKernelLauncher(DArrayLite input, DArrayLite rois, DArrayLite output,
-                                       DArrayLite argmax_y, DArrayLite argmax_x,
-                                       int aligned_height, int aligned_width,
-                                       float spatial_scale, int sampling_ratio,
-                                       int pool_mode, bool aligned,
-                                       cudaStream_t stream);
+void ROIAlignForwardCUDAKernelLauncher(DArrayLite input, DArrayLite rois,
+                                       DArrayLite output, DArrayLite argmax_y,
+                                       DArrayLite argmax_x, int aligned_height,
+                                       int aligned_width, float spatial_scale,
+                                       int sampling_ratio, int pool_mode,
+                                       bool aligned, cudaStream_t stream);
 
 void ROIAlignBackwardCUDAKernelLauncher(
-    DArrayLite grad_output, DArrayLite rois,
-    DArrayLite argmax_y, DArrayLite argmax_x, DArrayLite grad_input,
-    int aligned_height, int aligned_width, float spatial_scale,
-    int sampling_ratio, int pool_mode, bool aligned, cudaStream_t stream);
+    DArrayLite grad_output, DArrayLite rois, DArrayLite argmax_y,
+    DArrayLite argmax_x, DArrayLite grad_input, int aligned_height,
+    int aligned_width, float spatial_scale, int sampling_ratio, int pool_mode,
+    bool aligned, cudaStream_t stream);
 
 void roi_align_forward_cpu(HostContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
+                           const OperatorBase::in_list_t& ins,
+                           OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -51,14 +52,14 @@ void roi_align_forward_cpu(HostContext& ctx, const SSElement& attr,
   auto& argmax_y = outs[1];
   auto& argmax_x = outs[2];
 
-  ROIAlignForwardCPULauncher(
-      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
-      spatial_scale, sampling_ratio, pool_mode, aligned);
+  ROIAlignForwardCPULauncher(input, rois, output, argmax_y, argmax_x,
+                             aligned_height, aligned_width, spatial_scale,
+                             sampling_ratio, pool_mode, aligned);
 }
 
 void roi_align_backward_cpu(HostContext& ctx, const SSElement& attr,
-                             const OperatorBase::in_list_t& ins,
-                             OperatorBase::out_list_t& outs) {
+                            const OperatorBase::in_list_t& ins,
+                            OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -80,9 +81,9 @@ void roi_align_backward_cpu(HostContext& ctx, const SSElement& attr,
   auto& argmax_x = ins[3];
   auto& grad_input = outs[0];
 
-  ROIAlignBackwardCPULauncher(
-      grad_output, rois, argmax_y, argmax_x, grad_input, aligned_height,
-      aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
+  ROIAlignBackwardCPULauncher(grad_output, rois, argmax_y, argmax_x, grad_input,
+                              aligned_height, aligned_width, spatial_scale,
+                              sampling_ratio, pool_mode, aligned);
 }
 
 void roi_align_forward_cuda(CudaContext& ctx, const SSElement& attr,
