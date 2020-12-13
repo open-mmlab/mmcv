@@ -13,7 +13,9 @@ try:
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
+    cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
+    cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
 
 
@@ -207,5 +209,5 @@ setup(
     tests_require=['pytest'],
     install_requires=install_requires,
     ext_modules=get_extensions(),
-    cmdclass={'build_ext': BuildExtension},
+    cmdclass=cmd_class,
     zip_safe=False)
