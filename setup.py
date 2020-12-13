@@ -174,10 +174,14 @@ def get_extensions():
             cuda=True)
         extensions.append(ext_ops)
 
+        extra_compile_args2={
+            'nvcc': [cuda_args] if cuda_args else [],
+            'cxx': [],
+        }
         define_macros = []
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
-            extra_compile_args['nvcc'] += [
+            extra_compile_args2['nvcc'] += [
                 '-D__CUDA_NO_HALF_OPERATORS__',
                 '-D__CUDA_NO_HALF_CONVERSIONS__',
                 '-D__CUDA_NO_HALF2_OPERATORS__',
@@ -192,7 +196,7 @@ def get_extensions():
             sources=op_files,
             include_dirs=[include_path],
             define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
+            extra_compile_args=extra_compile_args2,
             cuda=True,
             pytorch=True)
         extensions.append(ext_ops)
