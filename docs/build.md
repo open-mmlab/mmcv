@@ -101,7 +101,7 @@ MMCV can be built in three ways:
 
 1. Lite version (without ops)
 
-   In this way, there does not exist any compilation.
+   In this way, no custom ops are compiled and mmcv is a pure python package.
 
 1. Full version (CPU ops)
 

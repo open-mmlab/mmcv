@@ -2,9 +2,7 @@ import glob
 import os
 import re
 from pkg_resources import DistributionNotFound, get_distribution
-from setuptools import dist, find_packages, setup
-
-dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.11.1'])
+from setuptools import find_packages, setup
 
 EXT_TYPE = ''
 try:
