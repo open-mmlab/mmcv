@@ -5,6 +5,11 @@ from collections import namedtuple
 
 import torch
 
+use_op = ['nms', 'softnms', 'nms_match', 'top_pool_forward',
+    'top_pool_backward', 'bottom_pool_forward', 'bottom_pool_backward',
+    'left_pool_forward', 'left_pool_backward', 'right_pool_forward',
+    'right_pool_backward']
+
 if torch.__version__ != 'parrots':
 
     def load_ext(name, funcs):
@@ -20,9 +25,11 @@ else:
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         for fun in funcs:
-            if fun in ['nms', 'softnms']:
+            if fun in use_op:
+                # op : out = func(in, **attrs_dict)
                 ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
             else:
+                # op_ : func(in, out, **attrs_dict)
                 ext_list.append(
                     extension.load(fun, name, lib_dir=lib_root).op_)
         return ExtModule(*ext_list)
