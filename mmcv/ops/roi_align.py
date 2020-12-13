@@ -18,7 +18,7 @@ class RoIAlignFunction(Function):
         trt_plugin_loaded = False
         try:
             from ..tensorrt import is_tensorrt_plugin_loaded
-        except:
+        except ImportError:
             trt_plugin_loaded = False
         else:
             trt_plugin_loaded = is_tensorrt_plugin_loaded()
