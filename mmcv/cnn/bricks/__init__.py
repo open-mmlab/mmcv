@@ -1,6 +1,6 @@
 from .activation import build_activation_layer
-from .context_block import ContextBlock
 from .conv import build_conv_layer
+from .context_block import ContextBlock
 from .conv2d_adaptive_padding import Conv2dAdaptivePadding
 from .conv_module import ConvModule
 from .conv_ws import ConvAWS2d, ConvWS2d, conv_ws_2d
