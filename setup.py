@@ -159,7 +159,7 @@ def get_extensions():
             cuda=True)
         extensions.append(ext_ops)
 
-        extra_compile_args2={
+        extra_compile_args2 = {
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
         }
