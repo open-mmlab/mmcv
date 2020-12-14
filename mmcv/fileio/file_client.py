@@ -1,5 +1,7 @@
 import inspect
+import os
 from abc import ABCMeta, abstractmethod
+from tempfile import TemporaryDirectory
 
 
 class BaseStorageBackend(metaclass=ABCMeta):
@@ -191,6 +193,38 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
+class PaviModelCloudBackend(BaseStorageBackend):
+    """Pavi modelcloud storage backend.
+
+    Args:
+        path_mapping (dict|None): path mapping dict from local path to Petrel
+            path. When ``path_mapping={'src': 'dst'}``, ``src`` in ``filepath``
+            will be replaced by ``dst``. Default: None.
+    """
+    def __init__(self, path_mapping=None):
+        try:
+            from pavi import modelcloud
+        except ImportError:
+            raise ImportError('Please install pavi to enable PaviModelCloudBackend.')
+
+        assert isinstance(path_mapping, dict) or path_mapping is None
+        self.path_mapping = path_mapping
+
+    def get(self, filepath):
+        from pavi import modelcloud
+        filepath = str(filepath)
+        model = modelcloud.get(filepath)
+        with TemporaryDirectory() as tmp_dir:
+            downloaded_file = os.path.join(tmp_dir, model.name)
+            model.download(downloaded_file)
+            with open(downloaded_file, 'rb') as f:
+                value_buf = f.read()
+        return value_buf
+
+    def get_text(self, filepath):
+        raise NotImplementedError
+
+
 class FileClient:
     """A general file client to access files in different backend.
 
@@ -210,6 +244,7 @@ class FileClient:
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
         'petrel': PetrelBackend,
+        'pavimodelcloud': PaviModelCloudBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):

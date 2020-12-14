@@ -4,8 +4,10 @@ import os.path as osp
 import pkgutil
 import time
 import warnings
+import io
 from collections import OrderedDict
 from importlib import import_module
+from tempfile import TemporaryDirectory
 
 import torch
 import torchvision
@@ -14,6 +16,7 @@ from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import load as load_file
+from ..fileio import FileClient
 from ..parallel import is_module_wrapper
 from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
@@ -113,6 +116,28 @@ def load_url_dist(url, model_dir=None):
         torch.distributed.barrier()
         if rank > 0:
             checkpoint = model_zoo.load_url(url, model_dir=model_dir)
+    return checkpoint
+
+
+def load_fileclient_dist(filename, backend, map_location):
+    """In distributed setting, this function only download checkpoint at local
+    rank 0."""
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    allowed_backends = ['pavimodelcloud']
+    if backend not in allowed_backends:
+        raise ValueError(
+            f'Load from Backend {backend} is not supported.')
+    if rank == 0:
+        fileclient = FileClient(backend=backend)
+        buffer = io.BytesIO(fileclient.get(filename))
+        checkpoint = torch.load(buffer, map_location=map_location)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            fileclient = FileClient(backend=backend)
+            buffer = io.BytesIO(fileclient.get(filename))
+            checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
 
@@ -217,6 +242,9 @@ def _load_checkpoint(filename, map_location=None):
         checkpoint = _process_mmcls_checkpoint(checkpoint)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
+    elif filename.startswith('pavimodelcloud://'):
+        model_path = filename[17:]
+        checkpoint = load_fileclient_dist(model_path, backend='pavimodelcloud', map_location=map_location)
     else:
         if not osp.isfile(filename):
             raise IOError(f'{filename} is not a checkpoint file')
