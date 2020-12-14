@@ -30,6 +30,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from ..bricks.wrappers import ConvTranspose2d
+
 
 def get_model_complexity_info(model,
                               input_shape,
@@ -580,4 +582,5 @@ MODULES_MAPPING = {
     nn.Upsample: upsample_flops_counter_hook,
     # Deconvolution
     nn.ConvTranspose2d: deconv_flops_counter_hook,
+    ConvTranspose2d: deconv_flops_counter_hook,
 }
