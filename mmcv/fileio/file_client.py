@@ -201,11 +201,13 @@ class PaviModelCloudBackend(BaseStorageBackend):
             path. When ``path_mapping={'src': 'dst'}``, ``src`` in ``filepath``
             will be replaced by ``dst``. Default: None.
     """
+
     def __init__(self, path_mapping=None):
         try:
-            from pavi import modelcloud
+            from pavi import modelcloud  # noqa
         except ImportError:
-            raise ImportError('Please install pavi to enable PaviModelCloudBackend.')
+            raise ImportError(
+                'Please install pavi to enable PaviModelCloudBackend.')
 
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
