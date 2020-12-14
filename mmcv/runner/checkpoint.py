@@ -1,13 +1,12 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import io
 import os
 import os.path as osp
 import pkgutil
 import time
 import warnings
-import io
 from collections import OrderedDict
 from importlib import import_module
-from tempfile import TemporaryDirectory
 
 import torch
 import torchvision
@@ -15,8 +14,8 @@ from torch.optim import Optimizer
 from torch.utils import model_zoo
 
 import mmcv
-from ..fileio import load as load_file
 from ..fileio import FileClient
+from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
 from ..utils import mkdir_or_exist
 from .dist_utils import get_dist_info
@@ -126,8 +125,7 @@ def load_fileclient_dist(filename, backend, map_location):
     rank = int(os.environ.get('LOCAL_RANK', rank))
     allowed_backends = ['pavimodelcloud']
     if backend not in allowed_backends:
-        raise ValueError(
-            f'Load from Backend {backend} is not supported.')
+        raise ValueError(f'Load from Backend {backend} is not supported.')
     if rank == 0:
         fileclient = FileClient(backend=backend)
         buffer = io.BytesIO(fileclient.get(filename))
@@ -244,7 +242,8 @@ def _load_checkpoint(filename, map_location=None):
         checkpoint = load_url_dist(filename)
     elif filename.startswith('pavimodelcloud://'):
         model_path = filename[17:]
-        checkpoint = load_fileclient_dist(model_path, backend='pavimodelcloud', map_location=map_location)
+        checkpoint = load_fileclient_dist(
+            model_path, backend='pavimodelcloud', map_location=map_location)
     else:
         if not osp.isfile(filename):
             raise IOError(f'{filename} is not a checkpoint file')
