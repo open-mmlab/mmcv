@@ -173,7 +173,7 @@ def soft_nms(boxes,
             'method': method_dict[method],
             'offset': int(offset)
         }
-        inds  = ext_module.softnms(*indata_list, **indata_dict)
+        inds = ext_module.softnms(*indata_list, **indata_dict)
     else:
         dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
         inds = ext_module.softnms(
@@ -283,7 +283,7 @@ def nms_match(dets, iou_threshold):
             dets_t = dets.detach().cpu()
         else:
             dets_t = torch.from_numpy(dets)
-        indata_list = [ dets_t ]
+        indata_list = [dets_t]
         indata_dict = {'iou_threshold': float(iou_threshold)}
         matched = ext_module.nms_match(*indata_list, **indata_dict)
         if torch.__version__ == 'parrots':
