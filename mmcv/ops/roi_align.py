@@ -24,7 +24,7 @@ class RoIAlignFunction(Function):
             trt_plugin_loaded = is_tensorrt_plugin_loaded()
         if trt_plugin_loaded:
             return g.op(
-                'MMCV::MMCVRoiAlign',
+                'mmcv::MMCVRoiAlign',
                 input,
                 rois,
                 output_height_i=output_size[0],

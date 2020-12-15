@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef TRT_ROI_ALIGN_HPP
+#define TRT_ROI_ALIGN_HPP
 #include <cublas_v2.h>
 
 #include <memory>
@@ -105,3 +105,4 @@ class RoiAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
   static std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
+#endif  // TRT_ROI_ALIGN_HPP

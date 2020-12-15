@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-
+#ifndef TRT_SERIALIZE_HPP
+#define TRT_SERIALIZE_HPP
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -114,3 +114,4 @@ inline void deserialize_value(void const** buffer, size_t* buffer_size,
                               T* value) {
   return Serializer<T>::deserialize(buffer, buffer_size, value);
 }
+#endif  // TRT_SERIALIZE_HPP

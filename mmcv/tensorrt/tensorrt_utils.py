@@ -2,6 +2,7 @@ import ctypes
 import glob
 import os
 
+import torch
 import tensorrt as trt
 
 
@@ -143,114 +144,106 @@ def load_trt_engine(path):
         return engine
 
 
-try:
-    import torch
+def torch_dtype_from_trt(dtype):
+    """Convert pytorch dtype to TensorRT dtype."""
+    if dtype == trt.bool:
+        return torch.bool
+    elif dtype == trt.int8:
+        return torch.int8
+    elif dtype == trt.int32:
+        return torch.int32
+    elif dtype == trt.float16:
+        return torch.float16
+    elif dtype == trt.float32:
+        return torch.float32
+    else:
+        raise TypeError('%s is not supported by torch' % dtype)
 
-    def torch_dtype_from_trt(dtype):
-        """Convert pytorch dtype to TensorRT dtype."""
-        if dtype == trt.bool:
-            return torch.bool
-        elif dtype == trt.int8:
-            return torch.int8
-        elif dtype == trt.int32:
-            return torch.int32
-        elif dtype == trt.float16:
-            return torch.float16
-        elif dtype == trt.float32:
-            return torch.float32
-        else:
-            raise TypeError('%s is not supported by torch' % dtype)
 
-    def torch_device_from_trt(device):
-        """Convert pytorch device to TensorRT device."""
-        if device == trt.TensorLocation.DEVICE:
-            return torch.device('cuda')
-        elif device == trt.TensorLocation.HOST:
-            return torch.device('cpu')
-        else:
-            return TypeError('%s is not supported by torch' % device)
+def torch_device_from_trt(device):
+    """Convert pytorch device to TensorRT device."""
+    if device == trt.TensorLocation.DEVICE:
+        return torch.device('cuda')
+    elif device == trt.TensorLocation.HOST:
+        return torch.device('cpu')
+    else:
+        return TypeError('%s is not supported by torch' % device)
 
-    class TRTWraper(torch.nn.Module):
-        """TensorRT engine Wraper.
 
-        Arguments:
-            engine (tensorrt.ICudaEngine): TensorRT engine to wrap
-            input_names (list[str]): names of each inputs
-            output_names (list[str]): names of each outputs
+class TRTWraper(torch.nn.Module):
+    """TensorRT engine Wraper.
 
-        Note:
-            If the engine is converted from onnx model. The input_names and
-            output_names should be the same as onnx model.
+    Arguments:
+        engine (tensorrt.ICudaEngine): TensorRT engine to wrap
+        input_names (list[str]): names of each inputs
+        output_names (list[str]): names of each outputs
+
+    Note:
+        If the engine is converted from onnx model. The input_names and
+        output_names should be the same as onnx model.
+    """
+
+    def __init__(self, engine=None, input_names=None, output_names=None):
+        super(TRTWraper, self).__init__()
+        load_tensorrt_plugin()
+        self._register_state_dict_hook(TRTWraper._on_state_dict)
+        self.engine = engine
+        if isinstance(self.engine, str):
+            self.engine = load_trt_engine(engine)
+        if self.engine is not None:
+            self.context = self.engine.create_execution_context()
+
+        self.input_names = input_names
+        self.output_names = output_names
+
+    def _on_state_dict(self, state_dict, prefix, local_metadata):
+        state_dict[prefix + 'engine'] = bytearray(self.engine.serialize())
+        state_dict[prefix + 'input_names'] = self.input_names
+        state_dict[prefix + 'output_names'] = self.output_names
+
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
+                              missing_keys, unexpected_keys, error_msgs):
+        engine_bytes = state_dict[prefix + 'engine']
+
+        with trt.Logger() as logger, trt.Runtime(logger) as runtime:
+            self.engine = runtime.deserialize_cuda_engine(engine_bytes)
+            self.context = self.engine.create_execution_context()
+
+        self.input_names = state_dict[prefix + 'input_names']
+        self.output_names = state_dict[prefix + 'output_names']
+
+    def forward(self, inputs):
         """
+        Arguments:
+            inputs (dict): dict of input name-tensors pair
 
-        def __init__(self, engine=None, input_names=None, output_names=None):
-            super(TRTWraper, self).__init__()
-            load_tensorrt_plugin()
-            self._register_state_dict_hook(TRTWraper._on_state_dict)
-            self.engine = engine
-            if isinstance(self.engine, str):
-                self.engine = load_trt_engine(engine)
-            if self.engine is not None:
-                self.context = self.engine.create_execution_context()
+        Return:
+            dict: dict of output name-tensors pair
+        """
+        assert self.input_names is not None
+        assert self.output_names is not None
+        bindings = [None] * (len(self.input_names) + len(self.output_names))
 
-            self.input_names = input_names
-            self.output_names = output_names
+        for input_name, input_tensor in inputs.items():
+            idx = self.engine.get_binding_index(input_name)
 
-        def _on_state_dict(self, state_dict, prefix, local_metadata):
-            state_dict[prefix + 'engine'] = bytearray(self.engine.serialize())
-            state_dict[prefix + 'input_names'] = self.input_names
-            state_dict[prefix + 'output_names'] = self.output_names
+            self.context.set_binding_shape(idx, tuple(input_tensor.shape))
+            bindings[idx] = input_tensor.contiguous().data_ptr()
 
-        def _load_from_state_dict(self, state_dict, prefix, local_metadata,
-                                  strict, missing_keys, unexpected_keys,
-                                  error_msgs):
-            engine_bytes = state_dict[prefix + 'engine']
+        # create output tensors
+        # outputs = [None] * len(self.output_names)
+        outputs = {}
+        for i, output_name in enumerate(self.output_names):
+            idx = self.engine.get_binding_index(output_name)
+            dtype = torch_dtype_from_trt(self.engine.get_binding_dtype(idx))
+            shape = tuple(self.context.get_binding_shape(idx))
 
-            with trt.Logger() as logger, trt.Runtime(logger) as runtime:
-                self.engine = runtime.deserialize_cuda_engine(engine_bytes)
-                self.context = self.engine.create_execution_context()
+            device = torch_device_from_trt(self.engine.get_location(idx))
+            output = torch.empty(size=shape, dtype=dtype, device=device)
+            outputs[output_name] = output
+            bindings[idx] = output.data_ptr()
 
-            self.input_names = state_dict[prefix + 'input_names']
-            self.output_names = state_dict[prefix + 'output_names']
+        self.context.execute_async_v2(bindings,
+                                      torch.cuda.current_stream().cuda_stream)
 
-        def forward(self, inputs):
-            """
-            Arguments:
-                inputs (dict): dict of input name-tensors pair
-
-            Return:
-                dict: dict of output name-tensors pair
-            """
-            assert self.input_names is not None
-            assert self.output_names is not None
-            bindings = [None] * (
-                len(self.input_names) + len(self.output_names))
-
-            for input_name, input_tensor in inputs.items():
-                idx = self.engine.get_binding_index(input_name)
-
-                self.context.set_binding_shape(idx, tuple(input_tensor.shape))
-                bindings[idx] = input_tensor.contiguous().data_ptr()
-
-            # create output tensors
-            # outputs = [None] * len(self.output_names)
-            outputs = {}
-            for i, output_name in enumerate(self.output_names):
-                idx = self.engine.get_binding_index(output_name)
-                dtype = torch_dtype_from_trt(
-                    self.engine.get_binding_dtype(idx))
-                shape = tuple(self.context.get_binding_shape(idx))
-
-                device = torch_device_from_trt(self.engine.get_location(idx))
-                output = torch.empty(size=shape, dtype=dtype, device=device)
-                outputs[output_name] = output
-                bindings[idx] = output.data_ptr()
-
-            self.context.execute_async_v2(
-                bindings,
-                torch.cuda.current_stream().cuda_stream)
-
-            return outputs
-
-except ImportError:
-    pass
+        return outputs

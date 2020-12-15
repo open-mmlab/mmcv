@@ -59,9 +59,8 @@ def test_nms():
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roialign():
-    if not torch.cuda.is_available():
-        pytest.skip('test requires GPU')
     try:
         from mmcv.ops import roi_align
     except (ImportError, ModuleNotFoundError):
@@ -126,9 +125,8 @@ def test_roialign():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
-    if not torch.cuda.is_available():
-        pytest.skip('test requires GPU')
     from mmcv.ops import roi_pool
 
     # roi pool config

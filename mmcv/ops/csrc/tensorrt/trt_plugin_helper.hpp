@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRT_PLUGIN_HELPER_HPP
+#define TRT_PLUGIN_HELPER_HPP
 #include <stdexcept>
 
 #include "NvInferPlugin.h"
@@ -23,3 +24,4 @@ inline unsigned int getElementSize(nvinfer1::DataType t) {
   return 0;
 }
 }  // namespace mmcv
+#endif  // TRT_PLUGIN_HELPER_HPP

@@ -52,7 +52,6 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     CommandLine:
         python -c "import setup; print(setup.parse_requirements())"
     """
-    import re
     import sys
     from os.path import exists
     require_fpath = fname
@@ -140,10 +139,10 @@ def get_extensions():
         library_dirs = []
         libraries = []
         include_dirs = []
-        ort_path = os.getenv('TENSORRT_DIR', '0')
-        ort_lib_path = glob.glob(
-            os.path.join(ort_path, 'targets', '*', 'lib'))[0]
-        library_dirs += [ort_lib_path]
+        tensorrt_path = os.getenv('TENSORRT_DIR', '0')
+        tensorrt_lib_path = glob.glob(
+            os.path.join(tensorrt_path, 'targets', '*', 'lib'))[0]
+        library_dirs += [tensorrt_lib_path]
         libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
         libraries += ['cudart']
         kwargs = {}
@@ -154,11 +153,10 @@ def get_extensions():
         include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
         include_dirs.append(include_path)
         include_dirs.append(include_trt_path)
-        include_dirs.append(os.path.join(ort_path, 'include'))
+        include_dirs.append(os.path.join(tensorrt_path, 'include'))
         include_dirs += include_paths(cuda=True)
 
         op_files = glob.glob('./mmcv/ops/csrc/tensorrt/plugins/*')
-        op_files += glob.glob('./mmcv/ops/csrc/tensorrt/common/*')
         define_macros += [('MMCV_WITH_CUDA', None)]
         define_macros += [('MMCV_WITH_TRT', None)]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
