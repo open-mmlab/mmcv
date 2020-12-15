@@ -123,7 +123,7 @@ def load_fileclient_dist(filename, backend, map_location):
     rank 0."""
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
-    allowed_backends = ['pavimodelcloud']
+    allowed_backends = ['pavi']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
     if rank == 0:
@@ -240,10 +240,10 @@ def _load_checkpoint(filename, map_location=None):
         checkpoint = _process_mmcls_checkpoint(checkpoint)
     elif filename.startswith(('http://', 'https://')):
         checkpoint = load_url_dist(filename)
-    elif filename.startswith('pavimodelcloud://'):
-        model_path = filename[17:]
+    elif filename.startswith('pavi://'):
+        model_path = filename[7:]
         checkpoint = load_fileclient_dist(
-            model_path, backend='pavimodelcloud', map_location=map_location)
+            model_path, backend='pavi', map_location=map_location)
     else:
         if not osp.isfile(filename):
             raise IOError(f'{filename} is not a checkpoint file')
@@ -386,7 +386,6 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         raise TypeError(f'meta must be a dict or None, but got {type(meta)}')
     meta.update(mmcv_version=mmcv.__version__, time=time.asctime())
 
-    mmcv.mkdir_or_exist(osp.dirname(filename))
     if is_module_wrapper(model):
         model = model.module
 
@@ -401,7 +400,14 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         checkpoint['optimizer'] = {}
         for name, optim in optimizer.items():
             checkpoint['optimizer'][name] = optim.state_dict()
-    # immediately flush buffer
-    with open(filename, 'wb') as f:
-        torch.save(checkpoint, f)
-        f.flush()
+
+    if filename.startswith('pavi://'):
+        model_path = filename[7:]
+        fileclient = FileClient(backend='pavi')
+        fileclient.save(checkpoint, model_path)
+    else:
+        mmcv.mkdir_or_exist(osp.dirname(filename))
+        # immediately flush buffer
+        with open(filename, 'wb') as f:
+            torch.save(checkpoint, f)
+            f.flush()

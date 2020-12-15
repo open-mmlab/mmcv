@@ -3,6 +3,8 @@ import os
 from abc import ABCMeta, abstractmethod
 from tempfile import TemporaryDirectory
 
+import torch
+
 
 class BaseStorageBackend(metaclass=ABCMeta):
     """Abstract class of storage backends.
@@ -193,7 +195,7 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
-class PaviModelCloudBackend(BaseStorageBackend):
+class PaviBackend(BaseStorageBackend):
     """Pavi modelcloud storage backend.
 
     Args:
@@ -206,8 +208,7 @@ class PaviModelCloudBackend(BaseStorageBackend):
         try:
             from pavi import modelcloud  # noqa
         except ImportError:
-            raise ImportError(
-                'Please install pavi to enable PaviModelCloudBackend.')
+            raise ImportError('Please install pavi to enable PaviBackend.')
 
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
@@ -222,6 +223,23 @@ class PaviModelCloudBackend(BaseStorageBackend):
             with open(downloaded_file, 'rb') as f:
                 value_buf = f.read()
         return value_buf
+
+    def save(self, checkpoint, filepath):
+        from pavi import modelcloud
+        from pavi.exception import NodeNotFoundError
+        filepath = str(filepath)
+        root = modelcloud.Folder()
+        file_dir, file_name = os.path.split(filepath)
+        try:
+            model = modelcloud.get(file_dir)
+        except NodeNotFoundError:
+            model = root.create_training_model(file_dir)
+        with TemporaryDirectory() as tmp_dir:
+            checkpoint_file = os.path.join(tmp_dir, file_name)
+            with open(checkpoint_file, 'wb') as f:
+                torch.save(checkpoint, f)
+                f.flush()
+            model.create_file(checkpoint_file, name=file_name)
 
     def get_text(self, filepath):
         raise NotImplementedError
@@ -246,7 +264,7 @@ class FileClient:
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
         'petrel': PetrelBackend,
-        'pavimodelcloud': PaviModelCloudBackend,
+        'pavi': PaviBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):
@@ -330,3 +348,6 @@ class FileClient:
 
     def get_text(self, filepath):
         return self.client.get_text(filepath)
+
+    def save(self, checkpoint, filepath):
+        return self.client.save(checkpoint, filepath)
