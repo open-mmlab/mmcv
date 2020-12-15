@@ -68,6 +68,7 @@ import onnxruntime as ort
 
 from mmcv.ops import get_onnxruntime_op_path
 
+ort_custom_op_path = get_onnxruntime_op_path()
 assert os.path.exists(ort_custom_op_path)
 session_options = ort.SessionOptions()
 session_options.register_custom_ops_library(ort_custom_op_path)
