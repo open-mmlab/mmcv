@@ -1,9 +1,8 @@
 import ctypes
 import glob
 import os
-
-import torch
 import tensorrt as trt
+import torch
 
 
 def get_tensorrt_op_path():
