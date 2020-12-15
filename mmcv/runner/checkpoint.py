@@ -123,7 +123,7 @@ def load_fileclient_dist(filename, backend, map_location):
     rank 0."""
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
-    allowed_backends = ['pavi']
+    allowed_backends = ['pavi', 'ceph']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
     if rank == 0:
@@ -244,6 +244,10 @@ def _load_checkpoint(filename, map_location=None):
         model_path = filename[7:]
         checkpoint = load_fileclient_dist(
             model_path, backend='pavi', map_location=map_location)
+    elif filename.startswith('s3://'):
+        model_path = filename[5:]
+        checkpoint = load_fileclient_dist(
+            model_path, backend='ceph', map_location=map_location)
     else:
         if not osp.isfile(filename):
             raise IOError(f'{filename} is not a checkpoint file')

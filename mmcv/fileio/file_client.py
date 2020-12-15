@@ -1,5 +1,5 @@
 import inspect
-import os
+import os.path as osp
 from abc import ABCMeta, abstractmethod
 from tempfile import TemporaryDirectory
 
@@ -218,7 +218,7 @@ class PaviBackend(BaseStorageBackend):
         filepath = str(filepath)
         model = modelcloud.get(filepath)
         with TemporaryDirectory() as tmp_dir:
-            downloaded_file = os.path.join(tmp_dir, model.name)
+            downloaded_file = osp.join(tmp_dir, model.name)
             model.download(downloaded_file)
             with open(downloaded_file, 'rb') as f:
                 value_buf = f.read()
@@ -229,13 +229,13 @@ class PaviBackend(BaseStorageBackend):
         from pavi.exception import NodeNotFoundError
         filepath = str(filepath)
         root = modelcloud.Folder()
-        file_dir, file_name = os.path.split(filepath)
+        file_dir, file_name = osp.split(filepath)
         try:
             model = modelcloud.get(file_dir)
         except NodeNotFoundError:
             model = root.create_training_model(file_dir)
         with TemporaryDirectory() as tmp_dir:
-            checkpoint_file = os.path.join(tmp_dir, file_name)
+            checkpoint_file = osp.join(tmp_dir, file_name)
             with open(checkpoint_file, 'wb') as f:
                 torch.save(checkpoint, f)
                 f.flush()
