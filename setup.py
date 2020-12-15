@@ -231,7 +231,8 @@ def get_extensions():
         kwargs['library_dirs'] = library_dirs
         kwargs['libraries'] = libraries
 
-        ext_ops = setuptools.Extension(
+        from setuptools import Extension
+        ext_ops = Extension(
             name=ext_name,
             sources=op_files,
             include_dirs=include_dirs,
