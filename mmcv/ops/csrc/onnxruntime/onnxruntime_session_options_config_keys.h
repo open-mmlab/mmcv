@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma once
+#ifndef ONNXRUNTIME_SESSION_OPTIONS_CONFIG_KEYS_H
+#define ONNXRUNTIME_SESSION_OPTIONS_CONFIG_KEYS_H
 
 /*
  * This file defines SessionOptions Config Keys and format of the Config Values.
@@ -39,3 +40,5 @@ static const char* const kOrtSessionOptionsConfigLoadModelFormat =
 // ONNX unless optimized_model_filepath ends in '.ort'.
 static const char* const kOrtSessionOptionsConfigSaveModelFormat =
     "session.save_model_format";
+
+#endif  // ONNXRUNTIME_SESSION_OPTIONS_CONFIG_KEYS_H

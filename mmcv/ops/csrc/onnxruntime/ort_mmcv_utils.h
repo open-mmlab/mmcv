@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ORT_MMCV_UTILS_H
+#define ORT_MMCV_UTILS_H
 #include <onnxruntime_cxx_api.h>
 
 #include <vector>
@@ -10,3 +11,4 @@ struct OrtTensorDimensions : std::vector<int64_t> {
     ort.ReleaseTensorTypeAndShapeInfo(info);
   }
 };
+#endif  // ORT_MMCV_UTILS_H

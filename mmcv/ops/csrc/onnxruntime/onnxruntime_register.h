@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ONNXRUNTIME_REGISTER_H
+#define ONNXRUNTIME_REGISTER_H
 #include <onnxruntime_c_api.h>
 
 #ifdef __cplusplus
@@ -11,3 +12,4 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
 #ifdef __cplusplus
 }
 #endif
+#endif  // ONNXRUNTIME_REGISTER_H

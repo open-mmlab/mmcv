@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ONNXRUNTIME_SOFT_NMS_H
+#define ONNXRUNTIME_SOFT_NMS_H
 #include <onnxruntime_cxx_api.h>
 
 struct SoftNmsKernel {
@@ -44,3 +45,4 @@ struct SoftNmsOp : Ort::CustomOpBase<SoftNmsOp, SoftNmsKernel> {
     return "CPUExecutionProvider";
   };
 };
+#endif  // ONNXRUNTIME_SOFT_NMS_H
