@@ -9,7 +9,7 @@ else:
 
     def jit(func=None,
             check_input=None,
-            partial_shape=False,
+            full_shape=True,
             derivate=False,
             coderize=False,
             optimize=False):
