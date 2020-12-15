@@ -39,11 +39,11 @@ class GatherPoints(Function):
 
         if torch.__version__ == 'parrots':
             indata_list = [features, indicies, output]
-            indata_dict = {'b' : B, 'c' : C, 'n' : N, 'npoints' : npoint}
+            indata_dict = {'b': B, 'c': C, 'n': N, 'npoints': npoint}
             ext_module.gather_points(*indata_list, **indata_dict)
         else:
-            ext_module.gather_points(B, C, N, npoint, features, 
-                                     indicies, output)
+            ext_module.gather_points(B, C, N, npoint, features, indicies,
+                                     output)
 
         ctx.for_backwards = (indicies, C, N)
         if torch.__version__ != 'parrots':
@@ -59,7 +59,7 @@ class GatherPoints(Function):
         grad_out_data = grad_out.data.contiguous()
         if torch.__version__ == 'parrots':
             indata_list = [grad_out_data, idx, grad_features.data]
-            indata_dict = {'b' : B, 'c' : C, 'n' : N, 'npoints' : npoint}
+            indata_dict = {'b': B, 'c': C, 'n': N, 'npoints': npoint}
             ext_module.gather_points_backward(*indata_list, **indata_dict)
         else:
             ext_module.gather_points_backward(B, C, N, npoint, grad_out_data,
