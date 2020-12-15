@@ -42,11 +42,11 @@ class ThreeInterpolate(Function):
 
         if torch.__version__ == 'parrots':
             indata_list = [features, indices, weight, output]
-            indata_dict = {'b' : B, 'c' : c, 'm' : m, 'n' : n}
+            indata_dict = {'b': B, 'c': c, 'm': m, 'n': n}
             ext_module.three_interpolate(*indata_list, **indata_dict)
         else:
-            ext_module.three_interpolate(B, c, m, n, features, indices, 
-                                         weight, output)
+            ext_module.three_interpolate(B, c, m, n, features, indices, weight,
+                                         output)
         return output
 
     @staticmethod
@@ -68,15 +68,13 @@ class ThreeInterpolate(Function):
         grad_out_data = grad_out.data.contiguous()
 
         if torch.__version__ == 'parrots':
-            indata_list = [grad_out_data, idx, weight, 
-                           grad_features.data]
-            indata_dict = {'b' : B, 'c' : c, 'n' : n, 'm' : m}
-            ext_module.three_interpolate_backward(*indata_list, 
-                                                  **indata_dict)
+            indata_list = [grad_out_data, idx, weight, grad_features.data]
+            indata_dict = {'b': B, 'c': c, 'n': n, 'm': m}
+            ext_module.three_interpolate_backward(*indata_list, **indata_dict)
         else:
-            ext_module.three_interpolate_backward(B, c, n, m, 
-                                              grad_out_data, idx,
-                                              weight, grad_features.data)
+            ext_module.three_interpolate_backward(B, c, n, m, grad_out_data,
+                                                  idx, weight,
+                                                  grad_features.data)
         return grad_features, None, None
 
 
@@ -111,8 +109,8 @@ class ThreeNN(Function):
 
         if torch.__version__ == 'parrots':
             indata_list = [target, source, dist2, idx]
-            indata_dict = {'b' : B, 'n' : N, 'm' : m}
-            ext_module.three_nn(*indata_list, **indata_dict) 
+            indata_dict = {'b': B, 'n': N, 'm': m}
+            ext_module.three_nn(*indata_list, **indata_dict)
         else:
             ext_module.three_nn(B, N, m, target, source, dist2, idx)
         return torch.sqrt(dist2), idx

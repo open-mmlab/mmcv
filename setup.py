@@ -159,7 +159,7 @@ def get_extensions():
         op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
         include_path = os.path.abspath('./mmcv/ops/csrc')
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
-        extra_compile_args={
+        extra_compile_args = {
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
         }
@@ -174,7 +174,7 @@ def get_extensions():
             cuda=True)
         extensions.append(ext_ops)
 
-        extra_compile_args2={
+        extra_compile_args2 = {
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
         }
