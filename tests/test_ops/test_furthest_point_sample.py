@@ -17,7 +17,8 @@ def test_fps():
                          [-0.0518, 3.7251, -0.3950]]]).cuda()
 
     idx = furthest_point_sample(xyz, 3)
-    expected_idx = torch.tensor([[0, 2, 4], [0, 2, 1]], dtype=torch.int32).cuda()
+    expected_idx = torch.tensor([[0, 2, 4], [0, 2, 1]],
+                                dtype=torch.int32).cuda()
     assert torch.all(idx == expected_idx)
 
 
@@ -33,7 +34,8 @@ def test_fps_with_dist():
                          [0.8164, 4.0081, -0.1839], [-1.1000, 3.0213, -0.8205],
                          [-0.0518, 3.7251, -0.3950]]]).cuda()
 
-    expected_idx = torch.tensor([[0, 2, 4], [0, 2, 1]], dtype=torch.int32).cuda()
+    expected_idx = torch.tensor([[0, 2, 4], [0, 2, 1]],
+                                dtype=torch.int32).cuda()
     xyz_square_dist = ((xyz.unsqueeze(dim=1) -
                         xyz.unsqueeze(dim=2))**2).sum(-1)
     idx = furthest_point_sample_with_dist(xyz_square_dist, 3)

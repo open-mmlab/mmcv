@@ -39,12 +39,8 @@ class FurthestPointSampling(Function):
 
         if torch.__version__ == 'parrots':
             indata_list = [points_xyz, temp, output]
-            indata_dict = {
-                "b" : B,
-                "n" : N,
-                "m" : num_points
-            }
-            ext_module.furthest_point_sampling(*indata_list, **indata_dict) 
+            indata_dict = {'b': B, 'n': N, 'm': num_points}
+            ext_module.furthest_point_sampling(*indata_list, **indata_dict)
         else:
             ext_module.furthest_point_sampling(B, N, num_points, points_xyz,
                                                temp, output)
@@ -83,16 +79,12 @@ class FurthestPointSamplingWithDist(Function):
 
         if torch.__version__ == 'parrots':
             indata_list = [points_dist, temp, output]
-            indata_dict = {
-                "b" : B,
-                "n" : N,
-                "m" : num_points
-            }
-            ext_module.furthest_point_sampling_with_dist(*indata_list,
-                **indata_dict)
+            indata_dict = {'b': B, 'n': N, 'm': num_points}
+            ext_module.furthest_point_sampling_with_dist(
+                *indata_list, **indata_dict)
         else:
-            ext_module.furthest_point_sampling_with_dist(B, N, num_points,
-                                                         points_dist, temp, output)
+            ext_module.furthest_point_sampling_with_dist(
+                B, N, num_points, points_dist, temp, output)
             ctx.mark_non_differentiable(output)
         return output
 

@@ -8,7 +8,7 @@ int furthest_point_sampling(int b, int n, int m,
                             Tensor temp,
                             Tensor idx);
 
-int furthest_point_sampling_with_dist(int b, int n, int m, 
+int furthest_point_sampling_with_dist(int b, int n, int m,
                                       const Tensor points,
                                       Tensor temp,
                                       Tensor idx);

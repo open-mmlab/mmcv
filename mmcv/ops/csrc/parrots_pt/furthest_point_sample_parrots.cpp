@@ -39,7 +39,7 @@ void furthest_point_sampling_with_dist_parrots(T& ctx, const SSElement& attr,
   points_tensor = buildATensor(ctx, ins[0]);
   temp_tensor = buildATensor(ctx, outs[0]);
   idx_tensor = buildATensor(ctx, outs[1]);
-  
+
   furthest_point_sampling_with_dist(b, n, m, points_tensor, temp_tensor, idx_tensor);
 }
 
@@ -66,4 +66,3 @@ PARROTS_EXTENSION_REGISTER(furthest_point_sampling_with_dist)
     .apply(furthest_point_sampling_with_dist_parrots<CudaContext>)
 #endif
     .done();
-
