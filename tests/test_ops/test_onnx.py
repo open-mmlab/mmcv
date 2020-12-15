@@ -73,9 +73,8 @@ def test_softnms():
         return
 
     # only support onnxruntime >= 1.5.1
-    if version.parse(rt.__version__) < version.parse('1.5.1'):
-        warnings.warn('test_softnms should be ran with onnxruntime >= 1.5.1')
-        return
+    assert version.parse(rt.__version__) >= version.parse(
+        '1.5.1'), 'test_softnms should be ran with onnxruntime >= 1.5.1'
 
     ort_custom_op_path = get_onnxruntime_op_path()
     assert os.path.exists(ort_custom_op_path)
