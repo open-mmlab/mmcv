@@ -4,7 +4,12 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', [
+if torch.__version__ == 'parrots':
+    load_ext = '_ext_pt'
+else:
+    load_ext = '_ext'
+
+ext_module = ext_loader.load_ext(load_ext, [
     'top_pool_forward', 'top_pool_backward', 'bottom_pool_forward',
     'bottom_pool_backward', 'left_pool_forward', 'left_pool_backward',
     'right_pool_forward', 'right_pool_backward'
