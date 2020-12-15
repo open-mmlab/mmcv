@@ -123,6 +123,12 @@ def test_convert_output_type_range():
     assert np.absolute(out_img).mean() > 1
 
 
+def assert_image_almost_equal(x, y, atol=1):
+    assert x.dtype == np.uint8
+    assert y.dtype == np.uint8
+    assert np.all(np.abs(x.astype(np.int32) - y.astype(np.int32)) <= atol)
+
+
 def test_rgb2ycbcr():
     with pytest.raises(TypeError):
         # The img type should be np.float32 or np.uint8
@@ -166,7 +172,7 @@ def test_rgb2ycbcr():
             cr = 128 + r * 112.0 - g * 93.786 - b * 18.214
             y, cb, cr = y.round(), cb.round(), cr.round()
             computed_ycbcr[i, j, :] = [y, cb, cr]
-    assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
+    assert_image_almost_equal(out_img, computed_ycbcr)
     # y_only=True
     in_img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
     out_img = mmcv.rgb2ycbcr(in_img, y_only=True)
@@ -178,7 +184,7 @@ def test_rgb2ycbcr():
             y = 16 + r * 65.481 + g * 128.553 + b * 24.966
             y = y.round()
             computed_y[i, j] = y
-    assert_array_almost_equal(out_img, computed_y, decimal=2)
+    assert_image_almost_equal(out_img, computed_y)
 
 
 def test_bgr2ycbcr():
@@ -220,7 +226,7 @@ def test_bgr2ycbcr():
             cr = 128 + r * 112.0 - g * 93.786 - b * 18.214
             y, cb, cr = y.round(), cb.round(), cr.round()
             computed_ycbcr[i, j, :] = [y, cb, cr]
-    assert_array_almost_equal(out_img, computed_ycbcr, decimal=2)
+    assert_image_almost_equal(out_img, computed_ycbcr)
     # y_only = True
     in_img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
     out_img = mmcv.bgr2ycbcr(in_img, y_only=True)
@@ -232,7 +238,7 @@ def test_bgr2ycbcr():
             y = 16 + r * 65.481 + g * 128.553 + b * 24.966
             y = y.round()
             computed_y[i, j] = y
-    assert_array_almost_equal(out_img, computed_y, decimal=2)
+    assert_image_almost_equal(out_img, computed_y)
 
 
 def test_ycbcr2rgb():
@@ -270,7 +276,7 @@ def test_ycbcr2rgb():
             b = -276.836 + y * 0.00456621 * 255. + cb * 0.00791071 * 255
             r, g, b = r.round(), g.round(), b.round()
             computed_rgb[i, j, :] = [r, g, b]
-    assert_array_almost_equal(out_img, computed_rgb, decimal=2)
+    assert_image_almost_equal(out_img, computed_rgb)
 
 
 def test_ycbcr2bgr():
@@ -303,7 +309,7 @@ def test_ycbcr2bgr():
             b = -276.836 + y * 0.00456621 * 255. + cb * 0.00791071 * 255
             r, g, b = r.round(), g.round(), b.round()
             computed_bgr[i, j, :] = [b, g, r]
-    assert_array_almost_equal(out_img, computed_bgr, decimal=2)
+    assert_image_almost_equal(out_img, computed_bgr)
 
 
 def test_bgr2hls():

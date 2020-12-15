@@ -64,7 +64,9 @@ def _init_dist_slurm(backend, port=None):
     else:
         # 29500 is torch.distributed default port
         os.environ['MASTER_PORT'] = '29500'
-    os.environ['MASTER_ADDR'] = addr
+    # use MASTER_ADDR in the environment variable if it already exists
+    if 'MASTER_ADDR' not in os.environ:
+        os.environ['MASTER_ADDR'] = addr
     os.environ['WORLD_SIZE'] = str(ntasks)
     os.environ['LOCAL_RANK'] = str(proc_id % num_gpus)
     os.environ['RANK'] = str(proc_id)

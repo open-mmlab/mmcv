@@ -48,8 +48,12 @@ class Fp16OptimizerHook(OptimizerHook):
     Refer to https://arxiv.org/abs/1710.03740 for more details.
 
     Args:
-        loss_scale (float | str): Scale factor multiplied with loss. If
-            'dynamic' is specified, then dynamic loss scaling will be used.
+        loss_scale (float | str | dict): Scale factor multiplied with loss.
+            If loss_scale is a float, static loss scaling will be used with
+            the specified scale. If loss_scale is a string, it must be
+            'dynamic', then dynamic loss scaling will be used.
+            It can also be a dict containing arguments of LossScaler.
+            Defaults to 512.
     """
 
     def __init__(self,
@@ -66,8 +70,11 @@ class Fp16OptimizerHook(OptimizerHook):
             self.loss_scaler = LossScaler(mode='dynamic')
         elif isinstance(loss_scale, float):
             self.loss_scaler = LossScaler(init_scale=loss_scale, mode='static')
+        elif isinstance(loss_scale, dict):
+            self.loss_scaler = LossScaler(**loss_scale)
         else:
-            raise ValueError('loss_scale must be of type float or str')
+            raise ValueError('loss_scale must be of type float, dict, or '
+                             f'"dynamic", got {loss_scale}')
 
     def before_run(self, runner):
         """Preparing steps before Mixed Precision Training.
@@ -139,7 +146,11 @@ class Fp16OptimizerHook(OptimizerHook):
                 if param.grad is not None:
                     param.grad.div_(self.loss_scaler.loss_scale)
             if self.grad_clip is not None:
-                self.clip_grads(fp32_weights)
+                grad_norm = self.clip_grads(fp32_weights)
+                if grad_norm is not None:
+                    # Add grad norm to the logger
+                    runner.log_buffer.update({'grad_norm': float(grad_norm)},
+                                             runner.outputs['num_samples'])
             # update fp32 params
             runner.optimizer.step()
             # copy fp32 params to the fp16 model
