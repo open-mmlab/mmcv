@@ -31,14 +31,12 @@ if TORCH_VERSION == 'parrots':
     from parrots.utils.tester import skip_no_elena
 else:
 
-    def bypass_decorator(func):
+    def skip_no_elena(func):
 
         def wrapper(*args, **kargs):
             return func(*args, **kargs)
 
         return wrapper
-
-    skip_no_elena = bypass_decorator
 
 
 def is_using_parrots():
