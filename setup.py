@@ -1,8 +1,6 @@
 import glob
 import os
 import re
-
-import setuptools
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
@@ -54,9 +52,9 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     CommandLine:
         python -c "import setup; print(setup.parse_requirements())"
     """
+    import re
     import sys
     from os.path import exists
-    import re
     require_fpath = fname
 
     def parse_line(line):
@@ -138,7 +136,7 @@ def get_extensions():
 
     if os.getenv('MMCV_WITH_TRT', '0') != '0':
         ext_name = 'mmcv._ext_trt'
-        from torch.utils.cpp_extension import library_paths, include_paths
+        from torch.utils.cpp_extension import include_paths, library_paths
         library_dirs = []
         libraries = []
         include_dirs = []
@@ -170,7 +168,8 @@ def get_extensions():
         kwargs['library_dirs'] = library_dirs
         kwargs['libraries'] = libraries
 
-        ext_ops = setuptools.Extension(
+        from setuptools import Extension
+        ext_ops = Extension(
             name=ext_name,
             sources=op_files,
             include_dirs=include_dirs,
@@ -204,7 +203,8 @@ def get_extensions():
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
-        from torch.utils.cpp_extension import (CUDAExtension, CppExtension)
+        from torch.utils.cpp_extension import CppExtension, CUDAExtension
+
         # prevent ninja from using too many resources
         os.environ.setdefault('MAX_JOBS', '4')
         define_macros = []
