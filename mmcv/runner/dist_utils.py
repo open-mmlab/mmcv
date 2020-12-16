@@ -35,7 +35,11 @@ def _init_dist_pytorch(backend, **kwargs):
 
 
 def _init_dist_mpi(backend, **kwargs):
-    raise NotImplementedError
+    # TODO: use local_rank instead of rank % num_gpus
+    rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(rank % num_gpus)
+    dist.init_process_group(backend=backend, **kwargs)
 
 
 def _init_dist_slurm(backend, port=None):
