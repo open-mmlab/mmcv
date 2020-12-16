@@ -256,7 +256,7 @@ def load_checkpoint(model,
         state_dict = checkpoint
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith('module.'):
-        state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+        state_dict = {k[7:]: v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint
