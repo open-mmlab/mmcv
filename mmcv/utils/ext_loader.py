@@ -5,7 +5,7 @@ from collections import namedtuple
 
 import torch
 
-use_op = [
+has_return_value_ops = [
     'nms', 'softnms', 'nms_match', 'top_pool_forward', 'top_pool_backward',
     'bottom_pool_forward', 'bottom_pool_backward', 'left_pool_forward',
     'left_pool_backward', 'right_pool_forward', 'right_pool_backward'
@@ -26,7 +26,7 @@ else:
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         for fun in funcs:
-            if fun in use_op:
+            if fun in has_return_value_ops:
                 # op : out = func(in, **attrs_dict)
                 ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
             else:
