@@ -21,7 +21,7 @@ if torch.__version__ != 'parrots':
 else:
     from parrots import extension
 
-    def get_extension(ext_str, root = ''):
+    def get_extension(ext_str, root=''):
         import os
         from ctypes import cdll
         if os.path.isfile(ext_str):
