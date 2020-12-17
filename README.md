@@ -171,3 +171,7 @@ pip install mmcv-full
 Note that the local compiling may take up to 10 mins.
 
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
+
+## FAQ
+If you face some installation issues, CUDA related issues or RuntimeErrors, 
+you may first refer to this [Trouble Shooting Page](docs/trouble_shooting.md).
