@@ -24,9 +24,9 @@ class TestNmsRotated(object):
         boxes = torch.from_numpy(np_boxes).cuda()
         labels = torch.from_numpy(np_labels).cuda()
 
-        dets, keep_inds = nms_rotated(boxes, 0.5, labels, True)
+        dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5, labels)
 
-        assert np.allclose(dets.cpu().numpy(), np_expect_dets)
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
     def test_nms_rotated(self):
@@ -47,6 +47,6 @@ class TestNmsRotated(object):
 
         boxes = torch.from_numpy(np_boxes).cuda()
 
-        dets, keep_inds = nms_rotated(boxes, 0.5)
-        assert np.allclose(dets.cpu().numpy(), np_expect_dets)
+        dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5)
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
