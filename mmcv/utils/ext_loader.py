@@ -21,18 +21,42 @@ if torch.__version__ != 'parrots':
 else:
     from parrots import extension
 
+    def get_extension(ext_str, root = ''):
+        import os
+        from ctypes import cdll
+        if os.path.isfile(ext_str):
+            lib_path = ext_str
+        else:
+            from distutils.command.build_ext import build_ext
+            lib = build_ext.get_ext_filename(None, ext_str)
+            lib_path = os.path.join(root, lib)
+        ext = cdll.LoadLibrary(lib_path)
+        return ext
+
+    def check_func_in_extension(func, ext):
+        exist = True
+        try:
+            getattr(ext, func)
+        except AttributeError:
+            exist = False
+        return exist
+
     def load_ext(name, funcs):
         ExtModule = namedtuple('ExtModule', funcs)
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        loaded_ext = get_extension(name, lib_root)
         for fun in funcs:
+            if check_func_in_extension(fun, loaded_ext):
+                ext = extension.load(fun, name, lib_dir=lib_root)
+            else:
+                ext = extension.load(fun, '_ext_pt', lib_dir=lib_root)
             if fun in has_return_value_ops:
                 # op : out = func(in, **attrs_dict)
-                ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
+                ext_list.append(ext.op)
             else:
                 # op_ : func(in, out, **attrs_dict)
-                ext_list.append(
-                    extension.load(fun, name, lib_dir=lib_root).op_)
+                ext_list.append(ext.op_)
         return ExtModule(*ext_list)
 
 

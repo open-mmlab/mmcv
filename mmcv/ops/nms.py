@@ -6,13 +6,8 @@ import torch
 from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
-if torch.__version__ == 'parrots':
-    load_ext = '_ext_pt'
-else:
-    load_ext = '_ext'
-
 ext_module = ext_loader.load_ext(
-    load_ext, ['nms', 'softnms', 'nms_match', 'nms_rotated'])
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated'])
 
 
 # This function is modified from: https://github.com/pytorch/vision/
