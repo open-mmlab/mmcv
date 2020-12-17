@@ -178,8 +178,8 @@ Tensor top_pool_backward(Tensor input, Tensor grad_output);
 void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                      const bool aligned);
 
-Tensor nms_rotated(const Tensor dets, Tensor scores, Tensor order,
-                   Tensor dets_sorted, const float iou_threshold,
+Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
+                   const Tensor dets_sorted, const float iou_threshold,
                    const int multi_label);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
