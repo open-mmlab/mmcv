@@ -1,12 +1,12 @@
 import numpy as np
 import torch
-
+import pytest
 
 class TestNmsRotated(object):
 
     def test_ml_nms_rotated(self):
         if not torch.cuda.is_available():
-            return
+            pytest.skip('test requires GPU')
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
@@ -31,7 +31,7 @@ class TestNmsRotated(object):
 
     def test_nms_rotated(self):
         if not torch.cuda.is_available():
-            return
+            pytest.skip('test requires GPU')
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
