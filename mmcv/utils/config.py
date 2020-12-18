@@ -492,11 +492,6 @@ class DictAction(Action):
     be passed as comma separated values, i.e 'KEY=V1,V2,V3', or with explicit
     brackets, i.e. 'KEY=[V1,V2,V3]'. It also support nested brackets to build
     list/tuple values. e.g. 'KEY=[(V1,V2),(V3,V4)]'
-
-    Notes:
-        For list/tuple arguments, it's better not add white space in between
-        two values.
-        Correct: 'KEY=[(V1,V2),(V3,V4)]'. Wrong: 'KEY=[(V1, V2), (V3, V4)]'
     """
 
     @staticmethod
@@ -555,8 +550,7 @@ class DictAction(Action):
             return end
 
         # Strip ' and " characters and replace whitespace.
-        val = val.strip('\'\"')
-        val = val.replace(' ', '')
+        val = val.strip('\'\"').replace(' ', '')
         is_tuple = False
         if val.startswith('(') and val.endswith(')'):
             is_tuple = True
