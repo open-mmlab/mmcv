@@ -534,23 +534,17 @@ class DictAction(Action):
             chars inside '()' and '[]' are treated as one element and thus ','
             inside these brackets are ignored.
             """
-            list_depth = 0
-            tuple_depth = 0
-            end = len(string)
-            for i, char in enumerate(val):
-                if char == '[':
-                    list_depth += 1
-                if char == ']':
-                    list_depth -= 1
-                if char == '(':
-                    tuple_depth += 1
-                if char == ')':
-                    tuple_depth -= 1
-                if list_depth == 0 and tuple_depth == 0 and char == ',':
-                    end = i
-                    break
-            assert (list_depth == 0) and (tuple_depth == 0),\
+            assert (string.count('(') == string.count(')')) and (
+                    string.count('[') == string.count(']')), \
                 f'Imbalanced bracket exist in {string}'
+            end = len(string)
+            for idx, char in enumerate(string):
+                pre = string[:idx]
+                # The string before this ',' is balanced
+                if ((char == ',') and (pre.count('(') == pre.count(')'))
+                        and (pre.count('[') == pre.count(']'))):
+                    end = idx
+                    break
             return end
 
         # Replace whitespace, though normally white space is not allowed
