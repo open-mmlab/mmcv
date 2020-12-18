@@ -348,10 +348,13 @@ def test_dict_action():
     parser.add_argument(
         '--options', nargs='+', action=DictAction, help='custom options')
     args = parser.parse_args(
+        ['--options', 'item2.a=a,b', 'item2.b=[(a,b), [1,2], false]'])
+    out_dict = {'item2.a': ['a', 'b'], 'item2.b': [('a', 'b'), [1, 2], False]}
+    assert args.options == out_dict
+    args = parser.parse_args(
         ['--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false'])
     out_dict = {'item2.a': 1, 'item2.b': 0.1, 'item2.c': 'x', 'item3': False}
     assert args.options == out_dict
-
     cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
     cfg.merge_from_dict(args.options)

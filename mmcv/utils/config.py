@@ -506,11 +506,83 @@ class DictAction(Action):
             return True if val.lower() == 'true' else False
         return val
 
+    @staticmethod
+    def _parse_iterable(val):
+        """Parse iterable values in the string.
+
+        All elements inside '()' or '[]' are treated as iterable values.
+
+        Args:
+            val (str): Value string.
+
+        Returns:
+            list | tuple: The expanded list or tuple from the string.
+
+        Examples:
+            >>> DictAction._parse_iterable('1,2,3')
+            [1, 2, 3]
+            >>> DictAction._parse_iterable('[a, b, c]')
+            ['a', 'b', 'c']
+            >>> DictAction._parse_iterable('[(1, 2, 3), [a, b], c]')
+            [(1, 2, 3), ['a', 'b], 'c']
+        """
+
+        def find_next_comma(string):
+            """Find the position of next comma in the string.
+
+            If no ',' is found in the string, return the string length. All
+            chars inside '()' and '[]' are treated as one element and thus ','
+            inside these brackets are ignored.
+            """
+            list_depth = 0
+            tuple_depth = 0
+            end = len(string)
+            for i, char in enumerate(val):
+                if char == '[':
+                    list_depth += 1
+                if char == ']':
+                    list_depth -= 1
+                if char == '(':
+                    tuple_depth += 1
+                if char == ')':
+                    tuple_depth -= 1
+                if list_depth == 0 and tuple_depth == 0 and char == ',':
+                    end = i
+                    break
+            assert (list_depth == 0) and (tuple_depth == 0),\
+                f'Imbalanced bracket exist in {string}'
+            return end
+
+        val = val.replace(' ', '')
+        is_tuple = False
+        if val.startswith('(') and val.endswith(')'):
+            is_tuple = True
+            val = val[1:-1]
+        elif val.startswith('[') and val.endswith(']'):
+            val = val[1:-1]
+
+        values = []
+        i = 0
+        while i < len(val):
+            end = find_next_comma(val[i:])
+            element = val[i:i + end]
+            i += end + 1
+
+            if all([x not in element for x in '()[]']):
+                # The element is not a list or tuple
+                element = DictAction._parse_int_float_bool(element)
+            else:
+                element = DictAction._parse_iterable(element)
+            values.append(element)
+        if is_tuple:
+            values = tuple(values)
+        return values
+
     def __call__(self, parser, namespace, values, option_string=None):
         options = {}
         for kv in values:
             key, val = kv.split('=', maxsplit=1)
-            val = [self._parse_int_float_bool(v) for v in val.split(',')]
+            val = self._parse_iterable(val)
             if len(val) == 1:
                 val = val[0]
             options[key] = val
