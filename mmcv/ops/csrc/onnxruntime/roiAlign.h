@@ -1,10 +1,11 @@
 #pragma once
+#include <assert.h>
 #include <onnxruntime_cxx_api.h>
-#include <vector>
-#include <string>
+
 #include <cmath>
 #include <mutex>
-#include <assert.h>
+#include <string>
+#include <vector>
 
 struct MMCVRoiAlignKernel {
 public:
