@@ -569,8 +569,7 @@ class DictAction(Action):
         values = []
         while len(val) > 0:
             end = find_next_comma(val)
-            element = val[:end]
-            element = DictAction._parse_iterable(element)
+            element = DictAction._parse_iterable(val[:end])
             values.append(element)
             val = val[end + 1:]
         if is_tuple:
