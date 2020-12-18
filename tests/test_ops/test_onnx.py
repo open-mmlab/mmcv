@@ -101,7 +101,7 @@ def test_roialign():
                 opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
-        from mmcv.ops import soft_nms, get_onnxruntime_op_path
+        from mmcv.ops import get_onnxruntime_op_path
         ort_custom_op_path = get_onnxruntime_op_path()
         assert os.path.exists(ort_custom_op_path)
 
