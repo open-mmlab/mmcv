@@ -35,3 +35,8 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
     This error may be due to your poor GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/open-mmlab/mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
     and recompile mmcv.
+
+- "RuntimeError: nms is not compiled with GPU support".
+  
+    This error is because your CUDA environment is not installed correctly. 
+    You may try to re-install your CUDA environment and then delete the build/ folder before re-compile mmcv. 
