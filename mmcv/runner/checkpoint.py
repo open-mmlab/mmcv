@@ -120,7 +120,11 @@ def load_url_dist(url, model_dir=None):
 def load_pavimodel_dist(model_path, map_location=None):
     """In distributed setting, this function only download checkpoint at local
     rank 0."""
-    from pavi import modelcloud
+    try:
+        from pavi import modelcloud
+    except ImportError:
+        raise ImportError(
+            'Please install pavi to load checkpoint from modelcloud.')
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
@@ -403,8 +407,12 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
             checkpoint['optimizer'][name] = optim.state_dict()
 
     if filename.startswith('pavi://'):
-        from pavi import modelcloud
-        from pavi.exception import NodeNotFoundError
+        try:
+            from pavi import modelcloud
+            from pavi.exception import NodeNotFoundError
+        except ImportError:
+            raise ImportError(
+                'Please install pavi to load checkpoint from modelcloud.')
         model_path = filename[7:]
         root = modelcloud.Folder()
         model_dir, model_name = osp.split(model_path)
