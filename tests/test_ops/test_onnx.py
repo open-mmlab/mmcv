@@ -4,6 +4,7 @@ from functools import partial
 import numpy as np
 import onnx
 import onnxruntime as rt
+import pytest
 import torch
 import torch.nn as nn
 
@@ -101,12 +102,14 @@ def test_roialign():
                 opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
-        from mmcv.ops import soft_nms, get_onnxruntime_op_path
-        ort_custom_op_path = get_onnxruntime_op_path()
-        assert os.path.exists(ort_custom_op_path)
-
         session_options = rt.SessionOptions()
-        session_options.register_custom_ops_library(ort_custom_op_path)
+        try:
+            from mmcv.ops import get_onnxruntime_op_path
+            ort_custom_op_path = get_onnxruntime_op_path()
+            assert os.path.exists(ort_custom_op_path)
+            session_options.register_custom_ops_library(ort_custom_op_path)
+        except ImportError:
+            pytest.skip('can not import get_onnxruntime_op_path.')
 
         # compute onnx_output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -189,4 +192,3 @@ def test_roipool():
         # allclose
         os.remove(onnx_file)
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
-test_roialign()
