@@ -553,6 +553,8 @@ class DictAction(Action):
                 f'Imbalanced bracket exist in {string}'
             return end
 
+        # Replace whitespace, though normally white space is not allowed
+        #  in option strings
         val = val.replace(' ', '')
         is_tuple = False
         if val.startswith('(') and val.endswith(')'):
