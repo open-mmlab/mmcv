@@ -554,8 +554,8 @@ class DictAction(Action):
                     break
             return end
 
-        # Replace whitespace, though normally white space is not allowed
-        #  in option strings
+        # Strip ' and " characters and replace whitespace.
+        val = val.strip('\'\"')
         val = val.replace(' ', '')
         is_tuple = False
         if val.startswith('(') and val.endswith(')'):
