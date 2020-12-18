@@ -488,8 +488,15 @@ class Config:
 class DictAction(Action):
     """
     argparse action to split an argument into KEY=VALUE form
-    on the first = and append to a dictionary. List options should
-    be passed as comma separated values, i.e KEY=V1,V2,V3
+    on the first = and append to a dictionary. List options can
+    be passed as comma separated values, i.e 'KEY=V1,V2,V3', or with explicit
+    brackets, i.e. 'KEY=[V1,V2,V3]'. It also support nested brackets to build
+    list/tuple values. e.g. 'KEY=[(V1,V2),(V3,V4)]'
+
+    Notes:
+        For list/tuple arguments, it's better not add white space in between
+        two values.
+        Correct: 'KEY=[(V1,V2),(V3,V4)]'. Wrong: 'KEY=[(V1, V2), (V3, V4)]'
     """
 
     @staticmethod
@@ -536,7 +543,7 @@ class DictAction(Action):
             """
             assert (string.count('(') == string.count(')')) and (
                     string.count('[') == string.count(']')), \
-                f'Imbalanced bracket exist in {string}'
+                f'Imbalanced brackets exist in {string}'
             end = len(string)
             for idx, char in enumerate(string):
                 pre = string[:idx]
