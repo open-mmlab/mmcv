@@ -562,6 +562,9 @@ class DictAction(Action):
             val = val[1:-1]
         elif val.startswith('[') and val.endswith(']'):
             val = val[1:-1]
+        elif ',' not in val:
+            # val is a single value
+            return DictAction._parse_int_float_bool(val)
 
         values = []
         i = 0
@@ -569,12 +572,7 @@ class DictAction(Action):
             end = find_next_comma(val[i:])
             element = val[i:i + end]
             i += end + 1
-
-            if all([x not in element for x in '()[]']):
-                # The element is not a list or tuple
-                element = DictAction._parse_int_float_bool(element)
-            else:
-                element = DictAction._parse_iterable(element)
+            element = DictAction._parse_iterable(element)
             values.append(element)
         if is_tuple:
             values = tuple(values)
@@ -585,7 +583,5 @@ class DictAction(Action):
         for kv in values:
             key, val = kv.split('=', maxsplit=1)
             val = self._parse_iterable(val)
-            if len(val) == 1:
-                val = val[0]
             options[key] = val
         setattr(namespace, self.dest, options)

@@ -352,6 +352,10 @@ def test_dict_action():
         ['--options', 'item2.a=a,b', 'item2.b=[(a,b), [1,2], false]'])
     out_dict = {'item2.a': ['a', 'b'], 'item2.b': [('a', 'b'), [1, 2], False]}
     assert args.options == out_dict
+    # Single Nested brackets
+    args = parser.parse_args(['--options', 'item2.a=[[1]]'])
+    out_dict = {'item2.a': [[1]]}
+    assert args.options == out_dict
     # Imbalance bracket
     with pytest.raises(AssertionError):
         parser.parse_args(['--options', 'item2.a=[(a,b), [1,2], false'])
