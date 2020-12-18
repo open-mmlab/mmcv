@@ -374,7 +374,7 @@ def simplify(model: Union[str, onnx.ModelProto],
              output_file: str = None,
              perform_optimization: bool = True,
              skip_fuse_bn: bool = False,
-             skip_shape_inference=True,
+             skip_shape_inference: bool = True,
              input_shapes: Dict[str, Sequence[int]] = None,
              skipped_optimizers: Sequence[str] = None) -> onnx.ModelProto:
     """Simplify and optimize an onnx model.
@@ -383,10 +383,10 @@ def simplify(model: Union[str, onnx.ModelProto],
     input multiple input images for verification.
 
     Arguments:
-        model (str or onnx.ModelProto), path of model or loaded model object.
-        inputs (optional, Sequence[Dict[str, np.ndarray]]), inputs of model.
+        model (str or onnx.ModelProto): path of model or loaded model object.
+        inputs (optional, Sequence[Dict[str, np.ndarray]]): inputs of model.
         output_file (optional, str): output file to save simplified model.
-        perform_optimization (optional, bool), whether to perform optimization.
+        perform_optimization (optional, bool): whether to perform optimization.
         skip_fuse_bn (optional, bool): whether to skip fusing bn layer.
         skip_shape_inference (optional, bool): whether to skip shape inference.
         input_shapes (optional, Dict[str, Sequence[int]]):

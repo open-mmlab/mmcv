@@ -4,6 +4,7 @@ from functools import partial
 import numpy as np
 import onnx
 import onnxruntime as rt
+import pytest
 import torch
 import torch.nn as nn
 
@@ -182,3 +183,26 @@ def test_roipool():
         # allclose
         os.remove(onnx_file)
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
+def test_simplify():
+    try:
+        from mmcv.onnx import simplify
+    except ImportError:
+        pytest.skip('No simplify found in mmcv.onnx')
+
+    def foo(x):
+        y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
+        return y
+
+    net = WrapFunction(foo)
+    dummy_input = torch.randn(2, 3, 4, 5)
+    torch.onnx.export(net, dummy_input, onnx_file, input_names=['input'])
+    ori_onnx_model = onnx.load(onnx_file)
+
+    feed_input = [{'input': dummy_input.detach().cpu().numpy()}]
+    slim_onnx_model = simplify(ori_onnx_model, feed_input, onnx_file)
+    numel_before = len(ori_onnx_model.graph.node)
+    numel_after = len(slim_onnx_model.graph.node)
+    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
+    os.remove(onnx_file)
