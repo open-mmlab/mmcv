@@ -166,13 +166,15 @@ class ConvModule(nn.Module):
 
     def init_weights(self):
         # 1. It is mainly for customized conv layers with their own
-        #    initialization manners, and we do not want ConvModule to
-        #    overrides the initialization.
+        #    initialization manners by calling their own ``init_weights()``,
+        #    and we do not want ConvModule to overrides the initialization.
         # 2. For customized conv layers without their own initialization
-        #    manners, they will be initialized by this method with default
-        #    `kaiming_init`.
-        # 3. For PyTorch's conv layers, they will be initialized anyway by
-        #    their own `reset_parameters` methods.
+        #    manners and PyTorch's conv layers, they will be initialized by
+        #    this method with default ``kaiming_init``.
+        # Note: For PyTorch's conv layers, they will not be initialized by
+        #    their own `reset_parameters` methods. Instead, we will implement
+        #    ``kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)`` as
+        #    default.
         if not hasattr(self.conv, 'init_weights'):
             if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
                 nonlinearity = 'leaky_relu'
