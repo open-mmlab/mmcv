@@ -567,13 +567,12 @@ class DictAction(Action):
             return DictAction._parse_int_float_bool(val)
 
         values = []
-        i = 0
-        while i < len(val):
-            end = find_next_comma(val[i:])
-            element = val[i:i + end]
-            i += end + 1
+        while len(val) > 0:
+            end = find_next_comma(val)
+            element = val[:end]
             element = DictAction._parse_iterable(element)
             values.append(element)
+            val = val[end + 1:]
         if is_tuple:
             values = tuple(values)
         return values
@@ -582,6 +581,5 @@ class DictAction(Action):
         options = {}
         for kv in values:
             key, val = kv.split('=', maxsplit=1)
-            val = self._parse_iterable(val)
-            options[key] = val
+            options[key] = self._parse_iterable(val)
         setattr(namespace, self.dest, options)
