@@ -1,13 +1,14 @@
 #pragma once
+#include <assert.h>
 #include <onnxruntime_cxx_api.h>
-#include <vector>
-#include <string>
+
 #include <cmath>
 #include <mutex>
-#include <assert.h>
+#include <string>
+#include <vector>
 
 struct MMCVRoiAlignKernel {
-public:
+ public:
   MMCVRoiAlignKernel(Ort::CustomOpApi ort, const OrtKernelInfo *info)
       : ort_(ort) {
     aligned_ = ort_.KernelInfoGetAttribute<int64_t>(info, "aligned");
@@ -23,7 +24,7 @@ public:
 
   void Compute(OrtKernelContext *context);
 
-private:
+ private:
   Ort::CustomOpApi ort_;
 
   int aligned_height_;
