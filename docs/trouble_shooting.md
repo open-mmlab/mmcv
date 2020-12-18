@@ -37,6 +37,6 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
     and recompile mmcv.
 
 - "RuntimeError: nms is not compiled with GPU support".
-  
-    This error is because your CUDA environment is not installed correctly. 
-    You may try to re-install your CUDA environment and then delete the build/ folder before re-compile mmcv. 
+
+    This error is because your CUDA environment is not installed correctly.
+    You may try to re-install your CUDA environment and then delete the build/ folder before re-compile mmcv.
