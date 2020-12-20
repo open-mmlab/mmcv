@@ -94,7 +94,7 @@ class RoIAlignFunction(Function):
     def backward(ctx, grad_output):
         rois, argmax_y, argmax_x = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
-
+        grad_output = grad_output.contiguous()
         ext_module.roi_align_backward(
             grad_output,
             rois,
