@@ -2,7 +2,6 @@ import argparse
 import os
 import os.path as osp
 import random
-import time
 
 import numpy as np
 import torch
@@ -62,9 +61,6 @@ def default_args_parser():
         help='whether to use gpu to collect results in multi-gpu testing.')
 
     # common arguments for training
-    parser.add_argument('--work-dir', help='the dir to save logs and models')
-    parser.add_argument(
-        '--resume-from', help='the checkpoint file to resume from')
     parser.add_argument(
         '--no-validate',
         action='store_true',
@@ -81,17 +77,6 @@ def default_args_parser():
         nargs='+',
         help='ids of gpus to use '
         '(only applicable to non-distributed training)')
-    parser.add_argument('--seed', type=int, default=None, help='random seed')
-    parser.add_argument(
-        '--deterministic',
-        action='store_true',
-        help='whether to set deterministic options for CUDNN backend.')
-    parser.add_argument(
-        '--cfg-options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file.')
 
     # common arguments for testing
     parser.add_argument(
@@ -119,11 +104,6 @@ def default_args_parser():
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
         '--show-dir', help='directory where painted images will be saved')
-    parser.add_argument(
-        '--show-score-thr',
-        type=float,
-        default=0.3,
-        help='score threshold (default: 0.3)')
     # TODO: decide whether to maintain two place for modifing eval options
     parser.add_argument(
         '--eval-options',
@@ -135,30 +115,44 @@ def default_args_parser():
     return parser
 
 
-def setup_cfg(args):
+def setup_cfg(args, cfg_args):
     """Set up config.
+
+    Note:
+        This function assumes the arguments are parsed from the parser of
+        defined by :meth:`default_args_parser`, which contains necessary keys
+        for distributed training including 'launcher', 'local_rank', etc.
 
     Arguments:
         args (:obj:`argparse.ArgumentParser`): arguments from entry point
+        cfg_args (list[str]): list of key-value pairs that will be merged
+            into cfgs.
 
     Returns:
         Config: config dict
     """
     cfg = Config.fromfile(args.config)
     # merge config from args.cfg_options
-    if args.cfg_options is not None:
-        cfg.merge_from_dict(args.cfg_options)
+    if len(cfg_args) > 0:
+        cfg.merge_from_list(cfg_args)
 
-    # work_dir is determined in this priority: CLI > segment in file > filename
-    if args.work_dir is not None:
-        # update configs according to CLI args if args.work_dir is not None
-        cfg.work_dir = args.work_dir
-    elif cfg.get('work_dir', None) is None:
+    if cfg.get('work_dir', None) is None:
         # use config filename as default work_dir if cfg.work_dir is None
         cfg.work_dir = osp.join('./work_dirs',
                                 osp.splitext(osp.basename(args.config))[0])
-    if args.resume_from is not None:
-        cfg.resume_from = args.resume_from
+
+    # initialize some default but necessary options
+    cfg.seed = cfg.get('seed', None)
+    cfg.deterministic = cfg.get('deterministic', False)
+    cfg.resume_from = cfg.get('resume_from', None)
+
+    cfg.launcher = args.launcher
+    cfg.local_rank = args.local_rank
+    if args.launcher == 'none':
+        cfg.distributed = False
+    else:
+        cfg.distributed = True
+
     if args.gpu_ids is not None:
         cfg.gpu_ids = args.gpu_ids
     else:
@@ -169,7 +163,7 @@ def setup_cfg(args):
     return cfg
 
 
-def setup_envs(cfg, args):
+def setup_envs(cfg, dump_cfg=True):
     """Setup running environments.
 
     This function initialize the running environment.
@@ -182,69 +176,64 @@ def setup_envs(cfg, args):
         5. Set random seed
 
     Args:
-        cfg (:obj:`Config`): [description]
-        args (:obj:``): [description]
+        cfg (:obj:`Config`): Config object.
+        dump_cfg: Whether to dump configs.
     """
     # set local rank
     if 'LOCAL_RANK' not in os.environ:
-        os.environ['LOCAL_RANK'] = str(args.local_rank)
+        os.environ['LOCAL_RANK'] = str(cfg.local_rank)
 
     # set cudnn_benchmark
     torch.backends.cudnn.benchmark = cfg.get('cudnn_benchmark', False)
 
     # init distributed env first, since logger depends on the dist info.
-    if args.launcher == 'none':
-        distributed = False
-    else:
-        distributed = True
-        init_dist(args.launcher, **cfg.dist_params)
+    if cfg.distributed:
+        init_dist(cfg.launcher, **cfg.dist_params)
         # re-set gpu_ids with distributed training mode
         _, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
 
     # create work_dir
     mkdir_or_exist(osp.abspath(cfg.work_dir))
-    # dump config
-    cfg.dump(osp.join(cfg.work_dir, osp.basename(args.config)))
+    if cfg.local_rank == 0 and dump_cfg:
+        # dump config
+        cfg.dump(osp.join(cfg.work_dir, osp.basename(cfg.filename)))
 
     # set random seeds
-    if args.seed is not None:
-        set_random_seed(args.seed, deterministic=args.deterministic)
-    cfg.seed = args.seed
-    return distributed
+    if cfg.seed is not None:
+        set_random_seed(cfg.seed, deterministic=cfg.deterministic)
 
 
-def setup_logger(cfg, get_root_logger):
-    timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-    log_file = osp.join(cfg.work_dir, f'{timestamp}.log')
-    get_root_logger(log_file=log_file, log_level=cfg.log_level)
-    return timestamp
+def gather_info(cfg, logger, env_info_dict):
+    """Gather running information.
 
+    This function do the following things in order:
 
-def gather_info(cfg, args, distributed, get_root_logger, collect_env):
-    """
-    1. collect & log env info
-    2. collect exp name, config
+        1. collect & log env info
+        2. collect exp name, config
+
+    Args:
+        cfg (:obj:`Config`): Config object.
+        logger (:obj:`logging.logger`): Logger.
+        env_info_dict (dict): Environment information.
     """
     # init the meta dict to record some important information such as
     # environment info and seed, which will be logged
     meta = dict()
     # log env info
-    env_info_dict = collect_env()
     env_info = '\n'.join([(f'{k}: {v}') for k, v in env_info_dict.items()])
     dash_line = '-' * 60 + '\n'
     meta['env_info'] = env_info
     meta['config'] = cfg.pretty_text
-    meta['seed'] = args.seed
-    meta['exp_name'] = osp.basename(args.config)
+    meta['seed'] = cfg.seed
+    meta['exp_name'] = osp.basename(cfg.filename)
 
     # log some basic info
-    logger = get_root_logger()
     logger.info('Environment info:\n' + dash_line + env_info + '\n' +
                 dash_line)
-    logger.info(f'Set random seed to {args.seed}, '
-                f'deterministic: {args.deterministic}')
-    logger.info(f'Distributed training: {distributed}')
+    logger.info(f'Set random seed to {cfg.seed}, '
+                f'deterministic: {cfg.deterministic}')
+    logger.info(f'Distributed training: {cfg.distributed}')
     logger.info(f'Config:\n{cfg.pretty_text}')
 
     return meta

@@ -404,7 +404,7 @@ class Config:
                 mmcv.dump(cfg_dict, file)
 
     def merge_from_dict(self, options):
-        """Merge list into cfg_dict.
+        """Merge dict into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
 
@@ -433,6 +433,28 @@ class Config:
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
         super(Config, self).__setattr__(
             '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
+
+    def merge_from_list(self, option_list):
+        """Merge list into cfg_dict.
+
+        Merge the dict parsed by MultipleKVAction into this cfg.
+
+        Examples:
+            >>> options = {'model.backbone.depth': 50,
+            ...            'model.backbone.with_cp':True}
+            >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
+            >>> cfg.merge_from_dict(options)
+            >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+            >>> assert cfg_dict == dict(
+            ...     model=dict(backbone=dict(depth=50, with_cp=True)))
+
+        Args:
+            options (dict): dict of configs to merge from.
+        """
+        assert len(option_list) % 2 == 0, '"option_list" should be specified' \
+            f'in pair , got odd length {len(option_list)}.'
+        options = {k: v for k, v in zip(option_list[0::2], option_list[1::2])}
+        self.merge_from_dict(options)
 
 
 class DictAction(Action):
