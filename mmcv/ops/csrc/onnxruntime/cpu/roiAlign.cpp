@@ -18,15 +18,15 @@ void pre_calc_for_bilinear_interpolate(
     const int height, const int width, const int pooled_height,
     const int pooled_width, const int iy_upper, const int ix_upper,
     float roi_start_h, float roi_start_w, float bin_size_h, float bin_size_w,
-    int roi_bin_grid_h, int roi_bin_grid_w, std::vector<PreCalc>& pre_calc) {
+    int roi_bin_grid_h, int roi_bin_grid_w, std::vector<PreCalc> &pre_calc) {
   int pre_calc_index = 0;
   for (int ph = 0; ph < pooled_height; ph++) {
     for (int pw = 0; pw < pooled_width; pw++) {
       for (int iy = 0; iy < iy_upper; iy++) {
-        const float yy = 
-          roi_start_h + ph * bin_size_h +
-          static_cast<float>(iy + .5f) * bin_size_h /
-              static_cast<float>(roi_bin_grid_h);  // e.g., 0.5, 1.5
+        const float yy =
+            roi_start_h + ph * bin_size_h +
+            static_cast<float>(iy + .5f) * bin_size_h /
+                static_cast<float>(roi_bin_grid_h); // e.g., 0.5, 1.5
         for (int ix = 0; ix < ix_upper; ix++) {
           const float xx = roi_start_w + pw * bin_size_w +
                            static_cast<float>(ix + .5f) * bin_size_w /
@@ -101,13 +101,14 @@ void pre_calc_for_bilinear_interpolate(
   }
 }
 
-void ROIAlignForwardCPU(const int nthreads, const float* input, const float* rois,
-                        float* output, float* argmax_y, float* argmax_x,
-                        const int pooled_height, const int pooled_width,
-                        const float spatial_scale, const int sampling_ratio,
-                        const int pool_mode,  // 0 - max pool, 1 - avg pool
-                        const bool aligned, const int channels, const int height,
-                        const int width) {
+void ROIAlignForwardCPU(const int nthreads, const float *input,
+                        const float *rois, float *output, float *argmax_y,
+                        float *argmax_x, const int pooled_height,
+                        const int pooled_width, const float spatial_scale,
+                        const int sampling_ratio,
+                        const int pool_mode, // 0 - max pool, 1 - avg pool
+                        const bool aligned, const int channels,
+                        const int height, const int width) {
   int n_rois = nthreads / channels / pooled_width / pooled_height;
   // (n, c, ph, pw) is an element in the pooled output
   // can be parallelized using omp
@@ -115,7 +116,7 @@ void ROIAlignForwardCPU(const int nthreads, const float* input, const float* roi
   for (int n = 0; n < n_rois; n++) {
     int index_n = n * channels * pooled_width * pooled_height;
 
-    const float* offset_rois = rois + n * 5;
+    const float *offset_rois = rois + n * 5;
     int roi_batch_ind = offset_rois[0];
 
     // Do not use rounding; this implementation detail is critical
@@ -131,25 +132,25 @@ void ROIAlignForwardCPU(const int nthreads, const float* input, const float* roi
       /*AT_ASSERTM(roi_width >= 0 && roi_height >= 0,
                  "ROIs in ROIAlign cannot have non-negative size!");*/
       assert(roi_width >= 0 && roi_height >= 0);
-    } else {  // for backward-compatibility only
+    } else { // for backward-compatibility only
       roi_width = std::max(roi_width, (float)1.);
       roi_height = std::max(roi_height, (float)1.);
     }
-    float bin_size_h = 
+    float bin_size_h =
         static_cast<float>(roi_height) / static_cast<float>(pooled_height);
-    float bin_size_w = 
+    float bin_size_w =
         static_cast<float>(roi_width) / static_cast<float>(pooled_width);
 
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceil(roi_height / pooled_height); // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // When the grid is empty, output zeros == 0/1, instead of NaN.
-    const float count = 
-        std::max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
+    const float count =
+        std::max(roi_bin_grid_h * roi_bin_grid_w, 1); // e.g. = 4
 
     // we want to precalculate indices and weights shared by all channels,
     // this is the key point of optimization
@@ -162,7 +163,7 @@ void ROIAlignForwardCPU(const int nthreads, const float* input, const float* roi
 
     for (int c = 0; c < channels; c++) {
       int index_n_c = index_n + c * pooled_width * pooled_height;
-      const float* offset_input =
+      const float *offset_input =
           input + (roi_batch_ind * channels + c) * height * width;
       int pre_calc_index = 0;
 
@@ -179,8 +180,8 @@ void ROIAlignForwardCPU(const int nthreads, const float* input, const float* roi
                                 static_cast<float>(roi_bin_grid_h);
             for (int ix = 0; ix < roi_bin_grid_w; ix++) {
               const float x = roi_start_w + pw * bin_size_w +
-                          static_cast<float>(ix + .5f) * bin_size_w /
-                              static_cast<float>(roi_bin_grid_w);
+                              static_cast<float>(ix + .5f) * bin_size_w /
+                                  static_cast<float>(roi_bin_grid_w);
               PreCalc pc = pre_calc[pre_calc_index];
               float val = pc.w1 * offset_input[pc.pos1] +
                           pc.w2 * offset_input[pc.pos2] +
@@ -203,21 +204,21 @@ void ROIAlignForwardCPU(const int nthreads, const float* input, const float* roi
           } else if (pool_mode == 1) {
             // We do average (integral) pooling inside a bin
             output[index] = output_val / count;
-          }  // if
-        }    // for pw
-      }      // for ph
-    }        // for c
-  }          // for n
+          } // if
+        }   // for pw
+      }     // for ph
+    }       // for c
+  }         // for n
 }
 
-void MMCVRoiAlignKernel::Compute(OrtKernelContext* context) {
+void MMCVRoiAlignKernel::Compute(OrtKernelContext *context) {
   // Setup inputs
-  const OrtValue* input_X = ort_.KernelContext_GetInput(context, 0);
-  const float* X_data = 
-      reinterpret_cast<const float*>(ort_.GetTensorData<float>(input_X));
-  const OrtValue* input_rois = ort_.KernelContext_GetInput(context, 1);
-  const float* rois = 
-      reinterpret_cast<const float*>(ort_.GetTensorData<const float*>(input_rois));
+  const OrtValue *input_X = ort_.KernelContext_GetInput(context, 0);
+  const float *X_data =
+      reinterpret_cast<const float *>(ort_.GetTensorData<float>(input_X));
+  const OrtValue *input_rois = ort_.KernelContext_GetInput(context, 1);
+  const float *rois = reinterpret_cast<const float *>(
+      ort_.GetTensorData<const float *>(input_rois));
 
   // Setup output
   OrtTensorDimensions out_dimensions(ort_, input_X);
@@ -232,10 +233,10 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext* context) {
   out_dimensions.data()[2] = aligned_height_;
   out_dimensions.data()[3] = aligned_width_;
 
-  OrtValue* output = ort_.KernelContext_GetOutput(
+  OrtValue *output = ort_.KernelContext_GetOutput(
       context, 0, out_dimensions.data(), out_dimensions.size());
-  float* out = ort_.GetTensorMutableData<float>(output);
-  OrtTensorTypeAndShapeInfo* output_info = ort_.GetTensorTypeAndShape(output);
+  float *out = ort_.GetTensorMutableData<float>(output);
+  OrtTensorTypeAndShapeInfo *output_info = ort_.GetTensorTypeAndShape(output);
   ort_.ReleaseTensorTypeAndShapeInfo(output_info);
 
   // TODO: forward here
@@ -245,7 +246,8 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext* context) {
   }
 
   int poolMod = 1;
-  if (pool_mode_ == "max") poolMod = 0;
+  if (pool_mode_ == "max")
+    poolMod = 0;
 
   float *argmax_x = nullptr, *argmax_y = nullptr;
   if (poolMod == 0) {
@@ -253,11 +255,13 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext* context) {
     argmax_x = new float[output_size];
   }
 
-  ROIAlignForwardCPU(output_size, X_data, rois,out, argmax_y,argmax_x,
+  ROIAlignForwardCPU(output_size, X_data, rois, out, argmax_y, argmax_x,
                      aligned_height_, aligned_width_, spatial_scale_,
                      sampling_ratio_, poolMod, aligned_, input_channels,
                      input_height, input_width);
 
-  if(argmax_x) delete argmax_x;
-  if(argmax_y) delete argmax_y;
+  if (argmax_x)
+    delete argmax_x;
+  if (argmax_y)
+    delete argmax_y;
 }
