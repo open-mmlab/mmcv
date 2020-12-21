@@ -2,6 +2,7 @@
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .ema import EMAHook
+from .eval import EvalHook, DistEvalHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
 from .logger import (LoggerHook, MlflowLoggerHook, PaviLoggerHook,
@@ -18,5 +19,6 @@ __all__ = [
     'OptimizerHook', 'Fp16OptimizerHook', 'IterTimerHook',
     'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
-    'WandbLoggerHook', 'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook'
+    'WandbLoggerHook', 'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook',
+    'EvalHook', 'DistEvalHook'
 ]
