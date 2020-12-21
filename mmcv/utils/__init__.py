@@ -9,6 +9,9 @@ from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
                    scandir, symlink)
 from .progressbar import (ProgressBar, track_iter_progress,
                           track_parallel_progress, track_progress)
+from .testing import (check_class_attr, check_dict, check_keys_contain,
+                      check_keys_equal, check_norm_state, is_all_zeros,
+                      is_block, is_norm)
 from .timer import Timer, TimerError, check_time
 from .version_utils import digit_version, get_git_hash
 
@@ -23,7 +26,9 @@ except ImportError:
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
-        'digit_version', 'get_git_hash', 'import_modules_from_strings'
+        'digit_version', 'get_git_hash', 'import_modules_from_strings',
+        'check_dict', 'check_class_attr', 'check_keys_contain',
+        'check_keys_equal', 'is_block'
     ]
 else:
     from .env import collect_env
@@ -49,5 +54,8 @@ else:
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
-        'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena'
+        'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena',
+        'skip_no_parrots', 'check_dict', 'check_class_attr',
+        'check_keys_contain', 'check_keys_equal', 'check_norm_state',
+        'check_norm_state', 'is_block', 'is_norm', 'is_all_zeros'
     ]
