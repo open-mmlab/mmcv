@@ -92,15 +92,18 @@ def test_roialign():
 
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
-        with torch.no_grad():
-            torch.onnx.export(
-                wrapped_model, (input, rois),
-                onnx_file,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=['input', 'rois'],
-                opset_version=11)
-        onnx_model = onnx.load(onnx_file)
+        try:
+            with torch.no_grad():
+                torch.onnx.export(
+                    wrapped_model, (input, rois),
+                    onnx_file,
+                    export_params=True,
+                    keep_initializers_as_inputs=True,
+                    input_names=['input', 'rois'],
+                    opset_version=11)
+            onnx_model = onnx.load(onnx_file)
+        except RuntimeError:
+            pytest.skip('can not export mmcv::roialign.')
 
         session_options = rt.SessionOptions()
         try:
