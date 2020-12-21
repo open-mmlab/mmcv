@@ -132,7 +132,7 @@ void ROIAlignForwardCPU(const int nthreads, const float *input,
       /*AT_ASSERTM(roi_width >= 0 && roi_height >= 0,
                  "ROIs in ROIAlign cannot have non-negative size!");*/
       assert(roi_width >= 0 && roi_height >= 0);
-    } else {  // for backward-compatibility only
+    } else { // for backward-compatibility only
       roi_width = std::max(roi_width, (float)1.);
       roi_height = std::max(roi_height, (float)1.);
     }
@@ -144,7 +144,7 @@ void ROIAlignForwardCPU(const int nthreads, const float *input,
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceil(roi_height / pooled_height); // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
@@ -204,11 +204,11 @@ void ROIAlignForwardCPU(const int nthreads, const float *input,
           } else if (pool_mode == 1) {
             // We do average (integral) pooling inside a bin
             output[index] = output_val / count;
-          }  // if
-        }    // for pw
-      }      // for ph
-    }        // for c
-  }          // for n
+          } // if
+        }   // for pw
+      }     // for ph
+    }       // for c
+  }         // for n
 }
 
 void MMCVRoiAlignKernel::Compute(OrtKernelContext *context) {
