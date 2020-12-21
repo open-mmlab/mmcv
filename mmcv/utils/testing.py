@@ -2,7 +2,7 @@
 import torch
 from torch.nn import GroupNorm
 
-from mmcv.utils import _BatchNorm
+from .parrots_wrapper import _BatchNorm
 
 
 def check_dict(result_dict, key_list, value_list):
