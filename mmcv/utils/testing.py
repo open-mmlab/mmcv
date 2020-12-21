@@ -39,7 +39,7 @@ def check_keys_contain(result_keys, target_keys):
 
 
 def check_keys_equal(result_keys, target_keys):
-    """check if all elements in target_keys is in reusult_keys."""
+    """check if target_keys is equal to result_keys."""
     return set(result_keys) == set(target_keys)
 
 
@@ -74,7 +74,7 @@ def is_all_zeros(module):
     is_weight_zero = torch.allclose(module.weight.data,
                                     torch.zeros_like(module.weight.data))
 
-    if hasattr(module, 'bias'):
+    if hasattr(module, 'bias') and module.bias is not None:
         is_bias_zero = torch.allclose(module.bias.data,
                                       torch.zeros_like(module.bias.data))
     else:
