@@ -7,9 +7,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 import torch.nn as nn
-from mmcv.runner import EpochBasedRunner, IterBasedRunner, EvalHook, DistEvalHook
-from mmcv.utils import get_logger
 from torch.utils.data import DataLoader, Dataset
+
+from mmcv.runner import (DistEvalHook, EpochBasedRunner, EvalHook,
+                         IterBasedRunner)
+from mmcv.utils import get_logger
 
 
 class ExampleDataset(Dataset):

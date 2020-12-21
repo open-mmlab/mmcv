@@ -2,10 +2,11 @@ import os.path as osp
 import warnings
 from math import inf
 
-from mmcv.runner import Hook
-from mmcv import symlink
-from mmcv.engine import single_gpu_test, multi_gpu_test
 from torch.utils.data import DataLoader
+
+from mmcv import symlink
+from mmcv.engine import multi_gpu_test, single_gpu_test
+from mmcv.runner import Hook
 
 
 class EvalHook(Hook):
@@ -85,6 +86,7 @@ class EvalHook(Hook):
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
+
         Args:
             rule (str | None): Comparison rule for best score.
             key_indicator (str | None): Key indicator to determine the
@@ -158,6 +160,7 @@ class EvalHook(Hook):
 
     def evaluation_flag(self, runner):
         """Judge whether to perform_evaluation.
+
         Returns:
             bool: The flag indicating whether to perform evaluation.
         """
@@ -197,11 +200,13 @@ class EvalHook(Hook):
             symlink(
                 last_ckpt,
                 osp.join(runner.work_dir, f'best_{self.key_indicator}.pth'))
-            runner.logger.info(f'Now best checkpoint is {current}.pth.'
-                               f'Best {self.key_indicator} is {best_score:0.4f}')
+            runner.logger.info(
+                f'Now best checkpoint is {current}.pth.'
+                f'Best {self.key_indicator} is {best_score:0.4f}')
 
     def evaluate(self, runner, results):
         """Evaluate the results.
+
         Args:
             runner (:obj:`mmcv.Runner`): The underlined training runner.
             results (list): Output results.
