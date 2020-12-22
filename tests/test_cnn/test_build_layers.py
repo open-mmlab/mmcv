@@ -101,7 +101,7 @@ def test_infer_norm_abbr():
     class FancyNorm:
         pass
 
-    assert infer_norm_abbr(FancyNorm) == 'norm'
+    assert infer_norm_abbr(FancyNorm) == 'norm_layer'
 
 
 def test_build_norm_layer():
