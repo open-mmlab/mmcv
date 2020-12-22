@@ -22,8 +22,10 @@ def add_features_to_output(m: onnx.ModelProto,
                            nodes: List[onnx.NodeProto]) -> None:
     """Add features to output in pb, so that ONNX Runtime will output them.
 
-    :param m: the model that will be run in ONNX Runtime
-    :param nodes: nodes whose outputs will be added into the graph outputs
+    Args:
+        m (onnx.ModelProto): Input ONNX model.
+        nodes (List[onnx.NodeProto]): List of ONNX nodes, whose outputs
+        will be added into the graph output.
     """
     for node in nodes:
         for output in node.output:
@@ -52,9 +54,18 @@ def get_value_info_all(m: onnx.ModelProto,
 
 
 def get_shape(m: onnx.ModelProto, name: str) -> TensorShape:
-    """
-    Note: This method relies on onnx shape inference, which is not reliable.
-    So only use it on input or output tensors
+    """Get shape info of a node in a model.
+
+    Args:
+        m (onnx.ModelProto): Input model.
+        name (str): Name of a node.
+
+    Returns:
+        TensorShape: Shape of a node.
+
+    Note:
+        This method relies on onnx shape inference, which is not reliable.
+        So only use it on input or output tensors
     """
     v = get_value_info_all(m, name)
     if v is not None:
@@ -70,6 +81,14 @@ def get_elem_type(m: onnx.ModelProto, name: str) -> Optional[int]:
 
 
 def get_np_type_from_elem_type(elem_type: int) -> int:
+    """Map element type from ONNX to dtype of numpy.
+
+    Args:
+        elem_type (int): Element type index in ONNX.
+
+    Returns:
+        int: Data type in numpy.
+    """
     # from https://github.com/onnx/onnx/blob/
     # e5e9a539f550f07ec156812484e8d4f33fb91f88/onnx/onnx.proto#L461
     sizes = (None, np.float32, np.uint8, np.int8, np.uint16, np.int16,
@@ -82,6 +101,14 @@ def get_np_type_from_elem_type(elem_type: int) -> int:
 
 
 def get_input_names(model: onnx.ModelProto) -> List[str]:
+    """Get input names of a model.
+
+    Args:
+        model (onnx.ModelProto): Input ONNX model.
+
+    Returns:
+        List[str]: List of input names.
+    """
     input_names = list(
         set([ipt.name for ipt in model.graph.input]) -
         set([x.name for x in model.graph.initializer]))
@@ -89,6 +116,14 @@ def get_input_names(model: onnx.ModelProto) -> List[str]:
 
 
 def add_initializers_into_inputs(model: onnx.ModelProto) -> onnx.ModelProto:
+    """add initializers into inputs of a model.
+
+    Args:
+        model (onnx.ModelProto): Input ONNX model.
+
+    Returns:
+        onnx.ModelProto: Updated ONNX model.
+    """
     for x in model.graph.initializer:
         input_names = [x.name for x in model.graph.input]
         if x.name not in input_names:
@@ -106,7 +141,18 @@ def add_initializers_into_inputs(model: onnx.ModelProto) -> onnx.ModelProto:
     return model
 
 
-def generate_rand_input(model, input_shapes: Optional[TensorShapes] = None):
+def generate_rand_input(
+        model: onnx.ModelProto,
+        input_shapes: Optional[TensorShapes] = None) -> Dict[str, np.ndarray]:
+    """Generate random input for a model.
+
+    Args:
+        model (onnx.ModelProto): Input ONNX model.
+        input_shapes (TensorShapes, optional): Input shapes of the model.
+
+    Returns:
+        Dict[str, np.ndarray]: Generated inputs of `np.ndarray`.
+    """
     if input_shapes is None:
         input_shapes = {}
     input_names = get_input_names(model)
@@ -128,6 +174,14 @@ def generate_rand_input(model, input_shapes: Optional[TensorShapes] = None):
 
 
 def get_constant_nodes(m: onnx.ModelProto) -> List[onnx.NodeProto]:
+    """Collect constant nodes from a model.
+
+    Args:
+        m (onnx.ModelProto): Input ONNX model.
+
+    Returns:
+        List[onnx.NodeProto]: List of constant nodes.
+    """
 
     const_nodes = []
     const_tensors = [x.name for x in m.graph.initializer]
@@ -169,9 +223,19 @@ def get_constant_nodes(m: onnx.ModelProto) -> List[onnx.NodeProto]:
 
 
 def forward(
-        model,
+        model: onnx.ModelProto,
         inputs: Dict[str, np.ndarray] = None,
         input_shapes: Optional[TensorShapes] = None) -> Dict[str, np.ndarray]:
+    """Run forward on a model.
+
+    Args:
+        model (onnx.ModelProto): Input ONNX model.
+        inputs (Dict[str, np.ndarray], optional): Inputs of the model.
+        input_shapes (TensorShapes, optional): Input shapes of the model.
+
+    Returns:
+        Dict[str, np.ndarray]: Outputs of the model.
+    """
     if input_shapes is None:
         input_shapes = {}
     sess_options = rt.SessionOptions()
@@ -224,12 +288,18 @@ def insert_elem(repeated_container, index: int, element):
 def eliminate_const_nodes(model: onnx.ModelProto,
                           const_nodes: List[onnx.NodeProto],
                           res: Dict[str, np.ndarray]) -> onnx.ModelProto:
+    """Eliminate redundant constant nodes from model.
+
+    Args:
+        model (onnx.ModelProto): The original ONNX model.
+        const_nodes (List[onnx.NodeProto]):
+            Constant nodes detected by `get_constant_nodes`.
+        res (Dict[str, np.ndarray]): Outputs of the model.
+
+    Returns:
+        onnx.ModelProto: The simplified onnx model.
     """
-    :param model: the original onnx model
-    :param const_nodes: const nodes detected by `get_constant_nodes`
-    :param res: The dict containing all tensors, got by `forward_all`
-    :return: the simplified onnx model. Redundant ops are all removed.
-    """
+
     for i, node in enumerate(model.graph.node):
         if node in const_nodes:
             for output in node.output:
@@ -252,18 +322,21 @@ def eliminate_const_nodes(model: onnx.ModelProto,
 
 def optimize(model: onnx.ModelProto, skip_fuse_bn: bool,
              skipped_optimizers: Optional[Sequence[str]]) -> onnx.ModelProto:
-    """
-    :param model: The onnx model.
-    :return: The optimized onnx model.
-    Before simplifying, use this method to generate value_info,
-    which is used in `forward_all`
-    After simplifying, use this method to fold constants generated
-    in previous step into initializer, and eliminate unused constants.
-    """
+    """Perform optimization on an ONNX model. Before simplifying, use this
+    method to generate value_info. After simplifying, use this method to fold
+    constants generated in previous step into initializer, and eliminate unused
+    constants.
 
+    Args:
+        model (onnx.ModelProto): The input ONNX model.
+        skip_fuse_bn (bool): Whether to skip fuse bn.
+        skipped_optimizers (Sequence[str]): List of optimizers to be skipped.
+
+    Returns:
+        onnx.ModelProto: The optimized model.
+    """
     # Due to a onnx bug, https://github.com/onnx/onnx/issues/2417,
     # we need to add missing initializers into inputs
-
     onnx.checker.check_model(model)
     input_num = len(model.graph.input)
     model = add_initializers_into_inputs(model)
@@ -301,15 +374,20 @@ def check(model_opt: onnx.ModelProto,
           n_times: int = 5,
           input_shapes: Optional[TensorShapes] = None,
           inputs: Optional[List[Dict[str, np.ndarray]]] = None) -> bool:
+    """Check model before and after simplify.
+
+    Args:
+        model_opt (onnx.ModelProto): Optimized model.
+        model_ori (onnx.ModelProto): Original model.
+        n_times (int, optional): Number of times to compare models.
+        input_shapes (TensorShapes, optional): Input shapes of the model.
+        inputs (List[Dict[str, np.ndarray]], optional): Inputs of the model.
+
+    Returns:
+        bool: `True` means the outputs of two models have neglectable
+            numeric difference.
     """
-    Warning:
-    Some models (e.g., MobileNet) may fail this check by a small magnitude.
-    Just ignore if it happens.
-    :param input_shapes: Shapes of generated random inputs
-    :param model_opt: The simplified ONNX model
-    :param model_ori: The original ONNX model
-    :param n_times: Generate n random inputs
-    """
+
     if input_shapes is None:
         input_shapes = {}
     onnx.checker.check_model(model_opt)
@@ -344,13 +422,20 @@ def check(model_opt: onnx.ModelProto,
 
 def clean_constant_nodes(const_nodes: List[onnx.NodeProto],
                          res: Dict[str, np.ndarray]):
-    """It seems not needed since commit 6f2a72, but maybe it still prevents
-    some unknown bug.
+    """Clean constant nodes.
 
-    :param const_nodes: const nodes detected by `get_constant_nodes`
-    :param res: The dict containing all tensors, got by `forward_all`
-    :return: The constant nodes which have an output in res
+    Args:
+        const_nodes (List[onnx.NodeProto]): List of constant nodes.
+        res (Dict[str, np.ndarray]): The forward result of model.
+
+    Returns:
+        List[onnx.NodeProto]:  The constant nodes which have an output in res.
+
+    Notes:
+        It seems not needed since commit 6f2a72, but maybe it still prevents
+        some unknown bug.
     """
+
     return [node for node in const_nodes if node.output[0] in res]
 
 
@@ -403,7 +488,8 @@ def simplify(model: Union[str, onnx.ModelProto],
         >>>
         >>> from mmcv.onnx import simplify
         >>>
-        >>> input = np.random.randn(1, 3, 224, 224).astype(np.float32)
+        >>> dummy_input = np.random.randn(1, 3, 224, 224).astype(np.float32)
+        >>> input = {'input':dummy_input}
         >>> input_file = 'sample.onnx'
         >>> output_file = 'slim.onnx'
         >>> model = simplify(input_file, [input], output_file)
@@ -417,6 +503,7 @@ def simplify(model: Union[str, onnx.ModelProto],
     model = add_suffix2name(model)
     onnx.checker.check_model(model)
     model_ori = copy.deepcopy(model)
+    numel_node_ori = len(model_ori.graph.node)
     if not skip_shape_inference:
         model = onnx.shape_inference.infer_shapes(model)
 
@@ -440,6 +527,9 @@ def simplify(model: Union[str, onnx.ModelProto],
         model_ori, model, input_shapes=input_shapes, inputs=inputs)
 
     assert check_ok, 'Check failed for the simplified model!'
+    numel_node_slim = len(model.graph.node)
+    print(f'Number of nodes: {numel_node_ori} -> {numel_node_slim}')
+
     if output_file is not None:
         save_dir, _ = os.path.split(output_file)
         if save_dir:

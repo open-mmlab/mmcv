@@ -28,9 +28,13 @@ import numpy as np
 
 import mmcv
 from mmcv.onnx import simplify
-
-input = np.random.randn(1, 3, 224, 224).astype(np.float32)
+dummy_input = np.random.randn(1, 3, 224, 224).astype(np.float32)
+input = {'input':dummy_input}
 input_file = 'sample.onnx'
 output_file = 'slim.onnx'
 model = simplify(input_file, [input], output_file)
 ```
+
+### FAQs
+
+- None
