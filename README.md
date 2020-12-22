@@ -175,4 +175,4 @@ If you would like to build MMCV from source, please refer to the [guide](https:/
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Trouble Shooting Page](docs/trouble_shooting.md).
+you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).
