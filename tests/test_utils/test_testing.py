@@ -34,28 +34,28 @@ def test_check_class_attr():
                                  (('wvi', 3), TestExample.test_func))
 
 
-check_keys_contain_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
-check_keys_contain_data_2 = [(['res_layer', 'dense_layer'], True),
-                             (['res_layer', 'conv_layer'], False)]
+assert_keys_contain_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
+assert_keys_contain_data_2 = [(['res_layer', 'dense_layer'], True),
+                              (['res_layer', 'conv_layer'], False)]
 
 
-@pytest.mark.parametrize('result_keys', check_keys_contain_data_1)
-@pytest.mark.parametrize('target_keys, ret_value', check_keys_contain_data_2)
-def test_check_keys_contain(result_keys, target_keys, ret_value):
-    assert mmcv.check_keys_contain(result_keys, target_keys) == ret_value
+@pytest.mark.parametrize('result_keys', assert_keys_contain_data_1)
+@pytest.mark.parametrize('target_keys, ret_value', assert_keys_contain_data_2)
+def test_assert_keys_contain(result_keys, target_keys, ret_value):
+    assert mmcv.assert_keys_contain(result_keys, target_keys) == ret_value
 
 
-check_keys_equal_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
-check_keys_equal_data_2 = [(['res_layer', 'norm_layer', 'dense_layer'], True),
-                           (['res_layer', 'dense_layer', 'norm_layer'], True),
-                           (['res_layer', 'norm_layer'], False),
-                           (['res_layer', 'conv_layer', 'norm_layer'], False)]
+assert_keys_equal_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
+assert_keys_equal_data_2 = [(['res_layer', 'norm_layer', 'dense_layer'], True),
+                            (['res_layer', 'dense_layer', 'norm_layer'], True),
+                            (['res_layer', 'norm_layer'], False),
+                            (['res_layer', 'conv_layer', 'norm_layer'], False)]
 
 
-@pytest.mark.parametrize('result_keys', check_keys_equal_data_1)
-@pytest.mark.parametrize('target_keys, ret_value', check_keys_equal_data_2)
-def test_check_keys_equal(result_keys, target_keys, ret_value):
-    assert mmcv.check_keys_equal(result_keys, target_keys) == ret_value
+@pytest.mark.parametrize('result_keys', assert_keys_equal_data_1)
+@pytest.mark.parametrize('target_keys, ret_value', assert_keys_equal_data_2)
+def test_assert_keys_equal(result_keys, target_keys, ret_value):
+    assert mmcv.assert_keys_equal(result_keys, target_keys) == ret_value
 
 
 check_norm_state_data = [((True, True, True, True, True), True, True),

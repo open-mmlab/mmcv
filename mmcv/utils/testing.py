@@ -2,12 +2,15 @@
 
 
 def check_dict(result_dict, key_list, value_list):
-    """check if result_dict is correct.
+    """Check if the result_dict is correct.
 
     Args:
-        result_dict(dict): dict to be checked.
-        key_list(tuple): tuple of checked keys.
-        value_list(tuple): tuple of target values.
+        result_dict(dict): Dict to be checked.
+        key_list(tuple): Tuple of checked keys.
+        value_list(tuple): Tuple of target values.
+
+    Returns:
+        bool: Whether the result_dict is correct.
     """
     for key, value in zip(key_list, value_list):
         if result_dict[key] != value:
@@ -19,9 +22,12 @@ def check_class_attr(obj, attr_list, value_list):
     """Check if attribute of class object is correct.
 
     Args:
-        obj(object): class object to be checked.
-        attr_list(tuple[str]): tuple of inner attribute names ot be checked.
-        value_list(tuple): tuple of target values.
+        obj(object): Class object to be checked.
+        attr_list(tuple[str]): Tuple of inner attribute names ot be checked.
+        value_list(tuple): Tuple of target values.
+
+    Returns:
+        bool: Whether the attribute of class object is correct.
     """
     for attr, value in zip(attr_list, value_list):
         if not hasattr(obj, attr) or getattr(obj, attr) != value:
@@ -29,13 +35,13 @@ def check_class_attr(obj, attr_list, value_list):
     return True
 
 
-def check_keys_contain(result_keys, target_keys):
+def assert_keys_contain(result_keys, target_keys):
     """Check if all elements in target_keys is in result_keys."""
     return set(target_keys).issubset(set(result_keys))
 
 
-def check_keys_equal(result_keys, target_keys):
-    """check if target_keys is equal to result_keys."""
+def assert_keys_equal(result_keys, target_keys):
+    """Check if target_keys is equal to result_keys."""
     return set(result_keys) == set(target_keys)
 
 
@@ -54,18 +60,20 @@ def is_block(module, block_candidates):
 
     Args:
         module(nn.Module): The module to be checked.
-        block_candidates(tuple[module]): tuple of block candidates
+        block_candidates(tuple[nn.module]): Tuple of block candidates.
+
+    Returns:
+        bool: Whether the module is the specified block.
     """
-    if isinstance(module, block_candidates):
-        return True
-    return False
+    return isinstance(module, block_candidates)
 
 
 def is_norm(module):
     """Check if the module is a norm layer."""
-    from torch.nn import GroupNorm
-    from .parrots_wrapper import _BatchNorm
-    return is_block(module, (GroupNorm, _BatchNorm))
+    from .parrots_wrapper import _BatchNorm, _InstanceNorm
+    from torch.nn import GroupNorm, LayerNorm
+    norm_layer_candidates = (_BatchNorm, _InstanceNorm, GroupNorm, LayerNorm)
+    return is_block(module, norm_layer_candidates)
 
 
 def is_all_zeros(module):
