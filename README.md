@@ -127,14 +127,14 @@ For more details, please refer the the following tables and delete ``=={mmcv_ver
 
 b. Install a specified version.
 
-The rule for installing the a specified ``mmcv-full`` is as follows:
+The rule for installing a specified ``mmcv-full`` is as follows:
 
 ```
 pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
 First of all, please refer to the Releases and replace ``{mmcv_version}`` a specified one. e.g. ``1.2.2``.
-Then replace ``{cu_version}`` and ``{torch_version}`` in the url to your desired one. For example,
+Then replace ``{cu_version}`` and ``{torch_version}`` in the url to your desired versions. For example,
 to install ``mmcv-full==1.2.2`` with ``CUDA 11`` and ``PyTorch 1.7.0``, use the following command:
 
 ```
