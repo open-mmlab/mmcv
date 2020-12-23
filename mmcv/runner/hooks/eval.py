@@ -26,15 +26,14 @@ class EvalHook(Hook):
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
             default: True.
-        save_best (str | None, optional): If a metric is specified, it would
-            measure the best checkpoint during evaluation. The information
-            about best checkpoint would be save in best.json.
+        save_best (str, optional): If a metric is specified, it would measure
+            the best checkpoint during evaluation. The information about best
+            checkpoint would be save in best.json.
             Options are the evaluation metrics to the test dataset. e.g.,
-             ``top1_acc``, ``top5_acc``, ``mean_class_accuracy``,
-            ``mean_average_precision``, ``mmit_mean_average_precision``
-            for action recognition dataset (RawframeDataset and VideoDataset).
-            ``AR@AN``, ``auc`` for action localization dataset.
-            (ActivityNetDataset). Default: None.
+            ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
+            segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
+            ``auto``, the first key will be used. The interval of
+            ``CheckpointHook`` should device EvalHook. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -239,15 +238,14 @@ class DistEvalHook(EvalHook):
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
             default: True.
-        save_best (str | None, optional): If a metric is specified, it would
-            measure the best checkpoint during evaluation. The information
-            about best checkpoint would be save in best.json.
+        save_best (str, optional): If a metric is specified, it would measure
+            the best checkpoint during evaluation. The information about best
+            checkpoint would be save in best.json.
             Options are the evaluation metrics to the test dataset. e.g.,
-             ``top1_acc``, ``top5_acc``, ``mean_class_accuracy``,
-            ``mean_average_precision``, ``mmit_mean_average_precision``
-            for action recognition dataset (RawframeDataset and VideoDataset).
-            ``AR@AN``, ``auc`` for action localization dataset.
-            (ActivityNetDataset). Default: None.
+            ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
+            segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
+            ``auto``, the first key will be used. The interval of
+            ``CheckpointHook`` should device EvalHook. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
