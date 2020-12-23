@@ -22,6 +22,7 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
                                             const int n_boxes2,
                                             const T* dev_boxes1,
                                             const T* dev_boxes2, T* dev_ious,
+                                            const int mode_flag,
                                             const bool aligned) {
   if (aligned) {
     CUDA_1D_KERNEL_LOOP(index, n_boxes1) {
@@ -47,7 +48,7 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
       block_boxes2[3] = dev_boxes2[base2 + 3];
       block_boxes2[4] = dev_boxes2[base2 + 4];
 
-      dev_ious[index] = single_box_iou_rotated<T>(block_boxes1, block_boxes2);
+      dev_ious[index] = single_box_iou_rotated<T>(block_boxes1, block_boxes2, mode_flag);
     }
   } else {
     CUDA_1D_KERNEL_LOOP(index, n_boxes1 * n_boxes2) {
@@ -73,7 +74,7 @@ __global__ void box_iou_rotated_cuda_kernel(const int n_boxes1,
       block_boxes2[3] = dev_boxes2[base2 + 3];
       block_boxes2[4] = dev_boxes2[base2 + 4];
 
-      dev_ious[index] = single_box_iou_rotated<T>(block_boxes1, block_boxes2);
+      dev_ious[index] = single_box_iou_rotated<T>(block_boxes1, block_boxes2, mode_flag);
     }
   }
 }

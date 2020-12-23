@@ -47,7 +47,7 @@ Tensor nms_rotated_cpu_kernel(const Tensor dets, const Tensor scores,
       }
 
       auto ovr = single_box_iou_rotated<scalar_t>(dets[i].data_ptr<scalar_t>(),
-                                                  dets[j].data_ptr<scalar_t>());
+                                                  dets[j].data_ptr<scalar_t>(), 0);
       if (ovr >= iou_threshold) {
         suppressed[j] = 1;
       }
