@@ -66,6 +66,14 @@ def test_roialign():
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align op is not successfully compiled')
 
+    # TODO remove after PR#724 merged
+    try:
+        from mmcv.tensorrt import is_tensorrt_plugin_loaded
+        if is_tensorrt_plugin_loaded:
+            pytest.skip('mmcv::MMCVRoiAlign is not supported in onnxruntime.')
+    except ImportError:
+        pass
+
     # roi align config
     pool_h = 2
     pool_w = 2

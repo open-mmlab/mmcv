@@ -16,12 +16,13 @@ class RoIAlignFunction(Function):
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
         trt_plugin_loaded = False
+        # TODO remove after #724 merged
         try:
             from ..tensorrt import is_tensorrt_plugin_loaded
-        except ImportError:
-            trt_plugin_loaded = False
-        else:
+
             trt_plugin_loaded = is_tensorrt_plugin_loaded()
+        except ImportError:
+            pass
         if trt_plugin_loaded:
             return g.op(
                 'mmcv::MMCVRoiAlign',
