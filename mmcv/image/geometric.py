@@ -302,14 +302,22 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
     Returns:
         ndarray: Scaled bboxes.
     """
-    if float(scale) == 1.0:
-        scaled_bboxes = bboxes.copy()
-    else:
-        w = bboxes[..., 2] - bboxes[..., 0] + 1
-        h = bboxes[..., 3] - bboxes[..., 1] + 1
-        dw = (w * (scale - 1)) * 0.5
-        dh = (h * (scale - 1)) * 0.5
-        scaled_bboxes = bboxes + np.stack((-dw, -dh, dw, dh), axis=-1)
+    scaled_bboxes = bboxes.copy()
+    if float(scale) != 1.0:
+        factor = (scale - 1) * 0.5
+
+        x_deltas = bboxes[..., 2] - bboxes[..., 0]
+        y_deltas = bboxes[..., 3] - bboxes[..., 1]
+        x_deltas += 1
+        y_deltas += 1
+        x_deltas *= factor
+        y_deltas *= factor
+        
+        scaled_bboxes[..., 0] -= x_deltas
+        scaled_bboxes[..., 1] -= y_deltas
+        scaled_bboxes[..., 2] += x_deltas
+        scaled_bboxes[..., 3] += y_deltas
+
     if clip_shape is not None:
         return bbox_clip(scaled_bboxes, clip_shape)
     else:
