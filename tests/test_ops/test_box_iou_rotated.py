@@ -93,11 +93,11 @@ class TestBoxIoURotated(object):
         from mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
-                [7.0, 7.0, 8.0, 8.0, 0.4]],
+             [7.0, 7.0, 8.0, 8.0, 0.4]],
             dtype=np.float32)
         np_boxes2 = np.asarray(
             [[0.0, 2.0, 2.0, 5.0, 0.3], [2.0, 1.0, 3.0, 3.0, 0.5],
-                [5.0, 5.0, 6.0, 7.0, 0.4]],
+             [5.0, 5.0, 6.0, 7.0, 0.4]],
             dtype=np.float32)
         np_expect_ious = np.asarray(
             [[0.4959, 0.5306, 0.0000], [0.1823, 0.5420, 0.1832],
