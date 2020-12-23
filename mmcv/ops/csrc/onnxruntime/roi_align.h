@@ -1,4 +1,6 @@
-#pragma once
+#ifndef ONNXRUNTIME_ROI_ALIGN_H
+#define ONNXRUNTIME_ROI_ALIGN_H
+
 #include <assert.h>
 #include <onnxruntime_cxx_api.h>
 
@@ -40,7 +42,7 @@ struct MMCVRoiAlignCustomOp
   void *CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo *info) {
     return new MMCVRoiAlignKernel(api, info);
   }
-  const char *GetName() const { return "RoiAlign"; }
+  const char *GetName() const { return "MMCVRoiAlign"; }
 
   size_t GetInputTypeCount() const { return 2; }
   ONNXTensorElementDataType GetInputType(size_t) const {
@@ -57,3 +59,4 @@ struct MMCVRoiAlignCustomOp
     return "CPUExecutionProvider";
   }
 };
+#endif // ONNXRUNTIME_ROI_ALIGN_H

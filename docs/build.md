@@ -101,11 +101,11 @@ MMCV can be built in three ways:
 
 1. Lite version (without ops)
 
-   In this way, only `flow_warp` module will be compiled as a Cython extension.
+   In this way, no custom ops are compiled and mmcv is a pure python package.
 
 1. Full version (CPU ops)
 
-   In addition to `flow_warp` module, module `ops` will be compiled as a pytorch extension, but only x86 code will be compiled. The compiled ops can be executed on CPU only.
+   Module `ops` will be compiled as a pytorch extension, but only x86 code will be compiled. The compiled ops can be executed on CPU only.
 
 1. Full version (CUDA ops)
 
@@ -138,9 +138,6 @@ After finishing above common steps, launch Anaconda shell from Start menu and is
 conda activate mmcv
 # change directory
 cd mmcv
-# build
-$env:MMCV_WITH_OPS = 0
-python setup.py build_ext # if success, cl will be launched to compile flow_warp.
 # install
 python setup.py develop
 # check
@@ -165,7 +162,7 @@ pip list
     # change directory
     cd mmcv
     # build
-    python setup.py build_ext # if success, cl will be launched to compile flow_warp first and then ops
+    python setup.py build_ext # if success, cl will be launched to compile ops
     # install
     python setup.py develop
     # check
@@ -218,7 +215,7 @@ pip list
    # change directory
    cd mmcv
    # build
-   python setup.py build_ext # if success, cl will be launched to compile flow_warp first and then ops
+   python setup.py build_ext # if success, cl will be launched to compile ops
    # install
    python setup.py develop
    # check

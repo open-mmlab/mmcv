@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -14,17 +15,27 @@ class RoIAlignFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
-        return g.op(
-            'mmcv::RoiAlign',
-            input,
-            rois,
-            aligned_height_i=output_size[0],
-            aligned_width_i=output_size[1],
-            spatial_scale_f=spatial_scale,
-            sampling_ratio_i=max(0, sampling_ratio),
-            pool_mode_s=pool_mode,
-            aligned_i=aligned)
-        '''
+        has_custom_op = False
+        try:
+            import os.path as osp
+
+            from mmcv.ops import get_onnxruntime_op_path
+            ort_op_path = get_onnxruntime_op_path()
+            has_custom_op = osp.exists(ort_op_path)
+        except ImportError:
+            pass
+        if has_custom_op:
+            return g.op(
+                'mmcv::MMCVRoiAlign',
+                input,
+                rois,
+                aligned_height_i=output_size[0],
+                aligned_width_i=output_size[1],
+                spatial_scale_f=spatial_scale,
+                sampling_ratio_i=max(0, sampling_ratio),
+                pool_mode_s=pool_mode,
+                aligned_i=aligned)
+
         from torch.onnx.symbolic_opset9 import sub, squeeze
         from torch.onnx.symbolic_helper import _slice_helper
         from torch.onnx import TensorProtoDataType
@@ -53,7 +64,6 @@ class RoIAlignFunction(Function):
             spatial_scale_f=spatial_scale,
             sampling_ratio_i=max(0, sampling_ratio),
             mode_s=pool_mode)
-        '''
 
     @staticmethod
     def forward(ctx,
@@ -105,7 +115,8 @@ class RoIAlignFunction(Function):
     def backward(ctx, grad_output):
         rois, argmax_y, argmax_x = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
-
+        # complex head architecture may cause grad_output uncontiguous.
+        grad_output = grad_output.contiguous()
         ext_module.roi_align_backward(
             grad_output,
             rois,

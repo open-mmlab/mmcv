@@ -47,7 +47,7 @@ jobs:
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py
+          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py
 
   build_without_ops:
     runs-on: ubuntu-latest
@@ -231,18 +231,3 @@ jobs:
         run: |
           # The timing on macos VMs is not precise, so we skip the progressbar tests
           pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
-
-  build_parrots:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sunnyxiaohu/parrots-mmcv:1.2.1
-      credentials:
-        username: sunnyxiaohu
-        password: ${{ secrets.CR_PAT }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install unittest dependencies
-        run: pip install -r requirements/test.txt
-      - name: Build and install
-        run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .

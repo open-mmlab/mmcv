@@ -65,7 +65,7 @@ def infer_abbr(class_type):
         elif 'instance' in class_name:
             return 'in'
         else:
-            return 'norm'
+            return 'norm_layer'
 
 
 def build_norm_layer(cfg, num_features, postfix=''):
