@@ -1,3 +1,6 @@
+import glob
+import os
+
 import torch
 
 if torch.__version__ == 'parrots':
@@ -18,3 +21,15 @@ else:
 
     def get_compiling_cuda_version():
         return ext_module.get_compiling_cuda_version()
+
+
+def get_onnxruntime_op_path():
+    wildcard = os.path.join(
+        os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+        '_ext_ort.*.so')
+
+    paths = glob.glob(wildcard)
+    if len(paths) > 0:
+        return paths[0]
+    else:
+        return ''

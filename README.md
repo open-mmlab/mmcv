@@ -52,6 +52,7 @@ Before installing mmcv-full, make sure that PyTorch has been successfully instal
 
 We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building.
 
+**For pip < 20.3, please refer to the following table:**
 <table class="docutils">
   <tbody>
     <tr>
@@ -105,12 +106,77 @@ We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA
   </tbody>
 </table>
 
+**For pip >= 20.3, please refer to the following table:**
+
+(NOTE: Please refer to the Releases and replace ``{mmcv_version}`` a specified one. e.g. ``1.2.1``; BTW, specifying version using ``latest`` is currently disabled.)
+<table class="docutils">
+  <tbody>
+    <tr>
+      <th width="80"> CUDA </th>
+      <th valign="bottom" align="left" width="100">torch 1.7</th>
+      <th valign="bottom" align="left" width="100">torch 1.6</th>
+      <th valign="bottom" align="left" width="100">torch 1.5</th>
+      <th valign="bottom" align="left" width="100">torch 1.4</th>
+      <th valign="bottom" align="left" width="100">torch 1.3</th>
+    </tr>
+    <tr>
+      <td align="left">11.0</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+    </tr>
+    <tr>
+      <td align="left">10.2</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.6.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+    </tr>
+    <tr>
+      <td align="left">10.1</td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.4.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.3.0/index.html</code></pre> </details> </td>
+    </tr>
+    <tr>
+      <td align="left">9.2</td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.6.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.4.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.3.0/index.html</code></pre> </details> </td>
+    </tr>
+    <tr>
+      <td align="left">cpu</td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.6.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.4.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full==={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.3.0/index.html</code></pre> </details> </td>
+    </tr>
+  </tbody>
+</table>
+
 Another way is to compile locally by running
 
 ```python
 pip install mmcv-full
 ```
 
+c. Install full version with custom operators for onnxruntime
+
+- Check [here](docs/onnxruntime_op.md) for detailed instruction.
+
 Note that the local compiling may take up to 10 mins.
 
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
+
+## FAQ
+
+If you face some installation issues, CUDA related issues or RuntimeErrors,
+you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).

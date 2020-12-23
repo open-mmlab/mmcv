@@ -1,9 +1,11 @@
 import os
+import warnings
 from functools import partial
 
 import numpy as np
 import onnx
 import onnxruntime as rt
+import pytest
 import torch
 import torch.nn as nn
 
@@ -56,6 +58,83 @@ def test_nms():
     onnx_score = onnx_dets[:, 4]
     os.remove(onnx_file)
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason='CUDA is unavailable for test_softnms')
+def test_softnms():
+    from mmcv.ops import get_onnxruntime_op_path, soft_nms
+    from packaging import version
+
+    # only support pytorch >= 1.7.0
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        warnings.warn('test_softnms should be ran with pytorch >= 1.7.0')
+        return
+
+    # only support onnxruntime >= 1.5.1
+    assert version.parse(rt.__version__) >= version.parse(
+        '1.5.1'), 'test_softnms should be ran with onnxruntime >= 1.5.1'
+
+    ort_custom_op_path = get_onnxruntime_op_path()
+    assert os.path.exists(ort_custom_op_path)
+
+    np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
+                         [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
+                        dtype=np.float32)
+    np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
+
+    boxes = torch.from_numpy(np_boxes)
+    scores = torch.from_numpy(np_scores)
+
+    configs = [[0.3, 0.5, 0.01, 'linear'], [0.3, 0.5, 0.01, 'gaussian'],
+               [0.3, 0.5, 0.01, 'naive']]
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+
+    for _iou_threshold, _sigma, _min_score, _method in configs:
+        pytorch_dets, pytorch_inds = soft_nms(
+            boxes,
+            scores,
+            iou_threshold=_iou_threshold,
+            sigma=_sigma,
+            min_score=_min_score,
+            method=_method)
+        nms = partial(
+            soft_nms,
+            iou_threshold=_iou_threshold,
+            sigma=_sigma,
+            min_score=_min_score,
+            method=_method)
+
+        wrapped_model = WrapFunction(nms)
+        wrapped_model.cpu().eval()
+        with torch.no_grad():
+            torch.onnx.export(
+                wrapped_model, (boxes, scores),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['boxes', 'scores'],
+                opset_version=11)
+        onnx_model = onnx.load(onnx_file)
+
+        # get onnx output
+        input_all = [node.name for node in onnx_model.graph.input]
+        input_initializer = [
+            node.name for node in onnx_model.graph.initializer
+        ]
+        net_feed_input = list(set(input_all) - set(input_initializer))
+        assert (len(net_feed_input) == 2)
+        sess = rt.InferenceSession(onnx_file, session_options)
+        onnx_dets, onnx_inds = sess.run(None, {
+            'scores': scores.detach().numpy(),
+            'boxes': boxes.detach().numpy()
+        })
+        os.remove(onnx_file)
+        assert np.allclose(pytorch_dets, onnx_dets, atol=1e-3)
+        assert np.allclose(onnx_inds, onnx_inds, atol=1e-3)
 
 
 def test_roialign():

@@ -35,7 +35,11 @@ def _init_dist_pytorch(backend, **kwargs):
 
 
 def _init_dist_mpi(backend, **kwargs):
-    raise NotImplementedError
+    # TODO: use local_rank instead of rank % num_gpus
+    rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(rank % num_gpus)
+    dist.init_process_group(backend=backend, **kwargs)
 
 
 def _init_dist_slurm(backend, port=None):
@@ -64,7 +68,9 @@ def _init_dist_slurm(backend, port=None):
     else:
         # 29500 is torch.distributed default port
         os.environ['MASTER_PORT'] = '29500'
-    os.environ['MASTER_ADDR'] = addr
+    # use MASTER_ADDR in the environment variable if it already exists
+    if 'MASTER_ADDR' not in os.environ:
+        os.environ['MASTER_ADDR'] = addr
     os.environ['WORLD_SIZE'] = str(ntasks)
     os.environ['LOCAL_RANK'] = str(proc_id % num_gpus)
     os.environ['RANK'] = str(proc_id)
