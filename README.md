@@ -168,6 +168,10 @@ Another way is to compile locally by running
 pip install mmcv-full
 ```
 
+c. Install full version with custom operators for onnxruntime
+
+- Check [here](docs/onnxruntime_op.md) for detailed instruction.
+
 Note that the local compiling may take up to 10 mins.
 
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
