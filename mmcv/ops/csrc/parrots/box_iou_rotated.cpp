@@ -20,9 +20,10 @@ void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
 
   bool aligned;
   int mode_flag;
-  SSAttrs(attr).get<bool>("aligned", aligned)
-               .get<int>("mode_flag", mode_flag)
-               .done();
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .get<int>("mode_flag", mode_flag)
+      .done();
   auto& ious = outs[0];
   box_iou_rotated_cpu_launcher(boxes1, boxes2, ious, mode_flag, aligned);
 }
@@ -35,13 +36,15 @@ void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
 
   bool aligned;
   int mode_flag;
-  SSAttrs(attr).get<bool>("aligned", aligned)
-               .get<int>("mode_flag", mode_flag)
-               .done();
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .get<int>("mode_flag", mode_flag)
+      .done();
 
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
   auto& ious = outs[0];
-  box_iou_rotated_cuda_launcher(boxes1, boxes2, ious, mode_flag, aligned, stream);
+  box_iou_rotated_cuda_launcher(boxes1, boxes2, ious, mode_flag, aligned,
+                                stream);
 }
 
 PARROTS_EXTENSION_REGISTER(box_iou_rotated)

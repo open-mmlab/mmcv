@@ -15,8 +15,7 @@ void box_iou_rotated_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
   if (aligned) {
     for (int i = 0; i < output_size; i++) {
       ious[i] = single_box_iou_rotated<T>(boxes1[i].data_ptr<T>(),
-                                          boxes2[i].data_ptr<T>(),
-                                          mode_flag);
+                                          boxes2[i].data_ptr<T>(), mode_flag);
     }
   } else {
     for (int i = 0; i < num_boxes1; i++) {

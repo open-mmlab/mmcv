@@ -17,13 +17,14 @@ void box_iou_rotated_cpu_kernel(const DArrayLite boxes1,
   if (aligned) {
     for (int i = 0; i < output_size; i++) {
       ious_ptr[i] =
-          single_box_iou_rotated<T>(boxes1[i].ptr<T>(), boxes2[i].ptr<T>(), mode_flag);
+          single_box_iou_rotated<T>(boxes1[i].ptr<T>(),
+                                    boxes2[i].ptr<T>(), mode_flag);
     }
   } else {
     for (int i = 0; i < num_boxes1; i++) {
       for (int j = 0; j < num_boxes2; j++) {
-        ious_ptr[i * num_boxes2 + j] =
-            single_box_iou_rotated<T>(boxes1[i].ptr<T>(), boxes2[j].ptr<T>(), mode_flag);
+        ious_ptr[i * num_boxes2 + j] = single_box_iou_rotated<T>(
+            boxes1[i].ptr<T>(), boxes2[j].ptr<T>(), mode_flag);
       }
     }
   }

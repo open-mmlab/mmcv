@@ -17,7 +17,8 @@ void box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
   box_iou_rotated_cuda_kernel<scalar_t>
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           num_boxes1, num_boxes2, boxes1.ptr<scalar_t>(),
-          boxes2.ptr<scalar_t>(), (scalar_t*)ious.ptr<scalar_t>(), mode_flag, aligned);
+          boxes2.ptr<scalar_t>(), (scalar_t*)ious.ptr<scalar_t>(), mode_flag,
+          aligned);
 
   PARROTS_CUDA_CHECK(cudaGetLastError());
 }
