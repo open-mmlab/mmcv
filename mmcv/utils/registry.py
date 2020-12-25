@@ -52,12 +52,9 @@ def build_from_cfg(cfg, registry, default_args=None):
 
 
 def infer_scope():
-    cur_frame = inspect.currentframe()
-    src_frame = inspect.getouterframes(cur_frame, 1)
-    print(src_frame, inspect.stack())
-    assert inspect.stack() == src_frame
-    scope = src_frame[0].filename.split('.')[0]
-    return scope
+    filename = inspect.getmodule(inspect.stack()[2][0]).__name__
+    split_filename = filename.split('.')
+    return split_filename[0]
 
 
 def split_scope_key(key):
@@ -83,10 +80,10 @@ class Registry:
         self._children = dict()
         if build_func is None:
             self.build_func = build_from_cfg
+        self._scope = infer_scope() if scope is None else scope
         if parent is not None:
             assert isinstance(parent, Registry)
             parent._add_children(self)
-        self._scope = infer_scope() if scope is None else scope
 
     def __len__(self):
         return len(self._module_dict)
@@ -143,6 +140,7 @@ class Registry:
 
     def _add_children(self, registry):
         assert isinstance(registry, Registry)
+        assert registry.scope is not None
         self.children[registry.scope] = registry
 
     def _register_module(self, module_class, module_name=None, force=False):
