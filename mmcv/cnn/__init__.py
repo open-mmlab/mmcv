@@ -11,6 +11,7 @@ from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                      build_activation_layer, build_conv_layer,
                      build_norm_layer, build_padding_layer, build_plugin_layer,
                      build_upsample_layer, conv_ws_2d, is_norm)
+from .builder import MODELS, build_model_from_cfg
 # yapf: enable
 from .resnet import ResNet, make_res_layer
 from .utils import (bias_init_with_prob, caffe2_xavier_init, constant_init,
@@ -30,5 +31,5 @@ __all__ = [
     'PLUGIN_LAYERS', 'Scale', 'get_model_complexity_info', 'conv_ws_2d',
     'ConvAWS2d', 'ConvWS2d', 'fuse_conv_bn', 'DepthwiseSeparableConvModule',
     'Linear', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d',
-    'MaxPool3d', 'Conv3d'
+    'MaxPool3d', 'Conv3d', 'MODELS', 'build_model_from_cfg'
 ]

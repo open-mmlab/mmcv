@@ -121,6 +121,31 @@ def test_registry():
     # end: test old APIs
 
 
+def test_multi_scope_registry():
+    DOGS = mmcv.Registry('dogs')
+    assert DOGS.name == 'dogs'
+    assert DOGS.module_dict == {}
+    assert len(DOGS) == 0
+
+    @DOGS.register_module()
+    class GoldenRetriever:
+        pass
+
+    assert len(DOGS) == 1
+    assert DOGS.get('GoldenRetriever') is GoldenRetriever
+
+    HOUNDS = mmcv.Registry('dogs', parent=DOGS, scope='hound')
+
+    @HOUNDS.register_module()
+    class BloodHound:
+        pass
+
+    assert len(DOGS) == 1
+    assert HOUNDS.get('BloodHound') is BloodHound
+
+    assert DOGS.get('hound.BloodHound') is BloodHound
+
+
 def test_build_from_cfg():
     BACKBONES = mmcv.Registry('backbone')
 

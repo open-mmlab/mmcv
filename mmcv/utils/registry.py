@@ -5,6 +5,71 @@ from functools import partial
 from .misc import is_str
 
 
+def build_from_cfg(cfg, registry, default_args=None):
+    """Build a module from config dict.
+
+    Args:
+        cfg (dict): Config dict. It should at least contain the key "type".
+        registry (:obj:`Registry`): The registry to search the type from.
+        default_args (dict, optional): Default initialization arguments.
+
+    Returns:
+        object: The constructed object.
+    """
+    if not isinstance(cfg, dict):
+        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
+    if 'type' not in cfg:
+        if default_args is None or 'type' not in default_args:
+            raise KeyError(
+                '`cfg` or `default_args` must contain the key "type", '
+                f'but got {cfg}\n{default_args}')
+    if not isinstance(registry, Registry):
+        raise TypeError('registry must be an mmcv.Registry object, '
+                        f'but got {type(registry)}')
+    if not (isinstance(default_args, dict) or default_args is None):
+        raise TypeError('default_args must be a dict or None, '
+                        f'but got {type(default_args)}')
+
+    args = cfg.copy()
+
+    if default_args is not None:
+        for name, value in default_args.items():
+            args.setdefault(name, value)
+
+    obj_type = args.pop('type')
+    if is_str(obj_type):
+        obj_cls = registry.get(obj_type)
+        if obj_cls is None:
+            raise KeyError(
+                f'{obj_type} is not in the {registry.name} registry')
+    elif inspect.isclass(obj_type):
+        obj_cls = obj_type
+    else:
+        raise TypeError(
+            f'type must be a str or valid type, but got {type(obj_type)}')
+
+    return obj_cls(**args)
+
+
+def infer_scope():
+    cur_frame = inspect.currentframe()
+    src_frame = inspect.getouterframes(cur_frame, 1)
+    print(src_frame, inspect.stack())
+    assert inspect.stack() == src_frame
+    scope = src_frame[0].filename.split('.')[0]
+    return scope
+
+
+def split_scope_key(key):
+    split_list = key.split('.')
+    assert len(split_list) in [1, 2]
+    if len(split_list) == 2:
+        scope, real_type = split_list
+    else:
+        scope, real_type = None, key
+    return scope, real_type
+
+
 class Registry:
     """A registry to map strings to classes.
 
@@ -12,9 +77,16 @@ class Registry:
         name (str): Registry name.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, build_func=None, parent=None, scope=None):
         self._name = name
         self._module_dict = dict()
+        self._children = dict()
+        if build_func is None:
+            self.build_func = build_from_cfg
+        if parent is not None:
+            assert isinstance(parent, Registry)
+            parent._add_children(self)
+        self._scope = infer_scope() if scope is None else scope
 
     def __len__(self):
         return len(self._module_dict)
@@ -33,8 +105,16 @@ class Registry:
         return self._name
 
     @property
+    def scope(self):
+        return self._scope
+
+    @property
     def module_dict(self):
         return self._module_dict
+
+    @property
+    def children(self):
+        return self._children
 
     def get(self, key):
         """Get the registry record.
@@ -45,7 +125,25 @@ class Registry:
         Returns:
             class: The corresponding class.
         """
-        return self._module_dict.get(key, None)
+        scope, real_key = split_scope_key(key)
+        if scope is not None:
+            return self._children[scope].module_dict.get(real_key, None)
+        else:
+            # get from self
+            if real_key in self._module_dict:
+                return self._module_dict[real_key]
+            else:
+                # get from children
+                for registry in self._children.values():
+                    if real_key in registry.module_dict:
+                        return registry.module_dict[real_key]
+
+    def build(self, *args, **kwargs):
+        return self.build_func(*args, **kwargs, registry=self)
+
+    def _add_children(self, registry):
+        assert isinstance(registry, Registry)
+        self.children[registry.scope] = registry
 
     def _register_module(self, module_class, module_name=None, force=False):
         if not inspect.isclass(module_class):
@@ -123,49 +221,3 @@ class Registry:
             return cls
 
         return _register
-
-
-def build_from_cfg(cfg, registry, default_args=None):
-    """Build a module from config dict.
-
-    Args:
-        cfg (dict): Config dict. It should at least contain the key "type".
-        registry (:obj:`Registry`): The registry to search the type from.
-        default_args (dict, optional): Default initialization arguments.
-
-    Returns:
-        object: The constructed object.
-    """
-    if not isinstance(cfg, dict):
-        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
-    if 'type' not in cfg:
-        if default_args is None or 'type' not in default_args:
-            raise KeyError(
-                '`cfg` or `default_args` must contain the key "type", '
-                f'but got {cfg}\n{default_args}')
-    if not isinstance(registry, Registry):
-        raise TypeError('registry must be an mmcv.Registry object, '
-                        f'but got {type(registry)}')
-    if not (isinstance(default_args, dict) or default_args is None):
-        raise TypeError('default_args must be a dict or None, '
-                        f'but got {type(default_args)}')
-
-    args = cfg.copy()
-
-    if default_args is not None:
-        for name, value in default_args.items():
-            args.setdefault(name, value)
-
-    obj_type = args.pop('type')
-    if is_str(obj_type):
-        obj_cls = registry.get(obj_type)
-        if obj_cls is None:
-            raise KeyError(
-                f'{obj_type} is not in the {registry.name} registry')
-    elif inspect.isclass(obj_type):
-        obj_cls = obj_type
-    else:
-        raise TypeError(
-            f'type must be a str or valid type, but got {type(obj_type)}')
-
-    return obj_cls(**args)
