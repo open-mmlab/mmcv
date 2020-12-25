@@ -7,7 +7,7 @@
 template <typename T>
 void box_iou_rotated_cpu_kernel(const DArrayLite boxes1,
                                 const DArrayLite boxes2, DArrayLite ious,
-                                const bool aligned) {
+                                const int mode_flag, const bool aligned) {
   int output_size = ious.size();
   int num_boxes1 = boxes1.dim(0);
   int num_boxes2 = boxes2.dim(0);
@@ -16,14 +16,14 @@ void box_iou_rotated_cpu_kernel(const DArrayLite boxes1,
 
   if (aligned) {
     for (int i = 0; i < output_size; i++) {
-      ious_ptr[i] =
-          single_box_iou_rotated<T>(boxes1[i].ptr<T>(), boxes2[i].ptr<T>());
+      ious_ptr[i] = single_box_iou_rotated<T>(boxes1[i].ptr<T>(),
+                                              boxes2[i].ptr<T>(), mode_flag);
     }
   } else {
     for (int i = 0; i < num_boxes1; i++) {
       for (int j = 0; j < num_boxes2; j++) {
-        ious_ptr[i * num_boxes2 + j] =
-            single_box_iou_rotated<T>(boxes1[i].ptr<T>(), boxes2[j].ptr<T>());
+        ious_ptr[i * num_boxes2 + j] = single_box_iou_rotated<T>(
+            boxes1[i].ptr<T>(), boxes2[j].ptr<T>(), mode_flag);
       }
     }
   }
@@ -31,6 +31,6 @@ void box_iou_rotated_cpu_kernel(const DArrayLite boxes1,
 
 void box_iou_rotated_cpu_launcher(const DArrayLite boxes1,
                                   const DArrayLite boxes2, DArrayLite ious,
-                                  const bool aligned) {
-  box_iou_rotated_cpu_kernel<float>(boxes1, boxes2, ious, aligned);
+                                  const int mode_flag, const bool aligned) {
+  box_iou_rotated_cpu_kernel<float>(boxes1, boxes2, ious, mode_flag, aligned);
 }
