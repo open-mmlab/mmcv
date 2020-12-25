@@ -78,8 +78,7 @@ class Registry:
         self._name = name
         self._module_dict = dict()
         self._children = dict()
-        if build_func is None:
-            self.build_func = build_from_cfg
+        self.build_func = build_from_cfg if build_func is None else build_func
         self._scope = infer_scope() if scope is None else scope
         if parent is not None:
             assert isinstance(parent, Registry)
