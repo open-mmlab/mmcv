@@ -59,4 +59,4 @@ struct MMCVRoiAlignCustomOp
     return "CPUExecutionProvider";
   }
 };
-#endif // ONNXRUNTIME_ROI_ALIGN_H
+#endif  // ONNXRUNTIME_ROI_ALIGN_H
