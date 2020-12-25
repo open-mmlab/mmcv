@@ -31,6 +31,6 @@ def load_tensorrt_plugin():
     """load TensorRT plugins library."""
     global plugin_is_loaded
     lib_path = get_tensorrt_op_path()
-    if not plugin_is_loaded and os.path.exists(lib_path):
+    if (not plugin_is_loaded) and os.path.exists(lib_path):
         ctypes.CDLL(lib_path)
         plugin_is_loaded = True

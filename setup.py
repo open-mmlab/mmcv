@@ -227,6 +227,52 @@ def get_extensions():
             define_macros=define_macros,
             extra_compile_args=extra_compile_args)
         extensions.append(ext_ops)
+
+    if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
+        ext_name = 'mmcv._ext_ort'
+        from torch.utils.cpp_extension import library_paths, include_paths
+        import onnxruntime
+        library_dirs = []
+        libraries = []
+        include_dirs = []
+        ort_path = os.getenv('ONNXRUNTIME_DIR', '0')
+        library_dirs += [os.path.join(ort_path, 'lib')]
+        libraries.append('onnxruntime')
+        kwargs = {}
+        define_macros = []
+        extra_compile_args = {'cxx': []}
+
+        include_path = os.path.abspath('./mmcv/ops/csrc/onnxruntime')
+        include_dirs.append(include_path)
+        include_dirs.append(os.path.join(ort_path, 'include'))
+        include_dirs += include_paths(cuda=True)
+
+        op_files = glob.glob('./mmcv/ops/csrc/onnxruntime/cpu/*')
+        if onnxruntime.get_device() == 'GPU' or os.getenv('FORCE_CUDA',
+                                                          '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            cuda_args = os.getenv('MMCV_CUDA_ARGS')
+            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+            op_files += glob.glob('./mmcv/ops/csrc/onnxruntime/gpu/*')
+            library_dirs += library_paths(cuda=True)
+        else:
+            library_dirs += library_paths(cuda=False)
+
+        kwargs['library_dirs'] = library_dirs
+        kwargs['libraries'] = libraries
+
+        from setuptools import Extension
+        ext_ops = Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=include_dirs,
+            define_macros=define_macros,
+            extra_compile_args=extra_compile_args,
+            language='c++',
+            library_dirs=library_dirs,
+            libraries=libraries)
+        extensions.append(ext_ops)
+
     return extensions
 
 
