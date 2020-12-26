@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 import mmcv
-from mmcv.cnn import build_model_from_cfg
+from mmcv.cnn import MODELS, build_model_from_cfg
 
 
 def test_build_model_from_cfg():
@@ -49,3 +49,15 @@ def test_build_model_from_cfg():
     assert model[0].depth == 50 and model[0].stages == 4
     assert isinstance(model[1], ResNeXt)
     assert model[1].depth == 50 and model[1].stages == 3
+
+    # test inherit `build_func` from parent
+    NEW_MODELS = mmcv.Registry('models', parent=MODELS)
+    assert NEW_MODELS.build_func is build_model_from_cfg
+
+    # test specify `build_func`
+    def pseudo_build(cfg):
+        return cfg
+
+    NEW_MODELS = mmcv.Registry(
+        'models', parent=MODELS, build_func=pseudo_build)
+    assert NEW_MODELS.build_func is pseudo_build

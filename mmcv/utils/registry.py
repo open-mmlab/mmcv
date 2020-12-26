@@ -57,8 +57,10 @@ class Registry:
     Args:
         name (str): Registry name.
         build_func(func, optional): Build function to construct instance from
-            Registry, ``func:build_from_cfg`` is used if not specified.
-            Default: None.
+            Registry, ``func:build_from_cfg`` is used if neither ``parent`` or
+            ``build_func`` is specified. If ``parent`` is specified and
+            ``build_func`` is not given,  ``build_func`` will be inherited
+            from ``parent``. Default: None.
         parent (Registry, optional): Parent registry. The class registered in
             children registry could be built from parent. Default: None.
         scope (str, optional): The scope of registry. If not specified, scope
@@ -70,11 +72,17 @@ class Registry:
         self._name = name
         self._module_dict = dict()
         self._children = dict()
-        self.build_func = build_from_cfg if build_func is None else build_func
         self._scope = self.infer_scope() if scope is None else scope
         if parent is not None:
             assert isinstance(parent, Registry)
             parent._add_children(self)
+        if build_func is None:
+            if parent is not None:
+                self.build_func = parent.build_func
+            else:
+                self.build_func = build_from_cfg
+        else:
+            self.build_func = build_func
 
     def __len__(self):
         return len(self._module_dict)

@@ -12,9 +12,9 @@ One typical example is the config systems in most OpenMMLab projects, which use 
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
-1. Create an registry
-2. Create a build method
-3. Use this registry to manage the modules
+1. Create a build method (or use default one).
+2. Create a registry.
+3. Use this registry to manage the modules.
 
 ### A Simple Example
 
@@ -22,28 +22,29 @@ Here we show a simple example of using registry to manage modules in a package.
 You can find more practical examples in OpenMMLab projects.
 
 Assuming we want to implement a series of Dataset Converter for converting different formats of data to the expected data format.
-We create directory as a package named `converters`.
+We create a directory as a package named `converters`.
 In the package, we first create a file to implement builders, named `converters/builder.py`, as below
 
 ```python
 from mmcv.utils import Registry
 
-# create a registry for converters
-CONVERTERS = Registry('converter')
-
-
 # create a build function
-def build_converter(cfg, *args, **kwargs):
+def build_converter(cfg, registry, *args, **kwargs):
     cfg_ = cfg.copy()
     converter_type = cfg_.pop('type')
-    if converter_type not in CONVERTERS:
+    if converter_type not in registry:
         raise KeyError(f'Unrecognized task type {converter_type}')
     else:
-        converter_cls = CONVERTERS.get(converter_type)
+        converter_cls = registry.get(converter_type)
 
     converter = converter_cls(*args, **kwargs, **cfg_)
     return converter
+
+# create a registry for converters
+CONVERTERS = Registry('converter', build_func=build_converter)
 ```
+
+*Note: similar functions like `build_from_cfg` and `build_model_from_cfg` is already implemented, you may directly use them instead of implementing by yourself.*
 
 Then we can implement different converters in the package. For example, implement `Converter1` in `converters/converter1.py`
 
@@ -66,5 +67,43 @@ If the module is successfully registered, you can use this converter through con
 
 ```python
 converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
-converter = build_converter(converter_cfg)
+converter = CONVERTERS.build(converter_cfg)
+```
+
+## Hierarchy Registry
+
+Hierarchy structure is used for similar registries from different packages.
+For example, both [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMClassification](https://github.com/open-mmlab/mmclassification) have `MODEL` registry define as followed:
+In MMDetection:
+
+```python
+from mmcv.utils import Registry
+from mmcv.cnn import MODELS as MMCV_MODELS
+MODELS = Registry('model', parent=MMCV_MODELS)
+
+@MODELS.register_module()
+class NetA(nn.Module):
+    def forward(self, x):
+        return x
+```
+
+In MMClassification:
+
+```python
+from mmcv.utils import Registry
+from mmcv.cnn import MODELS as MMCV_MODELS
+MODELS = Registry('model', parent=MMCV_MODELS)
+
+@MODELS.register_module()
+class NetB(nn.Module):
+    def forward(self, x):
+        return x + 1
+```
+
+We could build either `NetA` or `NetB` by:
+
+```python
+from mmcv.cnn import MODELS as MMCV_MODELS
+net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
+net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
 ```
