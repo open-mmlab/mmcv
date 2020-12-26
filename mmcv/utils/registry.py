@@ -51,27 +51,19 @@ def build_from_cfg(cfg, registry, default_args=None):
     return obj_cls(**args)
 
 
-def infer_scope():
-    filename = inspect.getmodule(inspect.stack()[2][0]).__name__
-    split_filename = filename.split('.')
-    return split_filename[0]
-
-
-def split_scope_key(key):
-    split_list = key.split('.')
-    assert len(split_list) in [1, 2]
-    if len(split_list) == 2:
-        scope, real_type = split_list
-    else:
-        scope, real_type = None, key
-    return scope, real_type
-
-
 class Registry:
     """A registry to map strings to classes.
 
     Args:
         name (str): Registry name.
+        build_func(func, optional): Build function to construct instance from
+            Registry, ``func:build_from_cfg`` is used if not specified.
+            Default: None.
+        parent (Registry, optional): Parent registry. The class registered in
+            children registry could be built from parent. Default: None.
+        scope (str, optional): The scope of registry. If not specified, scope
+            will be the name of the package where class is defined.
+            Default: None.
     """
 
     def __init__(self, name, build_func=None, parent=None, scope=None):
@@ -79,7 +71,7 @@ class Registry:
         self._module_dict = dict()
         self._children = dict()
         self.build_func = build_from_cfg if build_func is None else build_func
-        self._scope = infer_scope() if scope is None else scope
+        self._scope = self.infer_scope() if scope is None else scope
         if parent is not None:
             assert isinstance(parent, Registry)
             parent._add_children(self)
@@ -95,6 +87,22 @@ class Registry:
                      f'(name={self._name}, ' \
                      f'items={self._module_dict})'
         return format_str
+
+    @staticmethod
+    def infer_scope():
+        filename = inspect.getmodule(inspect.stack()[2][0]).__name__
+        split_filename = filename.split('.')
+        return split_filename[0]
+
+    @staticmethod
+    def split_scope_key(key):
+        split_list = key.split('.')
+        assert len(split_list) in [1, 2]
+        if len(split_list) == 2:
+            scope, real_type = split_list
+        else:
+            scope, real_type = None, key
+        return scope, real_type
 
     @property
     def name(self):
@@ -121,7 +129,7 @@ class Registry:
         Returns:
             class: The corresponding class.
         """
-        scope, real_key = split_scope_key(key)
+        scope, real_key = self.split_scope_key(key)
         if scope is not None:
             return self._children[scope].module_dict.get(real_key, None)
         else:

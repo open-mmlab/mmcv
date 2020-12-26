@@ -124,6 +124,7 @@ def test_registry():
 def test_multi_scope_registry():
     DOGS = mmcv.Registry('dogs')
     assert DOGS.name == 'dogs'
+    assert DOGS.scope == 'test_registry'
     assert DOGS.module_dict == {}
     assert len(DOGS) == 0
 
@@ -144,6 +145,7 @@ def test_multi_scope_registry():
     assert HOUNDS.get('BloodHound') is BloodHound
 
     assert DOGS.get('hound.BloodHound') is BloodHound
+    assert DOGS.get('BloodHound') is BloodHound
 
 
 def test_build_from_cfg():
