@@ -1,6 +1,4 @@
-import torch
-
-TORCH_VERSION = torch.__version__
+from .parrots_wrapper import TORCH_VERSION
 
 if TORCH_VERSION == 'parrots':
     from parrots.jit import pat as jit
