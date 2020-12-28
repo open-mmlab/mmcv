@@ -84,6 +84,67 @@ def parse_int_float_bool(val):
     return val
 
 
+def parse_iterable(val):
+    """Parse iterable values in the string. All elements inside '()' or '[]'
+    are treated as iterable values.
+
+    Args:
+        val (str): Value string.
+
+    Returns:
+        list | tuple: The expanded list or tuple from the string.
+
+    Examples:
+        >>> DictAction._parse_iterable('1,2,3')
+        [1, 2, 3]
+        >>> DictAction._parse_iterable('[a, b, c]')
+        ['a', 'b', 'c']
+        >>> DictAction._parse_iterable('[(1, 2, 3), [a, b], c]')
+        [(1, 2, 3), ['a', 'b], 'c']
+    """
+
+    def find_next_comma(string):
+        """Find the position of next comma in the string.
+
+        If no ',' is found in the string, return the string length. All chars
+        inside '()' and '[]' are treated as one element and thus ',' inside
+        these brackets are ignored.
+        """
+        assert (string.count('(') == string.count(')')) and (
+                string.count('[') == string.count(']')), \
+            f'Imbalanced brackets exist in {string}'
+        end = len(string)
+        for idx, char in enumerate(string):
+            pre = string[:idx]
+            # The string before this ',' is balanced
+            if ((char == ',') and (pre.count('(') == pre.count(')'))
+                    and (pre.count('[') == pre.count(']'))):
+                end = idx
+                break
+        return end
+
+    # Strip ' and " characters and replace whitespace.
+    val = val.strip('\'\"').replace(' ', '')
+    is_tuple = False
+    if val.startswith('(') and val.endswith(')'):
+        is_tuple = True
+        val = val[1:-1]
+    elif val.startswith('[') and val.endswith(']'):
+        val = val[1:-1]
+    elif ',' not in val:
+        # val is a single value
+        return DictAction._parse_int_float_bool(val)
+    values = []
+    while len(val) > 0:
+        comma_idx = find_next_comma(val)
+        element = DictAction._parse_iterable(val[:comma_idx])
+        values.append(element)
+        val = val[comma_idx + 1:]
+    if is_tuple:
+        values = tuple(values)
+    return values
+
+
 class Config:
     """A facility for config and config files.
 
@@ -212,20 +273,55 @@ class Config:
         return cfg_dict, cfg_text
 
     @staticmethod
-    def _merge_a_into_b(a, b):
-        # merge dict `a` into dict `b` (non-inplace). values in `a` will
-        # overwrite `b`.
-        # copy first to avoid inplace modification
+    def _merge_a_into_b(a, b, allow_list_keys=False):
+        """merge dict ``a`` into dict ``b`` (non-inplace).
+
+        Values in ``a`` will overwrite ``b``. ``b`` is copied first to avoid
+        in-place modifications.
+
+        Args:
+            a (dict): The source dict to be merged into ``b``.
+            b (dict): The origin dict to be fetch keys from ``a``.
+            allow_list_keys (bool): If True, int string keys (e.g. '0', '1')
+              are allowed in source ``a`` and will replace the element of the
+              corresponding index in b if b is a list. Default: False.
+
+        Returns:
+            dict: The modified dict of ``b`` using ``a``.
+
+        Examples:
+            # Normally merge a into b.
+            >>> Config._merge_a_into_b(
+            ...     dict(obj=dict(a=2)), dict(obj=dict(a=1)))
+            {'obj': {'a': 2}}
+
+            # Delete b first and merge a into b.
+            >>> Config._merge_a_into_b(
+            ...     dict(obj=dict(_delete_=True, a=2)), dict(obj=dict(a=1)))
+            {'obj': {'a': 2}}
+
+            # b is a list
+            >>> Config._merge_a_into_b(
+            ...     {'0': dict(a=2)}, [dict(a=1), dict(b=2)], True)
+            [{'a': 2}, {'b': 2}]
+        """
         b = b.copy()
         for k, v in a.items():
-            if isinstance(v, dict) and k in b and not v.pop(DELETE_KEY, False):
-                if not isinstance(b[k], dict):
+            if allow_list_keys and k.isdigit() and isinstance(b, list):
+                k = int(k)
+                if len(b) <= k:
+                    raise KeyError(f'Index {k} exceeds the length of list {b}')
+                b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
+            elif isinstance(v,
+                            dict) and k in b and not v.pop(DELETE_KEY, False):
+                allowed_types = (dict, list) if allow_list_keys else dict
+                if not isinstance(b[k], allowed_types):
                     raise TypeError(
                         f'{k}={v} in child config cannot inherit from base '
                         f'because {k} is a dict in the child config but is of '
                         f'type {type(b[k])} in base config. You may set '
                         f'`{DELETE_KEY}=True` to ignore the base config')
-                b[k] = Config._merge_a_into_b(v, b[k])
+                b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
             else:
                 b[k] = v
         return b
@@ -425,7 +521,7 @@ class Config:
             else:
                 mmcv.dump(cfg_dict, file)
 
-    def merge_from_dict(self, options):
+    def merge_from_dict(self, options, allow_list_keys=True):
         """Merge dict into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
@@ -439,8 +535,21 @@ class Config:
             >>> assert cfg_dict == dict(
             ...     model=dict(backbone=dict(depth=50, with_cp=True)))
 
+            # Merge list element
+            >>> cfg = Config(dict(pipeline=[
+            ...     dict(type='LoadImage'), dict(type='LoadAnnotations')]))
+            >>> options = dict(pipeline={'0': dict(type='SelfLoadImage')})
+            >>> cfg.merge_from_dict(options, allow_list_keys=True)
+            >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
+            >>> assert cfg_dict == dict(pipeline=[
+            ...     dict(type='SelfLoadImage'), dict(type='LoadAnnotations')])
+
         Args:
             options (dict): dict of configs to merge from.
+            allow_list_keys (bool): If True, int string keys (e.g. '0', '1')
+              are allowed in ``options`` and will replace the element of the
+              corresponding index in the config if the config is a list.
+              Default: True.
         """
         option_cfg_dict = {}
         for full_key, v in options.items():
@@ -454,7 +563,9 @@ class Config:
 
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
         super(Config, self).__setattr__(
-            '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
+            '_cfg_dict',
+            Config._merge_a_into_b(
+                option_cfg_dict, cfg_dict, allow_list_keys=allow_list_keys))
 
     def merge_from_arg_list(self, option_list, strict=True):
         """Merge unparsed argument list into cfg_dict.
@@ -492,15 +603,17 @@ class Config:
             val = [parse_int_float_bool(v) for v in val.split(',')]
             if len(val) == 1:
                 val = val[0]
-            options[key] = val
+            options[key] = parse_iterable(val)
         self.merge_from_dict(options)
 
 
 class DictAction(Action):
     """
     argparse action to split an argument into KEY=VALUE form
-    on the first = and append to a dictionary. List options should
-    be passed as comma separated values, i.e KEY=V1,V2,V3
+    on the first = and append to a dictionary. List options can
+    be passed as comma separated values, i.e 'KEY=V1,V2,V3', or with explicit
+    brackets, i.e. 'KEY=[V1,V2,V3]'. It also support nested brackets to build
+    list/tuple values. e.g. 'KEY=[(V1,V2),(V3,V4)]'
     """
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -510,5 +623,5 @@ class DictAction(Action):
             val = [parse_int_float_bool(v) for v in val.split(',')]
             if len(val) == 1:
                 val = val[0]
-            options[key] = val
+            options[key] = parse_iterable(val)
         setattr(namespace, self.dest, options)

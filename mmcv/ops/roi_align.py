@@ -94,7 +94,8 @@ class RoIAlignFunction(Function):
     def backward(ctx, grad_output):
         rois, argmax_y, argmax_x = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
-
+        # complex head architecture may cause grad_output uncontiguous.
+        grad_output = grad_output.contiguous()
         ext_module.roi_align_backward(
             grad_output,
             rois,

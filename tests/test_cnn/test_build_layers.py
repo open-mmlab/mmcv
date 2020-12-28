@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
@@ -100,7 +101,7 @@ def test_infer_norm_abbr():
     class FancyNorm:
         pass
 
-    assert infer_norm_abbr(FancyNorm) == 'norm'
+    assert infer_norm_abbr(FancyNorm) == 'norm_layer'
 
 
 def test_build_norm_layer():
@@ -181,6 +182,18 @@ def test_build_activation_layer():
         cfg['type'] = type_name
         layer = build_activation_layer(cfg)
         assert isinstance(layer, module)
+
+    # sanity check for Clamp
+    act = build_activation_layer(dict(type='Clamp'))
+    x = torch.randn(10) * 1000
+    y = act(x)
+    assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
+    act = build_activation_layer(dict(type='Clip', min=0))
+    y = act(x)
+    assert np.logical_and((y >= 0).numpy(), (y <= 1).numpy()).all()
+    act = build_activation_layer(dict(type='Clamp', max=0))
+    y = act(x)
+    assert np.logical_and((y >= -1).numpy(), (y <= 0).numpy()).all()
 
 
 def test_build_padding_layer():

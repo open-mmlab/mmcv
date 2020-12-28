@@ -1,12 +1,14 @@
 import numpy as np
+import pytest
 import torch
 
 
-class TestNmsRotated(object):
+@pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason='GPU is required to test NMSRotated op')
+class TestNmsRotated:
 
     def test_ml_nms_rotated(self):
-        if not torch.cuda.is_available():
-            return
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
@@ -24,14 +26,12 @@ class TestNmsRotated(object):
         boxes = torch.from_numpy(np_boxes).cuda()
         labels = torch.from_numpy(np_labels).cuda()
 
-        dets, keep_inds = nms_rotated(boxes, 0.5, labels, True)
+        dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5, labels)
 
-        assert np.allclose(dets.cpu().numpy(), np_expect_dets)
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
     def test_nms_rotated(self):
-        if not torch.cuda.is_available():
-            return
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
@@ -47,6 +47,6 @@ class TestNmsRotated(object):
 
         boxes = torch.from_numpy(np_boxes).cuda()
 
-        dets, keep_inds = nms_rotated(boxes, 0.5)
-        assert np.allclose(dets.cpu().numpy(), np_expect_dets)
+        dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5)
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)

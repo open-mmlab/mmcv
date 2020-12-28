@@ -1,10 +1,13 @@
+import sys
 from collections import OrderedDict
+from unittest.mock import MagicMock
 
+import pytest
 import torch.nn as nn
 from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
-from mmcv.runner.checkpoint import get_state_dict
+from mmcv.runner.checkpoint import get_state_dict, load_pavimodel_dist
 
 
 @MODULE_WRAPPERS.register_module()
@@ -28,6 +31,15 @@ class Model(nn.Module):
         super().__init__()
         self.block = Block()
         self.conv = nn.Conv2d(3, 3, 1)
+
+
+class Mockpavimodel(object):
+
+    def __init__(self, name='fakename'):
+        self.name = name
+
+    def download(self, file):
+        pass
 
 
 def assert_tensor_equal(tensor_a, tensor_b):
@@ -110,3 +122,14 @@ def test_get_state_dict():
                         wrapped_model.module.conv.module.weight)
     assert_tensor_equal(state_dict['conv.bias'],
                         wrapped_model.module.conv.module.bias)
+
+
+def test_load_pavimodel_dist():
+    sys.modules['pavi'] = MagicMock()
+    sys.modules['pavi.modelcloud'] = MagicMock()
+    pavimodel = Mockpavimodel()
+    import pavi
+    pavi.modelcloud.get = MagicMock(return_value=pavimodel)
+    with pytest.raises(FileNotFoundError):
+        # there is not such checkpoint for us to load
+        _ = load_pavimodel_dist('MyPaviFolder/checkpoint.pth')

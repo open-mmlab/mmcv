@@ -70,9 +70,6 @@ class TestFileClient:
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
-        with pytest.warns(
-                Warning, match='Ceph is deprecate in favor of Petrel.'):
-            FileClient('ceph')
         ceph_backend = FileClient('ceph')
 
         # input path is Path object
