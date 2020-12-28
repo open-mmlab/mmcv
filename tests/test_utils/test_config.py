@@ -238,21 +238,6 @@ def test_merge_from_dict():
         cfg.merge_from_dict(input_options, allow_list_keys=True)
 
 
-def test_merge_from_list():
-    cfg_file = osp.join(data_path, 'config/a.py')
-    cfg = Config.fromfile(cfg_file)
-    input_options = [
-        'item2.a', 1, 'item2.b', 0.1, 'item2.c', 'c', 'item3', False
-    ]
-    cfg.merge_from_list(input_options)
-    assert cfg.item2 == dict(a=1, b=0.1, c='c')
-    assert cfg.item3 is False
-
-    # test invalid option list that is in odd length
-    with pytest.raises(AssertionError):
-        cfg.merge_from_list(['item2.a', 1, 'item2.b', 0.1, 'item3'])
-
-
 def test_merge_delete():
     cfg_file = osp.join(data_path, 'config/delete.py')
     cfg = Config.fromfile(cfg_file)
