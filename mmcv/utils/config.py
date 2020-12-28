@@ -62,6 +62,28 @@ def add_args(parser, cfg, prefix=''):
     return parser
 
 
+def parse_int_float_bool(val):
+    """Parse string value to be integer, float, or boolean value.
+
+    Args:
+        val (str): String of variable
+
+    Returns:
+        int, float, bool, str: Converted variable
+    """
+    try:
+        return int(val)
+    except ValueError:
+        pass
+    try:
+        return float(val)
+    except ValueError:
+        pass
+    if val.lower() in ['true', 'false']:
+        return True if val.lower() == 'true' else False
+    return val
+
+
 class Config:
     """A facility for config and config files.
 
@@ -434,26 +456,43 @@ class Config:
         super(Config, self).__setattr__(
             '_cfg_dict', Config._merge_a_into_b(option_cfg_dict, cfg_dict))
 
-    def merge_from_list(self, option_list):
-        """Merge list into cfg_dict.
+    def merge_from_arg_list(self, option_list, strict=True):
+        """Merge unparsed argument list into cfg_dict.
 
         Merge the dict parsed by MultipleKVAction into this cfg.
 
         Examples:
-            >>> options = {'model.backbone.depth': 50,
-            ...            'model.backbone.with_cp':True}
+            >>> options = ['model.backbone.depth', 50,
+            ...            'model.backbone.with_cp', True]
             >>> cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
-            >>> cfg.merge_from_dict(options)
+            >>> cfg.merge_from_args_list(options, strict=False)
             >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
             >>> assert cfg_dict == dict(
             ...     model=dict(backbone=dict(depth=50, with_cp=True)))
 
         Args:
-            options (dict): dict of configs to merge from.
+            option_list (list[str]): List of raw arguments to merge from.
         """
         assert len(option_list) % 2 == 0, '"option_list" should be specified' \
             f'in pair , got odd length {len(option_list)}.'
-        options = {k: v for k, v in zip(option_list[0::2], option_list[1::2])}
+
+        def arg2key(key_name):
+            if key_name.startswith('--'):
+                opt_key = key_name[2:]
+            elif strict:
+                raise ValueError('Expect argument to be start with "--"'
+                                 f'Got {key_name}')
+            else:
+                opt_key = key_name
+            return opt_key.replace('-', '_')
+
+        options = {}
+        for key, val in zip(option_list[0::2], option_list[1::2]):
+            key = arg2key(key)
+            val = [parse_int_float_bool(v) for v in val.split(',')]
+            if len(val) == 1:
+                val = val[0]
+            options[key] = val
         self.merge_from_dict(options)
 
 
@@ -464,25 +503,11 @@ class DictAction(Action):
     be passed as comma separated values, i.e KEY=V1,V2,V3
     """
 
-    @staticmethod
-    def _parse_int_float_bool(val):
-        try:
-            return int(val)
-        except ValueError:
-            pass
-        try:
-            return float(val)
-        except ValueError:
-            pass
-        if val.lower() in ['true', 'false']:
-            return True if val.lower() == 'true' else False
-        return val
-
     def __call__(self, parser, namespace, values, option_string=None):
         options = {}
         for kv in values:
             key, val = kv.split('=', maxsplit=1)
-            val = [self._parse_int_float_bool(v) for v in val.split(',')]
+            val = [parse_int_float_bool(v) for v in val.split(',')]
             if len(val) == 1:
                 val = val[0]
             options[key] = val

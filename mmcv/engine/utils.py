@@ -134,7 +134,7 @@ def setup_cfg(args, cfg_args):
     cfg = Config.fromfile(args.config)
     # merge config from args.cfg_options
     if len(cfg_args) > 0:
-        cfg.merge_from_list(cfg_args)
+        cfg.merge_from_arg_list(cfg_args)
 
     if cfg.get('work_dir', None) is None:
         # use config filename as default work_dir if cfg.work_dir is None
