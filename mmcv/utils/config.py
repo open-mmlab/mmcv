@@ -95,11 +95,11 @@ def parse_iterable(val):
         list | tuple: The expanded list or tuple from the string.
 
     Examples:
-        >>> DictAction._parse_iterable('1,2,3')
+        >>> parse_iterable('1,2,3')
         [1, 2, 3]
-        >>> DictAction._parse_iterable('[a, b, c]')
+        >>> parse_iterable('[a, b, c]')
         ['a', 'b', 'c']
-        >>> DictAction._parse_iterable('[(1, 2, 3), [a, b], c]')
+        >>> parse_iterable('[(1, 2, 3), [a, b], c]')
         [(1, 2, 3), ['a', 'b], 'c']
     """
 
@@ -133,11 +133,11 @@ def parse_iterable(val):
         val = val[1:-1]
     elif ',' not in val:
         # val is a single value
-        return DictAction._parse_int_float_bool(val)
+        return parse_int_float_bool(val)
     values = []
     while len(val) > 0:
         comma_idx = find_next_comma(val)
-        element = DictAction._parse_iterable(val[:comma_idx])
+        element = parse_iterable(val[:comma_idx])
         values.append(element)
         val = val[comma_idx + 1:]
     if is_tuple:
@@ -600,9 +600,6 @@ class Config:
         options = {}
         for key, val in zip(option_list[0::2], option_list[1::2]):
             key = arg2key(key)
-            val = [parse_int_float_bool(v) for v in val.split(',')]
-            if len(val) == 1:
-                val = val[0]
             options[key] = parse_iterable(val)
         self.merge_from_dict(options)
 
@@ -620,8 +617,5 @@ class DictAction(Action):
         options = {}
         for kv in values:
             key, val = kv.split('=', maxsplit=1)
-            val = [parse_int_float_bool(v) for v in val.split(',')]
-            if len(val) == 1:
-                val = val[0]
             options[key] = parse_iterable(val)
         setattr(namespace, self.dest, options)
