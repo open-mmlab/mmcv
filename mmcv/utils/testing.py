@@ -78,13 +78,14 @@ def is_norm(module):
 
 def is_all_zeros(module):
     """Check if the weight (and bias) of the module is all zero."""
-    import torch
-    is_weight_zero = torch.allclose(module.weight.data,
-                                    torch.zeros_like(module.weight.data))
+    weight_data = module.weight.data
+    is_weight_zero = weight_data.allclose(
+        weight_data.new_zeros(weight_data.size()))
 
     if hasattr(module, 'bias') and module.bias is not None:
-        is_bias_zero = torch.allclose(module.bias.data,
-                                      torch.zeros_like(module.bias.data))
+        bias_data = module.bias.data
+        is_bias_zero = bias_data.allclose(
+            bias_data.new_zeros(bias_data.size()))
     else:
         is_bias_zero = True
 

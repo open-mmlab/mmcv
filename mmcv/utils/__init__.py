@@ -28,7 +28,7 @@ except ImportError:
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
         'digit_version', 'get_git_hash', 'import_modules_from_strings',
         'check_dict', 'check_class_attr', 'assert_keys_contain',
-        'assert_keys_equal'
+        'assert_keys_equal', 'is_all_zeros'
     ]
 else:
     from .env import collect_env
@@ -55,7 +55,7 @@ else:
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
         'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena',
-        'skip_no_parrots', 'check_dict', 'check_class_attr',
-        'assert_keys_contain', 'assert_keys_equal', 'check_norm_state',
-        'check_norm_state', 'is_block', 'is_norm', 'is_all_zeros'
+        'check_dict', 'check_class_attr', 'assert_keys_contain',
+        'assert_keys_equal', 'check_norm_state', 'check_norm_state',
+        'is_block', 'is_norm', 'is_all_zeros'
     ]
