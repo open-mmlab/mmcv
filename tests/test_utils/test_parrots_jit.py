@@ -2,6 +2,10 @@ import pytest
 import torch
 
 import mmcv
+from mmcv.utils import TORCH_VERSION
+
+skip_no_parrots = pytest.mark.skipif(
+    TORCH_VERSION != 'parrots', reason='test case under parrots environment')
 
 
 class TestJit(object):
@@ -55,7 +59,7 @@ class TestJit(object):
             assert f'k{idx}' in rets_t
             assert (rets[f'k{idx}'] == rets_t[f'k{idx}']).all()
 
-    @mmcv.skip_no_parrots
+    @skip_no_parrots
     def test_jit_cache(self):
 
         @mmcv.jit
@@ -88,7 +92,7 @@ class TestJit(object):
         rets_a = (rets_minus_t + rets_plus_t) / 4
         assert torch.allclose(oper['x'], rets_a)
 
-    @mmcv.skip_no_parrots
+    @skip_no_parrots
     def test_jit_shape(self):
 
         @mmcv.jit
@@ -109,7 +113,7 @@ class TestJit(object):
         assert (r == 2).all()
         assert len(func._cache._cache) == 2
 
-    @mmcv.skip_no_parrots
+    @skip_no_parrots
     def test_jit_kwargs(self):
 
         @mmcv.jit
@@ -206,7 +210,7 @@ class TestJit(object):
         d = pyfunc(a, b)
         assert torch.allclose(c, d)
 
-    @mmcv.skip_no_parrots
+    @skip_no_parrots
     def test_jit_check_input(self):
 
         def func(x):
@@ -217,7 +221,7 @@ class TestJit(object):
         with pytest.raises(AssertionError):
             func = mmcv.jit(func, check_input=(a, ))
 
-    @mmcv.skip_no_parrots
+    @skip_no_parrots
     def test_jit_partial_shape(self):
 
         @mmcv.jit(full_shape=False)
