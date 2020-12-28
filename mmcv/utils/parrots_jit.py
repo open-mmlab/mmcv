@@ -1,4 +1,3 @@
-import pytest
 import torch
 
 TORCH_VERSION = torch.__version__
@@ -37,11 +36,3 @@ else:
             return func(*args, **kargs)
 
         return wrapper
-
-
-def is_using_parrots():
-    return TORCH_VERSION == 'parrots'
-
-
-skip_no_parrots = pytest.mark.skipif(
-    not is_using_parrots(), reason='test case under parrots environment')

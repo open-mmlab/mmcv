@@ -2,7 +2,7 @@ from functools import partial
 
 import torch
 
-TORCH_VERSION = torch.__version__
+from .parrots_wrapper import TORCH_VERSION
 
 
 def _get_cuda_home():
