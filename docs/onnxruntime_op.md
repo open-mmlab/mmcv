@@ -15,10 +15,10 @@
 
 ## List of operators for ONNX Runtime supported in MMCV
 
-| Operator |  CPU  |  GPU  |       Note       |
-| :------: | :---: | :---: | :--------------: |
-| SoftNMS  |   Y   |   N   | commit `94810f2` |
-| RoiAlign |   Y   |   N   |       None       |
+| Operator |  CPU  |  GPU  |                                                Note                                                 |
+| :------: | :---: | :---: | :-------------------------------------------------------------------------------------------------: |
+| SoftNMS  |   Y   |   N   | commit [94810f](https://github.com/open-mmlab/mmcv/commit/94810f2297871d0ea3ca650dcb2e842f5374d998) |
+| RoiAlign |   Y   |   N   |                                                None                                                 |
 
 ## How to build custom operators for ONNX Runtime
 
