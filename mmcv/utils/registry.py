@@ -104,13 +104,18 @@ class Registry:
 
     @staticmethod
     def split_scope_key(key):
-        split_list = key.split('.')
-        assert len(split_list) in [1, 2]
-        if len(split_list) == 2:
-            scope, real_type = split_list
+        # split_list = key.split('.')
+        # assert len(split_list) in [1, 2]
+        # if len(split_list) == 2:
+        #     scope, real_type = split_list
+        # else:
+        #     scope, real_type = None, key
+        # return scope, real_type
+        split_index = key.find('.')
+        if split_index != -1:
+            return key[:split_index], key[split_index + 1:]
         else:
-            scope, real_type = None, key
-        return scope, real_type
+            return None, key
 
     @property
     def name(self):
@@ -139,7 +144,7 @@ class Registry:
         """
         scope, real_key = self.split_scope_key(key)
         if scope is not None:
-            return self._children[scope].module_dict.get(real_key, None)
+            return self._children[scope].get(real_key)
         else:
             # get from self
             if real_key in self._module_dict:
@@ -147,8 +152,9 @@ class Registry:
             else:
                 # get from children
                 for registry in self._children.values():
-                    if real_key in registry.module_dict:
-                        return registry.module_dict[real_key]
+                    result = registry.get(real_key)
+                    if result is not None:
+                        return result
 
     def build(self, *args, **kwargs):
         return self.build_func(*args, **kwargs, registry=self)

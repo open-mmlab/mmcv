@@ -141,11 +141,23 @@ def test_multi_scope_registry():
     class BloodHound:
         pass
 
-    assert len(DOGS) == 1
+    assert len(HOUNDS) == 1
     assert HOUNDS.get('BloodHound') is BloodHound
-
     assert DOGS.get('hound.BloodHound') is BloodHound
     assert DOGS.get('BloodHound') is BloodHound
+
+    LITTLE_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='little_hound')
+
+    @LITTLE_HOUNDS.register_module()
+    class Dachshund:
+        pass
+
+    assert len(LITTLE_HOUNDS) == 1
+    assert LITTLE_HOUNDS.get('Dachshund') is Dachshund
+    assert HOUNDS.get('Dachshund') is Dachshund
+    assert HOUNDS.get('little_hound.Dachshund') is Dachshund
+    assert DOGS.get('Dachshund') is Dachshund
+    assert DOGS.get('hound.little_hound.Dachshund') is Dachshund
 
 
 def test_build_from_cfg():
