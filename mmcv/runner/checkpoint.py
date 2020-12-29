@@ -3,13 +3,12 @@ import os
 import os.path as osp
 import pkgutil
 import time
+import torch
+import torchvision
 import warnings
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-
-import torch
-import torchvision
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
@@ -254,6 +253,36 @@ def _load_checkpoint(filename, map_location=None):
             raise IOError(f'{filename} is not a checkpoint file')
         checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
+
+
+def _load_checkpoint_with_prefix(prefix, filename):
+    """Load partial pretrained model with specific prefix.
+
+    Args:
+        prefix (str): The prefix of sub-module.
+        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
+            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
+            details.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    checkpoint = _load_checkpoint(filename)
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
+
+    if not prefix.endswith('.'):
+        prefix += '.'
+    prefix_len = len(prefix)
+    state_dict = {
+        k[prefix_len:]: v
+        for k, v in state_dict.items() if k.startswith(prefix)
+    }
+    assert state_dict, 'f{prefix} is not in the pretrained model'
+    return state_dict
 
 
 def load_checkpoint(model,

@@ -1,12 +1,12 @@
+import pytest
 import sys
+import torch.nn as nn
 from collections import OrderedDict
+from torch.nn.parallel import DataParallel
 from unittest.mock import MagicMock
 
-import pytest
-import torch.nn as nn
-from torch.nn.parallel import DataParallel
-
 from mmcv.parallel.registry import MODULE_WRAPPERS
+from mmcv.runner import _load_checkpoint_with_prefix
 from mmcv.runner.checkpoint import get_state_dict, load_pavimodel_dist
 
 
@@ -133,3 +133,14 @@ def test_load_pavimodel_dist():
     with pytest.raises(FileNotFoundError):
         # there is not such checkpoint for us to load
         _ = load_pavimodel_dist('MyPaviFolder/checkpoint.pth')
+
+
+def test_load_checkpoint_with_prefix():
+    prefix = 'backbone.'
+    checkpoint = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
+        'retinanet_r50_fpn_1x_coco/'\
+        'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
+    _load_checkpoint_with_prefix(prefix, checkpoint)
+    prefix = 'back'
+    with pytest.raises(AssertionError):
+        _load_checkpoint_with_prefix(prefix, checkpoint)
