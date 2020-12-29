@@ -104,13 +104,6 @@ class Registry:
 
     @staticmethod
     def split_scope_key(key):
-        # split_list = key.split('.')
-        # assert len(split_list) in [1, 2]
-        # if len(split_list) == 2:
-        #     scope, real_type = split_list
-        # else:
-        #     scope, real_type = None, key
-        # return scope, real_type
         split_index = key.find('.')
         if split_index != -1:
             return key[:split_index], key[split_index + 1:]
