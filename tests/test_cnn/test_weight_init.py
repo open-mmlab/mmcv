@@ -97,7 +97,7 @@ def test_initialize():
     init_cfg = dict()
     with pytest.raises(TypeError):
         initialize(model, init_cfg)
-    init_cfg = init_cfg = dict(
+    init_cfg = dict(
         type='init', Linear=dict(function='constant_init', val=3, bias=4))
     with pytest.raises(TypeError):
         initialize(model, init_cfg)
