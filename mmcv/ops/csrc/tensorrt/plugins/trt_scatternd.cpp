@@ -1,6 +1,7 @@
 #include "trt_scatternd.hpp"
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <chrono>
 
@@ -8,12 +9,12 @@
 
 extern void TRTONNXScatterNDKernelLauncher_float(
     const float *data, const int *indices, const float *update, const int *dims,
-    int nbDims, int indice_rows, int indice_cols, float *output,
+    int nbDims, const int *indices_dims, int indice_nbDims, float *output,
     cudaStream_t stream);
 
 extern void TRTONNXScatterNDKernelLauncher_int32(
     const int *data, const int *indices, const int *update, const int *dims,
-    int nbDims, int indice_rows, int indice_cols, int *output,
+    int nbDims, const int *indices_dims, int indice_nbDims, int *output,
     cudaStream_t stream);
 
 namespace {
@@ -97,10 +98,10 @@ int ONNXScatterNDDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                                   const void *const *inputs,
                                   void *const *outputs, void *workSpace,
                                   cudaStream_t stream) {
-  int indice_rows = inputDesc[1].dims.d[0];
-  int indice_cols = inputDesc[1].dims.d[1];
   const int *dims = &(inputDesc[0].dims.d[0]);
+  const int *indices_dims = &(inputDesc[1].dims.d[0]);
   int nbDims = inputDesc[0].dims.nbDims;
+  int indice_nbDims = inputDesc[1].dims.nbDims;
 
   const void *data = inputs[0];
   const void *indices = inputs[1];
@@ -113,13 +114,13 @@ int ONNXScatterNDDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
     case nvinfer1::DataType::kFLOAT:
       TRTONNXScatterNDKernelLauncher_float(
           (float *)data, (int *)indices, (float *)update, dims, nbDims,
-          indice_rows, indice_cols, (float *)output, stream);
+          indices_dims, indice_nbDims, (float *)output, stream);
       break;
 
     case nvinfer1::DataType::kINT32:
       TRTONNXScatterNDKernelLauncher_int32(
-          (int *)data, (int *)indices, (int *)update, dims, nbDims, indice_rows,
-          indice_cols, (int *)output, stream);
+          (int *)data, (int *)indices, (int *)update, dims, nbDims,
+          indices_dims, indice_nbDims, (int *)output, stream);
       break;
     default:
       break;
