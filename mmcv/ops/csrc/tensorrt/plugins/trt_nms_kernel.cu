@@ -2,12 +2,15 @@
 #include <thrust/execution_policy.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
+#include <thrust/gather.h>
 
+#include <chrono>
+#include <thread>
 #include <vector>
 
 #include "common_cuda_helper.hpp"
 #include "nms_cuda_kernel.cuh"
-
+#include "trt_cuda_helper.cuh"
 struct NMSBox {
   float box[4];
 };
@@ -40,6 +43,13 @@ struct nms_score_threshold {
   }
 };
 
+__global__ void nms_reindex_kernel(int n, int* output, int* index_cache){
+  CUDA_1D_KERNEL_LOOP(index, n) {
+    const int old_index = output[index*3+2];
+    output[index*3+2] = index_cache[old_index];
+  }
+}
+
 size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
                                   size_t num_classes, size_t boxes_word_size,
                                   int center_point_box) {
@@ -54,8 +64,10 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   size_t mask_workspace =
       num_batches * spatial_dimension * col_blocks * sizeof(unsigned long long);
+  size_t index_workspace =
+      spatial_dimension * (num_batches * num_classes + 1) * sizeof(int);
   return scores_workspace + boxes_xyxy_workspace + boxes_workspace +
-         mask_workspace;
+         mask_workspace + index_workspace;
 }
 
 void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
@@ -77,6 +89,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
     thrust::transform(thrust::cuda::par.on(stream), (NMSBox*)boxes,
                       (NMSBox*)(boxes + num_batches * spatial_dimension * 4),
                       (NMSBox*)boxes_xyxy, nm_centerwh2xyxy());
+    cudaCheckError();
   }
 
   float* scores_sorted = (float*)workspace;
@@ -86,18 +99,30 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   workspace = workspace + num_batches * spatial_dimension * col_blocks *
                               sizeof(unsigned long long);
 
+  // generate sequence [0,1,2,3,4 ....]
+  int* index_template = (int*)workspace;
+  workspace = workspace + spatial_dimension * sizeof(int);
+  thrust::sequence(thrust::cuda::par.on(stream), index_template,
+                   index_template + spatial_dimension, 0);
+
+  int* index_cache = (int*)workspace;
+  workspace =
+      workspace + spatial_dimension * num_batches * num_classes * sizeof(int);
+
   // this is dirty, should we create another nms_cuda kernel with float*
   // iou_threshold?
   float iou_threshold_cpu = 0.0f;
   if (iou_threshold != nullptr) {
     cudaMemcpy(&iou_threshold_cpu, iou_threshold, sizeof(float),
                cudaMemcpyDeviceToHost);
+    cudaCheckError();
   }
 
   int max_output_boxes_per_class_cpu = 0;
   if (max_output_boxes_per_class != nullptr) {
     cudaMemcpy(&max_output_boxes_per_class_cpu, max_output_boxes_per_class,
                sizeof(int), cudaMemcpyDeviceToHost);
+    cudaCheckError();
   }
   if (max_output_boxes_per_class_cpu == 0) {
     max_output_boxes_per_class_cpu = spatial_dimension;
@@ -105,14 +130,16 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
 
   // allocate pined memory
   int* output_cpu = nullptr;
-  cudaMallocHost((void**)&output_cpu,
-                 num_batches * spatial_dimension * num_classes * sizeof(int));
+  cudaMallocHost((void**)&output_cpu, num_batches * spatial_dimension *
+                                          num_classes * 3 * sizeof(int));
+  cudaCheckError();
   memset(output_cpu, 0,
          num_batches * spatial_dimension * num_classes * sizeof(int));
   unsigned long long* dev_mask_cpu = nullptr;
   cudaMallocHost((void**)&dev_mask_cpu, num_batches * spatial_dimension *
                                             col_blocks *
                                             sizeof(unsigned long long));
+  cudaCheckError();
 
   std::vector<unsigned long long> remv(col_blocks);
 
@@ -132,27 +159,35 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
       out_cls_ids[process_id] = cls_id;
       float* boxes_sorted_current =
           boxes_sorted + process_id * spatial_dimension * 4;
+      int* index_current = index_cache + batch_cls_id * spatial_dimension;
 
       // sort boxes by score
       cudaMemcpyAsync(scores_sorted, scores + batch_cls_id * spatial_dimension,
                       spatial_dimension * sizeof(float),
                       cudaMemcpyDeviceToDevice, stream);
-      if (center_point_box == 1) {
-        cudaMemcpyAsync(boxes_sorted_current,
-                        boxes_xyxy + batch_id * spatial_dimension * 4,
-                        spatial_dimension * 4 * sizeof(float),
-                        cudaMemcpyDeviceToDevice, stream);
-      } else {
-        cudaMemcpyAsync(boxes_sorted_current,
-                        boxes + batch_id * spatial_dimension * 4,
-                        spatial_dimension * 4 * sizeof(float),
-                        cudaMemcpyDeviceToDevice, stream);
-      }
+      cudaCheckError();
+
+      cudaMemcpyAsync(index_current, index_template,
+                      spatial_dimension * sizeof(int), cudaMemcpyDeviceToDevice,
+                      stream);
 
       thrust::sort_by_key(thrust::cuda::par.on(stream), scores_sorted,
                           scores_sorted + spatial_dimension,
-                          (NMSBox*)boxes_sorted_current,
+                          index_current,
                           thrust::greater<float>());
+
+      if (center_point_box == 1) {
+      thrust::gather(thrust::cuda::par.on(stream), index_current, index_current+spatial_dimension,
+      (NMSBox*)(boxes_xyxy + batch_id * spatial_dimension * 4), (NMSBox*)boxes_sorted_current
+      );
+      }else{
+      thrust::gather(thrust::cuda::par.on(stream), index_current, index_current+spatial_dimension,
+      (NMSBox*)(boxes + batch_id * spatial_dimension * 4), (NMSBox*)boxes_sorted_current
+      );
+
+      }
+
+      cudaCheckError();
 
       // if (score_threshold != nullptr) {
       //   thrust::transform_if(
@@ -175,12 +210,15 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                    num_batches * spatial_dimension * col_blocks *
                        sizeof(unsigned long long),
                    cudaMemcpyDeviceToHost);
+        cudaCheckError();
         for (int mask_batch_id = 0; mask_batch_id < num_batches;
              ++mask_batch_id) {
           const int out_batch_id = out_batch_ids[mask_batch_id];
           const int out_cls_id = out_cls_ids[mask_batch_id];
           unsigned long long* dev_mask_cpu_current =
               dev_mask_cpu + mask_batch_id * spatial_dimension * col_blocks;
+
+          int index_offset = out_batch_id*num_classes*spatial_dimension + out_cls_id*spatial_dimension;
 
           memset(&remv[0], 0, sizeof(unsigned long long) * col_blocks);
           int out_per_class_count = 0;
@@ -190,7 +228,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
             if (!(remv[nblock] & (1ULL << inblock))) {
               output_cpu_current[0] = out_batch_id;
               output_cpu_current[1] = out_cls_id;
-              output_cpu_current[2] = i;
+              output_cpu_current[2] = index_offset+i;
               output_cpu_current += 3;
               output_count += 1;
               out_per_class_count += 1;
@@ -212,8 +250,13 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   // fill output with -1
   thrust::fill(thrust::cuda::par.on(stream), output,
                output + num_batches * spatial_dimension * num_classes, -1);
-  cudaMemcpy(output, output_cpu, output_count * 3 * sizeof(int),
-             cudaMemcpyHostToDevice);
+  cudaCheckError();
+
+  cudaMemcpy(output, output_cpu, size_t(output_count * 3 * sizeof(int)),
+             cudaMemcpyDefault);
+  cudaCheckError();
+
+nms_reindex_kernel<<<DIVUP(output_count, threadsPerBlock), threadsPerBlock, 0, stream>>>(output_count, output, index_cache);
 
   // free pined memory
   cudaFreeHost(dev_mask_cpu);
