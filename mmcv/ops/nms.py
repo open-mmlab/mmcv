@@ -149,6 +149,10 @@ def nms(boxes, scores, iou_threshold, offset=0):
         if torch.onnx.is_in_onnx_export() and offset == 0:
             # ONNX only support offset == 1
             boxes[:, -2:] += 1
+    if torch.onnx.is_in_onnx_export():
+        # TensorRT will fill inds with -1
+        boxes = torch.cat((boxes, boxes.new_zeros(1, 4)), dim=0)
+        scores = torch.cat((scores, scores.new_zeros(1)), dim=0)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
