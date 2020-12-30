@@ -89,8 +89,7 @@ def get_np_type_from_elem_type(elem_type: int) -> int:
     Returns:
         int: Data type in numpy.
     """
-    # from https://github.com/onnx/onnx/blob/
-    # e5e9a539f550f07ec156812484e8d4f33fb91f88/onnx/onnx.proto#L461
+    # from https://github.com/onnx/onnx/blob/e5e9a539f550f07ec156812484e8d4f33fb91f88/onnx/onnx.proto#L461 # noqa: E501
     sizes = (None, np.float32, np.uint8, np.int8, np.uint16, np.int16,
              np.int32, np.int64, str, np.bool, np.float16, np.double,
              np.uint32, np.uint64, np.complex64, np.complex128, np.float16)

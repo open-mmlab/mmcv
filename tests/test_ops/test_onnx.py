@@ -4,7 +4,6 @@ from functools import partial
 import numpy as np
 import onnx
 import onnxruntime as rt
-import pytest
 import torch
 import torch.nn as nn
 
@@ -186,10 +185,7 @@ def test_roipool():
 
 
 def test_simplify():
-    try:
-        from mmcv.onnx import simplify
-    except ImportError:
-        pytest.skip('No simplify found in mmcv.onnx')
+    from mmcv.onnx import simplify
 
     def foo(x):
         y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
@@ -204,5 +200,5 @@ def test_simplify():
     slim_onnx_model = simplify(ori_onnx_model, feed_input, onnx_file)
     numel_before = len(ori_onnx_model.graph.node)
     numel_after = len(slim_onnx_model.graph.node)
-    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
     os.remove(onnx_file)
+    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'

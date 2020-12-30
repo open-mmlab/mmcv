@@ -2,7 +2,7 @@
 
 ## register_extra_symbolics
 
-Some extra symbolic functions need to be registered before exporting Pytorch model to ONNX.
+Some extra symbolic functions need to be registered before exporting PyTorch model to ONNX.
 
 ### Example
 
@@ -18,7 +18,7 @@ register_extra_symbolics(opset_version)
 
 ### Intention
 
-`mmcv.onnx.simplify` is based on [onnx-simplifier](https://github.com/daquexian/onnx-simplifier), which is a useful tool to make exported ONNX models slimmer by performing a series of optimization. However, for Pytorch models with custom op from `mmcv`, it would break down. Thus, custom op for ONNX Runtime should be registered.
+`mmcv.onnx.simplify` is based on [onnx-simplifier](https://github.com/daquexian/onnx-simplifier), which is a useful tool to make exported ONNX models slimmer by performing a series of optimization. However, for Pytorch models with custom op from `mmcv`, it would break down. Thus, custom ops for ONNX Runtime should be registered.
 
 ### Usage
 
