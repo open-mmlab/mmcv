@@ -12,14 +12,11 @@ trt_file = 'tmp.engine'
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='CUDA is required for test_roialign')
 def test_roialign():
-    try:
-        from mmcv.tensorrt import (TRTWraper, onnx2trt, save_trt_engine,
-                                   is_tensorrt_plugin_loaded)
+    from mmcv.tensorrt import (TRTWraper, onnx2trt, save_trt_engine,
+                               is_tensorrt_plugin_loaded)
 
-        if not is_tensorrt_plugin_loaded:
-            pytest.skip('test requires to complie TensorRT plugins in mmcv')
-    except (ImportError, ModuleNotFoundError):
-        pytest.skip('test requires mmcv.tensorrt')
+    if not is_tensorrt_plugin_loaded():
+        pytest.skip('test requires to complie TensorRT plugins in mmcv')
 
     try:
         from mmcv.ops import RoIAlign

@@ -75,7 +75,8 @@ def test_softnms():
         '1.5.1'), 'test_softnms should be ran with onnxruntime >= 1.5.1'
 
     ort_custom_op_path = get_onnxruntime_op_path()
-    assert os.path.exists(ort_custom_op_path)
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('softnms for onnxruntime is not compiled.')
 
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
@@ -138,17 +139,11 @@ def test_softnms():
 def test_roialign():
     try:
         from mmcv.ops import roi_align
+        from mmcv.ops import get_onnxruntime_op_path
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align op is not successfully compiled')
 
-    # TODO remove after PR#724 merged
-    try:
-        from mmcv.tensorrt import is_tensorrt_plugin_loaded
-        if is_tensorrt_plugin_loaded:
-            pytest.skip('mmcv::MMCVRoiAlign is not supported in onnxruntime.')
-    except ImportError:
-        pass
-
+    ort_custom_op_path = get_onnxruntime_op_path()
     # roi align config
     pool_h = 2
     pool_w = 2
@@ -187,7 +182,11 @@ def test_roialign():
                 keep_initializers_as_inputs=True,
                 input_names=['input', 'rois'],
                 opset_version=11)
+
         onnx_model = onnx.load(onnx_file)
+        session_options = rt.SessionOptions()
+        if os.path.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
 
         # compute onnx_output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -196,7 +195,7 @@ def test_roialign():
         ]
         net_feed_input = list(set(input_all) - set(input_initializer))
         assert (len(net_feed_input) == 2)
-        sess = rt.InferenceSession(onnx_file)
+        sess = rt.InferenceSession(onnx_file, session_options)
         onnx_output = sess.run(None, {
             'input': input.detach().numpy(),
             'rois': rois.detach().numpy()
