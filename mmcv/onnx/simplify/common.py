@@ -4,7 +4,7 @@ import warnings
 import onnx
 
 
-def add_suffix2name(ori_model, suffix='__', verify=True):
+def add_suffix2name(ori_model, suffix='__', verify=False):
     """Simplily add a suffix to the name of node, which has a numeric name."""
     # check if has special op, which has subgraph.
     special_ops = ('If', 'Loop')
