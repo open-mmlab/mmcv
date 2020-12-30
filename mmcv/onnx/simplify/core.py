@@ -239,13 +239,13 @@ def forward(
         input_shapes = {}
     sess_options = rt.SessionOptions()
     # load custom lib for onnxruntime in mmcv
-    ort_custom_op_path = None
+    ort_custom_op_path = ''
     try:
         from mmcv.ops import get_onnxruntime_op_path
         ort_custom_op_path = get_onnxruntime_op_path()
     except ImportError:
         pass
-    if ort_custom_op_path is not None:
+    if os.path.exists(ort_custom_op_path):
         sess_options.register_custom_ops_library(ort_custom_op_path)
     sess_options.graph_optimization_level = rt.GraphOptimizationLevel(0)
     sess_options.log_severity_level = 3
