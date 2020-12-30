@@ -39,6 +39,41 @@ class NMSop(torch.autograd.Function):
             1)
 
 
+class SoftNMSop(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, boxes, scores, iou_threshold, sigma, min_score, method,
+                offset):
+        dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
+        inds = ext_module.softnms(
+            boxes.cpu(),
+            scores.cpu(),
+            dets.cpu(),
+            iou_threshold=float(iou_threshold),
+            sigma=float(sigma),
+            min_score=float(min_score),
+            method=int(method),
+            offset=int(offset))
+        return dets, inds
+
+    @staticmethod
+    def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
+                 offset):
+        from packaging import version
+        assert version.parse(torch.__version__) >= version.parse('1.7.0')
+        nms_out = g.op(
+            'mmcv::SoftNonMaxSuppression',
+            boxes,
+            scores,
+            iou_threshold_f=float(iou_threshold),
+            sigma_f=float(sigma),
+            min_score_f=float(min_score),
+            method_i=int(method),
+            offset_i=int(offset),
+            outputs=2)
+        return nms_out
+
+
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
 def nms(boxes, scores, iou_threshold, offset=0):
     """Dispatch to either CPU or GPU NMS implementations.
@@ -191,17 +226,12 @@ def soft_nms(boxes,
         dets, inds, num_out = ext_module.softnms(*indata_list, **indata_dict)
         inds = inds[:num_out]
     else:
-        dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
-        inds = ext_module.softnms(
-            boxes.cpu(),
-            scores.cpu(),
-            dets.cpu(),
-            iou_threshold=float(iou_threshold),
-            sigma=float(sigma),
-            min_score=float(min_score),
-            method=method_dict[method],
-            offset=int(offset))
+        dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
+                                     float(iou_threshold), float(sigma),
+                                     float(min_score), method_dict[method],
+                                     int(offset))
     dets = dets[:inds.size(0)]
+
     if is_numpy:
         dets = dets.cpu().numpy()
         inds = inds.cpu().numpy()

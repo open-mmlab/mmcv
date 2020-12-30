@@ -5,11 +5,12 @@
 
 void box_iou_rotated_cpu_launcher(const DArrayLite boxes1,
                                   const DArrayLite boxes2, DArrayLite ious,
-                                  const bool aligned);
+                                  const int mode_flag, const bool aligned);
 
 void box_iou_rotated_cuda_launcher(const DArrayLite boxes1,
                                    const DArrayLite boxes2, DArrayLite ious,
-                                   const bool aligned, cudaStream_t stream);
+                                   const int mode_flag, const bool aligned,
+                                   cudaStream_t stream);
 
 void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
                          const OperatorBase::in_list_t& ins,
@@ -18,9 +19,13 @@ void box_iou_rotated_cpu(HostContext& ctx, const SSElement& attr,
   const auto& boxes2 = ins[1];
 
   bool aligned;
-  SSAttrs(attr).get<bool>("aligned", aligned).done();
+  int mode_flag;
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .get<int>("mode_flag", mode_flag)
+      .done();
   auto& ious = outs[0];
-  box_iou_rotated_cpu_launcher(boxes1, boxes2, ious, aligned);
+  box_iou_rotated_cpu_launcher(boxes1, boxes2, ious, mode_flag, aligned);
 }
 
 void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
@@ -30,15 +35,21 @@ void box_iou_rotated_cuda(CudaContext& ctx, const SSElement& attr,
   const auto& boxes2 = ins[1];
 
   bool aligned;
-  SSAttrs(attr).get<bool>("aligned", aligned).done();
+  int mode_flag;
+  SSAttrs(attr)
+      .get<bool>("aligned", aligned)
+      .get<int>("mode_flag", mode_flag)
+      .done();
 
   cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
   auto& ious = outs[0];
-  box_iou_rotated_cuda_launcher(boxes1, boxes2, ious, aligned, stream);
+  box_iou_rotated_cuda_launcher(boxes1, boxes2, ious, mode_flag, aligned,
+                                stream);
 }
 
 PARROTS_EXTENSION_REGISTER(box_iou_rotated)
     .attr("aligned")
+    .attr("mode_flag")
     .input(2)
     .output(1)
     .apply(box_iou_rotated_cpu)
