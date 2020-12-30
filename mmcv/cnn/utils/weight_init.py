@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import torch.nn as nn
 
-from mmcv.runner import (_load_checkpoint, _load_checkpoint_with_prefix,
-                         load_checkpoint, load_state_dict)
+from mmcv.runner import (_load_checkpoint_with_prefix, load_checkpoint,
+                         load_state_dict)
 from mmcv.utils import print_log
 
 
@@ -75,7 +75,7 @@ def initialize(module, init_cfg):
     """Initialize a module
 
     Args:
-        module (``torch.nn.Module``): An module will be initialized.
+        module (``torch.nn.Module``): A module will be initialized.
         init_cfg (dict):  Initialization config dict. It should at least
             contain the key "type", and "type" value must be "random" or
             "pretrained", which indicates weights initialization with values
@@ -87,12 +87,12 @@ def initialize(module, init_cfg):
 
     Example:
         >>> model = nn.Linear(2, 3, bias=True)
-        >>> # the values of "Linear" is dict that refers to the initilization
-            # function and argments. OpenMMLab has implemented initialization
-            # functions including `constant_init`, `xavier_init`, `normal_init`,
-            # `uniform_init`, `kaiming_init`, `caffe2_xavier_init` and
-            # `bias_init_wth_prob` in mmcv.cnn.utils.
-        >>> init_cfg = dict(type='random', Linear=dict(function='constant_init',
+        >>> # the value of key "Linear" is a dict that refers to the
+            # initilization function and argments. OpenMMLab has implemented
+            # initialization functions including `constant_init`,
+            # `xavier_init`, `normal_init`, `uniform_init`, `kaiming_init`,
+            # `caffe2_xavier_init` and `bias_init_wth_prob` in mmcv.cnn.utils.
+        >>> init_cfg = dict(type='random', Linear=dict(function='constant_init'
                 val=1, bias=2))
         >>> initialize(model, init_cfg)
         >>> for name, param in model.named_parameters():
