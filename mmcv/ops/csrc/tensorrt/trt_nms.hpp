@@ -60,6 +60,7 @@ class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   std::string mNamespace;
 
   int mCenterPointBox;
+  int mNumberInputs;
 
  protected:
   // To prevent compiler warnings.

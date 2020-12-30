@@ -1,6 +1,7 @@
 #include "trt_nms.hpp"
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <chrono>
 
@@ -30,7 +31,7 @@ std::vector<nvinfer1::PluginField>
 
 ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
     const std::string &name, int centerPointBox)
-    : mLayerName(name), mCenterPointBox(centerPointBox) {}
+    : mLayerName(name), mCenterPointBox(centerPointBox), mNumberInputs(0) {}
 
 ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
     const std::string name, const void *data, size_t length)
@@ -108,7 +109,9 @@ bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
 
 void ONNXNonMaxSuppressionDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
+    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
+      mNumberInputs = nbInputs;
+    }
 
 size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
@@ -132,12 +135,12 @@ int ONNXNonMaxSuppressionDynamic::enqueue(
 
   const float *boxes = (const float *)inputs[0];
   const float *scores = (const float *)inputs[1];
-  const int *max_output_boxes_per_class =
-      (inputDesc[2].dims.nbDims > 0) ? (const int *)inputs[2] : nullptr;
-  const float *iou_threshold =
-      (inputDesc[3].dims.nbDims > 0) ? (const float *)inputs[3] : nullptr;
+    const int *max_output_boxes_per_class =
+        (mNumberInputs>=3) ? (const int *)inputs[2] : nullptr;
+    const float *iou_threshold =
+        (mNumberInputs>=4) ? (const float *)inputs[3] : nullptr;
   const float *score_threshold =
-      (inputDesc[4].dims.nbDims > 0) ? (const float *)inputs[4] : nullptr;
+      (mNumberInputs>=5) ? (const float *)inputs[4] : nullptr;
 
   int *output = (int *)outputs[0];
 

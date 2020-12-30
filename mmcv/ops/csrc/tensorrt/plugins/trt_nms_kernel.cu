@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <thrust/execution_policy.h>
+#include <thrust/gather.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
-#include <thrust/gather.h>
 
 #include <chrono>
 #include <thread>
@@ -43,10 +43,10 @@ struct nms_score_threshold {
   }
 };
 
-__global__ void nms_reindex_kernel(int n, int* output, int* index_cache){
+__global__ void nms_reindex_kernel(int n, int* output, int* index_cache) {
   CUDA_1D_KERNEL_LOOP(index, n) {
-    const int old_index = output[index*3+2];
-    output[index*3+2] = index_cache[old_index];
+    const int old_index = output[index * 3 + 2];
+    output[index * 3 + 2] = index_cache[old_index];
   }
 }
 
@@ -172,30 +172,30 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                       stream);
 
       thrust::sort_by_key(thrust::cuda::par.on(stream), scores_sorted,
-                          scores_sorted + spatial_dimension,
-                          index_current,
+                          scores_sorted + spatial_dimension, index_current,
                           thrust::greater<float>());
 
       if (center_point_box == 1) {
-      thrust::gather(thrust::cuda::par.on(stream), index_current, index_current+spatial_dimension,
-      (NMSBox*)(boxes_xyxy + batch_id * spatial_dimension * 4), (NMSBox*)boxes_sorted_current
-      );
-      }else{
-      thrust::gather(thrust::cuda::par.on(stream), index_current, index_current+spatial_dimension,
-      (NMSBox*)(boxes + batch_id * spatial_dimension * 4), (NMSBox*)boxes_sorted_current
-      );
-
+        thrust::gather(thrust::cuda::par.on(stream), index_current,
+                       index_current + spatial_dimension,
+                       (NMSBox*)(boxes_xyxy + batch_id * spatial_dimension * 4),
+                       (NMSBox*)boxes_sorted_current);
+      } else {
+        thrust::gather(thrust::cuda::par.on(stream), index_current,
+                       index_current + spatial_dimension,
+                       (NMSBox*)(boxes + batch_id * spatial_dimension * 4),
+                       (NMSBox*)boxes_sorted_current);
       }
 
       cudaCheckError();
 
-      // if (score_threshold != nullptr) {
-      //   thrust::transform_if(
-      //       thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted_current,
-      //       (NMSBox*)(boxes_sorted_current + spatial_dimension * 4),
-      //       scores_sorted, (NMSBox*)boxes_sorted_current, nm_sbox_idle(),
-      //       nms_score_threshold(score_threshold));
-      // }
+      if (score_threshold != nullptr) {
+        thrust::transform_if(
+            thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted_current,
+            (NMSBox*)(boxes_sorted_current + spatial_dimension * 4),
+            scores_sorted, (NMSBox*)boxes_sorted_current, nm_sbox_idle(),
+            nms_score_threshold(score_threshold));
+      }
 
       unsigned long long* dev_mask_current =
           dev_mask + batch_id * spatial_dimension * col_blocks;
@@ -218,7 +218,8 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
           unsigned long long* dev_mask_cpu_current =
               dev_mask_cpu + mask_batch_id * spatial_dimension * col_blocks;
 
-          int index_offset = out_batch_id*num_classes*spatial_dimension + out_cls_id*spatial_dimension;
+          int index_offset = out_batch_id * num_classes * spatial_dimension +
+                             out_cls_id * spatial_dimension;
 
           memset(&remv[0], 0, sizeof(unsigned long long) * col_blocks);
           int out_per_class_count = 0;
@@ -228,7 +229,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
             if (!(remv[nblock] & (1ULL << inblock))) {
               output_cpu_current[0] = out_batch_id;
               output_cpu_current[1] = out_cls_id;
-              output_cpu_current[2] = index_offset+i;
+              output_cpu_current[2] = index_offset + i;
               output_cpu_current += 3;
               output_count += 1;
               out_per_class_count += 1;
@@ -249,14 +250,15 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
 
   // fill output with -1
   thrust::fill(thrust::cuda::par.on(stream), output,
-               output + num_batches * spatial_dimension * num_classes, -1);
+               output + num_batches * spatial_dimension * num_classes * 3, -1);
   cudaCheckError();
 
   cudaMemcpy(output, output_cpu, size_t(output_count * 3 * sizeof(int)),
              cudaMemcpyDefault);
   cudaCheckError();
 
-nms_reindex_kernel<<<DIVUP(output_count, threadsPerBlock), threadsPerBlock, 0, stream>>>(output_count, output, index_cache);
+  nms_reindex_kernel<<<DIVUP(output_count, threadsPerBlock), threadsPerBlock, 0,
+                       stream>>>(output_count, output, index_cache);
 
   // free pined memory
   cudaFreeHost(dev_mask_cpu);
