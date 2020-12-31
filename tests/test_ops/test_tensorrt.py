@@ -78,16 +78,14 @@ def test_roialign():
         with torch.no_grad():
             trt_outputs = trt_model({'input': input, 'rois': rois})
             trt_roi_feat = trt_outputs['roi_feat']
-            trt_roi_feat = trt_roi_feat.cpu().detach().numpy()
 
         # compute pytorch_output
         with torch.no_grad():
             pytorch_roi_feat = wrapped_model(input, rois)
-            pytorch_roi_feat = pytorch_roi_feat.cpu().detach().numpy()
 
         # allclose
         if os.path.exists(onnx_file):
             os.remove(onnx_file)
         if os.path.exists(trt_file):
             os.remove(trt_file)
-        assert np.allclose(pytorch_roi_feat, trt_roi_feat, atol=1e-3)
+        assert torch.allclose(pytorch_roi_feat, trt_roi_feat)

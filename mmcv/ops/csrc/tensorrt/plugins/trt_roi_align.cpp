@@ -70,8 +70,6 @@ nvinfer1::DimsExprs RoiAlignPluginDynamic::getOutputDimensions(
 bool RoiAlignPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
-  // const auto *in = inOut;
-  // const auto *out = inOut + nbInputs;
   return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
