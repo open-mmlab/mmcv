@@ -2,7 +2,9 @@
 
 
 def check_dict(result_dict, key_list, value_list):
-    """Check if the result_dict is correct.
+    """Check if the result_dict is correct. The function does not support the
+    case that both values in result_dict and value_list are nonstandard python
+    data types.
 
     Args:
         result_dict(dict): Dict to be checked.
