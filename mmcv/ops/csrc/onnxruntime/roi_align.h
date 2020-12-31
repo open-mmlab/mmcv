@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <onnxruntime_cxx_api.h>
+
 #include <cmath>
 #include <mutex>
 #include <string>
