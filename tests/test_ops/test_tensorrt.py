@@ -167,12 +167,11 @@ def test_nms():
     with torch.no_grad():
         trt_outputs = trt_model({'boxes': boxes, 'scores': scores})
         trt_dets = trt_outputs['dets']
-        trt_dets = trt_dets.cpu().detach().numpy()
 
     # compute pytorch_output
     with torch.no_grad():
         pytorch_outputs = wrapped_model(boxes, scores)
-        pytorch_dets = pytorch_outputs[0].cpu().detach().numpy()
+        pytorch_dets = pytorch_outputs[0]
 
     # allclose
     if os.path.exists(onnx_file):
@@ -183,4 +182,4 @@ def test_nms():
     trt_dets = trt_dets[:num_boxes, ...]
     trt_scores = trt_dets[:, 4]
     pytorch_scores = pytorch_dets[:, 4]
-    assert np.allclose(pytorch_scores, trt_scores, atol=1e-3)
+    assert torch.allclose(pytorch_scores, trt_scores, atol=1e-3)

@@ -1,6 +1,8 @@
 #ifndef TRT_CUDA_HELPER_HPP
 #define TRT_CUDA_HELPER_HPP
 
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+
 #define cudaCheckError()                                       \
 {                                                            \
   cudaError_t e = cudaGetLastError();                        \

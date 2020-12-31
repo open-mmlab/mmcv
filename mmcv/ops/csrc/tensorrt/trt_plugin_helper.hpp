@@ -6,6 +6,14 @@
 
 namespace mmcv {
 
+const int MAXTENSORDIMS = 10;
+
+struct TensorDesc {
+  int shape[MAXTENSORDIMS];
+  int stride[MAXTENSORDIMS];
+  int dim;
+};
+
 inline unsigned int getElementSize(nvinfer1::DataType t) {
   switch (t) {
     case nvinfer1::DataType::kINT32:

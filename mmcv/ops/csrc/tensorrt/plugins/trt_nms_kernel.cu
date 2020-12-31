@@ -78,14 +78,53 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                         int num_batches, int spatial_dimension,
                                         int num_classes, void* workspace,
                                         cudaStream_t stream) {
+  /**
+  * describe of inputs:
+  * bboxes: [num_batch, spatial_dimension, 4], input boxes
+  * scores: [num_batch, num_classes, spatial_dimension], input scores
+  * max_output_boxes_per_class: [1] or nullptr, max output boxes per class
+  * iou_threshold: [1] or nullptr, threshold of iou
+  * score_threshold: [1] or nullptr, threshold of scores
+  *
+  * describe of outputs:
+  * output: [num_batch * num_classes * spatial_dimension, 3], each row
+  *         (batch_id, class_id, boxes_id), filling -1 if invalid.
+  *
+  * shapes of workspace:
+  * boxes_sorted: [num_batches, spatial_dimension, 4], the boxes which will
+  *               be sorted by scores.
+  * boxes_xyxy: [num_batch, spatial_dimension, 4], will be used if
+  *             center_point_box == 1.
+  * scores_sorted: [spatial_dimension], the workspace used to sort scores.
+  * dev_mask: [num_batches, spatial_dimension, col_blocks], intersect mask,
+  *           where col_block = DIVUP(spatial_dimension, threadsPerBlock)
+  * index_template: [spatial_dimension], sequence (0,1,2,3,...), workspace
+  *                 for argsort.
+  * index_cache: [num_batches, num_classes, spatial_dimension], argsort of
+  *              each classes.
+  *
+  * How does it works?
+  * The algrithm is the same as mmcv pytorch nms, with gpu part(mask) and
+  * cpu part(process). In order to reduce host <==> device memory transfer cost
+  * (which is heavy), The cpu part will only be performed when dev_mask is full.
+  *
+  * Why not create a large dev_mask with
+  * [num_batches, num_classes, spatial_dimension, col_blocks] then we only need
+  * do memory transfer one time?
+  * Might cause OOM when num_classes is large.
+  *
+  */
+
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   float* boxes_sorted = (float*)workspace;
-  workspace = workspace + num_batches * spatial_dimension * 4 * sizeof(float);
+  workspace = static_cast<char*>(workspace) +
+              num_batches * spatial_dimension * 4 * sizeof(float);
 
   float* boxes_xyxy = nullptr;
   if (center_point_box == 1) {
     boxes_xyxy = (float*)workspace;
-    workspace = workspace + num_batches * spatial_dimension * 4 * sizeof(float);
+    workspace = static_cast<char*>(workspace) +
+                num_batches * spatial_dimension * 4 * sizeof(float);
     thrust::transform(thrust::cuda::par.on(stream), (NMSBox*)boxes,
                       (NMSBox*)(boxes + num_batches * spatial_dimension * 4),
                       (NMSBox*)boxes_xyxy, nm_centerwh2xyxy());
@@ -93,21 +132,22 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   }
 
   float* scores_sorted = (float*)workspace;
-  workspace = workspace + spatial_dimension * sizeof(float);
+  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(float);
 
   unsigned long long* dev_mask = (unsigned long long*)workspace;
-  workspace = workspace + num_batches * spatial_dimension * col_blocks *
-                              sizeof(unsigned long long);
+  workspace = static_cast<char*>(workspace) + num_batches * spatial_dimension *
+                                                  col_blocks *
+                                                  sizeof(unsigned long long);
 
   // generate sequence [0,1,2,3,4 ....]
   int* index_template = (int*)workspace;
-  workspace = workspace + spatial_dimension * sizeof(int);
+  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(int);
   thrust::sequence(thrust::cuda::par.on(stream), index_template,
                    index_template + spatial_dimension, 0);
 
   int* index_cache = (int*)workspace;
-  workspace =
-      workspace + spatial_dimension * num_batches * num_classes * sizeof(int);
+  workspace = static_cast<char*>(workspace) +
+              spatial_dimension * num_batches * num_classes * sizeof(int);
 
   // this is dirty, should we create another nms_cuda kernel with float*
   // iou_threshold?
@@ -205,6 +245,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
           dev_mask_current);
 
       // process cpu
+      // will be performed when dev_mask is full.
       if (process_id == num_batches - 1) {
         cudaMemcpy(dev_mask_cpu, dev_mask,
                    num_batches * spatial_dimension * col_blocks *
@@ -253,10 +294,12 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                output + num_batches * spatial_dimension * num_classes * 3, -1);
   cudaCheckError();
 
+  // copy valid output
   cudaMemcpy(output, output_cpu, size_t(output_count * 3 * sizeof(int)),
              cudaMemcpyDefault);
   cudaCheckError();
 
+  // reindex with index_cache
   nms_reindex_kernel<<<DIVUP(output_count, threadsPerBlock), threadsPerBlock, 0,
                        stream>>>(output_count, output, index_cache);
 
