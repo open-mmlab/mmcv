@@ -71,7 +71,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
         // Instead of devIoU used by original horizontal nms, here
         // we use the single_box_iou_rotated function from
         // box_iou_rotated_utils.h
-        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 6) >
+        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 6, 0) >
             iou_threshold) {
           t |= 1ULL << i;
         }
@@ -121,7 +121,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
         // Instead of devIoU used by original horizontal nms, here
         // we use the single_box_iou_rotated function from
         // box_iou_rotated_utils.h
-        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 5) >
+        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 5, 0) >
             iou_threshold) {
           t |= 1ULL << i;
         }

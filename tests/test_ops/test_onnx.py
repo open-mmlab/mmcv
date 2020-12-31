@@ -139,7 +139,12 @@ def test_softnms():
 
 def test_roialign():
     from mmcv.ops import roi_align
-
+    ort_custom_op_path = ''
+    try:
+        from mmcv.ops import get_onnxruntime_op_path
+        ort_custom_op_path = get_onnxruntime_op_path()
+    except ImportError:
+        pass
     # roi align config
     pool_h = 2
     pool_w = 2
@@ -178,7 +183,11 @@ def test_roialign():
                 keep_initializers_as_inputs=True,
                 input_names=['input', 'rois'],
                 opset_version=11)
+
         onnx_model = onnx.load(onnx_file)
+        session_options = rt.SessionOptions()
+        if os.path.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
 
         # compute onnx_output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -187,7 +196,7 @@ def test_roialign():
         ]
         net_feed_input = list(set(input_all) - set(input_initializer))
         assert (len(net_feed_input) == 2)
-        sess = rt.InferenceSession(onnx_file)
+        sess = rt.InferenceSession(onnx_file, session_options)
         onnx_output = sess.run(None, {
             'input': input.detach().numpy(),
             'rois': rois.detach().numpy()
