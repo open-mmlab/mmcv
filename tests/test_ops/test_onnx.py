@@ -8,6 +8,7 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
+from packaging import version
 
 onnx_file = 'tmp.onnx'
 
@@ -65,7 +66,6 @@ def test_nms():
     reason='CUDA is unavailable for test_softnms')
 def test_softnms():
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
-    from packaging import version
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
@@ -274,6 +274,10 @@ def test_roipool():
 
 def test_simplify():
     from mmcv.onnx import simplify
+
+    # only support PyTorch >= 1.5.0
+    if version.parse(torch.__version__) < version.parse('1.5.0'):
+        pytest.skip('mmcv.onnx.simplify only support with PyTorch >= 1.5.0')
 
     def foo(x):
         y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
