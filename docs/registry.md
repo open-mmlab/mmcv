@@ -64,7 +64,7 @@ The key step to use registry for managing the modules is to register the impleme
 `@CONVERTERS.register_module()` when you are creating the module. By this way, a mapping between a string and the class is built and maintained by `CONVERTERS` as below
 
 ```python
-'Converter1' -> <class 'Converter'>
+'Converter1' -> <class 'Converter1'>
 ```
 
 If the module is successfully registered, you can use this converter through configs as
