@@ -52,7 +52,7 @@ Then we can implement different converters in the package. For example, implemen
 from .builder import CONVERTERS
 
 
-# use the registry to namge the module
+# use the registry to manage the module
 @CONVERTERS.register_module()
 class Converter1(object):
     def __init__(self, a, b):
@@ -61,7 +61,12 @@ class Converter1(object):
 ```
 
 The key step to use registry for managing the modules is to register the implemented module into the registry `CONVERTERS` through
-`@CONVERTERS.register_module()` when you are creating the module.
+`@CONVERTERS.register_module()` when you are creating the module. By this way, a mapping between a string and the class is built and maintained by `CONVERTERS` as below
+
+```python
+'Converter1' -> <class 'Converter1'>
+```
+
 If the module is successfully registered, you can use this converter through configs as
 
 ```python
