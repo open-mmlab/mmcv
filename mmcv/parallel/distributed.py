@@ -3,7 +3,8 @@ import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
                                            _find_tensors)
 
-from mmcv.utils import TORCH_VERSION, get_logger
+from mmcv import print_log
+from mmcv.utils import TORCH_VERSION
 from .scatter_gather import scatter_kwargs
 
 
@@ -33,9 +34,9 @@ class MMDistributedDataParallel(DistributedDataParallel):
         # end of backward to the beginning of forward.
         if (TORCH_VERSION >= '1.7' and 'parrots'
                 not in TORCH_VERSION) and self.reducer._rebuild_buckets():
-            _logger = get_logger('mmcv')
-            _logger.info(
-                'Reducer buckets have been rebuilt in this iteration.')
+            print_log(
+                'Reducer buckets have been rebuilt in this iteration.',
+                logger='mmcv')
 
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
@@ -73,9 +74,9 @@ class MMDistributedDataParallel(DistributedDataParallel):
         # end of backward to the beginning of forward.
         if (TORCH_VERSION >= '1.7' and 'parrots'
                 not in TORCH_VERSION) and self.reducer._rebuild_buckets():
-            _logger = get_logger('mmcv')
-            _logger.info(
-                'Reducer buckets have been rebuilt in this iteration.')
+            print_log(
+                'Reducer buckets have been rebuilt in this iteration.',
+                logger='mmcv')
 
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
