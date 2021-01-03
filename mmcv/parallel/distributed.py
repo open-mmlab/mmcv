@@ -68,6 +68,13 @@ class MMDistributedDataParallel(DistributedDataParallel):
         ``self.module.forward()`` with ``self.module.val_step()``.
         It is compatible with PyTorch 1.1 - 1.5.
         """
+        # In PyTorch >= 1.7, they move the _rebuild_buckets from the end of
+        # backward to the beginning of forward.
+        if torch.__version__ >= '1.7' and self.reducer._rebuild_buckets():
+            _logger = get_logger('mmcv')
+            _logger.info(
+                'Reducer buckets have been rebuilt in this iteration.')
+
         if getattr(self, 'require_forward_param_sync', True):
             self._sync_params()
         if self.device_ids:
