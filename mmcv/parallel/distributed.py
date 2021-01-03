@@ -29,8 +29,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
         It is compatible with PyTorch 1.1 - 1.5.
         """
 
-        # In PyTorch >= 1.7, they move the _rebuild_buckets from the end of
-        # backward to the beginning of forward.
+        # In PyTorch >= 1.7, ``reducer._rebuild_buckets()`` is moved from the
+        # end of backward to the beginning of forward.
         if (TORCH_VERSION >= '1.7' and 'parrots'
                 not in TORCH_VERSION) and self.reducer._rebuild_buckets():
             _logger = get_logger('mmcv')
@@ -69,8 +69,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
         ``self.module.forward()`` with ``self.module.val_step()``.
         It is compatible with PyTorch 1.1 - 1.5.
         """
-        # In PyTorch >= 1.7, they move the _rebuild_buckets from the end of
-        # backward to the beginning of forward.
+        # In PyTorch >= 1.7, ``reducer._rebuild_buckets()`` is moved from the
+        # end of backward to the beginning of forward.
         if (TORCH_VERSION >= '1.7' and 'parrots'
                 not in TORCH_VERSION) and self.reducer._rebuild_buckets():
             _logger = get_logger('mmcv')
