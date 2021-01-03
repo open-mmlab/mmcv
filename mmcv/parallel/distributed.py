@@ -31,7 +31,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
 
         # In PyTorch >= 1.7, they move the _rebuild_buckets from the end of
         # backward to the beginning of forward.
-        if torch.__version__ >= '1.7' and self.reducer._rebuild_buckets():
+        if (TORCH_VERSION >= '1.7' and 'parrots'
+                not in TORCH_VERSION) and self.reducer._rebuild_buckets():
             _logger = get_logger('mmcv')
             _logger.info(
                 'Reducer buckets have been rebuilt in this iteration.')
@@ -70,7 +71,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
         """
         # In PyTorch >= 1.7, they move the _rebuild_buckets from the end of
         # backward to the beginning of forward.
-        if torch.__version__ >= '1.7' and self.reducer._rebuild_buckets():
+        if (TORCH_VERSION >= '1.7' and 'parrots'
+                not in TORCH_VERSION) and self.reducer._rebuild_buckets():
             _logger = get_logger('mmcv')
             _logger.info(
                 'Reducer buckets have been rebuilt in this iteration.')
