@@ -108,7 +108,7 @@ def test_constaninit():
     assert model[2].weight.allclose(torch.tensor(4.0))
     assert model[0].bias.allclose(torch.tensor(5.0))
     assert model[2].bias.allclose(torch.tensor(5.0))
-
+    # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
 
