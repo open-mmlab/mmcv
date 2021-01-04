@@ -1,85 +1,116 @@
 # Copyright (c) Open-MMLab.
+from collections.abc import Iterable
+from typing import Any, Dict, List
 
 
-def check_dict(result_dict, key_list, value_list):
-    """Check if the result_dict is correct. The function does not support the
-    case that both values in result_dict and value_list are nonstandard python
-    data types.
+def _any(judge_result):
+    """Since built-in ``any`` works only when the element of iterable is not
+    iterable, implement the funciton."""
+    if not isinstance(judge_result, Iterable):
+        return judge_result
+
+    try:
+        for element in judge_result:
+            if _any(element):
+                return True
+    except TypeError:
+        # Maybe encouter the case: torch.tensor(True) | torch.tensor(False)
+        if judge_result:
+            return True
+    return False
+
+
+def assert_dict_contains_subset(dict_obj: Dict[Any, Any],
+                                expected_subset: Dict[Any, Any]) -> bool:
+    """Check if the dict_obj contains the expected_subset.
 
     Args:
-        result_dict(dict): Dict to be checked.
-        key_list(tuple): Tuple of checked keys.
-        value_list(tuple): Tuple of target values.
+        dict_obj (Dict[Any, Any]): Dict object to be checked.
+        expected_subset (Dict[Any, Any]): Subset expected to be contained in
+            dict_obj.
 
     Returns:
-        bool: Whether the result_dict is correct.
+        bool: Whether the dict_obj contains the expected_subset.
     """
-    for key, value in zip(key_list, value_list):
-        if result_dict[key] != value:
+
+    for key, value in expected_subset.items():
+        uneq = dict_obj[key] != value if key in dict_obj.keys() else True
+        if _any(uneq):
             return False
     return True
 
 
-def check_class_attr(obj, attr_list, value_list):
+def assert_attrs_equal(obj: Any, expected_attrs: Dict[str, Any]) -> bool:
     """Check if attribute of class object is correct.
 
     Args:
-        obj(object): Class object to be checked.
-        attr_list(tuple[str]): Tuple of inner attribute names ot be checked.
-        value_list(tuple): Tuple of target values.
+        obj (object): Class object to be checked.
+        expected_attrs (Dict[str, Any]): Dict of the expected attrs.
 
     Returns:
         bool: Whether the attribute of class object is correct.
     """
-    for attr, value in zip(attr_list, value_list):
-        if not hasattr(obj, attr) or getattr(obj, attr) != value:
+    for attr, value in expected_attrs.items():
+        if not hasattr(obj, attr):
             return False
-    return True
-
-
-def assert_keys_contain(result_keys, target_keys):
-    """Check if all elements in target_keys is in result_keys."""
-    return set(target_keys).issubset(set(result_keys))
-
-
-def assert_keys_equal(result_keys, target_keys):
-    """Check if target_keys is equal to result_keys."""
-    return set(result_keys) == set(target_keys)
-
-
-def check_norm_state(modules, train_state):
-    """Check if norm layer is in correct train state."""
-    from .parrots_wrapper import _BatchNorm
-    for mod in modules:
-        if isinstance(mod, _BatchNorm):
-            if mod.training != train_state:
+        else:
+            if _any(getattr(obj, attr) != value):
                 return False
     return True
 
 
-def is_block(module, block_candidates):
-    """Check if the module is the specified block.
+def assert_dict_has_keys(obj: Dict[str, Any],
+                         expected_keys: List[str]) -> bool:
+    """Check if the obj has all the expected_keys.
 
     Args:
-        module(nn.Module): The module to be checked.
-        block_candidates(tuple[nn.module]): Tuple of block candidates.
+        obj (Dict[str, Any]): Object to be checked.
+        expected_keys (List[str]): Keys expected to contained in the keys of
+            the obj.
 
     Returns:
-        bool: Whether the module is the specified block.
+        bool: Whether the obj has the expected keys.
     """
-    return isinstance(module, block_candidates)
+    return set(expected_keys).issubset(set(obj.keys()))
 
 
-def is_norm(module):
-    """Check if the module is a norm layer."""
+def assert_keys_equal(result_keys: List[str], target_keys: List[str]) -> bool:
+    """Check if target_keys is equal to result_keys.
+
+    Args:
+        result_keys (List[str]): Result keys to be checked.
+        target_keys (List[str]): Target keys to be checked.
+
+    Returns:
+        bool: Whether target_keys is equal to result_keys.
+    """
+    return set(result_keys) == set(target_keys)
+
+
+def assert_is_norm_layer(module) -> bool:
+    """Check if the module is a norm layer.
+
+    Args:
+        module (nn.Module): The module to be checked.
+
+    Returns:
+        bool: Whether the module is a norm layer.
+    """
     from .parrots_wrapper import _BatchNorm, _InstanceNorm
     from torch.nn import GroupNorm, LayerNorm
     norm_layer_candidates = (_BatchNorm, _InstanceNorm, GroupNorm, LayerNorm)
-    return is_block(module, norm_layer_candidates)
+    return isinstance(module, norm_layer_candidates)
 
 
-def is_all_zeros(module):
-    """Check if the weight (and bias) of the module is all zero."""
+def assert_params_all_zeros(module) -> bool:
+    """Check if the parameters of the module is all zeros.
+
+    Args:
+        module (nn.Module): The module to be checked.
+
+    Returns:
+        bool: Whether the parameters of the module is all zeros.
+    """
     weight_data = module.weight.data
     is_weight_zero = weight_data.allclose(
         weight_data.new_zeros(weight_data.size()))

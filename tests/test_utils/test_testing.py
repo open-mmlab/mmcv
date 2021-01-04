@@ -1,22 +1,52 @@
 import pytest
-import torch.nn as nn
 
 import mmcv
 
-check_dict_data_1 = [({'a': 'test1', 'b': 2, 'c': (4, 6)}, ('a', 'b', 'c'))]
-check_dict_data_2 = [
-    (('test1', 2, (4, 6)), True), (('test1', 2, (6, 4)), False),
-    (('test1', 2, None), False), (('test2', 2, (4, 6)), False)
-]
+try:
+    import torch
+except ImportError:
+    torch = None
+else:
+    import torch.nn as nn
 
 
-@pytest.mark.parametrize('result_dict, key_list', check_dict_data_1)
-@pytest.mark.parametrize('value_list, ret_value', check_dict_data_2)
-def test_check_dict(result_dict, key_list, value_list, ret_value):
-    assert mmcv.check_dict(result_dict, key_list, value_list) == ret_value
+def test_assert_dict_contains_subset():
+    dict_obj = {'a': 'test1', 'b': 2, 'c': (4, 6)}
+
+    # case 1
+    expected_subset = {'a': 'test1', 'b': 2, 'c': (4, 6)}
+    assert mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+    # case 2
+    expected_subset = {'a': 'test1', 'b': 2, 'c': (6, 4)}
+    assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+    # case 3
+    expected_subset = {'a': 'test1', 'b': 2, 'c': None}
+    assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+    # case 4
+    expected_subset = {'a': 'test1', 'b': 2, 'd': (4, 6)}
+    assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+    if torch is not None:
+        dict_obj = {
+            'a': 'test1',
+            'b': 2,
+            'c': (4, 6),
+            'd': torch.tensor([5, 3, 5])
+        }
+
+        # case 5
+        expected_subset = {'d': torch.tensor([5, 5, 5])}
+        assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+        # case 6
+        expected_subset = {'d': torch.tensor([[5, 3, 5], [4, 1, 2]])}
+        assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
 
 
-def test_check_class_attr():
+def test_assert_attrs_equal():
 
     class TestExample(object):
         a, b, c = 1, ('wvi', 3), [4.5, 3.14]
@@ -24,25 +54,64 @@ def test_check_class_attr():
         def test_func(self):
             return self.b
 
-    assert mmcv.check_class_attr(TestExample, ('a', 'b', 'c'),
-                                 (1, ('wvi', 3), [4.5, 3.14]))
-    assert not mmcv.check_class_attr(TestExample, ('a', 'b', 'c'),
-                                     (1, ('wvi', 3), [4.5, 3.14, 2]))
-    assert not mmcv.check_class_attr(TestExample, ('bc', 'c'),
-                                     (54, [4.5, 3.14]))
-    assert mmcv.check_class_attr(TestExample, ('b', 'test_func'),
-                                 (('wvi', 3), TestExample.test_func))
+    # case 1
+    assert mmcv.assert_attrs_equal(TestExample, {
+        'a': 1,
+        'b': ('wvi', 3),
+        'c': [4.5, 3.14]
+    })
+
+    # case 2
+    assert not mmcv.assert_attrs_equal(TestExample, {
+        'a': 1,
+        'b': ('wvi', 3),
+        'c': [4.5, 3.14, 2]
+    })
+
+    # case 3
+    assert not mmcv.assert_attrs_equal(TestExample, {
+        'bc': 54,
+        'c': [4.5, 3.14]
+    })
+
+    # case 4
+    assert mmcv.assert_attrs_equal(TestExample, {
+        'b': ('wvi', 3),
+        'test_func': TestExample.test_func
+    })
+
+    if torch is not None:
+
+        class TestExample(object):
+            a, b = torch.tensor([1]), torch.tensor([4, 5])
+
+        # case 5
+        assert mmcv.assert_attrs_equal(TestExample, {
+            'a': torch.tensor([1]),
+            'b': torch.tensor([4, 5])
+        })
+
+        # case 6
+        assert not mmcv.assert_attrs_equal(TestExample, {
+            'a': torch.tensor([1]),
+            'b': torch.tensor([4, 6])
+        })
 
 
-assert_keys_contain_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
-assert_keys_contain_data_2 = [(['res_layer', 'dense_layer'], True),
-                              (['res_layer', 'conv_layer'], False)]
+assert_dict_has_keys_data_1 = [({
+    'res_layer': 1,
+    'norm_layer': 2,
+    'dense_layer': 3
+})]
+assert_dict_has_keys_data_2 = [(['res_layer', 'dense_layer'], True),
+                               (['res_layer', 'conv_layer'], False)]
 
 
-@pytest.mark.parametrize('result_keys', assert_keys_contain_data_1)
-@pytest.mark.parametrize('target_keys, ret_value', assert_keys_contain_data_2)
-def test_assert_keys_contain(result_keys, target_keys, ret_value):
-    assert mmcv.assert_keys_contain(result_keys, target_keys) == ret_value
+@pytest.mark.parametrize('obj', assert_dict_has_keys_data_1)
+@pytest.mark.parametrize('expected_keys, ret_value',
+                         assert_dict_has_keys_data_2)
+def test_assert_dict_has_keys(obj, expected_keys, ret_value):
+    assert mmcv.assert_dict_has_keys(obj, expected_keys) == ret_value
 
 
 assert_keys_equal_data_1 = [(['res_layer', 'norm_layer', 'dense_layer'])]
@@ -58,60 +127,35 @@ def test_assert_keys_equal(result_keys, target_keys, ret_value):
     assert mmcv.assert_keys_equal(result_keys, target_keys) == ret_value
 
 
-check_norm_state_data = [((True, True, True, True, True), True, True),
-                         ((False, True, True, True, True), True, True),
-                         ((True, True, True, False, True), True, False),
-                         ((True, False, True, False, True), False, True)]
+@pytest.mark.skipif(torch is None, reason='requires torch library')
+def test_assert_is_norm_layer():
+    # case 1
+    assert not mmcv.assert_is_norm_layer(nn.Conv3d(3, 64, 3))
+
+    # case 2
+    assert mmcv.assert_is_norm_layer(nn.BatchNorm3d(128))
+
+    # case 3
+    assert mmcv.assert_is_norm_layer(nn.GroupNorm(8, 64))
+
+    # case 4
+    assert not mmcv.assert_is_norm_layer(nn.Sigmoid())
 
 
-@pytest.mark.parametrize('modules_state, train_state, ret_value',
-                         check_norm_state_data)
-def test_check_norm_state(modules_state, train_state, ret_value):
-    demo_modules = nn.Sequential(*[
-        nn.Conv2d(3, 64, 3),
-        nn.BatchNorm2d(64),
-        nn.Conv2d(64, 64, 3),
-        nn.BatchNorm2d(64),
-        nn.Softmax()
-    ])
-    for demo_module, state in zip(demo_modules, modules_state):
-        demo_module.train(state)
-    assert mmcv.check_norm_state(demo_modules, train_state) == ret_value
-
-
-is_block_data = [(nn.Conv3d(3, 64, 3), (mmcv._ConvNd), True),
-                 (nn.Conv2d(3, 64, 3), (nn.Conv1d, nn.Conv3d), False),
-                 (nn.Linear(512, 10), (nn.Linear, nn.Identity), True),
-                 (nn.Sigmoid(), (nn.Softmax), False)]
-
-
-@pytest.mark.parametrize('module, block_candidates, ret_value', is_block_data)
-def test_is_block(module, block_candidates, ret_value):
-    assert mmcv.is_block(module, block_candidates) == ret_value
-
-
-is_norm_data = [(nn.Conv3d(3, 64, 3), False), (nn.BatchNorm3d(128), True),
-                (nn.GroupNorm(8, 64), True), (nn.Sigmoid(), False)]
-
-
-@pytest.mark.parametrize('module, ret_value', is_norm_data)
-def test_is_norm(module, ret_value):
-    assert mmcv.is_norm(module) == ret_value
-
-
-def test_is_all_zeros():
+@pytest.mark.skipif(torch is None, reason='requires torch library')
+def test_assert_params_all_zeros():
     demo_module = nn.Conv2d(3, 64, 3)
     nn.init.constant_(demo_module.weight, 0)
     nn.init.constant_(demo_module.bias, 0)
-    assert mmcv.is_all_zeros(demo_module)
+    assert mmcv.assert_params_all_zeros(demo_module)
 
     nn.init.xavier_normal_(demo_module.weight)
     nn.init.constant_(demo_module.bias, 0)
-    assert not mmcv.is_all_zeros(demo_module)
+    assert not mmcv.assert_params_all_zeros(demo_module)
 
     demo_module = nn.Linear(2048, 400, bias=False)
     nn.init.constant_(demo_module.weight, 0)
-    assert mmcv.is_all_zeros(demo_module)
+    assert mmcv.assert_params_all_zeros(demo_module)
 
     nn.init.normal_(demo_module.weight, mean=0, std=0.01)
-    assert not mmcv.is_all_zeros(demo_module)
+    assert not mmcv.assert_params_all_zeros(demo_module)
