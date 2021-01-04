@@ -4,8 +4,6 @@ from tempfile import TemporaryDirectory
 import pytest
 import torch
 from torch import nn
-from torch.nn.modules.conv import Conv1d
-from torch.serialization import check_module_version_greater_or_equal
 
 from mmcv.cnn import (bias_init_with_prob, caffe2_xavier_init, constant_init,
                       initialize, kaiming_init, normal_init, uniform_init,
