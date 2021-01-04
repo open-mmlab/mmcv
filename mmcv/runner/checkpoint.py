@@ -3,12 +3,12 @@ import os
 import os.path as osp
 import pkgutil
 import time
-import torch
-import torchvision
 import warnings
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
+import torch
+import torchvision
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 

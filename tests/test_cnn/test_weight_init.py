@@ -1,5 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from sys import prefix
 import numpy as np
 from tempfile import TemporaryDirectory
 import pytest
