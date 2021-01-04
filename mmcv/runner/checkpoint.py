@@ -16,7 +16,7 @@ import mmcv
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
 from ..utils import mkdir_or_exist
-from .dist_utils import get_dist_info
+from .dist_utils import get_dist_infos
 
 ENV_MMCV_HOME = 'MMCV_HOME'
 ENV_XDG_CACHE_HOME = 'XDG_CACHE_HOME'
@@ -255,7 +255,7 @@ def _load_checkpoint(filename, map_location=None):
     return checkpoint
 
 
-def _load_checkpoint_with_prefix(prefix, filename):
+def _load_checkpoint_with_prefix(prefix, filename, map_location=None):
     """Load partial pretrained model with specific prefix.
 
     Args:
@@ -263,25 +263,28 @@ def _load_checkpoint_with_prefix(prefix, filename):
         filename (str): Accept local filepath, URL, ``torchvision://xxx``,
             ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
             details.
+        map_location (str | None): Same as :func:`torch.load`. Default: None.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
 
-    checkpoint = _load_checkpoint(filename)
+    checkpoint = _load_checkpoint(filename, map_location=map_location)
+
     if 'state_dict' in checkpoint:
         state_dict = checkpoint['state_dict']
     else:
         state_dict = checkpoint
-
     if not prefix.endswith('.'):
         prefix += '.'
     prefix_len = len(prefix)
+
     state_dict = {
         k[prefix_len:]: v
         for k, v in state_dict.items() if k.startswith(prefix)
     }
-    assert state_dict, 'f{prefix} is not in the pretrained model'
+
+    assert state_dict, f'{prefix} is not in the pretrained model'
     return state_dict
 
 
