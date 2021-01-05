@@ -86,10 +86,12 @@ def test_constaninit():
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = ConstantInit(val=1, bias=2, layers='Conv2d')
     model.apply(func)
-    assert model[0].weight.allclose(torch.tensor(1.0), rtol=0)
-    assert model[0].bias.allclose(torch.tensor(2.0), rtol=0)
-    assert not model[2].weight.allclose(torch.tensor(1.0), rtol=0)
-    assert not model[2].bias.allclose(torch.tensor(2.0), rtol=0)
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
+
+    assert not torch.equal(model[2].weight,
+                           torch.full(model[2].weight.shape, 1.0))
+    assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
     func = ConstantInit(
         val=3,
@@ -97,17 +99,18 @@ def test_constaninit():
         layers='Linear')
     model.apply(func)
     res = bias_init_with_prob(0.01)
-    assert model[0].weight.allclose(torch.tensor(1.0))
-    assert model[2].weight.allclose(torch.tensor(3.0))
-    assert model[0].bias.allclose(torch.tensor(2.0))
-    assert model[2].bias.allclose(torch.tensor(res))
+
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 3.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
     func = ConstantInit(val=4, bias=5)
     model.apply(func)
-    assert model[0].weight.allclose(torch.tensor(4.0))
-    assert model[2].weight.allclose(torch.tensor(4.0))
-    assert model[0].bias.allclose(torch.tensor(5.0))
-    assert model[2].bias.allclose(torch.tensor(5.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 4.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 4.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 5.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 5.0))
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
@@ -125,16 +128,19 @@ def test_xavierinit():
     func = XavierInit(
         gain=100, bias=dict(type='BiasInitWithProb', prior_prob=0.01))
     model.apply(constant_func)
-    assert model[0].weight.allclose(torch.tensor(0.0))
-    assert model[2].weight.allclose(torch.tensor(0.0))
-    assert model[0].bias.allclose(torch.tensor(0.0))
-    assert model[2].bias.allclose(torch.tensor(0.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.0))
+
     res = bias_init_with_prob(0.01)
     model.apply(func)
-    assert not model[0].weight.allclose(torch.tensor(0.0))
-    assert not model[2].weight.allclose(torch.tensor(0.0))
-    assert model[0].bias.allclose(torch.tensor(res))
-    assert model[2].bias.allclose(torch.tensor(res))
+    assert not torch.equal(model[0].weight,
+                           torch.full(model[0].weight.shape, 0.0))
+    assert not torch.equal(model[2].weight,
+                           torch.full(model[2].weight.shape, 0.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, res))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
 
 def test_normalinit():
@@ -145,8 +151,8 @@ def test_normalinit():
     model.apply(func)
     assert model[0].weight.allclose(torch.tensor(100.0))
     assert model[2].weight.allclose(torch.tensor(100.0))
-    assert model[0].bias.allclose(torch.tensor(200.0), rtol=0)
-    assert model[2].bias.allclose(torch.tensor(200.0), rtol=0)
+    assert model[0].bias.allclose(torch.tensor(200.0))
+    assert model[2].bias.allclose(torch.tensor(200.0))
 
     func = NormalInit(
         mean=300,
@@ -157,8 +163,8 @@ def test_normalinit():
     model.apply(func)
     assert model[0].weight.allclose(torch.tensor(300.0))
     assert model[2].weight.allclose(torch.tensor(300.0))
-    assert model[0].bias.allclose(torch.tensor(res), rtol=0)
-    assert model[2].bias.allclose(torch.tensor(res), rtol=0)
+    assert model[0].bias.allclose(torch.tensor(res))
+    assert model[2].bias.allclose(torch.tensor(res))
 
 
 def test_uniforminit():
@@ -166,17 +172,19 @@ def test_uniforminit():
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = UniformInit(a=1, b=1, bias=2)
     model.apply(func)
-    assert model[0].weight.allclose(torch.tensor(1.0))
-    assert model[2].weight.allclose(torch.tensor(1.0))
-    assert model[0].bias.allclose(torch.tensor(2.0))
-    assert model[2].bias.allclose(torch.tensor(2.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 1.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
     func = UniformInit(a=100, b=100, layers=['Conv2d', 'Linear'], bias=10)
     model.apply(func)
-    assert model[0].weight.allclose(torch.tensor(100.0))
-    assert model[2].weight.allclose(torch.tensor(100.0))
-    assert model[0].bias.allclose(torch.tensor(10.0))
-    assert model[2].bias.allclose(torch.tensor(10.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape,
+                                                   100.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape,
+                                                   100.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.0))
 
 
 def test_kaiminginit():
@@ -184,22 +192,24 @@ def test_kaiminginit():
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = KaimingInit(bias=0.1, layers='Conv2d')
     model.apply(func)
-    assert model[0].bias.allclose(torch.full_like(model[2].bias, 0.1))
-    assert not model[2].bias.allclose(torch.full_like(model[0].bias, 0.1))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.1))
+    assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.1))
 
     func = KaimingInit(a=100, bias=10)
     constant_func = ConstantInit(val=0, bias=0)
     model.apply(constant_func)
-    assert model[0].weight.allclose(torch.tensor(0.0))
-    assert model[2].weight.allclose(torch.tensor(0.0))
-    assert model[0].bias.allclose(torch.tensor(0.0))
-    assert model[2].bias.allclose(torch.tensor(0.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.0))
 
     model.apply(func)
-    assert not model[0].weight.allclose(torch.tensor(0.0))
-    assert not model[2].weight.allclose(torch.tensor(0.0))
-    assert model[0].bias.allclose(torch.tensor(10.0))
-    assert model[2].bias.allclose(torch.tensor(10.0))
+    assert not torch.equal(model[0].weight,
+                           torch.full(model[0].weight.shape, 0.0))
+    assert not torch.equal(model[2].weight,
+                           torch.full(model[2].weight.shape, 0.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.0))
 
 
 def test_biasinitwithprob():
@@ -231,15 +241,22 @@ def test_pretrainedinit():
     with TemporaryDirectory():
         torch.save(modelA.state_dict(), 'modelA.pth')
         funcB(modelB)
-        assert modelB.linear.weight.allclose(torch.tensor(1.0))
-        assert modelB.linear.bias.allclose(torch.tensor(2.0))
-        assert modelB.conv2d.weight.allclose(torch.tensor(1.0))
-        assert modelB.conv2d.bias.allclose(torch.tensor(2.0))
-        assert modelB.conv2d_2.weight.allclose(torch.tensor(1.0))
-        assert modelB.conv2d_2.bias.allclose(torch.tensor(2.0))
+        assert torch.equal(modelB.linear.weight,
+                           torch.full(modelB.linear.weight.shape, 1.0))
+        assert torch.equal(modelB.linear.bias,
+                           torch.full(modelB.linear.bias.shape, 2.0))
+        assert torch.equal(modelB.conv2d.weight,
+                           torch.full(modelB.conv2d.weight.shape, 1.0))
+        assert torch.equal(modelB.conv2d.bias,
+                           torch.full(modelB.conv2d.bias.shape, 2.0))
+        assert torch.equal(modelB.conv2d_2.weight,
+                           torch.full(modelB.conv2d_2.weight.shape, 1.0))
+        assert torch.equal(modelB.conv2d_2.bias,
+                           torch.full(modelB.conv2d_2.bias.shape, 2.0))
+
         funcC(modelC)
-        assert modelC.weight.allclose(torch.tensor(1.0))
-        assert modelC.bias.allclose(torch.tensor(2.0))
+        assert torch.equal(modelC.weight, torch.full(modelC.weight.shape, 1.0))
+        assert torch.equal(modelC.bias, torch.full(modelC.bias.shape, 2.0))
 
 
 def test_initialize():
@@ -248,20 +265,20 @@ def test_initialize():
 
     init_cfg = dict(type='ConstantInit', val=1, bias=2)
     initialize(model, init_cfg)
-    assert model[0].weight.allclose(torch.tensor(1.0))
-    assert model[2].weight.allclose(torch.tensor(1.0))
-    assert model[0].bias.allclose(torch.tensor(2.0))
-    assert model[2].bias.allclose(torch.tensor(2.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 1.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
     init_cfg = [
         dict(type='ConstantInit', layers='Conv1d', val=1, bias=2),
         dict(type='ConstantInit', layers='Linear', val=3, bias=4)
     ]
     initialize(model, init_cfg)
-    assert model[0].weight.allclose(torch.tensor(1.0))
-    assert model[2].weight.allclose(torch.tensor(3.0))
-    assert model[0].bias.allclose(torch.tensor(2.0))
-    assert model[2].bias.allclose(torch.tensor(4.0))
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 3.0))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 4.0))
 
     init_cfg = dict(
         type='ConstantInit',
@@ -270,12 +287,18 @@ def test_initialize():
         layers=['Conv2d', 'Linear'],
         cases=dict(type='ConstantInit', name='conv2d_2', val=3, bias=4))
     initialize(foonet, init_cfg)
-    assert foonet.linear.weight.allclose(torch.tensor(1.0))
-    assert foonet.linear.bias.allclose(torch.tensor(2.0))
-    assert foonet.conv2d.weight.allclose(torch.tensor(1.0))
-    assert foonet.conv2d.bias.allclose(torch.tensor(2.0))
-    assert foonet.conv2d_2.weight.allclose(torch.tensor(3.0))
-    assert foonet.conv2d_2.bias.allclose(torch.tensor(4.0))
+    assert torch.equal(foonet.linear.weight,
+                       torch.full(foonet.linear.weight.shape, 1.0))
+    assert torch.equal(foonet.linear.bias,
+                       torch.full(foonet.linear.bias.shape, 2.0))
+    assert torch.equal(foonet.conv2d.weight,
+                       torch.full(foonet.conv2d.weight.shape, 1.0))
+    assert torch.equal(foonet.conv2d.bias,
+                       torch.full(foonet.conv2d.bias.shape, 2.0))
+    assert torch.equal(foonet.conv2d_2.weight,
+                       torch.full(foonet.conv2d_2.weight.shape, 3.0))
+    assert torch.equal(foonet.conv2d_2.bias,
+                       torch.full(foonet.conv2d_2.bias.shape, 4.0))
 
     init_cfg = dict(
         type='PretrainedInit',
@@ -287,9 +310,15 @@ def test_initialize():
     with TemporaryDirectory():
         torch.save(modelA.state_dict(), 'modelA.pth')
         initialize(foonet, init_cfg)
-        assert foonet.linear.weight.allclose(torch.tensor(1.0))
-        assert foonet.linear.bias.allclose(torch.tensor(2.0))
-        assert foonet.conv2d.weight.allclose(torch.tensor(1.0))
-        assert foonet.conv2d.bias.allclose(torch.tensor(2.0))
-        assert foonet.conv2d_2.weight.allclose(torch.tensor(3.0))
-        assert foonet.conv2d_2.bias.allclose(torch.tensor(4.0))
+        assert torch.equal(foonet.linear.weight,
+                           torch.full(foonet.linear.weight.shape, 1.0))
+        assert torch.equal(foonet.linear.bias,
+                           torch.full(foonet.linear.bias.shape, 2.0))
+        assert torch.equal(foonet.conv2d.weight,
+                           torch.full(foonet.conv2d.weight.shape, 1.0))
+        assert torch.equal(foonet.conv2d.bias,
+                           torch.full(foonet.conv2d.bias.shape, 2.0))
+        assert torch.equal(foonet.conv2d_2.weight,
+                           torch.full(foonet.conv2d_2.weight.shape, 3.0))
+        assert torch.equal(foonet.conv2d_2.bias,
+                           torch.full(foonet.conv2d_2.bias.shape, 4.0))
