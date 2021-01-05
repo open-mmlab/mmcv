@@ -2,7 +2,7 @@ import inspect
 import warnings
 from functools import partial
 
-from .misc import is_str
+from .misc import is_seq_of, is_str
 
 
 class Registry:
@@ -56,6 +56,11 @@ class Registry:
             module_name = module_class.__name__
         if is_str(module_name):
             module_name = [module_name]
+        else:
+            assert is_seq_of(
+                module_name,
+                str), ('module_name should be either of None, an '
+                       f'instance of str or list, but got {type(module_name)}')
         for name in module_name:
             if not force and name in self._module_dict:
                 raise KeyError(f'{name} is already registered '

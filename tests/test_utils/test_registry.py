@@ -73,6 +73,10 @@ def test_registry():
     repr_str += '})'
     assert repr(CATS) == repr_str
 
+    # name type
+    with pytest.raises(AssertionError):
+        CATS.register_module(name=7474741, module=SphynxCat)
+
     # the registered module should be a class
     with pytest.raises(TypeError):
         CATS.register_module(0)
