@@ -52,7 +52,18 @@ def build_from_cfg(cfg, registry, default_args=None):
 
 
 class Registry:
-    """A registry to map strings to classes.
+    """A registry to map strings to classes. Pleasee.
+
+    Registered object could be built from registry.
+    Example:
+        >>> MODELS = Registry('models')
+        >>> @MODELS.register_module()
+        >>> class ResNet:
+        >>>     pass
+        >>> resnet = MODELS.build(dict(type='ResNet'))
+
+    Please refer to https://mmcv.readthedocs.io/en/latest/registry.html for
+    advanced useage.
 
     Args:
         name (str): Registry name.
@@ -73,14 +84,14 @@ class Registry:
         self._module_dict = dict()
         self._children = dict()
         self._scope = self.infer_scope() if scope is None else scope
-        if parent is not None:
-            assert isinstance(parent, Registry)
-            parent._add_children(self)
         if build_func is None:
             if parent is not None:
                 self.build_func = parent.build_func
             else:
                 self.build_func = build_from_cfg
+        if parent is not None:
+            assert isinstance(parent, Registry)
+            parent._add_children(self)
         else:
             self.build_func = build_func
 
@@ -98,12 +109,33 @@ class Registry:
 
     @staticmethod
     def infer_scope():
+        """Infer the scope of registry.
+
+        The name of the package where registry is defined will be returned
+
+        Returns:
+            scope (str): The inferred scope name.
+        """
         filename = inspect.getmodule(inspect.stack()[2][0]).__name__
         split_filename = filename.split('.')
         return split_filename[0]
 
     @staticmethod
     def split_scope_key(key):
+        """Split scope and key.
+
+        The first scope will be split from key.
+
+        Examples:
+            >>> Registry.split_scope_key('mmdet.ResNet')
+            'mmdet', 'ResNet'
+            >>> Registry.split_scope_key('ResNet')
+            None, 'ResNet'
+
+        Return:
+            scope (str, None): The first scope.
+            key (str): The remaining key.
+        """
         split_index = key.find('.')
         if split_index != -1:
             return key[:split_index], key[split_index + 1:]
@@ -153,6 +185,20 @@ class Registry:
         return self.build_func(*args, **kwargs, registry=self)
 
     def _add_children(self, registry):
+        """Add children for a registry.
+
+        The ``registry`` will be added as children based on its scope.
+        The parent registry could build objects from children registry.
+
+        Example:
+            >>> models = Registry('models')
+            >>> mmdet_models = Registry('models', parent=models)
+            >>> @mmdet_models.register_module()
+            >>> class ResNet:
+            >>>     pass
+            >>> resnet = models.build(dict(type='mmdet.ResNet'))
+        """
+
         assert isinstance(registry, Registry)
         assert registry.scope is not None
         self.children[registry.scope] = registry
