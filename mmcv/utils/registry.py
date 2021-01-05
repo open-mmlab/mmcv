@@ -89,11 +89,11 @@ class Registry:
                 self.build_func = parent.build_func
             else:
                 self.build_func = build_from_cfg
+        else:
+            self.build_func = build_func
         if parent is not None:
             assert isinstance(parent, Registry)
             parent._add_children(self)
-        else:
-            self.build_func = build_func
 
     def __len__(self):
         return len(self._module_dict)
