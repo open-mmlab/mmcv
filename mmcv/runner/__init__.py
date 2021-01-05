@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from .base_runner import BaseRunner, BaseModule
+from .base_runner import BaseRunner
+from .base_module import BaseModule
 from .builder import RUNNERS, build_runner
 from .checkpoint import (_load_checkpoint, _load_checkpoint_with_prefix,
                          load_checkpoint, load_state_dict, save_checkpoint,
