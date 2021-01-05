@@ -77,7 +77,7 @@ class FooModel(BaseModule):
         if component4 is not None:
             self.component4 = build_from_cfg(component4, COMPONENTS)
 
-        # its type is not BaseModule
+        # its type is not BaseModule, it can be initialized with "cases" key.
         self.reg = nn.Linear(3, 4)
 
 
@@ -122,23 +122,38 @@ def test_model_weight_init():
     model = build_from_cfg(model_cfg, FOOMODELS)
     model.init_weight()
 
-    assert model.component1.conv1d.weight.allclose(torch.tensor(3.0))
-    assert model.component1.conv1d.bias.allclose(torch.tensor(4.0))
-    assert model.component2.conv2d.weight.allclose(torch.tensor(5.0))
-    assert model.component2.conv2d.bias.allclose(torch.tensor(6.0))
-    assert model.component3.linear.weight.allclose(torch.tensor(1.0))
-    assert model.component3.linear.bias.allclose(torch.tensor(2.0))
-    assert model.component4.linear.linear.weight.allclose(torch.tensor(1.0))
-    assert model.component4.linear.linear.bias.allclose(torch.tensor(2.0))
-    assert model.component4.conv1d.conv1d.weight.allclose(torch.tensor(3.0))
-    assert model.component4.conv1d.conv1d.bias.allclose(torch.tensor(4.0))
-    assert model.reg.weight.allclose(torch.tensor(1.0))
-    assert model.reg.bias.allclose(torch.tensor(2.0))
+    assert torch.equal(model.component1.conv1d.weight,
+                       torch.full(model.component1.conv1d.weight.shape, 3.0))
+    assert torch.equal(model.component1.conv1d.bias,
+                       torch.full(model.component1.conv1d.bias.shape, 4.0))
+    assert torch.equal(model.component2.conv2d.weight,
+                       torch.full(model.component2.conv2d.weight.shape, 5.0))
+    assert torch.equal(model.component2.conv2d.bias,
+                       torch.full(model.component2.conv2d.bias.shape, 6.0))
+    assert torch.equal(model.component3.linear.weight,
+                       torch.full(model.component3.linear.weight.shape, 1.0))
+    assert torch.equal(model.component3.linear.bias,
+                       torch.full(model.component3.linear.bias.shape, 2.0))
+    assert torch.equal(
+        model.component4.linear.linear.weight,
+        torch.full(model.component4.linear.linear.weight.shape, 1.0))
+    assert torch.equal(
+        model.component4.linear.linear.bias,
+        torch.full(model.component4.linear.linear.bias.shape, 2.0))
+    assert torch.equal(
+        model.component4.conv1d.conv1d.weight,
+        torch.full(model.component4.conv1d.conv1d.weight.shape, 3.0))
+    assert torch.equal(
+        model.component4.conv1d.conv1d.bias,
+        torch.full(model.component4.conv1d.conv1d.bias.shape, 4.0))
+    assert torch.equal(model.reg.weight, torch.full(model.reg.weight.shape,
+                                                    1.0))
+    assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 2.0))
 
 
 def test_nest_components_weight_init():
     """
-        Config
+    Config
     model (FooModel, Linear: weight=1, bias=2, Conv1d: weight=3, bias=4,
                      Conv2d: weight=5, bias=6)
     ├──component1 (FooConv1d, Conv1d: weight=7, bias=8)
@@ -187,15 +202,30 @@ def test_nest_components_weight_init():
     model = build_from_cfg(model_cfg, FOOMODELS)
     model.init_weight()
 
-    assert model.component1.conv1d.weight.allclose(torch.tensor(7.0))
-    assert model.component1.conv1d.bias.allclose(torch.tensor(8.0))
-    assert model.component2.conv2d.weight.allclose(torch.tensor(9.0))
-    assert model.component2.conv2d.bias.allclose(torch.tensor(10.0))
-    assert model.component3.linear.weight.allclose(torch.tensor(1.0))
-    assert model.component3.linear.bias.allclose(torch.tensor(2.0))
-    assert model.component4.linear.linear.weight.allclose(torch.tensor(1.0))
-    assert model.component4.linear.linear.bias.allclose(torch.tensor(2.0))
-    assert model.component4.conv1d.conv1d.weight.allclose(torch.tensor(3.0))
-    assert model.component4.conv1d.conv1d.bias.allclose(torch.tensor(4.0))
-    assert model.reg.weight.allclose(torch.tensor(13.0))
-    assert model.reg.bias.allclose(torch.tensor(14.0))
+    assert torch.equal(model.component1.conv1d.weight,
+                       torch.full(model.component1.conv1d.weight.shape, 7.0))
+    assert torch.equal(model.component1.conv1d.bias,
+                       torch.full(model.component1.conv1d.bias.shape, 8.0))
+    assert torch.equal(model.component2.conv2d.weight,
+                       torch.full(model.component2.conv2d.weight.shape, 9.0))
+    assert torch.equal(model.component2.conv2d.bias,
+                       torch.full(model.component2.conv2d.bias.shape, 10.0))
+    assert torch.equal(model.component3.linear.weight,
+                       torch.full(model.component3.linear.weight.shape, 1.0))
+    assert torch.equal(model.component3.linear.bias,
+                       torch.full(model.component3.linear.bias.shape, 2.0))
+    assert torch.equal(
+        model.component4.linear.linear.weight,
+        torch.full(model.component4.linear.linear.weight.shape, 1.0))
+    assert torch.equal(
+        model.component4.linear.linear.bias,
+        torch.full(model.component4.linear.linear.bias.shape, 2.0))
+    assert torch.equal(
+        model.component4.conv1d.conv1d.weight,
+        torch.full(model.component4.conv1d.conv1d.weight.shape, 3.0))
+    assert torch.equal(
+        model.component4.conv1d.conv1d.bias,
+        torch.full(model.component4.conv1d.conv1d.bias.shape, 4.0))
+    assert torch.equal(model.reg.weight,
+                       torch.full(model.reg.weight.shape, 13.0))
+    assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 14.0))
