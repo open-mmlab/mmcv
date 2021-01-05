@@ -142,14 +142,17 @@ class TRTWraper(torch.nn.Module):
         output_names should be the same as onnx model.
     """
 
-    def __init__(self, engine=None, input_names=None, output_names=None):
+    def __init__(self, engine, input_names, output_names):
         super(TRTWraper, self).__init__()
-        self._register_state_dict_hook(TRTWraper._on_state_dict)
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)
-        if self.engine is not None:
-            self.context = self.engine.create_execution_context()
+
+        if not isinstance(self.engine, trt.ICudaEngine):
+            raise TypeError('engine should be str or trt.ICudaEngine')
+
+        self._register_state_dict_hook(TRTWraper._on_state_dict)
+        self.context = self.engine.create_execution_context()
 
         self.input_names = input_names
         self.output_names = output_names
@@ -189,7 +192,6 @@ class TRTWraper(torch.nn.Module):
             bindings[idx] = input_tensor.contiguous().data_ptr()
 
         # create output tensors
-        # outputs = [None] * len(self.output_names)
         outputs = {}
         for i, output_name in enumerate(self.output_names):
             idx = self.engine.get_binding_index(output_name)

@@ -8,16 +8,16 @@
 
 #include "trt_plugin_helper.hpp"
 
-class RoiAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
+class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
-  RoiAlignPluginDynamic(const std::string &name, int outWidth, int outHeight,
+  RoIAlignPluginDynamic(const std::string &name, int outWidth, int outHeight,
                         float spatialScale, int sampleRatio, int poolMode,
                         bool aligned);
 
-  RoiAlignPluginDynamic(const std::string name, const void *data,
+  RoIAlignPluginDynamic(const std::string name, const void *data,
                         size_t length);
 
-  RoiAlignPluginDynamic() = delete;
+  RoIAlignPluginDynamic() = delete;
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -79,9 +79,9 @@ class RoiAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class RoiAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
+class RoIAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
  public:
-  RoiAlignPluginDynamicCreator();
+  RoIAlignPluginDynamicCreator();
 
   const char *getPluginName() const override;
 
