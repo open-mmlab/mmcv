@@ -2,7 +2,7 @@ import inspect
 import warnings
 from functools import partial
 
-from .misc import is_seq_of, is_str
+from .misc import is_seq_of
 
 
 class Registry:
@@ -54,7 +54,7 @@ class Registry:
 
         if module_name is None:
             module_name = module_class.__name__
-        if is_str(module_name):
+        if isinstance(module_name, str):
             module_name = [module_name]
         else:
             assert is_seq_of(
@@ -165,7 +165,7 @@ def build_from_cfg(cfg, registry, default_args=None):
             args.setdefault(name, value)
 
     obj_type = args.pop('type')
-    if is_str(obj_type):
+    if isinstance(obj_type, str):
         obj_cls = registry.get(obj_type)
         if obj_cls is None:
             raise KeyError(
