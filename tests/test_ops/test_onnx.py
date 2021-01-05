@@ -8,6 +8,7 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
+from packaging import version
 
 onnx_file = 'tmp.onnx'
 
@@ -63,7 +64,6 @@ def test_nms():
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_softnms():
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
-    from packaging import version
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
@@ -268,3 +268,27 @@ def test_roipool():
         # allclose
         os.remove(onnx_file)
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
+def test_simplify():
+    from mmcv.onnx import simplify
+
+    # only support PyTorch >= 1.5.0
+    if version.parse(torch.__version__) < version.parse('1.5.0'):
+        pytest.skip('mmcv.onnx.simplify only support with PyTorch >= 1.5.0')
+
+    def foo(x):
+        y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
+        return y
+
+    net = WrapFunction(foo)
+    dummy_input = torch.randn(2, 3, 4, 5)
+    torch.onnx.export(net, dummy_input, onnx_file, input_names=['input'])
+    ori_onnx_model = onnx.load(onnx_file)
+
+    feed_input = [{'input': dummy_input.detach().cpu().numpy()}]
+    slim_onnx_model = simplify(ori_onnx_model, feed_input, onnx_file)
+    numel_before = len(ori_onnx_model.graph.node)
+    numel_after = len(slim_onnx_model.graph.node)
+    os.remove(onnx_file)
+    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
