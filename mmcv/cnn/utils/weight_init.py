@@ -341,7 +341,7 @@ class PretrainedInit(object):
         self.map_location = map_location
 
     def __call__(self, module):
-        logger = get_logger("mmcv")
+        logger = get_logger('mmcv')
         if self.prefix is None:
             print_log(f'load model from: {self.checkpoint}', logger=logger)
             load_checkpoint(
