@@ -58,6 +58,9 @@ def test_registry():
     CATS.register_module(name='Sphynx', module=SphynxCat)
     assert CATS.get('Sphynx') is SphynxCat
 
+    CATS.register_module(name=['Sphynx1', 'Sphynx2'], module=SphynxCat)
+    assert CATS.get('Sphynx2') is SphynxCat
+
     repr_str = 'Registry(name=cat, items={'
     repr_str += ("'BritishShorthair': <class 'test_registry.test_registry."
                  "<locals>.BritishShorthair'>, ")
