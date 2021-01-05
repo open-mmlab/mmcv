@@ -1,5 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from .base_runner import BaseRunner
+from .base_runner import BaseRunner, BaseModule
 from .builder import RUNNERS, build_runner
 from .checkpoint import (_load_checkpoint, _load_checkpoint_with_prefix,
                          load_checkpoint, load_state_dict, save_checkpoint,
@@ -35,5 +35,5 @@ __all__ = [
     'set_random_seed', 'auto_fp16', 'force_fp32', 'wrap_fp16_model',
     'Fp16OptimizerHook', 'SyncBuffersHook', 'EMAHook', 'build_runner',
     'RUNNERS', 'allreduce_grads', 'allreduce_params', 'LossScaler',
-    '_load_checkpoint_with_prefix'
+    '_load_checkpoint_with_prefix', 'BaseModule'
 ]
