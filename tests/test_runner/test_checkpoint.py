@@ -1,7 +1,7 @@
 import pytest
 import sys
-import torch.nn as nn
 from collections import OrderedDict
+import torch.nn as nn
 from torch.nn.parallel import DataParallel
 from unittest.mock import MagicMock
 
