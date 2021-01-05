@@ -107,3 +107,14 @@ from mmcv.cnn import MODELS as MMCV_MODELS
 net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
 net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
 ```
+
+Or we could directly build them by (the scope could be inferred automatically):
+
+```python
+from mmcv.cnn import MODELS as MMCV_MODELS
+net_a = MMCV_MODELS.build(cfg=dict(type='NetA'))
+net_b = MMCV_MODELS.build(cfg=dict(type='NetB'))
+```
+
+Note that: if both MMDetection and MMClassification have `NetA` defined,
+the build result will be determined by the order of registry definition.
