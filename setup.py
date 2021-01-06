@@ -54,7 +54,6 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     """
     import sys
     from os.path import exists
-    import re
     require_fpath = fname
 
     def parse_line(line):
@@ -134,6 +133,51 @@ except ImportError:
 def get_extensions():
     extensions = []
 
+    if os.getenv('MMCV_WITH_TRT', '0') != '0':
+        ext_name = 'mmcv._ext_trt'
+        from torch.utils.cpp_extension import include_paths, library_paths
+        library_dirs = []
+        libraries = []
+        include_dirs = []
+        tensorrt_path = os.getenv('TENSORRT_DIR', '0')
+        tensorrt_lib_path = glob.glob(
+            os.path.join(tensorrt_path, 'targets', '*', 'lib'))[0]
+        library_dirs += [tensorrt_lib_path]
+        libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
+        libraries += ['cudart']
+        kwargs = {}
+        define_macros = []
+        extra_compile_args = {'cxx': []}
+
+        include_path = os.path.abspath('./mmcv/ops/csrc')
+        include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
+        include_dirs.append(include_path)
+        include_dirs.append(include_trt_path)
+        include_dirs.append(os.path.join(tensorrt_path, 'include'))
+        include_dirs += include_paths(cuda=True)
+
+        op_files = glob.glob('./mmcv/ops/csrc/tensorrt/plugins/*')
+        define_macros += [('MMCV_WITH_CUDA', None)]
+        define_macros += [('MMCV_WITH_TRT', None)]
+        cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+        library_dirs += library_paths(cuda=True)
+
+        kwargs['library_dirs'] = library_dirs
+        kwargs['libraries'] = libraries
+
+        from setuptools import Extension
+        ext_ops = Extension(
+            name=ext_name,
+            sources=op_files,
+            include_dirs=include_dirs,
+            define_macros=define_macros,
+            extra_compile_args=extra_compile_args,
+            language='c++',
+            library_dirs=library_dirs,
+            libraries=libraries)
+        extensions.append(ext_ops)
+
     if os.getenv('MMCV_WITH_OPS', '0') == '0':
         return extensions
 
@@ -157,7 +201,8 @@ def get_extensions():
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
-        from torch.utils.cpp_extension import (CUDAExtension, CppExtension)
+        from torch.utils.cpp_extension import CppExtension, CUDAExtension
+
         # prevent ninja from using too many resources
         os.environ.setdefault('MAX_JOBS', '4')
         define_macros = []

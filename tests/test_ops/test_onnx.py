@@ -61,9 +61,7 @@ def test_nms():
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(),
-    reason='CUDA is unavailable for test_softnms')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_softnms():
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
 
@@ -77,7 +75,8 @@ def test_softnms():
         '1.5.1'), 'test_softnms should be ran with onnxruntime >= 1.5.1'
 
     ort_custom_op_path = get_onnxruntime_op_path()
-    assert os.path.exists(ort_custom_op_path)
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('softnms for onnxruntime is not compiled.')
 
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
@@ -138,13 +137,13 @@ def test_softnms():
 
 
 def test_roialign():
-    from mmcv.ops import roi_align
-    ort_custom_op_path = ''
     try:
+        from mmcv.ops import roi_align
         from mmcv.ops import get_onnxruntime_op_path
-        ort_custom_op_path = get_onnxruntime_op_path()
-    except ImportError:
-        pass
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('roi_align op is not successfully compiled')
+
+    ort_custom_op_path = get_onnxruntime_op_path()
     # roi align config
     pool_h = 2
     pool_w = 2
@@ -208,9 +207,8 @@ def test_roialign():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
-    if not torch.cuda.is_available():
-        return
     from mmcv.ops import roi_pool
 
     # roi pool config

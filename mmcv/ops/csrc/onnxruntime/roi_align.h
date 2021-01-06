@@ -11,20 +11,19 @@
 
 struct MMCVRoiAlignKernel {
  public:
-  MMCVRoiAlignKernel(Ort::CustomOpApi ort, const OrtKernelInfo *info)
+  MMCVRoiAlignKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info)
       : ort_(ort) {
     aligned_ = ort_.KernelInfoGetAttribute<int64_t>(info, "aligned");
     aligned_height_ =
-        ort_.KernelInfoGetAttribute<int64_t>(info, "aligned_height");
-    aligned_width_ =
-        ort_.KernelInfoGetAttribute<int64_t>(info, "aligned_width");
-    pool_mode_ = ort_.KernelInfoGetAttribute<std::string>(info, "pool_mode");
+        ort_.KernelInfoGetAttribute<int64_t>(info, "output_height");
+    aligned_width_ = ort_.KernelInfoGetAttribute<int64_t>(info, "output_width");
+    pool_mode_ = ort_.KernelInfoGetAttribute<std::string>(info, "mode");
     sampling_ratio_ =
         ort_.KernelInfoGetAttribute<int64_t>(info, "sampling_ratio");
     spatial_scale_ = ort_.KernelInfoGetAttribute<float>(info, "spatial_scale");
   }
 
-  void Compute(OrtKernelContext *context);
+  void Compute(OrtKernelContext* context);
 
  private:
   Ort::CustomOpApi ort_;
@@ -39,10 +38,10 @@ struct MMCVRoiAlignKernel {
 
 struct MMCVRoiAlignCustomOp
     : Ort::CustomOpBase<MMCVRoiAlignCustomOp, MMCVRoiAlignKernel> {
-  void *CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo *info) {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
     return new MMCVRoiAlignKernel(api, info);
   }
-  const char *GetName() const { return "MMCVRoiAlign"; }
+  const char* GetName() const { return "MMCVRoiAlign"; }
 
   size_t GetInputTypeCount() const { return 2; }
   ONNXTensorElementDataType GetInputType(size_t) const {
@@ -55,7 +54,7 @@ struct MMCVRoiAlignCustomOp
   }
 
   // force cpu
-  const char *GetExecutionProviderType() const {
+  const char* GetExecutionProviderType() const {
     return "CPUExecutionProvider";
   }
 };
