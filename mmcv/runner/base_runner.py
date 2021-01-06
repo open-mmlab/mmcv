@@ -1,9 +1,10 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import logging
 import os.path as osp
-import torch
 import warnings
 from abc import ABCMeta, abstractmethod
+
+import torch
 from torch.optim import Optimizer
 
 import mmcv
