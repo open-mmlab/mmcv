@@ -133,3 +133,30 @@ def test_load_pavimodel_dist():
     with pytest.raises(FileNotFoundError):
         # there is not such checkpoint for us to load
         _ = load_pavimodel_dist('MyPaviFolder/checkpoint.pth')
+
+
+def test_load_classes_name():
+    from mmcv.runner import load_checkpoint, save_checkpoint
+    checkpoint_path = 'MyFolder/checkpoint.pth'
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_checkpoint(model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+
+    model.CLASSES = ('class1', 'class2')
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_checkpoint(model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' in checkpoint['meta']
+    assert checkpoint['meta']['CLASSES'] == ('class1', 'class2')
+
+    model = Model()
+    wrapped_model = DDPWrapper(model)
+    save_checkpoint(wrapped_model, checkpoint_path)
+    checkpoint = load_checkpoint(wrapped_model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+
+    wrapped_model.module.CLASSES = ('class1', 'class2')
+    save_checkpoint(wrapped_model, checkpoint_path)
+    checkpoint = load_checkpoint(wrapped_model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' in checkpoint['meta']
+    assert checkpoint['meta']['CLASSES'] == ('class1', 'class2')
