@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 def _any(judge_result):
     """Since built-in ``any`` works only when the element of iterable is not
-    iterable, implement the funciton."""
+    iterable, implement the function."""
     if not isinstance(judge_result, Iterable):
         return judge_result
 

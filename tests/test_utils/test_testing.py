@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import mmcv
@@ -29,6 +30,26 @@ def test_assert_dict_contains_subset():
     expected_subset = {'a': 'test1', 'b': 2, 'd': (4, 6)}
     assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
 
+    # case 5
+    dict_obj = {
+        'a': 'test1',
+        'b': 2,
+        'c': (4, 6),
+        'd': np.array([[5, 3, 5], [1, 2, 3]])
+    }
+    expected_subset = {
+        'a': 'test1',
+        'b': 2,
+        'c': (4, 6),
+        'd': np.array([[5, 3, 5], [6, 2, 3]])
+    }
+    assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
+    # case 6
+    dict_obj = {'a': 'test1', 'b': 2, 'c': (4, 6), 'd': np.array([[1]])}
+    expected_subset = {'a': 'test1', 'b': 2, 'c': (4, 6), 'd': np.array([[1]])}
+    assert mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
+
     if torch is not None:
         dict_obj = {
             'a': 'test1',
@@ -37,11 +58,11 @@ def test_assert_dict_contains_subset():
             'd': torch.tensor([5, 3, 5])
         }
 
-        # case 5
+        # case 7
         expected_subset = {'d': torch.tensor([5, 5, 5])}
         assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
 
-        # case 6
+        # case 8
         expected_subset = {'d': torch.tensor([[5, 3, 5], [4, 1, 2]])}
         assert not mmcv.assert_dict_contains_subset(dict_obj, expected_subset)
 
