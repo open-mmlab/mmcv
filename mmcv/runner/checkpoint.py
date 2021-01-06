@@ -394,6 +394,11 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     if is_module_wrapper(model):
         model = model.module
 
+    if hasattr(model, 'CLASSES') and model.CLASSES is not None:
+        # save class name to the meta
+        meta.update(CLASSES=model.CLASSES)
+        print('hhhhhhhhhhhhhhhh in mmcv CLASSES ---------------')
+
     checkpoint = {
         'meta': meta,
         'state_dict': weights_to_cpu(get_state_dict(model))
