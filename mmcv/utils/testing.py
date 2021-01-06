@@ -34,8 +34,7 @@ def assert_dict_contains_subset(dict_obj: Dict[Any, Any],
     """
 
     for key, value in expected_subset.items():
-        uneq = dict_obj[key] != value if key in dict_obj.keys() else True
-        if _any(uneq):
+        if key not in dict_obj.keys() or _any(dict_obj[key] != value):
             return False
     return True
 
@@ -51,11 +50,8 @@ def assert_attrs_equal(obj: Any, expected_attrs: Dict[str, Any]) -> bool:
         bool: Whether the attribute of class object is correct.
     """
     for attr, value in expected_attrs.items():
-        if not hasattr(obj, attr):
+        if not hasattr(obj, attr) or _any(getattr(obj, attr) != value):
             return False
-        else:
-            if _any(getattr(obj, attr) != value):
-                return False
     return True
 
 
