@@ -273,7 +273,6 @@ def _load_checkpoint(filename, map_location=None):
         model_path = filename[7:]
         checkpoint = load_pavimodel_dist(model_path, map_location=map_location)
     elif filename.startswith('s3://'):
-        # model_path = filename[5:]
         checkpoint = load_fileclient_dist(
             filename, backend='ceph', map_location=map_location)
     else:
