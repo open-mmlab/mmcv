@@ -6,7 +6,7 @@
 
 #include "trt_serialize.hpp"
 
-extern void TRTROIAlignForwardCUDAKernelLauncher_float(
+extern void TRTRoIAlignForwardCUDAKernelLauncher_float(
     const float *input, const float *rois, float *output, float *argmax_y,
     float *argmax_x, int output_size, int channels, int height, int width,
     int aligned_height, int aligned_width, float spatial_scale,
@@ -17,11 +17,11 @@ static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVRoiAlign"};
 }  // namespace
 
-nvinfer1::PluginFieldCollection RoiAlignPluginDynamicCreator::mFC{};
+nvinfer1::PluginFieldCollection RoIAlignPluginDynamicCreator::mFC{};
 std::vector<nvinfer1::PluginField>
-    RoiAlignPluginDynamicCreator::mPluginAttributes;
+    RoIAlignPluginDynamicCreator::mPluginAttributes;
 
-RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string &name,
+RoIAlignPluginDynamic::RoIAlignPluginDynamic(const std::string &name,
                                              int outWidth, int outHeight,
                                              float spatialScale,
                                              int sampleRatio, int poolMode,
@@ -34,7 +34,7 @@ RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string &name,
       mPoolMode(poolMode),
       mAligned(aligned) {}
 
-RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string name,
+RoIAlignPluginDynamic::RoIAlignPluginDynamic(const std::string name,
                                              const void *data, size_t length)
     : mLayerName(name) {
   deserialize_value(&data, &length, &mOutWidth);
@@ -45,8 +45,8 @@ RoiAlignPluginDynamic::RoiAlignPluginDynamic(const std::string name,
   deserialize_value(&data, &length, &mAligned);
 }
 
-nvinfer1::IPluginV2DynamicExt *RoiAlignPluginDynamic::clone() const {
-  RoiAlignPluginDynamic *plugin = new RoiAlignPluginDynamic(
+nvinfer1::IPluginV2DynamicExt *RoIAlignPluginDynamic::clone() const {
+  RoIAlignPluginDynamic *plugin = new RoIAlignPluginDynamic(
       mLayerName, mOutWidth, mOutHeight, mSpatialScale, mSampleRatio, mPoolMode,
       mAligned);
   plugin->setPluginNamespace(getPluginNamespace());
@@ -54,7 +54,7 @@ nvinfer1::IPluginV2DynamicExt *RoiAlignPluginDynamic::clone() const {
   return plugin;
 }
 
-nvinfer1::DimsExprs RoiAlignPluginDynamic::getOutputDimensions(
+nvinfer1::DimsExprs RoIAlignPluginDynamic::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
     nvinfer1::IExprBuilder &exprBuilder) {
   nvinfer1::DimsExprs ret;
@@ -67,20 +67,18 @@ nvinfer1::DimsExprs RoiAlignPluginDynamic::getOutputDimensions(
   return ret;
 }
 
-bool RoiAlignPluginDynamic::supportsFormatCombination(
+bool RoIAlignPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
-  // const auto *in = inOut;
-  // const auto *out = inOut + nbInputs;
   return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
-void RoiAlignPluginDynamic::configurePlugin(
+void RoIAlignPluginDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
 
-size_t RoiAlignPluginDynamic::getWorkspaceSize(
+size_t RoIAlignPluginDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
   size_t output_size = 0;
@@ -101,7 +99,7 @@ size_t RoiAlignPluginDynamic::getWorkspaceSize(
   return 0;
 }
 
-int RoiAlignPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
+int RoIAlignPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                                    const nvinfer1::PluginTensorDesc *outputDesc,
                                    const void *const *inputs,
                                    void *const *outputs, void *workSpace,
@@ -131,7 +129,7 @@ int RoiAlignPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 
   switch (outputDesc[0].type) {
     case nvinfer1::DataType::kFLOAT:
-      TRTROIAlignForwardCUDAKernelLauncher_float(
+      TRTRoIAlignForwardCUDAKernelLauncher_float(
           (const float *)feat, (const float *)rois, (float *)output,
           (float *)argmax_y, (float *)argmax_x, output_size, channels, height,
           width, mOutHeight, mOutWidth, mSpatialScale, mSampleRatio, mPoolMode,
@@ -145,30 +143,30 @@ int RoiAlignPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
   return 0;
 }
 
-nvinfer1::DataType RoiAlignPluginDynamic::getOutputDataType(
+nvinfer1::DataType RoIAlignPluginDynamic::getOutputDataType(
     int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
   return inputTypes[0];
 }
 
 // IPluginV2 Methods
-const char *RoiAlignPluginDynamic::getPluginType() const { return PLUGIN_NAME; }
+const char *RoIAlignPluginDynamic::getPluginType() const { return PLUGIN_NAME; }
 
-const char *RoiAlignPluginDynamic::getPluginVersion() const {
+const char *RoIAlignPluginDynamic::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-int RoiAlignPluginDynamic::getNbOutputs() const { return 1; }
+int RoIAlignPluginDynamic::getNbOutputs() const { return 1; }
 
-int RoiAlignPluginDynamic::initialize() { return 0; }
+int RoIAlignPluginDynamic::initialize() { return 0; }
 
-void RoiAlignPluginDynamic::terminate() {}
+void RoIAlignPluginDynamic::terminate() {}
 
-size_t RoiAlignPluginDynamic::getSerializationSize() const {
+size_t RoIAlignPluginDynamic::getSerializationSize() const {
   return sizeof(mOutWidth) + sizeof(mOutHeight) + sizeof(mSpatialScale) +
          sizeof(mSampleRatio) + sizeof(mPoolMode) + sizeof(mAligned);
 }
 
-void RoiAlignPluginDynamic::serialize(void *buffer) const {
+void RoIAlignPluginDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mOutWidth);
   serialize_value(&buffer, mOutHeight);
   serialize_value(&buffer, mSpatialScale);
@@ -177,22 +175,22 @@ void RoiAlignPluginDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mAligned);
 }
 
-void RoiAlignPluginDynamic::destroy() {
+void RoIAlignPluginDynamic::destroy() {
   // This gets called when the network containing plugin is destroyed
   delete this;
 }
 
-void RoiAlignPluginDynamic::setPluginNamespace(const char *libNamespace) {
+void RoIAlignPluginDynamic::setPluginNamespace(const char *libNamespace) {
   mNamespace = libNamespace;
 }
 
-const char *RoiAlignPluginDynamic::getPluginNamespace() const {
+const char *RoIAlignPluginDynamic::getPluginNamespace() const {
   return mNamespace.c_str();
 }
 
 ////////////////////// creator /////////////////////////////
 
-RoiAlignPluginDynamicCreator::RoiAlignPluginDynamicCreator() {
+RoIAlignPluginDynamicCreator::RoIAlignPluginDynamicCreator() {
   mPluginAttributes.emplace_back(nvinfer1::PluginField("output_height"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("output_width"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("spatial_scale"));
@@ -203,20 +201,20 @@ RoiAlignPluginDynamicCreator::RoiAlignPluginDynamicCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *RoiAlignPluginDynamicCreator::getPluginName() const {
+const char *RoIAlignPluginDynamicCreator::getPluginName() const {
   return PLUGIN_NAME;
 }
 
-const char *RoiAlignPluginDynamicCreator::getPluginVersion() const {
+const char *RoIAlignPluginDynamicCreator::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
 const nvinfer1::PluginFieldCollection *
-RoiAlignPluginDynamicCreator::getFieldNames() {
+RoIAlignPluginDynamicCreator::getFieldNames() {
   return &mFC;
 }
 
-nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
+nvinfer1::IPluginV2 *RoIAlignPluginDynamicCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) {
   int outWidth = 7;
   int outHeight = 7;
@@ -272,24 +270,24 @@ nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::createPlugin(
   assert(spatialScale > 0.);
   assert(poolMode >= 0);
 
-  RoiAlignPluginDynamic *plugin = new RoiAlignPluginDynamic(
+  RoIAlignPluginDynamic *plugin = new RoIAlignPluginDynamic(
       name, outWidth, outHeight, spatialScale, sampleRatio, poolMode, aligned);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-nvinfer1::IPluginV2 *RoiAlignPluginDynamicCreator::deserializePlugin(
+nvinfer1::IPluginV2 *RoIAlignPluginDynamicCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) {
-  auto plugin = new RoiAlignPluginDynamic(name, serialData, serialLength);
+  auto plugin = new RoIAlignPluginDynamic(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-void RoiAlignPluginDynamicCreator::setPluginNamespace(
+void RoIAlignPluginDynamicCreator::setPluginNamespace(
     const char *libNamespace) {
   mNamespace = libNamespace;
 }
 
-const char *RoiAlignPluginDynamicCreator::getPluginNamespace() const {
+const char *RoIAlignPluginDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }

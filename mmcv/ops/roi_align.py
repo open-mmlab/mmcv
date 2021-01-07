@@ -4,6 +4,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
+from ..onnx import is_custom_op_loaded
 from ..utils import deprecated_api_warning, ext_loader
 
 ext_module = ext_loader.load_ext('_ext',
@@ -15,15 +16,8 @@ class RoIAlignFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
-        trt_plugin_loaded = False
-        # TODO remove after #724 merged
-        try:
-            from ..tensorrt import is_tensorrt_plugin_loaded
-
-            trt_plugin_loaded = is_tensorrt_plugin_loaded()
-        except ImportError:
-            pass
-        if trt_plugin_loaded:
+        has_custom_op = is_custom_op_loaded()
+        if has_custom_op:
             return g.op(
                 'mmcv::MMCVRoiAlign',
                 input,

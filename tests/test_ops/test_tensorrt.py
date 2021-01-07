@@ -27,11 +27,10 @@ def test_roialign():
     try:
         from mmcv.tensorrt import (TRTWraper, onnx2trt, save_trt_engine,
                                    is_tensorrt_plugin_loaded)
-
-        if not is_tensorrt_plugin_loaded:
+        if not is_tensorrt_plugin_loaded():
             pytest.skip('test requires to complie TensorRT plugins in mmcv')
     except (ImportError, ModuleNotFoundError):
-        pytest.skip('test requires mmcv.tensorrt')
+        pytest.skip('test requires to install TensorRT from source.')
 
     try:
         from mmcv.ops import RoIAlign
@@ -93,19 +92,17 @@ def test_roialign():
         with torch.no_grad():
             trt_outputs = trt_model({'input': input, 'rois': rois})
             trt_roi_feat = trt_outputs['roi_feat']
-            trt_roi_feat = trt_roi_feat.cpu().detach().numpy()
 
         # compute pytorch_output
         with torch.no_grad():
             pytorch_roi_feat = wrapped_model(input, rois)
-            pytorch_roi_feat = pytorch_roi_feat.cpu().detach().numpy()
 
         # allclose
         if os.path.exists(onnx_file):
             os.remove(onnx_file)
         if os.path.exists(trt_file):
             os.remove(trt_file)
-        assert np.allclose(pytorch_roi_feat, trt_roi_feat, atol=1e-3)
+        assert torch.allclose(pytorch_roi_feat, trt_roi_feat)
 
 
 def test_nms():
@@ -138,7 +135,7 @@ def test_nms():
     wrapped_model.cpu().eval()
     with torch.no_grad():
         torch.onnx.export(
-            wrapped_model, (boxes, scores),
+            wrapped_model, (boxes.detach().cpu(), scores.detach().cpu()),
             onnx_file,
             export_params=True,
             keep_initializers_as_inputs=True,
