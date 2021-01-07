@@ -1,10 +1,16 @@
-import tensorrt as trt
+import warnings
+
 import torch
+
+try:
+    import tensorrt as trt
+except ImportError:
+    warnings.warn('`TensorRT should be installed manaully.')
 
 
 def onnx2trt(onnx_model,
              opt_shape_dict,
-             log_level=trt.Logger.ERROR,
+             log_level=None,
              fp16_mode=False,
              max_workspace_size=0,
              device_id=0):
@@ -34,6 +40,8 @@ def onnx2trt(onnx_model,
         >>>             device_id=0)
         >>>             })
     """
+    if log_level is None:
+        log_level = trt.Logger.ERROR
     device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
