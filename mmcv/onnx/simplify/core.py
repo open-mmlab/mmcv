@@ -1,31 +1,25 @@
 # This file is modified from https://github.com/daquexian/onnx-simplifier
 import copy
 import os
-import warnings
 from collections import OrderedDict
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np  # type: ignore
+import onnx  # type: ignore
+import onnx.helper  # type: ignore
+import onnx.numpy_helper
+import onnx.shape_inference  # type: ignore
+import onnxoptimizer  # type: ignore
+import onnxruntime as rt  # type: ignore
 
 from .common import add_suffix2name
-
-try:
-    import onnx  # type: ignore
-    import onnx.helper  # type: ignore
-    import onnx.numpy_helper
-    import onnx.shape_inference  # type: ignore
-    import onnxoptimizer  # type: ignore
-    import onnxruntime as rt  # type: ignore
-except (ImportError, ModuleNotFoundError):
-    warnings.warn(
-        'To use `mmcv.onnx.simplify`, `onnx`, `onnxruntime` and `onnxoptimizer`\
-        should be installed manually!')
 
 TensorShape = List[int]
 TensorShapes = Dict[Optional[str], TensorShape]
 
 
-def add_features_to_output(m, nodes):
+def add_features_to_output(m: onnx.ModelProto,
+                           nodes: List[onnx.NodeProto]) -> None:
     """Add features to output in pb, so that ONNX Runtime will output them.
 
     Args:
@@ -38,28 +32,12 @@ def add_features_to_output(m, nodes):
             m.graph.output.extend([onnx.ValueInfoProto(name=output)])
 
 
-def get_shape_from_value_info_proto(v):
-    """get_shape_from_value_info_proto.
-
-    Args:
-        v (onnx.ValueInfoProto): value_info of onnx node
-
-    Returns:
-        List[int]: Shape info from value info
-    """
+def get_shape_from_value_info_proto(v: onnx.ValueInfoProto) -> List[int]:
     return [dim.dim_value for dim in v.type.tensor_type.shape.dim]
 
 
-def get_value_info_all(m, name: str):
-    """get_value_info_all.
-
-    Args:
-        m (onnx.ModelProto): onnx model
-        name (str): node name
-
-    Returns:
-        Optional[onnx.ValueInfoProto]: value info of this node
-    """
+def get_value_info_all(m: onnx.ModelProto,
+                       name: str) -> Optional[onnx.ValueInfoProto]:
     for v in m.graph.value_info:
         if v.name == name:
             return v
@@ -75,7 +53,7 @@ def get_value_info_all(m, name: str):
     return None
 
 
-def get_shape(m, name: str) -> TensorShape:
+def get_shape(m: onnx.ModelProto, name: str) -> TensorShape:
     """Get shape info of a node in a model.
 
     Args:
@@ -95,16 +73,7 @@ def get_shape(m, name: str) -> TensorShape:
     raise RuntimeError('Cannot get shape of "{}"'.format(name))
 
 
-def get_elem_type(m, name: str) -> Optional[int]:
-    """get_elem_type.
-
-    Args:
-        m (onnx.ModelProto): onnx model
-        name (str): name for a node
-
-    Returns:
-        Optional[int]: Element type of the node
-    """
+def get_elem_type(m: onnx.ModelProto, name: str) -> Optional[int]:
     v = get_value_info_all(m, name)
     if v is not None:
         return v.type.tensor_type.elem_type
@@ -130,7 +99,7 @@ def get_np_type_from_elem_type(elem_type: int) -> int:
     return size
 
 
-def get_input_names(model) -> List[str]:
+def get_input_names(model: onnx.ModelProto) -> List[str]:
     """Get input names of a model.
 
     Args:
@@ -145,7 +114,7 @@ def get_input_names(model) -> List[str]:
     return input_names
 
 
-def add_initializers_into_inputs(model):
+def add_initializers_into_inputs(model: onnx.ModelProto) -> onnx.ModelProto:
     """add initializers into inputs of a model.
 
     Args:
@@ -172,7 +141,7 @@ def add_initializers_into_inputs(model):
 
 
 def generate_rand_input(
-        model,
+        model: onnx.ModelProto,
         input_shapes: Optional[TensorShapes] = None) -> Dict[str, np.ndarray]:
     """Generate random input for a model.
 
@@ -203,7 +172,7 @@ def generate_rand_input(
     return inputs
 
 
-def get_constant_nodes(m):
+def get_constant_nodes(m: onnx.ModelProto) -> List[onnx.NodeProto]:
     """Collect constant nodes from a model.
 
     Args:
@@ -253,7 +222,7 @@ def get_constant_nodes(m):
 
 
 def forward(
-        model,
+        model: onnx.ModelProto,
         inputs: Dict[str, np.ndarray] = None,
         input_shapes: Optional[TensorShapes] = None) -> Dict[str, np.ndarray]:
     """Run forward on a model.
@@ -295,8 +264,8 @@ def forward(
 
 
 def forward_for_node_outputs(
-        model,
-        nodes,
+        model: onnx.ModelProto,
+        nodes: List[onnx.NodeProto],
         input_shapes: Optional[TensorShapes] = None,
         inputs: Optional[Dict[str,
                               np.ndarray]] = None) -> Dict[str, np.ndarray]:
@@ -315,7 +284,9 @@ def insert_elem(repeated_container, index: int, element):
     repeated_container[index].CopyFrom(element)
 
 
-def eliminate_const_nodes(model, const_nodes, res: Dict[str, np.ndarray]):
+def eliminate_const_nodes(model: onnx.ModelProto,
+                          const_nodes: List[onnx.NodeProto],
+                          res: Dict[str, np.ndarray]) -> onnx.ModelProto:
     """Eliminate redundant constant nodes from model.
 
     Args:
@@ -348,8 +319,8 @@ def eliminate_const_nodes(model, const_nodes, res: Dict[str, np.ndarray]):
     return model
 
 
-def optimize(model, skip_fuse_bn: bool,
-             skipped_optimizers: Optional[Sequence[str]]):
+def optimize(model: onnx.ModelProto, skip_fuse_bn: bool,
+             skipped_optimizers: Optional[Sequence[str]]) -> onnx.ModelProto:
     """Perform optimization on an ONNX model. Before simplifying, use this
     method to generate value_info. After simplifying, use this method to fold
     constants generated in previous step into initializer, and eliminate unused
@@ -397,8 +368,8 @@ def optimize(model, skip_fuse_bn: bool,
     return model
 
 
-def check(model_opt,
-          model_ori,
+def check(model_opt: onnx.ModelProto,
+          model_ori: onnx.ModelProto,
           n_times: int = 5,
           input_shapes: Optional[TensorShapes] = None,
           inputs: Optional[List[Dict[str, np.ndarray]]] = None) -> bool:
@@ -448,7 +419,8 @@ def check(model_opt,
     return True
 
 
-def clean_constant_nodes(const_nodes, res: Dict[str, np.ndarray]):
+def clean_constant_nodes(const_nodes: List[onnx.NodeProto],
+                         res: Dict[str, np.ndarray]):
     """Clean constant nodes.
 
     Args:
@@ -466,7 +438,7 @@ def clean_constant_nodes(const_nodes, res: Dict[str, np.ndarray]):
     return [node for node in const_nodes if node.output[0] in res]
 
 
-def check_and_update_input_shapes(model,
+def check_and_update_input_shapes(model: onnx.ModelProto,
                                   input_shapes: TensorShapes) -> TensorShapes:
     input_names = get_input_names(model)
     if None in input_shapes:
@@ -481,14 +453,14 @@ def check_and_update_input_shapes(model,
     return input_shapes
 
 
-def simplify(model,
+def simplify(model: Union[str, onnx.ModelProto],
              inputs: Sequence[Dict[str, np.ndarray]] = None,
              output_file: str = None,
              perform_optimization: bool = True,
              skip_fuse_bn: bool = False,
              skip_shape_inference: bool = True,
              input_shapes: Dict[str, Sequence[int]] = None,
-             skipped_optimizers: Sequence[str] = None):
+             skipped_optimizers: Sequence[str] = None) -> onnx.ModelProto:
     """Simplify and optimize an onnx model.
 
     For models from detection and segmentation, it is strongly suggested to
