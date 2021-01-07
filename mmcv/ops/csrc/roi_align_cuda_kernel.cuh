@@ -1,11 +1,16 @@
 #ifndef ROI_ALIGN_CUDA_KERNEL_CUH
 #define ROI_ALIGN_CUDA_KERNEL_CUH
 
+#include <float.h>
+#ifdef MMCV_WITH_TRT
+#include "common_cuda_helper.hpp"
+#else  // MMCV_WITH_TRT
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
-#else
+#else  // MMCV_USE_PARROTS
 #include "pytorch_cuda_helper.hpp"
-#endif
+#endif  // MMCV_USE_PARROTS
+#endif  // MMCV_WITH_TRT
 
 /*** Forward ***/
 template <typename T>
