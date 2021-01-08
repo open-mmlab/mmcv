@@ -137,7 +137,7 @@ def test_load_pavimodel_dist():
 
 def test_load_classes_name():
     from mmcv.runner import load_checkpoint, save_checkpoint
-    checkpoint_path = 'MyFolder/checkpoint.pth'
+    checkpoint_path = 'TmpFolder/checkpoint.pth'
     model = Model()
     save_checkpoint(model, checkpoint_path)
     checkpoint = load_checkpoint(model, checkpoint_path)
@@ -160,3 +160,7 @@ def test_load_classes_name():
     checkpoint = load_checkpoint(wrapped_model, checkpoint_path)
     assert 'meta' in checkpoint and 'CLASSES' in checkpoint['meta']
     assert checkpoint['meta']['CLASSES'] == ('class1', 'class2')
+
+    # remove the folder
+    import shutil
+    shutil.rmtree('TmpFolder')
