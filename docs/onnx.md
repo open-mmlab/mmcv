@@ -20,6 +20,14 @@ register_extra_symbolics(opset_version)
 
 `mmcv.onnx.simplify` is based on [onnx-simplifier](https://github.com/daquexian/onnx-simplifier), which is a useful tool to make exported ONNX models slimmer by performing a series of optimization. However, for Pytorch models with custom op from `mmcv`, it would break down. Thus, custom ops for ONNX Runtime should be registered.
 
+### Prerequisite
+
+`mmcv.onnx.simplify` has three dependencies: `onnx`, `onnxoptimizer`, `onnxruntime`. After installation of `mmcv`, you have to install them manually using pip.
+
+```bash
+pip install onnx onnxoptimizer onnxruntime
+```
+
 ### Usage
 
 ```python
