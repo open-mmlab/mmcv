@@ -271,7 +271,7 @@ def test_roipool():
 
 
 def test_simplify():
-    from mmcv.onnx import simplify
+    from mmcv.onnx.simplify import simplify
 
     # only support PyTorch >= 1.5.0
     if version.parse(torch.__version__) < version.parse('1.5.0'):
