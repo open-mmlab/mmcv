@@ -67,19 +67,20 @@ class EvalHook(Hook):
         if interval <= 0:
             raise ValueError(f'interval must be positive, but got {interval}')
 
-        assert isinstance(by_epoch, bool)
+        assert isinstance(by_epoch, bool), '``by_epoch`` should be a boolean'
 
         if start is not None and start < 0:
             warnings.warn(
                 f'The evaluation start epoch {start} is smaller than 0, '
-                f'use 0 instead', UserWarning)
+                'use 0 instead', UserWarning)
             start = 0
         self.dataloader = dataloader
         self.interval = interval
         self.start = start
         self.by_epoch = by_epoch
 
-        assert isinstance(save_best, str) or save_best is None
+        assert isinstance(save_best, str) or save_best is None, \
+            '``save_best`` should be a str or None'
         self.save_best = save_best
         self.eval_kwargs = eval_kwargs
         self.initial_flag = True
