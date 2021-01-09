@@ -5,9 +5,14 @@ from itertools import chain
 
 from torch.nn.utils import clip_grad
 
+from mmcv.utils import TORCH_VERSION
 from ..dist_utils import allreduce_grads
 from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
+try:
+    from torch.cuda.amp import autocast, GradScaler
+except ImportError:
+    pass
 
 
 @HOOKS.register_module()
@@ -38,7 +43,10 @@ class OptimizerHook(Hook):
 class Fp16OptimizerHook(OptimizerHook):
     """FP16 optimizer hook.
 
-    The steps of fp16 optimizer is as follows.
+    If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend, 
+    otherwise, original mmcv implementation will be adopted.
+
+    The steps of fp16 optimizer with mmcv implementation is as follows.
     1. Scale the loss value.
     2. BP in the fp16 model.
     2. Copy gradients from fp16 model to fp32 weights.
@@ -46,6 +54,8 @@ class Fp16OptimizerHook(OptimizerHook):
     4. Copy updated parameters from fp32 weights to fp16 model.
 
     Refer to https://arxiv.org/abs/1710.03740 for more details.
+
+    Otherwise, torch.cuda.amp will take care of the optimization procedure.
 
     Args:
         loss_scale (float | str | dict): Scale factor multiplied with loss.
@@ -66,12 +76,28 @@ class Fp16OptimizerHook(OptimizerHook):
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
         self.distributed = distributed
+        self._use_torch_amp = (
+            TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0')
+
         if loss_scale == 'dynamic':
-            self.loss_scaler = LossScaler(mode='dynamic')
+            self._scale_update_param = None
+            if self._use_torch_amp:
+                self.loss_scaler = GradScaler(init_scale=loss_scale)
+            else:
+                self.loss_scaler = LossScaler(mode='dynamic')
         elif isinstance(loss_scale, float):
-            self.loss_scaler = LossScaler(init_scale=loss_scale, mode='static')
+            self._scale_update_param = loss_scale
+            if self._use_torch_amp:
+                self.loss_scaler = GradScaler(init_scale=loss_scale)
+            else:
+                self.loss_scaler = LossScaler(
+                    init_scale=loss_scale, mode='static')
         elif isinstance(loss_scale, dict):
-            self.loss_scaler = LossScaler(**loss_scale)
+            self._scale_update_param = None
+            if self._use_torch_amp:
+                self.loss_scaler = GradScaler(**loss_scale)
+            else:
+                self.loss_scaler = LossScaler(**loss_scale)
         else:
             raise ValueError('loss_scale must be of type float, dict, or '
                              f'"dynamic", got {loss_scale}')
@@ -79,24 +105,27 @@ class Fp16OptimizerHook(OptimizerHook):
     def before_run(self, runner):
         """Preparing steps before Mixed Precision Training.
 
+        If torch.cuda.amp is not used, the following steps will be excuted:
         1. Make a master copy of fp32 weights for optimization.
         2. Convert the main model from fp32 to fp16.
         """
-        # keep a copy of fp32 weights
-        old_groups = runner.optimizer.param_groups
-        runner.optimizer.param_groups = copy.deepcopy(
-            runner.optimizer.param_groups)
-        state = defaultdict(dict)
-        p_map = {
-            old_p: p
-            for old_p, p in zip(
-                chain(*(g['params'] for g in old_groups)),
-                chain(*(g['params'] for g in runner.optimizer.param_groups)))
-        }
-        for k, v in runner.optimizer.state.items():
-            state[p_map[k]] = v
-        runner.optimizer.state = state
-        # convert model to fp16
+        if not self._use_torch_amp:
+            # keep a copy of fp32 weights
+            old_groups = runner.optimizer.param_groups
+            runner.optimizer.param_groups = copy.deepcopy(
+                runner.optimizer.param_groups)
+            state = defaultdict(dict)
+            p_map = {
+                old_p: p
+                for old_p, p in zip(
+                    chain(*(g['params'] for g in old_groups)),
+                    chain(*(g['params']
+                            for g in runner.optimizer.param_groups)))
+            }
+            for k, v in runner.optimizer.state.items():
+                state[p_map[k]] = v
+            runner.optimizer.state = state
+            # convert model to fp16
         wrap_fp16_model(runner.model)
 
     def copy_grads_to_fp32(self, fp16_net, fp32_weights):
@@ -125,37 +154,50 @@ class Fp16OptimizerHook(OptimizerHook):
         # clear grads of last iteration
         runner.model.zero_grad()
         runner.optimizer.zero_grad()
-        # scale the loss value
-        scaled_loss = runner.outputs['loss'] * self.loss_scaler.loss_scale
-        scaled_loss.backward()
-        # copy fp16 grads in the model to fp32 params in the optimizer
 
-        fp32_weights = []
-        for param_group in runner.optimizer.param_groups:
-            fp32_weights += param_group['params']
-        self.copy_grads_to_fp32(runner.model, fp32_weights)
-        # allreduce grads
-        if self.distributed:
-            allreduce_grads(fp32_weights, self.coalesce, self.bucket_size_mb)
-
-        has_overflow = self.loss_scaler.has_overflow(fp32_weights)
-        # if has overflow, skip this iteration
-        if not has_overflow:
-            # scale the gradients back
-            for param in fp32_weights:
-                if param.grad is not None:
-                    param.grad.div_(self.loss_scaler.loss_scale)
+        if self._use_torch_amp:
+            self.loss_scaler.scale(runner.outputs['loss']).backward()
+            self.loss_scaler.unscale_(runner.optimizer)
+            # grad clip
             if self.grad_clip is not None:
-                grad_norm = self.clip_grads(fp32_weights)
-                if grad_norm is not None:
-                    # Add grad norm to the logger
-                    runner.log_buffer.update({'grad_norm': float(grad_norm)},
-                                             runner.outputs['num_samples'])
-            # update fp32 params
-            runner.optimizer.step()
-            # copy fp32 params to the fp16 model
-            self.copy_params_to_fp16(runner.model, fp32_weights)
-        self.loss_scaler.update_scale(has_overflow)
-        if has_overflow:
-            runner.logger.warning('Check overflow, downscale loss scale '
-                                  f'to {self.loss_scaler.cur_scale}')
+                self.clip_grads(runner.model.parameters())  # NEED CHECK
+            # backward and update scaler
+            self.loss_scaler.step(runner.optimizer)
+            self.loss_scaler.update(self._scale_update_param)
+        else:
+            # scale the loss value
+            scaled_loss = runner.outputs['loss'] * self.loss_scaler.loss_scale
+            scaled_loss.backward()
+            # copy fp16 grads in the model to fp32 params in the optimizer
+
+            fp32_weights = []
+            for param_group in runner.optimizer.param_groups:
+                fp32_weights += param_group['params']
+            self.copy_grads_to_fp32(runner.model, fp32_weights)
+            # allreduce grads
+            if self.distributed:
+                allreduce_grads(fp32_weights, self.coalesce,
+                                self.bucket_size_mb)
+
+            has_overflow = self.loss_scaler.has_overflow(fp32_weights)
+            # if has overflow, skip this iteration
+            if not has_overflow:
+                # scale the gradients back
+                for param in fp32_weights:
+                    if param.grad is not None:
+                        param.grad.div_(self.loss_scaler.loss_scale)
+                if self.grad_clip is not None:
+                    grad_norm = self.clip_grads(fp32_weights)
+                    if grad_norm is not None:
+                        # Add grad norm to the logger
+                        runner.log_buffer.update(
+                            {'grad_norm': float(grad_norm)},
+                            runner.outputs['num_samples'])
+                # update fp32 params
+                runner.optimizer.step()
+                # copy fp32 params to the fp16 model
+                self.copy_params_to_fp16(runner.model, fp32_weights)
+            self.loss_scaler.update_scale(has_overflow)
+            if has_overflow:
+                runner.logger.warning('Check overflow, downscale loss scale '
+                                      f'to {self.loss_scaler.cur_scale}')
