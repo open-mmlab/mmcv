@@ -139,7 +139,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 8)
 
             real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc.pth')
+            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)
@@ -161,7 +161,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 8)
 
             real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc.pth')
+            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)
@@ -181,7 +181,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 8)
 
             real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_score.pth')
+            link_path = osp.join(tmpdir, 'best_score_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)
@@ -201,7 +201,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 8)
 
             real_path = osp.join(tmpdir, 'epoch_6.pth')
-            link_path = osp.join(tmpdir, 'best_acc.pth')
+            link_path = osp.join(tmpdir, 'best_acc_epoch_6.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)
@@ -220,7 +220,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 2)
 
             real_path = osp.join(tmpdir, 'epoch_2.pth')
-            link_path = osp.join(tmpdir, 'best_acc.pth')
+            link_path = osp.join(tmpdir, 'best_acc_epoch_2.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)
@@ -238,7 +238,7 @@ def test_eval_hook():
             runner.run([loader], [('train', 1)], 8)
 
             real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc.pth')
+            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
                 real_path)

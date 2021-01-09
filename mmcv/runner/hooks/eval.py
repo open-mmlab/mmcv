@@ -1,10 +1,10 @@
+import os
 import os.path as osp
 import warnings
 from math import inf
 
 from torch.utils.data import DataLoader
 
-from mmcv import symlink
 from mmcv.engine import multi_gpu_test, single_gpu_test
 from mmcv.runner import Hook
 
@@ -49,7 +49,7 @@ class EvalHook(Hook):
 
     rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
     init_value_map = {'greater': -inf, 'less': inf}
-    greater_keys = ['acc', 'top', 'AR@', 'auc', 'precision']
+    greater_keys = ['acc', 'top', 'AR@', 'auc', 'precision', 'mAP']
     less_keys = ['loss']
 
     def __init__(self,
@@ -85,6 +85,7 @@ class EvalHook(Hook):
         self.initial_flag = True
 
         if self.save_best is not None:
+            self.best_ckpt_path = None
             self._init_rule(rule, self.save_best)
 
     def _init_rule(self, rule, key_indicator):
@@ -191,8 +192,10 @@ class EvalHook(Hook):
     def _save_ckpt(self, runner, key_score):
         if self.by_epoch:
             current = f'epoch_{runner.epoch + 1}'
+            cur_type, cur_time = 'epoch', runner.epoch + 1
         else:
             current = f'iter_{runner.iter + 1}'
+            cur_type, cur_time = 'iter', runner.iter + 1
 
         best_score = runner.meta['hook_msgs'].get(
             'best_score', self.init_value_map[self.rule])
@@ -201,12 +204,19 @@ class EvalHook(Hook):
             runner.meta['hook_msgs']['best_score'] = best_score
             last_ckpt = runner.meta['hook_msgs']['last_ckpt']
             runner.meta['hook_msgs']['best_ckpt'] = last_ckpt
-            symlink(
-                last_ckpt,
-                osp.join(runner.work_dir, f'best_{self.key_indicator}.pth'))
+
+            if self.best_ckpt_path and osp.isfile(self.best_ckpt_path):
+                os.remove(self.best_ckpt_path)
+
+            best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
+            runner.save_checkpoint(
+                runner.work_dir, best_ckpt_name, create_symlink=False)
+            self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
             runner.logger.info(
-                f'Now best checkpoint is {current}.pth.'
-                f'Best {self.key_indicator} is {best_score:0.4f}')
+                f'Now best checkpoint is saved as {best_ckpt_name}.')
+            runner.logger.info(
+                f'Best {self.key_indicator} is {best_score:0.4f} '
+                f'at {cur_time} {cur_type}.')
 
     def evaluate(self, runner, results):
         """Evaluate the results.
