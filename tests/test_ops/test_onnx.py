@@ -8,6 +8,7 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
+from packaging import version
 
 onnx_file = 'tmp.onnx'
 
@@ -60,12 +61,9 @@ def test_nms():
     assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(),
-    reason='CUDA is unavailable for test_softnms')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_softnms():
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
-    from packaging import version
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
@@ -77,7 +75,8 @@ def test_softnms():
         '1.5.1'), 'test_softnms should be ran with onnxruntime >= 1.5.1'
 
     ort_custom_op_path = get_onnxruntime_op_path()
-    assert os.path.exists(ort_custom_op_path)
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('softnms for onnxruntime is not compiled.')
 
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
@@ -138,8 +137,13 @@ def test_softnms():
 
 
 def test_roialign():
-    from mmcv.ops import roi_align
+    try:
+        from mmcv.ops import roi_align
+        from mmcv.ops import get_onnxruntime_op_path
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('roi_align op is not successfully compiled')
 
+    ort_custom_op_path = get_onnxruntime_op_path()
     # roi align config
     pool_h = 2
     pool_w = 2
@@ -178,7 +182,11 @@ def test_roialign():
                 keep_initializers_as_inputs=True,
                 input_names=['input', 'rois'],
                 opset_version=11)
+
         onnx_model = onnx.load(onnx_file)
+        session_options = rt.SessionOptions()
+        if os.path.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
 
         # compute onnx_output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -187,7 +195,7 @@ def test_roialign():
         ]
         net_feed_input = list(set(input_all) - set(input_initializer))
         assert (len(net_feed_input) == 2)
-        sess = rt.InferenceSession(onnx_file)
+        sess = rt.InferenceSession(onnx_file, session_options)
         onnx_output = sess.run(None, {
             'input': input.detach().numpy(),
             'rois': rois.detach().numpy()
@@ -199,9 +207,8 @@ def test_roialign():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
-    if not torch.cuda.is_available():
-        return
     from mmcv.ops import roi_pool
 
     # roi pool config
@@ -261,3 +268,27 @@ def test_roipool():
         # allclose
         os.remove(onnx_file)
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
+def test_simplify():
+    from mmcv.onnx.simplify import simplify
+
+    # only support PyTorch >= 1.5.0
+    if version.parse(torch.__version__) < version.parse('1.5.0'):
+        pytest.skip('mmcv.onnx.simplify only support with PyTorch >= 1.5.0')
+
+    def foo(x):
+        y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
+        return y
+
+    net = WrapFunction(foo)
+    dummy_input = torch.randn(2, 3, 4, 5)
+    torch.onnx.export(net, dummy_input, onnx_file, input_names=['input'])
+    ori_onnx_model = onnx.load(onnx_file)
+
+    feed_input = [{'input': dummy_input.detach().cpu().numpy()}]
+    slim_onnx_model = simplify(ori_onnx_model, feed_input, onnx_file)
+    numel_before = len(ori_onnx_model.graph.node)
+    numel_after = len(slim_onnx_model.graph.node)
+    os.remove(onnx_file)
+    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'

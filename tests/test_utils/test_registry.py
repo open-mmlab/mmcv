@@ -58,6 +58,9 @@ def test_registry():
     CATS.register_module(name='Sphynx', module=SphynxCat)
     assert CATS.get('Sphynx') is SphynxCat
 
+    CATS.register_module(name=['Sphynx1', 'Sphynx2'], module=SphynxCat)
+    assert CATS.get('Sphynx2') is SphynxCat
+
     repr_str = 'Registry(name=cat, items={'
     repr_str += ("'BritishShorthair': <class 'test_registry.test_registry."
                  "<locals>.BritishShorthair'>, ")
@@ -66,9 +69,17 @@ def test_registry():
     repr_str += ("'Siamese': <class 'test_registry.test_registry."
                  "<locals>.SiameseCat'>, ")
     repr_str += ("'Sphynx': <class 'test_registry.test_registry."
+                 "<locals>.SphynxCat'>, ")
+    repr_str += ("'Sphynx1': <class 'test_registry.test_registry."
+                 "<locals>.SphynxCat'>, ")
+    repr_str += ("'Sphynx2': <class 'test_registry.test_registry."
                  "<locals>.SphynxCat'>")
     repr_str += '})'
     assert repr(CATS) == repr_str
+
+    # name type
+    with pytest.raises(AssertionError):
+        CATS.register_module(name=7474741, module=SphynxCat)
 
     # the registered module should be a class
     with pytest.raises(TypeError):
