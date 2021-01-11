@@ -27,19 +27,24 @@ struct nm_centerwh2xyxy {
 };
 
 struct nm_sbox_idle {
+  const float* idle_box_;
+  __host__ __device__ nm_sbox_idle(const float* idle_box){
+    idle_box_ = idle_box;
+  }
+
   __host__ __device__ NMSBox operator()(const NMSBox box) {
-    return {0.0f, 0.0f, 1.0f, 1.0f};
+    return {idle_box_[0], idle_box_[1], idle_box_[2], idle_box_[3]};
   }
 };
 
 struct nms_score_threshold {
-  float score_threshold_;
+  const float* score_threshold_;
   __host__ __device__ nms_score_threshold(const float* score_threshold) {
-    score_threshold_ = *score_threshold;
+    score_threshold_ = score_threshold;
   }
 
   __host__ __device__ bool operator()(const float score) {
-    return score < score_threshold_;
+    return score < (*score_threshold_);
   }
 };
 
@@ -232,8 +237,8 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
       if (score_threshold != nullptr) {
         thrust::transform_if(
             thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted_current,
-            (NMSBox*)(boxes_sorted_current + spatial_dimension * 4),
-            scores_sorted, (NMSBox*)boxes_sorted_current, nm_sbox_idle(),
+            (NMSBox*)(boxes_sorted_current+spatial_dimension*4),
+            scores_sorted, (NMSBox*)boxes_sorted_current, nm_sbox_idle(boxes_sorted_current),
             nms_score_threshold(score_threshold));
       }
 
