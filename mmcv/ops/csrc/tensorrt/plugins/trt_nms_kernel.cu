@@ -15,7 +15,7 @@ struct NMSBox {
   float box[4];
 };
 
-struct nm_centerwh2xyxy {
+struct nms_centerwh2xyxy {
   __host__ __device__ NMSBox operator()(const NMSBox box) {
     NMSBox out;
     out.box[0] = box.box[0] - box.box[2] / 2.0f;
@@ -26,9 +26,9 @@ struct nm_centerwh2xyxy {
   }
 };
 
-struct nm_sbox_idle {
+struct nms_sbox_idle {
   const float* idle_box_;
-  __host__ __device__ nm_sbox_idle(const float* idle_box){
+  __host__ __device__ nms_sbox_idle(const float* idle_box) {
     idle_box_ = idle_box;
   }
 
@@ -84,41 +84,42 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                         int num_classes, void* workspace,
                                         cudaStream_t stream) {
   /**
-  * describe of inputs:
-  * bboxes: [num_batch, spatial_dimension, 4], input boxes
-  * scores: [num_batch, num_classes, spatial_dimension], input scores
-  * max_output_boxes_per_class: [1] or nullptr, max output boxes per class
-  * iou_threshold: [1] or nullptr, threshold of iou
-  * score_threshold: [1] or nullptr, threshold of scores
-  *
-  * describe of outputs:
-  * output: [num_batch * num_classes * spatial_dimension, 3], each row
-  *         (batch_id, class_id, boxes_id), filling -1 if invalid.
-  *
-  * shapes of workspace:
-  * boxes_sorted: [num_batches, spatial_dimension, 4], the boxes which will
-  *               be sorted by scores.
-  * boxes_xyxy: [num_batch, spatial_dimension, 4], will be used if
-  *             center_point_box == 1.
-  * scores_sorted: [spatial_dimension], the workspace used to sort scores.
-  * dev_mask: [num_batches, spatial_dimension, col_blocks], intersect mask,
-  *           where col_block = DIVUP(spatial_dimension, threadsPerBlock)
-  * index_template: [spatial_dimension], sequence (0,1,2,3,...), workspace
-  *                 for argsort.
-  * index_cache: [num_batches, num_classes, spatial_dimension], argsort of
-  *              each classes.
-  *
-  * How does it works?
-  * The algrithm is the same as mmcv pytorch nms, with gpu part(mask) and
-  * cpu part(process). In order to reduce host <==> device memory transfer cost
-  * (which is heavy), The cpu part will only be performed when dev_mask is full.
-  *
-  * Why not create a large dev_mask with
-  * [num_batches, num_classes, spatial_dimension, col_blocks] then we only need
-  * do memory transfer one time?
-  * Might cause OOM when num_classes is large.
-  *
-  */
+   * describe of inputs:
+   * bboxes: [num_batch, spatial_dimension, 4], input boxes
+   * scores: [num_batch, num_classes, spatial_dimension], input scores
+   * max_output_boxes_per_class: [1] or nullptr, max output boxes per class
+   * iou_threshold: [1] or nullptr, threshold of iou
+   * score_threshold: [1] or nullptr, threshold of scores
+   *
+   * describe of outputs:
+   * output: [num_batch * num_classes * spatial_dimension, 3], each row
+   *         (batch_id, class_id, boxes_id), filling -1 if invalid.
+   *
+   * shapes of workspace:
+   * boxes_sorted: [num_batches, spatial_dimension, 4], the boxes which will
+   *               be sorted by scores.
+   * boxes_xyxy: [num_batch, spatial_dimension, 4], will be used if
+   *             center_point_box == 1.
+   * scores_sorted: [spatial_dimension], the workspace used to sort scores.
+   * dev_mask: [num_batches, spatial_dimension, col_blocks], intersect mask,
+   *           where col_block = DIVUP(spatial_dimension, threadsPerBlock)
+   * index_template: [spatial_dimension], sequence (0,1,2,3,...), workspace
+   *                 for argsort.
+   * index_cache: [num_batches, num_classes, spatial_dimension], argsort of
+   *              each classes.
+   *
+   * How does it works?
+   * The algrithm is the same as mmcv pytorch nms, with gpu part(mask) and
+   * cpu part(process). In order to reduce host <==> device memory transfer cost
+   * (which is heavy), The cpu part will only be performed when dev_mask is
+   * full.
+   *
+   * Why not create a large dev_mask with
+   * [num_batches, num_classes, spatial_dimension, col_blocks] then we only need
+   * do memory transfer one time?
+   * Might cause OOM when num_classes is large.
+   *
+   */
 
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   float* boxes_sorted = (float*)workspace;
@@ -132,7 +133,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                 num_batches * spatial_dimension * 4 * sizeof(float);
     thrust::transform(thrust::cuda::par.on(stream), (NMSBox*)boxes,
                       (NMSBox*)(boxes + num_batches * spatial_dimension * 4),
-                      (NMSBox*)boxes_xyxy, nm_centerwh2xyxy());
+                      (NMSBox*)boxes_xyxy, nms_centerwh2xyxy());
     cudaCheckError();
   }
 
@@ -195,7 +196,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   int output_count = 0;
   int* output_cpu_current = output_cpu;
   std::vector<int> out_batch_ids(num_batches);
-  std::vector<int> out_cls_ids(num_classes);
+  std::vector<int> out_cls_ids(num_batches);
   for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
     for (int cls_id = 0; cls_id < num_classes; ++cls_id) {
       const int batch_cls_id = batch_id * num_classes + cls_id;
@@ -237,8 +238,9 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
       if (score_threshold != nullptr) {
         thrust::transform_if(
             thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted_current,
-            (NMSBox*)(boxes_sorted_current+spatial_dimension*4),
-            scores_sorted, (NMSBox*)boxes_sorted_current, nm_sbox_idle(boxes_sorted_current),
+            (NMSBox*)(boxes_sorted_current + spatial_dimension * 4),
+            scores_sorted, (NMSBox*)boxes_sorted_current,
+            nms_sbox_idle(boxes_sorted_current),
             nms_score_threshold(score_threshold));
       }
 
