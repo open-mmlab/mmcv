@@ -191,7 +191,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
 
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
-  const int offset = 1;
+  const int offset = 0;
 
   int output_count = 0;
   int* output_cpu_current = output_cpu;
@@ -216,6 +216,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
       cudaMemcpyAsync(index_current, index_template,
                       spatial_dimension * sizeof(int), cudaMemcpyDeviceToDevice,
                       stream);
+      cudaCheckError();
 
       thrust::sort_by_key(thrust::cuda::par.on(stream), scores_sorted,
                           scores_sorted + spatial_dimension, index_current,
@@ -245,7 +246,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
       }
 
       unsigned long long* dev_mask_current =
-          dev_mask + batch_id * spatial_dimension * col_blocks;
+          dev_mask + process_id * spatial_dimension * col_blocks;
 
       nms_cuda<<<blocks, threads, 0, stream>>>(
           spatial_dimension, iou_threshold_cpu, offset, boxes_sorted_current,
