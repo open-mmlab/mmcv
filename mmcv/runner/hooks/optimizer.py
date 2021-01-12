@@ -53,7 +53,6 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
                     runner.log_buffer.update({'grad_norm': float(grad_norm)},
                                              runner.outputs['num_samples'])
             runner.optimizer.zero_grad()
-            self.steps = 0
 
 
 @HOOKS.register_module()
