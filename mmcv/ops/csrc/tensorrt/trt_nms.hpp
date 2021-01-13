@@ -13,7 +13,7 @@ class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   ONNXNonMaxSuppressionDynamic(const std::string &name, int centerPointBox);
 
   ONNXNonMaxSuppressionDynamic(const std::string name, const void *data,
-                        size_t length);
+                               size_t length);
 
   ONNXNonMaxSuppressionDynamic() = delete;
 

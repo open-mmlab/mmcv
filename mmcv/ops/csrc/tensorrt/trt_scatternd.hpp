@@ -12,8 +12,7 @@ class ONNXScatterNDDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
   ONNXScatterNDDynamic(const std::string &name);
 
-  ONNXScatterNDDynamic(const std::string name, const void *data,
-                        size_t length);
+  ONNXScatterNDDynamic(const std::string name, const void *data, size_t length);
 
   ONNXScatterNDDynamic() = delete;
 

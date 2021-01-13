@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "common_cuda_helper.hpp"
-#include "trt_plugin_helper.hpp"
 #include "trt_cuda_helper.cuh"
+#include "trt_plugin_helper.hpp"
 
 static int const threadsPerBlock = sizeof(unsigned long long int) * 8;
 

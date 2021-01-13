@@ -108,8 +108,8 @@ bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
 void ONNXNonMaxSuppressionDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
-      mNumberInputs = nbInputs;
-    }
+  mNumberInputs = nbInputs;
+}
 
 size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
@@ -133,12 +133,12 @@ int ONNXNonMaxSuppressionDynamic::enqueue(
 
   const float *boxes = (const float *)inputs[0];
   const float *scores = (const float *)inputs[1];
-    const int *max_output_boxes_per_class =
-        (mNumberInputs>=3) ? (const int *)inputs[2] : nullptr;
-    const float *iou_threshold =
-        (mNumberInputs>=4) ? (const float *)inputs[3] : nullptr;
+  const int *max_output_boxes_per_class =
+      (mNumberInputs >= 3) ? (const int *)inputs[2] : nullptr;
+  const float *iou_threshold =
+      (mNumberInputs >= 4) ? (const float *)inputs[3] : nullptr;
   const float *score_threshold =
-      (mNumberInputs>=5) ? (const float *)inputs[4] : nullptr;
+      (mNumberInputs >= 5) ? (const float *)inputs[4] : nullptr;
 
   int *output = (int *)outputs[0];
 
