@@ -4,11 +4,12 @@ from ..utils import Registry, build_from_cfg
 
 
 def build_model_from_cfg(cfg, registry, default_args=None):
-    """Build a module.
+    """Build a module from config dict(s).
 
     Args:
-        cfg (dict, list[dict]): The config of modules, is is either a dict
-            or a list of configs.
+        cfg (dict, list[dict]): The config of modules, is is either a config
+            dict or a list of config dicts. If cfg is a list, a
+            the built modules will be wrapped with ``nn.Sequential``.
         registry (:obj:`Registry`): A registry the module belongs to.
         default_args (dict, optional): Default arguments to build the module.
             Defaults to None.

@@ -52,7 +52,7 @@ def build_from_cfg(cfg, registry, default_args=None):
 
 
 class Registry:
-    """A registry to map strings to classes. Pleasee.
+    """A registry to map strings to classes.
 
     Registered object could be built from registry.
     Example:
@@ -68,7 +68,7 @@ class Registry:
     Args:
         name (str): Registry name.
         build_func(func, optional): Build function to construct instance from
-            Registry, ``func:build_from_cfg`` is used if neither ``parent`` or
+            Registry, func:`build_from_cfg` is used if neither ``parent`` or
             ``build_func`` is specified. If ``parent`` is specified and
             ``build_func`` is not given,  ``build_func`` will be inherited
             from ``parent``. Default: None.
@@ -111,7 +111,16 @@ class Registry:
     def infer_scope():
         """Infer the scope of registry.
 
-        The name of the package where registry is defined will be returned
+        The name of the package where registry is defined will be returned.
+
+        Example:
+            in mmdet/models/backbone/resnet.py
+            >>> MODELS = Registry('models')
+            >>> @MODELS.register_module()
+            >>> class ResNet:
+            >>>     pass
+            The scope of ``ResNet`` will be ``mmdet``.
+
 
         Returns:
             scope (str): The inferred scope name.
@@ -176,10 +185,17 @@ class Registry:
                 return self._module_dict[real_key]
             else:
                 # get from children
+                prev_registry, pre_result = None, None
                 for registry in self._children.values():
                     result = registry.get(real_key)
-                    if result is not None:
-                        return result
+                    if pre_result and result:
+                        raise ValueError(
+                            f'{real_key} defined in both '
+                            f'{prev_registry.scope}.{prev_registry.name} and '
+                            f'{registry.scope}.{registry.name}')
+                    prev_registry = registry
+                    pre_result = result
+                return pre_result
 
     def build(self, *args, **kwargs):
         return self.build_func(*args, **kwargs, registry=self)

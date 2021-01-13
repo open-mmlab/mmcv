@@ -170,6 +170,11 @@ def test_multi_scope_registry():
     assert DOGS.get('Dachshund') is Dachshund
     assert DOGS.get('hound.little_hound.Dachshund') is Dachshund
 
+    MID_HOUNDS = mmcv.Registry('dogs', parent=DOGS, scope='mid_hound')
+    MID_HOUNDS.register_module(module=BloodHound)
+    with pytest.raises(ValueError):
+        DOGS.get('BloodHound')
+
 
 def test_build_from_cfg():
     BACKBONES = mmcv.Registry('backbone')
