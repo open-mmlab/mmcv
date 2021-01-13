@@ -49,8 +49,6 @@ nvinfer1::DimsExprs ONNXScatterNDDynamic::getOutputDimensions(
 bool ONNXScatterNDDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
-  // const auto *in = inOut;
-  // const auto *out = inOut + nbInputs;
   if (pos < nbInputs) {
     switch (pos) {
       case 0:

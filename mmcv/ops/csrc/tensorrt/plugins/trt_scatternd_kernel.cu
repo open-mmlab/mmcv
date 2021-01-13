@@ -3,15 +3,12 @@
 #include <vector>
 
 #include "common_cuda_helper.hpp"
+#include "trt_plugin_helper.hpp"
+#include "trt_cuda_helper.cuh"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 static int const threadsPerBlock = sizeof(unsigned long long int) * 8;
-static const int MAXTENSORDIMS = 10;
-struct TensorDesc {
-  int shape[MAXTENSORDIMS];
-  int stride[MAXTENSORDIMS];
-  int dim;
-};
+
+using mmcv::TensorDesc;
 
 template <typename T>
 __global__ void onnx_scatternd_kernel(const int n, const int* indices,
