@@ -105,9 +105,9 @@ def test_model_weight_init():
     model_cfg = dict(
         type="FooModel",
         init_cfg=[
-            dict(type='ConstantInit', val=1, bias=2, layers='Linear'),
-            dict(type='ConstantInit', val=3, bias=4, layers='Conv1d'),
-            dict(type='ConstantInit', val=5, bias=6, layers='Conv2d')
+            dict(type='Constant', val=1, bias=2, layers='Linear'),
+            dict(type='Constant', val=3, bias=4, layers='Conv1d'),
+            dict(type='Constant', val=5, bias=6, layers='Conv2d')
         ],
         component1=dict(type='FooConv1d'),
         component2=dict(type='FooConv2d'),
@@ -177,7 +177,7 @@ def test_nest_components_weight_init():
         type="FooModel",
         init_cfg=[
             dict(
-                type='ConstantInit',
+                type='Constant',
                 val=1,
                 bias=2,
                 layers='Linear',
@@ -186,11 +186,9 @@ def test_nest_components_weight_init():
             dict(type='ConstantInit', val=5, bias=6, layers='Conv2d'),
         ],
         component1=dict(
-            type='FooConv1d',
-            init_cfg=dict(type='ConstantInit', val=7, bias=8)),
+            type='FooConv1d', init_cfg=dict(type='Constant', val=7, bias=8)),
         component2=dict(
-            type='FooConv2d',
-            init_cfg=dict(type='ConstantInit', val=9, bias=10)),
+            type='FooConv2d', init_cfg=dict(type='Constant', val=9, bias=10)),
         component3=dict(type='FooLinear'),
         component4=dict(
             type='FooLinearConv1d',

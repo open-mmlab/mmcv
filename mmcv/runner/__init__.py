@@ -36,5 +36,5 @@ __all__ = [
     'set_random_seed', 'auto_fp16', 'force_fp32', 'wrap_fp16_model',
     'Fp16OptimizerHook', 'SyncBuffersHook', 'EMAHook', 'build_runner',
     'RUNNERS', 'allreduce_grads', 'allreduce_params', 'LossScaler',
-    'BaseModule', '_load_checkpoint_with_prefix,'
+    'BaseModule', '_load_checkpoint_with_prefix'
 ]
