@@ -5,18 +5,21 @@ import onnx
 import pytest
 import torch
 
-from mmcv.tensorrt import (TRTWraper, is_tensorrt_plugin_loaded, onnx2trt,
-                           save_trt_engine)
+try:
+    from mmcv.tensorrt import (TRTWraper, is_tensorrt_plugin_loaded, onnx2trt,
+                               save_trt_engine)
+except ImportError:
+    pytest.skip(
+        'TensorRT should be installed from source.', allow_module_level=True)
 
-onnx_file = 'tmp.onnx'
-trt_file = 'tmp.engine'
+if not torch.cuda.is_available():
+    pytest.skip(
+        'CUDA is required for this test module', allow_module_level=True)
 
-with_cuda = pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='CUDA is required for test_roialign')
-
-with_tensorrt = pytest.mark.skipif(
-    not is_tensorrt_plugin_loaded(),
-    reason='test requires to complie TensorRT plugins in mmcv')
+if not is_tensorrt_plugin_loaded():
+    pytest.skip(
+        'Test requires to complie TensorRT plugins in mmcv',
+        allow_module_level=True)
 
 
 class WrapFunction(torch.nn.Module):
@@ -29,8 +32,10 @@ class WrapFunction(torch.nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
-@with_cuda
-@with_tensorrt
+onnx_file = 'tmp.onnx'
+trt_file = 'tmp.engine'
+
+
 def test_roialign():
     try:
         from mmcv.ops import RoIAlign
@@ -105,8 +110,6 @@ def test_roialign():
         assert torch.allclose(pytorch_roi_feat, trt_roi_feat)
 
 
-@with_cuda
-@with_tensorrt
 def test_scatternd():
 
     def func(data):
