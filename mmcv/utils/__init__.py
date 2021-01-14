@@ -9,6 +9,9 @@ from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
                    scandir, symlink)
 from .progressbar import (ProgressBar, track_iter_progress,
                           track_parallel_progress, track_progress)
+from .testing import (assert_attrs_equal, assert_dict_contains_subset,
+                      assert_dict_has_keys, assert_is_norm_layer,
+                      assert_keys_equal, assert_params_all_zeros)
 from .timer import Timer, TimerError, check_time
 from .version_utils import digit_version, get_git_hash
 
@@ -23,7 +26,9 @@ except ImportError:
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
-        'digit_version', 'get_git_hash', 'import_modules_from_strings'
+        'digit_version', 'get_git_hash', 'import_modules_from_strings',
+        'assert_dict_contains_subset', 'assert_attrs_equal',
+        'assert_dict_has_keys', 'assert_keys_equal'
     ]
 else:
     from .env import collect_env
@@ -49,5 +54,8 @@ else:
         '_InstanceNorm', '_MaxPoolNd', 'get_build_config', 'BuildExtension',
         'CppExtension', 'CUDAExtension', 'DataLoader', 'PoolDataLoader',
         'TORCH_VERSION', 'deprecated_api_warning', 'digit_version',
-        'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena'
+        'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena',
+        'assert_dict_contains_subset', 'assert_attrs_equal',
+        'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
+        'assert_params_all_zeros'
     ]

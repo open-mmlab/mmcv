@@ -50,11 +50,19 @@ def assert_tensor_equal(tensor_a, tensor_b):
 
 
 def test_get_state_dict():
-    state_dict_keys = set([
-        'block.conv.weight', 'block.conv.bias', 'block.norm.weight',
-        'block.norm.bias', 'block.norm.running_mean', 'block.norm.running_var',
-        'block.norm.num_batches_tracked', 'conv.weight', 'conv.bias'
-    ])
+    if torch.__version__ == 'parrots':
+        state_dict_keys = set([
+            'block.conv.weight', 'block.conv.bias', 'block.norm.weight',
+            'block.norm.bias', 'block.norm.running_mean',
+            'block.norm.running_var', 'conv.weight', 'conv.bias'
+        ])
+    else:
+        state_dict_keys = set([
+            'block.conv.weight', 'block.conv.bias', 'block.norm.weight',
+            'block.norm.bias', 'block.norm.running_mean',
+            'block.norm.running_var', 'block.norm.num_batches_tracked',
+            'conv.weight', 'conv.bias'
+        ])
 
     model = Model()
     state_dict = get_state_dict(model)
@@ -71,8 +79,9 @@ def test_get_state_dict():
                         model.block.norm.running_mean)
     assert_tensor_equal(state_dict['block.norm.running_var'],
                         model.block.norm.running_var)
-    assert_tensor_equal(state_dict['block.norm.num_batches_tracked'],
-                        model.block.norm.num_batches_tracked)
+    if torch.__version__ != 'parrots':
+        assert_tensor_equal(state_dict['block.norm.num_batches_tracked'],
+                            model.block.norm.num_batches_tracked)
     assert_tensor_equal(state_dict['conv.weight'], model.conv.weight)
     assert_tensor_equal(state_dict['conv.bias'], model.conv.bias)
 
@@ -92,8 +101,10 @@ def test_get_state_dict():
                         wrapped_model.module.block.norm.running_mean)
     assert_tensor_equal(state_dict['block.norm.running_var'],
                         wrapped_model.module.block.norm.running_var)
-    assert_tensor_equal(state_dict['block.norm.num_batches_tracked'],
-                        wrapped_model.module.block.norm.num_batches_tracked)
+    if torch.__version__ != 'parrots':
+        assert_tensor_equal(
+            state_dict['block.norm.num_batches_tracked'],
+            wrapped_model.module.block.norm.num_batches_tracked)
     assert_tensor_equal(state_dict['conv.weight'],
                         wrapped_model.module.conv.weight)
     assert_tensor_equal(state_dict['conv.bias'],
@@ -118,9 +129,10 @@ def test_get_state_dict():
                         wrapped_model.module.block.module.norm.running_mean)
     assert_tensor_equal(state_dict['block.norm.running_var'],
                         wrapped_model.module.block.module.norm.running_var)
-    assert_tensor_equal(
-        state_dict['block.norm.num_batches_tracked'],
-        wrapped_model.module.block.module.norm.num_batches_tracked)
+    if torch.__version__ != 'parrots':
+        assert_tensor_equal(
+            state_dict['block.norm.num_batches_tracked'],
+            wrapped_model.module.block.module.norm.num_batches_tracked)
     assert_tensor_equal(state_dict['conv.weight'],
                         wrapped_model.module.conv.module.weight)
     assert_tensor_equal(state_dict['conv.bias'],
@@ -169,3 +181,35 @@ def test_load_checkpoint_with_prefix():
         prefix = 'back'
         with pytest.raises(AssertionError):
             _load_checkpoint_with_prefix(prefix, 'model.pth')
+
+
+def test_load_classes_name():
+    from mmcv.runner import load_checkpoint, save_checkpoint
+    import tempfile
+    import os
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_checkpoint(model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+
+    model.CLASSES = ('class1', 'class2')
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_checkpoint(model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' in checkpoint['meta']
+    assert checkpoint['meta']['CLASSES'] == ('class1', 'class2')
+
+    model = Model()
+    wrapped_model = DDPWrapper(model)
+    save_checkpoint(wrapped_model, checkpoint_path)
+    checkpoint = load_checkpoint(wrapped_model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+
+    wrapped_model.module.CLASSES = ('class1', 'class2')
+    save_checkpoint(wrapped_model, checkpoint_path)
+    checkpoint = load_checkpoint(wrapped_model, checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' in checkpoint['meta']
+    assert checkpoint['meta']['CLASSES'] == ('class1', 'class2')
+
+    # remove the temp file
+    os.remove(checkpoint_path)
