@@ -1,9 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from tempfile import TemporaryDirectory
-
 import numpy as np
 import pytest
 import torch
+from tempfile import TemporaryDirectory
 from torch import nn
 
 from mmcv.cnn import (BiasInitWithProb, ConstantInit, KaimingInit, NormalInit,
@@ -83,7 +82,7 @@ def test_bias_init_with_prob():
 
 
 def test_constaninit():
-    """test ConstantInit class"""
+    """test ConstantInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = ConstantInit(val=1, bias=2, layers='Conv2d')
     model.apply(func)
@@ -116,7 +115,7 @@ def test_constaninit():
 
 
 def test_xavierinit():
-    """test XavierInit class """
+    """test XavierInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = XavierInit(bias=0.1, layers='Conv2d')
     model.apply(func)
@@ -142,7 +141,7 @@ def test_xavierinit():
 
 
 def test_normalinit():
-    """test Normalinit class"""
+    """test Normalinit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
 
     func = NormalInit(mean=100, std=1e-5, bias=200)
@@ -166,7 +165,7 @@ def test_normalinit():
 
 
 def test_uniforminit():
-    """"test UniformInit class"""
+    """"test UniformInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = UniformInit(a=1, b=1, bias=2)
     model.apply(func)
@@ -186,7 +185,7 @@ def test_uniforminit():
 
 
 def test_kaiminginit():
-    """test KaimingInit class"""
+    """test KaimingInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = KaimingInit(bias=0.1, layers='Conv2d')
     model.apply(func)
@@ -211,7 +210,7 @@ def test_kaiminginit():
 
 
 def test_biasinitwithprob():
-    """test BiasInitWithProb class"""
+    """test BiasInitWithProb class."""
     func = BiasInitWithProb(0.5)
     res = func()
     assert res == bias_init_with_prob(0.5)
@@ -227,7 +226,7 @@ class FooModule(nn.Module):
 
 
 def test_pretrainedinit():
-    """test PretrainedInit class"""
+    """test PretrainedInit class."""
 
     modelA = FooModule()
     constant_func = ConstantInit(val=1, bias=2)

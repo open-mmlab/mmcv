@@ -2,7 +2,7 @@
 import numpy as np
 import torch.nn as nn
 
-from mmcv.utils import (build_from_cfg, get_logger, print_log, Registry)
+from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 
 INITIALIZERS = Registry('initializer')
 
@@ -311,6 +311,7 @@ class KaimingInit(BaseInit):
 @INITIALIZERS.register_module(name='BiasProb')
 class BiasInitWithProb(object):
     """Initialize conv/fc bias value according to giving probablity.
+
     Args:
         prior_prob (float): value as prior probability
     """
@@ -385,7 +386,7 @@ def _initialize_cases(module, cases):
 
 
 def initialize(module, init_cfg):
-    """Initialize a module
+    """Initialize a module.
 
     Args:
         module (``torch.nn.Module``): the module will be initialized.

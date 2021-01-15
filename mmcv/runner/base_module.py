@@ -1,6 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from abc import ABCMeta
 import warnings
+from abc import ABCMeta
 
 import torch.nn as nn
 
@@ -8,7 +8,7 @@ from mmcv.cnn import initialize
 
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
-    """Base module for all modules in openmmlab"""
+    """Base module for all modules in openmmlab."""
 
     def __init__(self, init_cfg=None):
         """Initialize BaseModule, inherited from `torch.nn.Module`
@@ -38,8 +38,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         return self._is_init
 
     def init_weight(self):
-        """Initialize the weights.
-        """
+        """Initialize the weights."""
         if not self._is_init:
 
             if hasattr(self, 'init_cfg'):
