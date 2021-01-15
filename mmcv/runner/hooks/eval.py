@@ -211,7 +211,6 @@ class EvalHook(Hook):
             runner.save_checkpoint(
                 runner.work_dir, best_ckpt_name, create_symlink=False)
             self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
-            
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
