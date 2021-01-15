@@ -171,7 +171,7 @@ class TestPhotometric:
 
         def _adjust_contrast(img, factor):
             from PIL.ImageEnhance import Contrast
-
+            from PIL import Image
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
