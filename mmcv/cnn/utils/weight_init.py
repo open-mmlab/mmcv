@@ -95,7 +95,7 @@ class ConstantInit(BaseInit):
 
     Args:
         val (int | float): the value to fill the weights in the module with
-        bias (int | float | dict, optional): the value to fill the bias or
+        bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
         layers (str |  [str], optional): the layer will be initialized.
         Defaults to None.
@@ -131,11 +131,11 @@ class XavierInit(BaseInit):
     neural networks` - Glorot, X. & Bengio, Y. (2010).
 
     Args:
-        gain (int | float, optional): an optional scaling factor. Defaults
+        gain (int | float): an optional scaling factor. Defaults
         to 1.
-        bias (int | float | dict, optional): the value to fill the bias or
+        bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
-        distribution (str, optional): distribution either be ``'normal'``
+        distribution (str): distribution either be ``'normal'``
         or ``'uniform'``. Defaults to ``'normal'``.
         layers (str | [str], optional): the layer will be initialized.
         Defaults to None.
@@ -173,11 +173,11 @@ class NormalInit(BaseInit):
     distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`.
 
     Args:
-        mean (int | float, optional):the mean of the normal distribution.
+        mean (int | float):the mean of the normal distribution.
         Defaults to 0.
-        std (int | float, optional): the standard deviation of the normal
+        std (int | float): the standard deviation of the normal
         distribution. Defaults to 1.
-        bias (int | float | dict, optional): the value to fill the bias or
+        bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
         layers (str | [str], optional): the layer will be initialized.
         Defaults to None.
@@ -214,11 +214,11 @@ class UniformInit(BaseInit):
     distribution :math:`\mathcal{U}(a, b)`.
 
     Args:
-        a (int | float, optional): the lower bound of the uniform
+        a (int | float): the lower bound of the uniform
         distribution. Defaults to 0.
-        b (int | float, optional): the upper bound of the uniform
+        b (int | float): the upper bound of the uniform
         distribution. Defaults to 1.
-        bias (int | float | dict, optional): the value to fill the bias or
+        bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
         layers (str | [str], optional): the layer will be initialized.
         Defaults to None.
@@ -255,18 +255,18 @@ class KaimingInit(BaseInit):
     performance on ImageNet classification` - He, K. et al. (2015).
 
     Args:
-        a (int | float, optional): the negative slope of the rectifier used
+        a (int | float): the negative slope of the rectifier used
         after this layer (only used with ``'leaky_relu'``). Defaults to 0.
-        mode (str, optional):  either ``'fan_in'`` or ``'fan_out'``.
+        mode (str):  either ``'fan_in'`` or ``'fan_out'``.
         Choosing ``'fan_in'`` preserves the magnitude of the variance of
         the weights in the forward pass. Choosing ``'fan_out'`` preserves
         the magnitudes in the backwards pass. Defaults to ``'fan_out'``.
-        nonlinearity (str, optional): the non-linear function
+        nonlinearity (str): the non-linear function
         (`nn.functional` name), recommended to use only with ``'relu'`` or
         ``'leaky_relu'`` . Defaults to 'relu'.
-        bias (int | float | dict, optional): the value to fill the bias or
+        bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
-        distribution (str, optional): distribution either be ``'normal'``
+        distribution (str): distribution either be ``'normal'``
         or ``'uniform'``. Defaults to ``'normal'``.
         layers (str | [str], optional): the layer will be initialized.
         Defaults to None.
@@ -389,9 +389,9 @@ def initialize(module, init_cfg):
 
     Args:
         module (``torch.nn.Module``): the module will be initialized.
-        init_cfg (dict | list[dict]): initialization config dict to define
-        initializer. OpenMMLab has implemented 7 initializers including
-        ``Constant``, ``Xavier`, ``Normal``, ``Uniform``,
+        init_cfg (dict | list[dict]): initialization configuration dict to
+        define initializer. OpenMMLab has implemented 7 initializers including
+        ``Constant``, ``Xavier``, ``Normal``, ``Uniform``,
         ``Kaiming``, ``Pretrained`` and ``BiasProb`` for
         bias initialization.
 
@@ -399,51 +399,17 @@ def initialize(module, init_cfg):
         >>> module = nn.Linear(2, 3, bias=True)
         >>> init_cfg = dict(type='Constant', val =1 , bias =2)
         >>> initialize(module, init_cfg)
-        >>> for p in module.parameters():
-                print(p)
-            Parameter containing:
-            tensor([[1., 1.],
-                    [1., 1.],
-                    [1., 1.]], requires_grad=True)
-            Parameter containing:
-            tensor([2., 2., 2.], requires_grad=True)
 
         >>> module = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
         >>> # define key ``'layers'`` for initializing layers with different
         >>> # configuration
         >>> init_cfg = [dict(type='Constant', layers='Conv1d', val=1),
-                dict(type='ConstantInit', layers='Linear', val=2)]
+                dict(type='Constant', layers='Linear', val=2)]
         >>> initialize(module, init_cfg)
-        >>> for name, param in module.named_parameters():
-                print(name, param)
-        0.weight Parameter containing:
-        tensor([[[1., 1., 1.],
-                [1., 1., 1.],
-                [1., 1., 1.]]], requires_grad=True)
-        0.bias Parameter containing:
-        tensor([0.], requires_grad=True)
-        1.weight Parameter containing:
-        tensor([[2.],
-                [2.]], requires_grad=True)
-        1.bias Parameter containing:
-        tensor([0., 0.], requires_grad=True)
 
         >>> # Omitting ``'layers'`` initialize module with same configuration
         >>> init_cfg = dict(type='Constant', val=1, bias=2)
         >>> initialize(module, init_cfg)
-        >>> for name, param in module.named_parameters():
-                print(name, param)
-        0.weight Parameter containing:
-        tensor([[[1., 1., 1.],
-                [1., 1., 1.],
-                [1., 1., 1.]]], requires_grad=True)
-        0.bias Parameter containing:
-        tensor([2.], requires_grad=True)
-        1.weight Parameter containing:
-        tensor([[1.],
-                [1.]], requires_grad=True)
-        1.bias Parameter containing:
-        tensor([2., 2.], requires_grad=True)
 
         >>> # define key``'cases'`` to initialize some specific cases in module
         >>> class FooNet(nn.Module):
