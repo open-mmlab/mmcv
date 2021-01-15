@@ -221,31 +221,141 @@ def _process_mmcls_checkpoint(checkpoint):
     return new_checkpoint
 
 
-def _load_checkpoint(filename, map_location=None):
-    """Load checkpoint from somewhere (modelzoo, file, url).
+class LoadCheckpointHandler:
 
-    Args:
-        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
-            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
-            details.
-        map_location (str | None): Same as :func:`torch.load`. Default: None.
+    @classmethod
+    def get_supported_prefixes(cls):
+        """
+        Returns:
+            str or List[str] or Tuple[str]: the list or tuple or str of
+            Handler can support
+        """
+        raise NotImplementedError()
 
-    Returns:
-        dict | OrderedDict: The loaded checkpoint. It can be either an
-            OrderedDict storing model weights or a dict containing other
-            information, which depends on the checkpoint.
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
+        raise NotImplementedError()
+
+
+class NativeLoadCheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
+        if not osp.isfile(filename):
+            raise IOError(f'{filename} is not a checkpoint file')
+        checkpoint = torch.load(filename, map_location=map_location)
+        return checkpoint
+
+
+class LoadCheckpointHandlerClient:
+    """A general load checkpoint handler client to load checkpoint.
+
+    Attributes:
+        _handler (str): .
+        _native_checkpoint_handler (:obj:`NativeLoadCheckpointHandler`):
+           The backend object.
     """
-    if filename.startswith('modelzoo://'):
-        warnings.warn('The URL scheme of "modelzoo://" is deprecated, please '
-                      'use "torchvision://" instead')
-        model_urls = get_torchvision_models()
-        model_name = filename[11:]
-        checkpoint = load_url_dist(model_urls[model_name])
-    elif filename.startswith('torchvision://'):
-        model_urls = get_torchvision_models()
-        model_name = filename[14:]
-        checkpoint = load_url_dist(model_urls[model_name])
-    elif filename.startswith('open-mmlab://'):
+
+    _handler = {}
+    _native_checkpoint_handler = NativeLoadCheckpointHandler()
+
+    @classmethod
+    def _register_backend(cls, handler, force=False):
+        prefixes = handler.get_supported_prefixes()
+        assert isinstance(prefixes, (list, tuple, str))
+        if isinstance(prefixes, str):
+            prefixes = [prefixes]
+        for prefix in prefixes:
+            if prefix not in cls._handler:
+                cls._handler[prefix] = handler
+                continue
+            if force:
+                cls._handler[prefix] = handler
+            else:
+                raise KeyError(
+                    f'{handler} is already registered as a storage backend, '
+                    'add "force=True" if you want to override it')
+        # sort
+        cls._handler = OrderedDict(
+            sorted(cls._handler.items(), key=lambda t: t[0], reverse=True))
+
+    @classmethod
+    def register_handler(cls, handler=None, force=False):
+
+        if handler is not None:
+            cls._register_backend(handler, force=force)
+            return
+
+        def _register(backend_cls):
+            cls._register_backend(backend_cls, force=force)
+            return backend_cls
+
+        return _register
+
+    @classmethod
+    def _get_checkpoint_handler(cls, path):
+        """Finds a Handler that supports the given path. Falls back to the
+        native Handler if no other handler is found.
+
+        Args:
+            path (str): checkpoint path
+
+        Returns:
+            handler (Handler)
+        """
+        for p in cls._handler.keys():
+            if path.startswith(p):
+                return cls._handler[p]
+        return cls._native_checkpoint_handler
+
+    @classmethod
+    def load_checkpoint(cls, filepath, map_location=None):
+        return cls._get_checkpoint_handler(filepath).load_checkpoint(
+            filepath, map_location)
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class HTTPURLLoadCheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 'http://', 'https://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
+        checkpoint = load_url_dist(filename)
+        return checkpoint
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class TorchLoadCheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 'modelzoo://', 'torchvision://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
+        if filename.startswith('modelzoo://'):
+            warnings.warn(
+                'The URL scheme of "modelzoo://" is deprecated, please '
+                'use "torchvision://" instead')
+            model_name = filename[11:]
+        else:
+            model_name = filename[14:]
+        checkpoint = load_url_dist(model_name)
+        return checkpoint
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class OpenMMLabCheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 'open-mmlab://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
         model_urls = get_external_models()
         model_name = filename[13:]
         deprecated_urls = get_deprecated_model_names()
@@ -254,32 +364,58 @@ def _load_checkpoint(filename, map_location=None):
                           f'of open-mmlab://{deprecated_urls[model_name]}')
             model_name = deprecated_urls[model_name]
         model_url = model_urls[model_name]
-        # check if is url
         if model_url.startswith(('http://', 'https://')):
-            checkpoint = load_url_dist(model_url)
+            checkpoint = load_url_dist(filename)
         else:
             filename = osp.join(_get_mmcv_home(), model_url)
             if not osp.isfile(filename):
                 raise IOError(f'{filename} is not a checkpoint file')
             checkpoint = torch.load(filename, map_location=map_location)
-    elif filename.startswith('mmcls://'):
+        return checkpoint
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class MMCLSCheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 'mmcls://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
         model_urls = get_mmcls_models()
         model_name = filename[8:]
         checkpoint = load_url_dist(model_urls[model_name])
         checkpoint = _process_mmcls_checkpoint(checkpoint)
-    elif filename.startswith(('http://', 'https://')):
-        checkpoint = load_url_dist(filename)
-    elif filename.startswith('pavi://'):
+        return checkpoint
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class PAVICheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 'pavi://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
         model_path = filename[7:]
         checkpoint = load_pavimodel_dist(model_path, map_location=map_location)
-    elif filename.startswith('s3://'):
+        return checkpoint
+
+
+@LoadCheckpointHandlerClient.register_handler()
+class S3CheckpointHandler(LoadCheckpointHandler):
+
+    @classmethod
+    def get_supported_prefixes(cls):
+        return 's3://'
+
+    @classmethod
+    def load_checkpoint(cls, filename, map_location):
         checkpoint = load_fileclient_dist(
             filename, backend='ceph', map_location=map_location)
-    else:
-        if not osp.isfile(filename):
-            raise IOError(f'{filename} is not a checkpoint file')
-        checkpoint = torch.load(filename, map_location=map_location)
-    return checkpoint
+        return checkpoint
 
 
 def load_checkpoint(model,
@@ -302,7 +438,8 @@ def load_checkpoint(model,
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    checkpoint = _load_checkpoint(filename, map_location)
+    checkpoint = LoadCheckpointHandlerClient.load_checkpoint(
+        filename, map_location)
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(
