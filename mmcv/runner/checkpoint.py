@@ -221,23 +221,14 @@ def _process_mmcls_checkpoint(checkpoint):
     return new_checkpoint
 
 
-class LoadCheckpointHandler:
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        """
-        Returns:
-            str or List[str] or Tuple[str]: the list or tuple or str of
-            Handler can support
-        """
-        raise NotImplementedError()
+class BaseCheckpointLoader:
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
         raise NotImplementedError()
 
 
-class NativeLoadCheckpointHandler(LoadCheckpointHandler):
+class NativeCheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -247,79 +238,74 @@ class NativeLoadCheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-class LoadCheckpointHandlerClient:
-    """A general load checkpoint handler client to load checkpoint.
+class CheckpointLoaderClient:
+    """A general checkpoint loader client to load checkpoint.
 
     Attributes:
-        _handler (str): .
-        _native_checkpoint_handler (:obj:`NativeLoadCheckpointHandler`):
+        _loader (dict[loader]): .
+        _native_checkpoint_handler (:obj:`NativeCheckpointLoader`):
            The backend object.
     """
 
-    _handler = {}
-    _native_checkpoint_handler = NativeLoadCheckpointHandler()
+    _loader = {}
+    _native_checkpoint_loader = NativeCheckpointLoader()
 
     @classmethod
-    def _register_backend(cls, handler, force=False):
-        prefixes = handler.get_supported_prefixes()
+    def _register_loader(cls, prefixes, loader, force=False):
         assert isinstance(prefixes, (list, tuple, str))
         if isinstance(prefixes, str):
             prefixes = [prefixes]
         for prefix in prefixes:
-            if prefix not in cls._handler:
-                cls._handler[prefix] = handler
+            if prefix not in cls._loader:
+                cls._loader[prefix] = loader
                 continue
             if force:
-                cls._handler[prefix] = handler
+                cls._loader[prefix] = loader
             else:
                 raise KeyError(
-                    f'{handler} is already registered as a storage backend, '
+                    f'{prefix} is already registered as a storage backend, '
                     'add "force=True" if you want to override it')
         # sort
-        cls._handler = OrderedDict(
-            sorted(cls._handler.items(), key=lambda t: t[0], reverse=True))
+        cls._loader = OrderedDict(
+            sorted(cls._loader.items(), key=lambda t: t[0], reverse=True))
 
     @classmethod
-    def register_handler(cls, handler=None, force=False):
+    def register_loader(cls, prefixes, loader=None, force=False):
 
-        if handler is not None:
-            cls._register_backend(handler, force=force)
+        if loader is not None:
+            cls._register_loader(prefixes, loader, force=force)
             return
 
-        def _register(backend_cls):
-            cls._register_backend(backend_cls, force=force)
-            return backend_cls
+        def _register(loader_cls):
+            cls._register_loader(prefixes, loader_cls, force=force)
+            return loader_cls
 
         return _register
 
     @classmethod
-    def _get_checkpoint_handler(cls, path):
-        """Finds a Handler that supports the given path. Falls back to the
-        native Handler if no other handler is found.
+    def _get_checkpoint_loader(cls, path):
+        """Finds a loader that supports the given path. Falls back to the
+        native loader if no other loader is found.
 
         Args:
             path (str): checkpoint path
 
         Returns:
-            handler (Handler)
+            loader (Loader)
         """
-        for p in cls._handler.keys():
+        for p in cls._loader.keys():
             if path.startswith(p):
-                return cls._handler[p]
-        return cls._native_checkpoint_handler
+                return cls._loader[p]
+        return cls._native_checkpoint_loader
 
     @classmethod
     def load_checkpoint(cls, filepath, map_location=None):
-        return cls._get_checkpoint_handler(filepath).load_checkpoint(
+        return cls._get_checkpoint_loader(filepath).load_checkpoint(
             filepath, map_location)
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class HTTPURLLoadCheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 'http://', 'https://'
+@CheckpointLoaderClient.register_loader(prefixes=('http://', 'https://'))
+class HTTPURLLoadCheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -327,12 +313,9 @@ class HTTPURLLoadCheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class TorchLoadCheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 'modelzoo://', 'torchvision://'
+@CheckpointLoaderClient.register_loader(
+    prefixes=('modelzoo://', 'torchvision://'))
+class TorchLoadCheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -347,12 +330,8 @@ class TorchLoadCheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class OpenMMLabCheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 'open-mmlab://'
+@CheckpointLoaderClient.register_loader(prefixes='open-mmlab://')
+class OpenMMLabCheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -374,12 +353,8 @@ class OpenMMLabCheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class MMCLSCheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 'mmcls://'
+@CheckpointLoaderClient.register_loader(prefixes='mmcls://')
+class MMCLSCheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -390,12 +365,8 @@ class MMCLSCheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class PAVICheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 'pavi://'
+@CheckpointLoaderClient.register_loader(prefixes='pavi://')
+class PAVICheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -404,12 +375,8 @@ class PAVICheckpointHandler(LoadCheckpointHandler):
         return checkpoint
 
 
-@LoadCheckpointHandlerClient.register_handler()
-class S3CheckpointHandler(LoadCheckpointHandler):
-
-    @classmethod
-    def get_supported_prefixes(cls):
-        return 's3://'
+@CheckpointLoaderClient.register_loader(prefixes='s3://')
+class S3CheckpointLoader(BaseCheckpointLoader):
 
     @classmethod
     def load_checkpoint(cls, filename, map_location):
@@ -438,8 +405,7 @@ def load_checkpoint(model,
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    checkpoint = LoadCheckpointHandlerClient.load_checkpoint(
-        filename, map_location)
+    checkpoint = CheckpointLoaderClient.load_checkpoint(filename, map_location)
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(
