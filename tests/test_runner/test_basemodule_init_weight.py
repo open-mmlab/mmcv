@@ -181,9 +181,9 @@ def test_nest_components_weight_init():
                 val=1,
                 bias=2,
                 layers='Linear',
-                cases=dict(type='ConstantInit', name='reg', val=13, bias=14)),
-            dict(type='ConstantInit', val=3, bias=4, layers='Conv1d'),
-            dict(type='ConstantInit', val=5, bias=6, layers='Conv2d'),
+                cases=dict(type='Constant', name='reg', val=13, bias=14)),
+            dict(type='Constant', val=3, bias=4, layers='Conv1d'),
+            dict(type='Constant', val=5, bias=6, layers='Conv2d'),
         ],
         component1=dict(
             type='FooConv1d', init_cfg=dict(type='Constant', val=7, bias=8)),
