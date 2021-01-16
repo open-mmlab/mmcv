@@ -9,6 +9,7 @@ import torch.nn as nn
 
 from mmcv.utils import TORCH_VERSION
 from .dist_utils import allreduce_grads as _allreduce_grads
+
 try:
     from torch.cuda.amp import autocast
 except ImportError:
@@ -136,8 +137,8 @@ def force_fp32(apply_to=None, out_fp16=False):
     mixed precision training. If there are some inputs that must be processed
     in fp32 mode, then this decorator can handle it. If inputs arguments are
     fp16 tensors, they will be converted to fp32 automatically. Arguments other
-    than fp16 tensors are ignored. If you are using PyTorch >= 1.6, 
-    torch.cuda.amp is used as the backend, otherwise, original mmcv 
+    than fp16 tensors are ignored. If you are using PyTorch >= 1.6,
+    torch.cuda.amp is used as the backend, otherwise, original mmcv
     implementation will be adopted.
 
     Args:

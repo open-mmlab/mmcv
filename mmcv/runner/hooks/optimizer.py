@@ -9,8 +9,9 @@ from mmcv.utils import TORCH_VERSION
 from ..dist_utils import allreduce_grads
 from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
+
 try:
-    from torch.cuda.amp import autocast, GradScaler
+    from torch.cuda.amp import GradScaler
 except ImportError:
     pass
 
@@ -43,7 +44,7 @@ class OptimizerHook(Hook):
 class Fp16OptimizerHook(OptimizerHook):
     """FP16 optimizer hook.
 
-    If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend, 
+    If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,
     otherwise, original mmcv implementation will be adopted.
 
     The steps of fp16 optimizer with mmcv implementation is as follows.
@@ -63,17 +64,17 @@ class Fp16OptimizerHook(OptimizerHook):
             the specified scale. If loss_scale is a string, it must be
             'dynamic', then dynamic loss scaling will be used.
             It can also be a dict containing arguments of LossScaler.
-            Defaults to 512. For Pytorch >= 1.6, mmcv uses official 
-            implementation of GradScaler. If you use a dict version of 
+            Defaults to 512. For Pytorch >= 1.6, mmcv uses official
+            implementation of GradScaler. If you use a dict version of
             loss_scale to create GradScaler, plese refer to:
 
             https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler
-            
+
             for the parameters. Here is an example:
             loss_scale = dict(
-                init_scale=65536.0, 
-                growth_factor=2.0, 
-                backoff_factor=0.5, 
+                init_scale=65536.0,
+                growth_factor=2.0,
+                backoff_factor=0.5,
                 growth_interval=2000
             )
     """
