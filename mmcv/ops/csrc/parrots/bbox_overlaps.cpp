@@ -1,36 +1,29 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void BBoxOverlapsCUDAKernelLauncher(const DArrayLite bboxes1,
-                                    const DArrayLite bboxes2, DArrayLite ious,
-                                    const int mode, const bool aligned,
-                                    const int offset, cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
+                                    Tensor ious, const int mode,
+                                    const bool aligned, const int offset);
 
-void bbox_overlaps_cuda(CudaContext& ctx, const SSElement& attr,
-                        const OperatorBase::in_list_t& ins,
-                        OperatorBase::out_list_t& outs) {
-  int mode, offset;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("mode", mode)
-      .get<bool>("aligned", aligned)
-      .get<int>("offset", offset)
-      .done();
-
-  const auto& bboxes1 = ins[0];
-  const auto& bboxes2 = ins[1];
-
-  auto& ious = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  BBoxOverlapsCUDAKernelLauncher(bboxes1, bboxes2, ious, mode, aligned, offset,
-                                 stream);
+void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
+                        const int mode, const bool aligned, const int offset) {
+  BBoxOverlapsCUDAKernelLauncher(bboxes1, bboxes2, ious, mode, aligned, offset);
 }
+#endif
 
-PARROTS_EXTENSION_REGISTER(bbox_overlaps)
-    .attr("mode")
-    .attr("aligned")
-    .attr("offset")
-    .input(2)
-    .output(1)
-    .apply(bbox_overlaps_cuda)
-    .done();
+void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
+                   const int mode, const bool aligned, const int offset) {
+  if (bboxes1.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(bboxes1);
+    CHECK_CUDA_INPUT(bboxes2);
+    CHECK_CUDA_INPUT(ious);
+
+    bbox_overlaps_cuda(bboxes1, bboxes2, ious, mode, aligned, offset);
+#else
+    AT_ERROR("bbox_overlaps is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("bbox_overlaps is not implemented on CPU");
+  }
+}
