@@ -7,22 +7,20 @@
 
 #include "trt_serialize.hpp"
 
-extern size_t get_onnxnms_workspace_size(size_t num_batches,
-                                         size_t spatial_dimension,
-                                         size_t num_classes,
-                                         size_t boxes_word_size,
-                                         int center_point_box);
+extern size_t get_onnxnms_workspace_size(
+    size_t num_batches, size_t spatial_dimension, size_t num_classes,
+    size_t boxes_word_size, int center_point_box, size_t output_length);
 
 extern void TRTONNXNMSCUDAKernelLauncher_float(
     const float *boxes, const float *scores,
-    const int *max_output_boxes_per_class, const float *iou_threshold,
-    const float *score_threshold, int *output, int center_point_box,
-    int num_batches, int spatial_dimension, int num_classes, void *workspace,
-    cudaStream_t stream);
+    const int max_output_boxes_per_class, const float iou_threshold,
+    const float score_threshold, int *output, int center_point_box,
+    int num_batches, int spatial_dimension, int num_classes,
+    size_t output_length, void *workspace, cudaStream_t stream);
 
 namespace {
 static const char *PLUGIN_VERSION{"1"};
-static const char *PLUGIN_NAME{"NonMaxSuppression"};
+static const char *PLUGIN_NAME{"MMCVNonMaxSuppression"};
 }  // namespace
 
 nvinfer1::PluginFieldCollection ONNXNonMaxSuppressionDynamicCreator::mFC{};
@@ -30,18 +28,27 @@ std::vector<nvinfer1::PluginField>
     ONNXNonMaxSuppressionDynamicCreator::mPluginAttributes;
 
 ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
-    const std::string &name, int centerPointBox)
-    : mLayerName(name), mCenterPointBox(centerPointBox), mNumberInputs(0) {}
+    const std::string &name, int centerPointBox, int maxOutputBoxesPerClass,
+    float iouThreshold, float scoreThreshold)
+    : mLayerName(name),
+      mCenterPointBox(centerPointBox),
+      mMaxOutputBoxesPerClass(maxOutputBoxesPerClass),
+      mIouThreshold(iouThreshold),
+      mScoreThreshold(scoreThreshold) {}
 
 ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
     const std::string name, const void *data, size_t length)
     : mLayerName(name) {
   deserialize_value(&data, &length, &mCenterPointBox);
+  deserialize_value(&data, &length, &mMaxOutputBoxesPerClass);
+  deserialize_value(&data, &length, &mIouThreshold);
+  deserialize_value(&data, &length, &mScoreThreshold);
 }
 
 nvinfer1::IPluginV2DynamicExt *ONNXNonMaxSuppressionDynamic::clone() const {
-  ONNXNonMaxSuppressionDynamic *plugin =
-      new ONNXNonMaxSuppressionDynamic(mLayerName, mCenterPointBox);
+  ONNXNonMaxSuppressionDynamic *plugin = new ONNXNonMaxSuppressionDynamic(
+      mLayerName, mCenterPointBox, mMaxOutputBoxesPerClass, mIouThreshold,
+      mScoreThreshold);
   plugin->setPluginNamespace(getPluginNamespace());
 
   return plugin;
@@ -54,6 +61,9 @@ nvinfer1::DimsExprs ONNXNonMaxSuppressionDynamic::getOutputDimensions(
   ret.nbDims = 2;
   auto num_batches = inputs[0].d[0];
   auto spatial_dimension = inputs[0].d[1];
+  if (mMaxOutputBoxesPerClass > 0) {
+    spatial_dimension = exprBuilder.constant(mMaxOutputBoxesPerClass);
+  }
   auto num_classes = inputs[1].d[1];
   ret.d[0] = exprBuilder.operation(
       nvinfer1::DimensionOperation::kPROD, *num_batches,
@@ -77,18 +87,6 @@ bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
         // scores
         return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
                inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
-      case 2:
-        // max_output_boxes_per_class
-        return inOut[pos].type == nvinfer1::DataType::kINT32 &&
-               inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
-      case 3:
-        // iou_threshold
-        return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-               inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
-      case 4:
-        // score_threshold
-        return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-               inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
       default:
         return true;
     }
@@ -107,9 +105,7 @@ bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
 
 void ONNXNonMaxSuppressionDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
-  mNumberInputs = nbInputs;
-}
+    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
 
 size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
@@ -118,9 +114,11 @@ size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
   size_t num_batches = inputs[0].dims.d[0];
   size_t spatial_dimension = inputs[0].dims.d[1];
   size_t num_classes = inputs[1].dims.d[1];
+  size_t output_length = outputs[0].dims.d[0];
 
   return get_onnxnms_workspace_size(num_batches, spatial_dimension, num_classes,
-                                    boxes_word_size, mCenterPointBox);
+                                    boxes_word_size, mCenterPointBox,
+                                    output_length);
 }
 
 int ONNXNonMaxSuppressionDynamic::enqueue(
@@ -130,22 +128,16 @@ int ONNXNonMaxSuppressionDynamic::enqueue(
   int num_batches = inputDesc[0].dims.d[0];
   int spatial_dimension = inputDesc[0].dims.d[1];
   int num_classes = inputDesc[1].dims.d[1];
+  int output_length = outputDesc[0].dims.d[0];
 
   const float *boxes = (const float *)inputs[0];
   const float *scores = (const float *)inputs[1];
-  const int *max_output_boxes_per_class =
-      (mNumberInputs >= 3) ? (const int *)inputs[2] : nullptr;
-  const float *iou_threshold =
-      (mNumberInputs >= 4) ? (const float *)inputs[3] : nullptr;
-  const float *score_threshold =
-      (mNumberInputs >= 5) ? (const float *)inputs[4] : nullptr;
-
   int *output = (int *)outputs[0];
 
   TRTONNXNMSCUDAKernelLauncher_float(
-      boxes, scores, max_output_boxes_per_class, iou_threshold, score_threshold,
-      output, mCenterPointBox, num_batches, spatial_dimension, num_classes,
-      workSpace, stream);
+      boxes, scores, mMaxOutputBoxesPerClass, mIouThreshold,
+      mScoreThreshold, output, mCenterPointBox, num_batches,
+      spatial_dimension, num_classes, output_length, workSpace, stream);
 
   return 0;
 }
@@ -171,11 +163,15 @@ int ONNXNonMaxSuppressionDynamic::initialize() { return 0; }
 void ONNXNonMaxSuppressionDynamic::terminate() {}
 
 size_t ONNXNonMaxSuppressionDynamic::getSerializationSize() const {
-  return sizeof(mCenterPointBox);
+  return sizeof(mCenterPointBox) + sizeof(mMaxOutputBoxesPerClass) +
+         sizeof(mIouThreshold) + sizeof(mScoreThreshold);
 }
 
 void ONNXNonMaxSuppressionDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mCenterPointBox);
+  serialize_value(&buffer, mMaxOutputBoxesPerClass);
+  serialize_value(&buffer, mIouThreshold);
+  serialize_value(&buffer, mScoreThreshold);
 }
 
 void ONNXNonMaxSuppressionDynamic::destroy() {
@@ -196,7 +192,11 @@ const char *ONNXNonMaxSuppressionDynamic::getPluginNamespace() const {
 
 ONNXNonMaxSuppressionDynamicCreator::ONNXNonMaxSuppressionDynamicCreator() {
   mPluginAttributes.clear();
-  // mPluginAttributes.emplace_back(nvinfer1::PluginField("center_point_box"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("center_point_box"));
+  mPluginAttributes.emplace_back(
+      nvinfer1::PluginField("max_output_boxes_per_class"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("iou_threshold"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("score_threshold"));
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
 }
@@ -217,6 +217,10 @@ ONNXNonMaxSuppressionDynamicCreator::getFieldNames() {
 nvinfer1::IPluginV2 *ONNXNonMaxSuppressionDynamicCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) {
   int centerPointBox = 0;
+  int maxOutputBoxesPerClass = 0;
+  float iouThreshold = 0.0f;
+  float scoreThreshold = 0.0f;
+
   for (int i = 0; i < fc->nbFields; i++) {
     if (fc->fields[i].data == nullptr) {
       continue;
@@ -226,10 +230,23 @@ nvinfer1::IPluginV2 *ONNXNonMaxSuppressionDynamicCreator::createPlugin(
     if (field_name.compare("center_point_box") == 0) {
       centerPointBox = static_cast<const int *>(fc->fields[i].data)[0];
     }
+
+    if (field_name.compare("max_output_boxes_per_class") == 0) {
+      maxOutputBoxesPerClass = static_cast<const int *>(fc->fields[i].data)[0];
+    }
+
+    if (field_name.compare("iou_threshold") == 0) {
+      iouThreshold = static_cast<const float *>(fc->fields[i].data)[0];
+    }
+
+    if (field_name.compare("score_threshold") == 0) {
+      scoreThreshold = static_cast<const float *>(fc->fields[i].data)[0];
+    }
   }
 
-  ONNXNonMaxSuppressionDynamic *plugin =
-      new ONNXNonMaxSuppressionDynamic(name, centerPointBox);
+  ONNXNonMaxSuppressionDynamic *plugin = new ONNXNonMaxSuppressionDynamic(
+      name, centerPointBox, maxOutputBoxesPerClass, iouThreshold,
+      scoreThreshold);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }

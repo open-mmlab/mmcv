@@ -10,7 +10,9 @@
 
 class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
-  ONNXNonMaxSuppressionDynamic(const std::string &name, int centerPointBox);
+  ONNXNonMaxSuppressionDynamic(const std::string &name, int centerPointBox,
+                               int maxOutputBoxesPerClass, float iouThreshold,
+                               float scoreThreshold);
 
   ONNXNonMaxSuppressionDynamic(const std::string name, const void *data,
                                size_t length);
@@ -60,7 +62,9 @@ class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   std::string mNamespace;
 
   int mCenterPointBox;
-  int mNumberInputs;
+  int mMaxOutputBoxesPerClass;
+  float mIouThreshold;
+  float mScoreThreshold;
 
  protected:
   // To prevent compiler warnings.

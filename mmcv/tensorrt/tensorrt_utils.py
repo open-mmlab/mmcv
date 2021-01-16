@@ -1,6 +1,80 @@
 import tensorrt as trt
 import torch
 
+import onnx
+import numpy as np
+
+
+def preprocess_onnx(onnx_model):
+    graph = onnx_model.graph
+    nodes = graph.node
+
+    idx = 0
+
+    node_dict = {}
+    for node in nodes:
+        node_outputs = node.output
+        for output in node_outputs:
+            if len(output) > 0:
+                node_dict[output] = node
+
+    while idx < len(nodes):
+        node = nodes[idx]
+        node_attributes = node.attribute
+        node_inputs = node.input
+        node_outputs = node.output
+        node_name = node.name
+        # process NonMaxSuppression node
+        if node.op_type == 'NonMaxSuppression':
+            center_point_box = 0
+            max_output_boxes_per_class = 0
+            iou_threshold = 0.0
+            score_threshold = 0.0
+
+            for attribute in node_attributes:
+                if attribute.name == 'center_point_box':
+                    center_point_box = attribute.i
+
+            if len(node_inputs) >= 3:
+                const_node = node_dict[node_inputs[2]]
+                assert const_node.op_type == 'Constant'
+                raw_data = const_node.attribute[0].t.raw_data
+                max_output_boxes_per_class = onnx.helper.np.frombuffer(
+                    raw_data, np.int64).item()
+
+            if len(node_inputs) >= 4:
+                const_node = node_dict[node_inputs[3]]
+                assert const_node.op_type == 'Constant'
+                raw_data = const_node.attribute[0].t.raw_data
+                iou_threshold = np.frombuffer(raw_data, np.float32).item()
+
+            if len(node_inputs) >= 5:
+                const_node = node_dict[node_inputs[4]]
+                assert const_node.op_type == 'Constant'
+                raw_data = const_node.attribute[0].t.raw_data
+                score_threshold = np.frombuffer(raw_data, np.float32).item()
+
+            new_node = onnx.helper.make_node(
+                'MMCVNonMaxSuppression',
+                node_inputs[:2],
+                node_outputs,
+                name=node_name,
+                center_point_box=center_point_box,
+                max_output_boxes_per_class=max_output_boxes_per_class,
+                iou_threshold=iou_threshold,
+                score_threshold=score_threshold)
+
+            if node_name in node_dict:
+                node_dict[node_name] = new_node
+            nodes.insert(idx, new_node)
+            nodes.remove(node)
+
+            idx += 1
+            continue
+        idx += 1
+
+    return onnx_model
+
 
 def onnx2trt(onnx_model,
              opt_shape_dict,
@@ -46,10 +120,11 @@ def onnx2trt(onnx_model,
     parser = trt.OnnxParser(network, logger)
 
     if isinstance(onnx_model, str):
-        assert parser.parse_from_file(onnx_model), 'parse onnx failed.'
-    else:
-        assert parser.parse(
-            onnx_model.SerializeToString()), 'parse onnx failed.'
+        onnx_model = onnx.load(onnx_model)
+    
+    onnx_model = preprocess_onnx(onnx_model)
+
+    assert parser.parse(onnx_model.SerializeToString()), 'parse onnx failed.'
 
     # config builder
     builder.max_workspace_size = max_workspace_size
