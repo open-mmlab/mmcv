@@ -135,9 +135,9 @@ int ONNXNonMaxSuppressionDynamic::enqueue(
   int *output = (int *)outputs[0];
 
   TRTONNXNMSCUDAKernelLauncher_float(
-      boxes, scores, mMaxOutputBoxesPerClass, mIouThreshold,
-      mScoreThreshold, output, mCenterPointBox, num_batches,
-      spatial_dimension, num_classes, output_length, workSpace, stream);
+      boxes, scores, mMaxOutputBoxesPerClass, mIouThreshold, mScoreThreshold,
+      output, mCenterPointBox, num_batches, spatial_dimension, num_classes,
+      output_length, workSpace, stream);
 
   return 0;
 }

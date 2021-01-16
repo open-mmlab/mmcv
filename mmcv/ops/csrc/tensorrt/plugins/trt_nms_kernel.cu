@@ -55,6 +55,50 @@ __global__ void nms_reindex_kernel(int n, int* output, int* index_cache) {
   }
 }
 
+__global__ void mask_to_output_kernel(const unsigned long long* dev_mask,
+                                      const int* index, int* output,
+                                      int* output_count, int batch_id,
+                                      int cls_id, int spatial_dimension,
+                                      int col_blocks,
+                                      int max_output_boxes_per_class) {
+  extern __shared__ unsigned long long remv[];
+
+  // fill remv with 0
+  CUDA_1D_KERNEL_LOOP(i, col_blocks) { remv[i] = 0; }
+  __syncthreads();
+
+  int start = *output_count;
+  int out_per_class_count = 0;
+  for (int i = 0; i < spatial_dimension; i++) {
+    const int nblock = i / threadsPerBlock;
+    const int inblock = i % threadsPerBlock;
+    if (!(remv[nblock] & (1ULL << inblock))) {
+      if (threadIdx.x == 0) {
+        output[start * 3 + 0] = batch_id;
+        output[start * 3 + 1] = cls_id;
+        output[start * 3 + 2] = index[i];
+        start += 1;
+      }
+      out_per_class_count += 1;
+      if (out_per_class_count >= max_output_boxes_per_class) {
+        break;
+      }
+      __syncthreads();
+      // set every overlap box with bit 1 in remv
+      const unsigned long long* p = dev_mask + i * col_blocks;
+      CUDA_1D_KERNEL_LOOP(j, col_blocks) {
+        if (j >= nblock) {
+          remv[j] |= p[j];
+        }
+      }  // j
+      __syncthreads();
+    }
+  }  // i
+  if (threadIdx.x == 0) {
+    *output_count = start;
+  }
+}
+
 size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
                                   size_t num_classes, size_t boxes_word_size,
                                   int center_point_box, size_t output_length) {
@@ -67,10 +111,11 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
   size_t boxes_workspace = spatial_dimension * 4 * boxes_word_size;
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   size_t mask_workspace =
-      num_batches * spatial_dimension * col_blocks * sizeof(unsigned long long);
-  size_t index_workspace = spatial_dimension * (num_batches + 1) * sizeof(int);
+      spatial_dimension * col_blocks * sizeof(unsigned long long);
+  size_t index_workspace = spatial_dimension * 2 * sizeof(int);
+  size_t count_workspace = sizeof(int);
   return scores_workspace + boxes_xyxy_workspace + boxes_workspace +
-         mask_workspace + index_workspace;
+         mask_workspace + index_workspace + count_workspace;
 }
 
 void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
@@ -90,7 +135,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
    * score_threshold: [1] or nullptr, threshold of scores
    *
    * describe of outputs:
-   * output: [num_batch * num_classes * spatial_dimension, 3], each row
+   * output: [output_length, 3], each row
    *         (batch_id, class_id, boxes_id), filling -1 if invalid.
    *
    * shapes of workspace:
@@ -99,23 +144,12 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
    * boxes_xyxy: [num_batch, spatial_dimension, 4], will be used if
    *             center_point_box == 1.
    * scores_sorted: [spatial_dimension], the workspace used to sort scores.
-   * dev_mask: [num_batches, spatial_dimension, col_blocks], intersect mask,
+   * dev_mask: [spatial_dimension, col_blocks], intersect mask,
    *           where col_block = DIVUP(spatial_dimension, threadsPerBlock)
    * index_template: [spatial_dimension], sequence (0,1,2,3,...), workspace
    *                 for argsort.
-   * index_cache: [num_batches, num_classes, spatial_dimension], argsort of
+   * index_cache: [num_batches, spatial_dimension], argsort of
    *              each classes.
-   *
-   * How does it works?
-   * The algrithm is the same as mmcv pytorch nms, with gpu part(mask) and
-   * cpu part(process). In order to reduce host <==> device memory transfer cost
-   * (which is heavy), The cpu part will only be performed when dev_mask is
-   * full.
-   *
-   * Why not create a large dev_mask with
-   * [num_batches, num_classes, spatial_dimension, col_blocks] then we only need
-   * do memory transfer one time?
-   * Might cause OOM when num_classes is large.
    *
    */
 
@@ -139,13 +173,11 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(float);
 
   unsigned long long* dev_mask = (unsigned long long*)workspace;
-  workspace = static_cast<char*>(workspace) + num_batches * spatial_dimension *
-                                                  col_blocks *
-                                                  sizeof(unsigned long long);
+  workspace = static_cast<char*>(workspace) +
+              spatial_dimension * col_blocks * sizeof(unsigned long long);
 
   int* index_cache = (int*)workspace;
-  workspace = static_cast<char*>(workspace) +
-              spatial_dimension * num_batches * sizeof(int);
+  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(int);
 
   // generate sequence [0,1,2,3,4 ....]
   int* index_template = (int*)workspace;
@@ -153,43 +185,27 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   thrust::sequence(thrust::cuda::par.on(stream), index_template,
                    index_template + spatial_dimension, 0);
 
-  const float iou_threshold_cpu = iou_threshold;
-
   int max_output_boxes_per_class_cpu = max_output_boxes_per_class;
   if (max_output_boxes_per_class_cpu <= 0) {
     max_output_boxes_per_class_cpu = spatial_dimension;
   }
 
-  // allocate pined memory
-  int* output_cpu = nullptr;
-  cudaMallocHost((void**)&output_cpu, output_length * 3 * sizeof(int));
-  cudaCheckError();
-  memset(output_cpu, 0, output_length * 3 * sizeof(int));
-  unsigned long long* dev_mask_cpu = nullptr;
-  cudaMallocHost((void**)&dev_mask_cpu,
-                 num_batches * spatial_dimension * col_blocks *
-                         sizeof(unsigned long long) +
-                     num_batches * spatial_dimension * sizeof(int));
-  cudaCheckError();
+  int* output_count = (int*)workspace;
+  workspace = static_cast<char*>(workspace) + sizeof(int);
+  cudaMemsetAsync(output_count, 0, sizeof(int), stream);
 
-  std::vector<unsigned long long> remv(col_blocks);
+  // fill output with -1
+  thrust::fill(thrust::cuda::par.on(stream), output, output + output_length * 3,
+               -1);
+  cudaCheckError();
 
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
   const int offset = 0;
 
-  int output_count = 0;
-  int* output_cpu_current = output_cpu;
-  std::vector<int> out_batch_ids(num_batches);
-  std::vector<int> out_cls_ids(num_batches);
   for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
     for (int cls_id = 0; cls_id < num_classes; ++cls_id) {
       const int batch_cls_id = batch_id * num_classes + cls_id;
-      const int process_id = batch_cls_id % num_batches;
-      out_batch_ids[process_id] = batch_id;
-      out_cls_ids[process_id] = cls_id;
-      float* boxes_sorted_current = boxes_sorted;
-      int* index_current = index_cache + process_id * spatial_dimension;
 
       // sort boxes by score
       cudaMemcpyAsync(scores_sorted, scores + batch_cls_id * spatial_dimension,
@@ -197,109 +213,46 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                       cudaMemcpyDeviceToDevice, stream);
       cudaCheckError();
 
-      cudaMemcpyAsync(index_current, index_template,
+      cudaMemcpyAsync(index_cache, index_template,
                       spatial_dimension * sizeof(int), cudaMemcpyDeviceToDevice,
                       stream);
       cudaCheckError();
 
       thrust::sort_by_key(thrust::cuda::par.on(stream), scores_sorted,
-                          scores_sorted + spatial_dimension, index_current,
+                          scores_sorted + spatial_dimension, index_cache,
                           thrust::greater<float>());
 
       if (center_point_box == 1) {
-        thrust::gather(thrust::cuda::par.on(stream), index_current,
-                       index_current + spatial_dimension,
+        thrust::gather(thrust::cuda::par.on(stream), index_cache,
+                       index_cache + spatial_dimension,
                        (NMSBox*)(boxes_xyxy + batch_id * spatial_dimension * 4),
-                       (NMSBox*)boxes_sorted_current);
+                       (NMSBox*)boxes_sorted);
       } else {
-        thrust::gather(thrust::cuda::par.on(stream), index_current,
-                       index_current + spatial_dimension,
+        thrust::gather(thrust::cuda::par.on(stream), index_cache,
+                       index_cache + spatial_dimension,
                        (NMSBox*)(boxes + batch_id * spatial_dimension * 4),
-                       (NMSBox*)boxes_sorted_current);
+                       (NMSBox*)boxes_sorted);
       }
 
       cudaCheckError();
 
       if (score_threshold > 0.0f) {
         thrust::transform_if(
-            thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted_current,
-            (NMSBox*)(boxes_sorted_current + spatial_dimension * 4),
-            scores_sorted, (NMSBox*)boxes_sorted_current,
-            nms_sbox_idle(boxes_sorted_current),
+            thrust::cuda::par.on(stream), (NMSBox*)boxes_sorted,
+            (NMSBox*)(boxes_sorted + spatial_dimension * 4), scores_sorted,
+            (NMSBox*)boxes_sorted, nms_sbox_idle(boxes_sorted),
             nms_score_threshold(score_threshold));
       }
 
-      unsigned long long* dev_mask_current =
-          dev_mask + process_id * spatial_dimension * col_blocks;
-
-      nms_cuda<<<blocks, threads, 0, stream>>>(
-          spatial_dimension, iou_threshold_cpu, offset, boxes_sorted_current,
-          dev_mask_current);
+      nms_cuda<<<blocks, threads, 0, stream>>>(spatial_dimension, iou_threshold,
+                                               offset, boxes_sorted, dev_mask);
       // process cpu
       // will be performed when dev_mask is full.
-      if (process_id == num_batches - 1) {
-        cudaMemcpy(dev_mask_cpu, dev_mask,
-                   num_batches * spatial_dimension * col_blocks *
-                           sizeof(unsigned long long) +
-                       num_batches * spatial_dimension * sizeof(int),
-                   cudaMemcpyDeviceToHost);
-        cudaCheckError();
-        int* index_cache_cpu =
-            (int*)((char*)dev_mask_cpu + num_batches * spatial_dimension *
-                                             col_blocks *
-                                             sizeof(unsigned long long));
-        for (int mask_batch_id = 0; mask_batch_id < num_batches;
-             ++mask_batch_id) {
-          const int out_batch_id = out_batch_ids[mask_batch_id];
-          const int out_cls_id = out_cls_ids[mask_batch_id];
-          unsigned long long* dev_mask_cpu_current =
-              dev_mask_cpu + mask_batch_id * spatial_dimension * col_blocks;
-          int* index_cache_cpu_current =
-              index_cache_cpu + mask_batch_id * spatial_dimension;
-
-          memset(&remv[0], 0, sizeof(unsigned long long) * col_blocks);
-          int out_per_class_count = 0;
-          for (int i = 0; i < spatial_dimension; i++) {
-            int nblock = i / threadsPerBlock;
-            int inblock = i % threadsPerBlock;
-            if (!(remv[nblock] & (1ULL << inblock))) {
-              output_cpu_current[0] = out_batch_id;
-              output_cpu_current[1] = out_cls_id;
-              output_cpu_current[2] = index_cache_cpu_current[i];
-              output_cpu_current += 3;
-              output_count += 1;
-              out_per_class_count += 1;
-              if (out_per_class_count >= max_output_boxes_per_class_cpu) {
-                break;
-              }
-              // set every overlap box with bit 1 in remv
-              unsigned long long* p = dev_mask_cpu_current + i * col_blocks;
-              for (int j = nblock; j < col_blocks; j++) {
-                remv[j] |= p[j];
-              }  // j
-            }
-          }  // i
-        }    // mask_batch_id
-      }
+      mask_to_output_kernel<<<1, threadsPerBlock,
+                              col_blocks * sizeof(unsigned long long),
+                              stream>>>(
+          dev_mask, index_cache, output, output_count, batch_id, cls_id,
+          spatial_dimension, col_blocks, max_output_boxes_per_class_cpu);
     }  // cls_id
   }    // batch_id
-
-  // fill output with -1
-  thrust::fill(thrust::cuda::par.on(stream), output,
-               output + output_length * 3, -1);
-  cudaCheckError();
-
-  // copy valid output
-  cudaMemcpy(output, output_cpu, size_t(output_count * 3 * sizeof(int)),
-             cudaMemcpyDefault);
-  cudaCheckError();
-
-  // // reindex with index_cache
-  // nms_reindex_kernel<<<DIVUP(output_count, threadsPerBlock), threadsPerBlock,
-  // 0,
-  //                      stream>>>(output_count, output, index_cache);
-
-  // free pined memory
-  cudaFreeHost(dev_mask_cpu);
-  cudaFreeHost(output_cpu);
 }

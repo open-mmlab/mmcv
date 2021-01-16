@@ -1,8 +1,7 @@
+import numpy as np
+import onnx
 import tensorrt as trt
 import torch
-
-import onnx
-import numpy as np
 
 
 def preprocess_onnx(onnx_model):
@@ -121,7 +120,7 @@ def onnx2trt(onnx_model,
 
     if isinstance(onnx_model, str):
         onnx_model = onnx.load(onnx_model)
-    
+
     onnx_model = preprocess_onnx(onnx_model)
 
     assert parser.parse(onnx_model.SerializeToString()), 'parse onnx failed.'
