@@ -22,7 +22,7 @@ void bbox_overlaps_parrots(CudaContext& ctx, const SSElement& attr,
 
   const auto& bboxes1 = buildATensor(ctx, ins[0]);
   const auto& bboxes2 = buildATensor(ctx, ins[1]);
-  auto& ious = buildATensor(ctx, outs[0]);
+  auto ious = buildATensor(ctx, outs[0]);
   bbox_overlaps_cuda(bboxes1, bboxes2, ious, mode, aligned, offset);
 }
 
