@@ -27,4 +27,4 @@ void psamask_backward_cpu(const int psa_type, const Tensor grad_output,
                           const int h_feature, const int w_feature,
                           const int h_mask, const int w_mask,
                           const int half_h_mask, const int half_w_mask);
-#endif //PSAMASK_PYTORCH_H
+#endif  // PSAMASK_PYTORCH_H

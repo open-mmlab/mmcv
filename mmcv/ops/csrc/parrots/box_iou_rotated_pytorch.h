@@ -11,4 +11,4 @@ void box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned);
 #endif
 
-#endif // BOX_IOU_ROTATED_PYTORCH_H
+#endif  // BOX_IOU_ROTATED_PYTORCH_H

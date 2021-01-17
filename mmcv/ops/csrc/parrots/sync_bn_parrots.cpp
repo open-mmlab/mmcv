@@ -1,29 +1,31 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "sync_bn_pytorch.h"
 using namespace parrots;
 
 void sync_bn_forward_mean_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                               const OperatorBase::in_list_t& ins,
-                               OperatorBase::out_list_t& outs) {
+                                       const OperatorBase::in_list_t& ins,
+                                       OperatorBase::out_list_t& outs) {
   const auto& input = buildATensor(ctx, ins[0]);
   auto mean = buildATensor(ctx, outs[0]);
   sync_bn_forward_mean_cuda(input, mean);
 }
 
 void sync_bn_forward_var_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                              const OperatorBase::in_list_t& ins,
-                              OperatorBase::out_list_t& outs) {
+                                      const OperatorBase::in_list_t& ins,
+                                      OperatorBase::out_list_t& outs) {
   const auto& input = buildATensor(ctx, ins[0]);
   const auto& mean = buildATensor(ctx, ins[1]);
   auto var = buildATensor(ctx, outs[0]);
   sync_bn_forward_var_cuda(input, mean, var);
 }
 
-void sync_bn_forward_output_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                 const OperatorBase::in_list_t& ins,
-                                 OperatorBase::out_list_t& outs) {
+void sync_bn_forward_output_cuda_parrots(CudaContext& ctx,
+                                         const SSElement& attr,
+                                         const OperatorBase::in_list_t& ins,
+                                         OperatorBase::out_list_t& outs) {
   size_t group_size;
   float eps, momentum;
   SSAttrs(attr)
@@ -47,9 +49,10 @@ void sync_bn_forward_output_cuda_parrots(CudaContext& ctx, const SSElement& attr
                               group_size);
 }
 
-void sync_bn_backward_param_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                 const OperatorBase::in_list_t& ins,
-                                 OperatorBase::out_list_t& outs) {
+void sync_bn_backward_param_cuda_parrots(CudaContext& ctx,
+                                         const SSElement& attr,
+                                         const OperatorBase::in_list_t& ins,
+                                         OperatorBase::out_list_t& outs) {
   const auto& grad_output = buildATensor(ctx, ins[0]);
   const auto& norm = buildATensor(ctx, ins[1]);
   auto grad_weight = buildATensor(ctx, outs[0]);
@@ -58,8 +61,8 @@ void sync_bn_backward_param_cuda_parrots(CudaContext& ctx, const SSElement& attr
 }
 
 void sync_bn_backward_data_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                const OperatorBase::in_list_t& ins,
-                                OperatorBase::out_list_t& outs) {
+                                        const OperatorBase::in_list_t& ins,
+                                        OperatorBase::out_list_t& outs) {
   const auto& grad_output = buildATensor(ctx, ins[0]);
   const auto& weight = buildATensor(ctx, ins[1]);
   const auto& grad_weight = buildATensor(ctx, ins[2]);
@@ -67,8 +70,8 @@ void sync_bn_backward_data_cuda_parrots(CudaContext& ctx, const SSElement& attr,
   const auto& norm = buildATensor(ctx, ins[4]);
   const auto& std = buildATensor(ctx, ins[5]);
   auto grad_input = buildATensor(ctx, outs[0]);
-  sync_bn_backward_data_cuda(grad_output, weight, grad_weight, grad_bias,
-                             norm, std, grad_input);
+  sync_bn_backward_data_cuda(grad_output, weight, grad_weight, grad_bias, norm,
+                             std, grad_input);
 }
 
 PARROTS_EXTENSION_REGISTER(sync_bn_forward_mean)
@@ -103,4 +106,3 @@ PARROTS_EXTENSION_REGISTER(sync_bn_backward_data)
     .output(1)
     .apply(sync_bn_backward_data_cuda_parrots)
     .done();
-

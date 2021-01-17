@@ -7,8 +7,8 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 void psamask_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
-                          const OperatorBase::in_list_t &ins,
-                          OperatorBase::out_list_t &outs) {
+                                  const OperatorBase::in_list_t &ins,
+                                  OperatorBase::out_list_t &outs) {
   int psa_type, num_, h_feature, w_feature, h_mask, w_mask, half_h_mask,
       half_w_mask;
   SSAttrs(attr)
@@ -28,8 +28,8 @@ void psamask_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
 }
 
 void psamask_backward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
-                           const OperatorBase::in_list_t &ins,
-                           OperatorBase::out_list_t &outs) {
+                                   const OperatorBase::in_list_t &ins,
+                                   OperatorBase::out_list_t &outs) {
   int psa_type, num_, h_feature, w_feature, h_mask, w_mask, half_h_mask,
       half_w_mask;
   SSAttrs(attr)
@@ -46,13 +46,13 @@ void psamask_backward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
   const auto &grad_output = buildATensor(ctx, ins[0]);
   auto grad_input = buildATensor(ctx, outs[0]);
   psamask_backward_cuda(psa_type, grad_output, grad_input, num_, h_feature,
-                          w_feature, h_mask, w_mask, half_h_mask, half_w_mask);
+                        w_feature, h_mask, w_mask, half_h_mask, half_w_mask);
 }
 #endif
 
 void psamask_forward_cpu_parrots(HostContext &ctx, const SSElement &attr,
-                         const OperatorBase::in_list_t &ins,
-                         OperatorBase::out_list_t &outs) {
+                                 const OperatorBase::in_list_t &ins,
+                                 OperatorBase::out_list_t &outs) {
   int psa_type, num_, h_feature, w_feature, h_mask, w_mask, half_h_mask,
       half_w_mask;
   SSAttrs(attr)
@@ -72,8 +72,8 @@ void psamask_forward_cpu_parrots(HostContext &ctx, const SSElement &attr,
 }
 
 void psamask_backward_cpu_parrots(HostContext &ctx, const SSElement &attr,
-                          const OperatorBase::in_list_t &ins,
-                          OperatorBase::out_list_t &outs) {
+                                  const OperatorBase::in_list_t &ins,
+                                  OperatorBase::out_list_t &outs) {
   int psa_type, num_, h_feature, w_feature, h_mask, w_mask, half_h_mask,
       half_w_mask;
   SSAttrs(attr)

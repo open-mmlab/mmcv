@@ -1,13 +1,14 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "roi_align_pytorch.h"
 using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 void roi_align_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
+                                    const OperatorBase::in_list_t& ins,
+                                    OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -26,7 +27,7 @@ void roi_align_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
   const auto& input = buildATensor(ctx, ins[0]);
   const auto& rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
-  auto argmax_y =  buildATensor(ctx, outs[1]);
+  auto argmax_y = buildATensor(ctx, outs[1]);
   auto argmax_x = buildATensor(ctx, outs[2]);
   roi_align_forward_cuda(input, rois, output, argmax_y, argmax_x,
                          aligned_height, aligned_width, spatial_scale,
@@ -34,8 +35,8 @@ void roi_align_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
 }
 
 void roi_align_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                             const OperatorBase::in_list_t& ins,
-                             OperatorBase::out_list_t& outs) {
+                                     const OperatorBase::in_list_t& ins,
+                                     OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -63,8 +64,8 @@ void roi_align_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
 #endif
 
 void roi_align_forward_cpu_parrots(HostContext& ctx, const SSElement& attr,
-                           const OperatorBase::in_list_t& ins,
-                           OperatorBase::out_list_t& outs) {
+                                   const OperatorBase::in_list_t& ins,
+                                   OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -85,14 +86,14 @@ void roi_align_forward_cpu_parrots(HostContext& ctx, const SSElement& attr,
   auto output = buildATensor(ctx, outs[0]);
   auto argmax_y = buildATensor(ctx, outs[1]);
   auto argmax_x = buildATensor(ctx, outs[2]);
-  roi_align_forward_cpu(input, rois, output, argmax_y, argmax_x,
-                        aligned_height, aligned_width, spatial_scale,
-                        sampling_ratio, pool_mode, aligned);
+  roi_align_forward_cpu(input, rois, output, argmax_y, argmax_x, aligned_height,
+                        aligned_width, spatial_scale, sampling_ratio, pool_mode,
+                        aligned);
 }
 
 void roi_align_backward_cpu_parrots(HostContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
+                                    const OperatorBase::in_list_t& ins,
+                                    OperatorBase::out_list_t& outs) {
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -147,4 +148,3 @@ PARROTS_EXTENSION_REGISTER(roi_align_backward)
     .apply(roi_align_backward_cuda_parrots)
 #endif
     .done();
-

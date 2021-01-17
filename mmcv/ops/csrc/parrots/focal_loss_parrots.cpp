@@ -1,13 +1,15 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "focal_loss_pytorch.h"
 
 using namespace parrots;
 
-void sigmoid_focal_loss_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                     const OperatorBase::in_list_t& ins,
-                                     OperatorBase::out_list_t& outs){
+void sigmoid_focal_loss_forward_cuda_parrots(CudaContext& ctx,
+                                             const SSElement& attr,
+                                             const OperatorBase::in_list_t& ins,
+                                             OperatorBase::out_list_t& outs) {
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
@@ -19,13 +21,12 @@ void sigmoid_focal_loss_forward_cuda_parrots(CudaContext& ctx, const SSElement& 
 
   auto output = buildATensor(ctx, outs[0]);
 
-  sigmoid_focal_loss_forward_cuda(input, target, weight, output, gamma,
-                                  alpha);
+  sigmoid_focal_loss_forward_cuda(input, target, weight, output, gamma, alpha);
 }
 
-void sigmoid_focal_loss_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                      const OperatorBase::in_list_t& ins,
-                                      OperatorBase::out_list_t& outs) {
+void sigmoid_focal_loss_backward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
@@ -41,9 +42,10 @@ void sigmoid_focal_loss_backward_cuda_parrots(CudaContext& ctx, const SSElement&
                                    alpha);
 }
 
-void softmax_focal_loss_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                     const OperatorBase::in_list_t& ins,
-                                     OperatorBase::out_list_t& outs) {
+void softmax_focal_loss_forward_cuda_parrots(CudaContext& ctx,
+                                             const SSElement& attr,
+                                             const OperatorBase::in_list_t& ins,
+                                             OperatorBase::out_list_t& outs) {
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
@@ -54,13 +56,12 @@ void softmax_focal_loss_forward_cuda_parrots(CudaContext& ctx, const SSElement& 
   const auto& weight = buildATensor(ctx, ins[2]);
 
   auto output = buildATensor(ctx, outs[0]);
-  softmax_focal_loss_forward_cuda(input, target, weight, output, gamma,
-                                  alpha);
+  softmax_focal_loss_forward_cuda(input, target, weight, output, gamma, alpha);
 }
 
-void softmax_focal_loss_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                      const OperatorBase::in_list_t& ins,
-                                      OperatorBase::out_list_t& outs) {
+void softmax_focal_loss_backward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();

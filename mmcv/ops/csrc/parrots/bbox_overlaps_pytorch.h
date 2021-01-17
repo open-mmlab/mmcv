@@ -6,4 +6,4 @@ using namespace at;
 void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                         const int mode, const bool aligned, const int offset);
 
-#endif // BBOX_OVERLAPS_PYTORCH_H
+#endif  // BBOX_OVERLAPS_PYTORCH_H

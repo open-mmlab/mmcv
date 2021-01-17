@@ -22,4 +22,4 @@ void sync_bn_backward_data_cuda(const Tensor grad_output, const Tensor weight,
                                 const Tensor grad_weight,
                                 const Tensor grad_bias, const Tensor norm,
                                 const Tensor std, Tensor grad_input);
-#endif //SYNC_BN_PYTORCH_H
+#endif  // SYNC_BN_PYTORCH_H

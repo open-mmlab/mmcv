@@ -14,4 +14,4 @@ void deform_roi_pool_backward_cuda(Tensor grad_output, Tensor input,
                                    int pooled_height, int pooled_width,
                                    float spatial_scale, int sampling_ratio,
                                    float gamma);
-#endif //DEFORM_ROI_POOL_PYTORCH_H
+#endif  // DEFORM_ROI_POOL_PYTORCH_H

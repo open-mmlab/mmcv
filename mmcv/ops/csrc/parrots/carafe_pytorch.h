@@ -12,4 +12,4 @@ void carafe_backward_cuda(Tensor top_grad, Tensor rfeatures, Tensor masks,
                           Tensor rbottom_grad, Tensor rmask_grad,
                           Tensor bottom_grad, Tensor mask_grad, int kernel_size,
                           int group_size, int scale_factor);
-#endif //CARAFE_PYTORCH_H
+#endif  // CARAFE_PYTORCH_H

@@ -17,4 +17,4 @@ void modulated_deform_conv_backward_cuda(
     int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias);
-#endif // MODULATED_DEFORM_CONV_PYTORCH_H
+#endif  // MODULATED_DEFORM_CONV_PYTORCH_H

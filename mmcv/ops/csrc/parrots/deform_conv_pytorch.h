@@ -23,4 +23,4 @@ void deform_conv_backward_parameters_cuda(
     int padH, int dilationW, int dilationH, int group, int deformable_group,
     float scale, int im2col_step);
 
-#endif //DEFORM_CONV_PYTORCH_H
+#endif  // DEFORM_CONV_PYTORCH_H

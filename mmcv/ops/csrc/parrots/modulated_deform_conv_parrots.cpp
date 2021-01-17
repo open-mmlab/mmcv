@@ -1,13 +1,14 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "modulated_deform_conv_pytorch.h"
 
 using namespace parrots;
 
-void modulated_deform_conv_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                        const OperatorBase::in_list_t& ins,
-                                        OperatorBase::out_list_t& outs) {
+void modulated_deform_conv_forward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h,
       dilation_w, group, deformable_group, with_bias;
   SSAttrs(attr)
@@ -35,15 +36,14 @@ void modulated_deform_conv_forward_cuda_parrots(CudaContext& ctx, const SSElemen
   auto columns = buildATensor(ctx, outs[1]);
 
   modulated_deform_conv_forward_cuda(
-        input, weight, bias, ones, offset, mask, output, columns, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
+      input, weight, bias, ones, offset, mask, output, columns, kernel_h,
+      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
 }
 
-void modulated_deform_conv_backward_cuda_parrots(CudaContext& ctx,
-                                         const SSElement& attr,
-                                         const OperatorBase::in_list_t& ins,
-                                         OperatorBase::out_list_t& outs) {
+void modulated_deform_conv_backward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h,
       dilation_w, group, deformable_group, with_bias;
   SSAttrs(attr)
@@ -75,12 +75,11 @@ void modulated_deform_conv_backward_cuda_parrots(CudaContext& ctx,
   auto grad_mask = buildATensor(ctx, outs[5]);
   auto grad_output = buildATensor(ctx, outs[6]);
   modulated_deform_conv_backward_cuda(
-        input, weight, bias, ones, offset, mask, columns, grad_input,
-        grad_weight, grad_bias, grad_offset, grad_mask, grad_output, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
+      input, weight, bias, ones, offset, mask, columns, grad_input, grad_weight,
+      grad_bias, grad_offset, grad_mask, grad_output, kernel_h, kernel_w,
+      stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
 }
-
 
 PARROTS_EXTENSION_REGISTER(modulated_deform_conv_forward)
     .attr("kernel_h")
@@ -115,4 +114,3 @@ PARROTS_EXTENSION_REGISTER(modulated_deform_conv_backward)
     .output(7)
     .apply(modulated_deform_conv_backward_cuda_parrots)
     .done();
-

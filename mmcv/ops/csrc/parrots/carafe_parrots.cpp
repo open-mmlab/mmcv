@@ -1,6 +1,7 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "carafe_pytorch.h"
 
 using namespace parrots;
@@ -11,8 +12,8 @@ using namespace parrots;
  *                          int kernel_size, int group_size, int scale_factor);
  */
 void carafe_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                         const OperatorBase::in_list_t& ins,
-                         OperatorBase::out_list_t& outs) {
+                                 const OperatorBase::in_list_t& ins,
+                                 OperatorBase::out_list_t& outs) {
   int kernel_size, group_size, scale_factor;
   SSAttrs(attr)
       .get<int>("kernel_size", kernel_size)
@@ -28,8 +29,7 @@ void carafe_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
   auto rmasks = buildATensor(ctx, outs[2]);
   auto output = buildATensor(ctx, outs[3]);
 
-  carafe_forward_cuda(features, masks, rfeatures,
-                      routput, rmasks, output,
+  carafe_forward_cuda(features, masks, rfeatures, routput, rmasks, output,
                       kernel_size, group_size, scale_factor);
 }
 
@@ -37,12 +37,12 @@ void carafe_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
  * void carafe_backward_cuda(Tensor top_grad, Tensor rfeatures, Tensor masks,
  *                           Tensor rtop_grad, Tensor rbottom_grad_hs,
  *                           Tensor rbottom_grad, Tensor rmask_grad,
- *                           Tensor bottom_grad, Tensor mask_grad, int kernel_size,
- *                           int group_size, int scale_factor);
+ *                           Tensor bottom_grad, Tensor mask_grad, int
+ * kernel_size, int group_size, int scale_factor);
  */
 void carafe_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                          const OperatorBase::in_list_t& ins,
-                          OperatorBase::out_list_t& outs) {
+                                  const OperatorBase::in_list_t& ins,
+                                  OperatorBase::out_list_t& outs) {
   int kernel_size, group_size, scale_factor;
   SSAttrs(attr)
       .get<int>("kernel_size", kernel_size)
@@ -61,11 +61,9 @@ void carafe_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
   auto bottom_grad = buildATensor(ctx, outs[4]);
   auto mask_grad = buildATensor(ctx, outs[5]);
 
-  carafe_backward_cuda(top_grad, rfeatures, masks,
-                       rtop_grad, rbottom_grad_hs,
-                       rbottom_grad, rmask_grad,
-                       bottom_grad, mask_grad, kernel_size,
-                       group_size, scale_factor);
+  carafe_backward_cuda(top_grad, rfeatures, masks, rtop_grad, rbottom_grad_hs,
+                       rbottom_grad, rmask_grad, bottom_grad, mask_grad,
+                       kernel_size, group_size, scale_factor);
 }
 
 PARROTS_EXTENSION_REGISTER(carafe_forward)

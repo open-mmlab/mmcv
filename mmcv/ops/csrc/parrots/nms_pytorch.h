@@ -14,4 +14,4 @@ std::vector<std::vector<int> > nms_match(at::Tensor dets, float iou_threshold);
 at::Tensor nms_rotated(const at::Tensor dets, const at::Tensor scores,
                        const at::Tensor order, const at::Tensor dets_sorted,
                        const float iou_threshold, const int multi_label);
-#endif // NMS_PYTORCH_H
+#endif  // NMS_PYTORCH_H

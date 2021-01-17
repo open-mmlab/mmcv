@@ -1,12 +1,13 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "tin_shift_pytorch.h"
 using namespace parrots;
 
 void tin_shift_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
-                            const OperatorBase::in_list_t &ins,
-                            OperatorBase::out_list_t &outs) {
+                                    const OperatorBase::in_list_t &ins,
+                                    OperatorBase::out_list_t &outs) {
   const auto &input = buildATensor(ctx, ins[0]);
   const auto &shift = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
@@ -14,8 +15,8 @@ void tin_shift_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
 }
 
 void tin_shift_backward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
-                             const OperatorBase::in_list_t &ins,
-                             OperatorBase::out_list_t &outs) {
+                                     const OperatorBase::in_list_t &ins,
+                                     OperatorBase::out_list_t &outs) {
   const auto &grad_output = buildATensor(ctx, ins[0]);
   const auto &shift = buildATensor(ctx, ins[1]);
   auto grad_input = buildATensor(ctx, outs[0]);

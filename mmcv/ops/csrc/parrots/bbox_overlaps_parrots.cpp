@@ -1,17 +1,18 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "bbox_overlaps_pytorch.h"
 
 using namespace parrots;
 
 /*
- * void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
- *                         const int mode, const bool aligned, const int offset);
+ * void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor
+ * ious, const int mode, const bool aligned, const int offset);
  */
 void bbox_overlaps_parrots(CudaContext& ctx, const SSElement& attr,
-                                 const OperatorBase::in_list_t& ins,
-                                 OperatorBase::out_list_t& outs) {
+                           const OperatorBase::in_list_t& ins,
+                           OperatorBase::out_list_t& outs) {
   int mode, offset;
   bool aligned;
   SSAttrs(attr)

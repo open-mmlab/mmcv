@@ -28,4 +28,4 @@ void roi_align_backward_cpu(Tensor grad_output, Tensor rois, Tensor argmax_y,
                             float spatial_scale, int sampling_ratio,
                             int pool_mode, bool aligned);
 
-#endif //ROI_ALIGN_PYTORCH_H
+#endif  // ROI_ALIGN_PYTORCH_H

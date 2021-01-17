@@ -1,13 +1,14 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "masked_conv2d_pytorch.h"
 
 using namespace parrots;
 
 void masked_im2col_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                const OperatorBase::in_list_t& ins,
-                                OperatorBase::out_list_t& outs) {
+                                        const OperatorBase::in_list_t& ins,
+                                        OperatorBase::out_list_t& outs) {
   // im: (n, ic, h, w), kernel size (kh, kw)
   // kernel: (oc, ic * kh * kw), col: (kh * kw * ic, ow * oh)
   int kernel_h, kernel_w, pad_h, pad_w;
@@ -28,8 +29,8 @@ void masked_im2col_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
 }
 
 void masked_col2im_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                const OperatorBase::in_list_t& ins,
-                                OperatorBase::out_list_t& outs) {
+                                        const OperatorBase::in_list_t& ins,
+                                        OperatorBase::out_list_t& outs) {
   // im: (n, ic, h, w), kernel size (kh, kw)
   // kernel: (oc, ic * kh * kh), col: (kh * kw * ic, ow * oh)
   int height, width, channels;

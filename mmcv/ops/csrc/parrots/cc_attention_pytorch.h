@@ -12,4 +12,4 @@ void ca_map_forward_cuda(const Tensor weight, const Tensor g, Tensor out);
 
 void ca_map_backward_cuda(const Tensor dout, const Tensor weight,
                           const Tensor g, Tensor dw, Tensor dg);
-#endif //CC_ATTENTION_PYTORCH_H
+#endif  // CC_ATTENTION_PYTORCH_H

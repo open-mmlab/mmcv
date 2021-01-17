@@ -12,4 +12,4 @@ void roi_pool_backward_cuda(Tensor grad_output, Tensor rois, Tensor argmax,
                             Tensor grad_input, int pooled_height,
                             int pooled_width, float spatial_scale);
 #endif
-#endif //ROI_POOL_PYTORCH_H
+#endif  // ROI_POOL_PYTORCH_H

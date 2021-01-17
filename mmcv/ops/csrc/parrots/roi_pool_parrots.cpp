@@ -1,12 +1,13 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "roi_pool_pytorch.h"
 using namespace parrots;
 
 void roi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                           const OperatorBase::in_list_t& ins,
-                           OperatorBase::out_list_t& outs) {
+                                   const OperatorBase::in_list_t& ins,
+                                   OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -25,8 +26,8 @@ void roi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
 }
 
 void roi_pool_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
+                                    const OperatorBase::in_list_t& ins,
+                                    OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;

@@ -17,4 +17,4 @@ void softmax_focal_loss_backward_cuda(Tensor input, Tensor target,
                                       Tensor weight, Tensor buff,
                                       Tensor grad_input, float gamma,
                                       float alpha);
-#endif //FOCAL_LOSS_PYTORCH_H
+#endif  // FOCAL_LOSS_PYTORCH_H

@@ -1,6 +1,7 @@
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
+
 #include "deform_roi_pool_pytorch.h"
 
 using namespace parrots;
@@ -10,9 +11,10 @@ using namespace parrots;
  *                                  int pooled_width, float spatial_scale,
  *                                  int sampling_ratio, float gamma);
  */
-void deform_roi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                  const OperatorBase::in_list_t& ins,
-                                  OperatorBase::out_list_t& outs) {
+void deform_roi_pool_forward_cuda_parrots(CudaContext& ctx,
+                                          const SSElement& attr,
+                                          const OperatorBase::in_list_t& ins,
+                                          OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -27,10 +29,10 @@ void deform_roi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& att
       .done();
 
   const auto& input = buildATensor(ctx, ins[0]);
-  const auto& rois =  buildATensor(ctx, ins[1]);
-  const auto& offset =  buildATensor(ctx, ins[2]);
+  const auto& rois = buildATensor(ctx, ins[1]);
+  const auto& offset = buildATensor(ctx, ins[2]);
 
-  auto output =  buildATensor(ctx, outs[0]);
+  auto output = buildATensor(ctx, outs[0]);
   deform_roi_pool_forward_cuda(input, rois, offset, output, pooled_height,
                                pooled_width, spatial_scale, sampling_ratio,
                                gamma);
@@ -43,9 +45,10 @@ void deform_roi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& att
  *                                   float spatial_scale, int sampling_ratio,
  *                                   float gamma);
  */
-void deform_roi_pool_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                   const OperatorBase::in_list_t& ins,
-                                   OperatorBase::out_list_t& outs) {
+void deform_roi_pool_backward_cuda_parrots(CudaContext& ctx,
+                                           const SSElement& attr,
+                                           const OperatorBase::in_list_t& ins,
+                                           OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -68,10 +71,9 @@ void deform_roi_pool_backward_cuda_parrots(CudaContext& ctx, const SSElement& at
   auto grad_input = buildATensor(ctx, outs[0]);
   auto grad_offset = buildATensor(ctx, outs[1]);
 
-  deform_roi_pool_backward_cuda(grad_output, input, rois, offset,
-                                grad_input, grad_offset, pooled_height,
-                                pooled_width, spatial_scale, sampling_ratio,
-                                gamma);
+  deform_roi_pool_backward_cuda(grad_output, input, rois, offset, grad_input,
+                                grad_offset, pooled_height, pooled_width,
+                                spatial_scale, sampling_ratio, gamma);
 }
 
 PARROTS_EXTENSION_REGISTER(deform_roi_pool_forward)
