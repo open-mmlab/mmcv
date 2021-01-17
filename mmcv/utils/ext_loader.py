@@ -16,9 +16,10 @@ else:
     from parrots import extension
 
     has_return_value_ops = [
-        'nms', 'softnms', 'nms_match', 'nms_rotated', 'top_pool_forward', 'top_pool_backward',
-        'bottom_pool_forward', 'bottom_pool_backward', 'left_pool_forward',
-        'left_pool_backward', 'right_pool_forward', 'right_pool_backward'
+        'nms', 'softnms', 'nms_match', 'nms_rotated', 'top_pool_forward',
+        'top_pool_backward', 'bottom_pool_forward', 'bottom_pool_backward',
+        'left_pool_forward', 'left_pool_backward', 'right_pool_forward',
+        'right_pool_backward'
     ]
 
     def load_ext(name, funcs):

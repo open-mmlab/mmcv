@@ -25,7 +25,7 @@ class WrapFunction(nn.Module):
 
 def test_nms():
     if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly') 
+        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import nms
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],

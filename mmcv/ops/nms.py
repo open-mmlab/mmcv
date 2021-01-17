@@ -349,8 +349,12 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     dets_sorted = dets_wl.index_select(0, order)
 
     if torch.__version__ == 'parrots':
-        keep_inds = ext_module.nms_rotated(dets_wl, scores, order,
-            dets_sorted, iou_threshold=iou_threshold,
+        keep_inds = ext_module.nms_rotated(
+            dets_wl,
+            scores,
+            order,
+            dets_sorted,
+            iou_threshold=iou_threshold,
             multi_label=multi_label)
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
