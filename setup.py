@@ -184,8 +184,8 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
-        #new parrots op impl do not use MMCV_USE_PARROTS
-        #define_macros = [('MMCV_USE_PARROTS', None)]
+        # new parrots op impl do not use MMCV_USE_PARROTS
+        # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         op_files = glob.glob('./mmcv/ops/csrc/parrots/*.cu') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
