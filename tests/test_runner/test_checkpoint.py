@@ -178,3 +178,86 @@ def test_load_classes_name():
 
     # remove the temp file
     os.remove(checkpoint_path)
+
+
+def test_checkpoint_loader():
+    from mmcv.runner import CheckpointLoaderClient, save_checkpoint, \
+        BaseCheckpointLoader
+    import tempfile
+    import os
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = CheckpointLoaderClient.load_checkpoint(checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+
+    # remove the temp file
+    os.remove(checkpoint_path)
+
+    filename = 'http://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'HTTPURLLoadCheckpointLoader'
+
+    filename = 'https://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'HTTPURLLoadCheckpointLoader'
+
+    filename = 'modelzoo://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'TorchLoadCheckpointLoader'
+
+    filename = 'torchvision://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'TorchLoadCheckpointLoader'
+
+    filename = 'open-mmlab://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'OpenMMLabCheckpointLoader'
+
+    filename = 'mmcls://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'MMCLSCheckpointLoader'
+
+    filename = 'pavi://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'PAVICheckpointLoader'
+
+    filename = 's3://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'S3CheckpointLoader'
+
+    filename = 'ss3://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'NativeCheckpointLoader'
+
+    @CheckpointLoaderClient.register_loader(prefixes='ftp://')
+    class FTPCheckpointLoader(BaseCheckpointLoader):
+
+        @classmethod
+        def load_checkpoint(cls, filename, map_location):
+            return dict(filename=filename)
+
+    filename = 'ftp://xx.xx/xx.pth'
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'FTPCheckpointLoader'
+
+    # test force
+    class FTP1CheckpointLoader(BaseCheckpointLoader):
+
+        @classmethod
+        def load_checkpoint(cls, filename, map_location):
+            return dict(filename=filename)
+
+    with pytest.raises(KeyError):
+        CheckpointLoaderClient.register_loader('ftp://', FTP1CheckpointLoader)
+
+    CheckpointLoaderClient.register_loader(
+        'ftp://', FTP1CheckpointLoader, force=True)
+    checkpoint = CheckpointLoaderClient.load_checkpoint(filename)
+    assert checkpoint['filename'] == filename
+
+    # test print class name
+    CheckpointLoaderClient.register_loader(
+        'ftp://', FTP1CheckpointLoader(), force=True)
+    loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
+    assert loader.__class__.__name__ == 'FTP1CheckpointLoader'
