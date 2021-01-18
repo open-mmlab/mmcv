@@ -15,13 +15,26 @@ def preprocess_onnx(onnx_model):
     """
     graph = onnx_model.graph
     nodes = graph.node
-
+    initializers = graph.initializer
     node_dict = {}
     for node in nodes:
         node_outputs = node.output
         for output in node_outputs:
             if len(output) > 0:
                 node_dict[output] = node
+
+    init_dict = {_.name: _ for _ in initializers}
+
+    def parse_data(name, typ):
+        if name in node_dict:
+            const_node = node_dict[name]
+            assert const_node.op_type == 'Constant'
+            raw_data = const_node.attribute[0].t.raw_data
+        elif name in init_dict:
+            raw_data = init_dict[name].raw_data
+        else:
+            raise ValueError(f'{name} not found in node or initilizer.')
+        return np.frombuffer(raw_data, typ).item()
 
     nrof_node = len(nodes)
     for idx in range(nrof_node):
@@ -42,23 +55,14 @@ def preprocess_onnx(onnx_model):
                     center_point_box = attribute.i
 
             if len(node_inputs) >= 3:
-                const_node = node_dict[node_inputs[2]]
-                assert const_node.op_type == 'Constant'
-                raw_data = const_node.attribute[0].t.raw_data
-                max_output_boxes_per_class = onnx.helper.np.frombuffer(
-                    raw_data, np.int64).item()
+                max_output_boxes_per_class = parse_data(
+                    node_inputs[2], np.int64)
 
             if len(node_inputs) >= 4:
-                const_node = node_dict[node_inputs[3]]
-                assert const_node.op_type == 'Constant'
-                raw_data = const_node.attribute[0].t.raw_data
-                iou_threshold = np.frombuffer(raw_data, np.float32).item()
+                iou_threshold = parse_data(node_inputs[3], np.float32)
 
             if len(node_inputs) >= 5:
-                const_node = node_dict[node_inputs[4]]
-                assert const_node.op_type == 'Constant'
-                raw_data = const_node.attribute[0].t.raw_data
-                score_threshold = np.frombuffer(raw_data, np.float32).item()
+                score_threshold = parse_data(node_inputs[4], np.float32)
 
             new_node = onnx.helper.make_node(
                 'MMCVNonMaxSuppression',
