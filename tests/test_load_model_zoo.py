@@ -7,9 +7,8 @@ import pytest
 
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
-                                    ENV_XDG_CACHE_HOME, _get_mmcv_home,
-                                    CheckpointLoaderClient,
-                                    get_deprecated_model_names,
+                                    ENV_XDG_CACHE_HOME, CheckpointLoaderClient,
+                                    _get_mmcv_home, get_deprecated_model_names,
                                     get_external_models)
 
 
@@ -116,5 +115,6 @@ def test_load_external_url():
     # test local file
     with pytest.raises(IOError, match='train.pth is not a checkpoint ' 'file'):
         CheckpointLoaderClient.load_checkpoint('train.pth')
-    url = CheckpointLoaderClient.load_checkpoint(osp.join(_get_mmcv_home(), 'test.pth'))
+    url = CheckpointLoaderClient.load_checkpoint(
+        osp.join(_get_mmcv_home(), 'test.pth'))
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'
