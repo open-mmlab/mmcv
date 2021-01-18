@@ -289,10 +289,12 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     nms_op = eval(nms_type)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
-    if boxes_for_nms.shape[0] < split_thr:
+    # Won't split to multiple nms nodes when exporting to onnx
+    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        scores = dets[:, -1]
+        # Keep tracing when export to ONNX.
+        scores = scores[keep]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):
