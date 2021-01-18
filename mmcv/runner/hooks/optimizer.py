@@ -93,7 +93,6 @@ class Fp16OptimizerHook(OptimizerHook):
             TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0')
 
         if loss_scale == 'dynamic':
-            self._scale_update_param = None
             if self._use_torch_amp:
                 self.loss_scaler = GradScaler(init_scale=loss_scale)
             else:
@@ -101,12 +100,12 @@ class Fp16OptimizerHook(OptimizerHook):
         elif isinstance(loss_scale, float):
             self._scale_update_param = loss_scale
             if self._use_torch_amp:
-                self.loss_scaler = GradScaler(init_scale=loss_scale)
+                self.loss_scaler = GradScaler(
+                    init_scale=loss_scale, growth_factor=1, backoff_factor=1)
             else:
                 self.loss_scaler = LossScaler(
                     init_scale=loss_scale, mode='static')
         elif isinstance(loss_scale, dict):
-            self._scale_update_param = None
             if self._use_torch_amp:
                 self.loss_scaler = GradScaler(**loss_scale)
             else:
@@ -173,10 +172,14 @@ class Fp16OptimizerHook(OptimizerHook):
             self.loss_scaler.unscale_(runner.optimizer)
             # grad clip
             if self.grad_clip is not None:
-                self.clip_grads(runner.model.parameters())  # NEED CHECK
+                grad_norm = self.clip_grads(runner.model.parameters())
+                if grad_norm is not None:
+                    # Add grad norm to the logger
+                    runner.log_buffer.update({'grad_norm': float(grad_norm)},
+                                             runner.outputs['num_samples'])
             # backward and update scaler
             self.loss_scaler.step(runner.optimizer)
-            self.loss_scaler.update(self._scale_update_param)
+            self.loss_scaler.update()
         else:
             # scale the loss value
             scaled_loss = runner.outputs['loss'] * self.loss_scaler.loss_scale
