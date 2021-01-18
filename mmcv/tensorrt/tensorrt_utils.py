@@ -5,10 +5,16 @@ import torch
 
 
 def preprocess_onnx(onnx_model):
+    """Modify onnx model to match with TensorRT plugins in mmcv.
+
+    Args:
+        onnx_model (onnx.ModelProto): Input onnx model.
+
+    Returns:
+        onnx.ModelProto: Modified onnx model.
+    """
     graph = onnx_model.graph
     nodes = graph.node
-
-    idx = 0
 
     node_dict = {}
     for node in nodes:
@@ -17,7 +23,8 @@ def preprocess_onnx(onnx_model):
             if len(output) > 0:
                 node_dict[output] = node
 
-    while idx < len(nodes):
+    nrof_node = len(nodes)
+    for idx in range(nrof_node):
         node = nodes[idx]
         node_attributes = node.attribute
         node_inputs = node.input
@@ -67,10 +74,6 @@ def preprocess_onnx(onnx_model):
                 node_dict[node_name] = new_node
             nodes.insert(idx, new_node)
             nodes.remove(node)
-
-            idx += 1
-            continue
-        idx += 1
 
     return onnx_model
 
