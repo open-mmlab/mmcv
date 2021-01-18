@@ -162,7 +162,7 @@ class ConvModule(nn.Module):
 
     @property
     def norm(self):
-        return getattr(self, self.norm_name)
+        return getattr(self, self.norm_name) if self.with_norm else None
 
     def init_weights(self):
         # 1. It is mainly for customized conv layers with their own
