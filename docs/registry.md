@@ -122,4 +122,4 @@ net_b = MMCV_MODELS.build(cfg=dict(type='NetB'))
 ```
 
 Note that: if both MMDetection and MMClassification have `NetA` defined,
-the build result will be determined by the order of registry definition.
+a `ValueError` will be raised.
