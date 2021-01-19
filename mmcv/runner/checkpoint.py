@@ -273,10 +273,7 @@ class CheckpointLoaderClient:
         else:
             assert isinstance(prefixes, (list, tuple))
         for prefix in prefixes:
-            if prefix not in cls._loader:
-                cls._loader[prefix] = loader
-                continue
-            if force:
+            if (prefix not in cls._loader) or force:
                 cls._loader[prefix] = loader
             else:
                 raise KeyError(

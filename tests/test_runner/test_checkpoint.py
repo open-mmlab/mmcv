@@ -237,20 +237,22 @@ def test_checkpoint_loader():
         def load_checkpoint(cls, filename, map_location):
             return dict(filename=filename)
 
+    # test register_loader
     filename = 'ftp://xx.xx/xx.pth'
     loader = CheckpointLoaderClient._get_checkpoint_loader(filename)
     assert loader.__name__ == 'FTPCheckpointLoader'
 
-    # test force
     class FTP1CheckpointLoader(BaseCheckpointLoader):
 
         @classmethod
         def load_checkpoint(cls, filename, map_location):
             return dict(filename=filename)
 
+    # test duplicate registered error
     with pytest.raises(KeyError):
         CheckpointLoaderClient.register_loader('ftp://', FTP1CheckpointLoader)
 
+    # test force param
     CheckpointLoaderClient.register_loader(
         'ftp://', FTP1CheckpointLoader, force=True)
     checkpoint = CheckpointLoaderClient.load_checkpoint(filename)
