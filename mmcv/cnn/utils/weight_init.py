@@ -126,7 +126,7 @@ class ConstantInit(BaseInit):
 
 @INITIALIZERS.register_module(name='Xavier')
 class XavierInit(BaseInit):
-    """Initialize module parameters with values according to the method
+    r"""Initialize module parameters with values according to the method
     described in `Understanding the difficulty of training deep feedforward
     neural networks` - Glorot, X. & Bengio, Y. (2010).
 
@@ -250,7 +250,7 @@ class UniformInit(BaseInit):
 
 @INITIALIZERS.register_module(name='Kaiming')
 class KaimingInit(BaseInit):
-    """Initialize module paramters with the valuse according to the method
+    r"""Initialize module paramters with the valuse according to the method
     described in `Delving deep into rectifiers: Surpassing human-level
     performance on ImageNet classification` - He, K. et al. (2015).
 

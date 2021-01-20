@@ -103,7 +103,7 @@ def test_model_weight_init():
     ├──reg (nn.Linear, weight=1, bias=2)
     """
     model_cfg = dict(
-        type="FooModel",
+        type='FooModel',
         init_cfg=[
             dict(type='Constant', val=1, bias=2, layers='Linear'),
             dict(type='Constant', val=3, bias=4, layers='Conv1d'),
@@ -174,7 +174,7 @@ def test_nest_components_weight_init():
     """
 
     model_cfg = dict(
-        type="FooModel",
+        type='FooModel',
         init_cfg=[
             dict(
                 type='Constant',
