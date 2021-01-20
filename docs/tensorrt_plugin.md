@@ -16,6 +16,10 @@
 |     ScatterND     |       ScatterND       |   Y   |
 | NonMaxSuppression | MMCVNonMaxSuppression |  WIP  |
 
+Notes
+
+- All plugins listed above are developed on TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0
+
 ## How to build TensorRT plugins in MMCV
 
 ### Prerequisite
