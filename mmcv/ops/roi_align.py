@@ -4,7 +4,6 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..onnx import is_custom_op_loaded
 from ..utils import deprecated_api_warning, ext_loader
 
 ext_module = ext_loader.load_ext('_ext',
@@ -16,6 +15,7 @@ class RoIAlignFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
+        from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         if has_custom_op:
             return g.op(

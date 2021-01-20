@@ -344,7 +344,9 @@ class BaseRunner(metaclass=ABCMeta):
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
     def register_lr_hook(self, lr_config):
-        if isinstance(lr_config, dict):
+        if lr_config is None:
+            return
+        elif isinstance(lr_config, dict):
             assert 'policy' in lr_config
             policy_type = lr_config.pop('policy')
             # If the type of policy is all in lower case, e.g., 'cyclic',

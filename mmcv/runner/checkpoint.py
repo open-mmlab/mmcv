@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import io
 import os
 import os.path as osp
 import pkgutil
@@ -14,6 +15,7 @@ from torch.optim import Optimizer
 from torch.utils import model_zoo
 
 import mmcv
+from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
 from ..utils import mkdir_or_exist
@@ -145,6 +147,27 @@ def load_pavimodel_dist(model_path, map_location=None):
     return checkpoint
 
 
+def load_fileclient_dist(filename, backend, map_location):
+    """In distributed setting, this function only download checkpoint at local
+    rank 0."""
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    allowed_backends = ['ceph']
+    if backend not in allowed_backends:
+        raise ValueError(f'Load from Backend {backend} is not supported.')
+    if rank == 0:
+        fileclient = FileClient(backend=backend)
+        buffer = io.BytesIO(fileclient.get(filename))
+        checkpoint = torch.load(buffer, map_location=map_location)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            fileclient = FileClient(backend=backend)
+            buffer = io.BytesIO(fileclient.get(filename))
+            checkpoint = torch.load(buffer, map_location=map_location)
+    return checkpoint
+
+
 def get_torchvision_models():
     model_urls = dict()
     for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
@@ -249,6 +272,9 @@ def _load_checkpoint(filename, map_location=None):
     elif filename.startswith('pavi://'):
         model_path = filename[7:]
         checkpoint = load_pavimodel_dist(model_path, map_location=map_location)
+    elif filename.startswith('s3://'):
+        checkpoint = load_fileclient_dist(
+            filename, backend='ceph', map_location=map_location)
     else:
         if not osp.isfile(filename):
             raise IOError(f'{filename} is not a checkpoint file')
@@ -393,6 +419,10 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     if is_module_wrapper(model):
         model = model.module
+
+    if hasattr(model, 'CLASSES') and model.CLASSES is not None:
+        # save class name to the meta
+        meta.update(CLASSES=model.CLASSES)
 
     checkpoint = {
         'meta': meta,

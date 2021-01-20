@@ -17,7 +17,6 @@ __global__ void onnx_scatternd_kernel(const int n, const int* indices,
                                       TensorDesc indice_desc) {
   const int indice_cols = indice_desc.shape[indice_desc.dim - 1];
   const int copy_stride = tensor_desc.stride[indice_cols - 1];
-  const int* shape = &(tensor_desc.shape[0]);
   const int* stride = &(tensor_desc.stride[0]);
   CUDA_1D_KERNEL_LOOP(index, n) {
     int output_offset = 0;
