@@ -224,7 +224,7 @@ def _process_mmcls_checkpoint(checkpoint):
 class BaseCheckpointLoader:
     """Abstract class of checkpoint loader.
 
-    All loaders need to implement the classmethod api: ``load_checkpoint()``.
+    All loaders need to implement the class method api: ``load_checkpoint()``.
     it's load checkpoint by filename and map_location parameter
     """
 
@@ -255,13 +255,7 @@ class NativeCheckpointLoader(BaseCheckpointLoader):
 
 
 class CheckpointLoaderClient:
-    """A general checkpoint loader client to load checkpoint.
-
-    Attributes:
-        _loader (dict[loader]): .
-        _native_checkpoint_handler (:obj:`NativeCheckpointLoader`):
-           The default loader object.
-    """
+    """A general checkpoint loader client to load checkpoint."""
 
     _loader = {}
     _native_checkpoint_loader = NativeCheckpointLoader
@@ -277,7 +271,7 @@ class CheckpointLoaderClient:
                 cls._loader[prefix] = loader
             else:
                 raise KeyError(
-                    f'{prefix} is already registered as a storage backend, '
+                    f'{prefix} is already registered as a loader backend, '
                     'add "force=True" if you want to override it')
         # sort
         cls._loader = OrderedDict(
@@ -292,7 +286,7 @@ class CheckpointLoaderClient:
         Args:
             prefixes (str or list[str] or tuple[str]):
             The prefix of the registered loader.
-            loader (class, optional): The loader class to be registered,
+            loader (class, None): The loader class to be registered,
                 which must be a subclass of :class:`BaseCheckpointLoader`.
                 When this method is used as a decorator, loader is None.
                 Defaults to None.
@@ -319,7 +313,7 @@ class CheckpointLoaderClient:
             path (str): checkpoint path
 
         Returns:
-            loader (Loader)
+            loader (class): checkpoint loader
         """
 
         for p in cls._loader:
@@ -328,11 +322,11 @@ class CheckpointLoaderClient:
         return cls._native_checkpoint_loader
 
     @classmethod
-    def load_checkpoint(cls, filepath, map_location=None, logger=None):
+    def load_checkpoint(cls, filename, map_location=None, logger=None):
         """load checkpoint through URL scheme file path.
 
         Args:
-            filename (str): checkpoint file path with given prefix
+            filename (str): checkpoint file name with given prefix
             map_location (str or None): Same as :func:`torch.load`.
             logger (:mod:`logging.Logger` or None): The logger for message.
 
@@ -340,7 +334,7 @@ class CheckpointLoaderClient:
             dict or OrderedDict: The loaded checkpoint.
         """
 
-        checkpoint_loader = cls._get_checkpoint_loader(filepath)
+        checkpoint_loader = cls._get_checkpoint_loader(filename)
         if isinstance(checkpoint_loader, type):
             # class object
             class_name = checkpoint_loader.__name__
@@ -348,7 +342,7 @@ class CheckpointLoaderClient:
             # class instance object
             class_name = checkpoint_loader.__class__.__name__
         mmcv.print_log(f'Use {class_name} loader', logger)
-        return checkpoint_loader.load_checkpoint(filepath, map_location)
+        return checkpoint_loader.load_checkpoint(filename, map_location)
 
 
 @CheckpointLoaderClient.register_loader(prefixes=('http://', 'https://'))
