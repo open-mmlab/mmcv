@@ -1,16 +1,16 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-import io
 import os
 import os.path as osp
+import warnings
+
+import io
 import pkgutil
 import time
-import warnings
+import torch
+import torchvision
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-
-import torch
-import torchvision
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
