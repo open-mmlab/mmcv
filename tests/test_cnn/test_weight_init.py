@@ -1,8 +1,9 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+from tempfile import TemporaryDirectory
+
 import numpy as np
 import pytest
 import torch
-from tempfile import TemporaryDirectory
 from torch import nn
 
 from mmcv.cnn import (BiasInitWithProb, ConstantInit, KaimingInit, NormalInit,

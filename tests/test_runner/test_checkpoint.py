@@ -1,11 +1,12 @@
-import pytest
 import sys
-import torch
-import torch.nn as nn
 from collections import OrderedDict
 from tempfile import TemporaryDirectory
-from torch.nn.parallel import DataParallel
 from unittest.mock import MagicMock
+
+import pytest
+import torch
+import torch.nn as nn
+from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
