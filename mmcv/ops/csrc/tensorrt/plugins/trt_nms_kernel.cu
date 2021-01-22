@@ -11,6 +11,8 @@
 #include "common_cuda_helper.hpp"
 #include "nms_cuda_kernel.cuh"
 #include "trt_cuda_helper.cuh"
+#include "trt_plugin_helper.hpp"
+
 struct NMSBox {
   float box[4];
 };
@@ -104,16 +106,19 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
                                   int center_point_box, size_t output_length) {
   size_t boxes_xyxy_workspace = 0;
   if (center_point_box == 1) {
-    boxes_xyxy_workspace =
-        num_batches * spatial_dimension * 4 * boxes_word_size;
+    boxes_xyxy_workspace = mmcv::getAlignedSize(
+        num_batches * spatial_dimension * 4 * boxes_word_size);
   }
-  size_t scores_workspace = spatial_dimension * boxes_word_size;
-  size_t boxes_workspace = spatial_dimension * 4 * boxes_word_size;
+  size_t scores_workspace =
+      mmcv::getAlignedSize(spatial_dimension * boxes_word_size);
+  size_t boxes_workspace =
+      mmcv::getAlignedSize(spatial_dimension * 4 * boxes_word_size);
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
-  size_t mask_workspace =
-      spatial_dimension * col_blocks * sizeof(unsigned long long);
-  size_t index_workspace = spatial_dimension * 2 * sizeof(int);
-  size_t count_workspace = sizeof(int);
+  size_t mask_workspace = mmcv::getAlignedSize(spatial_dimension * col_blocks *
+                                               sizeof(unsigned long long));
+  size_t index_workspace =
+      mmcv::getAlignedSize(spatial_dimension * 2 * sizeof(int));
+  size_t count_workspace = mmcv::getAlignedSize(sizeof(int));
   return scores_workspace + boxes_xyxy_workspace + boxes_workspace +
          mask_workspace + index_workspace + count_workspace;
 }
@@ -162,7 +167,8 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   if (center_point_box == 1) {
     boxes_xyxy = (float*)workspace;
     workspace = static_cast<char*>(workspace) +
-                num_batches * spatial_dimension * 4 * sizeof(float);
+                mmcv::getAlignedSize(num_batches * spatial_dimension * 4 *
+                                     sizeof(float));
     thrust::transform(thrust::cuda::par.on(stream), (NMSBox*)boxes,
                       (NMSBox*)(boxes + num_batches * spatial_dimension * 4),
                       (NMSBox*)boxes_xyxy, nms_centerwh2xyxy());
@@ -170,18 +176,22 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   }
 
   float* scores_sorted = (float*)workspace;
-  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(float);
+  workspace = static_cast<char*>(workspace) +
+              mmcv::getAlignedSize(spatial_dimension * sizeof(float));
 
   unsigned long long* dev_mask = (unsigned long long*)workspace;
   workspace = static_cast<char*>(workspace) +
-              spatial_dimension * col_blocks * sizeof(unsigned long long);
+              mmcv::getAlignedSize(spatial_dimension * col_blocks *
+                                   sizeof(unsigned long long));
 
   int* index_cache = (int*)workspace;
-  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(int);
+  workspace = static_cast<char*>(workspace) +
+              mmcv::getAlignedSize(spatial_dimension * sizeof(int));
 
   // generate sequence [0,1,2,3,4 ....]
   int* index_template = (int*)workspace;
-  workspace = static_cast<char*>(workspace) + spatial_dimension * sizeof(int);
+  workspace = static_cast<char*>(workspace) +
+              mmcv::getAlignedSize(spatial_dimension * sizeof(int));
   thrust::sequence(thrust::cuda::par.on(stream), index_template,
                    index_template + spatial_dimension, 0);
 
@@ -191,7 +201,7 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   }
 
   int* output_count = (int*)workspace;
-  workspace = static_cast<char*>(workspace) + sizeof(int);
+  workspace = static_cast<char*>(workspace) + mmcv::getAlignedSize(sizeof(int));
   cudaMemsetAsync(output_count, 0, sizeof(int), stream);
 
   // fill output with -1

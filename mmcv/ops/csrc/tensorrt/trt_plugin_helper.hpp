@@ -31,5 +31,10 @@ inline unsigned int getElementSize(nvinfer1::DataType t) {
   throw std::runtime_error("Invalid DataType.");
   return 0;
 }
+
+inline size_t getAlignedSize(size_t origin_size){
+  return size_t((origin_size+31)/32)*32;
+}
+
 }  // namespace mmcv
 #endif  // TRT_PLUGIN_HELPER_HPP
