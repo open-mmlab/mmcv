@@ -116,11 +116,14 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   size_t mask_workspace = mmcv::getAlignedSize(spatial_dimension * col_blocks *
                                                sizeof(unsigned long long));
+  size_t index_template_workspace =
+      mmcv::getAlignedSize(spatial_dimension * sizeof(int));
   size_t index_workspace =
-      mmcv::getAlignedSize(spatial_dimension * 2 * sizeof(int));
+      mmcv::getAlignedSize(spatial_dimension * sizeof(int));
   size_t count_workspace = mmcv::getAlignedSize(sizeof(int));
   return scores_workspace + boxes_xyxy_workspace + boxes_workspace +
-         mask_workspace + index_workspace + count_workspace;
+         mask_workspace + index_template_workspace + index_workspace +
+         count_workspace;
 }
 
 void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
@@ -160,8 +163,8 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
 
   const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
   float* boxes_sorted = (float*)workspace;
-  workspace =
-      static_cast<char*>(workspace) + spatial_dimension * 4 * sizeof(float);
+  workspace = static_cast<char*>(workspace) +
+              mmcv::getAlignedSize(spatial_dimension * 4 * sizeof(float));
 
   float* boxes_xyxy = nullptr;
   if (center_point_box == 1) {
