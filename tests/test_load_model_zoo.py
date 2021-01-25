@@ -58,7 +58,7 @@ def test_get_deprecated_models():
     }
 
 
-def load_url_dist(url):
+def load_url_dist(url, map_location=None):
     return 'url:' + url
 
 
