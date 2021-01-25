@@ -105,17 +105,19 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
-def load_url_dist(url, model_dir=None):
+def load_url_dist(url, model_dir=None, map_location=None):
     """In distributed setting, this function only download checkpoint at local
     rank 0."""
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(url, model_dir=model_dir)
+        checkpoint = model_zoo.load_url(
+            url, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(url, model_dir=model_dir)
+            checkpoint = model_zoo.load_url(
+                url, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
 
@@ -240,11 +242,13 @@ def _load_checkpoint(filename, map_location=None):
                       'use "torchvision://" instead')
         model_urls = get_torchvision_models()
         model_name = filename[11:]
-        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = load_url_dist(
+            model_urls[model_name], map_location=map_location)
     elif filename.startswith('torchvision://'):
         model_urls = get_torchvision_models()
         model_name = filename[14:]
-        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = load_url_dist(
+            model_urls[model_name], map_location=map_location)
     elif filename.startswith('open-mmlab://'):
         model_urls = get_external_models()
         model_name = filename[13:]
@@ -256,7 +260,7 @@ def _load_checkpoint(filename, map_location=None):
         model_url = model_urls[model_name]
         # check if is url
         if model_url.startswith(('http://', 'https://')):
-            checkpoint = load_url_dist(model_url)
+            checkpoint = load_url_dist(model_url, map_location=map_location)
         else:
             filename = osp.join(_get_mmcv_home(), model_url)
             if not osp.isfile(filename):
@@ -265,10 +269,11 @@ def _load_checkpoint(filename, map_location=None):
     elif filename.startswith('mmcls://'):
         model_urls = get_mmcls_models()
         model_name = filename[8:]
-        checkpoint = load_url_dist(model_urls[model_name])
+        checkpoint = load_url_dist(
+            model_urls[model_name], map_location=map_location)
         checkpoint = _process_mmcls_checkpoint(checkpoint)
     elif filename.startswith(('http://', 'https://')):
-        checkpoint = load_url_dist(filename)
+        checkpoint = load_url_dist(filename, map_location=map_location)
     elif filename.startswith('pavi://'):
         model_path = filename[7:]
         checkpoint = load_pavimodel_dist(model_path, map_location=map_location)
