@@ -173,12 +173,17 @@ class TestIO:
         with pytest.raises(ValueError):
             mmcv.imread(self.img_path, 'unsupported_backend')
 
+        mmcv.use_backend('cv2')
+
         # consistent exif behaviour
         img_cv2_exif = mmcv.imread(self.exif_img_path)
         img_pil_exif = mmcv.imread(self.exif_img_path, backend='pillow')
-        assert np.all(img_cv2_exif == img_pil_exif)
-
-        mmcv.use_backend('cv2')
+        assert img_cv2_exif.shape == img_pil_exif.shape
+        img_cv2_exif_unchanged = mmcv.imread(
+            self.exif_img_path, flag='unchanged')
+        img_pil_exif_unchanged = mmcv.imread(
+            self.exif_img_path, backend='pillow', flag='unchanged')
+        assert img_cv2_exif_unchanged.shape == img_pil_exif_unchanged.shape
 
     def test_imfrombytes(self):
         # backend cv2, channel order: bgr
