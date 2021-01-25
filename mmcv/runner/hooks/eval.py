@@ -31,13 +31,13 @@ class EvalHook(Hook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in best.json.
+            checkpoint would be save in ``runner.meta['hook_msgs']``.
             Options are the evaluation metrics to the test dataset. e.g.,
             ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
             segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
             ``auto``, the first key of the returned ``OrderedDict`` result
-            will be used. The interval of ``CheckpointHook`` should device
-            ``EvalHook``. Default: None.
+            will be used. The interval of ``EvalHook`` should be
+            divisible of that in ``CheckpointHook``. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -46,6 +46,10 @@ class EvalHook(Hook):
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
     """
+
+    # Since the key for determine greater an less is related to the downstream
+    # task, downstream repos may need to overwrite the following inner
+    # variable according to their tasks
 
     rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
     init_value_map = {'greater': -inf, 'less': inf}
@@ -257,13 +261,13 @@ class DistEvalHook(EvalHook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in best.json.
+            checkpoint would be save in ``runner.meta['hook_msgs']``.
             Options are the evaluation metrics to the test dataset. e.g.,
             ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
             segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
             ``auto``, the first key of the returned ``OrderedDict`` result
-            will be used. The interval of ``CheckpointHook`` should depend on
-            ``EvalHook``. Default: None.
+            will be used. The interval of ``EvalHook`` should depend on
+            ``CheckpointHook``. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
