@@ -32,8 +32,9 @@ inline unsigned int getElementSize(nvinfer1::DataType t) {
   return 0;
 }
 
-inline size_t getAlignedSize(size_t origin_size, size_t aligned_number=16) {
-  return size_t((origin_size + aligned_number-1) / aligned_number) * aligned_number;
+inline size_t getAlignedSize(size_t origin_size, size_t aligned_number = 16) {
+  return size_t((origin_size + aligned_number - 1) / aligned_number) *
+         aligned_number;
 }
 
 }  // namespace mmcv
