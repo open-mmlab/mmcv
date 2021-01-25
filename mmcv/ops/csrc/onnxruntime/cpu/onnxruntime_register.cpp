@@ -1,9 +1,9 @@
 #include "onnxruntime_register.h"
 
+#include "nms.h"
 #include "ort_mmcv_utils.h"
 #include "roi_align.h"
 #include "soft_nms.h"
-#include "nms.h"
 
 const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;

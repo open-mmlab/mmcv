@@ -8,7 +8,7 @@ struct NmsKernel {
 
   void Compute(OrtKernelContext *context);
 
-protected:
+ protected:
   OrtApi api_;
   Ort::CustomOpApi ort_;
   const OrtKernelInfo *info_;
