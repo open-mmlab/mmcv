@@ -28,14 +28,15 @@ class NMSop(torch.autograd.Function):
                 'mmcv::NonMaxSupression',
                 bboxes,
                 scores,
-                iou_threshold_f = float(iou_threshold),
-                offset_i = int(offset))
+                iou_threshold_f=float(iou_threshold),
+                offset_i=int(offset))
         else:
             from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
             max_output_per_class = g.op(
-                'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+                'Constant',
+                value_t=torch.tensor([sys.maxsize], dtype=torch.long))
             iou_threshold = g.op(
                 'Constant',
                 value_t=torch.tensor([iou_threshold], dtype=torch.float))
@@ -45,8 +46,9 @@ class NMSop(torch.autograd.Function):
                 g,
                 select(
                     g, nms_out, 1,
-                    g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-                1)
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([2], dtype=torch.long))), 1)
 
 
 class SoftNMSop(torch.autograd.Function):
