@@ -26,6 +26,7 @@ class TestIO:
         cls.gray_img_dim3_path = osp.join(cls.data_dir, 'grayscale_dim3.jpg')
         cls.gray_alpha_img_path = osp.join(cls.data_dir, 'gray_alpha.png')
         cls.palette_img_path = osp.join(cls.data_dir, 'palette.gif')
+        cls.exif_img_path = osp.join(cls.data_dir, 'color_exif.jpg')
         cls.img = cv2.imread(cls.img_path)
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
@@ -171,6 +172,11 @@ class TestIO:
 
         with pytest.raises(ValueError):
             mmcv.imread(self.img_path, 'unsupported_backend')
+
+        # consistent exif behaviour
+        img_cv2_exif = mmcv.imread(self.exif_img_path)
+        img_pil_exif = mmcv.imread(self.exif_img_path, backend='pillow')
+        assert np.all(img_cv2_exif == img_pil_exif)
 
         mmcv.use_backend('cv2')
 
