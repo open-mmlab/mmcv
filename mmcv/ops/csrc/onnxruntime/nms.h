@@ -8,7 +8,7 @@ struct NmsKernel {
 
   void Compute(OrtKernelContext *context);
 
- protected:    
+protected:
   OrtApi api_;
   Ort::CustomOpApi ort_;
   const OrtKernelInfo *info_;
@@ -19,11 +19,11 @@ struct NmsKernel {
 };
 
 struct NmsOp : Ort::CustomOpBase<NmsOp, NmsKernel> {
-  void *CreateKernel(OrtApi api, const OrtKernelInfo* info) const {
+  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) const {
     return new NmsKernel(api, info);
   };
 
-  const char* GetName() const { return "NonMaxSupression"; };
+  const char *GetName() const { return "NonMaxSupression"; };
 
   size_t GetInputTypeCount() const { return 2; };
   ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
@@ -36,8 +36,8 @@ struct NmsOp : Ort::CustomOpBase<NmsOp, NmsKernel> {
   }
 
   // force cpu
-  const char* GetExecutionProviderType() const {
-    return "CPUExecutionProvider";  
+  const char *GetExecutionProviderType() const {
+    return "CPUExecutionProvider";
   }
 };
 
