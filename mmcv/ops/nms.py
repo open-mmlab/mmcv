@@ -21,22 +21,32 @@ class NMSop(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
-        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-        boxes = unsqueeze(g, bboxes, 0)
-        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-        max_output_per_class = g.op(
-            'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-        nms_out = g.op('NonMaxSuppression', boxes, scores,
-                       max_output_per_class, iou_threshold)
-        return squeeze(
-            g,
-            select(
-                g, nms_out, 1,
-                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-            1)
+        from ..onnx import is_custom_op_loaded
+        has_custom_op = is_custom_op_loaded()
+        if has_custom_op:
+            return g.op(
+                'mmcv::NonMaxSupression',
+                bboxes,
+                scores,
+                iou_threshold_f = float(iou_threshold),
+                offset_i = int(offset))
+        else:
+            from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            boxes = unsqueeze(g, bboxes, 0)
+            scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
+            max_output_per_class = g.op(
+                'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+            iou_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([iou_threshold], dtype=torch.float))
+            nms_out = g.op('NonMaxSuppression', boxes, scores,
+                           max_output_per_class, iou_threshold)
+            return squeeze(
+                g,
+                select(
+                    g, nms_out, 1,
+                    g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
+                1)
 
 
 class SoftNMSop(torch.autograd.Function):
