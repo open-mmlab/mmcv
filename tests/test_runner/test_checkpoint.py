@@ -143,9 +143,13 @@ def test_load_pavimodel_dist():
     pavimodel = Mockpavimodel()
     import pavi
     pavi.modelcloud.get = MagicMock(return_value=pavimodel)
+    with pytest.raises(AssertionError):
+        # test pavi prefix
+        _ = load_from_pavi('MyPaviFolder/checkpoint.pth')
+
     with pytest.raises(FileNotFoundError):
         # there is not such checkpoint for us to load
-        _ = load_from_pavi('MyPaviFolder/checkpoint.pth')
+        _ = load_from_pavi('pavi://checkpoint.pth')
 
 
 def test_load_classes_name():
