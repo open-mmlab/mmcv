@@ -239,9 +239,9 @@ def load_from_local(filename, map_location):
 
 
 class CheckpointLoader:
-    """A general checkpoint loader to manage all scheme loaders."""
+    """A general checkpoint loader to manage all schemes."""
 
-    _loader = {}
+    _schemes = {}
 
     @classmethod
     def _register_scheme(cls, prefixes, loader, force=False):
@@ -250,15 +250,15 @@ class CheckpointLoader:
         else:
             assert isinstance(prefixes, (list, tuple))
         for prefix in prefixes:
-            if (prefix not in cls._loader) or force:
-                cls._loader[prefix] = loader
+            if (prefix not in cls._schemes) or force:
+                cls._schemes[prefix] = loader
             else:
                 raise KeyError(
                     f'{prefix} is already registered as a loader backend, '
                     'add "force=True" if you want to override it')
-        # sort
-        cls._loader = OrderedDict(
-            sorted(cls._loader.items(), key=lambda t: t[0], reverse=True))
+        # sort, longer prefixes take priority
+        cls._schemes = OrderedDict(
+            sorted(cls._schemes.items(), key=lambda t: t[0], reverse=True))
 
     @classmethod
     def register_scheme(cls, prefixes, loader=None, force=False):
@@ -298,9 +298,9 @@ class CheckpointLoader:
             loader (function): checkpoint loader
         """
 
-        for p in cls._loader:
+        for p in cls._schemes:
             if path.startswith(p):
-                return cls._loader[p]
+                return cls._schemes[p]
         return load_from_local
 
     @classmethod
@@ -432,7 +432,7 @@ def load_from_pavi(filename, map_location):
 
 
 @CheckpointLoader.register_scheme(prefixes='s3://')
-def load_from_s3(filename, map_location):
+def load_from_ceph(filename, map_location):
     """load checkpoint through the file path prefixed with s3.
 
     Args:
@@ -446,6 +446,26 @@ def load_from_s3(filename, map_location):
     checkpoint = load_fileclient_dist(
         filename, backend='ceph', map_location=map_location)
     return checkpoint
+
+
+def _load_checkpoint(filename, map_location=None, logger=None):
+    """Load checkpoint from somewhere (modelzoo, file, url).
+
+    Args:
+        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
+            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
+            details.
+        map_location (str, optional): Same as :func:`torch.load`.
+           Default: None.
+        logger (:mod:`logging.Logger`, optional): The logger for error message.
+           Default: None
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint. It can be either an
+           OrderedDict storing model weights or a dict containing other
+           information, which depends on the checkpoint.
+    """
+    return CheckpointLoader.load_checkpoint(filename, map_location, logger)
 
 
 def load_checkpoint(model,
@@ -468,8 +488,7 @@ def load_checkpoint(model,
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    checkpoint = CheckpointLoader.load_checkpoint(filename, map_location,
-                                                  logger)
+    checkpoint = _load_checkpoint(filename, map_location, logger)
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(
