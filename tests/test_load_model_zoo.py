@@ -58,8 +58,12 @@ def test_get_deprecated_models():
     }
 
 
-def load_url_dist(url):
+def load_from_http(url):
     return 'url:' + url
+
+
+def load_url(url, model_dir=None):
+    return load_from_http(url)
 
 
 def load(filepath, map_location=None):
@@ -67,8 +71,9 @@ def load(filepath, map_location=None):
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
-@patch('mmcv.runner.checkpoint.load_url_dist', load_url_dist)
+@patch('mmcv.runner.checkpoint.load_from_http', load_from_http)
 @patch('torch.load', load)
+@patch('torch.utils.model_zoo.load_url', load_url)
 def test_load_external_url():
     # test modelzoo://
     url = _load_checkpoint('modelzoo://resnet50')

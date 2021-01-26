@@ -105,69 +105,6 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
-def load_url_dist(url, model_dir=None):
-    """In distributed setting, this function only download checkpoint at local
-    rank 0."""
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
-    if rank == 0:
-        checkpoint = model_zoo.load_url(url, model_dir=model_dir)
-    if world_size > 1:
-        torch.distributed.barrier()
-        if rank > 0:
-            checkpoint = model_zoo.load_url(url, model_dir=model_dir)
-    return checkpoint
-
-
-def load_pavimodel_dist(model_path, map_location=None):
-    """In distributed setting, this function only download checkpoint at local
-    rank 0."""
-    try:
-        from pavi import modelcloud
-    except ImportError:
-        raise ImportError(
-            'Please install pavi to load checkpoint from modelcloud.')
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
-    if rank == 0:
-        model = modelcloud.get(model_path)
-        with TemporaryDirectory() as tmp_dir:
-            downloaded_file = osp.join(tmp_dir, model.name)
-            model.download(downloaded_file)
-            checkpoint = torch.load(downloaded_file, map_location=map_location)
-    if world_size > 1:
-        torch.distributed.barrier()
-        if rank > 0:
-            model = modelcloud.get(model_path)
-            with TemporaryDirectory() as tmp_dir:
-                downloaded_file = osp.join(tmp_dir, model.name)
-                model.download(downloaded_file)
-                checkpoint = torch.load(
-                    downloaded_file, map_location=map_location)
-    return checkpoint
-
-
-def load_fileclient_dist(filename, backend, map_location):
-    """In distributed setting, this function only download checkpoint at local
-    rank 0."""
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
-    allowed_backends = ['ceph']
-    if backend not in allowed_backends:
-        raise ValueError(f'Load from Backend {backend} is not supported.')
-    if rank == 0:
-        fileclient = FileClient(backend=backend)
-        buffer = io.BytesIO(fileclient.get(filename))
-        checkpoint = torch.load(buffer, map_location=map_location)
-    if world_size > 1:
-        torch.distributed.barrier()
-        if rank > 0:
-            fileclient = FileClient(backend=backend)
-            buffer = io.BytesIO(fileclient.get(filename))
-            checkpoint = torch.load(buffer, map_location=map_location)
-    return checkpoint
-
-
 def get_torchvision_models():
     model_urls = dict()
     for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
@@ -325,19 +262,103 @@ class CheckpointLoader:
 
 
 @CheckpointLoader.register_scheme(prefixes=('http://', 'https://'))
-def load_from_http(filename, map_location=None):
-    """load checkpoint through HTTP or HTTPS scheme path.
+def load_from_http(filename, map_location=None, model_dir=None):
+    """load checkpoint through HTTP or HTTPS scheme path. In distributed
+    setting, this function only download checkpoint at local rank 0.
 
     Args:
         filename (str): checkpoint file path with modelzoo or
-                torchvision prefix
+            torchvision prefix
         map_location (str, optional): it's not use.
+        model_dir (string, optional): directory in which to save the object,
+            Default: None
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
 
-    checkpoint = load_url_dist(filename)
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    if rank == 0:
+        checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
+    return checkpoint
+
+
+@CheckpointLoader.register_scheme(prefixes='pavi://')
+def load_from_pavi(filename, map_location=None):
+    """load checkpoint through the file path prefixed with pavi. In distributed
+    setting, this function only download checkpoint at local rank 0.
+
+    Args:
+        filename (str): checkpoint file path with pavi prefix
+        map_location (str, optional): Same as :func:`torch.load`.
+          Default: None
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+    assert filename.startswith('pavi://'), \
+        f'Expected filename startswith `pavi://`, but get {filename}'
+    model_path = filename[7:]
+
+    try:
+        from pavi import modelcloud
+    except ImportError:
+        raise ImportError(
+            'Please install pavi to load checkpoint from modelcloud.')
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    if rank == 0:
+        model = modelcloud.get(model_path)
+        with TemporaryDirectory() as tmp_dir:
+            downloaded_file = osp.join(tmp_dir, model.name)
+            model.download(downloaded_file)
+            checkpoint = torch.load(downloaded_file, map_location=map_location)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            model = modelcloud.get(model_path)
+            with TemporaryDirectory() as tmp_dir:
+                downloaded_file = osp.join(tmp_dir, model.name)
+                model.download(downloaded_file)
+                checkpoint = torch.load(
+                    downloaded_file, map_location=map_location)
+    return checkpoint
+
+
+@CheckpointLoader.register_scheme(prefixes='s3://')
+def load_from_ceph(filename, map_location=None, backend='ceph'):
+    """load checkpoint through the file path prefixed with s3. In distributed
+    setting, this function only download checkpoint at local rank 0.
+
+    Args:
+        filename (str): checkpoint file path with s3 prefix
+        map_location (str, optional): Same as :func:`torch.load`.
+        backend (str): The storage backend type. Options are "disk", "ceph",
+            "memcached" and "lmdb". Default: 'ceph'
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+    rank, world_size = get_dist_info()
+    rank = int(os.environ.get('LOCAL_RANK', rank))
+    allowed_backends = ['ceph']
+    if backend not in allowed_backends:
+        raise ValueError(f'Load from Backend {backend} is not supported.')
+    if rank == 0:
+        fileclient = FileClient(backend=backend)
+        buffer = io.BytesIO(fileclient.get(filename))
+        checkpoint = torch.load(buffer, map_location=map_location)
+    if world_size > 1:
+        torch.distributed.barrier()
+        if rank > 0:
+            fileclient = FileClient(backend=backend)
+            buffer = io.BytesIO(fileclient.get(filename))
+            checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
 
@@ -365,12 +386,13 @@ def load_from_torchvision(filename, map_location=None):
 
 
 @CheckpointLoader.register_scheme(prefixes='open-mmlab://')
-def load_from_openmmlab(filename, map_location):
+def load_from_openmmlab(filename, map_location=None):
     """load checkpoint through the file path prefixed with open-mmlab.
 
     Args:
         filename (str): checkpoint file path with open-mmlab prefix
         map_location (str, optional): Same as :func:`torch.load`.
+          Default: None
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -411,40 +433,6 @@ def load_from_mmcls(filename, map_location=None):
     model_name = filename[8:]
     checkpoint = load_from_http(model_urls[model_name])
     checkpoint = _process_mmcls_checkpoint(checkpoint)
-    return checkpoint
-
-
-@CheckpointLoader.register_scheme(prefixes='pavi://')
-def load_from_pavi(filename, map_location):
-    """load checkpoint through the file path prefixed with pavi.
-
-    Args:
-        filename (str): checkpoint file path with pavi prefix
-        map_location (str, optional): Same as :func:`torch.load`.
-
-    Returns:
-        dict or OrderedDict: The loaded checkpoint.
-    """
-
-    model_path = filename[7:]
-    checkpoint = load_pavimodel_dist(model_path, map_location=map_location)
-    return checkpoint
-
-
-@CheckpointLoader.register_scheme(prefixes='s3://')
-def load_from_ceph(filename, map_location):
-    """load checkpoint through the file path prefixed with s3.
-
-    Args:
-        filename (str): checkpoint file path with s3 prefix
-        map_location (str, optional): Same as :func:`torch.load`.
-
-    Returns:
-        dict or OrderedDict: The loaded checkpoint.
-    """
-
-    checkpoint = load_fileclient_dist(
-        filename, backend='ceph', map_location=map_location)
     return checkpoint
 
 

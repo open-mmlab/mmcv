@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
-from mmcv.runner.checkpoint import get_state_dict, load_pavimodel_dist
+from mmcv.runner.checkpoint import get_state_dict, load_from_pavi
 
 
 @MODULE_WRAPPERS.register_module()
@@ -145,7 +145,7 @@ def test_load_pavimodel_dist():
     pavi.modelcloud.get = MagicMock(return_value=pavimodel)
     with pytest.raises(FileNotFoundError):
         # there is not such checkpoint for us to load
-        _ = load_pavimodel_dist('MyPaviFolder/checkpoint.pth')
+        _ = load_from_pavi('MyPaviFolder/checkpoint.pth')
 
 
 def test_load_classes_name():
