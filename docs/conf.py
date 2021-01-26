@@ -44,13 +44,15 @@ release = __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'recommonmark',
     'sphinx.ext.autosectionlabel',
-]
+    'sphinx_markdown_tables'
+]  # yapf: disable
 
 autodoc_mock_imports = [
     'cv2', 'mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision'
