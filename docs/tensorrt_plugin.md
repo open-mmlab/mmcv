@@ -1,8 +1,26 @@
 # TensorRT Plugins for custom operators in MMCV (Experimental)
 
+<!-- TOC -->
+
+- [TensorRT Plugins for custom operators in MMCV (Experimental)](#tensorrt-plugins-for-custom-operators-in-mmcv-experimental)
+  - [Introduction of TensorRT](#introduction-of-tensorrt)
+  - [Why include TensorRT plugins in MMCV](#why-include-tensorrt-plugins-in-mmcv)
+  - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
+  - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)
+    - [Prerequisite](#prerequisite)
+    - [Build on Linux](#build-on-linux)
+  - [Create TensorRT engine and run inference in python](#create-tensorrt-engine-and-run-inference-in-python)
+  - [How to add a TensorRT plugin for custom op in MMCV](#how-to-add-a-tensorrt-plugin-for-custom-op-in-mmcv)
+    - [Main procedures](#main-procedures)
+    - [Reminders](#reminders)
+  - [Known Issues](#known-issues)
+  - [References](#references)
+
+<!-- TOC -->
+
 ## Introduction of TensorRT
 
-**NVIDIA TensorRT** is a SDK for high-performance deep learning inference, which includes a deep learning inference optimizer and runtime that delivers low latency and high-throughput for deep learning inference applications. Check its [developer's website](https://developer.nvidia.com/tensorrt) for more information.
+**NVIDIA TensorRT** is a software development kit(SDK) for high-performance inference of deep learning models. It includes a deep learning inference optimizer and runtime that delivers low latency and high-throughput for deep learning inference applications. Please check its [developer's website](https://developer.nvidia.com/tensorrt) for more information.
 
 ## Why include TensorRT plugins in MMCV
 
@@ -62,9 +80,9 @@ cd mmcv # to MMCV root directory
 MMCV_WITH_OPS=1 MMCV_WITH_TRT=1 pip install -e .
 ```
 
-## How to create TensorRT engine and run inference in python
+## Create TensorRT engine and run inference in python
 
-Example
+Here is an example.
 
 ```python
 import torch
@@ -111,7 +129,15 @@ with torch.no_grad():
 
 ### Main procedures
 
-Take RoIAlign plugin `roi_align` for example.
+Below are the main steps:
+
+1. Add c++ header file
+2. Add c++ source file
+3. Add cuda kernel file
+4. Register plugin in `trt_plugin.cpp`
+5. Add unit test in `tests/test_ops/test_tensorrt.py`
+
+**Take RoIAlign plugin `roi_align` for example.**
 
 1. Add header `trt_roi_align.hpp` to TensorRT include directory `mmcv/ops/csrc/tensorrt/`
 2. Add source `trt_roi_align.cpp` to TensorRT source directory `mmcv/ops/csrc/tensorrt/plugins/`
