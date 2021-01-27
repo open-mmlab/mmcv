@@ -3,8 +3,7 @@
 <!-- TOC -->
 
 - [TensorRT Plugins for custom operators in MMCV (Experimental)](#tensorrt-plugins-for-custom-operators-in-mmcv-experimental)
-  - [Introduction of TensorRT](#introduction-of-tensorrt)
-  - [Why include TensorRT plugins in MMCV](#why-include-tensorrt-plugins-in-mmcv)
+  - [Introduction](#introduction)
   - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
   - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)
     - [Prerequisite](#prerequisite)
@@ -18,13 +17,10 @@
 
 <!-- TOC -->
 
-## Introduction of TensorRT
+## Introduction
 
 **NVIDIA TensorRT** is a software development kit(SDK) for high-performance inference of deep learning models. It includes a deep learning inference optimizer and runtime that delivers low latency and high-throughput for deep learning inference applications. Please check its [developer's website](https://developer.nvidia.com/tensorrt) for more information.
-
-## Why include TensorRT plugins in MMCV
-
-- To ease the deployment of trained models with custom operators from `mmcv.ops` using TensorRT.
+To ease the deployment of trained models with custom operators from `mmcv.ops` using TensorRT, a series of TensorRT plugins are included in MMCV.
 
 ## List of TensorRT plugins supported in MMCV
 
