@@ -120,6 +120,9 @@ def nms(boxes, scores, iou_threshold, offset=0):
     """
     assert isinstance(boxes, (torch.Tensor, np.ndarray))
     assert isinstance(scores, (torch.Tensor, np.ndarray))
+    print('save input data')
+    np.save('boxes.bin', boxes.detach().cpu().numpy())
+    np.save('scores.bin', scores.detach().cpu().numpy())
     is_numpy = False
     if isinstance(boxes, np.ndarray):
         is_numpy = True
@@ -154,13 +157,7 @@ def nms(boxes, scores, iou_threshold, offset=0):
             select = ext_module.nms(*indata_list, **indata_dict)
         inds = order.masked_select(select)
     else:
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] -= 1
         inds = NMSop.apply(boxes, scores, iou_threshold, offset)
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] += 1
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()

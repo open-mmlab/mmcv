@@ -65,12 +65,13 @@ void NmsKernel::Compute(OrtKernelContext *context) {
 
   // area = (x2 - x1 + offset) * (y2 - y1 + offset)
   for (int64_t i = 0; i < nboxes; i++) {
-    areas[i] =
-        (x2[i * 4] - x1[i * 4] + offset) * (y2[i * 4] - y1[i * 4] + offset);
+    areas[i] = (tmp_boxes[i * 4 + 2] - tmp_boxes[i * 4 + 0] + offset) *
+               (tmp_boxes[i * 4 + 3] - tmp_boxes[i * 4 + 1] + offset);
   }
 
   for (int64_t _i = 0; _i < nboxes; _i++) {
-    if (select[_i] == false) continue;
+    if (select[_i] == false)
+      continue;
     auto i = order[_i];
     auto ix1 = tmp_boxes[i * 4 + 0];
     auto iy1 = tmp_boxes[i * 4 + 1];
@@ -79,7 +80,8 @@ void NmsKernel::Compute(OrtKernelContext *context) {
     auto iarea = areas[i];
 
     for (int64_t _j = _i + 1; _j < nboxes; _j++) {
-      if (select[_j] == false) continue;
+      if (select[_j] == false)
+        continue;
       auto j = order[_j];
       auto xx1 = std::max(ix1, tmp_boxes[j * 4 + 0]);
       auto yy1 = std::max(iy1, tmp_boxes[j * 4 + 1]);
@@ -90,7 +92,8 @@ void NmsKernel::Compute(OrtKernelContext *context) {
       auto h = std::max(0.f, yy2 - yy1 + offset);
       auto inter = w * h;
       auto ovr = inter / (iarea + areas[j] - inter);
-      if (ovr >= iou_threshold) select[_j] = false;
+      if (ovr >= iou_threshold)
+        select[_j] = false;
     }
   }
   std::vector<int64_t> res_order;
