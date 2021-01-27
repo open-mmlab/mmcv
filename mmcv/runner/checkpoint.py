@@ -158,23 +158,6 @@ def _process_mmcls_checkpoint(checkpoint):
     return new_checkpoint
 
 
-def load_from_local(filename, map_location):
-    """load checkpoint by local file path.
-
-    Args:
-        filename (str): local checkpoint file path
-        map_location (str, optional): Same as :func:`torch.load`.
-
-    Returns:
-        dict or OrderedDict: The loaded checkpoint.
-    """
-
-    if not osp.isfile(filename):
-        raise IOError(f'{filename} is not a checkpoint file')
-    checkpoint = torch.load(filename, map_location=map_location)
-    return checkpoint
-
-
 class CheckpointLoader:
     """A general checkpoint loader to manage all schemes."""
 
@@ -238,7 +221,6 @@ class CheckpointLoader:
         for p in cls._schemes:
             if path.startswith(p):
                 return cls._schemes[p]
-        return load_from_local
 
     @classmethod
     def load_checkpoint(cls, filename, map_location=None, logger=None):
@@ -259,6 +241,24 @@ class CheckpointLoader:
         class_name = checkpoint_loader.__name__
         mmcv.print_log(f'Use {class_name} loader', logger)
         return checkpoint_loader(filename, map_location)
+
+
+@CheckpointLoader.register_scheme(prefixes='')
+def load_from_local(filename, map_location):
+    """load checkpoint by local file path.
+
+    Args:
+        filename (str): local checkpoint file path
+        map_location (str, optional): Same as :func:`torch.load`.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    if not osp.isfile(filename):
+        raise IOError(f'{filename} is not a checkpoint file')
+    checkpoint = torch.load(filename, map_location=map_location)
+    return checkpoint
 
 
 @CheckpointLoader.register_scheme(prefixes=('http://', 'https://'))
@@ -385,12 +385,14 @@ def load_from_torchvision(filename, map_location=None):
     return load_from_http(model_urls[model_name])
 
 
-@CheckpointLoader.register_scheme(prefixes='open-mmlab://')
+@CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
 def load_from_openmmlab(filename, map_location=None):
-    """load checkpoint through the file path prefixed with open-mmlab.
+    """load checkpoint through the file path prefixed with open-mmlab or
+    openmmlab.
 
     Args:
-        filename (str): checkpoint file path with open-mmlab prefix
+        filename (str): checkpoint file path with open-mmlab or
+        openmmlab prefix
         map_location (str, optional): Same as :func:`torch.load`.
           Default: None
 
