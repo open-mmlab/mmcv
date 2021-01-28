@@ -23,7 +23,7 @@ struct NmsOp : Ort::CustomOpBase<NmsOp, NmsKernel> {
     return new NmsKernel(api, info);
   };
 
-  const char *GetName() const { return "NonMaxSupression"; };
+  const char *GetName() const { return "NonMaxSuppression"; };
 
   size_t GetInputTypeCount() const { return 2; };
   ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
