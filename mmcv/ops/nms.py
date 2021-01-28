@@ -25,7 +25,7 @@ class NMSop(torch.autograd.Function):
         has_custom_op = is_custom_op_loaded()
         if has_custom_op:
             return g.op(
-                'mmcv::NonMaxSupression',
+                'mmcv::NonMaxSuppression',
                 bboxes,
                 scores,
                 iou_threshold_f=float(iou_threshold),
