@@ -38,10 +38,6 @@ void NmsKernel::Compute(OrtKernelContext *context) {
 
   // allocate tmp memory
   float *tmp_boxes = (float *)allocator_.Alloc(sizeof(float) * nboxes * 4);
-  float *x1 = tmp_boxes;
-  float *y1 = tmp_boxes + 1;
-  float *x2 = tmp_boxes + 2;
-  float *y2 = tmp_boxes + 3;
   float *sc = (float *)allocator_.Alloc(sizeof(float) * nboxes);
   float *areas = (float *)allocator_.Alloc(sizeof(float) * nboxes);
   bool *select = (bool *)allocator_.Alloc(sizeof(bool) * nboxes);
