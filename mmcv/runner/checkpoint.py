@@ -3,6 +3,7 @@ import io
 import os
 import os.path as osp
 import pkgutil
+import re
 import time
 import warnings
 from collections import OrderedDict
@@ -495,8 +496,9 @@ def load_checkpoint(model,
     else:
         state_dict = checkpoint
     # strip prefix of state_dict
-    if list(state_dict.keys())[0].startswith('module.'):
-        state_dict = {k[7:]: v for k, v in state_dict.items()}
+    blank = r'^'
+    prefix = r'module.'
+    state_dict = {re.sub(blank, prefix, k): v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint
