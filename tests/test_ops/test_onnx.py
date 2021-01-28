@@ -48,7 +48,7 @@ def test_nms():
 
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
-        pytest.skip('softnms for onnxruntime is not compiled.')
+        pytest.skip('nms for onnxruntime is not compiled.')
 
     session_options = rt.SessionOptions()
     session_options.register_custom_ops_library(ort_custom_op_path)

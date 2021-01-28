@@ -120,9 +120,6 @@ def nms(boxes, scores, iou_threshold, offset=0):
     """
     assert isinstance(boxes, (torch.Tensor, np.ndarray))
     assert isinstance(scores, (torch.Tensor, np.ndarray))
-    print('save input data')
-    np.save('boxes.bin', boxes.detach().cpu().numpy())
-    np.save('scores.bin', scores.detach().cpu().numpy())
     is_numpy = False
     if isinstance(boxes, np.ndarray):
         is_numpy = True
