@@ -401,11 +401,17 @@ def load_from_openmmlab(filename, map_location=None):
     """
 
     model_urls = get_external_models()
-    model_name = filename[13:]
+    prefix_str = 'open-mmlab://'
+    if filename.startswith(prefix_str):
+        model_name = filename[13:]
+    else:
+        model_name = filename[12:]
+        prefix_str = 'openmmlab://'
+
     deprecated_urls = get_deprecated_model_names()
     if model_name in deprecated_urls:
-        warnings.warn(f'open-mmlab://{model_name} is deprecated in favor '
-                      f'of open-mmlab://{deprecated_urls[model_name]}')
+        warnings.warn(f'{prefix_str}{model_name} is deprecated in favor '
+                      f'of {prefix_str}{deprecated_urls[model_name]}')
         model_name = deprecated_urls[model_name]
     model_url = model_urls[model_name]
     # check if is url

@@ -101,6 +101,16 @@ def test_load_external_url():
         url = _load_checkpoint('open-mmlab://train_old')
         assert url == 'url:https://localhost/train.pth'
 
+    # test openmmlab:// with deprecated model name
+    os.environ.pop(ENV_MMCV_HOME, None)
+    os.environ.pop(ENV_XDG_CACHE_HOME, None)
+    with pytest.warns(
+            Warning,
+            match='openmmlab://train_old is deprecated in favor of '
+            'openmmlab://train'):
+        url = _load_checkpoint('openmmlab://train_old')
+        assert url == 'url:https://localhost/train.pth'
+
     # test open-mmlab:// with user-defined MMCV_HOME
     os.environ.pop(ENV_MMCV_HOME, None)
     mmcv_home = osp.join(osp.dirname(__file__), 'data/model_zoo/mmcv_home')
