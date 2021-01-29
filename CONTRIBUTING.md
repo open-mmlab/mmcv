@@ -7,7 +7,7 @@ All kinds of contributions are welcome, including but not limited to the followi
 
 ## Workflow
 
-1. fork and pull the latest OpenMMLab repo
+1. fork and pull the latest OpenMMLab repository
 2. checkout a new branch (do not use master branch for PRs)
 3. commit your changes
 4. create a PR
@@ -46,10 +46,7 @@ From the repository folder
 pre-commit install
 ```
 
-If you are facing an issue when installing markdown lint, you may install ruby for markdown lint by
-referring to [this repo](https://github.com/innerlee/setup) by following the usage and taking [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh).
-
-or by the following steps
+Try the following steps to install ruby when you encounter an issue on installing markdownlint
 
 ```shell
 # install rvm
@@ -60,6 +57,8 @@ rvm autolibs disable
 # install ruby
 rvm install 2.7.1
 ```
+
+Or refer to [this repo](https://github.com/innerlee/setup) and take [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh) according its instruction.
 
 After this on every commit check code linters and formatter will be enforced.
 
