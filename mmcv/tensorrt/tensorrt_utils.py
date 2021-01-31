@@ -74,8 +74,9 @@ def preprocess_onnx(onnx_model):
                 iou_threshold=iou_threshold,
                 score_threshold=score_threshold)
 
-            if node_name in node_dict:
-                node_dict[node_name] = new_node
+            for output in node_outputs:
+                if output in node_dict:
+                    node_dict[output] = new_node
             nodes.insert(idx, new_node)
             nodes.remove(node)
 
