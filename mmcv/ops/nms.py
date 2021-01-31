@@ -142,13 +142,13 @@ def nms(boxes, scores, iou_threshold, offset=0):
             select = ext_module.nms(*indata_list, **indata_dict)
         inds = order.masked_select(select)
     else:
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] -= 1
-        inds = NMSop.apply(boxes, scores, iou_threshold, offset)
-        if torch.onnx.is_in_onnx_export() and offset == 0:
+        if torch.onnx.is_in_onnx_export() and offset == 1:
             # ONNX only support offset == 1
             boxes[:, -2:] += 1
+        inds = NMSop.apply(boxes, scores, iou_threshold, offset)
+        if torch.onnx.is_in_onnx_export() and offset == 1:
+            # ONNX only support offset == 1
+            boxes[:, -2:] -= 1
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
