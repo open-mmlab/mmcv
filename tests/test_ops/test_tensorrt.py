@@ -114,6 +114,7 @@ def test_roialign():
 
 def test_nms():
     try:
+        import mmcv
         from mmcv.ops import nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
@@ -121,14 +122,10 @@ def test_nms():
     # trt config
     fp16_mode = False
     max_workspace_size = 1 << 30
-
-    np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
-                         [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
-                        dtype=np.float32)
-    np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
-    boxes = torch.from_numpy(np_boxes).cuda()
-    scores = torch.from_numpy(np_scores).cuda()
-    nms = partial(nms, iou_threshold=0.3, offset=0)
+    data = mmcv.load('./tests/data/batched_nms_data.pkl')
+    boxes = data['boxes'].cuda()
+    scores = data['scores'].cuda()
+    nms = partial(nms, iou_threshold=0.7, offset=0)
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
@@ -162,11 +159,13 @@ def test_nms():
     with torch.no_grad():
         trt_outputs = trt_model({'boxes': boxes, 'scores': scores})
         trt_dets = trt_outputs['dets']
+        trt_inds = trt_outputs['inds']
+        trt_inds = trt_inds.long()
 
     # compute pytorch_output
     with torch.no_grad():
         pytorch_outputs = wrapped_model(boxes, scores)
-        pytorch_dets = pytorch_outputs[0]
+        pytorch_dets, pytorch_inds = pytorch_outputs
 
     # allclose
     if os.path.exists(onnx_file):
@@ -175,9 +174,95 @@ def test_nms():
         os.remove(trt_file)
     num_boxes = pytorch_dets.shape[0]
     trt_dets = trt_dets[:num_boxes, ...]
+    trt_inds = trt_inds[:num_boxes]
     trt_scores = trt_dets[:, 4]
     pytorch_scores = pytorch_dets[:, 4]
     assert torch.allclose(pytorch_scores, trt_scores, atol=1e-3)
+    assert torch.equal(pytorch_inds, trt_inds)
+
+
+def test_batched_nms():
+    try:
+        import mmcv
+        from mmcv.ops import batched_nms
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('test requires compilation')
+
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+    data = mmcv.load('./tests/data/batched_nms_data.pkl')
+    nms_cfg = dict(type='nms', iou_threshold=0.7)
+    boxes = data['boxes'].cuda()
+    scores = data['scores'].cuda()
+    idxs = data['idxs'].cuda()
+    class_agnostic = False
+
+    nms = partial(batched_nms, nms_cfg=nms_cfg, class_agnostic=class_agnostic)
+    wrapped_model = WrapFunction(nms)
+    wrapped_model.cpu().eval()
+    input_data = (boxes.detach().cpu(), scores.detach().cpu(),
+                  idxs.detach().cpu())
+    input_names = ['boxes', 'scores', 'idxs']
+    output_names = ['dets', 'inds']
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model,
+            input_data,
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    # create trt engine and wraper
+    opt_shape_dict = {
+        'boxes': [list(boxes.shape),
+                  list(boxes.shape),
+                  list(boxes.shape)],
+        'scores': [list(scores.shape),
+                   list(scores.shape),
+                   list(scores.shape)],
+        'idxs': [list(idxs.shape),
+                 list(idxs.shape),
+                 list(idxs.shape)]
+    }
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWraper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({
+            'boxes': boxes,
+            'scores': scores,
+            'idxs': idxs
+        })
+        trt_dets = trt_outputs['dets']
+        trt_inds = trt_outputs['inds']
+        trt_inds = trt_inds.long()
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_outputs = wrapped_model(boxes, scores, idxs)
+        pytorch_dets, pytorch_inds = pytorch_outputs
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    num_boxes = pytorch_dets.shape[0]
+    trt_dets = trt_dets[:num_boxes, ...]
+    trt_inds = trt_inds[:num_boxes]
+    trt_scores = trt_dets[:, 4]
+    pytorch_scores = pytorch_dets[:, 4]
+
+    assert torch.allclose(pytorch_scores, trt_scores)
+    assert torch.equal(pytorch_inds, trt_inds)
 
 
 def test_scatternd():
