@@ -142,12 +142,14 @@ def nms(boxes, scores, iou_threshold, offset=0):
             select = ext_module.nms(*indata_list, **indata_dict)
         inds = order.masked_select(select)
     else:
+        # According to source of NMS in ONNX Runtime, offset should be 0
+        # https://github.com/microsoft/onnxruntime/blob/bba185a582655b95fdd9913ac45f3f5c8ffd10ba/onnxruntime/core/providers/cpu/object_detection/non_max_suppression.cc#L158 # noqa: E501
         if torch.onnx.is_in_onnx_export() and offset == 1:
-            # ONNX only support offset == 1
+            # ONNX only support offset == 0
             boxes[:, -2:] += 1
         inds = NMSop.apply(boxes, scores, iou_threshold, offset)
         if torch.onnx.is_in_onnx_export() and offset == 1:
-            # ONNX only support offset == 1
+            # ONNX only support offset == 0
             boxes[:, -2:] -= 1
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
