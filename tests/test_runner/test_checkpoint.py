@@ -9,8 +9,8 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
-from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
-                                    get_state_dict, load_pavimodel_dist)
+from mmcv.runner.checkpoint import (get_state_dict, load_from_pavi,
+                                    _load_checkpoint_with_prefix)
 
 
 @MODULE_WRAPPERS.register_module()
@@ -146,9 +146,13 @@ def test_load_pavimodel_dist():
     pavimodel = Mockpavimodel()
     import pavi
     pavi.modelcloud.get = MagicMock(return_value=pavimodel)
+    with pytest.raises(AssertionError):
+        # test pavi prefix
+        _ = load_from_pavi('MyPaviFolder/checkpoint.pth')
+
     with pytest.raises(FileNotFoundError):
         # there is not such checkpoint for us to load
-        _ = load_pavimodel_dist('MyPaviFolder/checkpoint.pth')
+        _ = load_from_pavi('pavi://checkpoint.pth')
 
 
 def test_load_checkpoint_with_prefix():
@@ -215,3 +219,72 @@ def test_load_classes_name():
 
     # remove the temp file
     os.remove(checkpoint_path)
+
+
+def test_checkpoint_loader():
+    from mmcv.runner import _load_checkpoint, save_checkpoint, CheckpointLoader
+    import tempfile
+    import os
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = _load_checkpoint(checkpoint_path)
+    assert 'meta' in checkpoint and 'CLASSES' not in checkpoint['meta']
+    # remove the temp file
+    os.remove(checkpoint_path)
+
+    filenames = [
+        'http://xx.xx/xx.pth', 'https://xx.xx/xx.pth',
+        'modelzoo://xx.xx/xx.pth', 'torchvision://xx.xx/xx.pth',
+        'open-mmlab://xx.xx/xx.pth', 'openmmlab://xx.xx/xx.pth',
+        'mmcls://xx.xx/xx.pth', 'pavi://xx.xx/xx.pth', 's3://xx.xx/xx.pth',
+        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth'
+    ]
+    fn_names = [
+        'load_from_http', 'load_from_http', 'load_from_torchvision',
+        'load_from_torchvision', 'load_from_openmmlab', 'load_from_openmmlab',
+        'load_from_mmcls', 'load_from_pavi', 'load_from_ceph',
+        'load_from_local', 'load_from_local'
+    ]
+
+    for filename, fn_name in zip(filenames, fn_names):
+        loader = CheckpointLoader._get_checkpoint_loader(filename)
+        assert loader.__name__ == fn_name
+
+    @CheckpointLoader.register_scheme(prefixes='ftp://')
+    def load_from_ftp(filename, map_location):
+        return dict(filename=filename)
+
+    # test register_loader
+    filename = 'ftp://xx.xx/xx.pth'
+    loader = CheckpointLoader._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'load_from_ftp'
+
+    def load_from_ftp1(filename, map_location):
+        return dict(filename=filename)
+
+    # test duplicate registered error
+    with pytest.raises(KeyError):
+        CheckpointLoader.register_scheme('ftp://', load_from_ftp1)
+
+    # test force param
+    CheckpointLoader.register_scheme('ftp://', load_from_ftp1, force=True)
+    checkpoint = CheckpointLoader.load_checkpoint(filename)
+    assert checkpoint['filename'] == filename
+
+    # test print function name
+    loader = CheckpointLoader._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'load_from_ftp1'
+
+    # test sort
+    @CheckpointLoader.register_scheme(prefixes='a/b')
+    def load_from_ab(filename, map_location):
+        return dict(filename=filename)
+
+    @CheckpointLoader.register_scheme(prefixes='a/b/c')
+    def load_from_abc(filename, map_location):
+        return dict(filename=filename)
+
+    filename = 'a/b/c/d'
+    loader = CheckpointLoader._get_checkpoint_loader(filename)
+    assert loader.__name__ == 'load_from_abc'
