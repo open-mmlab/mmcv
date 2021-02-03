@@ -2,7 +2,7 @@ import os
 
 from .parrots_wrapper import TORCH_VERSION
 
-parrots_jit_option = os.getenv(PARROTS_JIT_OPTION)
+parrots_jit_option = os.getenv('PARROTS_JIT_OPTION')
 
 if TORCH_VERSION == 'parrots' and parrots_jit_option == 'ON':
     from parrots.jit import pat as jit
