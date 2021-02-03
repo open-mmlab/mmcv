@@ -9,8 +9,8 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
-from mmcv.runner.checkpoint import (get_state_dict, load_from_pavi,
-                                    _load_checkpoint_with_prefix)
+from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
+                                    get_state_dict, load_from_pavi)
 
 
 @MODULE_WRAPPERS.register_module()
