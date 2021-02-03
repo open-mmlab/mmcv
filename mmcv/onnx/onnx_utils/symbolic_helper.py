@@ -237,6 +237,8 @@ def _interpolate_get_scales_if_available(g, scales):
     offsets = g.op('Constant', value_t=torch.ones(2, dtype=torch.float32))
     scales_list = g.op(
         'Constant', value_t=torch.tensor(_maybe_get_const(scales[0], 'fs')))
+    # modify to support PyTorch==1.7.0
+    # https://github.com/pytorch/pytorch/blob/75ee5756715e7161314ce037474843b68f69fc04/torch/onnx/symbolic_helper.py#L375 # noqa: E501
     scales = g.op('Concat', offsets, scales_list, axis_i=0)
     return scales
 
