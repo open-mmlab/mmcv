@@ -182,8 +182,9 @@ def test_load_checkpoint_with_prefix():
         assert torch.equal(model.conv2d.state_dict()['bias'],
                            state_dict['bias'])
 
-        prefix = 'back'
+        # test whether prefix is in pretrained model
         with pytest.raises(AssertionError):
+            prefix = 'back'
             _load_checkpoint_with_prefix(prefix, 'model.pth')
 
 
