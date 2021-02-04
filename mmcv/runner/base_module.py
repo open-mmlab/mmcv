@@ -4,8 +4,6 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
-from mmcv.cnn import initialize
-
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
@@ -31,7 +29,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # if pretrained is not None:
         #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
         #         key, please consider using init_cfg')
-        #     self.init_cfg = dict(type='pretrained', checkpoint=pretrained)
+        #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
     @property
     def is_init(self):
@@ -39,6 +37,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
     def init_weight(self):
         """Initialize the weights."""
+        from ..cnn import initialize
+
         if not self._is_init:
 
             if hasattr(self, 'init_cfg'):
