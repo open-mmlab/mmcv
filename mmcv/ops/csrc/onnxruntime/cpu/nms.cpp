@@ -6,8 +6,8 @@
 #include <cmath>
 #include <iostream>
 #include <iterator>
-#include <vector>
 #include <numeric>  // std::iota
+#include <vector>
 
 #include "../ort_mmcv_utils.h"
 
