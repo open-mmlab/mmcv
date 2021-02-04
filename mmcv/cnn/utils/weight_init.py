@@ -77,16 +77,21 @@ def bias_init_with_prob(prior_prob):
 
 class BaseInit(object):
 
-    def __init__(self, bias, layers):
+    def __init__(self, bias, layer):
         if not isinstance(bias, (dict, int, float)):
             raise TypeError(
                 f'bias must be a dict or numbel, but got {type(bias)}')
+        if layer is not None:
+            if not isinstance(layer, (str, list)):
+                raise TypeError(f'layer must be str or list[str], \
+                    but got {type(layer)}')
+
         if isinstance(bias, dict):
             func = build_from_cfg(bias, INITIALIZERS)
             self.bias = func()
         else:
             self.bias = bias
-        self.layers = layers
+        self.layer = layer
 
 
 @INITIALIZERS.register_module(name='Constant')
@@ -97,31 +102,27 @@ class ConstantInit(BaseInit):
         val (int | float): the value to fill the weights in the module with
         bias (int | float | dict): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
-        layers (str |  [str], optional): the layer will be initialized.
-        Defaults to None.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
     """
 
-    def __init__(self, val, bias=0, layers=None):
-        super().__init__(bias, layers)
+    def __init__(self, val, bias=0, layer=None):
+        super().__init__(bias, layer)
         self.val = val
 
     def __call__(self, module):
-        if self.layers is None:
+        if self.layer is None:
             constant_init(module, self.val, self.bias)
         else:
-            if isinstance(self.layers, str):
+            if isinstance(self.layer, str):
                 layername = module.__class__.__name__
-                if layername == self.layers:
+                if layername == self.layer:
                     constant_init(module, self.val, self.bias)
-            elif isinstance(self.layers, list):
-                for layer in self.layers:
-                    layername = module.__class__.__name__
-                    if layername == layer:
-                        constant_init(module, self.val, self.bias)
             else:
-                raise TypeError(
-                    f'layers must be str or [str], but gor {type(self.layers)}'
-                )
+                for layer_ in self.layer:
+                    layername = module.__class__.__name__
+                    if layername == layer_:
+                        constant_init(module, self.val, self.bias)
 
 
 @INITIALIZERS.register_module(name='Xavier')
@@ -131,40 +132,35 @@ class XavierInit(BaseInit):
     neural networks` - Glorot, X. & Bengio, Y. (2010).
 
     Args:
-        gain (int | float): an optional scaling factor. Defaults
-        to 1.
-        bias (int | float | dict): the value to fill the bias or
-        define initialization type for bias. Defaults to 0.
+        gain (int | float): an optional scaling factor. Defaults to 1.
+        bias (int | float | dict): the value to fill the bias or define
+            initialization type for bias. Defaults to 0.
         distribution (str): distribution either be ``'normal'``
-        or ``'uniform'``. Defaults to ``'normal'``.
-        layers (str | [str], optional): the layer will be initialized.
-        Defaults to None.
+            or ``'uniform'``. Defaults to ``'normal'``.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
     """
 
-    def __init__(self, gain=1, bias=0, distribution='normal', layers=None):
-        super().__init__(bias, layers)
+    def __init__(self, gain=1, bias=0, distribution='normal', layer=None):
+        super().__init__(bias, layer)
         self.gain = gain
         self.distribution = distribution
 
     def __call__(self, module):
-        if self.layers is None:
+        if self.layer is None:
             xavier_init(module, self.gain, self.bias, self.distribution)
         else:
-            if isinstance(self.layers, str):
+            if isinstance(self.layer, str):
                 layername = module.__class__.__name__
-                if layername == self.layers:
+                if layername == self.layer:
                     xavier_init(module, self.gain, self.bias,
                                 self.distribution)
-            elif isinstance(self.layers, list):
-                for layer in self.layers:
+            else:
+                for layer_ in self.layer:
                     layername = module.__class__.__name__
-                    if layername == layer:
+                    if layername == layer_:
                         xavier_init(module, self.gain, self.bias,
                                     self.distribution)
-            else:
-                raise TypeError(
-                    f'layers must be str or [str], but gor {type(self.layers)}'
-                )
 
 
 @INITIALIZERS.register_module(name='Normal')
@@ -173,39 +169,34 @@ class NormalInit(BaseInit):
     distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`.
 
     Args:
-        mean (int | float):the mean of the normal distribution.
-        Defaults to 0.
-        std (int | float): the standard deviation of the normal
-        distribution. Defaults to 1.
-        bias (int | float | dict): the value to fill the bias or
-        define initialization type for bias. Defaults to 0.
-        layers (str | [str], optional): the layer will be initialized.
-        Defaults to None.
+        mean (int | float):the mean of the normal distribution. Defaults to 0.
+        std (int | float): the standard deviation of the normal distribution.
+            Defaults to 1.
+        bias (int | float | dict): the value to fill the bias or define
+            initialization type for bias. Defaults to 0.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
 
     """
 
-    def __init__(self, mean=0, std=1, bias=0, layers=None):
-        super().__init__(bias, layers)
+    def __init__(self, mean=0, std=1, bias=0, layer=None):
+        super().__init__(bias, layer)
         self.mean = mean
         self.std = std
 
     def __call__(self, module):
-        if self.layers is None:
+        if self.layer is None:
             normal_init(module, self.mean, self.std, self.bias)
         else:
-            if isinstance(self.layers, str):
+            if isinstance(self.layer, str):
                 layername = module.__class__.__name__
-                if layername == self.layers:
+                if layername == self.layer:
                     normal_init(module, self.mean, self.std, self.bias)
-            elif isinstance(self.layers, list):
-                for layer in self.layers:
-                    layername = module.__class__.__name__
-                    if layername == layer:
-                        normal_init(module, self.mean, self.std, self.bias)
             else:
-                raise TypeError(
-                    f'layers must be str or [str], but gor {type(self.layers)}'
-                )
+                for layer_ in self.layer:
+                    layername = module.__class__.__name__
+                    if layername == layer_:
+                        normal_init(module, self.mean, self.std, self.bias)
 
 
 @INITIALIZERS.register_module(name='Uniform')
@@ -214,62 +205,60 @@ class UniformInit(BaseInit):
     distribution :math:`\mathcal{U}(a, b)`.
 
     Args:
-        a (int | float): the lower bound of the uniform
-        distribution. Defaults to 0.
-        b (int | float): the upper bound of the uniform
-        distribution. Defaults to 1.
-        bias (int | float | dict): the value to fill the bias or
-        define initialization type for bias. Defaults to 0.
-        layers (str | [str], optional): the layer will be initialized.
-        Defaults to None.
+        a (int | float): the lower bound of the uniform distribution.
+            Defaults to 0.
+        b (int | float): the upper bound of the uniform distribution.
+            Defaults to 1.
+        bias (int | float | dict): the value to fill the bias or define
+            initialization type for bias. Defaults to 0.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
     """
 
-    def __init__(self, a=0, b=1, bias=0, layers=None):
-        super().__init__(bias, layers)
+    def __init__(self, a=0, b=1, bias=0, layer=None):
+        super().__init__(bias, layer)
         self.a = a
         self.b = b
 
     def __call__(self, module):
-        if self.layers is None:
+        if self.layer is None:
             uniform_init(module, self.a, self.b, self.bias)
         else:
-            if isinstance(self.layers, str):
+            if isinstance(self.layer, str):
                 layername = module.__class__.__name__
-                if layername == self.layers:
+                if layername == self.layer:
                     uniform_init(module, self.a, self.b, self.bias)
-            elif isinstance(self.layers, list):
-                for layer in self.layers:
-                    layername = module.__class__.__name__
-                    if layername == layer:
-                        uniform_init(module, self.a, self.b, self.bias)
             else:
-                raise TypeError(
-                    f'layers must be str or [str], but gor {type(self.layers)}'
-                )
+                for layer_ in self.layer:
+                    layername = module.__class__.__name__
+                    if layername == layer_:
+                        uniform_init(module, self.a, self.b, self.bias)
 
 
 @INITIALIZERS.register_module(name='Kaiming')
 class KaimingInit(BaseInit):
-    r"""Initialize module paramters with the valuse according to the method
+    """Initialize module paramters with the valuse according to the method
     described in `Delving deep into rectifiers: Surpassing human-level
-    performance on ImageNet classification` - He, K. et al. (2015).
+    performance on ImageNet classification - He, K. et al. (2015).
+    <https://www.cv-foundation.org/openaccess/content_iccv_2015/
+    papers/He_Delving_Deep_into_ICCV_2015_paper.pdf>`_
 
     Args:
-        a (int | float): the negative slope of the rectifier used
-        after this layer (only used with ``'leaky_relu'``). Defaults to 0.
-        mode (str):  either ``'fan_in'`` or ``'fan_out'``.
-        Choosing ``'fan_in'`` preserves the magnitude of the variance of
-        the weights in the forward pass. Choosing ``'fan_out'`` preserves
-        the magnitudes in the backwards pass. Defaults to ``'fan_out'``.
-        nonlinearity (str): the non-linear function
-        (`nn.functional` name), recommended to use only with ``'relu'`` or
-        ``'leaky_relu'`` . Defaults to 'relu'.
-        bias (int | float | dict): the value to fill the bias or
-        define initialization type for bias. Defaults to 0.
-        distribution (str): distribution either be ``'normal'``
-        or ``'uniform'``. Defaults to ``'normal'``.
-        layers (str | [str], optional): the layer will be initialized.
-        Defaults to None.
+        a (int | float): the negative slope of the rectifier used after this
+            layer (only used with ``'leaky_relu'``). Defaults to 0.
+        mode (str):  either ``'fan_in'`` or ``'fan_out'``. Choosing
+            ``'fan_in'`` preserves the magnitude of the variance of the weights
+            in the forward pass. Choosing ``'fan_out'`` preserves the
+            magnitudes in the backwards pass. Defaults to ``'fan_out'``.
+        nonlinearity (str): the non-linear function (`nn.functional` name),
+            recommended to use only with ``'relu'`` or ``'leaky_relu'`` .
+            Defaults to 'relu'.
+        bias (int | float | dict): the value to fill the bias or define
+            initialization type for bias. Defaults to 0.
+        distribution (str): distribution either be ``'normal'`` or
+            ``'uniform'``. Defaults to ``'normal'``.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -278,34 +267,30 @@ class KaimingInit(BaseInit):
                  nonlinearity='relu',
                  bias=0,
                  distribution='normal',
-                 layers=None):
-        super().__init__(bias, layers)
+                 layer=None):
+        super().__init__(bias, layer)
         self.a = a
         self.mode = mode
         self.nonlinearity = nonlinearity
         self.distribution = distribution
 
     def __call__(self, module):
-        if self.layers is None:
+        if self.layer is None:
             kaiming_init(module, self.a, self.mode, self.nonlinearity,
                          self.bias, self.distribution)
         else:
-            if isinstance(self.layers, str):
+            if isinstance(self.layer, str):
                 layername = module.__class__.__name__
-                if layername == self.layers:
+                if layername == self.layer:
                     kaiming_init(module, self.a, self.mode, self.nonlinearity,
                                  self.bias, self.distribution)
-            elif isinstance(self.layers, list):
-                for layer in self.layers:
+            else:
+                for layer_ in self.layer:
                     layername = module.__class__.__name__
-                    if layername == layer:
+                    if layername == layer_:
                         kaiming_init(module, self.a, self.mode,
                                      self.nonlinearity, self.bias,
                                      self.distribution)
-            else:
-                raise TypeError(
-                    f'layers must be str or [str], but gor {type(self.layers)}'
-                )
 
 
 @INITIALIZERS.register_module(name='BiasProb')
@@ -329,7 +314,7 @@ class PretrainedInit(object):
     Args:
         checkpoint (str): the file should be load
         prefix (str, optional): the prefix to indicate the sub-module.
-        Defaults to None.
+            Defaults to None.
     """
 
     def __init__(self, checkpoint, prefix=None, map_location=None):
@@ -366,23 +351,23 @@ def _initialize(module, cfg):
         module.apply(func)
 
 
-def _initialize_cases(module, cases):
-    if isinstance(cases, list):
-        for case in cases:
-            name = case.pop('name', None)
+def _initialize_case(module, case):
+    if isinstance(case, list):
+        for case_ in case:
+            name = case_.pop('name', None)
             if hasattr(module, name):
-                _initialize(getattr(module, name), case)
+                _initialize(getattr(module, name), case_)
             else:
                 raise RuntimeError(f'module did not have attribute {name}')
 
-    elif isinstance(cases, dict):
-        name = cases.pop('name', None)
+    elif isinstance(case, dict):
+        name = case.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), cases)
+            _initialize(getattr(module, name), case)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
     else:
-        raise TypeError(f'cases must be a dict or list, but got {type(cases)}')
+        raise TypeError(f'case must be a dict or list, but got {type(case)}')
 
 
 def initialize(module, init_cfg):
@@ -391,10 +376,10 @@ def initialize(module, init_cfg):
     Args:
         module (``torch.nn.Module``): the module will be initialized.
         init_cfg (dict | list[dict]): initialization configuration dict to
-        define initializer. OpenMMLab has implemented 7 initializers including
-        ``Constant``, ``Xavier``, ``Normal``, ``Uniform``,
-        ``Kaiming``, ``Pretrained`` and ``BiasProb`` for
-        bias initialization.
+            define initializer. OpenMMLab has implemented 7 initializers
+            including ``Constant``, ``Xavier``, ``Normal``, ``Uniform``,
+            ``Kaiming``, ``Pretrained`` and ``BiasProb`` for bias
+            initialization.
 
     Example:
         >>> module = nn.Linear(2, 3, bias=True)
@@ -402,17 +387,17 @@ def initialize(module, init_cfg):
         >>> initialize(module, init_cfg)
 
         >>> module = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
-        >>> # define key ``'layers'`` for initializing layers with different
+        >>> # define key ``'layer'`` for initializing layer with different
         >>> # configuration
-        >>> init_cfg = [dict(type='Constant', layers='Conv1d', val=1),
-                dict(type='Constant', layers='Linear', val=2)]
+        >>> init_cfg = [dict(type='Constant', layer='Conv1d', val=1),
+                dict(type='Constant', layer='Linear', val=2)]
         >>> initialize(module, init_cfg)
 
-        >>> # Omitting ``'layers'`` initialize module with same configuration
+        >>> # Omitting ``'layer'`` initialize module with same configuration
         >>> init_cfg = dict(type='Constant', val=1, bias=2)
         >>> initialize(module, init_cfg)
 
-        >>> # define key``'cases'`` to initialize some specific cases in module
+        >>> # define key``'case'`` to initialize some specific case in module
         >>> class FooNet(nn.Module):
         >>>     def __init__(self):
         >>>         super().__init__()
@@ -421,7 +406,7 @@ def initialize(module, init_cfg):
         >>>         self.cls = nn.Conv2d(16, 5, 3)
         >>> model = FooNet()
         >>> init_cfg = dict(type='Constant', val=1, bias=2,
-        >>>     cases=dict(type='Constant', name='reg', val=3, bias=4))
+        >>>     case=dict(type='Constant', name='reg', val=3, bias=4))
         >>> initialize(model, init_cfg)
 
         >>> model = ResNet(depth=50)
@@ -442,22 +427,22 @@ def initialize(module, init_cfg):
         raise TypeError(f'init_cfg must be a dict, but got {type(init_cfg)}')
 
     if isinstance(init_cfg, dict):
-        cases = init_cfg.pop('cases', None)
+        case = init_cfg.pop('case', None)
         _initialize(module, init_cfg)
 
-        if cases is not None:
-            _initialize_cases(module, cases)
+        if case is not None:
+            _initialize_case(module, case)
         else:
             # All attributes in module have same initialization.
             pass
 
     else:
         for cfg in init_cfg:
-            cases = cfg.pop('cases', None)
+            case = cfg.pop('case', None)
             _initialize(module, cfg)
 
-            if cases is not None:
-                _initialize_cases(module, cases)
+            if case is not None:
+                _initialize_case(module, case)
             else:
                 # All attributes in module have same initialization.
                 pass

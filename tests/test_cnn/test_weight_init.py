@@ -85,7 +85,7 @@ def test_bias_init_with_prob():
 def test_constaninit():
     """test ConstantInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
-    func = ConstantInit(val=1, bias=2, layers='Conv2d')
+    func = ConstantInit(val=1, bias=2, layer='Conv2d')
     model.apply(func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
@@ -95,7 +95,7 @@ def test_constaninit():
     assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
     func = ConstantInit(
-        val=3, bias=dict(type='BiasProb', prior_prob=0.01), layers='Linear')
+        val=3, bias=dict(type='BiasProb', prior_prob=0.01), layer='Linear')
     model.apply(func)
     res = bias_init_with_prob(0.01)
 
@@ -110,15 +110,19 @@ def test_constaninit():
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 4.0))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 5.0))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 5.0))
+
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
+    # test layer input type
+    with pytest.raises(TypeError):
+        func = ConstantInit(val=1, layer=1)
 
 
 def test_xavierinit():
     """test XavierInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
-    func = XavierInit(bias=0.1, layers='Conv2d')
+    func = XavierInit(bias=0.1, layer='Conv2d')
     model.apply(func)
     assert model[0].bias.allclose(torch.full_like(model[2].bias, 0.1))
     assert not model[2].bias.allclose(torch.full_like(model[0].bias, 0.1))
@@ -140,6 +144,13 @@ def test_xavierinit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, res))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
+    # test bias input type
+    with pytest.raises(TypeError):
+        func = XavierInit(bias='0.1', layer='Conv2d')
+    # test layer inpur type
+    with pytest.raises(TypeError):
+        func = XavierInit(bias=0.1, layer=1)
+
 
 def test_normalinit():
     """test Normalinit class."""
@@ -156,7 +167,7 @@ def test_normalinit():
         mean=300,
         std=1e-5,
         bias=dict(type='BiasProb', prior_prob=0.01),
-        layers=['Conv2d', 'Linear'])
+        layer=['Conv2d', 'Linear'])
     res = bias_init_with_prob(0.01)
     model.apply(func)
     assert model[0].weight.allclose(torch.tensor(300.0))
@@ -175,7 +186,7 @@ def test_uniforminit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.0))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
-    func = UniformInit(a=100, b=100, layers=['Conv2d', 'Linear'], bias=10)
+    func = UniformInit(a=100, b=100, layer=['Conv2d', 'Linear'], bias=10)
     model.apply(func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape,
                                                    100.0))
@@ -188,7 +199,7 @@ def test_uniforminit():
 def test_kaiminginit():
     """test KaimingInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
-    func = KaimingInit(bias=0.1, layers='Conv2d')
+    func = KaimingInit(bias=0.1, layer='Conv2d')
     model.apply(func)
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.1))
     assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.1))
@@ -269,8 +280,8 @@ def test_initialize():
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.0))
 
     init_cfg = [
-        dict(type='Constant', layers='Conv1d', val=1, bias=2),
-        dict(type='Constant', layers='Linear', val=3, bias=4)
+        dict(type='Constant', layer='Conv1d', val=1, bias=2),
+        dict(type='Constant', layer='Linear', val=3, bias=4)
     ]
     initialize(model, init_cfg)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.0))
@@ -282,8 +293,8 @@ def test_initialize():
         type='Constant',
         val=1,
         bias=2,
-        layers=['Conv2d', 'Linear'],
-        cases=dict(type='Constant', name='conv2d_2', val=3, bias=4))
+        layer=['Conv2d', 'Linear'],
+        case=dict(type='Constant', name='conv2d_2', val=3, bias=4))
     initialize(foonet, init_cfg)
     assert torch.equal(foonet.linear.weight,
                        torch.full(foonet.linear.weight.shape, 1.0))
@@ -301,7 +312,7 @@ def test_initialize():
     init_cfg = dict(
         type='Pretrained',
         checkpoint='modelA.pth',
-        cases=dict(type='Constant', name='conv2d_2', val=3, bias=4))
+        case=dict(type='Constant', name='conv2d_2', val=3, bias=4))
     modelA = FooModule()
     constant_func = ConstantInit(val=1, bias=2)
     modelA.apply(constant_func)
@@ -320,3 +331,40 @@ def test_initialize():
                            torch.full(foonet.conv2d_2.weight.shape, 3.0))
         assert torch.equal(foonet.conv2d_2.bias,
                            torch.full(foonet.conv2d_2.bias.shape, 4.0))
+    # test init_cfg type
+    with pytest.raises(TypeError):
+        init_cfg = 'init_cfg'
+        initialize(foonet, init_cfg)
+
+    # test case value type
+    with pytest.raises(TypeError):
+        init_cfg = dict(
+            type='Constant',
+            val=1,
+            bias=2,
+            layer=['Conv2d', 'Linear'],
+            case='conv')
+        initialize(foonet, init_cfg)
+
+    # test case name
+    with pytest.raises(RuntimeError):
+        init_cfg = dict(
+            type='Constant',
+            val=1,
+            bias=2,
+            layer=['Conv2d', 'Linear'],
+            case=dict(type='Constant', name='conv2d_3', val=3, bias=4))
+        initialize(foonet, init_cfg)
+
+    # test list case name
+    with pytest.raises(RuntimeError):
+        init_cfg = dict(
+            type='Constant',
+            val=1,
+            bias=2,
+            layer=['Conv2d', 'Linear'],
+            case=[
+                dict(type='Constant', name='conv2d', val=3, bias=4),
+                dict(type='Constant', name='conv2d_3', val=5, bias=6)
+            ])
+        initialize(foonet, init_cfg)
