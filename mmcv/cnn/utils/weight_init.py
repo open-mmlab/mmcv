@@ -91,7 +91,10 @@ class BaseInit(object):
             self.bias = func()
         else:
             self.bias = bias
-        self.layer = layer
+        if isinstance(layer, str):
+            self.layer = [layer]
+        else:
+            self.layer = layer
 
 
 @INITIALIZERS.register_module(name='Constant')
@@ -114,15 +117,10 @@ class ConstantInit(BaseInit):
         if self.layer is None:
             constant_init(module, self.val, self.bias)
         else:
-            if isinstance(self.layer, str):
+            for layer_ in self.layer:
                 layername = module.__class__.__name__
-                if layername == self.layer:
+                if layername == layer_:
                     constant_init(module, self.val, self.bias)
-            else:
-                for layer_ in self.layer:
-                    layername = module.__class__.__name__
-                    if layername == layer_:
-                        constant_init(module, self.val, self.bias)
 
 
 @INITIALIZERS.register_module(name='Xavier')
@@ -150,17 +148,11 @@ class XavierInit(BaseInit):
         if self.layer is None:
             xavier_init(module, self.gain, self.bias, self.distribution)
         else:
-            if isinstance(self.layer, str):
+            for layer_ in self.layer:
                 layername = module.__class__.__name__
-                if layername == self.layer:
+                if layername == layer_:
                     xavier_init(module, self.gain, self.bias,
                                 self.distribution)
-            else:
-                for layer_ in self.layer:
-                    layername = module.__class__.__name__
-                    if layername == layer_:
-                        xavier_init(module, self.gain, self.bias,
-                                    self.distribution)
 
 
 @INITIALIZERS.register_module(name='Normal')
@@ -188,15 +180,10 @@ class NormalInit(BaseInit):
         if self.layer is None:
             normal_init(module, self.mean, self.std, self.bias)
         else:
-            if isinstance(self.layer, str):
+            for layer_ in self.layer:
                 layername = module.__class__.__name__
-                if layername == self.layer:
+                if layername == layer_:
                     normal_init(module, self.mean, self.std, self.bias)
-            else:
-                for layer_ in self.layer:
-                    layername = module.__class__.__name__
-                    if layername == layer_:
-                        normal_init(module, self.mean, self.std, self.bias)
 
 
 @INITIALIZERS.register_module(name='Uniform')
@@ -224,15 +211,10 @@ class UniformInit(BaseInit):
         if self.layer is None:
             uniform_init(module, self.a, self.b, self.bias)
         else:
-            if isinstance(self.layer, str):
+            for layer_ in self.layer:
                 layername = module.__class__.__name__
-                if layername == self.layer:
+                if layername == layer_:
                     uniform_init(module, self.a, self.b, self.bias)
-            else:
-                for layer_ in self.layer:
-                    layername = module.__class__.__name__
-                    if layername == layer_:
-                        uniform_init(module, self.a, self.b, self.bias)
 
 
 @INITIALIZERS.register_module(name='Kaiming')
@@ -352,22 +334,18 @@ def _initialize(module, cfg):
 
 
 def _initialize_case(module, case):
-    if isinstance(case, list):
-        for case_ in case:
-            name = case_.pop('name', None)
-            if hasattr(module, name):
-                _initialize(getattr(module, name), case_)
-            else:
-                raise RuntimeError(f'module did not have attribute {name}')
+    if not isinstance(case, (dict, list)):
+        raise TypeError(f'case must be a dict or list, but got {type(case)}')
 
-    elif isinstance(case, dict):
-        name = case.pop('name', None)
+    if isinstance(case, dict):
+        case = [case]
+
+    for case_ in case:
+        name = case_.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), case)
+            _initialize(getattr(module, name), case_)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
-    else:
-        raise TypeError(f'case must be a dict or list, but got {type(case)}')
 
 
 def initialize(module, init_cfg):
@@ -427,22 +405,14 @@ def initialize(module, init_cfg):
         raise TypeError(f'init_cfg must be a dict, but got {type(init_cfg)}')
 
     if isinstance(init_cfg, dict):
-        case = init_cfg.pop('case', None)
-        _initialize(module, init_cfg)
+        init_cfg = [init_cfg]
+
+    for cfg in init_cfg:
+        case = cfg.pop('case', None)
+        _initialize(module, cfg)
 
         if case is not None:
             _initialize_case(module, case)
         else:
             # All attributes in module have same initialization.
             pass
-
-    else:
-        for cfg in init_cfg:
-            case = cfg.pop('case', None)
-            _initialize(module, cfg)
-
-            if case is not None:
-                _initialize_case(module, case)
-            else:
-                # All attributes in module have same initialization.
-                pass
