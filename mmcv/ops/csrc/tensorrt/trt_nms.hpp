@@ -8,16 +8,16 @@
 
 #include "trt_plugin_helper.hpp"
 
-class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
+class NonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
-  ONNXNonMaxSuppressionDynamic(const std::string &name, int centerPointBox,
+  NonMaxSuppressionDynamic(const std::string &name, int centerPointBox,
                                int maxOutputBoxesPerClass, float iouThreshold,
-                               float scoreThreshold);
+                               float scoreThreshold, int offset);
 
-  ONNXNonMaxSuppressionDynamic(const std::string name, const void *data,
+  NonMaxSuppressionDynamic(const std::string name, const void *data,
                                size_t length);
 
-  ONNXNonMaxSuppressionDynamic() = delete;
+  NonMaxSuppressionDynamic() = delete;
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -65,6 +65,7 @@ class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   int mMaxOutputBoxesPerClass;
   float mIouThreshold;
   float mScoreThreshold;
+  int mOffset;
 
  protected:
   // To prevent compiler warnings.
@@ -77,9 +78,9 @@ class ONNXNonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class ONNXNonMaxSuppressionDynamicCreator : public nvinfer1::IPluginCreator {
+class NonMaxSuppressionDynamicCreator : public nvinfer1::IPluginCreator {
  public:
-  ONNXNonMaxSuppressionDynamicCreator();
+  NonMaxSuppressionDynamicCreator();
 
   const char *getPluginName() const override;
 

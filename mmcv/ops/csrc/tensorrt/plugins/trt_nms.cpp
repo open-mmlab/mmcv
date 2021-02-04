@@ -11,50 +11,52 @@ extern size_t get_onnxnms_workspace_size(
     size_t num_batches, size_t spatial_dimension, size_t num_classes,
     size_t boxes_word_size, int center_point_box, size_t output_length);
 
-extern void TRTONNXNMSCUDAKernelLauncher_float(
+extern void TRTNMSCUDAKernelLauncher_float(
     const float *boxes, const float *scores,
     const int max_output_boxes_per_class, const float iou_threshold,
-    const float score_threshold, int *output, int center_point_box,
+    const float score_threshold, const int offset, int *output, int center_point_box,
     int num_batches, int spatial_dimension, int num_classes,
     size_t output_length, void *workspace, cudaStream_t stream);
 
 namespace {
 static const char *PLUGIN_VERSION{"1"};
-static const char *PLUGIN_NAME{"MMCVNonMaxSuppression"};
+static const char *PLUGIN_NAME{"NonMaxSuppression"};
 }  // namespace
 
-nvinfer1::PluginFieldCollection ONNXNonMaxSuppressionDynamicCreator::mFC{};
+nvinfer1::PluginFieldCollection NonMaxSuppressionDynamicCreator::mFC{};
 std::vector<nvinfer1::PluginField>
-    ONNXNonMaxSuppressionDynamicCreator::mPluginAttributes;
+    NonMaxSuppressionDynamicCreator::mPluginAttributes;
 
-ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
+NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(
     const std::string &name, int centerPointBox, int maxOutputBoxesPerClass,
-    float iouThreshold, float scoreThreshold)
+    float iouThreshold, float scoreThreshold, int offset)
     : mLayerName(name),
       mCenterPointBox(centerPointBox),
       mMaxOutputBoxesPerClass(maxOutputBoxesPerClass),
       mIouThreshold(iouThreshold),
-      mScoreThreshold(scoreThreshold) {}
+      mScoreThreshold(scoreThreshold),
+      mOffset(offset) {}
 
-ONNXNonMaxSuppressionDynamic::ONNXNonMaxSuppressionDynamic(
+NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(
     const std::string name, const void *data, size_t length)
     : mLayerName(name) {
   deserialize_value(&data, &length, &mCenterPointBox);
   deserialize_value(&data, &length, &mMaxOutputBoxesPerClass);
   deserialize_value(&data, &length, &mIouThreshold);
   deserialize_value(&data, &length, &mScoreThreshold);
+  deserialize_value(&data, &length, &mOffset);
 }
 
-nvinfer1::IPluginV2DynamicExt *ONNXNonMaxSuppressionDynamic::clone() const {
-  ONNXNonMaxSuppressionDynamic *plugin = new ONNXNonMaxSuppressionDynamic(
+nvinfer1::IPluginV2DynamicExt *NonMaxSuppressionDynamic::clone() const {
+  NonMaxSuppressionDynamic *plugin = new NonMaxSuppressionDynamic(
       mLayerName, mCenterPointBox, mMaxOutputBoxesPerClass, mIouThreshold,
-      mScoreThreshold);
+      mScoreThreshold, mOffset);
   plugin->setPluginNamespace(getPluginNamespace());
 
   return plugin;
 }
 
-nvinfer1::DimsExprs ONNXNonMaxSuppressionDynamic::getOutputDimensions(
+nvinfer1::DimsExprs NonMaxSuppressionDynamic::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
     nvinfer1::IExprBuilder &exprBuilder) {
   nvinfer1::DimsExprs ret;
@@ -74,7 +76,7 @@ nvinfer1::DimsExprs ONNXNonMaxSuppressionDynamic::getOutputDimensions(
   return ret;
 }
 
-bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
+bool NonMaxSuppressionDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
   if (pos < nbInputs) {
@@ -103,11 +105,11 @@ bool ONNXNonMaxSuppressionDynamic::supportsFormatCombination(
   return true;
 }
 
-void ONNXNonMaxSuppressionDynamic::configurePlugin(
+void NonMaxSuppressionDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
 
-size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
+size_t NonMaxSuppressionDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
   size_t boxes_word_size = mmcv::getElementSize(inputs[0].type);
@@ -121,7 +123,7 @@ size_t ONNXNonMaxSuppressionDynamic::getWorkspaceSize(
                                     output_length);
 }
 
-int ONNXNonMaxSuppressionDynamic::enqueue(
+int NonMaxSuppressionDynamic::enqueue(
     const nvinfer1::PluginTensorDesc *inputDesc,
     const nvinfer1::PluginTensorDesc *outputDesc, const void *const *inputs,
     void *const *outputs, void *workSpace, cudaStream_t stream) {
@@ -133,93 +135,95 @@ int ONNXNonMaxSuppressionDynamic::enqueue(
   const float *boxes = (const float *)inputs[0];
   const float *scores = (const float *)inputs[1];
   int *output = (int *)outputs[0];
-
-  TRTONNXNMSCUDAKernelLauncher_float(
+  TRTNMSCUDAKernelLauncher_float(
       boxes, scores, mMaxOutputBoxesPerClass, mIouThreshold, mScoreThreshold,
-      output, mCenterPointBox, num_batches, spatial_dimension, num_classes,
-      output_length, workSpace, stream);
+      mOffset, output, mCenterPointBox, num_batches, spatial_dimension,
+      num_classes, output_length, workSpace, stream);
 
   return 0;
 }
 
-nvinfer1::DataType ONNXNonMaxSuppressionDynamic::getOutputDataType(
+nvinfer1::DataType NonMaxSuppressionDynamic::getOutputDataType(
     int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
   return nvinfer1::DataType::kINT32;
 }
 
 // IPluginV2 Methods
-const char *ONNXNonMaxSuppressionDynamic::getPluginType() const {
+const char *NonMaxSuppressionDynamic::getPluginType() const {
   return PLUGIN_NAME;
 }
 
-const char *ONNXNonMaxSuppressionDynamic::getPluginVersion() const {
+const char *NonMaxSuppressionDynamic::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-int ONNXNonMaxSuppressionDynamic::getNbOutputs() const { return 1; }
+int NonMaxSuppressionDynamic::getNbOutputs() const { return 1; }
 
-int ONNXNonMaxSuppressionDynamic::initialize() { return 0; }
+int NonMaxSuppressionDynamic::initialize() { return 0; }
 
-void ONNXNonMaxSuppressionDynamic::terminate() {}
+void NonMaxSuppressionDynamic::terminate() {}
 
-size_t ONNXNonMaxSuppressionDynamic::getSerializationSize() const {
+size_t NonMaxSuppressionDynamic::getSerializationSize() const {
   return sizeof(mCenterPointBox) + sizeof(mMaxOutputBoxesPerClass) +
-         sizeof(mIouThreshold) + sizeof(mScoreThreshold);
+         sizeof(mIouThreshold) + sizeof(mScoreThreshold) + sizeof(mOffset);
 }
 
-void ONNXNonMaxSuppressionDynamic::serialize(void *buffer) const {
+void NonMaxSuppressionDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mCenterPointBox);
   serialize_value(&buffer, mMaxOutputBoxesPerClass);
   serialize_value(&buffer, mIouThreshold);
   serialize_value(&buffer, mScoreThreshold);
+  serialize_value(&buffer, mOffset);
 }
 
-void ONNXNonMaxSuppressionDynamic::destroy() {
+void NonMaxSuppressionDynamic::destroy() {
   // This gets called when the network containing plugin is destroyed
   delete this;
 }
 
-void ONNXNonMaxSuppressionDynamic::setPluginNamespace(
+void NonMaxSuppressionDynamic::setPluginNamespace(
     const char *libNamespace) {
   mNamespace = libNamespace;
 }
 
-const char *ONNXNonMaxSuppressionDynamic::getPluginNamespace() const {
+const char *NonMaxSuppressionDynamic::getPluginNamespace() const {
   return mNamespace.c_str();
 }
 
 ////////////////////// creator /////////////////////////////
 
-ONNXNonMaxSuppressionDynamicCreator::ONNXNonMaxSuppressionDynamicCreator() {
+NonMaxSuppressionDynamicCreator::NonMaxSuppressionDynamicCreator() {
   mPluginAttributes.clear();
   mPluginAttributes.emplace_back(nvinfer1::PluginField("center_point_box"));
   mPluginAttributes.emplace_back(
       nvinfer1::PluginField("max_output_boxes_per_class"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("iou_threshold"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("score_threshold"));
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("offset"));
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *ONNXNonMaxSuppressionDynamicCreator::getPluginName() const {
+const char *NonMaxSuppressionDynamicCreator::getPluginName() const {
   return PLUGIN_NAME;
 }
 
-const char *ONNXNonMaxSuppressionDynamicCreator::getPluginVersion() const {
+const char *NonMaxSuppressionDynamicCreator::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
 const nvinfer1::PluginFieldCollection *
-ONNXNonMaxSuppressionDynamicCreator::getFieldNames() {
+NonMaxSuppressionDynamicCreator::getFieldNames() {
   return &mFC;
 }
 
-nvinfer1::IPluginV2 *ONNXNonMaxSuppressionDynamicCreator::createPlugin(
+nvinfer1::IPluginV2 *NonMaxSuppressionDynamicCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) {
   int centerPointBox = 0;
   int maxOutputBoxesPerClass = 0;
   float iouThreshold = 0.0f;
   float scoreThreshold = 0.0f;
+  int offset = 0;
 
   for (int i = 0; i < fc->nbFields; i++) {
     if (fc->fields[i].data == nullptr) {
@@ -242,28 +246,31 @@ nvinfer1::IPluginV2 *ONNXNonMaxSuppressionDynamicCreator::createPlugin(
     if (field_name.compare("score_threshold") == 0) {
       scoreThreshold = static_cast<const float *>(fc->fields[i].data)[0];
     }
-  }
 
-  ONNXNonMaxSuppressionDynamic *plugin = new ONNXNonMaxSuppressionDynamic(
+    if (field_name.compare("offset") == 0) {
+      offset = static_cast<const int *>(fc->fields[i].data)[0];
+    }
+  }
+  NonMaxSuppressionDynamic *plugin = new NonMaxSuppressionDynamic(
       name, centerPointBox, maxOutputBoxesPerClass, iouThreshold,
-      scoreThreshold);
+      scoreThreshold, offset);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-nvinfer1::IPluginV2 *ONNXNonMaxSuppressionDynamicCreator::deserializePlugin(
+nvinfer1::IPluginV2 *NonMaxSuppressionDynamicCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) {
   auto plugin =
-      new ONNXNonMaxSuppressionDynamic(name, serialData, serialLength);
+      new NonMaxSuppressionDynamic(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-void ONNXNonMaxSuppressionDynamicCreator::setPluginNamespace(
+void NonMaxSuppressionDynamicCreator::setPluginNamespace(
     const char *libNamespace) {
   mNamespace = libNamespace;
 }
 
-const char *ONNXNonMaxSuppressionDynamicCreator::getPluginNamespace() const {
+const char *NonMaxSuppressionDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }

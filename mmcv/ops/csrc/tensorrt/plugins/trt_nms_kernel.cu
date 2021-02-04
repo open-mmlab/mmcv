@@ -126,14 +126,15 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
          count_workspace;
 }
 
-void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
-                                        const int max_output_boxes_per_class,
-                                        const float iou_threshold,
-                                        const float score_threshold,
-                                        int* output, int center_point_box,
-                                        int num_batches, int spatial_dimension,
-                                        int num_classes, size_t output_length,
-                                        void* workspace, cudaStream_t stream) {
+void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
+                                    const int max_output_boxes_per_class,
+                                    const float iou_threshold,
+                                    const float score_threshold,
+                                    const int offset, int* output,
+                                    int center_point_box, int num_batches,
+                                    int spatial_dimension, int num_classes,
+                                    size_t output_length, void* workspace,
+                                    cudaStream_t stream) {
   /**
    * describe of inputs:
    * bboxes: [num_batch, spatial_dimension, 4], input boxes
@@ -214,7 +215,6 @@ void TRTONNXNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
 
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
-  const int offset = 0;
 
   for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
     for (int cls_id = 0; cls_id < num_classes; ++cls_id) {
