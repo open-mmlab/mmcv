@@ -46,18 +46,25 @@ def preprocess_onnx(onnx_model):
         # process NonMaxSuppression node
         if node.op_type == 'NonMaxSuppression':
             center_point_box = 0
-            offset = 0
-            max_output_boxes_per_class = 100000
-            iou_threshold = 0.0
+            max_output_boxes_per_class = 1000000
+            iou_threshold = 0.3
             score_threshold = 0.0
-
+            offset = 0
             for attribute in node_attributes:
                 if attribute.name == 'center_point_box':
                     center_point_box = attribute.i
                 elif attribute.name == 'offset':
                     offset = attribute.i
-                elif attribute.name == 'iou_threshold':
-                    iou_threshold = attribute.f
+
+            if len(node_inputs) >= 3:
+                max_output_boxes_per_class = parse_data(
+                    node_inputs[2], np.int64)
+
+            if len(node_inputs) >= 4:
+                iou_threshold = parse_data(node_inputs[3], np.float32)
+
+            if len(node_inputs) >= 5:
+                score_threshold = parse_data(node_inputs[4], np.float32)
 
             new_node = onnx.helper.make_node(
                 'NonMaxSuppression',
@@ -127,7 +134,11 @@ def onnx2trt(onnx_model,
 
     onnx_model = preprocess_onnx(onnx_model)
 
-    assert parser.parse(onnx_model.SerializeToString()), 'parse onnx failed.'
+    if not parser.parse(onnx_model.SerializeToString()):
+        error_msgs = ''
+        for error in range(parser.num_errors):
+            error_msgs += f'{parser.get_error(error)}\n'
+        raise RuntimeError(f'parse onnx failed:\n{error_msgs}')
 
     # config builder
     builder.max_workspace_size = max_workspace_size

@@ -1,3 +1,4 @@
+import os
 import sys
 
 import numpy as np
@@ -23,7 +24,9 @@ class NMSop(torch.autograd.Function):
     def symbolic(g, bboxes, scores, iou_threshold, offset):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
-        if has_custom_op:
+        # TensorRT nms plugin is aligned with original nms in ONNXRuntime
+        is_trt_backend = os.environ.get('ONNX_BACKEND') == 'MMCVTensorRT'
+        if has_custom_op and (not is_trt_backend):
             return g.op(
                 'mmcv::NonMaxSuppression',
                 bboxes,

@@ -118,7 +118,7 @@ def test_nms():
         from mmcv.ops import nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
-
+    os.environ['ONNX_BACKEND'] = 'MMCVTensorRT'
     # trt config
     fp16_mode = False
     max_workspace_size = 1 << 30
@@ -177,6 +177,7 @@ def test_nms():
     trt_inds = trt_inds[:num_boxes]
     trt_scores = trt_dets[:, 4]
     pytorch_scores = pytorch_dets[:, 4]
+    os.environ.pop('ONNX_BACKEND')
     assert torch.allclose(pytorch_scores, trt_scores, atol=1e-3)
     assert torch.equal(pytorch_inds, trt_inds)
 
@@ -189,6 +190,7 @@ def test_batched_nms():
         pytest.skip('test requires compilation')
 
     # trt config
+    os.environ['ONNX_BACKEND'] = 'MMCVTensorRT'
     fp16_mode = False
     max_workspace_size = 1 << 30
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
@@ -261,6 +263,7 @@ def test_batched_nms():
     trt_scores = trt_dets[:, 4]
     pytorch_scores = pytorch_dets[:, 4]
 
+    os.environ.pop('ONNX_BACKEND')
     assert torch.allclose(pytorch_scores, trt_scores)
     assert torch.equal(pytorch_inds, trt_inds)
 
