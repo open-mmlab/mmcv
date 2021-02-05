@@ -70,25 +70,29 @@ def caffe2_xavier_init(module, bias=0):
 
 
 def bias_init_with_prob(prior_prob):
-    """initialize conv/fc bias value according to giving probablity."""
+    """initialize conv/fc bias value according to giving probability."""
     bias_init = float(-np.log((1 - prior_prob) / prior_prob))
     return bias_init
 
 
 class BaseInit(object):
 
-    def __init__(self, bias, layer):
-        if not isinstance(bias, (dict, int, float)):
-            raise TypeError(
-                f'bias must be a dict or numbel, but got {type(bias)}')
+    def __init__(self, bias, bias_prob, layer):
+        if not isinstance(bias, (int, float)):
+            raise TypeError(f'bias must be a numbel, but got a {type(bias)}')
+
+        if bias_prob is not None:
+            if not isinstance(bias_prob, float):
+                raise TypeError(f'bias_with_prob type must be float, \
+                    but got {type(bias_prob)}')
+
         if layer is not None:
             if not isinstance(layer, (str, list)):
                 raise TypeError(f'layer must be str or list[str], \
-                    but got {type(layer)}')
+                    but got a {type(layer)}')
 
-        if isinstance(bias, dict):
-            func = build_from_cfg(bias, INITIALIZERS)
-            self.bias = func()
+        if bias_prob is not None:
+            self.bias = bias_init_with_prob(bias_prob)
         else:
             self.bias = bias
         self.layer = [layer] if isinstance(layer, str) else layer
@@ -100,14 +104,16 @@ class ConstantInit(BaseInit):
 
     Args:
         val (int | float): the value to fill the weights in the module with
-        bias (int | float | dict): the value to fill the bias or
+        bias (int | float): the value to fill the bias or
         define initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
     """
 
-    def __init__(self, val, bias=0, layer=None):
-        super().__init__(bias, layer)
+    def __init__(self, val, bias=0, bias_prob=None, layer=None):
+        super().__init__(bias, bias_prob, layer)
         self.val = val
 
     def __call__(self, module):
@@ -133,16 +139,23 @@ class XavierInit(BaseInit):
 
     Args:
         gain (int | float): an optional scaling factor. Defaults to 1.
-        bias (int | float | dict): the value to fill the bias or define
+        bias (int | float): the value to fill the bias or define
             initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
         distribution (str): distribution either be ``'normal'``
             or ``'uniform'``. Defaults to ``'normal'``.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
     """
 
-    def __init__(self, gain=1, bias=0, distribution='normal', layer=None):
-        super().__init__(bias, layer)
+    def __init__(self,
+                 gain=1,
+                 bias=0,
+                 bias_prob=None,
+                 distribution='normal',
+                 layer=None):
+        super().__init__(bias, bias_prob, layer)
         self.gain = gain
         self.distribution = distribution
 
@@ -169,15 +182,17 @@ class NormalInit(BaseInit):
         mean (int | float):the mean of the normal distribution. Defaults to 0.
         std (int | float): the standard deviation of the normal distribution.
             Defaults to 1.
-        bias (int | float | dict): the value to fill the bias or define
+        bias (int | float): the value to fill the bias or define
             initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
 
     """
 
-    def __init__(self, mean=0, std=1, bias=0, layer=None):
-        super().__init__(bias, layer)
+    def __init__(self, mean=0, std=1, bias=0, bias_prob=None, layer=None):
+        super().__init__(bias, bias_prob, layer)
         self.mean = mean
         self.std = std
 
@@ -205,14 +220,16 @@ class UniformInit(BaseInit):
             Defaults to 0.
         b (int | float): the upper bound of the uniform distribution.
             Defaults to 1.
-        bias (int | float | dict): the value to fill the bias or define
+        bias (int | float): the value to fill the bias or define
             initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
     """
 
-    def __init__(self, a=0, b=1, bias=0, layer=None):
-        super().__init__(bias, layer)
+    def __init__(self, a=0, b=1, bias=0, bias_prob=None, layer=None):
+        super().__init__(bias, bias_prob, layer)
         self.a = a
         self.b = b
 
@@ -248,8 +265,10 @@ class KaimingInit(BaseInit):
         nonlinearity (str): the non-linear function (`nn.functional` name),
             recommended to use only with ``'relu'`` or ``'leaky_relu'`` .
             Defaults to 'relu'.
-        bias (int | float | dict): the value to fill the bias or define
+        bias (int | float): the value to fill the bias or define
             initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
         distribution (str): distribution either be ``'normal'`` or
             ``'uniform'``. Defaults to ``'normal'``.
         layer (str | list[str], optional): the layer will be initialized.
@@ -261,9 +280,10 @@ class KaimingInit(BaseInit):
                  mode='fan_out',
                  nonlinearity='relu',
                  bias=0,
+                 bias_prob=None,
                  distribution='normal',
                  layer=None):
-        super().__init__(bias, layer)
+        super().__init__(bias, bias_prob, layer)
         self.a = a
         self.mode = mode
         self.nonlinearity = nonlinearity
@@ -283,21 +303,6 @@ class KaimingInit(BaseInit):
                                      self.bias, self.distribution)
 
         module.apply(init)
-
-
-@INITIALIZERS.register_module(name='BiasProb')
-class BiasInitWithProb(object):
-    """Initialize conv/fc bias value according to giving probablity.
-
-    Args:
-        prior_prob (float): value as prior probability
-    """
-
-    def __init__(self, prior_prob):
-        self.prior_prob = prior_prob
-
-    def __call__(self):
-        return bias_init_with_prob(self.prior_prob)
 
 
 @INITIALIZERS.register_module(name='Pretrained')

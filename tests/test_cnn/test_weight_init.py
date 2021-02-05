@@ -6,11 +6,10 @@ import pytest
 import torch
 from torch import nn
 
-from mmcv.cnn import (BiasInitWithProb, ConstantInit, KaimingInit, NormalInit,
-                      PretrainedInit, UniformInit, XavierInit,
-                      bias_init_with_prob, caffe2_xavier_init, constant_init,
-                      initialize, kaiming_init, normal_init, uniform_init,
-                      xavier_init)
+from mmcv.cnn import (ConstantInit, KaimingInit, NormalInit, PretrainedInit,
+                      UniformInit, XavierInit, bias_init_with_prob,
+                      caffe2_xavier_init, constant_init, initialize,
+                      kaiming_init, normal_init, uniform_init, xavier_init)
 
 
 def test_constant_init():
@@ -94,8 +93,7 @@ def test_constaninit():
                            torch.full(model[2].weight.shape, 1.))
     assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.))
 
-    func = ConstantInit(
-        val=3, bias=dict(type='BiasProb', prior_prob=0.01), layer='Linear')
+    func = ConstantInit(val=3, bias_prob=0.01, layer='Linear')
     func(model)
     res = bias_init_with_prob(0.01)
 
@@ -128,7 +126,7 @@ def test_xavierinit():
     assert not model[2].bias.allclose(torch.full_like(model[0].bias, 0.1))
 
     constant_func = ConstantInit(val=0, bias=0)
-    func = XavierInit(gain=100, bias=dict(type='BiasProb', prior_prob=0.01))
+    func = XavierInit(gain=100, bias_prob=0.01)
     model.apply(constant_func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))
@@ -164,10 +162,7 @@ def test_normalinit():
     assert model[2].bias.allclose(torch.tensor(200.))
 
     func = NormalInit(
-        mean=300,
-        std=1e-5,
-        bias=dict(type='BiasProb', prior_prob=0.01),
-        layer=['Conv2d', 'Linear'])
+        mean=300, std=1e-5, bias_prob=0.01, layer=['Conv2d', 'Linear'])
     res = bias_init_with_prob(0.01)
     func(model)
     assert model[0].weight.allclose(torch.tensor(300.))
@@ -219,13 +214,6 @@ def test_kaiminginit():
                            torch.full(model[2].weight.shape, 0.))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
-
-
-def test_biasinitwithprob():
-    """test BiasInitWithProb class."""
-    func = BiasInitWithProb(0.5)
-    res = func()
-    assert res == bias_init_with_prob(0.5)
 
 
 class FooModule(nn.Module):
