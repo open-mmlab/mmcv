@@ -91,10 +91,7 @@ class BaseInit(object):
             self.bias = func()
         else:
             self.bias = bias
-        if isinstance(layer, str):
-            self.layer = [layer]
-        else:
-            self.layer = layer
+        self.layer = [layer] if isinstance(layer, str) else layer
 
 
 @INITIALIZERS.register_module(name='Constant')
@@ -117,8 +114,8 @@ class ConstantInit(BaseInit):
         if self.layer is None:
             constant_init(module, self.val, self.bias)
         else:
+            layername = module.__class__.__name__
             for layer_ in self.layer:
-                layername = module.__class__.__name__
                 if layername == layer_:
                     constant_init(module, self.val, self.bias)
 
@@ -148,8 +145,8 @@ class XavierInit(BaseInit):
         if self.layer is None:
             xavier_init(module, self.gain, self.bias, self.distribution)
         else:
+            layername = module.__class__.__name__
             for layer_ in self.layer:
-                layername = module.__class__.__name__
                 if layername == layer_:
                     xavier_init(module, self.gain, self.bias,
                                 self.distribution)
@@ -180,8 +177,8 @@ class NormalInit(BaseInit):
         if self.layer is None:
             normal_init(module, self.mean, self.std, self.bias)
         else:
+            layername = module.__class__.__name__
             for layer_ in self.layer:
-                layername = module.__class__.__name__
                 if layername == layer_:
                     normal_init(module, self.mean, self.std, self.bias)
 
@@ -211,8 +208,8 @@ class UniformInit(BaseInit):
         if self.layer is None:
             uniform_init(module, self.a, self.b, self.bias)
         else:
+            layername = module.__class__.__name__
             for layer_ in self.layer:
-                layername = module.__class__.__name__
                 if layername == layer_:
                     uniform_init(module, self.a, self.b, self.bias)
 
@@ -261,18 +258,11 @@ class KaimingInit(BaseInit):
             kaiming_init(module, self.a, self.mode, self.nonlinearity,
                          self.bias, self.distribution)
         else:
-            if isinstance(self.layer, str):
-                layername = module.__class__.__name__
-                if layername == self.layer:
+            layername = module.__class__.__name__
+            for layer_ in self.layer:
+                if layername == layer_:
                     kaiming_init(module, self.a, self.mode, self.nonlinearity,
                                  self.bias, self.distribution)
-            else:
-                for layer_ in self.layer:
-                    layername = module.__class__.__name__
-                    if layername == layer_:
-                        kaiming_init(module, self.a, self.mode,
-                                     self.nonlinearity, self.bias,
-                                     self.distribution)
 
 
 @INITIALIZERS.register_module(name='BiasProb')
@@ -337,8 +327,7 @@ def _initialize_case(module, case):
     if not isinstance(case, (dict, list)):
         raise TypeError(f'case must be a dict or list, but got {type(case)}')
 
-    if isinstance(case, dict):
-        case = [case]
+    case = [case] if isinstance(case, dict) else case
 
     for case_ in case:
         name = case_.pop('name', None)
