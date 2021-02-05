@@ -112,6 +112,9 @@ def test_constaninit():
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
+    # test bias_prob type
+    with pytest.raises(TypeError):
+        func = ConstantInit(val=1, bias_prob='1')
     # test layer input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, layer=1)

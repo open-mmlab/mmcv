@@ -83,7 +83,7 @@ class BaseInit(object):
 
         if bias_prob is not None:
             if not isinstance(bias_prob, float):
-                raise TypeError(f'bias_with_prob type must be float, \
+                raise TypeError(f'bias_prob type must be float, \
                     but got {type(bias_prob)}')
 
         if layer is not None:
