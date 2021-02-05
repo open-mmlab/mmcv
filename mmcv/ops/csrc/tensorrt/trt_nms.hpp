@@ -11,11 +11,11 @@
 class NonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
   NonMaxSuppressionDynamic(const std::string &name, int centerPointBox,
-                               int maxOutputBoxesPerClass, float iouThreshold,
-                               float scoreThreshold, int offset);
+                           int maxOutputBoxesPerClass, float iouThreshold,
+                           float scoreThreshold, int offset);
 
   NonMaxSuppressionDynamic(const std::string name, const void *data,
-                               size_t length);
+                           size_t length);
 
   NonMaxSuppressionDynamic() = delete;
 

@@ -14,9 +14,10 @@ extern size_t get_onnxnms_workspace_size(
 extern void TRTNMSCUDAKernelLauncher_float(
     const float *boxes, const float *scores,
     const int max_output_boxes_per_class, const float iou_threshold,
-    const float score_threshold, const int offset, int *output, int center_point_box,
-    int num_batches, int spatial_dimension, int num_classes,
-    size_t output_length, void *workspace, cudaStream_t stream);
+    const float score_threshold, const int offset, int *output,
+    int center_point_box, int num_batches, int spatial_dimension,
+    int num_classes, size_t output_length, void *workspace,
+    cudaStream_t stream);
 
 namespace {
 static const char *PLUGIN_VERSION{"1"};
@@ -37,8 +38,9 @@ NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(
       mScoreThreshold(scoreThreshold),
       mOffset(offset) {}
 
-NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(
-    const std::string name, const void *data, size_t length)
+NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(const std::string name,
+                                                   const void *data,
+                                                   size_t length)
     : mLayerName(name) {
   deserialize_value(&data, &length, &mCenterPointBox);
   deserialize_value(&data, &length, &mMaxOutputBoxesPerClass);
@@ -181,8 +183,7 @@ void NonMaxSuppressionDynamic::destroy() {
   delete this;
 }
 
-void NonMaxSuppressionDynamic::setPluginNamespace(
-    const char *libNamespace) {
+void NonMaxSuppressionDynamic::setPluginNamespace(const char *libNamespace) {
   mNamespace = libNamespace;
 }
 
@@ -251,17 +252,16 @@ nvinfer1::IPluginV2 *NonMaxSuppressionDynamicCreator::createPlugin(
       offset = static_cast<const int *>(fc->fields[i].data)[0];
     }
   }
-  NonMaxSuppressionDynamic *plugin = new NonMaxSuppressionDynamic(
-      name, centerPointBox, maxOutputBoxesPerClass, iouThreshold,
-      scoreThreshold, offset);
+  NonMaxSuppressionDynamic *plugin =
+      new NonMaxSuppressionDynamic(name, centerPointBox, maxOutputBoxesPerClass,
+                                   iouThreshold, scoreThreshold, offset);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
 nvinfer1::IPluginV2 *NonMaxSuppressionDynamicCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) {
-  auto plugin =
-      new NonMaxSuppressionDynamic(name, serialData, serialLength);
+  auto plugin = new NonMaxSuppressionDynamic(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
