@@ -111,13 +111,17 @@ class ConstantInit(BaseInit):
         self.val = val
 
     def __call__(self, module):
-        if self.layer is None:
-            constant_init(module, self.val, self.bias)
-        else:
-            layername = module.__class__.__name__
-            for layer_ in self.layer:
-                if layername == layer_:
-                    constant_init(module, self.val, self.bias)
+
+        def init(m):
+            if self.layer is None:
+                constant_init(m, self.val, self.bias)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        constant_init(m, self.val, self.bias)
+
+        module.apply(init)
 
 
 @INITIALIZERS.register_module(name='Xavier')
@@ -143,14 +147,17 @@ class XavierInit(BaseInit):
         self.distribution = distribution
 
     def __call__(self, module):
-        if self.layer is None:
-            xavier_init(module, self.gain, self.bias, self.distribution)
-        else:
-            layername = module.__class__.__name__
-            for layer_ in self.layer:
-                if layername == layer_:
-                    xavier_init(module, self.gain, self.bias,
-                                self.distribution)
+
+        def init(m):
+            if self.layer is None:
+                xavier_init(m, self.gain, self.bias, self.distribution)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        xavier_init(m, self.gain, self.bias, self.distribution)
+
+        module.apply(init)
 
 
 @INITIALIZERS.register_module(name='Normal')
@@ -175,13 +182,17 @@ class NormalInit(BaseInit):
         self.std = std
 
     def __call__(self, module):
-        if self.layer is None:
-            normal_init(module, self.mean, self.std, self.bias)
-        else:
-            layername = module.__class__.__name__
-            for layer_ in self.layer:
-                if layername == layer_:
-                    normal_init(module, self.mean, self.std, self.bias)
+
+        def init(m):
+            if self.layer is None:
+                normal_init(m, self.mean, self.std, self.bias)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        normal_init(m, self.mean, self.std, self.bias)
+
+        module.apply(init)
 
 
 @INITIALIZERS.register_module(name='Uniform')
@@ -206,13 +217,17 @@ class UniformInit(BaseInit):
         self.b = b
 
     def __call__(self, module):
-        if self.layer is None:
-            uniform_init(module, self.a, self.b, self.bias)
-        else:
-            layername = module.__class__.__name__
-            for layer_ in self.layer:
-                if layername == layer_:
-                    uniform_init(module, self.a, self.b, self.bias)
+
+        def init(m):
+            if self.layer is None:
+                uniform_init(m, self.a, self.b, self.bias)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        uniform_init(m, self.a, self.b, self.bias)
+
+        module.apply(init)
 
 
 @INITIALIZERS.register_module(name='Kaiming')
@@ -255,15 +270,19 @@ class KaimingInit(BaseInit):
         self.distribution = distribution
 
     def __call__(self, module):
-        if self.layer is None:
-            kaiming_init(module, self.a, self.mode, self.nonlinearity,
-                         self.bias, self.distribution)
-        else:
-            layername = module.__class__.__name__
-            for layer_ in self.layer:
-                if layername == layer_:
-                    kaiming_init(module, self.a, self.mode, self.nonlinearity,
-                                 self.bias, self.distribution)
+
+        def init(m):
+            if self.layer is None:
+                kaiming_init(m, self.a, self.mode, self.nonlinearity,
+                             self.bias, self.distribution)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        kaiming_init(m, self.a, self.mode, self.nonlinearity,
+                                     self.bias, self.distribution)
+
+        module.apply(init)
 
 
 @INITIALIZERS.register_module(name='BiasProb')
@@ -318,22 +337,20 @@ class PretrainedInit(object):
 
 def _initialize(module, cfg):
     func = build_from_cfg(cfg, INITIALIZERS)
-    if cfg.get('type') == 'PretrainedInit':
-        func(module)
-    else:
-        module.apply(func)
+    func(module)
 
 
-def _initialize_case(module, case):
-    if not isinstance(case, (dict, list)):
-        raise TypeError(f'case must be a dict or list, but got {type(case)}')
+def _initialize_override(module, override):
+    if not isinstance(override, (dict, list)):
+        raise TypeError(
+            f'override must be a dict or list, but got {type(override)}')
 
-    case = [case] if isinstance(case, dict) else case
+    override = [override] if isinstance(override, dict) else override
 
-    for case_ in case:
-        name = case_.pop('name', None)
+    for override_ in override:
+        name = override_.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), case_)
+            _initialize(getattr(module, name), override_)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
 
@@ -365,7 +382,8 @@ def initialize(module, init_cfg):
         >>> init_cfg = dict(type='Constant', val=1, bias=2)
         >>> initialize(module, init_cfg)
 
-        >>> # define key``'case'`` to initialize some specific case in module
+        >>> # define key``'override'`` to initialize some specific override in
+        >>> # module
         >>> class FooNet(nn.Module):
         >>>     def __init__(self):
         >>>         super().__init__()
@@ -374,7 +392,7 @@ def initialize(module, init_cfg):
         >>>         self.cls = nn.Conv2d(16, 5, 3)
         >>> model = FooNet()
         >>> init_cfg = dict(type='Constant', val=1, bias=2,
-        >>>     case=dict(type='Constant', name='reg', val=3, bias=4))
+        >>>     override=dict(type='Constant', name='reg', val=3, bias=4))
         >>> initialize(model, init_cfg)
 
         >>> model = ResNet(depth=50)
@@ -398,11 +416,11 @@ def initialize(module, init_cfg):
         init_cfg = [init_cfg]
 
     for cfg in init_cfg:
-        case = cfg.pop('case', None)
+        override = cfg.pop('override', None)
         _initialize(module, cfg)
 
-        if case is not None:
-            _initialize_case(module, case)
+        if override is not None:
+            _initialize_override(module, override)
         else:
             # All attributes in module have same initialization.
             pass

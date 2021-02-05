@@ -75,7 +75,8 @@ class FooModel(BaseModule):
         if component4 is not None:
             self.component4 = build_from_cfg(component4, COMPONENTS)
 
-        # its type is not BaseModule, it can be initialized with "case" key.
+        # its type is not BaseModule, it can be initialized
+        # with "override" key.
         self.reg = nn.Linear(3, 4)
 
 
@@ -181,7 +182,7 @@ def test_nest_components_weight_init():
                 val=1,
                 bias=2,
                 layer='Linear',
-                case=dict(type='Constant', name='reg', val=13, bias=14)),
+                override=dict(type='Constant', name='reg', val=13, bias=14)),
             dict(type='Constant', val=3, bias=4, layer='Conv1d'),
             dict(type='Constant', val=5, bias=6, layer='Conv2d'),
         ],
