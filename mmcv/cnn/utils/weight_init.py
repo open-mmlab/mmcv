@@ -124,7 +124,8 @@ class ConstantInit(BaseInit):
 class XavierInit(BaseInit):
     r"""Initialize module parameters with values according to the method
     described in `Understanding the difficulty of training deep feedforward
-    neural networks` - Glorot, X. & Bengio, Y. (2010).
+    neural networks - Glorot, X. & Bengio, Y. (2010).
+    <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
 
     Args:
         gain (int | float): an optional scaling factor. Defaults to 1.
