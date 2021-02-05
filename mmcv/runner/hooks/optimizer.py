@@ -91,17 +91,17 @@ class Fp16OptimizerHook(OptimizerHook):
         self.distributed = distributed
         self._use_torch_amp = (
             TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0')
+        self._scale_update_param = None
 
         if loss_scale == 'dynamic':
             if self._use_torch_amp:
-                self.loss_scaler = GradScaler(init_scale=loss_scale)
+                self.loss_scaler = GradScaler()
             else:
                 self.loss_scaler = LossScaler(mode='dynamic')
         elif isinstance(loss_scale, float):
-            self._scale_update_param = loss_scale
             if self._use_torch_amp:
-                self.loss_scaler = GradScaler(
-                    init_scale=loss_scale, growth_factor=1, backoff_factor=1)
+                self._scale_update_param = loss_scale
+                self.loss_scaler = GradScaler(init_scale=loss_scale)
             else:
                 self.loss_scaler = LossScaler(
                     init_scale=loss_scale, mode='static')
@@ -179,7 +179,7 @@ class Fp16OptimizerHook(OptimizerHook):
                                              runner.outputs['num_samples'])
             # backward and update scaler
             self.loss_scaler.step(runner.optimizer)
-            self.loss_scaler.update()
+            self.loss_scaler.update(self._scale_update_param)
         else:
             # scale the loss value
             scaled_loss = runner.outputs['loss'] * self.loss_scaler.loss_scale
