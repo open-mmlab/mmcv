@@ -33,6 +33,5 @@ __all__ = [
     'ConvAWS2d', 'ConvWS2d', 'fuse_conv_bn', 'DepthwiseSeparableConvModule',
     'Linear', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d',
     'MaxPool3d', 'Conv3d', 'initialize', 'INITIALIZERS', 'ConstantInit',
-    'XavierInit', 'NormalInit', 'UniformInit', 'KaimingInit',
-    'BiasInitWithProb', 'PretrainedInit'
+    'XavierInit', 'NormalInit', 'UniformInit', 'KaimingInit', 'PretrainedInit'
 ]
