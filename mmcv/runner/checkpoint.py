@@ -464,6 +464,39 @@ def _load_checkpoint(filename, map_location=None, logger=None):
     return CheckpointLoader.load_checkpoint(filename, map_location, logger)
 
 
+def _load_checkpoint_with_prefix(prefix, filename, map_location=None):
+    """Load partial pretrained model with specific prefix.
+
+    Args:
+        prefix (str): The prefix of sub-module.
+        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
+            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
+            details.
+        map_location (str | None): Same as :func:`torch.load`. Default: None.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    checkpoint = _load_checkpoint(filename, map_location=map_location)
+
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
+    if not prefix.endswith('.'):
+        prefix += '.'
+    prefix_len = len(prefix)
+
+    state_dict = {
+        k[prefix_len:]: v
+        for k, v in state_dict.items() if k.startswith(prefix)
+    }
+
+    assert state_dict, f'{prefix} is not in the pretrained model'
+    return state_dict
+
+
 def load_checkpoint(model,
                     filename,
                     map_location=None,
