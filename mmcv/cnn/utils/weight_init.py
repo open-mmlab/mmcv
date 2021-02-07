@@ -300,7 +300,7 @@ class KaimingInit(BaseInit):
 
 @INITIALIZERS.register_module(name='Pretrained')
 class PretrainedInit(object):
-    """Initialize module by loading a pretrained model
+    """Initialize module by loading a pretrained model.
 
     Args:
         checkpoint (str): the checkpoint file of the pretrained model should
