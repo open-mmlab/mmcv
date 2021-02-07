@@ -77,7 +77,7 @@ def bias_init_with_prob(prior_prob):
 
 class BaseInit(object):
 
-    def __init__(self, bias=0, bias_prob=None, layer=None):
+    def __init__(self, *, bias=0, bias_prob=None, layer=None):
         if not isinstance(bias, (int, float)):
             raise TypeError(f'bias must be a numbel, but got a {type(bias)}')
 
