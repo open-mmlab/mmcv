@@ -88,7 +88,7 @@ class BaseInit(object):
 
         if layer is not None:
             if not isinstance(layer, (str, list)):
-                raise TypeError(f'layer must be str or list of str, \
+                raise TypeError(f'layer must be a str or a list of str, \
                     but got a {type(layer)}')
 
         if bias_prob is not None:
@@ -303,7 +303,8 @@ class PretrainedInit(object):
     """Initialize module by loading a pretrained model
 
     Args:
-        checkpoint (str): the file of the pretrained model should be load.
+        checkpoint (str): the checkpoint file of the pretrained model should
+            be load.
         prefix (str, optional): the prefix of a sub-module in the pretrained
             model. it is for loading a part of the pretrained model to
             initialize. For example, if we would like to only load the
@@ -344,7 +345,7 @@ def _initialize(module, cfg):
 
 def _initialize_override(module, override):
     if not isinstance(override, (dict, list)):
-        raise TypeError(f'override must be a dict or list of dict, \
+        raise TypeError(f'override must be a dict or a list of dict, \
                 but got {type(override)}')
 
     override = [override] if isinstance(override, dict) else override
