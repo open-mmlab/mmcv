@@ -7,7 +7,14 @@ import torch
 def preprocess_onnx(onnx_model):
     """Modify onnx model to match with TensorRT plugins in mmcv.
 
-    Args:
+    There are some conflict between onnx node definition and TensorRT limit.
+    This function perform preprocess on the onnx model to solve the conflicts.
+    For example, onnx `attribute` is loaded in TensorRT on host and onnx
+    `input` is loaded on device. The shape inference is performed on host, so
+    any `input` related to shape (such as `max_output_boxes_per_class` in
+    NonMaxSuppression) should be transformed to `attribute` before conversion.
+
+    Arguments:
         onnx_model (onnx.ModelProto): Input onnx model.
 
     Returns:
