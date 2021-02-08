@@ -277,14 +277,12 @@ def load_from_http(filename, map_location=None, model_dir=None):
         dict or OrderedDict: The loaded checkpoint.
     """
 
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
+    rank = int(os.environ.get('LOCAL_RANK', get_dist_info()[0]))
     if rank == 0:
-        checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
-    if world_size > 1:
+        checkpoint = model_zoo.load_url(filename, model_dir=model_dir, map_location=map_location)
+    else:
         torch.distributed.barrier()
-        if rank > 0:
-            checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
+        checkpoint = model_zoo.load_url(filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
 
@@ -382,7 +380,7 @@ def load_from_torchvision(filename, map_location=None):
         model_name = filename[11:]
     else:
         model_name = filename[14:]
-    return load_from_http(model_urls[model_name])
+    return load_from_http(model_urls[model_name], map_location=map_location)
 
 
 @CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
@@ -416,7 +414,7 @@ def load_from_openmmlab(filename, map_location=None):
     model_url = model_urls[model_name]
     # check if is url
     if model_url.startswith(('http://', 'https://')):
-        checkpoint = load_from_http(model_url)
+        checkpoint = load_from_http(model_url, map_location=map_location)
     else:
         filename = osp.join(_get_mmcv_home(), model_url)
         if not osp.isfile(filename):
@@ -439,7 +437,7 @@ def load_from_mmcls(filename, map_location=None):
 
     model_urls = get_mmcls_models()
     model_name = filename[8:]
-    checkpoint = load_from_http(model_urls[model_name])
+    checkpoint = load_from_http(model_urls[model_name], map_location=map_location)
     checkpoint = _process_mmcls_checkpoint(checkpoint)
     return checkpoint
 
