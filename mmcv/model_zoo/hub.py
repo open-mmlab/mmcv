@@ -19,7 +19,10 @@ def update_model_zoo(name: str, config: str, details: dict,
         {
             'name': str,
             'config': str,
-            'details': str,
+            'details': {
+                'metric_a': float,
+                'metric_b': float
+            },
             'path': str
         }
         ...
