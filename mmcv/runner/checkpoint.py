@@ -371,7 +371,7 @@ def load_from_torchvision(filename, map_location=None):
     Args:
         filename (str): checkpoint file path with modelzoo or
             torchvision prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -432,7 +432,7 @@ def load_from_mmcls(filename, map_location=None):
 
     Args:
         filename (str): checkpoint file path with mmcls prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
