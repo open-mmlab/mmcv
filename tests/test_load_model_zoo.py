@@ -62,7 +62,7 @@ def load_from_http(url, map_location=None):
     return 'url:' + url
 
 
-def load_url(url, model_dir=None):
+def load_url(url, map_location=None, model_dir=None):
     return load_from_http(url)
 
 
