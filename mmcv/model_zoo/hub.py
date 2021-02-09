@@ -7,7 +7,21 @@ from mmcv import dump, load
 
 def update_model_zoo(name: str, config: str, details: dict,
                      checkpoint_path: str, json_path: str) -> None:
-    """Update the model zoo information in the json file.
+    r"""Update the model zoo information in the json file.
+
+    The format of json file storing the model information should be as below:
+
+    .. code-block:: json
+
+    [
+        {
+            'name': str,
+            'config': str,
+            'details': str,
+            'path': str
+        }
+        ...
+    ]
 
     Args:
         name (str): The name of the model to be updated. Usually, it is
