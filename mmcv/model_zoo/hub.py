@@ -75,14 +75,14 @@ def process_checkpoint(in_file: str, out_file: str) -> None:
 
 
 def get_model_by_config(builder: callable,
-                        config: str,
+                        config: Union[str, Config],
                         pretrained: bool = True) -> callable:
     """Obtain the model given builder and config name.
 
     Args:
         builder (callable): The build function that builds model based
             on the config.
-        config (str): The name of the model, or the path of config in the repo.
+        config (str, :obj:`Config`): The the path of config or a Config object.
         pretrained (bool, optional): Whether load the released pre-trained
             model. Defaults to True.
 
@@ -92,6 +92,14 @@ def get_model_by_config(builder: callable,
 
     # TODO: support to load the json for only once
     #
+
+
+def find_model_by_name():
+    pass
+
+
+def get_builder_from_repo():
+    pass
 
 
 def load_model(
@@ -118,3 +126,20 @@ def load_model(
         tuple[callable, dict]: Retuan the model and its corresponding detail
             information.
     """
+    # obtain builder from the repo
+    builder = get_builder_from_repo(repo_or_dir)
+
+    # obtain info of the model by name
+    model_info = find_model_by_name(name)
+    config = model_info['config']
+
+    # infer config from name
+    if override_config is not None:
+        if not isinstance(override_config, (dict, Config)):
+            assert isinstance(override_config, str)
+            override_config = Config.fromfile(override_config)
+        config = Config.fromfile(config)
+        config.merge_from_dict(override_config)
+
+    model = get_model_by_config(builder, config, pretrained=pretrained)
+    return model, model_info['details']
