@@ -21,22 +21,34 @@ class NMSop(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
-        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-        boxes = unsqueeze(g, bboxes, 0)
-        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-        max_output_per_class = g.op(
-            'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-        nms_out = g.op('NonMaxSuppression', boxes, scores,
-                       max_output_per_class, iou_threshold)
-        return squeeze(
-            g,
-            select(
-                g, nms_out, 1,
-                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-            1)
+        from ..onnx import is_custom_op_loaded
+        has_custom_op = is_custom_op_loaded()
+        if has_custom_op:
+            return g.op(
+                'mmcv::NonMaxSuppression',
+                bboxes,
+                scores,
+                iou_threshold_f=float(iou_threshold),
+                offset_i=int(offset))
+        else:
+            from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            boxes = unsqueeze(g, bboxes, 0)
+            scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
+            max_output_per_class = g.op(
+                'Constant',
+                value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+            iou_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([iou_threshold], dtype=torch.float))
+            nms_out = g.op('NonMaxSuppression', boxes, scores,
+                           max_output_per_class, iou_threshold)
+            return squeeze(
+                g,
+                select(
+                    g, nms_out, 1,
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([2], dtype=torch.long))), 1)
 
 
 class SoftNMSop(torch.autograd.Function):
@@ -142,13 +154,7 @@ def nms(boxes, scores, iou_threshold, offset=0):
             select = ext_module.nms(*indata_list, **indata_dict)
         inds = order.masked_select(select)
     else:
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] -= 1
         inds = NMSop.apply(boxes, scores, iou_threshold, offset)
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] += 1
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -285,7 +291,8 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     nms_op = eval(nms_type)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
-    if boxes_for_nms.shape[0] < split_thr:
+    # Won't split to multiple nms nodes when exporting to onnx
+    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
         scores = dets[:, -1]

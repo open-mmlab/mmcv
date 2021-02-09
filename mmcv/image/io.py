@@ -15,7 +15,7 @@ except ImportError:
     TJCS_RGB = TJPF_GRAY = TJPF_BGR = TurboJPEG = None
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageOps
 except ImportError:
     Image = None
 
@@ -92,6 +92,8 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
         if array.ndim >= 3 and array.shape[2] >= 3:  # color image
             array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
     else:
+        # Handle exif orientation tag
+        img = ImageOps.exif_transpose(img)
         # If the image mode is not 'RGB', convert it to 'RGB' first.
         if img.mode != 'RGB':
             if img.mode != 'LA':
