@@ -279,10 +279,12 @@ def load_from_http(filename, map_location=None, model_dir=None):
 
     rank = int(os.environ.get('LOCAL_RANK', get_dist_info()[0]))
     if rank == 0:
-        checkpoint = model_zoo.load_url(filename, model_dir=model_dir, map_location=map_location)
+        checkpoint = model_zoo.load_url(
+            filename, model_dir=model_dir, map_location=map_location)
     else:
         torch.distributed.barrier()
-        checkpoint = model_zoo.load_url(filename, model_dir=model_dir, map_location=map_location)
+        checkpoint = model_zoo.load_url(
+            filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
 
@@ -437,7 +439,8 @@ def load_from_mmcls(filename, map_location=None):
 
     model_urls = get_mmcls_models()
     model_name = filename[8:]
-    checkpoint = load_from_http(model_urls[model_name], map_location=map_location)
+    checkpoint = load_from_http(
+        model_urls[model_name], map_location=map_location)
     checkpoint = _process_mmcls_checkpoint(checkpoint)
     return checkpoint
 
