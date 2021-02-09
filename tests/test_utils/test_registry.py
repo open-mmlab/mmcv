@@ -155,7 +155,6 @@ def test_multi_scope_registry():
     assert len(HOUNDS) == 1
     assert HOUNDS.get('BloodHound') is BloodHound
     assert DOGS.get('hound.BloodHound') is BloodHound
-    assert DOGS.get('BloodHound') is BloodHound
 
     LITTLE_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='little_hound')
 
@@ -165,15 +164,22 @@ def test_multi_scope_registry():
 
     assert len(LITTLE_HOUNDS) == 1
     assert LITTLE_HOUNDS.get('Dachshund') is Dachshund
-    assert HOUNDS.get('Dachshund') is Dachshund
+    assert LITTLE_HOUNDS.get('hound.BloodHound') is BloodHound
     assert HOUNDS.get('little_hound.Dachshund') is Dachshund
-    assert DOGS.get('Dachshund') is Dachshund
     assert DOGS.get('hound.little_hound.Dachshund') is Dachshund
 
-    MID_HOUNDS = mmcv.Registry('dogs', parent=DOGS, scope='mid_hound')
-    MID_HOUNDS.register_module(module=BloodHound)
-    with pytest.raises(ValueError):
-        DOGS.get('BloodHound')
+    MID_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='mid_hound')
+
+    @MID_HOUNDS.register_module()
+    class Beagle:
+        pass
+
+    assert MID_HOUNDS.get('Beagle') is Beagle
+    assert HOUNDS.get('mid_hound.Beagle') is Beagle
+    assert DOGS.get('hound.mid_hound.Beagle') is Beagle
+    assert LITTLE_HOUNDS.get('hound.mid_hound.Beagle') is Beagle
+    assert MID_HOUNDS.get('hound.BloodHound') is BloodHound
+    assert MID_HOUNDS.get('hound.Dachshund') is None
 
 
 def test_build_from_cfg():

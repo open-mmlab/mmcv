@@ -105,7 +105,25 @@ class NetB(nn.Module):
         return x + 1
 ```
 
-We could build either `NetA` or `NetB` by:
+We could build two net in either MMDetection or MMClassification by:
+
+```python
+import mmcls # import mmcls to register models
+from mmdet.models import MODELS
+net_a = MODELS.build(cfg=dict(type='NetA'))
+net_b = MODELS.build(cfg=dict(type='mmcls.NetB'))
+```
+
+or
+
+```python
+import mmdet # import mmcls to register models
+from mmcls.models import MODELS
+net_a = MODELS.build(cfg=dict(type='mmdet.NetA'))
+net_b = MODELS.build(cfg=dict(type='NetB'))
+```
+
+Build them by shared `MODELS` registry in MMCV is also feasible:
 
 ```python
 from mmcv.cnn import MODELS as MMCV_MODELS
@@ -113,13 +131,4 @@ net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
 net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
 ```
 
-Or we could directly build them by (the scope could be inferred automatically):
-
-```python
-from mmcv.cnn import MODELS as MMCV_MODELS
-net_a = MMCV_MODELS.build(cfg=dict(type='NetA'))
-net_b = MMCV_MODELS.build(cfg=dict(type='NetB'))
-```
-
-Note that: if both MMDetection and MMClassification have `NetA` defined,
-a `ValueError` will be raised.
+Note that: we may avoid unused import by adding `custom_imports = dict(imports=['mmdet', 'mmcls'])` in config file.
