@@ -269,7 +269,7 @@ def load_from_http(filename, map_location=None, model_dir=None):
     Args:
         filename (str): checkpoint file path with modelzoo or
             torchvision prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
         model_dir (string, optional): directory in which to save the object,
             Default: None
 
