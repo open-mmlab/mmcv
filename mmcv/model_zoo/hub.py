@@ -1,8 +1,10 @@
 import subprocess
+from typing import Union
 
 import torch
 
 from mmcv import dump, load
+from mmcv.utils import Config
 
 
 def update_model_zoo(name: str, config: str, details: dict,
@@ -67,3 +69,49 @@ def process_checkpoint(in_file: str, out_file: str) -> None:
         out_file_name = out_file
     final_file = out_file_name + f'-{sha[:8]}.pth'
     subprocess.Popen(['mv', out_file, final_file])
+
+
+def get_model_by_config(builder: callable,
+                        config: str,
+                        pretrained: bool = True) -> callable:
+    """Obtain the model given builder and config name.
+
+    Args:
+        builder (callable): The build function that builds model based
+            on the config.
+        config (str): The name of the model, or the path of config in the repo.
+        pretrained (bool, optional): Whether load the released pre-trained
+            model. Defaults to True.
+
+    Returns:
+        tuple: (model, details)
+    """
+
+    # TODO: support to load the json for only once
+    #
+
+
+def load_model(
+        repo_or_dir: str,
+        name: str,
+        pretrained: bool = True,
+        override_config: Union[str, dict,
+                               Config] = None) -> tuple[callable, dict]:
+    """High level API that loads a model from a given github repo or a local
+    directory.
+
+    Args:
+        repo_or_dir (str): Github/Gitlab repo or a local directory path.
+        name (str): The name of the model.
+        pretrained (bool): Whether to load the pretrained checkpoint.
+            Defaults to True.
+        override_config (Union[str, dict, :obj:`Config`], optional): The config
+            used to override the original model config. If it is a str, it will
+            be taken as an absolute path to load a :obj:`Config`.
+            The config will be merged with the original config mapped by the
+            name. Defaults to None.
+
+    Returns:
+        tuple[callable, dict]: Retuan the model and its corresponding detail
+            information.
+    """
