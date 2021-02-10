@@ -504,7 +504,7 @@ def load_checkpoint(model,
                     filename,
                     map_location=None,
                     strict=False,
-                    rmword='module.',
+                    rmword='module',
                     addword=None,
                     logger=None):
     """Load checkpoint from a file or URI.
