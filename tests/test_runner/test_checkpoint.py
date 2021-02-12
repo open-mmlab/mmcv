@@ -10,7 +10,8 @@ from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
-                                    get_state_dict, load_from_pavi)
+                                    get_state_dict, load_checkpoint,
+                                    load_from_pavi)
 
 
 @MODULE_WRAPPERS.register_module()
@@ -186,6 +187,30 @@ def test_load_checkpoint_with_prefix():
         with pytest.raises(AssertionError):
             prefix = 'back'
             _load_checkpoint_with_prefix(prefix, 'model.pth')
+
+
+def test_load_checkpoint():
+    import os
+
+    class PrefixModel(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.backbone = Model()
+
+    pmodel = PrefixModel()
+    model = Model()
+    chkpt_path = './chk.pth'
+
+    # add prefix
+    torch.save(model.state_dict(), chkpt_path)
+    load_checkpoint(pmodel, chkpt_path, revise_keys=[(r'^', 'backbone.')])
+
+    # strip prefix
+    torch.save(pmodel.state_dict(), chkpt_path)
+    load_checkpoint(model, chkpt_path, revise_keys=[('backbone.', '')])
+
+    os.remove(chkpt_path)
 
 
 def test_load_classes_name():
