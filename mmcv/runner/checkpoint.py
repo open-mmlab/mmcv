@@ -504,8 +504,7 @@ def load_checkpoint(model,
                     filename,
                     map_location=None,
                     strict=False,
-                    rmword='module',
-                    addword=None,
+                    revise_keys=[(r'^module.', '')],
                     logger=None):
     """Load checkpoint from a file or URI.
 
@@ -517,10 +516,8 @@ def load_checkpoint(model,
         map_location (str): Same as :func:`torch.load`.
         strict (bool): Whether to allow different params for the model and
             checkpoint.
-        rmword (str): Customized keywords to remove for compatibility
-            between model and checkpoint.
-        addword (str): Customized keywords to add for compatibility
-            between model and checkpoint.
+        revise_keys (list): Customized keywords to modify for compatibility
+            between model and checkpoint. Default: remove 'module.'.
         logger (:mod:`logging.Logger` or None): The logger for error message.
 
     Returns:
@@ -537,20 +534,8 @@ def load_checkpoint(model,
     else:
         state_dict = checkpoint
     # strip prefix of state_dict
-    blank = r''
-    if rmword is not None:
-        prefix = rmword + '.'
-        state_dict = {
-            re.sub(prefix, blank, k): v
-            for k, v in state_dict.items()
-        }
-    if addword is not None:
-        prefix = r'^'
-        toadd = addword + '.'
-        state_dict = {
-            re.sub(blank, toadd, k): v
-            for k, v in state_dict.items()
-        }
+    for (p, s) in revise_keys:
+        state_dict = {re.sub(p, s, k): v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint
