@@ -1,10 +1,13 @@
 from unittest.mock import MagicMock, patch
 
+import numpy as np
+import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
-                           MMDistributedDataParallel, is_module_wrapper)
+from mmcv.parallel import (DataContainer, MODULE_WRAPPERS, MMDataParallel,
+                           MMDistributedDataParallel, is_module_wrapper,
+                           scatter)
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
@@ -57,3 +60,19 @@ def test_is_module_wrapper():
 
     module_wraper = ModuleWrapper(model)
     assert is_module_wrapper(module_wraper)
+
+
+def test_scatter_gather():
+    inputs = (torch.zeros([20, 3, 128, 128]), )
+    output_cpu = scatter(inputs, [-1])
+    output_gpu = scatter(inputs, [0])
+    cpu_size = output_cpu[0][0].size()
+    gpu_size = output_gpu[0][0].size()
+    assert np.all_equal(cpu_size, gpu_size)
+
+    inputs = (DataContainer([torch.zeros([20, 3, 128, 128])]),)
+    output_cpu = scatter(inputs, [-1])
+    output_gpu = scatter(inputs, [0])
+    cpu_size = output_cpu[0][0].size()
+    gpu_size = output_gpu[0][0].size()
+    assert np.all_equal(cpu_size, gpu_size)
