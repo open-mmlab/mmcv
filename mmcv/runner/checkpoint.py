@@ -516,9 +516,9 @@ def load_checkpoint(model,
         map_location (str): Same as :func:`torch.load`.
         strict (bool): Whether to allow different params for the model and
             checkpoint.
+        logger (:mod:`logging.Logger` or None): The logger for error message.
         revise_keys (list): Customized keywords to modify for compatibility
             between model and checkpoint. Default: remove 'module.'.
-        logger (:mod:`logging.Logger` or None): The logger for error message.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
