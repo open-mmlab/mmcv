@@ -312,8 +312,13 @@ class BaseRunner(metaclass=ABCMeta):
     def load_checkpoint(self, filename, map_location='cpu', strict=False):
 
         self.logger.info('load checkpoint from %s', filename)
-        return load_checkpoint(self.model, filename, map_location, strict,
-                               self.logger, revise_keys=self.revise_keys)
+        return load_checkpoint(
+            self.model,
+            filename,
+            map_location,
+            strict,
+            self.logger,
+            revise_keys=self.revise_keys)
 
     def resume(self,
                checkpoint,

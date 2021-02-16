@@ -518,7 +518,8 @@ def load_checkpoint(model,
             checkpoint.
         logger (:mod:`logging.Logger` or None): The logger for error message.
         revise_keys (list): Customized keywords to modify for compatibility
-            between model and checkpoint. Default: remove 'module.'.
+            between model and checkpoint. Default: strip the prefix 'module.'
+            by [(r'^module.', '')]).
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
