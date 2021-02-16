@@ -504,8 +504,8 @@ def load_checkpoint(model,
                     filename,
                     map_location=None,
                     strict=False,
-                    revise_keys=[(r'^module.', '')],
-                    logger=None):
+                    logger=None,
+                    revise_keys=[(r'^module.', '')]):
     """Load checkpoint from a file or URI.
 
     Args:
