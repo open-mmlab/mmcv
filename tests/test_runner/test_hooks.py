@@ -415,3 +415,36 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner
+
+def test_runner_with_revise_keys():
+
+    import os
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.conv = nn.Conv2d(3, 3, 1)
+    class PrefixModel(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.backbone = Model()
+
+    pmodel = PrefixModel()
+    model = Model()
+    chkpt_path = './chk.pth'
+
+    # add prefix
+    torch.save(model.state_dict(), chkpt_path)
+    runner = _build_demo_runner(runner_type='EpochBasedRunner')
+    runner.model=pmodel
+    runner.revise_keys=[(r'^', 'backbone.')]
+    runner.load_checkpoint(chkpt_path)
+
+    # strip prefix
+    torch.save(pmodel.state_dict(), chkpt_path)
+    runner.model=model
+    runner.revise_keys=[('backbone.', '')]
+    runner.load_checkpoint(chkpt_path)
+
+    os.remove(chkpt_path)
