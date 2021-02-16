@@ -45,8 +45,7 @@ class BaseRunner(metaclass=ABCMeta):
             Defaults to None.
         max_epochs (int, optional): Total training epochs.
         max_iters (int, optional): Total training iterations.
-        revise_keys (list): Customized keywords to modify for compatibility
-            between model and checkpoint. Default: remove 'module.'.
+
     """
 
     def __init__(self,
@@ -57,8 +56,7 @@ class BaseRunner(metaclass=ABCMeta):
                  logger=None,
                  meta=None,
                  max_iters=None,
-                 max_epochs=None,
-                 revise_keys=[(r'^module.', '')]):
+                 max_epochs=None):
         if batch_processor is not None:
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
@@ -105,7 +103,6 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
-        self.revise_keys = revise_keys
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)
@@ -309,7 +306,8 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
-    def load_checkpoint(self, filename, map_location='cpu', strict=False):
+    def load_checkpoint(self, filename, map_location='cpu', strict=False,
+                 revise_keys=[(r'^module.', '')]):
 
         self.logger.info('load checkpoint from %s', filename)
         return load_checkpoint(
@@ -318,7 +316,7 @@ class BaseRunner(metaclass=ABCMeta):
             map_location,
             strict,
             self.logger,
-            revise_keys=self.revise_keys)
+            revise_keys=revise_keys)
 
     def resume(self,
                checkpoint,

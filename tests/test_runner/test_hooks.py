@@ -441,13 +441,11 @@ def test_runner_with_revise_keys():
     torch.save(model.state_dict(), chkpt_path)
     runner = _build_demo_runner(runner_type='EpochBasedRunner')
     runner.model = pmodel
-    runner.revise_keys = [(r'^', 'backbone.')]
-    runner.load_checkpoint(chkpt_path)
+    runner.load_checkpoint(chkpt_path,revise_keys=[(r'^', 'backbone.')])
 
     # strip prefix
     torch.save(pmodel.state_dict(), chkpt_path)
     runner.model = model
-    runner.revise_keys = [('backbone.', '')]
-    runner.load_checkpoint(chkpt_path)
+    runner.load_checkpoint(chkpt_path,revise_keys=[('backbone.', '')])
 
     os.remove(chkpt_path)
