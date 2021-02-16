@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from mmcv.parallel import (DataContainer, MODULE_WRAPPERS, MMDataParallel,
+from mmcv.parallel import (MODULE_WRAPPERS, DataContainer, MMDataParallel,
                            MMDistributedDataParallel, is_module_wrapper,
                            scatter)
 from mmcv.parallel.distributed_deprecated import \
@@ -70,7 +70,7 @@ def test_scatter_gather():
     gpu_size = output_gpu[0][0].size()
     assert np.all_equal(cpu_size, gpu_size)
 
-    inputs = (DataContainer([torch.zeros([20, 3, 128, 128])]),)
+    inputs = (DataContainer([torch.zeros([20, 3, 128, 128])]), )
     output_cpu = scatter(inputs, [-1])
     output_gpu = scatter(inputs, [0])
     cpu_size = output_cpu[0][0].size()
