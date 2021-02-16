@@ -45,7 +45,6 @@ class BaseRunner(metaclass=ABCMeta):
             Defaults to None.
         max_epochs (int, optional): Total training epochs.
         max_iters (int, optional): Total training iterations.
-
     """
 
     def __init__(self,
@@ -306,8 +305,11 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
-    def load_checkpoint(self, filename, map_location='cpu', strict=False,
-                 revise_keys=[(r'^module.', '')]):
+    def load_checkpoint(self,
+                        filename,
+                        map_location='cpu',
+                        strict=False,
+                        revise_keys=[(r'^module.', '')]):
 
         self.logger.info('load checkpoint from %s', filename)
         return load_checkpoint(
