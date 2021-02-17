@@ -178,8 +178,6 @@ def build_from_cfg(cfg, registry, default_args=None):
 
     try:
         return obj_cls(**args)
-    except TypeError as e:
+    except Exception as e:
         # Normal TypeError does not print class name.
-        raise TypeError(f'{obj_cls.__name__}: {e}')
-    except:  # noqa: E722
-        raise
+        raise type(e)(f'When instantiating {obj_cls.__name__}, {e}')
