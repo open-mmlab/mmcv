@@ -67,6 +67,7 @@ class IterBasedRunner(BaseRunner):
         self._inner_iter += 1
         self._iter += 1
 
+    @torch.no_grad()
     def val(self, data_loader, **kwargs):
         self.model.eval()
         self.mode = 'val'
