@@ -40,11 +40,22 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
     def __init__(self, grad_clip=None, cumulative_iters=1):
         super(GradientCumulativeOptimizerHook, self).__init__(grad_clip)
         self.cumulative_iters = cumulative_iters
+        self.divisible_ietrs = 0
+        self.remainder_iters = 0
+        self.initialized = False
+
+    def _init(self, runner):
+        self.divisible_ietrs = runner.max_iters // self.cumulative_iters * self.cumulative_iters
+        self.remainder_iters = runner.max_iters % self.cumulative_iters
+        self.initialized = True
 
     def after_train_iter(self, runner):
-        runner.outputs['loss'] = runner.outputs['loss'] / self.cumulative_iters
+        if not self.initialized:
+            self._init(runner)
+        loss_factor = self.cumulative_iters if runner.iter < self.divisible_ietrs else self.remainder_iters
+        runner.outputs['loss'] = runner.outputs['loss'] / loss_factor
         runner.outputs['loss'].backward()
-        if (runner.iter + 1) % cumulative_iters == 0 or runner.iter == max_iters:
+        if (runner.iter + 1) % self.cumulative_iters == 0 or runner.iter == runner.max_iters:
             runner.optimizer.step()
             if self.grad_clip is not None:
                 grad_norm = self.clip_grads(runner.model.parameters())
