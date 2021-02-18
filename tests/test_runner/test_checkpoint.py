@@ -191,6 +191,8 @@ def test_load_checkpoint_with_prefix():
 
 def test_load_checkpoint():
     import os
+    import tempfile
+    import re
 
     class PrefixModel(nn.Module):
 
@@ -200,17 +202,23 @@ def test_load_checkpoint():
 
     pmodel = PrefixModel()
     model = Model()
-    chkpt_path = './chk.pth'
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
 
     # add prefix
-    torch.save(model.state_dict(), chkpt_path)
-    load_checkpoint(pmodel, chkpt_path, revise_keys=[(r'^', 'backbone.')])
-
+    torch.save(model.state_dict(), checkpoint_path)
+    state_dict = load_checkpoint(
+        pmodel, checkpoint_path, revise_keys=[(r'^', 'backbone.')])
+    for key in pmodel.backbone.state_dict().keys():
+        assert torch.equal(pmodel.backbone.state_dict()[key], state_dict[key])
     # strip prefix
-    torch.save(pmodel.state_dict(), chkpt_path)
-    load_checkpoint(model, chkpt_path, revise_keys=[('backbone.', '')])
+    torch.save(pmodel.state_dict(), checkpoint_path)
+    state_dict = load_checkpoint(
+        model, checkpoint_path, revise_keys=[('backbone.', '')])
 
-    os.remove(chkpt_path)
+    for key in state_dict.keys():
+        key_stripped = re.sub('^backbone.', '', key)
+        assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
+    os.remove(checkpoint_path)
 
 
 def test_load_classes_name():
