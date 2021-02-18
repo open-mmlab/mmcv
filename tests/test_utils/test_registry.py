@@ -221,3 +221,8 @@ def test_build_from_cfg():
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
         model = mmcv.build_from_cfg(cfg, BACKBONES, default_args=0)
+
+    # incorrect arguments
+    with pytest.raises(TypeError):
+        cfg = dict(type='ResNet', non_existing_arg=50)
+        model = mmcv.build_from_cfg(cfg, BACKBONES)
