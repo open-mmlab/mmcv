@@ -535,7 +535,7 @@ def load_checkpoint(model,
     else:
         state_dict = checkpoint
     # strip prefix of state_dict
-    for (p, s) in revise_keys:
+    for p, s in revise_keys:
         state_dict = {re.sub(p, s, k): v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
