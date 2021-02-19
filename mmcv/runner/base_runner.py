@@ -11,7 +11,7 @@ import mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import HOOKS, Hook
+from .hooks import HOOKS, Hook, IterTimerHook
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_time_str
@@ -414,14 +414,13 @@ class BaseRunner(metaclass=ABCMeta):
                 info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
-    def register_itertimer_hook(self, itertimer_config):
-        if itertimer_config is None:
-            return
-        if isinstance(itertimer_config, dict):
-            itertimer_config.setdefault('type', 'IterTimerHook')
-            hook = mmcv.buid_from_cfg(itertimer_config, HOOKS)
+    def register_timer_hook(self, timer_config):
+        if timer_config is None:
+            hook = IterTimerHook()
+        if isinstance(timer_config, dict):
+            hook = mmcv.buid_from_cfg(timer_config, HOOKS)
         else:
-            hook = itertimer_config
+            hook = timer_config
         self.register_hook(hook)
 
     def register_training_hooks(self,
@@ -430,7 +429,7 @@ class BaseRunner(metaclass=ABCMeta):
                                 checkpoint_config=None,
                                 log_config=None,
                                 momentum_config=None,
-                                itertimer_config=dict(type='IterTimerHook')):
+                                timer_config=None):
         """Register default hooks for training.
 
         Default hooks include:
@@ -446,5 +445,5 @@ class BaseRunner(metaclass=ABCMeta):
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
-        self.register_itertimer_hook(itertimer_config)
+        self.register_timer_hook(timer_config)
         self.register_logger_hooks(log_config)
