@@ -66,7 +66,9 @@ nvinfer1::DimsExprs NonMaxSuppressionDynamic::getOutputDimensions(
   auto num_batches = inputs[0].d[0];
   auto spatial_dimension = inputs[0].d[1];
   if (mMaxOutputBoxesPerClass > 0) {
-    spatial_dimension = exprBuilder.constant(mMaxOutputBoxesPerClass);
+    spatial_dimension = exprBuilder.operation(
+        nvinfer1::DimensionOperation::kMIN, *spatial_dimension,
+        *exprBuilder.constant(mMaxOutputBoxesPerClass));
   }
   auto num_classes = inputs[1].d[1];
   ret.d[0] = exprBuilder.operation(
