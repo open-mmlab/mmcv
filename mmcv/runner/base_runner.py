@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import copy
 import logging
 import os.path as osp
 import warnings
@@ -11,7 +12,7 @@ import mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import HOOKS, Hook, IterTimerHook
+from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_time_str
@@ -416,7 +417,7 @@ class BaseRunner(metaclass=ABCMeta):
 
     def register_timer_hook(self, timer_config):
         if timer_config is None:
-            hook = IterTimerHook()
+            return
         if isinstance(timer_config, dict):
             hook = mmcv.buid_from_cfg(timer_config, HOOKS)
         else:
@@ -429,7 +430,7 @@ class BaseRunner(metaclass=ABCMeta):
                                 checkpoint_config=None,
                                 log_config=None,
                                 momentum_config=None,
-                                timer_config=None):
+                                timer_config=dict(type='IterTimerHook')):
         """Register default hooks for training.
 
         Default hooks include:
@@ -441,9 +442,10 @@ class BaseRunner(metaclass=ABCMeta):
         - IterTimerHook
         - LoggerHook(s)
         """
+        timer_config_ = copy.deepcopy(timer_config)
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
-        self.register_timer_hook(timer_config)
+        self.register_timer_hook(timer_config_)
         self.register_logger_hooks(log_config)
