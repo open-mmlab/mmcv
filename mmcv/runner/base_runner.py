@@ -11,7 +11,7 @@ import mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import HOOKS, Hook, IterTimerHook
+from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_time_str
