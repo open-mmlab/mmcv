@@ -299,6 +299,9 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
         # -1 indexing works abnormal in TensorRT
+        # This assumes `dets` has 5 dimensions where
+        # the last dimension is score.
+        # TODO: more elegant way to handle the dimension issue.
         scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
