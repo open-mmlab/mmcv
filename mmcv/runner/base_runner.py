@@ -418,10 +418,11 @@ class BaseRunner(metaclass=ABCMeta):
     def register_timer_hook(self, timer_config):
         if timer_config is None:
             return
-        if isinstance(timer_config, dict):
-            hook = mmcv.buid_from_cfg(timer_config, HOOKS)
+        timer_config_ = copy.deepcopy(timer_config)
+        if isinstance(timer_config_, dict):
+            hook = mmcv.buid_from_cfg(timer_config_, HOOKS)
         else:
-            hook = timer_config
+            hook = timer_config_
         self.register_hook(hook)
 
     def register_training_hooks(self,
@@ -442,10 +443,9 @@ class BaseRunner(metaclass=ABCMeta):
         - IterTimerHook
         - LoggerHook(s)
         """
-        timer_config_ = copy.deepcopy(timer_config)
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
-        self.register_timer_hook(timer_config_)
+        self.register_timer_hook(timer_config)
         self.register_logger_hooks(log_config)
