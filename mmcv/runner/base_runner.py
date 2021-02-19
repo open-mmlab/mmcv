@@ -430,7 +430,7 @@ class BaseRunner(metaclass=ABCMeta):
                                 checkpoint_config=None,
                                 log_config=None,
                                 momentum_config=None,
-                                itertimer_config=None):
+                                itertimer_config=dict(type='IterTimerHook')):
         """Register default hooks for training.
 
         Default hooks include:
