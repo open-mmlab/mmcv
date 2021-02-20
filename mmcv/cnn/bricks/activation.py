@@ -6,7 +6,7 @@ from .registry import ACTIVATION_LAYERS
 
 for module in [
         nn.ReLU, nn.LeakyReLU, nn.PReLU, nn.RReLU, nn.ReLU6, nn.ELU,
-        nn.Sigmoid, nn.Tanh
+        nn.Sigmoid, nn.Tanh, nn.GELU
 ]:
     ACTIVATION_LAYERS.register_module(module=module)
 
