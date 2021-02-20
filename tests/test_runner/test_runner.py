@@ -274,8 +274,10 @@ def test_register_timer_hook(runner_class):
     timer_config = dict(type='IterTimerHook')
     runner.register_timer_hook(timer_config)
     assert len(runner.hooks) == 1
+    assert isinstance(runner.hooks[0], IterTimerHook)
 
     # test register IterTimerHook
     timer_config = IterTimerHook()
     runner.register_timer_hook(timer_config)
     assert len(runner.hooks) == 2
+    assert isinstance(runner.hooks[1], IterTimerHook)
