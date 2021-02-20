@@ -1,12 +1,15 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from mmcv.utils import build_from_cfg
 from .registry import ACTIVATION_LAYERS
+from .wrappers import TORCH_VERSION, obsolete_torch_version
 
 for module in [
         nn.ReLU, nn.LeakyReLU, nn.PReLU, nn.RReLU, nn.ReLU6, nn.ELU,
-        nn.Sigmoid, nn.Tanh, nn.GELU
+        nn.Sigmoid, nn.Tanh,
+        F.gelu if obsolete_torch_version(TORCH_VERSION, (1, 3, 1)) else nn.GELU
 ]:
     ACTIVATION_LAYERS.register_module(module=module)
 
