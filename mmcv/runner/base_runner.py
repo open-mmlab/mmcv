@@ -420,7 +420,7 @@ class BaseRunner(metaclass=ABCMeta):
             return
         if isinstance(timer_config, dict):
             timer_config_ = copy.deepcopy(timer_config)
-            hook = mmcv.buid_from_cfg(timer_config_, HOOKS)
+            hook = mmcv.build_from_cfg(timer_config_, HOOKS)
         else:
             hook = timer_config
         self.register_hook(hook)
