@@ -15,7 +15,7 @@ A simplest example is
 
 ```python
 cfg = dict(type='Conv3d')
-layer = build_norm_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
+layer = build_conv_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
 ```
 
 - `build_conv_layer`: Supported types are Conv1d, Conv2d, Conv3d, Conv (alias for Conv2d).
