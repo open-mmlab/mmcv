@@ -235,7 +235,7 @@ class VideoReader:
                                               file_start + task_num))
         else:
             for i in range(task_num):
-                write_frame(file_start +i) #直接调用write_frame，避免重复代码，统一逻辑。
+                write_frame(file_start +i)
 
     def __len__(self):
         return self.frame_cnt
@@ -314,5 +314,5 @@ def frames2video(frame_dir,
         track_progress(write_frame, range(start, end))
     else:
         for i in range(start, end):
-             write_frame(i) #直接调用，避免重复代码，统一逻辑
+             write_frame(i)
     vwriter.release()
