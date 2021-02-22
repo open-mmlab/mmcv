@@ -226,7 +226,7 @@ class VideoReader:
         def write_frame(file_idx):
             img = self.read()
             if img is None:
-                    break
+                    return
             filename = osp.join(frame_dir, filename_tmpl.format(file_idx))
             cv2.imwrite(filename, img)
 
@@ -235,7 +235,7 @@ class VideoReader:
                                               file_start + task_num))
         else:
             for i in range(task_num):
-                write_frame(i) #直接调用write_frame，避免重复代码，统一逻辑。
+                write_frame(file_start +i) #直接调用write_frame，避免重复代码，统一逻辑。
 
     def __len__(self):
         return self.frame_cnt
