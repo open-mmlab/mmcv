@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-from mmcv.utils import build_from_cfg
+from mmcv.utils import TORCH_VERSION, build_from_cfg
 from .registry import ACTIVATION_LAYERS
 
 for module in [
@@ -41,6 +42,38 @@ class Clamp(nn.Module):
             torch.Tensor: Clamped tensor.
         """
         return torch.clamp(x, min=self.min, max=self.max)
+
+
+class GELU(nn.Module):
+    r"""Applies the Gaussian Error Linear Units function:
+
+    .. math::
+        \text{GELU}(x) = x * \Phi(x)
+    where :math:`\Phi(x)` is the Cumulative Distribution Function for
+    Gaussian Distribution.
+
+    Shape:
+        - Input: :math:`(N, *)` where `*` means, any number of additional
+          dimensions
+        - Output: :math:`(N, *)`, same shape as the input
+
+    .. image:: scripts/activation_images/GELU.png
+
+    Examples::
+
+        >>> m = nn.GELU()
+        >>> input = torch.randn(2)
+        >>> output = m(input)
+    """
+
+    def forward(self, input):
+        return F.gelu(input)
+
+
+if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
+    ACTIVATION_LAYERS.register_module(module=GELU)
+else:
+    ACTIVATION_LAYERS.register_module(module=nn.GELU)
 
 
 def build_activation_layer(cfg):
