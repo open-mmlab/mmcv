@@ -77,9 +77,9 @@ class Registry:
             from ``parent``. Default: None.
         parent (Registry, optional): Parent registry. The class registered in
             children registry could be built from parent. Default: None.
-        scope (str, optional): The scope of registry. If not specified, scope
-            will be the name of the package where class is defined.
-            Default: None.
+        scope (str, optional): The scope of registry. It is the key to index
+            children. If not specified, scope will be the name of the package
+            where class is defined, e.g. mmdet, mmcls, mmseg. Default: None.
     """
 
     def __init__(self, name, build_func=None, parent=None, scope=None):
@@ -87,6 +87,11 @@ class Registry:
         self._module_dict = dict()
         self._children = dict()
         self._scope = self.infer_scope() if scope is None else scope
+
+        # self.build_func will be set with the following priority:
+        # 1. build_func
+        # 2. parent.build_func
+        # 3. build_from_cfg
         if build_func is None:
             if parent is not None:
                 self.build_func = parent.build_func
@@ -120,7 +125,7 @@ class Registry:
         The name of the package where registry is defined will be returned.
 
         Example:
-            in mmdet/models/backbone/resnet.py
+            # in mmdet/models/backbone/resnet.py
             >>> MODELS = Registry('models')
             >>> @MODELS.register_module()
             >>> class ResNet:
@@ -131,6 +136,8 @@ class Registry:
         Returns:
             scope (str): The inferred scope name.
         """
+        # inspect.stack() trace where this function is called, the index-2
+        # indicates the frame where `infer_scope()` is called
         filename = inspect.getmodule(inspect.stack()[2][0]).__name__
         split_filename = filename.split('.')
         return split_filename[0]
@@ -217,6 +224,8 @@ class Registry:
 
         assert isinstance(registry, Registry)
         assert registry.scope is not None
+        assert registry.scope not in self.children, \
+            f'scope {registry.scope} exists in {self.name} registry'
         self.children[registry.scope] = registry
 
     def _register_module(self, module_class, module_name=None, force=False):
