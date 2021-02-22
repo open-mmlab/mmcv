@@ -7,8 +7,7 @@ from .registry import ACTIVATION_LAYERS
 
 for module in [
         nn.ReLU, nn.LeakyReLU, nn.PReLU, nn.RReLU, nn.ReLU6, nn.ELU,
-        nn.Sigmoid, nn.Tanh, F.gelu
-        if TORCH_VERSION == 'parrots' or TORCH_VERSION <= '1.3.1' else nn.GELU
+        nn.Sigmoid, nn.Tanh
 ]:
     ACTIVATION_LAYERS.register_module(module=module)
 
@@ -43,6 +42,36 @@ class Clamp(nn.Module):
             torch.Tensor: Clamped tensor.
         """
         return torch.clamp(x, min=self.min, max=self.max)
+
+
+@ACTIVATION_LAYERS.register_module()
+class GELU(nn.GELU):
+    r"""Applies the Gaussian Error Linear Units function:
+
+    .. math::
+        \text{GELU}(x) = x * \Phi(x)
+    where :math:`\Phi(x)` is the Cumulative Distribution Function for
+    Gaussian Distribution.
+
+    Shape:
+        - Input: :math:`(N, *)` where `*` means, any number of additional
+          dimensions
+        - Output: :math:`(N, *)`, same shape as the input
+
+    .. image:: scripts/activation_images/GELU.png
+
+    Examples::
+
+        >>> m = nn.GELU()
+        >>> input = torch.randn(2)
+        >>> output = m(input)
+    """
+
+    def forward(self, input):
+        if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
+            return F.gelu(input)
+
+        return super().forward(input)
 
 
 def build_activation_layer(cfg):
