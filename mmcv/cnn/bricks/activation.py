@@ -44,8 +44,7 @@ class Clamp(nn.Module):
         return torch.clamp(x, min=self.min, max=self.max)
 
 
-@ACTIVATION_LAYERS.register_module()
-class GELU(nn.GELU):
+class GELU(nn.Module):
     r"""Applies the Gaussian Error Linear Units function:
 
     .. math::
@@ -68,10 +67,13 @@ class GELU(nn.GELU):
     """
 
     def forward(self, input):
-        if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
-            return F.gelu(input)
+        return F.gelu(input)
 
-        return super().forward(input)
+
+if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
+    ACTIVATION_LAYERS.register_module(module=GELU)
+else:
+    ACTIVATION_LAYERS.register_module(module=nn.GELU)
 
 
 def build_activation_layer(cfg):
