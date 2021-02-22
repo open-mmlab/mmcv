@@ -51,7 +51,7 @@ def test_build_model_from_cfg():
     assert model[1].depth == 50 and model[1].stages == 3
 
     # test inherit `build_func` from parent
-    NEW_MODELS = mmcv.Registry('models', parent=MODELS)
+    NEW_MODELS = mmcv.Registry('models', parent=MODELS, scope='new')
     assert NEW_MODELS.build_func is build_model_from_cfg
 
     # test specify `build_func`
