@@ -226,7 +226,7 @@ class VideoReader:
         def write_frame(file_idx):
             img = self.read()
             if img is None:
-                    break
+                    return
             filename = osp.join(frame_dir, filename_tmpl.format(file_idx))
             cv2.imwrite(filename, img)
 
