@@ -161,6 +161,25 @@ def test_fromfile():
         Config.fromfile(osp.join(data_path, 'color.jpg'))
 
 
+def test_fromstring():
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
+        cfg_file = osp.join(data_path, 'config', filename)
+        suffix = osp.splitext(filename)[-1]
+        in_cfg = Config.fromfile(cfg_file)
+
+        # test is_pretty_text is True
+        out_cfg = Config.fromstring(in_cfg.pretty_text)
+        assert in_cfg._cfg_dict == out_cfg._cfg_dict
+
+        # test is_pretty_text is False
+        cfg_str = open(cfg_file, 'r').read()
+        out_cfg = Config.fromstring(cfg_str, suffix, is_pretty_text=False)
+        assert in_cfg._cfg_dict == out_cfg._cfg_dict
+
+        with pytest.raises(IOError):
+            Config.fromstring(cfg_str, is_pretty_text=False)
+
+
 def test_merge_from_base():
     cfg_file = osp.join(data_path, 'config/d.py')
     cfg = Config.fromfile(cfg_file)

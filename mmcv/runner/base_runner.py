@@ -2,7 +2,6 @@
 import copy
 import logging
 import os.path as osp
-import tempfile
 import warnings
 from abc import ABCMeta, abstractmethod
 
@@ -332,17 +331,13 @@ class BaseRunner(metaclass=ABCMeta):
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
 
+        # Recalculate iter when the number of GPUs is different during resume
         if 'config' in checkpoint['meta']:
-            temp_file = tempfile.NamedTemporaryFile()
-            config_path = f'{temp_file.name}.py'
-            with open(config_path, 'w') as f:
-                f.write(checkpoint['meta']['config'])
-            config = mmcv.Config.fromfile(config_path)
+            config = mmcv.Config.fromstring(checkpoint['meta']['config'])
             previous_gpu_ids = config.get('gpu_ids', None)
             if previous_gpu_ids and len(previous_gpu_ids) > 0:
                 self._iter = int(self._iter * len(previous_gpu_ids) /
                                  self.world_size)
-            temp_file.close()
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
