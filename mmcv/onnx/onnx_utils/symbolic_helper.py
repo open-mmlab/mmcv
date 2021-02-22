@@ -226,11 +226,10 @@ def _interpolate_size_to_scales(g, input, output_size, dim):
 
 
 def _interpolate_get_scales_if_available(g, scales):
-    scale_size = len(scales)
-    if scale_size == 0:
+    if len(scales) == 0:
         return None
-    # scales[0] is TensorType in Pytorch <=1.7.0
-    scale_desc = 'fs' if scale_size == 1 else 'f'
+    # scales[0] is ListType in Pytorch == 1.7.0
+    scale_desc = 'fs' if scales[0].type().kind() == 'ListType' else 'f'
     available_scales = _maybe_get_const(
         scales[0], scale_desc) != -1 and not _is_none(scales[0])
 
@@ -238,7 +237,7 @@ def _interpolate_get_scales_if_available(g, scales):
         return None
 
     offsets = g.op('Constant', value_t=torch.ones(2, dtype=torch.float32))
-    if scale_size == 1:
+    if scale_desc == 'fs':
         scales_list = g.op(
             'Constant',
             value_t=torch.tensor(_maybe_get_const(scales[0], scale_desc)))

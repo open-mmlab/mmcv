@@ -299,3 +299,29 @@ def test_simplify():
     numel_after = len(slim_onnx_model.graph.node)
     os.remove(onnx_file)
     assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
+
+
+def test_interpolate():
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    opset_version = 11
+    register_extra_symbolics(opset_version)
+
+    def func(feat, scale_factor=2):
+        out = nn.functional.interpolate(feat, scale_factor=scale_factor)
+        return out
+
+    net = WrapFunction(func)
+    net = net.cpu().eval()
+    dummy_input = torch.randn(2, 4, 8, 8).cpu()
+    torch.onnx.export(
+        net,
+        dummy_input,
+        onnx_file,
+        input_names=['input'],
+        opset_version=opset_version)
+    sess = rt.InferenceSession(onnx_file)
+    onnx_result = sess.run(None, {'input': dummy_input.detach().numpy()})
+    pytorch_result = func(dummy_input).detach().numpy()
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
