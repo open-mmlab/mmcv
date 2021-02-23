@@ -331,7 +331,8 @@ class BaseRunner(metaclass=ABCMeta):
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
 
-        # Recalculate iter when the number of GPUs is different during resume
+        # Re-calculate the number of iterations when resuming
+        # models with different number of GPUs
         if 'config' in checkpoint['meta']:
             config = mmcv.Config.fromstring(
                 checkpoint['meta']['config'], file_format='.py')
