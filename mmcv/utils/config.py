@@ -274,8 +274,9 @@ class Config:
                 cfg = Config.fromfile(temp_file.name)
             except Exception as e:
                 raise SyntaxError(
-                    f'{e}\nPlease check file_format, If cfg_str comes from '
-                    f'pretty_text, you should set file_format=".py"')
+                    f'{e}\nPlease check "file_format", If "cfg_str" '
+                    f'comes from pretty_text, you should set '
+                    f'file_format=\'.py\'')
         return cfg
 
     @staticmethod

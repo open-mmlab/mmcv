@@ -337,9 +337,12 @@ class BaseRunner(metaclass=ABCMeta):
             config = mmcv.Config.fromstring(
                 checkpoint['meta']['config'], file_format='.py')
             previous_gpu_ids = config.get('gpu_ids', None)
-            if previous_gpu_ids and len(previous_gpu_ids) > 0:
+            if previous_gpu_ids and len(previous_gpu_ids) > 0 and len(
+                    previous_gpu_ids) != self.world_size:
                 self._iter = int(self._iter * len(previous_gpu_ids) /
                                  self.world_size)
+                self.logger.info('the iteration number is changed due to '
+                                 'change of GPU number')
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
