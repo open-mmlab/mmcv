@@ -333,7 +333,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         # Recalculate iter when the number of GPUs is different during resume
         if 'config' in checkpoint['meta']:
-            config = mmcv.Config.fromstring(checkpoint['meta']['config'])
+            config = mmcv.Config.fromstring(
+                checkpoint['meta']['config'], file_format='.py')
             previous_gpu_ids = config.get('gpu_ids', None)
             if previous_gpu_ids and len(previous_gpu_ids) > 0:
                 self._iter = int(self._iter * len(previous_gpu_ids) /

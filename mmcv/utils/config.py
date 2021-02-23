@@ -254,29 +254,28 @@ class Config:
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @staticmethod
-    def fromstring(cfg_str, suffix=None, is_pretty_text=True):
+    def fromstring(cfg_str, file_format):
         """Generate config from config str.
 
         Args:
             cfg_str (str): Config str.
-            suffix (str or optional): Config file suffix corresponding to
-                the config str. if is_pretty_text is False, only
-                py/yml/yaml/json type are supported now! Default: None
-            is_pretty_text (bool): Determine if cfg_str comes
-                from pretty_text, Default: True
+            file_format (str): Config file format corresponding to the
+               config str. Only py/yml/yaml/json type are supported now!
 
         Returns:
             obj:`Config`: Config obj.
         """
-        if is_pretty_text:
-            suffix = '.py'
-        if suffix not in ['.py', '.json', '.yaml', '.yml']:
+        if file_format not in ['.py', '.json', '.yaml', '.yml']:
             raise IOError('Only py/yml/yaml/json type are supported now!')
-        with tempfile.NamedTemporaryFile(
-                'w', suffix=suffix, delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
             temp_file.write(cfg_str)
             temp_file.flush()
-            cfg = Config.fromfile(temp_file.name)
+            try:
+                cfg = Config.fromfile(temp_file.name)
+            except Exception as e:
+                raise SyntaxError(
+                    f'{e}\nPlease check file_format, If cfg_str comes from '
+                    f'pretty_text, you should set file_format=".py"')
         return cfg
 
     @staticmethod
