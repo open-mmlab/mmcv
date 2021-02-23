@@ -1,3 +1,4 @@
+import os
 import sys
 
 import numpy as np
@@ -23,7 +24,9 @@ class NMSop(torch.autograd.Function):
     def symbolic(g, bboxes, scores, iou_threshold, offset):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
-        if has_custom_op:
+        # TensorRT nms plugin is aligned with original nms in ONNXRuntime
+        is_trt_backend = os.environ.get('ONNX_BACKEND') == 'MMCVTensorRT'
+        if has_custom_op and (not is_trt_backend):
             return g.op(
                 'mmcv::NonMaxSuppression',
                 bboxes,
@@ -295,7 +298,11 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        scores = dets[:, -1]
+        # -1 indexing works abnormal in TensorRT
+        # This assumes `dets` has 5 dimensions where
+        # the last dimension is score.
+        # TODO: more elegant way to handle the dimension issue.
+        scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):
