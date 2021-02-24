@@ -235,7 +235,7 @@ class VideoReader:
                                               file_start + task_num))
         else:
             for i in range(task_num):
-                write_frame(file_start +i)
+                write_frame(file_start + i)
 
     def __len__(self):
         return self.frame_cnt
