@@ -226,7 +226,7 @@ class VideoReader:
         def write_frame(file_idx):
             img = self.read()
             if img is None:
-                    return
+                return
             filename = osp.join(frame_dir, filename_tmpl.format(file_idx))
             cv2.imwrite(filename, img)
 
@@ -314,5 +314,5 @@ def frames2video(frame_dir,
         track_progress(write_frame, range(start, end))
     else:
         for i in range(start, end):
-             write_frame(i)
+            write_frame(i)
     vwriter.release()
