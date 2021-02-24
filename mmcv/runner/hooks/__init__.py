@@ -2,7 +2,7 @@
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .ema import EMAHook
-from .eval import DistEvalHook, EvalHook
+from .evaluation import DistEvalHook, EvalHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
 from .logger import (LoggerHook, MlflowLoggerHook, PaviLoggerHook,
