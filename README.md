@@ -163,4 +163,4 @@ you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/
 
 ## Contributing
 
-We appreciate all contributions to improve MMDetection. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.
+We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.
