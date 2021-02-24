@@ -24,9 +24,10 @@ class CheckpointHook(Hook):
             In some cases we want only the latest few checkpoints and would
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
+        save_last (bool): Whether to force the last checkpoint to be saved
+            regardless of interval.
         sync_buffer (bool): Whether to synchronize buffers in different
             gpus. Default: False.
-        keep_last (bool): Whether to save last checkpoint.
     """
 
     def __init__(self,
@@ -35,17 +36,21 @@ class CheckpointHook(Hook):
                  save_optimizer=True,
                  out_dir=None,
                  max_keep_ckpts=-1,
-                 sync_buffer=False,
                  save_last=True,
+                 sync_buffer=False,
                  **kwargs):
         self.interval = interval
         self.by_epoch = by_epoch
         self.save_optimizer = save_optimizer
         self.out_dir = out_dir
         self.max_keep_ckpts = max_keep_ckpts
+        self.save_last = save_last
         self.args = kwargs
         self.sync_buffer = sync_buffer
-        self.save_last = save_last
+
+    def before_run(self, runner):
+        if not self.out_dir:
+            self.out_dir = runner.work_dir
 
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
@@ -59,8 +64,6 @@ class CheckpointHook(Hook):
     @master_only
     def _save_checkpoint(self, runner):
         """Save the current checkpoint and delete unwanted checkpoint."""
-        if not self.out_dir:
-            self.out_dir = runner.work_dir
         runner.save_checkpoint(
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
         if runner.meta is not None:
@@ -105,7 +108,5 @@ class CheckpointHook(Hook):
 
     def after_run(self, runner):
         if self.save_last:
-            if not self.out_dir:
-                self.out_dir = runner.work_dir
             runner.save_checkpoint(
                 self.out_dir, save_optimizer=self.save_optimizer, **self.args)
