@@ -138,12 +138,11 @@ def test_eval_hook():
             runner.register_hook(eval_hook)
             runner.run([loader], [('train', 1)], 8)
 
-            real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
+            ckpt_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == 7
 
         # total_epochs = 8, return the best acc and corresponding epoch
@@ -160,12 +159,11 @@ def test_eval_hook():
             runner.register_hook(eval_hook)
             runner.run([loader], [('train', 1)], 8)
 
-            real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
+            ckpt_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == 7
 
         # total_epochs = 8, return the best score and corresponding epoch
@@ -180,12 +178,11 @@ def test_eval_hook():
             runner.register_hook(eval_hook)
             runner.run([loader], [('train', 1)], 8)
 
-            real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_score_epoch_4.pth')
+            ckpt_path = osp.join(tmpdir, 'best_score_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == 7
 
         # total_epochs = 8, return the best score using less compare func
@@ -200,12 +197,11 @@ def test_eval_hook():
             runner.register_hook(eval_hook)
             runner.run([loader], [('train', 1)], 8)
 
-            real_path = osp.join(tmpdir, 'epoch_6.pth')
-            link_path = osp.join(tmpdir, 'best_acc_epoch_6.pth')
+            ckpt_path = osp.join(tmpdir, 'best_acc_epoch_6.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == -3
 
         # Test the EvalHook when resume happend
@@ -219,12 +215,11 @@ def test_eval_hook():
             runner.register_hook(eval_hook)
             runner.run([loader], [('train', 1)], 2)
 
-            real_path = osp.join(tmpdir, 'epoch_2.pth')
-            link_path = osp.join(tmpdir, 'best_acc_epoch_2.pth')
+            ckpt_path = osp.join(tmpdir, 'best_acc_epoch_2.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == 4
 
             resume_from = osp.join(tmpdir, 'latest.pth')
@@ -237,12 +232,11 @@ def test_eval_hook():
             runner.resume(resume_from)
             runner.run([loader], [('train', 1)], 8)
 
-            real_path = osp.join(tmpdir, 'epoch_4.pth')
-            link_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
+            ckpt_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
 
             assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(
-                real_path)
-            assert osp.exists(link_path)
+                ckpt_path)
+            assert osp.exists(ckpt_path)
             assert runner.meta['hook_msgs']['best_score'] == 7
 
 
@@ -263,6 +257,10 @@ def test_start_param(EvalHookParam, _build_demo_runner, by_epoch):
     # 0.2. negative interval
     with pytest.raises(ValueError):
         EvalHookParam(dataloader, interval=-1)
+
+    # 0.3. negative start
+    with pytest.raises(ValueError):
+        EvalHookParam(dataloader, start=-1)
 
     # 1. start=None, interval=1: perform evaluation after each epoch.
     runner = _build_demo_runner()
@@ -298,18 +296,10 @@ def test_start_param(EvalHookParam, _build_demo_runner, by_epoch):
     runner.run([dataloader], [('train', 1)], 3)
     assert evalhook.evaluate.call_count == 2  # after epoch 1 & 3
 
-    # 5. start=0/negative, interval=1: perform evaluation after each epoch and
+    # 5. start=0, interval=1: perform evaluation after each epoch and
     #    before epoch 1.
     runner = _build_demo_runner()
     evalhook = EvalHookParam(dataloader, start=0, by_epoch=by_epoch)
-    evalhook.evaluate = MagicMock()
-    runner.register_hook(evalhook)
-    runner.run([dataloader], [('train', 1)], 2)
-    assert evalhook.evaluate.call_count == 3  # before epoch1 and after e1 & e2
-
-    runner = _build_demo_runner()
-    with pytest.warns(UserWarning):
-        evalhook = EvalHookParam(dataloader, start=-2, by_epoch=by_epoch)
     evalhook.evaluate = MagicMock()
     runner.register_hook(evalhook)
     runner.run([dataloader], [('train', 1)], 2)

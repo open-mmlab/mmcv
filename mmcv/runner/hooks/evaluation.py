@@ -7,8 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
-from mmcv.engine import multi_gpu_test, single_gpu_test
-from mmcv.runner import Hook
+from .hook import Hook
 
 
 class EvalHook(Hook):
@@ -176,6 +175,7 @@ class EvalHook(Hook):
         if not self._should_evaluate(runner):
             return
 
+        from mmcv.engine import single_gpu_test
         results = single_gpu_test(runner.model, self.dataloader)
         key_score = self.evaluate(runner, results)
         if self.save_best:
@@ -360,6 +360,7 @@ class DistEvalHook(EvalHook):
         if tmpdir is None:
             tmpdir = osp.join(runner.work_dir, '.eval_hook')
 
+        from mmcv.engine import multi_gpu_test
         results = multi_gpu_test(
             runner.model,
             self.dataloader,
