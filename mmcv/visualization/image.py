@@ -53,6 +53,7 @@ def imshow_bboxes(img,
         ndarray: The image with bboxes drawn on it.
     """
     img = imread(img)
+    img = np.ascontiguousarray(img)
 
     if isinstance(bboxes, np.ndarray):
         bboxes = [bboxes]
@@ -119,6 +120,7 @@ def imshow_det_bboxes(img,
     assert bboxes.shape[0] == labels.shape[0]
     assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5
     img = imread(img)
+    img = np.ascontiguousarray(img)
 
     if score_thr > 0:
         assert bboxes.shape[1] == 5
@@ -129,7 +131,7 @@ def imshow_det_bboxes(img,
 
     bbox_color = color_val(bbox_color)
     text_color = color_val(text_color)
-    img = np.ascontiguousarray(img)
+
     for bbox, label in zip(bboxes, labels):
         bbox_int = bbox.astype(np.int32)
         left_top = (bbox_int[0], bbox_int[1])

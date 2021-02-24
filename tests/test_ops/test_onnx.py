@@ -26,7 +26,7 @@ class WrapFunction(nn.Module):
 def test_nms():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
-    from mmcv.ops import nms
+    from mmcv.ops import get_onnxruntime_op_path, nms
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                         dtype=np.float32)
@@ -48,12 +48,19 @@ def test_nms():
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('nms for onnxruntime is not compiled.')
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+
     # get onnx output
     input_all = [node.name for node in onnx_model.graph.input]
     input_initializer = [node.name for node in onnx_model.graph.initializer]
     net_feed_input = list(set(input_all) - set(input_initializer))
     assert (len(net_feed_input) == 2)
-    sess = rt.InferenceSession(onnx_file)
+    sess = rt.InferenceSession(onnx_file, session_options)
     onnx_dets, _ = sess.run(None, {
         'scores': scores.detach().numpy(),
         'boxes': boxes.detach().numpy()

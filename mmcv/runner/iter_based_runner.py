@@ -67,6 +67,7 @@ class IterBasedRunner(BaseRunner):
         self._inner_iter += 1
         self._iter += 1
 
+    @torch.no_grad()
     def val(self, data_loader, **kwargs):
         self.model.eval()
         self.mode = 'val'
@@ -212,7 +213,7 @@ class IterBasedRunner(BaseRunner):
             if platform.system() != 'Windows':
                 mmcv.symlink(filename, dst_file)
             else:
-                shutil.copy(filename, dst_file)
+                shutil.copy(filepath, dst_file)
 
     def register_training_hooks(self,
                                 lr_config,

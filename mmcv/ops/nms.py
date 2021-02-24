@@ -1,3 +1,4 @@
+import os
 import sys
 
 import numpy as np
@@ -21,22 +22,36 @@ class NMSop(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset):
-        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-        boxes = unsqueeze(g, bboxes, 0)
-        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-        max_output_per_class = g.op(
-            'Constant', value_t=torch.tensor([sys.maxsize], dtype=torch.long))
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-        nms_out = g.op('NonMaxSuppression', boxes, scores,
-                       max_output_per_class, iou_threshold)
-        return squeeze(
-            g,
-            select(
-                g, nms_out, 1,
-                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-            1)
+        from ..onnx import is_custom_op_loaded
+        has_custom_op = is_custom_op_loaded()
+        # TensorRT nms plugin is aligned with original nms in ONNXRuntime
+        is_trt_backend = os.environ.get('ONNX_BACKEND') == 'MMCVTensorRT'
+        if has_custom_op and (not is_trt_backend):
+            return g.op(
+                'mmcv::NonMaxSuppression',
+                bboxes,
+                scores,
+                iou_threshold_f=float(iou_threshold),
+                offset_i=int(offset))
+        else:
+            from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            boxes = unsqueeze(g, bboxes, 0)
+            scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
+            max_output_per_class = g.op(
+                'Constant',
+                value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+            iou_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([iou_threshold], dtype=torch.float))
+            nms_out = g.op('NonMaxSuppression', boxes, scores,
+                           max_output_per_class, iou_threshold)
+            return squeeze(
+                g,
+                select(
+                    g, nms_out, 1,
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([2], dtype=torch.long))), 1)
 
 
 class SoftNMSop(torch.autograd.Function):
@@ -126,13 +141,7 @@ def nms(boxes, scores, iou_threshold, offset=0):
         }
         inds = ext_module.nms(*indata_list, **indata_dict)
     else:
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] -= 1
         inds = NMSop.apply(boxes, scores, iou_threshold, offset)
-        if torch.onnx.is_in_onnx_export() and offset == 0:
-            # ONNX only support offset == 1
-            boxes[:, -2:] += 1
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -264,10 +273,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     nms_op = eval(nms_type)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
-    if boxes_for_nms.shape[0] < split_thr:
+    # Won't split to multiple nms nodes when exporting to onnx
+    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        scores = dets[:, -1]
+        # -1 indexing works abnormal in TensorRT
+        # This assumes `dets` has 5 dimensions where
+        # the last dimension is score.
+        # TODO: more elegant way to handle the dimension issue.
+        scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):

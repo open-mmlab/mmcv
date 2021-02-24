@@ -175,5 +175,8 @@ def build_from_cfg(cfg, registry, default_args=None):
     else:
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
-
-    return obj_cls(**args)
+    try:
+        return obj_cls(**args)
+    except Exception as e:
+        # Normal TypeError does not print class name.
+        raise type(e)(f'{obj_cls.__name__}: {e}')
