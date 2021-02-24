@@ -5,6 +5,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
@@ -267,6 +268,12 @@ class Config:
         """
         if file_format not in ['.py', '.json', '.yaml', '.yml']:
             raise IOError('Only py/yml/yaml/json type are supported now!')
+        if file_format != '.py':
+            # check if users specify a wrong suffix for python
+            if 'dict(' in cfg_str:
+                warnings.warn(
+                    'Please check "file_format", its file format may be .py')
+
         with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
             temp_file.write(cfg_str)
             temp_file.flush()
