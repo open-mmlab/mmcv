@@ -177,12 +177,12 @@ def test_fromstring():
     # test pretty_text only supports py file format
     cfg_file = osp.join(data_path, 'config', 'b.json')
     in_cfg = Config.fromfile(cfg_file)
-    with pytest.raises(SyntaxError):
+    with pytest.raises(Exception):
         Config.fromstring(in_cfg.pretty_text, '.json')
 
     # test file format error
     cfg_str = open(cfg_file, 'r').read()
-    with pytest.raises(SyntaxError):
+    with pytest.raises(Exception):
         Config.fromstring(cfg_str, '.py')
 
 

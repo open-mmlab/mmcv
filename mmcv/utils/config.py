@@ -268,22 +268,15 @@ class Config:
         """
         if file_format not in ['.py', '.json', '.yaml', '.yml']:
             raise IOError('Only py/yml/yaml/json type are supported now!')
-        if file_format != '.py':
+        if file_format != '.py' and 'dict(' in cfg_str:
             # check if users specify a wrong suffix for python
-            if 'dict(' in cfg_str:
-                warnings.warn(
-                    'Please check "file_format", its file format may be .py')
+            warnings.warn(
+                'Please check "file_format", the file format may be .py')
 
         with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
             temp_file.write(cfg_str)
             temp_file.flush()
-            try:
-                cfg = Config.fromfile(temp_file.name)
-            except Exception as e:
-                raise SyntaxError(
-                    f'{e}\nPlease check "file_format", If "cfg_str" '
-                    f'comes from pretty_text, you should set '
-                    f'file_format=\'.py\'')
+            cfg = Config.fromfile(temp_file.name)
         return cfg
 
     @staticmethod
