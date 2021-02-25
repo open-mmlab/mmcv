@@ -161,6 +161,31 @@ def test_fromfile():
         Config.fromfile(osp.join(data_path, 'color.jpg'))
 
 
+def test_fromstring():
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
+        cfg_file = osp.join(data_path, 'config', filename)
+        file_format = osp.splitext(filename)[-1]
+        in_cfg = Config.fromfile(cfg_file)
+
+        out_cfg = Config.fromstring(in_cfg.pretty_text, '.py')
+        assert in_cfg._cfg_dict == out_cfg._cfg_dict
+
+        cfg_str = open(cfg_file, 'r').read()
+        out_cfg = Config.fromstring(cfg_str, file_format)
+        assert in_cfg._cfg_dict == out_cfg._cfg_dict
+
+    # test pretty_text only supports py file format
+    cfg_file = osp.join(data_path, 'config', 'b.json')
+    in_cfg = Config.fromfile(cfg_file)
+    with pytest.raises(Exception):
+        Config.fromstring(in_cfg.pretty_text, '.json')
+
+    # test file format error
+    cfg_str = open(cfg_file, 'r').read()
+    with pytest.raises(Exception):
+        Config.fromstring(cfg_str, '.py')
+
+
 def test_merge_from_base():
     cfg_file = osp.join(data_path, 'config/d.py')
     cfg = Config.fromfile(cfg_file)
