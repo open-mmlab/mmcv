@@ -198,7 +198,7 @@ def test_eval_hook():
 
         ckpt_path = osp.join(tmpdir, 'best_loss_top_epoch_6.pth')
 
-        assert runner.meta['hook_msgs']['best_ckpt'] == osp.realpath(ckpt_path)
+        assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
         assert osp.exists(ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == -3
 
