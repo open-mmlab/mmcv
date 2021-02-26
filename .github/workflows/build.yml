@@ -185,7 +185,7 @@ jobs:
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
-          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
+          coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.6
