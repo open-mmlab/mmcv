@@ -2,45 +2,51 @@
 // modified from
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/nms_rotated/nms_rotated_cuda.cu
 #include "nms_rotated_cuda.cuh"
-#include "parrots_cuda_helper.hpp"
+#include "pytorch_cuda_helper.hpp"
 
-DArrayLite nms_rotated_cuda(const DArrayLite dets, const DArrayLite scores,
-                            const DArrayLite dets_sorted, float iou_threshold,
-                            const int multi_label, cudaStream_t stream,
-                            CudaContext& ctx) {
-  int dets_num = dets.dim(0);
+Tensor nms_rotated_cuda(const Tensor dets, const Tensor scores,
+                        const Tensor order_t, const Tensor dets_sorted,
+                        float iou_threshold, const int multi_label) {
+  // using scalar_t = float;
+  AT_ASSERTM(dets.type().is_cuda(), "dets must be a CUDA tensor");
+  AT_ASSERTM(scores.type().is_cuda(), "scores must be a CUDA tensor");
+  at::cuda::CUDAGuard device_guard(dets.device());
 
-  const int col_blocks = divideUP(dets_num, threadsPerBlock);
+  int dets_num = dets.size(0);
 
-  auto mask = ctx.createDArrayLite(
-      DArraySpec::array(Prim::Int64, DArrayShape(dets_num * col_blocks)));
+  const int col_blocks = at::cuda::ATenCeilDiv(dets_num, threadsPerBlock);
+
+  Tensor mask =
+      at::empty({dets_num * col_blocks}, dets.options().dtype(at::kLong));
 
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(dets_sorted.elemType().prim(), [&] {
-    nms_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
-        dets_num, iou_threshold, dets_sorted.ptr<scalar_t>(),
-        (unsigned long long*)mask.ptr<int64_t>(), multi_label);
-  });
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      dets_sorted.type(), "nms_rotated_kernel_cuda", [&] {
+        nms_rotated_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+            dets_num, iou_threshold, dets_sorted.data<scalar_t>(),
+            (unsigned long long*)mask.data<int64_t>(), multi_label);
+      });
 
-  DArrayLite mask_cpu = ctx.createDArrayLite(mask, getHostProxy());
-  unsigned long long* mask_host = (unsigned long long*)mask_cpu.ptr<int64_t>();
+  Tensor mask_cpu = mask.to(at::kCPU);
+  unsigned long long* mask_host = (unsigned long long*)mask_cpu.data<int64_t>();
 
   std::vector<unsigned long long> remv(col_blocks);
   memset(&remv[0], 0, sizeof(unsigned long long) * col_blocks);
 
-  auto keep = ctx.createDArrayLite(
-      DArraySpec::array(Prim::Int64, DArrayShape(dets_num)), getHostProxy());
+  Tensor keep =
+      at::empty({dets_num}, dets.options().dtype(at::kLong).device(at::kCPU));
+  int64_t* keep_out = keep.data<int64_t>();
 
-  int64_t* keep_out = keep.ptr<int64_t>();
-
+  int num_to_keep = 0;
   for (int i = 0; i < dets_num; i++) {
     int nblock = i / threadsPerBlock;
     int inblock = i % threadsPerBlock;
 
     if (!(remv[nblock] & (1ULL << inblock))) {
-      keep_out[i] = 1;
+      keep_out[num_to_keep++] = i;
       unsigned long long* p = mask_host + i * col_blocks;
       for (int j = nblock; j < col_blocks; j++) {
         remv[j] |= p[j];
@@ -48,7 +54,8 @@ DArrayLite nms_rotated_cuda(const DArrayLite dets, const DArrayLite scores,
     }
   }
 
-  auto keep_cuda = ctx.createDArrayLite(keep, ctx.getProxy());
-  PARROTS_CUDA_CHECK(cudaGetLastError());
-  return keep_cuda;
+  AT_CUDA_CHECK(cudaGetLastError());
+  return order_t.index(
+      {keep.narrow(/*dim=*/0, /*start=*/0, /*length=*/num_to_keep)
+           .to(order_t.device(), keep.scalar_type())});
 }

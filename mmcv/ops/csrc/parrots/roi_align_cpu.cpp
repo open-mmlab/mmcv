@@ -1,9 +1,10 @@
 // Modified from
 // https://github.com/facebookresearch/detectron2/tree/master/detectron2/layers/csrc/ROIAlign
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-#include <iostream>
+#include <ATen/ATen.h>
+#include <ATen/TensorUtils.h>
 
-#include "parrots_cpp_helper.hpp"
+#include "../pytorch_cpp_helper.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
@@ -133,8 +134,8 @@ void ROIAlignForward(const int nthreads, const T* input, const T* rois,
     T roi_width = roi_end_w - roi_start_w;
     T roi_height = roi_end_h - roi_start_h;
     if (aligned) {
-      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0)
-          << "ROIs in ROIAlign cannot have non-negative size!";
+      AT_ASSERTM(roi_width >= 0 && roi_height >= 0,
+                 "ROIs in ROIAlign cannot have non-negative size!");
     } else {  // for backward-compatibility only
       roi_width = std::max(roi_width, (T)1.);
       roi_height = std::max(roi_height, (T)1.);
@@ -294,8 +295,8 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
     T roi_width = roi_end_w - roi_start_w;
     T roi_height = roi_end_h - roi_start_h;
     if (aligned) {
-      PARROTS_CHECKARGS(roi_width >= 0 && roi_height >= 0)
-          << "ROIs in ROIAlign do not have non-negative size!";
+      AT_ASSERTM(roi_width >= 0 && roi_height >= 0,
+                 "ROIs in ROIAlign do not have non-negative size!");
     } else {  // for backward-compatibility only
       roi_width = std::max(roi_width, (T)1.);
       roi_height = std::max(roi_height, (T)1.);
@@ -378,38 +379,37 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
   }          // for
 }  // ROIAlignBackward
 
-void ROIAlignForwardCPULauncher(DArrayLite input, DArrayLite rois,
-                                DArrayLite output, DArrayLite argmax_y,
-                                DArrayLite argmax_x, int aligned_height,
-                                int aligned_width, float spatial_scale,
-                                int sampling_ratio, int pool_mode,
-                                bool aligned) {
-  int output_size = output.size();
-  int channels = input.dim(1);
-  int height = input.dim(2);
-  int width = input.dim(3);
+void ROIAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,
+                                Tensor argmax_y, Tensor argmax_x,
+                                int aligned_height, int aligned_width,
+                                float spatial_scale, int sampling_ratio,
+                                int pool_mode, bool aligned) {
+  int output_size = output.numel();
+  int channels = input.size(1);
+  int height = input.size(2);
+  int width = input.size(3);
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      input.elemType().prim(), ([&] {
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      input.scalar_type(), "ROIAlign_forward", [&] {
         ROIAlignForward<scalar_t>(
-            output_size, input.ptr<scalar_t>(), rois.ptr<scalar_t>(),
-            output.ptr<scalar_t>(), argmax_y.ptr<scalar_t>(),
-            argmax_x.ptr<scalar_t>(), aligned_height, aligned_width,
+            output_size, input.data_ptr<scalar_t>(), rois.data_ptr<scalar_t>(),
+            output.data_ptr<scalar_t>(), argmax_y.data_ptr<scalar_t>(),
+            argmax_x.data_ptr<scalar_t>(), aligned_height, aligned_width,
             static_cast<scalar_t>(spatial_scale), sampling_ratio, pool_mode,
             aligned, channels, height, width);
-      }));
+      });
 }
 
-void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
-                                 DArrayLite argmax_y, DArrayLite argmax_x,
-                                 DArrayLite grad_input, int aligned_height,
+void ROIAlignBackwardCPULauncher(Tensor grad_output, Tensor rois,
+                                 Tensor argmax_y, Tensor argmax_x,
+                                 Tensor grad_input, int aligned_height,
                                  int aligned_width, float spatial_scale,
                                  int sampling_ratio, int pool_mode,
                                  bool aligned) {
-  int output_size = grad_output.size();
-  int channels = grad_input.dim(1);
-  int height = grad_input.dim(2);
-  int width = grad_input.dim(3);
+  int output_size = grad_output.numel();
+  int channels = grad_input.size(1);
+  int height = grad_input.size(2);
+  int width = grad_input.size(3);
 
   // get stride values to ensure indexing into gradients is correct.
   int n_stride = grad_output.stride(0);
@@ -417,14 +417,14 @@ void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
   int h_stride = grad_output.stride(2);
   int w_stride = grad_output.stride(3);
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_output.elemType().prim(), ([&] {
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      grad_output.scalar_type(), "ROIAlign_backward", [&] {
         ROIAlignBackward<scalar_t>(
-            output_size, grad_output.ptr<scalar_t>(), rois.ptr<scalar_t>(),
-            argmax_y.ptr<scalar_t>(), argmax_x.ptr<scalar_t>(),
-            grad_input.ptr<scalar_t>(), aligned_height, aligned_width,
-            static_cast<scalar_t>(spatial_scale), sampling_ratio, pool_mode,
-            aligned, channels, height, width, n_stride, c_stride, h_stride,
-            w_stride);
-      }));
+            output_size, grad_output.data_ptr<scalar_t>(),
+            rois.data_ptr<scalar_t>(), argmax_y.data_ptr<scalar_t>(),
+            argmax_x.data_ptr<scalar_t>(), grad_input.data_ptr<scalar_t>(),
+            aligned_height, aligned_width, static_cast<scalar_t>(spatial_scale),
+            sampling_ratio, pool_mode, aligned, channels, height, width,
+            n_stride, c_stride, h_stride, w_stride);
+      });
 }
