@@ -53,13 +53,17 @@ class CheckpointHook(Hook):
             self.out_dir = runner.work_dir
 
     def after_train_epoch(self, runner):
-        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
+        if not self.by_epoch:
             return
 
-        runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
-        if self.sync_buffer:
-            allreduce_params(runner.model.buffers())
-        self._save_checkpoint(runner)
+        if self.every_n_epochs(
+                runner, self.interval) or (self.save_last
+                                           and self.is_last_epoch(runner)):
+            runner.logger.info(
+                f'Saving checkpoint at {runner.epoch + 1} epochs')
+            if self.sync_buffer:
+                allreduce_params(runner.model.buffers())
+            self._save_checkpoint(runner)
 
     @master_only
     def _save_checkpoint(self, runner):
@@ -97,16 +101,14 @@ class CheckpointHook(Hook):
                     break
 
     def after_train_iter(self, runner):
-        if self.by_epoch or not self.every_n_iters(runner, self.interval):
+        if self.by_epoch:
             return
 
-        runner.logger.info(
-            f'Saving checkpoint at {runner.iter + 1} iterations')
-        if self.sync_buffer:
-            allreduce_params(runner.model.buffers())
-        self._save_checkpoint(runner)
-
-    def after_run(self, runner):
-        if self.save_last:
-            runner.save_checkpoint(
-                self.out_dir, save_optimizer=self.save_optimizer, **self.args)
+        if self.every_n_iters(
+                runner, self.interval) or (self.save_last
+                                           and self.is_last_iter(runner)):
+            runner.logger.info(
+                f'Saving checkpoint at {runner.iter + 1} iterations')
+            if self.sync_buffer:
+                allreduce_params(runner.model.buffers())
+            self._save_checkpoint(runner)

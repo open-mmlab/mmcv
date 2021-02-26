@@ -59,3 +59,9 @@ class Hook:
 
     def end_of_epoch(self, runner):
         return runner.inner_iter + 1 == len(runner.data_loader)
+
+    def is_last_epoch(self, runner):
+        return runner.epoch + 1 == runner._max_epochs
+
+    def is_last_iter(self, runner):
+        return runner.iter + 1 == runner._max_iters
