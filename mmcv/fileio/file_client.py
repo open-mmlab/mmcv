@@ -191,6 +191,20 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
+class HTTPBackend(BaseStorageBackend):
+    """HTTP and HTTPS storage bachend."""
+
+    def get(self, filepath):
+        from urllib.request import urlopen
+        value_buf = urlopen(filepath).read()
+        return value_buf
+    
+    def get_text(self, filepath):
+        from urllib.request import urlopen
+        value_buf = urlopen(filepath).read()
+        return value_buf.decode('utf-8')
+
+
 class FileClient:
     """A general file client to access files in different backend.
 
@@ -210,6 +224,7 @@ class FileClient:
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
         'petrel': PetrelBackend,
+        'http': HTTPBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):
