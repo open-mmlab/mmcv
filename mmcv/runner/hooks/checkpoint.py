@@ -56,6 +56,9 @@ class CheckpointHook(Hook):
         if not self.by_epoch:
             return
 
+        # save checkpoint for following cases:
+        # 1. every ``self.interval`` epochs
+        # 2. reach the last epoch of training
         if self.every_n_epochs(
                 runner, self.interval) or (self.save_last
                                            and self.is_last_epoch(runner)):
@@ -104,6 +107,9 @@ class CheckpointHook(Hook):
         if self.by_epoch:
             return
 
+        # save checkpoint for following cases:
+        # 1. every ``self.interval`` iterations
+        # 2. reach the last iteration of training
         if self.every_n_iters(
                 runner, self.interval) or (self.save_last
                                            and self.is_last_iter(runner)):
