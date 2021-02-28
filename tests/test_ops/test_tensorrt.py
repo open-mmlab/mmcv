@@ -330,7 +330,6 @@ def test_scatternd():
 
 def test_deform_conv():
     try:
-        import mmcv
         from mmcv.ops import DeformConv2dPack
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
