@@ -79,8 +79,14 @@ nvinfer1::DimsExprs DeformableConvPluginDynamic::getOutputDimensions(
 bool DeformableConvPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
-  return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-         inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+  if (pos == 0) {
+    return (inOut[pos].type == nvinfer1::DataType::kFLOAT &&
+            inOut[pos].format == nvinfer1::TensorFormat::kLINEAR);
+
+  } else {
+    return inOut[pos].type == inOut[0].type &&
+           inOut[pos].format == inOut[0].format;
+  }
 }
 
 void DeformableConvPluginDynamic::configurePlugin(
@@ -90,7 +96,7 @@ void DeformableConvPluginDynamic::configurePlugin(
 size_t DeformableConvPluginDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
-  int sizeof_dtype = sizeof(float);
+  int sizeof_dtype = mmcv::getElementSize(outputs[0].type);
 
   int batch_size = inputs[0].dims.d[0];
   int nInputPlane = inputs[0].dims.d[1];
@@ -139,12 +145,21 @@ int DeformableConvPluginDynamic::enqueue(
   const void *weight = inputs[2];
   void *output = outputs[0];
 
-  DeformConvForwardCUDAKernelLauncher_float(
-      (float *)x, (float *)weight, (float *)offset, (float *)output, workSpace,
-      batch_size, inputChannel, inputHeight, inputWidth, outputChannel,
-      kernelWidth, kernelHeight, mStride.d[0], mStride.d[1], mPadding.d[0],
-      mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup, mDeformableGroup,
-      mIm2colStep, m_cublas_handle, stream);
+  // TODO: add fp16 support
+  auto data_type = inputDesc[0].type;
+  switch (data_type) {
+    case nvinfer1::DataType::kFLOAT:
+      DeformConvForwardCUDAKernelLauncher_float(
+          (float *)x, (float *)weight, (float *)offset, (float *)output,
+          workSpace, batch_size, inputChannel, inputHeight, inputWidth,
+          outputChannel, kernelWidth, kernelHeight, mStride.d[0], mStride.d[1],
+          mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup,
+          mDeformableGroup, mIm2colStep, m_cublas_handle, stream);
+      break;
+    default:
+      return 1;
+      break;
+  }
 
   return 0;
 }

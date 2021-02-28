@@ -1,4 +1,5 @@
 #include <cublas_v2.h>
+#include <cuda_fp16.h>
 
 #include "common_cuda_helper.hpp"
 #include "deform_conv_cuda_kernel.cuh"
@@ -31,14 +32,46 @@ void trt_deformable_im2col(const T* data_input, const T* data_offset,
   cudaCheckError();
 }
 
-void DeformConvForwardCUDAKernelLauncher_float(
-    const float* input, const float* weight, const float* offset, float* output,
-    void* workspace, int batchSize, int nInputPlane, int inputHeight,
-    int inputWidth, int nOutputPlane, int kW, int kH, int dW, int dH, int padW,
-    int padH, int dilationW, int dilationH, int group, int deformable_group,
-    int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream) {
-  // define scalar type incase we might have fp16/int8 version in future
-  typedef float scalar_t;
+// used to switch gemm between fp32 and fp16
+template <typename scalar_t>
+cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa,
+                              cublasOperation_t transb, int m, int n, int k,
+                              const scalar_t* alpha, const scalar_t* A, int lda,
+                              const scalar_t* B, int ldb, const scalar_t* beta,
+                              scalar_t* C, int ldc) {
+  return CUBLAS_STATUS_INTERNAL_ERROR;
+}
+
+template <>
+cublasStatus_t cublasGemmWrap<float>(cublasHandle_t handle,
+                                     cublasOperation_t transa,
+                                     cublasOperation_t transb, int m, int n,
+                                     int k, const float* alpha, const float* A,
+                                     int lda, const float* B, int ldb,
+                                     const float* beta, float* C, int ldc) {
+  cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C,
+              ldc);
+}
+
+template <>
+cublasStatus_t cublasGemmWrap<half>(cublasHandle_t handle,
+                                    cublasOperation_t transa,
+                                    cublasOperation_t transb, int m, int n,
+                                    int k, const half* alpha, const half* A,
+                                    int lda, const half* B, int ldb,
+                                    const half* beta, half* C, int ldc) {
+  cublasHgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C,
+              ldc);
+}
+
+template <typename scalar_t>
+void DeformConvForwardCUDAKernelLauncher(
+    const scalar_t* input, const scalar_t* weight, const scalar_t* offset,
+    scalar_t* output, void* workspace, int batchSize, int nInputPlane,
+    int inputHeight, int inputWidth, int nOutputPlane, int kW, int kH, int dW,
+    int dH, int padW, int padH, int dilationW, int dilationH, int group,
+    int deformable_group, int im2col_step, cublasHandle_t cublas_handle,
+    cudaStream_t stream) {
   size_t word_size = sizeof(scalar_t);
 
   im2col_step = std::min(int(batchSize), im2col_step);
@@ -51,6 +84,7 @@ void DeformConvForwardCUDAKernelLauncher_float(
       mmcv::getAlignedSize(nInputPlane * kW * kH * im2col_step * outputHeight *
                            outputWidth * word_size);
 
+  // column buffer for img2col
   scalar_t* columns = (scalar_t*)workspace;
   workspace = workspace + columns_size;
 
@@ -59,6 +93,7 @@ void DeformConvForwardCUDAKernelLauncher_float(
   if (im2col_step == 1) {
     output_buffer = output;
   } else {
+    // output need permute when im2col_step!=1
     output_buffer = (scalar_t*)workspace;
     output_buffer_size = batchSize * nOutputPlane * outputWidth * outputHeight;
   }
@@ -96,8 +131,9 @@ void DeformConvForwardCUDAKernelLauncher_float(
       scalar_t* out_buffer_start =
           output_buffer + elt * out_buffer_step + g * out_buffer_g_step;
 
-      cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, m, k, &alpha,
-                  col_start, n, weight_start, k, &beta, out_buffer_start, n);
+      cublasGemmWrap<scalar_t>(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, m, k,
+                               &alpha, col_start, n, weight_start, k, &beta,
+                               out_buffer_start, n);
       cudaCheckError();
     }
   }
@@ -109,4 +145,17 @@ void DeformConvForwardCUDAKernelLauncher_float(
     memcpyPermute<scalar_t>(output, output_buffer, &output_buffer_shape[0],
                             &output_buffer_permute[0], 5, stream);
   }
+}
+
+void DeformConvForwardCUDAKernelLauncher_float(
+    const float* input, const float* weight, const float* offset, float* output,
+    void* workspace, int batchSize, int nInputPlane, int inputHeight,
+    int inputWidth, int nOutputPlane, int kW, int kH, int dW, int dH, int padW,
+    int padH, int dilationW, int dilationH, int group, int deformable_group,
+    int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream) {
+  DeformConvForwardCUDAKernelLauncher<float>(
+      input, weight, offset, output, workspace, batchSize, nInputPlane,
+      inputHeight, inputWidth, nOutputPlane, kW, kH, dW, dH, padW, padH,
+      dilationW, dilationH, group, deformable_group, im2col_step, cublas_handle,
+      stream);
 }
