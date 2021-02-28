@@ -43,10 +43,10 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     """Test model with multiple gpus.
 
     This method tests model with multiple gpus and collects the results
-    under two different modes: gpu and cpu modes. By setting 'gpu_collect=True'
-    it encodes results to gpu tensors and use gpu communication for results
-    collection. On cpu mode it saves the results on different gpus to 'tmpdir'
-    and collects them by the rank 0 worker.
+    under two different modes: gpu and cpu modes. By setting
+    ``gpu_collect=True``, it encodes results to gpu tensors and use gpu
+    communication for results collection. On cpu mode it saves the results on
+    different gpus to ``tmpdir`` and collects them by the rank 0 worker.
 
     Args:
         model (nn.Module): Model to be tested.
@@ -84,6 +84,23 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
 
 
 def collect_results_cpu(result_part, size, tmpdir=None):
+    """Collect results under cpu mode.
+
+    On cpu mode, this function will save the results on different gpus to
+    ``tmpdir`` and collect them by the rank 0 worker.
+
+    Args:
+        result_part (list): Result list containing result parts
+            to be collected.
+        size (int): Size of the results, commonly equal to length of
+            the results.
+        tmpdir (str | None): temporal directory for collected results to
+            store. If set to None, it will create a random temporal directory
+            for it.
+
+    Returns:
+        list: The collected results.
+    """
     rank, world_size = get_dist_info()
     # create a tmp dir if it is not specified
     if tmpdir is None:
@@ -114,7 +131,11 @@ def collect_results_cpu(result_part, size, tmpdir=None):
         part_list = []
         for i in range(world_size):
             part_file = osp.join(tmpdir, f'part_{i}.pkl')
-            part_list.append(mmcv.load(part_file))
+            part_result = mmcv.load(part_file)
+            # When data is severely insufficient, an empty part_result
+            # on a certain gpu could makes the overall outputs empty.
+            if part_result:
+                part_list.append(part_result)
         # sort the results
         ordered_results = []
         for res in zip(*part_list):
@@ -127,6 +148,20 @@ def collect_results_cpu(result_part, size, tmpdir=None):
 
 
 def collect_results_gpu(result_part, size):
+    """Collect results under gpu mode.
+
+    On gpu mode, this function will encode results to gpu tensors and use gpu
+    communication for results collection.
+
+    Args:
+        result_part (list): Result list containing result parts
+            to be collected.
+        size (int): Size of the results, commonly equal to length of
+            the results.
+
+    Returns:
+        list: The collected results.
+    """
     rank, world_size = get_dist_info()
     # dump result part to tensor with pickle
     part_tensor = torch.tensor(
@@ -148,8 +183,11 @@ def collect_results_gpu(result_part, size):
     if rank == 0:
         part_list = []
         for recv, shape in zip(part_recv_list, shape_list):
-            part_list.append(
-                pickle.loads(recv[:shape[0]].cpu().numpy().tobytes()))
+            part_result = pickle.loads(recv[:shape[0]].cpu().numpy().tobytes())
+            # When data is severely insufficient, an empty part_result
+            # on a certain gpu could makes the overall outputs empty.
+            if part_result:
+                part_list.append(part_result)
         # sort the results
         ordered_results = []
         for res in zip(*part_list):
