@@ -13,4 +13,8 @@
     }                                                          \
   }
 
+template <class scalar_t>
+void memcpyPermute(scalar_t *dst, const scalar_t *src, int *src_size,
+                   int *permute, int src_dim, cudaStream_t stream = 0);
+
 #endif  // TRT_CUDA_HELPER_HPP
