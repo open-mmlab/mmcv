@@ -109,7 +109,7 @@ size_t DeformableConvPluginDynamic::getWorkspaceSize(
 
   int kW = inputs[2].dims.d[2];
   int kH = inputs[2].dims.d[3];
-  int im2col_step = mIm2colStep;
+  int im2col_step = std::min(batch_size, mIm2colStep);
 
   size_t col_size =
       mmcv::getAlignedSize(nInputPlane * kW * kH * im2col_step * outputHeight *
@@ -144,6 +144,7 @@ int DeformableConvPluginDynamic::enqueue(
   const void *offset = inputs[1];
   const void *weight = inputs[2];
   void *output = outputs[0];
+  int im2col_step = std::min(batch_size, mIm2colStep);
 
   // TODO: add fp16 support
   auto data_type = inputDesc[0].type;
@@ -154,7 +155,7 @@ int DeformableConvPluginDynamic::enqueue(
           workSpace, batch_size, inputChannel, inputHeight, inputWidth,
           outputChannel, kernelWidth, kernelHeight, mStride.d[0], mStride.d[1],
           mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup,
-          mDeformableGroup, mIm2colStep, m_cublas_handle, stream);
+          mDeformableGroup, im2col_step, m_cublas_handle, stream);
       break;
     default:
       return 1;
