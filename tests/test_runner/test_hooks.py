@@ -6,6 +6,7 @@ CommandLine:
 """
 import logging
 import os.path as osp
+import re
 import shutil
 import sys
 import tempfile
@@ -441,11 +442,16 @@ def test_runner_with_revise_keys():
     torch.save(model.state_dict(), checkpoint_path)
     runner = _build_demo_runner(runner_type='EpochBasedRunner')
     runner.model = pmodel
-    runner.load_checkpoint(checkpoint_path, revise_keys=[(r'^', 'backbone.')])
-
+    state_dict = runner.load_checkpoint(
+        checkpoint_path, revise_keys=[(r'^', 'backbone.')])
+    for key in pmodel.backbone.state_dict().keys():
+        assert torch.equal(pmodel.backbone.state_dict()[key], state_dict[key])
     # strip prefix
     torch.save(pmodel.state_dict(), checkpoint_path)
     runner.model = model
-    runner.load_checkpoint(checkpoint_path, revise_keys=[('backbone.', '')])
-
+    state_dict = runner.load_checkpoint(
+        checkpoint_path, revise_keys=[('backbone.', '')])
+    for key in state_dict.keys():
+        key_stripped = re.sub('^backbone.', '', key)
+        assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
