@@ -435,17 +435,17 @@ def test_runner_with_revise_keys():
 
     pmodel = PrefixModel()
     model = Model()
-    chkpt_path = './chk.pth'
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
 
     # add prefix
-    torch.save(model.state_dict(), chkpt_path)
+    torch.save(model.state_dict(), checkpoint_path)
     runner = _build_demo_runner(runner_type='EpochBasedRunner')
     runner.model = pmodel
-    runner.load_checkpoint(chkpt_path, revise_keys=[(r'^', 'backbone.')])
+    runner.load_checkpoint(checkpoint_path, revise_keys=[(r'^', 'backbone.')])
 
     # strip prefix
-    torch.save(pmodel.state_dict(), chkpt_path)
+    torch.save(pmodel.state_dict(), checkpoint_path)
     runner.model = model
-    runner.load_checkpoint(chkpt_path, revise_keys=[('backbone.', '')])
+    runner.load_checkpoint(checkpoint_path, revise_keys=[('backbone.', '')])
 
-    os.remove(chkpt_path)
+    os.remove(checkpoint_path)
