@@ -198,7 +198,7 @@ class HTTPBackend(BaseStorageBackend):
     def get(self, filepath):
         value_buf = urlopen(filepath).read()
         return value_buf
-    
+
     def get_text(self, filepath):
         value_buf = urlopen(filepath).read()
         return value_buf.decode('utf-8')
