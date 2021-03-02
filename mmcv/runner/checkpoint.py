@@ -517,9 +517,11 @@ def load_checkpoint(model,
         strict (bool): Whether to allow different params for the model and
             checkpoint.
         logger (:mod:`logging.Logger` or None): The logger for error message.
-        revise_keys (list): Customized keywords to modify for compatibility
-            between model and checkpoint. Default: strip the prefix 'module.'
-            by [(r'^module.', '')]).
+        revise_keys (list): A list of customized keywords to modify the
+            state_dict in checkpoint. Each item is a (pattern, replacement)
+            pair of the regular expression operations. Default: strip
+            the prefix 'module.' by [(r'^module.', '')].
+
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
