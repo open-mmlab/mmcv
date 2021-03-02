@@ -1,5 +1,6 @@
 import inspect
 from abc import ABCMeta, abstractmethod
+from urllib.request import urlopen
 
 
 class BaseStorageBackend(metaclass=ABCMeta):
@@ -195,12 +196,10 @@ class HTTPBackend(BaseStorageBackend):
     """HTTP and HTTPS storage bachend."""
 
     def get(self, filepath):
-        from urllib.request import urlopen
         value_buf = urlopen(filepath).read()
         return value_buf
     
     def get_text(self, filepath):
-        from urllib.request import urlopen
         value_buf = urlopen(filepath).read()
         return value_buf.decode('utf-8')
 
