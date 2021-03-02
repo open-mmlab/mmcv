@@ -505,7 +505,7 @@ def load_checkpoint(model,
                     map_location=None,
                     strict=False,
                     logger=None,
-                    revise_keys=[(r'^module.', '')]):
+                    revise_keys=[(r'^module\.', '')]):
     """Load checkpoint from a file or URI.
 
     Args:
@@ -520,7 +520,7 @@ def load_checkpoint(model,
         revise_keys (list): A list of customized keywords to modify the
             state_dict in checkpoint. Each item is a (pattern, replacement)
             pair of the regular expression operations. Default: strip
-            the prefix 'module.' by [(r'^module.', '')].
+            the prefix 'module.' by [(r'^module\\.', '')].
 
 
     Returns:
@@ -537,8 +537,8 @@ def load_checkpoint(model,
     else:
         state_dict = checkpoint
     # strip prefix of state_dict
-    for p, s in revise_keys:
-        state_dict = {re.sub(p, s, k): v for k, v in state_dict.items()}
+    for p, r in revise_keys:
+        state_dict = {re.sub(p, r, k): v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint

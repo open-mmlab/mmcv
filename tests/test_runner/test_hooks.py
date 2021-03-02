@@ -450,8 +450,8 @@ def test_runner_with_revise_keys():
     torch.save(pmodel.state_dict(), checkpoint_path)
     runner.model = model
     state_dict = runner.load_checkpoint(
-        checkpoint_path, revise_keys=[('backbone.', '')])
+        checkpoint_path, revise_keys=[(r'^backbone\.', '')])
     for key in state_dict.keys():
-        key_stripped = re.sub('^backbone.', '', key)
+        key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)

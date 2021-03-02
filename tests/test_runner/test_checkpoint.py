@@ -213,10 +213,10 @@ def test_load_checkpoint():
     # strip prefix
     torch.save(pmodel.state_dict(), checkpoint_path)
     state_dict = load_checkpoint(
-        model, checkpoint_path, revise_keys=[('backbone.', '')])
+        model, checkpoint_path, revise_keys=[(r'^backbone\.', '')])
 
     for key in state_dict.keys():
-        key_stripped = re.sub('^backbone.', '', key)
+        key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
 
