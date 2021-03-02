@@ -183,10 +183,12 @@ class TestFileClient:
         assert img.shape == (120, 125, 3)
 
     def test_http_backend(self):
+
         def get_bytes(filepath):
             with open(filepath, 'rb') as f:
                 content = f.read()
             return content
+
         http_backend = FileClient('http')
 
         # input is path or Path object
@@ -207,8 +209,7 @@ class TestFileClient:
 
         # input url is http text
         http_backend.get_text = MagicMock(
-            return_value=get_bytes(self.text_path)
-            )
+            return_value=get_bytes(self.text_path))
         value_buf = http_backend.get_text(self.text_path)
         assert self.text_path.open('r').read() == value_buf.decode('utf-8')
 
