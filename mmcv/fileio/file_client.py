@@ -213,7 +213,7 @@ class FileClient:
 
     Attributes:
         backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached" and "lmdb".
+            "memcached", "lmdb" and "http".
         client (:obj:`BaseStorageBackend`): The backend object.
     """
 
