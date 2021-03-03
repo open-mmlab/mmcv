@@ -202,6 +202,38 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
+    def test_adjust_sharpness(self, nb_rand_test=100):
+
+        def _adjust_sharpness(img, factor):
+            # adjust the sharpness of image using
+            # PIL.ImageEnhance.Sharpness
+            from PIL.ImageEnhance import Sharpness
+            from PIL import Image
+            img = Image.fromarray(img)
+            sharpened_img = Sharpness(img).enhance(factor)
+            return np.asarray(sharpened_img)
+
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+        # test case with factor 1.0
+        assert_array_equal(mmcv.adjust_sharpness(img, 1.), img)
+        # test adjust_sharpness with randomly sampled images and factors.
+        for _ in range(nb_rand_test):
+            img = np.clip(
+                np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
+                255).astype(np.uint8)
+            factor = np.random.uniform()
+            # Note the gap between PIL.ImageEnhance.Sharpness and
+            # mmcv.adjust_sharpness mainly comes from the difference ways of
+            # handling img edges when applying filters
+            np.testing.assert_allclose(
+                mmcv.adjust_sharpness(img, factor).astype(np.int32)[1:-1,
+                                                                    1:-1],
+                _adjust_sharpness(img, factor).astype(np.int32)[1:-1, 1:-1],
+                rtol=0,
+                atol=1)
+
     def test_lut_transform(self):
         lut_table = np.array(list(range(256)))
 

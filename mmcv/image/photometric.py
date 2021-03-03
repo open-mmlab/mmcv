@@ -227,6 +227,33 @@ def adjust_contrast(img, factor=1.):
     return contrasted_img.astype(img.dtype)
 
 
+def adjust_sharpness(img, factor=1.):
+    """Adjust image sharpness.
+
+    This function controls the sharpness of an image. An
+    enhancement factor of 0.0 gives a blurred image. A
+    factor of 1.0 gives the original image. And a factor
+    of 2.0 gives a sharpened image. It blends the source
+    image and the degenerated mean image:
+
+    ``output = img * factor + degenerated * (1 - factor)``
+
+    Args:
+        img (ndarray): Image to be sharpened. BGR order.
+        factor (float): Same as :func:`mmcv.adjust_brightness`.
+
+    Returns:
+        ndarray: The sharpened image.
+    """
+    kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
+    degenerated = cv2.filter2D(img, -1, kernel)
+    sharpened_img = cv2.addWeighted(
+        img.astype(np.float32), factor, degenerated.astype(np.float32),
+        1 - factor, 0)
+    sharpened_img = np.clip(sharpened_img, 0, 255)
+    return sharpened_img.astype(img.dtype)
+
+
 def lut_transform(img, lut_table):
     """Transform array by look-up table.
 
