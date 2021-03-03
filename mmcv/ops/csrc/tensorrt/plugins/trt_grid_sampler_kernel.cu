@@ -407,8 +407,11 @@ void grid_sample(T *output, const T *input, const T *grid, int *output_dims,
   TensorDesc grid_desc;
   create_desc(grid_dims, nb_dims, grid_desc);
 
-  int count = input_desc.shape[0];
-  for (int i = 1; i < nb_dims - 1; ++i) {
+  int count = 1;
+  for (int i = 0; i < nb_dims; ++i) {
+    if (i == 1) {
+      continue;
+    }
     count *= input_desc.shape[i];
   }
 
