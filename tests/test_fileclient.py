@@ -182,6 +182,32 @@ class TestFileClient:
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == (120, 125, 3)
 
+    def test_http_backend(self):
+        http_backend = FileClient('http')
+        img_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
+            'master/tests/data/color.jpg'
+        text_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
+            'master/tests/data/filelist.txt'
+
+        # input is path or Path object
+        with pytest.raises(Exception):
+            http_backend.get(self.img_path)
+        with pytest.raises(Exception):
+            http_backend.get(str(self.img_path))
+        with pytest.raises(Exception):
+            http_backend.get_text(self.text_path)
+        with pytest.raises(Exception):
+            http_backend.get_text(str(self.text_path))
+
+        # input url is http image
+        img_bytes = http_backend.get(img_url)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+
+        # input url is http text
+        value_buf = http_backend.get_text(text_url)
+        assert self.text_path.open('r').read() == value_buf
+
     def test_register_backend(self):
 
         # name must be a string

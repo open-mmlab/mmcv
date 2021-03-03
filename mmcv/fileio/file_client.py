@@ -1,5 +1,6 @@
 import inspect
 from abc import ABCMeta, abstractmethod
+from urllib.request import urlopen
 
 
 class BaseStorageBackend(metaclass=ABCMeta):
@@ -191,6 +192,18 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
 
+class HTTPBackend(BaseStorageBackend):
+    """HTTP and HTTPS storage bachend."""
+
+    def get(self, filepath):
+        value_buf = urlopen(filepath).read()
+        return value_buf
+
+    def get_text(self, filepath):
+        value_buf = urlopen(filepath).read()
+        return value_buf.decode('utf-8')
+
+
 class FileClient:
     """A general file client to access files in different backend.
 
@@ -200,7 +213,7 @@ class FileClient:
 
     Attributes:
         backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached" and "lmdb".
+            "memcached", "lmdb" and "http".
         client (:obj:`BaseStorageBackend`): The backend object.
     """
 
@@ -210,6 +223,7 @@ class FileClient:
         'memcached': MemcachedBackend,
         'lmdb': LmdbBackend,
         'petrel': PetrelBackend,
+        'http': HTTPBackend,
     }
 
     def __init__(self, backend='disk', **kwargs):
