@@ -245,6 +245,7 @@ def adjust_sharpness(img, factor=1.):
     Returns:
         ndarray: The sharpened image.
     """
+    # adopted from PIL.ImageFilter.SMOOTH
     kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
     degenerated = cv2.filter2D(img, -1, kernel)
     sharpened_img = cv2.addWeighted(
