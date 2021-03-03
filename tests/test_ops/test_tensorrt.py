@@ -326,3 +326,70 @@ def test_scatternd():
     if os.path.exists(trt_file):
         os.remove(trt_file)
     assert torch.allclose(pytorch_results, trt_results)
+
+
+def test_grid_sample():
+    from mmcv.onnx.symbolic import register_extra_symbolics
+
+    register_extra_symbolics(11)
+
+    def func(input, grid):
+        return nn.functional.grid_sample(input, grid)
+
+    input = torch.rand(1, 1, 10, 10).cuda()
+    grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
+    grid = nn.functional.affine_grid(grid, input.size()).type_as(input).cuda()
+    wrapped_model = WrapFunction(func).eval().cuda()
+
+    input_names = ['input', 'grid']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (input.clone(), grid.clone()),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wraper
+    opt_shape_dict = {
+        'input': [list(input.shape),
+                  list(input.shape),
+                  list(input.shape)],
+        'grid': [list(grid.shape),
+                 list(grid.shape),
+                 list(grid.shape)],
+    }
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWraper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': input.clone(), 'grid': grid.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = wrapped_model(input.clone(), grid.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+
+    assert torch.allclose(pytorch_results, trt_results)
