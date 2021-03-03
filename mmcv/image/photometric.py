@@ -166,7 +166,7 @@ def imequalize(img):
     s2 = _scale_channel(img, 1)
     s3 = _scale_channel(img, 2)
     equalized_img = np.stack([s1, s2, s3], axis=-1)
-    return equalized_img
+    return equalized_img.astype((img.dtype))
 
 
 def adjust_brightness(img, factor=1.):
@@ -196,6 +196,7 @@ def adjust_brightness(img, factor=1.):
     brightened_img = cv2.addWeighted(
         img.astype(np.float32), factor, degenerated.astype(np.float32),
         1 - factor, 0)
+    brightened_img = np.clip(brightened_img, 0, 255)
     return brightened_img.astype(img.dtype)
 
 
@@ -224,6 +225,7 @@ def adjust_contrast(img, factor=1.):
     contrasted_img = cv2.addWeighted(
         img.astype(np.float32), factor, degenerated.astype(np.float32),
         1 - factor, 0)
+    contrasted_img = np.clip(contrasted_img, 0, 255)
     return contrasted_img.astype(img.dtype)
 
 
