@@ -46,12 +46,12 @@ class EvalHook(Hook):
 
     Notes:
         If new arguments are added for EvalHook, tools/test.py,
-        tools/eval_metric.py may be effected.
+        tools/eval_metric.py may be affected.
     """
 
-    # Since the key for determine greater an less is related to the downstream
-    # task, downstream repos may need to overwrite the following inner
-    # variable according to their tasks
+    # Since the key for determine greater or less is related to the downstream
+    # tasks, downstream repos may need to overwrite the following inner
+    # variable accordingly.
 
     rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
     init_value_map = {'greater': -inf, 'less': inf}
@@ -86,7 +86,8 @@ class EvalHook(Hook):
         self.by_epoch = by_epoch
 
         assert isinstance(save_best, str) or save_best is None, \
-            '``save_best`` should be a str or None'
+            '""save_best"" should be a str or None ' \
+            f'rather than {type(save_best)}'
         self.save_best = save_best
         self.eval_kwargs = eval_kwargs
         self.initial_flag = True
@@ -339,7 +340,6 @@ class DistEvalHook(EvalHook):
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
-
         # Synchronization of BatchNorm's buffer (running_mean
         # and running_var) is not supported in the DDP of pytorch,
         # which may cause the inconsistent performance of models in
