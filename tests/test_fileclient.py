@@ -183,13 +183,11 @@ class TestFileClient:
         assert img.shape == (120, 125, 3)
 
     def test_http_backend(self):
-
-        def get_bytes(filepath):
-            with open(filepath, 'rb') as f:
-                content = f.read()
-            return content
-
         http_backend = FileClient('http')
+        img_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
+            'master/tests/data/color.jpg'
+        text_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
+            'master/tests/data/filelist.txt'
 
         # input is path or Path object
         with pytest.raises(Exception):
@@ -202,16 +200,13 @@ class TestFileClient:
             http_backend.get_text(str(self.text_path))
 
         # input url is http image
-        http_backend.get = MagicMock(return_value=get_bytes(self.img_path))
-        img_bytes = http_backend.get(self.img_path)
+        img_bytes = http_backend.get(img_url)
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == self.img_shape
 
         # input url is http text
-        http_backend.get_text = MagicMock(
-            return_value=get_bytes(self.text_path))
-        value_buf = http_backend.get_text(self.text_path)
-        assert self.text_path.open('r').read() == value_buf.decode('utf-8')
+        value_buf = http_backend.get_text(text_url)
+        assert self.text_path.open('r').read() == value_buf
 
     def test_register_backend(self):
 
