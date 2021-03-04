@@ -97,9 +97,10 @@ def posterize(img, bits):
 
 
 def adjust_color(img, alpha=1, beta=None, gamma=0):
-    """It blends the source image and its gray image:
+    r"""It blends the source image and its gray image:
 
-    ``output = img * alpha + gray_img * beta + gamma``
+    .. math::
+        output = img * alpha + gray\_img * beta + gamma
 
     Args:
         img (ndarray): The input source image.
@@ -177,7 +178,8 @@ def adjust_brightness(img, factor=1.):
     A factor of 1.0 gives the original image. This function
     blends the source image and the degenerated black image:
 
-    ``output = img * factor + degenerated * (1 - factor)``
+    .. math::
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be brightened.
@@ -208,7 +210,8 @@ def adjust_contrast(img, factor=1.):
     image. A factor of 1.0 gives the original image. It
     blends the source image and the degenerated mean image:
 
-    ``output = img * factor + degenerated * (1 - factor)``
+    .. math::
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be contrasted. BGR order.
@@ -229,7 +232,7 @@ def adjust_contrast(img, factor=1.):
     return contrasted_img.astype(img.dtype)
 
 
-def adjust_sharpness(img, factor=1.):
+def adjust_sharpness(img, factor=1., kernel=None):
     """Adjust image sharpness.
 
     This function controls the sharpness of an image. An
@@ -238,7 +241,8 @@ def adjust_sharpness(img, factor=1.):
     of 2.0 gives a sharpened image. It blends the source
     image and the degenerated mean image:
 
-    ``output = img * factor + degenerated * (1 - factor)``
+    .. math::
+    output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be sharpened. BGR order.
