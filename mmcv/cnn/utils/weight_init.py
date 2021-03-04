@@ -310,6 +310,7 @@ class PretrainedInit(object):
             initialize. For example, if we would like to only load the
             backbone of a detector model, we can set ``prefix='backbone.'``.
             Defaults to None.
+        map_location (str): map tensors into proper locations.
     """
 
     def __init__(self, checkpoint, prefix=None, map_location=None):

@@ -132,7 +132,7 @@ class TestPhotometric:
         # test equalize with randomly sampled image.
         for _ in range(nb_rand_test):
             img = np.clip(
-                np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
+                np.random.normal(0, 1, (1000, 1200, 3)) * 260, 0,
                 255).astype(np.uint8)
             equalized_img = mmcv.imequalize(img)
             assert_array_equal(equalized_img, _imequalize(img))
@@ -160,7 +160,7 @@ class TestPhotometric:
             img = np.clip(
                 np.random.uniform(0, 1, (1000, 1200, 3)) * 260, 0,
                 255).astype(np.uint8)
-            factor = np.random.uniform()
+            factor = np.random.uniform() + np.random.choice([0, 1])
             np.testing.assert_allclose(
                 mmcv.adjust_brightness(img, factor).astype(np.int32),
                 _adjust_brightness(img, factor).astype(np.int32),
@@ -192,7 +192,7 @@ class TestPhotometric:
             img = np.clip(
                 np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
                 255).astype(np.uint8)
-            factor = np.random.uniform()
+            factor = np.random.uniform() + np.random.choice([0, 1])
             # Note the gap (less_equal 1) between PIL.ImageEnhance.Contrast
             # and mmcv.adjust_contrast comes from the gap that converts from
             # a color image to gray image using mmcv or PIL.

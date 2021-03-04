@@ -103,7 +103,6 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
-
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)
@@ -307,10 +306,20 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
-    def load_checkpoint(self, filename, map_location='cpu', strict=False):
+    def load_checkpoint(self,
+                        filename,
+                        map_location='cpu',
+                        strict=False,
+                        revise_keys=[(r'^module.', '')]):
+
         self.logger.info('load checkpoint from %s', filename)
-        return load_checkpoint(self.model, filename, map_location, strict,
-                               self.logger)
+        return load_checkpoint(
+            self.model,
+            filename,
+            map_location,
+            strict,
+            self.logger,
+            revise_keys=revise_keys)
 
     def resume(self,
                checkpoint,
