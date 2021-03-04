@@ -166,7 +166,7 @@ def imequalize(img):
     s2 = _scale_channel(img, 1)
     s3 = _scale_channel(img, 2)
     equalized_img = np.stack([s1, s2, s3], axis=-1)
-    return equalized_img.astype((img.dtype))
+    return equalized_img.astype(img.dtype)
 
 
 def adjust_brightness(img, factor=1.):
