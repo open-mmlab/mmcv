@@ -247,12 +247,21 @@ def adjust_sharpness(img, factor=1., kernel=None):
     Args:
         img (ndarray): Image to be sharpened. BGR order.
         factor (float): Same as :func:`mmcv.adjust_brightness`.
+        kernel (np.ndarray, optional): Filter kernel to be applied on the img
+            to obtain the degenerated img. Defaults to None.
 
     Returns:
         ndarray: The sharpened image.
     """
-    # adopted from PIL.ImageFilter.SMOOTH
-    kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
+
+    if kernel is None:
+        # adopted from PIL.ImageFilter.SMOOTH
+        kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
+    assert isinstance(kernel, np.ndarray), \
+        f'kernel must be of type np.ndarrray, but got {type(kernel)} instead.'
+    assert kernel.ndim == 2, \
+        f'kernel must have a dimention of 2, but got {kernel.ndim} instead.'
+
     degenerated = cv2.filter2D(img, -1, kernel)
     sharpened_img = cv2.addWeighted(
         img.astype(np.float32), factor, degenerated.astype(np.float32),
