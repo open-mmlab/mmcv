@@ -216,6 +216,7 @@ class TestPhotometric:
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                        dtype=np.uint8)
         img = np.stack([img, img, img], axis=-1)
+
         # test case with invalid type of kernel
         with pytest.raises(AssertionError):
             mmcv.adjust_sharpness(img, 1., kernel=1.)
@@ -227,6 +228,7 @@ class TestPhotometric:
         kernel = np.zeros((3, 3))
         assert_array_equal(
             mmcv.adjust_sharpness(img, 0., kernel=kernel), np.zeros_like(img))
+
         # test case with factor 1.0
         assert_array_equal(mmcv.adjust_sharpness(img, 1.), img)
         # test adjust_sharpness with randomly sampled images and factors.
