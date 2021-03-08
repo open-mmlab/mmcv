@@ -97,9 +97,10 @@ def posterize(img, bits):
 
 
 def adjust_color(img, alpha=1, beta=None, gamma=0):
-    """It blends the source image and its gray image:
+    r"""It blends the source image and its gray image:
 
-    ``output = img * alpha + gray_img * beta + gamma``
+    .. math::
+        output = img * alpha + gray\_img * beta + gamma
 
     Args:
         img (ndarray): The input source image.
@@ -166,7 +167,7 @@ def imequalize(img):
     s2 = _scale_channel(img, 1)
     s3 = _scale_channel(img, 2)
     equalized_img = np.stack([s1, s2, s3], axis=-1)
-    return equalized_img.astype((img.dtype))
+    return equalized_img.astype(img.dtype)
 
 
 def adjust_brightness(img, factor=1.):
@@ -177,7 +178,8 @@ def adjust_brightness(img, factor=1.):
     A factor of 1.0 gives the original image. This function
     blends the source image and the degenerated black image:
 
-    ``output = img * factor + degenerated * (1 - factor)``
+    .. math::
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be brightened.
@@ -208,7 +210,8 @@ def adjust_contrast(img, factor=1.):
     image. A factor of 1.0 gives the original image. It
     blends the source image and the degenerated mean image:
 
-    ``output = img * factor + degenerated * (1 - factor)``
+    .. math::
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be contrasted. BGR order.
@@ -227,6 +230,50 @@ def adjust_contrast(img, factor=1.):
         1 - factor, 0)
     contrasted_img = np.clip(contrasted_img, 0, 255)
     return contrasted_img.astype(img.dtype)
+
+
+def adjust_sharpness(img, factor=1., kernel=None):
+    """Adjust image sharpness.
+
+    This function controls the sharpness of an image. An
+    enhancement factor of 0.0 gives a blurred image. A
+    factor of 1.0 gives the original image. And a factor
+    of 2.0 gives a sharpened image. It blends the source
+    image and the degenerated mean image:
+
+    .. math::
+    output = img * factor + degenerated * (1 - factor)
+
+    Args:
+        img (ndarray): Image to be sharpened. BGR order.
+        factor (float): Same as :func:`mmcv.adjust_brightness`.
+        kernel (np.ndarray, optional): Filter kernel to be applied on the img
+            to obtain the degenerated img. Defaults to None.
+
+    Notes:
+        No value sanity check is enforced on the kernel set by users. So with
+        an inappropriate kernel, the `adjust_sharpness` may fail to perform
+        the function its name indicates but end up performing whatever
+        transform determined by the kernel.
+
+    Returns:
+        ndarray: The sharpened image.
+    """
+
+    if kernel is None:
+        # adopted from PIL.ImageFilter.SMOOTH
+        kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
+    assert isinstance(kernel, np.ndarray), \
+        f'kernel must be of type np.ndarrray, but got {type(kernel)} instead.'
+    assert kernel.ndim == 2, \
+        f'kernel must have a dimention of 2, but got {kernel.ndim} instead.'
+
+    degenerated = cv2.filter2D(img, -1, kernel)
+    sharpened_img = cv2.addWeighted(
+        img.astype(np.float32), factor, degenerated.astype(np.float32),
+        1 - factor, 0)
+    sharpened_img = np.clip(sharpened_img, 0, 255)
+    return sharpened_img.astype(img.dtype)
 
 
 def lut_transform(img, lut_table):
