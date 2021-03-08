@@ -65,7 +65,7 @@ class TestLoading(object):
         results = transform(copy.deepcopy(results))
         assert results['filename'] is None
         assert results['ori_filename'] is None
-        assert results['img'].shape == (288, 512, 3)
+        assert results['img'].shape == (300, 400, 3)
         assert results['img'].dtype == np.uint8
-        assert results['img_shape'] == (288, 512, 3)
-        assert results['ori_shape'] == (288, 512, 3)
+        assert results['img_shape'] == (300, 400, 3)
+        assert results['ori_shape'] == (300, 400, 3)
