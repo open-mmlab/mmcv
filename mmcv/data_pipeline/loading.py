@@ -68,6 +68,7 @@ class LoadImageFromFile(object):
         results['ori_shape'] = img.shape
         results['pad_shape'] = img.shape
         results['scale_factor'] = 1.0
+        results['img_fields'] = ['img']
         num_channels = 1 if len(img.shape) < 3 else img.shape[2]
         results['img_norm_cfg'] = dict(
             mean=np.zeros(num_channels, dtype=np.float32),
@@ -82,3 +83,40 @@ class LoadImageFromFile(object):
                     f'file_client_args={self.file_client_args}, '
                     f'imdecode_backend={self.imdecode_backend})')
         return repr_str
+
+
+class LoadImageFromArray(LoadImageFromFile):
+    """Load an image from numpy array.
+
+    Similar with :obj:`LoadImageFromFile`, but the image array is already in
+    ``results['img']``.
+    """
+
+    def __call__(self, results):
+        """Call functions to add image meta information.
+
+        Args:
+            results (dict): Result dict with Webcam read image in
+                ``results['img']``.
+        Returns:
+            dict: The dict contains loaded image and meta information.
+        """
+
+        img = results['img']
+        if self.to_float32:
+            img = img.astype(np.float32)
+
+        results['filename'] = None
+        results['ori_filename'] = None
+        results['img'] = img
+        results['img_shape'] = img.shape
+        results['ori_shape'] = img.shape
+        results['pad_shape'] = img.shape
+        results['scale_factor'] = 1.0
+        results['img_fields'] = ['img']
+        num_channels = 1 if len(img.shape) < 3 else img.shape[2]
+        results['img_norm_cfg'] = dict(
+            mean=np.zeros(num_channels, dtype=np.float32),
+            std=np.ones(num_channels, dtype=np.float32),
+            to_rgb=False)
+        return results

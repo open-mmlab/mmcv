@@ -1,4 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from .loading import LoadImageFromFile
+from .loading import LoadImageFromArray, LoadImageFromFile
 
-__all__ = ['LoadImageFromFile']
+__all__ = ['LoadImageFromArray', 'LoadImageFromFile']

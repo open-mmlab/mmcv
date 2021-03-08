@@ -3,7 +3,7 @@ import os.path as osp
 
 import numpy as np
 
-from mmcv.data_pipeline import LoadImageFromFile
+from mmcv.data_pipeline import LoadImageFromArray, LoadImageFromFile
 
 
 class TestLoading(object):
@@ -56,3 +56,15 @@ class TestLoading(object):
         assert results['img'].dtype == np.uint8
         np.testing.assert_equal(results['img_norm_cfg']['mean'],
                                 np.zeros(1, dtype=np.float32))
+
+    def test_load_array_img(self):
+        img = mmcv.imread(osp.join(self.data_prefix, 'color.jpg'))
+        results = dict(img=img)
+        transform = LoadImageFromArray()
+        results = transform(copy.deepcopy(results))
+        assert results['filename'] is None
+        assert results['ori_filename'] is None
+        assert results['img'].shape == (288, 512, 3)
+        assert results['img'].dtype == np.uint8
+        assert results['img_shape'] == (288, 512, 3)
+        assert results['ori_shape'] == (288, 512, 3)
