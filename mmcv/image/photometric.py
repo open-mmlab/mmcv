@@ -261,9 +261,10 @@ def auto_contrast(img, cut_off=0):
         cut_high = histo_sum[-1] - histo_sum[-1] * cut_off[1] // 100
         histo_sum = np.clip(histo_sum, cut_low, cut_high) - cut_low
         histo = np.concatenate([[histo_sum[0]], np.diff(histo_sum)], 0)
-        # compute mapping
+
+        # Compute mapping
         low, high = np.nonzero(histo)[0][0], np.nonzero(histo)[0][-1]
-        # if all the values have been cut off
+        # If all the values have been cut off, return the origin img
         if low >= high:
             return im
         scale = 255.0 / (high - low)
@@ -271,7 +272,6 @@ def auto_contrast(img, cut_off=0):
         lut = np.array(range(256))
         lut = lut * scale + offset
         lut = np.clip(lut, 0, 255)
-
         return lut[im]
 
     if isinstance(cut_off, (int, float)):
