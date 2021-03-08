@@ -228,7 +228,7 @@ class TestPhotometric:
             mmcv.auto_contrast(img, 12.5), _auto_contrast(img, 12.5))
         # test case with cut-off as tuple
         assert_array_equal(
-            mmcv.auto_contrast(img, (10, 20)), _auto_contrast(img, (10, 20)))
+            mmcv.auto_contrast(img, (10, 10)), _auto_contrast(img, 10))
         # test case with cut-off with sum over 100
         assert_array_equal(
             mmcv.auto_contrast(img, 60), _auto_contrast(img, 60))
@@ -238,7 +238,11 @@ class TestPhotometric:
             img = np.clip(
                 np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
                 255).astype(np.uint8)
-            cut_off = tuple((np.random.rand(2) * 100).tolist())
+            # cut-offs are not set as tuple since in `build.yml`, pillow 6.2.2
+            # is installed, which does not support setting low cut-off and high
+            #  cut-off differently.
+            # With pillow above 8.0.0, cut_off can be set as tuple
+            cut_off = np.random.rand() * 100
             assert_array_equal(
                 mmcv.auto_contrast(img, cut_off), _auto_contrast(img, cut_off))
 
