@@ -3,6 +3,7 @@ import os.path as osp
 
 import numpy as np
 
+from mmcv.image import imread
 from mmcv.data_pipeline import LoadImageFromArray, LoadImageFromFile
 
 
@@ -58,7 +59,7 @@ class TestLoading(object):
                                 np.zeros(1, dtype=np.float32))
 
     def test_load_array_img(self):
-        img = mmcv.imread(osp.join(self.data_prefix, 'color.jpg'))
+        img = imread(osp.join(self.data_prefix, 'color.jpg'))
         results = dict(img=img)
         transform = LoadImageFromArray()
         results = transform(copy.deepcopy(results))
