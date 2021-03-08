@@ -202,6 +202,46 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
+    def test_auto_contrast(self, nb_rand_test=100):
+
+        def _auto_contrast(img, cut_off=0):
+            from PIL.ImageOps import autocontrast
+            from PIL import Image
+            # Image.fromarray defaultly supports RGB, not BGR.
+            # convert from BGR to RGB
+            img = Image.fromarray(img[..., ::-1], mode='RGB')
+            contrasted_img = autocontrast(img, cut_off)
+            # convert from RGB to BGR
+            return np.asarray(contrasted_img)[..., ::-1]
+
+        img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                       dtype=np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+
+        # test case without cut-off
+        assert_array_equal(mmcv.auto_contrast(img), _auto_contrast(img))
+        # test case with cut-off as int
+        assert_array_equal(
+            mmcv.auto_contrast(img, 10), _auto_contrast(img, 10))
+        # test case with cut-off as float
+        assert_array_equal(
+            mmcv.auto_contrast(img, 12.5), _auto_contrast(img, 12.5))
+        # test case with cut-off as tuple
+        assert_array_equal(
+            mmcv.auto_contrast(img, (10, 20)), _auto_contrast(img, (10, 20)))
+        # test case with cut-off with sum over 100
+        assert_array_equal(
+            mmcv.auto_contrast(img, 60), _auto_contrast(img, 60))
+
+        # test auto_contrast with randomly sampled images and factors.
+        for _ in range(nb_rand_test):
+            img = np.clip(
+                np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+                255).astype(np.uint8)
+            cut_off = tuple((np.random.rand(2) * 100).tolist())
+            assert_array_equal(
+                mmcv.auto_contrast(img, cut_off), _auto_contrast(img, cut_off))
+
     def test_adjust_sharpness(self, nb_rand_test=100):
 
         def _adjust_sharpness(img, factor):
