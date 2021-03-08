@@ -3,8 +3,8 @@ import os.path as osp
 
 import numpy as np
 
-from mmcv.image import imread
 from mmcv.data_pipeline import LoadImageFromArray, LoadImageFromFile
+from mmcv.image import imread
 
 
 class TestLoading(object):
