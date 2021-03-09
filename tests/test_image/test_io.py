@@ -177,7 +177,7 @@ class TestIO:
         # backend tifffile, multi channel tiff file(> 4 channels).
         mmcv.use_backend('tifffile')
         img_tifffile = mmcv.imread(self.tiff_path)
-        assert img_tifffile.shape == (400, 300, 5)
+        assert img_tifffile.shape == (200, 150, 5)
 
         mmcv.use_backend('cv2')
 
