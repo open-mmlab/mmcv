@@ -204,13 +204,13 @@ class TestPhotometric:
 
     def test_auto_contrast(self, nb_rand_test=100):
 
-        def _auto_contrast(img, cut_off=0):
+        def _auto_contrast(img, cutoff=0):
             from PIL.ImageOps import autocontrast
             from PIL import Image
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
-            contrasted_img = autocontrast(img, cut_off)
+            contrasted_img = autocontrast(img, cutoff)
             # convert from RGB to BGR
             return np.asarray(contrasted_img)[..., ::-1]
 
@@ -241,10 +241,10 @@ class TestPhotometric:
             # cut-offs are not set as tuple since in `build.yml`, pillow 6.2.2
             # is installed, which does not support setting low cut-off and high
             #  cut-off differently.
-            # With pillow above 8.0.0, cut_off can be set as tuple
-            cut_off = np.random.rand() * 100
+            # With pillow above 8.0.0, cutoff can be set as tuple
+            cutoff = np.random.rand() * 100
             assert_array_equal(
-                mmcv.auto_contrast(img, cut_off), _auto_contrast(img, cut_off))
+                mmcv.auto_contrast(img, cutoff), _auto_contrast(img, cutoff))
 
     def test_adjust_sharpness(self, nb_rand_test=100):
 

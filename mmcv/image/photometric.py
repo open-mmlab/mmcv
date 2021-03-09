@@ -232,7 +232,7 @@ def adjust_contrast(img, factor=1.):
     return contrasted_img.astype(img.dtype)
 
 
-def auto_contrast(img, cut_off=0):
+def auto_contrast(img, cutoff=0):
     """Auto adjust image contrast.
 
     This function maximize (normalize) image contrast by first removing cutoff
@@ -242,7 +242,7 @@ def auto_contrast(img, cut_off=0):
 
     Args:
         img (ndarray): Image to be contrasted. BGR order.
-        cut_off (int | float | tuple): The cutoff percent of the lightest and
+        cutoff (int | float | tuple): The cutoff percent of the lightest and
             darkest pixels to be removed. If given as tuple, it shall be
             (low, high). Otherwise, the single value will be used for both.
             Defaults to 0.
@@ -251,14 +251,14 @@ def auto_contrast(img, cut_off=0):
         ndarray: The contrasted image.
     """
 
-    def _auto_contrast_channel(im, c, cut_off):
+    def _auto_contrast_channel(im, c, cutoff):
         im = im[:, :, c]
         # Compute the histogram of the image channel.
         histo = np.histogram(im, 256, (0, 255))[0]
         # Remove cut-off percent pixels from histo
         histo_sum = np.cumsum(histo)
-        cut_low = histo_sum[-1] * cut_off[0] // 100
-        cut_high = histo_sum[-1] - histo_sum[-1] * cut_off[1] // 100
+        cut_low = histo_sum[-1] * cutoff[0] // 100
+        cut_high = histo_sum[-1] - histo_sum[-1] * cutoff[1] // 100
         histo_sum = np.clip(histo_sum, cut_low, cut_high) - cut_low
         histo = np.concatenate([[histo_sum[0]], np.diff(histo_sum)], 0)
 
@@ -274,16 +274,16 @@ def auto_contrast(img, cut_off=0):
         lut = np.clip(lut, 0, 255)
         return lut[im]
 
-    if isinstance(cut_off, (int, float)):
-        cut_off = (cut_off, cut_off)
+    if isinstance(cutoff, (int, float)):
+        cutoff = (cutoff, cutoff)
     else:
-        assert isinstance(cut_off, tuple), 'cut_off must be of type int, ' \
-            f'float or tuple, but got {type(cut_off)} instead.'
+        assert isinstance(cutoff, tuple), 'cutoff must be of type int, ' \
+            f'float or tuple, but got {type(cutoff)} instead.'
     # Auto adjusts contrast for each channel independently and then stacks
     # the result.
-    s1 = _auto_contrast_channel(img, 0, cut_off)
-    s2 = _auto_contrast_channel(img, 1, cut_off)
-    s3 = _auto_contrast_channel(img, 2, cut_off)
+    s1 = _auto_contrast_channel(img, 0, cutoff)
+    s2 = _auto_contrast_channel(img, 1, cutoff)
+    s3 = _auto_contrast_channel(img, 2, cutoff)
     contrasted_img = np.stack([s1, s2, s3], axis=-1)
     return contrasted_img.astype(img.dtype)
 
