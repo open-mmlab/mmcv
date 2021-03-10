@@ -24,7 +24,7 @@ inline int GET_BLOCKS(const int N, const int num_threads) {
 
 template <typename scalar_t>
 __device__ scalar_t ms_deform_attn_im2col_bilinear(
-    const scalar_t *&bottom_data, const int &height, const int &width, # NOLINT
+    const scalar_t *&bottom_data, const int &height, const int &width,
     const int &nheads, const int &channels, const scalar_t &h,
     const scalar_t &w, const int &m, const int &c) {
   const int h_low = floor(h);
@@ -73,10 +73,10 @@ __device__ scalar_t ms_deform_attn_im2col_bilinear(
 
 template <typename scalar_t>
 __device__ void ms_deform_attn_col2im_bilinear(
-    const scalar_t *&bottom_data, const int &height, const int &width, # NOLINT
+    const scalar_t *&bottom_data, const int &height, const int &width,
     const int &nheads, const int &channels, const scalar_t &h,
     const scalar_t &w, const int &m, const int &c, const scalar_t &top_grad,
-    const scalar_t &attn_weight, scalar_t *&grad_value, # NOLINT
+    const scalar_t &attn_weight, scalar_t *&grad_value,
     scalar_t *grad_sampling_loc, scalar_t *grad_attn_weight) {
   const int h_low = floor(h);
   const int w_low = floor(w);
@@ -140,10 +140,10 @@ __device__ void ms_deform_attn_col2im_bilinear(
 
 template <typename scalar_t>
 __device__ void ms_deform_attn_col2im_bilinear_gm(
-    const scalar_t *&bottom_data, const int &height, const int &width, # NOLINT
+    const scalar_t *&bottom_data, const int &height, const int &width,
     const int &nheads, const int &channels, const scalar_t &h,
     const scalar_t &w, const int &m, const int &c, const scalar_t &top_grad,
-    const scalar_t &attn_weight, scalar_t *&grad_value, # NOLINT
+    const scalar_t &attn_weight, scalar_t *&grad_value,
     scalar_t *grad_sampling_loc, scalar_t *grad_attn_weight) {
   const int h_low = floor(h);
   const int w_low = floor(w);
@@ -807,4 +807,4 @@ __global__ void ms_deformable_col2im_gpu_kernel_gm(
     }
   }
 }
-#endif // OPENMMLAB_PRS_ADD_MSD_ATTEN_MMCV_OPS_CSRC_MS_DEFORM_ATTN_CUDA_KERNEL_CUH_ #NOLINT
+#endif // OPENMMLAB_PRS_ADD_MSD_ATTEN_MMCV_OPS_CSRC_MS_DEFORM_ATTN_CUDA_KERNEL_CUH_
