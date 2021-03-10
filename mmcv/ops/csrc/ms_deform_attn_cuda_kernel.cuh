@@ -13,8 +13,8 @@
 
 #include "pytorch_cuda_helper.hpp"
 
-#define CUDA_KERNEL_LOOP(i, n)                                                 \
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n);                 \
+#define CUDA_KERNEL_LOOP(i, n)                                 \
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); \
        i += blockDim.x * gridDim.x)
 
 const int CUDA_NUM_THREADS = 1024;
@@ -807,4 +807,4 @@ __global__ void ms_deformable_col2im_gpu_kernel_gm(
     }
   }
 }
-#endif // OPENMMLAB_PRS_ADD_MSD_ATTEN_MMCV_OPS_CSRC_MS_DEFORM_ATTN_CUDA_KERNEL_CUH_
+#endif  // OPENMMLAB_PRS_ADD_MSD_ATTEN_MMCV_OPS_CSRC_MS_DEFORM_ATTN_CUDA_KERNEL_CUH_

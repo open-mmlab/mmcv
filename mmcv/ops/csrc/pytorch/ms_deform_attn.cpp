@@ -19,12 +19,11 @@ Tensor ms_deform_attn_cuda_forward(const Tensor &value,
                                    const Tensor &attn_weight,
                                    const int im2col_step);
 
-std::vector<Tensor>
-ms_deform_attn_cuda_backward(const Tensor &value, const Tensor &spatial_shapes,
-                             const Tensor &level_start_index,
-                             const Tensor &sampling_loc,
-                             const Tensor &attn_weight,
-                             const Tensor &grad_output, const int im2col_step);
+std::vector<Tensor> ms_deform_attn_cuda_backward(
+    const Tensor &value, const Tensor &spatial_shapes,
+    const Tensor &level_start_index, const Tensor &sampling_loc,
+    const Tensor &attn_weight, const Tensor &grad_output,
+    const int im2col_step);
 
 #endif
 
@@ -49,11 +48,13 @@ Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
   AT_ERROR("Not implemented on the CPU");
 }
 
-std::vector<Tensor>
-ms_deform_attn_backward(const Tensor &value, const Tensor &spatial_shapes,
-                        const Tensor &level_start_index,
-                        const Tensor &sampling_loc, const Tensor &attn_weight,
-                        const Tensor &grad_output, const int im2col_step) {
+std::vector<Tensor> ms_deform_attn_backward(const Tensor &value,
+                                            const Tensor &spatial_shapes,
+                                            const Tensor &level_start_index,
+                                            const Tensor &sampling_loc,
+                                            const Tensor &attn_weight,
+                                            const Tensor &grad_output,
+                                            const int im2col_step) {
   if (value.type().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(value)

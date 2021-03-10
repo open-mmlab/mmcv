@@ -77,125 +77,136 @@ void ms_deformable_col2im_cuda(
     }
   } else {
     switch (channels) {
-    case 1:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 1><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                         num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 2:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 2><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                         num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 4:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 4><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                         num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 8:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 8><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                         num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 16:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 16><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                          num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 32:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
-          scalar_t, 32><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                          num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 64:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
-          scalar_t, 64><<<GET_BLOCKS(num_actual_kernels, num_threads),
-                          num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 128:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
-          scalar_t, 128><<<GET_BLOCKS(num_actual_kernels, num_threads),
+      case 1:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 1><<<GET_BLOCKS(num_actual_kernels, num_threads),
                            num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 256:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
-          scalar_t, 256><<<GET_BLOCKS(num_actual_kernels, num_threads),
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 2:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 2><<<GET_BLOCKS(num_actual_kernels, num_threads),
                            num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 512:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
-          scalar_t, 512><<<GET_BLOCKS(num_actual_kernels, num_threads),
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 4:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 4><<<GET_BLOCKS(num_actual_kernels, num_threads),
                            num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    case 1024:
-      ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
-          scalar_t, 1024><<<GET_BLOCKS(num_actual_kernels, num_threads),
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 8:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 8><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                           num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 16:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 16><<<GET_BLOCKS(num_actual_kernels, num_threads),
                             num_threads, 0, stream>>>(
-          num_kernels, grad_col, data_value, data_spatial_shapes,
-          data_level_start_index, data_sampling_loc, data_attn_weight,
-          batch_size, spatial_size, num_heads, channels, num_levels, num_query,
-          num_point, grad_value, grad_sampling_loc, grad_attn_weight);
-      break;
-    default:
-      if (channels < 64) {
-        ms_deformable_col2im_gpu_kernel_shm_reduce_v1<scalar_t><<<
-            GET_BLOCKS(num_actual_kernels, num_threads), num_threads,
-            num_threads * 3 * sizeof(scalar_t), stream>>>(
             num_kernels, grad_col, data_value, data_spatial_shapes,
             data_level_start_index, data_sampling_loc, data_attn_weight,
             batch_size, spatial_size, num_heads, channels, num_levels,
             num_query, num_point, grad_value, grad_sampling_loc,
             grad_attn_weight);
-      } else {
-        ms_deformable_col2im_gpu_kernel_shm_reduce_v2<scalar_t><<<
-            GET_BLOCKS(num_actual_kernels, num_threads), num_threads,
-            num_threads * 3 * sizeof(scalar_t), stream>>>(
+        break;
+      case 32:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1<
+            scalar_t, 32><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                            num_threads, 0, stream>>>(
             num_kernels, grad_col, data_value, data_spatial_shapes,
             data_level_start_index, data_sampling_loc, data_attn_weight,
             batch_size, spatial_size, num_heads, channels, num_levels,
             num_query, num_point, grad_value, grad_sampling_loc,
             grad_attn_weight);
-      }
+        break;
+      case 64:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
+            scalar_t, 64><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                            num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 128:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
+            scalar_t, 128><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                             num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 256:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
+            scalar_t, 256><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                             num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 512:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
+            scalar_t, 512><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                             num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      case 1024:
+        ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2<
+            scalar_t, 1024><<<GET_BLOCKS(num_actual_kernels, num_threads),
+                              num_threads, 0, stream>>>(
+            num_kernels, grad_col, data_value, data_spatial_shapes,
+            data_level_start_index, data_sampling_loc, data_attn_weight,
+            batch_size, spatial_size, num_heads, channels, num_levels,
+            num_query, num_point, grad_value, grad_sampling_loc,
+            grad_attn_weight);
+        break;
+      default:
+        if (channels < 64) {
+          ms_deformable_col2im_gpu_kernel_shm_reduce_v1<scalar_t><<<
+              GET_BLOCKS(num_actual_kernels, num_threads), num_threads,
+              num_threads * 3 * sizeof(scalar_t), stream>>>(
+              num_kernels, grad_col, data_value, data_spatial_shapes,
+              data_level_start_index, data_sampling_loc, data_attn_weight,
+              batch_size, spatial_size, num_heads, channels, num_levels,
+              num_query, num_point, grad_value, grad_sampling_loc,
+              grad_attn_weight);
+        } else {
+          ms_deformable_col2im_gpu_kernel_shm_reduce_v2<scalar_t><<<
+              GET_BLOCKS(num_actual_kernels, num_threads), num_threads,
+              num_threads * 3 * sizeof(scalar_t), stream>>>(
+              num_kernels, grad_col, data_value, data_spatial_shapes,
+              data_level_start_index, data_sampling_loc, data_attn_weight,
+              batch_size, spatial_size, num_heads, channels, num_levels,
+              num_query, num_point, grad_value, grad_sampling_loc,
+              grad_attn_weight);
+        }
     }
   }
   cudaError_t err = cudaGetLastError();
