@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build-n-publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
           twine upload dist/* -u __token__ -p ${{ secrets.pypi_password }}
 
   build-n-publish_with_ops:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
