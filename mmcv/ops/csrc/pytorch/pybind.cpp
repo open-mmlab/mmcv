@@ -1,3 +1,13 @@
+/*!
+**************************************************************************************************
+* Deformable DETR
+* Copyright (c) 2020 SenseTime. All Rights Reserved.
+* Licensed under the Apache License, Version 2.0 [see LICENSE for details]
+**************************************************************************************************
+* Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
+**************************************************************************************************
+*/
+
 #include "pytorch_cpp_helper.hpp"
 
 std::string get_compiler_version();
@@ -394,7 +404,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
-  m.def("ms_deform_attn_forward", &ms_deform_attn_forward, "ms_deform_attn_forward");
-  m.def("ms_deform_attn_backward", &ms_deform_attn_backward, "ms_deform_attn_backward");
-
+  m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
+    "forward function of multi-scale deformable attention");
+  m.def("ms_deform_attn_backward", &ms_deform_attn_backward,
+    "backward function of multi-scale deformable attention");
 }
