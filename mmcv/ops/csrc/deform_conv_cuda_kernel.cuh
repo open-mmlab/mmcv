@@ -210,9 +210,8 @@ __global__ void deformable_im2col_gpu_kernel(
     const T *data_im_ptr =
         data_im + (b_col * num_channels + c_im) * height * width;
     const T *data_offset_ptr =
-        data_offset +
-        (b_col * deformable_group + deformable_group_index) * 2 * kernel_h *
-            kernel_w * height_col * width_col;
+        data_offset + (b_col * deformable_group + deformable_group_index) * 2 *
+                          kernel_h * kernel_w * height_col * width_col;
 
     for (int i = 0; i < kernel_h; ++i) {
       for (int j = 0; j < kernel_w; ++j) {
@@ -261,10 +260,9 @@ __global__ void deformable_col2im_gpu_kernel(
     int w_in = w_out * stride_w - pad_w;
     int h_in = h_out * stride_h - pad_h;
 
-    const T *data_offset_ptr = data_offset +
-                               (b * deformable_group + deformable_group_index) *
-                                   2 * kernel_h * kernel_w * height_col *
-                                   width_col;
+    const T *data_offset_ptr =
+        data_offset + (b * deformable_group + deformable_group_index) * 2 *
+                          kernel_h * kernel_w * height_col * width_col;
     const int data_offset_h_ptr =
         ((2 * (i * kernel_w + j)) * height_col + h_out) * width_col + w_out;
     const int data_offset_w_ptr =
@@ -313,18 +311,16 @@ __global__ void deformable_col2im_coord_gpu_kernel(
     const int deformable_group_index = c / (2 * kernel_h * kernel_w);
     const int col_step = kernel_h * kernel_w;
     int cnt = 0;
-    const T *data_col_ptr = data_col +
-                            deformable_group_index *
-                                channel_per_deformable_group * batch_size *
-                                width_col * height_col;
-    const T *data_im_ptr = data_im +
-                           (b * deformable_group + deformable_group_index) *
-                               channel_per_deformable_group / kernel_h /
-                               kernel_w * height * width;
-    const T *data_offset_ptr = data_offset +
-                               (b * deformable_group + deformable_group_index) *
-                                   2 * kernel_h * kernel_w * height_col *
-                                   width_col;
+    const T *data_col_ptr = data_col + deformable_group_index *
+                                           channel_per_deformable_group *
+                                           batch_size * width_col * height_col;
+    const T *data_im_ptr =
+        data_im + (b * deformable_group + deformable_group_index) *
+                      channel_per_deformable_group / kernel_h / kernel_w *
+                      height * width;
+    const T *data_offset_ptr =
+        data_offset + (b * deformable_group + deformable_group_index) * 2 *
+                          kernel_h * kernel_w * height_col * width_col;
 
     const int offset_c = c - deformable_group_index * 2 * kernel_h * kernel_w;
 
