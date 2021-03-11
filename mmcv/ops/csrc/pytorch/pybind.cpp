@@ -4,7 +4,8 @@
 * Copyright (c) 2020 SenseTime. All Rights Reserved.
 * Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 **************************************************************************************************
-* Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
+* Modified from
+*https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
 **************************************************************************************************
 */
 
@@ -102,23 +103,18 @@ void modulated_deform_conv_backward(
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias);
 
+Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
+                              const Tensor &level_start_index,
+                              const Tensor &sampling_loc,
+                              const Tensor &attn_weight, const int im2col_step);
 
-Tensor ms_deform_attn_forward(
-    const Tensor &value,
-    const Tensor &spatial_shapes,
-    const Tensor &level_start_index,
-    const Tensor &sampling_loc,
-    const Tensor &attn_weight,
-    const int im2col_step);
-
-std::vector<Tensor> ms_deform_attn_backward(
-    const Tensor &value,
-    const Tensor &spatial_shapes,
-    const Tensor &level_start_index,
-    const Tensor &sampling_loc,
-    const Tensor &attn_weight,
-    const Tensor &grad_output,
-    const int im2col_step);
+std::vector<Tensor> ms_deform_attn_backward(const Tensor &value,
+                                            const Tensor &spatial_shapes,
+                                            const Tensor &level_start_index,
+                                            const Tensor &sampling_loc,
+                                            const Tensor &attn_weight,
+                                            const Tensor &grad_output,
+                                            const int im2col_step);
 
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
@@ -187,10 +183,6 @@ void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
-
-
-
-
 Tensor bottom_pool_forward(Tensor input);
 
 Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
@@ -213,8 +205,6 @@ void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
 Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const float iou_threshold,
                    const int multi_label);
-
-
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
@@ -405,7 +395,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
   m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
-    "forward function of multi-scale deformable attention");
+        "forward function of multi-scale deformable attention");
   m.def("ms_deform_attn_backward", &ms_deform_attn_backward,
-    "backward function of multi-scale deformable attention");
+        "backward function of multi-scale deformable attention");
 }
