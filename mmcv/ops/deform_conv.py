@@ -32,7 +32,7 @@ class DeformConv2dFunction(Function):
                  bias=False,
                  im2col_step=32):
         return g.op(
-            'MMCVDeformConv2d',
+            'mmcv::MMCVDeformConv2d',
             input,
             offset,
             weight,
