@@ -19,7 +19,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
     """
 
     def to_kwargs(self, inputs, kwargs, device_id):
-        #  Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
+        # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
 
