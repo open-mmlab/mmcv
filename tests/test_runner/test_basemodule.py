@@ -246,7 +246,7 @@ def test_sequential_model_weight_init():
                        torch.full(seq_model[1].conv2d.weight.shape, 2.))
     assert torch.equal(seq_model[1].conv2d.bias,
                        torch.full(seq_model[1].conv2d.bias.shape, 3.))
-
+    # inner init_cfg has highter priority
     seq_model = BaseSequential(
         *layers, init_cfg=dict(type='Constant', val=4., bias=5.))
     assert torch.equal(seq_model[0].conv1d.weight,
