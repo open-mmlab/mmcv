@@ -51,3 +51,43 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         else:
             warnings.warn('This module has bee initialized, \
                 please call initialize(module, init_cfg) to reinitialize it')
+
+    def __repr__(self):
+        s = super().__repr__()
+        if hasattr(self, 'init_cfg'):
+            s += f'\ninit_cfg={self.init_cfg}'
+        return s
+
+
+class BaseSequential(nn.Sequential):
+    """Base sequential module for all sequential modules in openmmlab."""
+
+    def __init__(self, *args, init_cfg=None):
+        super(BaseSequential, self).__init__(*args)
+
+        self._is_init = False
+        if init_cfg is not None:
+            self.init_cfg = init_cfg
+
+    @property
+    def is_init(self):
+        return self._is_init
+
+    def init_weight(self):
+        """Initialize the weights."""
+        from ..cnn import initialize
+
+        if not self._is_init:
+
+            if hasattr(self, 'init_cfg'):
+                initialize(self, self.init_cfg)
+                self._is_init = True
+            for module in self.children():
+                if 'init_weight' in dir(module):
+                    module.init_weight()
+
+    def __repr__(self):
+        s = super().__repr__()
+        if hasattr(self, 'init_cfg'):
+            s += f'\ninit_cfg={self.init_cfg}'
+        return s
