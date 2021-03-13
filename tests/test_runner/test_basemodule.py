@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from mmcv.runner import BaseModule, BaseSequential
+from mmcv.runner import BaseModule, Sequential
 from mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
@@ -236,7 +236,7 @@ def test_sequential_model_weight_init():
             type='FooConv2d', init_cfg=dict(type='Constant', val=2., bias=3.)),
     ]
     layers = [build_from_cfg(cfg, COMPONENTS) for cfg in seq_model_cfg]
-    seq_model = BaseSequential(*layers)
+    seq_model = Sequential(*layers)
     seq_model.init_weight()
     assert torch.equal(seq_model[0].conv1d.weight,
                        torch.full(seq_model[0].conv1d.weight.shape, 0.))
@@ -247,7 +247,7 @@ def test_sequential_model_weight_init():
     assert torch.equal(seq_model[1].conv2d.bias,
                        torch.full(seq_model[1].conv2d.bias.shape, 3.))
     # inner init_cfg has highter priority
-    seq_model = BaseSequential(
+    seq_model = Sequential(
         *layers, init_cfg=dict(type='Constant', val=4., bias=5.))
     assert torch.equal(seq_model[0].conv1d.weight,
                        torch.full(seq_model[0].conv1d.weight.shape, 0.))

@@ -59,8 +59,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         return s
 
 
-class BaseSequential(BaseModule, nn.Sequential):
-    """Base sequential module for all sequential modules in openmmlab."""
+class Sequential(BaseModule, nn.Sequential):
+    """Sequential module in openmmlab."""
 
     def __init__(self, *args, init_cfg=None):
         BaseModule.__init__(self, init_cfg)
