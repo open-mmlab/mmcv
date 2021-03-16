@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from mmcv.runner import BaseModule, Sequential, ModuleList
+from mmcv.runner import BaseModule, ModuleList, Sequential
 from mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
