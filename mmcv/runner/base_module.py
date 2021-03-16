@@ -77,8 +77,6 @@ class ModuleList(BaseModule, nn.ModuleList):
     Args:
         modules (iterable, optional): an iterable of modules to add.
         init_cfg (dict, optional): Initialization config dict.
-
-
     """
 
     def __init__(self, modules=None, init_cfg=None):
