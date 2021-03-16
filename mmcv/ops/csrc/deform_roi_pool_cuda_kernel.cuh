@@ -42,10 +42,10 @@ __global__ void deform_roi_pool_forward_cuda_kernel(
     int roi_bin_grid_h =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(ceil(roi_height / pooled_height));
+            : static_cast<int>(ceilf(roi_height / pooled_height));
     int roi_bin_grid_w = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : static_cast<int>(ceil(roi_width / pooled_width));
+                             : static_cast<int>(ceilf(roi_width / pooled_width));
 
     // Compute roi offset
     if (offset != NULL) {
@@ -113,10 +113,10 @@ __global__ void deform_roi_pool_backward_cuda_kernel(
     int roi_bin_grid_h =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(ceil(roi_height / pooled_height));
+            : static_cast<int>(ceilf(roi_height / pooled_height));
     int roi_bin_grid_w = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : static_cast<int>(ceil(roi_width / pooled_width));
+                             : static_cast<int>(ceilf(roi_width / pooled_width));
 
     // Compute roi offset
     if (offset != NULL) {
