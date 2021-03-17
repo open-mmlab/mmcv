@@ -348,7 +348,7 @@ def _initialize(module, cfg, overmodule=False):
     func(module)
 
 
-def _initialize_override(module, override):
+def _initialize_override(module, override, cfg):
     if not isinstance(override, (dict, list)):
         raise TypeError(f'override must be a dict or a list of dict, \
                 but got {type(override)}')
@@ -356,6 +356,8 @@ def _initialize_override(module, override):
     override = [override] if isinstance(override, dict) else override
 
     for override_ in override:
+        if 'type' not in override_.keys():
+            override_.update(cfg)
         name = override_.pop('name', None)
         if hasattr(module, name):
             _initialize(getattr(module, name), override_, overmodule=True)
@@ -428,10 +430,8 @@ def initialize(module, init_cfg):
         _initialize(module, cfg)
 
         if override is not None:
-            if 'type' not in override.keys():
-                cfg.pop('layer', None)
-                override.update(cfg)
-            _initialize_override(module, override)
+            cfg.pop('layer', None)
+            _initialize_override(module, override, cfg)
         else:
             # All attributes in module have same initialization.
             pass

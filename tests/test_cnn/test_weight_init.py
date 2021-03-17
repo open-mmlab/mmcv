@@ -102,13 +102,6 @@ def test_constaninit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
-    func = ConstantInit(val=4, bias=5)
-    func(model)
-    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 4.))
-    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 4.))
-    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 5.))
-    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 5.))
-
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
@@ -128,8 +121,8 @@ def test_xavierinit():
     assert model[0].bias.allclose(torch.full_like(model[2].bias, 0.1))
     assert not model[2].bias.allclose(torch.full_like(model[0].bias, 0.1))
 
-    constant_func = ConstantInit(val=0, bias=0)
-    func = XavierInit(gain=100, bias_prob=0.01)
+    constant_func = ConstantInit(val=0, bias=0, layer=['Conv2d', 'Linear'])
+    func = XavierInit(gain=100, bias_prob=0.01, layer=['Conv2d', 'Linear'])
     model.apply(constant_func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))
@@ -157,7 +150,7 @@ def test_normalinit():
     """test Normalinit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
 
-    func = NormalInit(mean=100, std=1e-5, bias=200)
+    func = NormalInit(mean=100, std=1e-5, bias=200, layer=['Conv2d', 'Linear'])
     func(model)
     assert model[0].weight.allclose(torch.tensor(100.))
     assert model[2].weight.allclose(torch.tensor(100.))
@@ -177,7 +170,7 @@ def test_normalinit():
 def test_uniforminit():
     """"test UniformInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
-    func = UniformInit(a=1, b=1, bias=2)
+    func = UniformInit(a=1, b=1, bias=2, layer=['Conv2d', 'Linear'])
     func(model)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 1.))
@@ -202,8 +195,8 @@ def test_kaiminginit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.1))
     assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.1))
 
-    func = KaimingInit(a=100, bias=10)
-    constant_func = ConstantInit(val=0, bias=0)
+    func = KaimingInit(a=100, bias=10, layer=['Conv2d', 'Linear'])
+    constant_func = ConstantInit(val=0, bias=0, layer=['Conv2d', 'Linear'])
     model.apply(constant_func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))
@@ -232,7 +225,7 @@ def test_pretrainedinit():
     """test PretrainedInit class."""
 
     modelA = FooModule()
-    constant_func = ConstantInit(val=1, bias=2)
+    constant_func = ConstantInit(val=1, bias=2, layer=['Conv2d', 'Linear'])
     modelA.apply(constant_func)
     modelB = FooModule()
     funcB = PretrainedInit(checkpoint='modelA.pth')
@@ -263,7 +256,7 @@ def test_initialize():
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     foonet = FooModule()
 
-    init_cfg = dict(type='Constant', val=1, bias=2)
+    init_cfg = dict(type='Constant', layer=['Conv2d', 'Linear'], val=1, bias=2)
     initialize(model, init_cfg)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 1.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 1.))
@@ -271,7 +264,7 @@ def test_initialize():
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.))
 
     init_cfg = [
-        dict(type='Constant', layer='Conv1d', val=1, bias=2),
+        dict(type='Constant', layer='Conv2d', val=1, bias=2),
         dict(type='Constant', layer='Linear', val=3, bias=4)
     ]
     initialize(model, init_cfg)
@@ -305,7 +298,7 @@ def test_initialize():
         checkpoint='modelA.pth',
         override=dict(type='Constant', name='conv2d_2', val=3, bias=4))
     modelA = FooModule()
-    constant_func = ConstantInit(val=1, bias=2)
+    constant_func = ConstantInit(val=1, bias=2, layer=['Conv2d', 'Linear'])
     modelA.apply(constant_func)
     with TemporaryDirectory():
         torch.save(modelA.state_dict(), 'modelA.pth')
