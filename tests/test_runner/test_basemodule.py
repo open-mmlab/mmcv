@@ -187,9 +187,11 @@ def test_nest_components_weight_init():
             dict(type='Constant', val=5, bias=6, layer='Conv2d'),
         ],
         component1=dict(
-            type='FooConv1d', init_cfg=dict(type='Constant', val=7, bias=8)),
+            type='FooConv1d',
+            init_cfg=dict(type='Constant', layer='Conv1d', val=7, bias=8)),
         component2=dict(
-            type='FooConv2d', init_cfg=dict(type='Constant', val=9, bias=10)),
+            type='FooConv2d',
+            init_cfg=dict(type='Constant', layer='Conv2d', val=9, bias=10)),
         component3=dict(type='FooLinear'),
         component4=dict(
             type='FooLinearConv1d',
@@ -226,3 +228,88 @@ def test_nest_components_weight_init():
     assert torch.equal(model.reg.weight,
                        torch.full(model.reg.weight.shape, 13.0))
     assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 14.0))
+
+
+def test_without_layer_weight_init():
+    model_cfg = dict(
+        type='FooModel',
+        init_cfg=[
+            dict(type='Constant', val=1, bias=2, layer='Linear'),
+            dict(type='Constant', val=3, bias=4, layer='Conv1d'),
+            dict(type='Constant', val=5, bias=6, layer='Conv2d')
+        ],
+        component1=dict(
+            type='FooConv1d', init_cfg=dict(type='Constant', val=7, bias=8)),
+        component2=dict(type='FooConv2d'),
+        component3=dict(type='FooLinear'))
+    model = build_from_cfg(model_cfg, FOOMODELS)
+    model.init_weight()
+
+    assert torch.equal(model.component1.conv1d.weight,
+                       torch.full(model.component1.conv1d.weight.shape, 3.0))
+    assert torch.equal(model.component1.conv1d.bias,
+                       torch.full(model.component1.conv1d.bias.shape, 4.0))
+
+    # init_cfg in component1 does not have layer key, so it does nothing
+    assert torch.equal(model.component2.conv2d.weight,
+                       torch.full(model.component2.conv2d.weight.shape, 5.0))
+    assert torch.equal(model.component2.conv2d.bias,
+                       torch.full(model.component2.conv2d.bias.shape, 6.0))
+    assert torch.equal(model.component3.linear.weight,
+                       torch.full(model.component3.linear.weight.shape, 1.0))
+    assert torch.equal(model.component3.linear.bias,
+                       torch.full(model.component3.linear.bias.shape, 2.0))
+
+    assert torch.equal(model.reg.weight, torch.full(model.reg.weight.shape,
+                                                    1.0))
+    assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 2.0))
+
+
+def test_override_weight_init():
+
+    # only initialize 'override'
+    model_cfg = dict(
+        type='FooModel',
+        init_cfg=[
+            dict(type='Constant', val=10, bias=20, override=dict(name='reg'))
+        ],
+        component1=dict(type='FooConv1d'),
+        component3=dict(type='FooLinear'))
+    model = build_from_cfg(model_cfg, FOOMODELS)
+    model.init_weight()
+    assert torch.equal(model.reg.weight,
+                       torch.full(model.reg.weight.shape, 10.0))
+    assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 20.0))
+    # do not initialize others
+    assert not torch.equal(
+        model.component1.conv1d.weight,
+        torch.full(model.component1.conv1d.weight.shape, 10.0))
+    assert not torch.equal(
+        model.component1.conv1d.bias,
+        torch.full(model.component1.conv1d.bias.shape, 20.0))
+    assert not torch.equal(
+        model.component3.linear.weight,
+        torch.full(model.component3.linear.weight.shape, 10.0))
+    assert not torch.equal(
+        model.component3.linear.bias,
+        torch.full(model.component3.linear.bias.shape, 20.0))
+
+    # 'override' has higher priority
+    model_cfg = dict(
+        type='FooModel',
+        init_cfg=[
+            dict(
+                type='Constant',
+                val=1,
+                bias=2,
+                override=dict(name='reg', type='Constant', val=30, bias=40))
+        ],
+        component1=dict(type='FooConv1d'),
+        component2=dict(type='FooConv2d'),
+        component3=dict(type='FooLinear'))
+    model = build_from_cfg(model_cfg, FOOMODELS)
+    model.init_weight()
+
+    assert torch.equal(model.reg.weight,
+                       torch.full(model.reg.weight.shape, 30.0))
+    assert torch.equal(model.reg.bias, torch.full(model.reg.bias.shape, 40.0))
