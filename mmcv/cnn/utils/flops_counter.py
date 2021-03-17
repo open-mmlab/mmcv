@@ -431,8 +431,8 @@ def norm_flops_counter_hook(module, input, output):
     input = input[0]
 
     batch_flops = np.prod(input.shape)
-    if (hasattr(module, 'affine') and module.affine or
-        hasattr(module, 'elementwise_affine') and module.elementwise_affine):
+    if (getattr(module, 'affine', False) or
+           getattr(module, 'elementwise_affine', False)):
         batch_flops *= 2
     module.__flops__ += int(batch_flops)
 
