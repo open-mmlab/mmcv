@@ -8,6 +8,7 @@ import torch.nn as nn
 from mmcv import ConfigDict
 from mmcv.cnn import (Linear, build_activation_layer, build_norm_layer,
                       constant_init, xavier_init)
+from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttnFunction
 from mmcv.utils import build_from_cfg
 from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMERCODER,
                        TRANSFORMERLAYER)
@@ -205,7 +206,7 @@ class MultiScaleDeformableAttention(nn.Module):
                 f'Last dim of reference_points must be'
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
         if torch.cuda.is_available():
-            output = MultiScaleDeformAttnFunction.apply(
+            output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
         else:
