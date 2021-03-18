@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
+from mmcv.runner.base_module import BaseModule
 from mmcv.utils import build_from_cfg
 from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMERLAYER,
                        TRANSFORMERLAYERSEQUENCE)
@@ -31,7 +32,7 @@ def build_transformerlayersequence(cfg, default_args=None):
 
 
 @ATTENTION.register_module()
-class MultiheadAttention(nn.Module):
+class MultiheadAttention(BaseModule):
     """A warpper for torch.nn.MultiheadAttention.
 
     This module implements MultiheadAttention with residual connection,
@@ -41,10 +42,16 @@ class MultiheadAttention(nn.Module):
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        dropout (float): A Dropout layer on attn_output_weights. Default: 0..
+        dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization
     """
 
-    def __init__(self, embed_dims, num_heads, dropout=0., **kwargs):
+    def __init__(self,
+                 embed_dims,
+                 num_heads,
+                 dropout=0.,
+                 init_cfg=None,
+                 **kwargs):
         super(MultiheadAttention, self).__init__()
         self.embed_dims = embed_dims
         self.num_heads = num_heads
@@ -52,6 +59,7 @@ class MultiheadAttention(nn.Module):
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
                                           **kwargs)
         self.dropout = nn.Dropout(dropout)
+        self.init_cfg = init_cfg
 
     def forward(self,
                 query,
@@ -126,7 +134,7 @@ class MultiheadAttention(nn.Module):
         return residual + self.dropout(out)
 
 
-class FFN(nn.Module):
+class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with residual connection.
 
     Args:
@@ -149,7 +157,8 @@ class FFN(nn.Module):
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
                  dropout=0.,
-                 add_residual=True):
+                 add_residual=True,
+                 init_cfg=None):
         super(FFN, self).__init__()
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -158,6 +167,7 @@ class FFN(nn.Module):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
+        self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
         layers = []
@@ -187,7 +197,7 @@ class FFN(nn.Module):
 
 
 @TRANSFORMERLAYER.register_module()
-class BaseTransformerLayer(nn.Module):
+class BaseTransformerLayer(BaseModule):
     """Base `TransformerLayer` for vision transformer.
 
     It can be built from `mmcv.ConfigDict` and support more flexible
@@ -221,16 +231,15 @@ class BaseTransformerLayer(nn.Module):
             Default：2.
     """
 
-    def __init__(
-            self,
-            attn_cfgs=None,
-            feedforward_channels=None,
-            ffn_dropout=0.,
-            operation_order=None,
-            act_cfg=dict(type='ReLU', inplace=True),
-            norm_cfg=dict(type='LN'),
-            ffn_num_fcs=2,
-    ):
+    def __init__(self,
+                 attn_cfgs=None,
+                 feedforward_channels=None,
+                 ffn_dropout=0.,
+                 operation_order=None,
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 ffn_num_fcs=2,
+                 init_cfg=None):
 
         super(BaseTransformerLayer, self).__init__()
         assert set(operation_order) & set(
@@ -248,7 +257,7 @@ class BaseTransformerLayer(nn.Module):
                 f'of attn_cfg {num_attn} is ' \
                 f'not consistent with the number of attention' \
                 f'in operation_order {operation_order}.'
-
+        self.init_cfg = init_cfg
         self.num_attn = num_attn
         self.feedforward_channels = feedforward_channels
         self.ffn_dropout = ffn_dropout
@@ -373,7 +382,7 @@ class BaseTransformerLayer(nn.Module):
 
 
 @TRANSFORMERLAYERSEQUENCE.register_module()
-class TransformerLayerSequence(nn.Module):
+class TransformerLayerSequence(BaseModule):
     """Base class for TransformerEncoder and TransformerDecoder in vision
     transformer.
 
@@ -390,7 +399,7 @@ class TransformerLayerSequence(nn.Module):
         num_layers (int): The number of `TransformerLayer`. Default: None.
     """
 
-    def __init__(self, transformerlayers=None, num_layers=None):
+    def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
         super(TransformerLayerSequence, self).__init__()
         if isinstance(transformerlayers, ConfigDict):
             transformerlayers = [
@@ -399,6 +408,7 @@ class TransformerLayerSequence(nn.Module):
         else:
             assert isinstance(transformerlayers, list) and \
                    len(transformerlayers) == num_layers
+        self.init_cfg = init_cfg
         self.num_layers = num_layers
         operation_order = transformerlayers[0]['operation_order']
         self.pre_norm = operation_order[0] == 'norm'
@@ -438,7 +448,7 @@ class TransformerLayerSequence(nn.Module):
                 shape [bs, num_queries]. Only used in self-attention
                 Default: None.
             key_padding_mask (Tensor): ByteTensor for `query`, with
-                shape [bs, num_keys].Default: None.
+                shape [bs, num_keys]. Default: None.
 
         Returns:
             Tensor: forwarded results with shape [num_queries, bs, embed_dims].
