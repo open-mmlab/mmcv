@@ -22,3 +22,4 @@ This document is used as a reference for English-Chinese terminology translation
 | training schedule | 训练策略 |
 | scheduler | 调度器 |
 | schedule | 调整 |
+| ground truth | 真实标签 |
