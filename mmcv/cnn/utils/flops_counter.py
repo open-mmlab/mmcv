@@ -40,11 +40,13 @@ def get_model_complexity_info(model,
                               input_constructor=None,
                               flush=False,
                               ost=sys.stdout):
-    """Get complexity information of a model. This method can calculate FLOPs
+    """Get complexity information of a model.
+    
+    This method can calculate FLOPs
     and parameter counts of a model with corresponding input shape. It can also
-    print complexity information for each layer in a model. Supported layers
-    are listed as below:
-
+    print complexity information for each layer in a model.
+    
+    Supported layers are listed as below:
         - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
         - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
             ``nn.ReLU6``.
@@ -59,6 +61,7 @@ def get_model_complexity_info(model,
         - Linear: ``nn.Linear``.
         - Deconvolution: ``nn.ConvTranspose2d``.
         - Upsample: ``nn.Upsample``.
+
     Args:
         model (nn.Module): The model for complexity calculation.
         input_shape (tuple): Input shape used for calculation.
@@ -72,6 +75,7 @@ def get_model_complexity_info(model,
         flush (bool): same as that in :func:`print`. Default: False.
         ost (stream): same as ``file`` param in :func:`print`.
             Default: sys.stdout.
+
     Returns:
         tuple[float | str]: If ``as_strings`` is set to True, it will return
             FLOPs and parameter counts in a string format. otherwise, it will
@@ -113,15 +117,19 @@ def get_model_complexity_info(model,
 
 def flops_to_string(flops, units='GFLOPs', precision=2):
     """Convert FLOPs number into a string.
+
     Note that Here we take a multiply-add counts as one FLOP.
+
     Args:
         flops (float): FLOPs number to be converted.
         units (str | None): Converted FLOPs units. Options are None, 'GFLOPs',
             'MFLOPs', 'KFLOPs', 'FLOPs'. If set to None, it will automatically
             choose the most suitable unit for FLOPs. Default: 'GFLOPs'.
         precision (int): Digit number after the decimal point. Default: 2.
+
     Returns:
         str: The converted FLOPs number with units.
+
     Examples:
         >>> flops_to_string(1e9)
         '1.0 GFLOPs'
@@ -152,14 +160,17 @@ def flops_to_string(flops, units='GFLOPs', precision=2):
 
 def params_to_string(num_params, units=None, precision=2):
     """Convert parameter number into a string.
+
     Args:
         num_params (float): Parameter number to be converted.
         units (str | None): Converted FLOPs units. Options are None, 'M',
             'K' and ''. If set to None, it will automatically choose the most
             suitable unit for Parameter number. Default: None.
         precision (int): Digit number after the decimal point. Default: 2.
+
     Returns:
         str: The converted parameter number with units.
+
     Examples:
         >>> params_to_string(1e9)
         '1000.0 M'
@@ -192,6 +203,7 @@ def print_model_with_flops(model,
                            ost=sys.stdout,
                            flush=False):
     """Print a model with FLOPs for each layer.
+
     Args:
         model (nn.Module): The model to be printed.
         total_flops (float): Total FLOPs of the model.
@@ -201,8 +213,10 @@ def print_model_with_flops(model,
         ost (stream): same as `file` param in :func:`print`.
             Default: sys.stdout.
         flush (bool): same as that in :func:`print`. Default: False.
+
     Example:
         >>> class ExampleModel(nn.Module):
+
         >>> def __init__(self):
         >>>     super().__init__()
         >>>     self.conv1 = nn.Conv2d(3, 8, 3)
@@ -211,6 +225,7 @@ def print_model_with_flops(model,
         >>>     self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
         >>>     self.flatten = nn.Flatten()
         >>>     self.fc = nn.Linear(8, 1)
+
         >>> def forward(self, x):
         >>>     x = self.conv1(x)
         >>>     x = self.conv2(x)
@@ -219,6 +234,7 @@ def print_model_with_flops(model,
         >>>     x = self.flatten(x)
         >>>     x = self.fc(x)
         >>>     return x
+
         >>> model = ExampleModel()
         >>> x = (3, 16, 16)
         to print the complexity inforamtion state for each layer, you can use
@@ -293,6 +309,7 @@ def get_model_parameters_number(model):
 
     Args:
         model (nn.module): The model for parameter number calculation.
+
     Returns:
         float: Parameter number of the model.
     """
@@ -322,6 +339,7 @@ def compute_average_flops_cost(self):
 
     A method to compute average FLOPs cost, which will be available after
     `add_flops_counting_methods()` is called on a desired net object.
+
     Returns:
         float: Current mean flops consumption per image.
     """
