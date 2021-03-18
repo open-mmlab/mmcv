@@ -409,7 +409,6 @@ def test_deform_conv():
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_grid_sample(mode, padding_mode, align_corners):
     from mmcv.onnx.symbolic import register_extra_symbolics
-    from itertools import product
 
     register_extra_symbolics(11)
 
