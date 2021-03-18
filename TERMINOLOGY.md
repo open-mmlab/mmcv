@@ -15,9 +15,9 @@ This document is used as a reference for English-Chinese terminology translation
 | register | 注册器 |
 | tensor | 张量 |
 | benchmark | 基准测试 |
-| recognizer | 动作识别器 |
-| detector | 时空动作检测器 |
-| localizer | 时序动作检测器 |
+| recognizer | 识别器 |
+| detector | 检测器 |
+| localizer | 定位器 |
 | annotation | 标注 |
 | training schedule | 训练策略 |
 | scheduler | 调度器 |
