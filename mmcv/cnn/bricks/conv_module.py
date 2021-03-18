@@ -145,8 +145,6 @@ class ConvModule(nn.Module):
             else:
                 norm_channels = in_channels
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
-            assert self.norm_name != 'norm', 'norm has been used as' \
-                'property of ConvModule'
             self.add_module(self.norm_name, norm)
         else:
             self.norm_name = None
