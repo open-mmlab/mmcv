@@ -412,7 +412,7 @@ void grid_sample(T *output, const T *input, const T *grid, int *output_dims,
     if (i == 1) {
       continue;
     }
-    count *= input_desc.shape[i];
+    count *= output_desc.shape[i];
   }
 
   if (nb_dims == 4) {

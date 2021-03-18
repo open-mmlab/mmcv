@@ -95,13 +95,13 @@ int GridSamplerDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
   using mmcv::GridSamplerInterpolation;
   using mmcv::GridSamplerPadding;
 
-  GridSamplerInterpolation intep_mode = GridSamplerInterpolation::Bilinear;
+  GridSamplerInterpolation interp_mode = GridSamplerInterpolation::Bilinear;
   switch (mMode) {
     case 0:
-      intep_mode = GridSamplerInterpolation::Bilinear;
+      interp_mode = GridSamplerInterpolation::Bilinear;
       break;
     case 1:
-      intep_mode = GridSamplerInterpolation::Nearest;
+      interp_mode = GridSamplerInterpolation::Nearest;
       break;
     default:
       break;
@@ -131,7 +131,7 @@ int GridSamplerDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
       grid_sample_float(
           (float *)outputs[0], (float *)inputs[0], (float *)inputs[1],
           &(output_dims.d[0]), &(input_dims.d[0]), &(grid_dims.d[0]),
-          input_dims.nbDims, intep_mode, padding_mode, mAlignCorners, stream);
+          input_dims.nbDims, interp_mode, padding_mode, mAlignCorners, stream);
       break;
     default:
       return 1;
