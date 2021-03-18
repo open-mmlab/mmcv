@@ -30,6 +30,7 @@ def build_transformerlayersequence(cfg, default_args=None):
     return build_from_cfg(cfg, TRANSFORMERLAYERSEQUENCE, default_args)
 
 
+@ATTENTION.register_module()
 class MultiheadAttention(nn.Module):
     """A warpper for torch.nn.MultiheadAttention.
 
@@ -185,6 +186,7 @@ class FFN(nn.Module):
         return residual + self.dropout(out)
 
 
+@TRANSFORMERLAYER.register_module()
 class BaseTransformerLayer(nn.Module):
     """Base `TransformerLayer` for vision transformer.
 
@@ -370,6 +372,7 @@ class BaseTransformerLayer(nn.Module):
         return query
 
 
+@TRANSFORMERLAYERSEQUENCE.register_module()
 class TransformerLayerSequence(nn.Module):
     """Base class for TransformerEncoder and TransformerDecoder in vision
     transformer.
