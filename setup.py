@@ -184,20 +184,32 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
-        define_macros = [('MMCV_USE_PARROTS', None)]
-        op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
-        include_path = os.path.abspath('./mmcv/ops/csrc')
+        # new parrots op impl do not use MMCV_USE_PARROTS
+        # define_macros = [('MMCV_USE_PARROTS', None)]
+        define_macros = []
+        op_files = glob.glob('./mmcv/ops/csrc/parrots/*.cu') +\
+            glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+        include_dirs = [os.path.abspath('./mmcv/ops/csrc')]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        extra_compile_args = {
+            'nvcc': [cuda_args] if cuda_args else [],
+            'cxx': [],
+        }
+        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            extra_compile_args['nvcc'] += [
+                '-D__CUDA_NO_HALF_OPERATORS__',
+                '-D__CUDA_NO_HALF_CONVERSIONS__',
+                '-D__CUDA_NO_HALF2_OPERATORS__',
+            ]
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
-            include_dirs=[include_path],
+            include_dirs=include_dirs,
             define_macros=define_macros,
-            extra_compile_args={
-                'nvcc': [cuda_args] if cuda_args else [],
-                'cxx': [],
-            },
-            cuda=True)
+            extra_compile_args=extra_compile_args,
+            cuda=True,
+            pytorch=True)
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'

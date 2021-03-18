@@ -4,9 +4,11 @@
 
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
+English | [简体中文](README_zh-CN.md)
+
 ## Introduction
 
-MMCV is a foundational python library for computer vision research and supports many
+MMCV is a foundational library for computer vision research and supports many
 research projects as below:
 
 - [MMDetection](https://github.com/open-mmlab/mmdetection): Detection toolbox and benchmark
@@ -146,11 +148,11 @@ Another way is to compile locally by running
 pip install mmcv-full
 ```
 
+Note that the local compiling may take up to 10 mins.
+
 c. Install full version with custom operators for onnxruntime
 
 - Check [here](docs/onnxruntime_op.md) for detailed instruction.
-
-Note that the local compiling may take up to 10 mins.
 
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
 
@@ -158,3 +160,7 @@ If you would like to build MMCV from source, please refer to the [guide](https:/
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
 you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).
+
+## Contributing
+
+We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.

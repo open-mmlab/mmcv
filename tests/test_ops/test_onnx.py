@@ -24,7 +24,9 @@ class WrapFunction(nn.Module):
 
 
 def test_nms():
-    from mmcv.ops import nms
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+    from mmcv.ops import get_onnxruntime_op_path, nms
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                         dtype=np.float32)
@@ -46,12 +48,19 @@ def test_nms():
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('nms for onnxruntime is not compiled.')
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+
     # get onnx output
     input_all = [node.name for node in onnx_model.graph.input]
     input_initializer = [node.name for node in onnx_model.graph.initializer]
     net_feed_input = list(set(input_all) - set(input_initializer))
     assert (len(net_feed_input) == 2)
-    sess = rt.InferenceSession(onnx_file)
+    sess = rt.InferenceSession(onnx_file, session_options)
     onnx_dets, _ = sess.run(None, {
         'scores': scores.detach().numpy(),
         'boxes': boxes.detach().numpy()
@@ -63,6 +72,8 @@ def test_nms():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_softnms():
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
 
     # only support pytorch >= 1.7.0
@@ -137,6 +148,8 @@ def test_softnms():
 
 
 def test_roialign():
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
     try:
         from mmcv.ops import roi_align
         from mmcv.ops import get_onnxruntime_op_path
@@ -209,6 +222,8 @@ def test_roialign():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import roi_pool
 
     # roi pool config
@@ -271,6 +286,8 @@ def test_roipool():
 
 
 def test_simplify():
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.onnx.simplify import simplify
 
     # only support PyTorch >= 1.5.0
@@ -292,3 +309,29 @@ def test_simplify():
     numel_after = len(slim_onnx_model.graph.node)
     os.remove(onnx_file)
     assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
+
+
+def test_interpolate():
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    opset_version = 11
+    register_extra_symbolics(opset_version)
+
+    def func(feat, scale_factor=2):
+        out = nn.functional.interpolate(feat, scale_factor=scale_factor)
+        return out
+
+    net = WrapFunction(func)
+    net = net.cpu().eval()
+    dummy_input = torch.randn(2, 4, 8, 8).cpu()
+    torch.onnx.export(
+        net,
+        dummy_input,
+        onnx_file,
+        input_names=['input'],
+        opset_version=opset_version)
+    sess = rt.InferenceSession(onnx_file)
+    onnx_result = sess.run(None, {'input': dummy_input.detach().numpy()})
+    pytorch_result = func(dummy_input).detach().numpy()
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    assert np.allclose(pytorch_result, onnx_result, atol=1e-3)

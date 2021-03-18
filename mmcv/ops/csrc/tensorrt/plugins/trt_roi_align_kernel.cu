@@ -9,7 +9,6 @@ void TRTRoIAlignForwardCUDAKernelLauncher(
     scalar_t spatial_scale, int sampling_ratio, int pool_mode, bool aligned,
     cudaStream_t stream) {
   roi_align_forward_cuda_kernel<scalar_t>
-
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           output_size, input, rois, output, argmax_y, argmax_x, aligned_height,
           aligned_width, static_cast<scalar_t>(spatial_scale), sampling_ratio,

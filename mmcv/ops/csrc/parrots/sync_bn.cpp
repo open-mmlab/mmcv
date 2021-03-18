@@ -1,139 +1,158 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void SyncBNForwardMeanCUDAKernelLauncher(const DArrayLite input,
-                                         DArrayLite mean, cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void SyncBNForwardMeanCUDAKernelLauncher(const Tensor input, Tensor mean);
 
-void SyncBNForwardVarCUDAKernelLauncher(const DArrayLite input,
-                                        const DArrayLite mean, DArrayLite var,
-                                        cudaStream_t stream);
+void SyncBNForwardVarCUDAKernelLauncher(const Tensor input, const Tensor mean,
+                                        Tensor var);
 
 void SyncBNForwardOutputCUDAKernelLauncher(
-    const DArrayLite input, const DArrayLite mean, const DArrayLite var,
-    DArrayLite running_mean, DArrayLite running_var, const DArrayLite weight,
-    const DArrayLite bias, DArrayLite norm, DArrayLite std, DArrayLite output,
-    const float eps, const float momentum, size_t group_size,
-    cudaStream_t stream);
+    const Tensor input, const Tensor mean, const Tensor var,
+    Tensor running_mean, Tensor running_var, const Tensor weight,
+    const Tensor bias, Tensor norm, Tensor std, Tensor output, float eps,
+    float momentum, int group_size);
 
-void SyncBNBackwardParamCUDAKernelLauncher(const DArrayLite grad_output,
-                                           const DArrayLite norm,
-                                           DArrayLite weight_diff,
-                                           DArrayLite bias_diff,
-                                           cudaStream_t stream);
+void SyncBNBackwardParamCUDAKernelLauncher(const Tensor grad_output,
+                                           const Tensor norm,
+                                           Tensor grad_weight,
+                                           Tensor grad_bias);
 
-void SyncBNBackwardDataCUDAKernelLauncher(
-    const DArrayLite grad_output, const DArrayLite weight,
-    const DArrayLite weight_diff, const DArrayLite bias_diff,
-    const DArrayLite norm, const DArrayLite std, DArrayLite grad_input,
-    cudaStream_t stream);
+void SyncBNBackwardDataCUDAKernelLauncher(const Tensor grad_output,
+                                          const Tensor weight,
+                                          const Tensor grad_weight,
+                                          const Tensor grad_bias,
+                                          const Tensor norm, const Tensor std,
+                                          Tensor grad_input);
 
-void sync_bn_forward_mean_cuda(CudaContext& ctx, const SSElement& attr,
-                               const OperatorBase::in_list_t& ins,
-                               OperatorBase::out_list_t& outs) {
-  const auto& input = ins[0];
-  auto& mean = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  SyncBNForwardMeanCUDAKernelLauncher(input, mean, stream);
+void sync_bn_forward_mean_cuda(const Tensor input, Tensor mean) {
+  SyncBNForwardMeanCUDAKernelLauncher(input, mean);
 }
 
-void sync_bn_forward_var_cuda(CudaContext& ctx, const SSElement& attr,
-                              const OperatorBase::in_list_t& ins,
-                              OperatorBase::out_list_t& outs) {
-  const auto& input = ins[0];
-  const auto& mean = ins[1];
-  auto& var = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  SyncBNForwardVarCUDAKernelLauncher(input, mean, var, stream);
+void sync_bn_forward_var_cuda(const Tensor input, const Tensor mean,
+                              Tensor var) {
+  SyncBNForwardVarCUDAKernelLauncher(input, mean, var);
 }
 
-void sync_bn_forward_output_cuda(CudaContext& ctx, const SSElement& attr,
-                                 const OperatorBase::in_list_t& ins,
-                                 OperatorBase::out_list_t& outs) {
-  size_t group_size;
-  float eps, momentum;
-  SSAttrs(attr)
-      .get<float>("eps", eps)
-      .get<float>("momentum", momentum)
-      .get<size_t>("group_size", group_size)
-      .done();
-
-  const auto& input = ins[0];
-  const auto& mean = ins[1];
-  const auto& var = ins[2];
-  const auto& weight = ins[3];
-  const auto& bias = ins[4];
-  auto& running_mean = outs[0];
-  auto& running_var = outs[1];
-  auto& norm = outs[2];
-  auto& std = outs[3];
-  auto& output = outs[4];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  SyncBNForwardOutputCUDAKernelLauncher(
-      input, mean, var, running_mean, running_var, weight, bias, norm, std,
-      output, eps, momentum, group_size, stream);
+void sync_bn_forward_output_cuda(const Tensor input, const Tensor mean,
+                                 const Tensor var, Tensor running_mean,
+                                 Tensor running_var, const Tensor weight,
+                                 const Tensor bias, Tensor norm, Tensor std,
+                                 Tensor output, float eps, float momentum,
+                                 int group_size) {
+  SyncBNForwardOutputCUDAKernelLauncher(input, mean, var, running_mean,
+                                        running_var, weight, bias, norm, std,
+                                        output, eps, momentum, group_size);
 }
 
-void sync_bn_backward_param_cuda(CudaContext& ctx, const SSElement& attr,
-                                 const OperatorBase::in_list_t& ins,
-                                 OperatorBase::out_list_t& outs) {
-  const auto& grad_output = ins[0];
-  const auto& norm = ins[1];
-  auto& grad_weight = outs[0];
-  auto& grad_bias = outs[1];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void sync_bn_backward_param_cuda(const Tensor grad_output, const Tensor norm,
+                                 Tensor grad_weight, Tensor grad_bias) {
   SyncBNBackwardParamCUDAKernelLauncher(grad_output, norm, grad_weight,
-                                        grad_bias, stream);
+                                        grad_bias);
 }
 
-void sync_bn_backward_data_cuda(CudaContext& ctx, const SSElement& attr,
-                                const OperatorBase::in_list_t& ins,
-                                OperatorBase::out_list_t& outs) {
-  const auto& grad_output = ins[0];
-  const auto& weight = ins[1];
-  const auto& grad_weight = ins[2];
-  const auto& grad_bias = ins[3];
-  const auto& norm = ins[4];
-  const auto& std = ins[5];
-  auto& grad_input = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void sync_bn_backward_data_cuda(const Tensor grad_output, const Tensor weight,
+                                const Tensor grad_weight,
+                                const Tensor grad_bias, const Tensor norm,
+                                const Tensor std, Tensor grad_input) {
   SyncBNBackwardDataCUDAKernelLauncher(grad_output, weight, grad_weight,
-                                       grad_bias, norm, std, grad_input,
-                                       stream);
+                                       grad_bias, norm, std, grad_input);
+}
+#endif
+
+void sync_bn_forward_mean(const Tensor input, Tensor mean) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    sync_bn_forward_mean_cuda(input, mean);
+#else
+    AT_ERROR("SyncBatchNorm is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SyncBatchNorm is not implemented on CPU");
+  }
 }
 
-PARROTS_EXTENSION_REGISTER(sync_bn_forward_mean)
-    .input(1)
-    .output(1)
-    .apply(sync_bn_forward_mean_cuda)
-    .done();
+void sync_bn_forward_var(const Tensor input, const Tensor mean, Tensor var) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    CHECK_CUDA_INPUT(var);
+    sync_bn_forward_var_cuda(input, mean, var);
+#else
+    AT_ERROR("SyncBatchNorm is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SyncBatchNorm is not implemented on CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(sync_bn_forward_var)
-    .input(2)
-    .output(1)
-    .apply(sync_bn_forward_var_cuda)
-    .done();
+void sync_bn_forward_output(const Tensor input, const Tensor mean,
+                            const Tensor var, const Tensor weight,
+                            const Tensor bias, Tensor running_mean,
+                            Tensor running_var, Tensor norm, Tensor std,
+                            Tensor output, float eps, float momentum,
+                            int group_size) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(mean);
+    CHECK_CUDA_INPUT(var);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(bias);
+    CHECK_CUDA_INPUT(running_mean);
+    CHECK_CUDA_INPUT(running_var);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(std);
+    CHECK_CUDA_INPUT(output);
+    sync_bn_forward_output_cuda(input, mean, var, running_mean, running_var,
+                                weight, bias, norm, std, output, eps, momentum,
+                                group_size);
+#else
+    AT_ERROR("SyncBatchNorm is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SyncBatchNorm is not implemented on CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(sync_bn_forward_output)
-    .attr("eps")
-    .attr("momentum")
-    .attr("group_size")
-    .input(5)
-    .output(5)
-    .apply(sync_bn_forward_output_cuda)
-    .done();
+void sync_bn_backward_param(const Tensor grad_output, const Tensor norm,
+                            Tensor grad_weight, Tensor grad_bias) {
+  if (grad_output.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(grad_weight);
+    CHECK_CUDA_INPUT(grad_bias);
+    sync_bn_backward_param_cuda(grad_output, norm, grad_weight, grad_bias);
+#else
+    AT_ERROR("SyncBatchNorm is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SyncBatchNorm is not implemented on CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(sync_bn_backward_param)
-    .input(2)
-    .output(2)
-    .apply(sync_bn_backward_param_cuda)
-    .done();
-
-PARROTS_EXTENSION_REGISTER(sync_bn_backward_data)
-    .input(6)
-    .output(1)
-    .apply(sync_bn_backward_data_cuda)
-    .done();
+void sync_bn_backward_data(const Tensor grad_output, const Tensor weight,
+                           const Tensor grad_weight, const Tensor grad_bias,
+                           const Tensor norm, const Tensor std,
+                           Tensor grad_input) {
+  if (grad_output.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(grad_weight);
+    CHECK_CUDA_INPUT(grad_bias);
+    CHECK_CUDA_INPUT(norm);
+    CHECK_CUDA_INPUT(std);
+    CHECK_CUDA_INPUT(grad_input);
+    sync_bn_backward_data_cuda(grad_output, weight, grad_weight, grad_bias,
+                               norm, std, grad_input);
+#else
+    AT_ERROR("SyncBatchNorm is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SyncBatchNorm is not implemented on CPU");
+  }
+}

@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import copy
 import logging
 import os.path as osp
 import warnings
@@ -11,7 +12,7 @@ import mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import HOOKS, Hook, IterTimerHook
+from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
 from .priority import get_priority
 from .utils import get_time_str
@@ -102,7 +103,6 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
-
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)
@@ -306,10 +306,20 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
-    def load_checkpoint(self, filename, map_location='cpu', strict=False):
+    def load_checkpoint(self,
+                        filename,
+                        map_location='cpu',
+                        strict=False,
+                        revise_keys=[(r'^module.', '')]):
+
         self.logger.info('load checkpoint from %s', filename)
-        return load_checkpoint(self.model, filename, map_location, strict,
-                               self.logger)
+        return load_checkpoint(
+            self.model,
+            filename,
+            map_location,
+            strict,
+            self.logger,
+            revise_keys=revise_keys)
 
     def resume(self,
                checkpoint,
@@ -329,6 +339,20 @@ class BaseRunner(metaclass=ABCMeta):
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
+
+        # Re-calculate the number of iterations when resuming
+        # models with different number of GPUs
+        if 'config' in checkpoint['meta']:
+            config = mmcv.Config.fromstring(
+                checkpoint['meta']['config'], file_format='.py')
+            previous_gpu_ids = config.get('gpu_ids', None)
+            if previous_gpu_ids and len(previous_gpu_ids) > 0 and len(
+                    previous_gpu_ids) != self.world_size:
+                self._iter = int(self._iter * len(previous_gpu_ids) /
+                                 self.world_size)
+                self.logger.info('the iteration number is changed due to '
+                                 'change of GPU number')
+
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -414,12 +438,23 @@ class BaseRunner(metaclass=ABCMeta):
                 info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
+    def register_timer_hook(self, timer_config):
+        if timer_config is None:
+            return
+        if isinstance(timer_config, dict):
+            timer_config_ = copy.deepcopy(timer_config)
+            hook = mmcv.build_from_cfg(timer_config_, HOOKS)
+        else:
+            hook = timer_config
+        self.register_hook(hook)
+
     def register_training_hooks(self,
                                 lr_config,
                                 optimizer_config=None,
                                 checkpoint_config=None,
                                 log_config=None,
-                                momentum_config=None):
+                                momentum_config=None,
+                                timer_config=dict(type='IterTimerHook')):
         """Register default hooks for training.
 
         Default hooks include:
@@ -435,5 +470,5 @@ class BaseRunner(metaclass=ABCMeta):
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
-        self.register_hook(IterTimerHook())
+        self.register_timer_hook(timer_config)
         self.register_logger_hooks(log_config)

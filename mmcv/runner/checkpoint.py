@@ -3,6 +3,7 @@ import io
 import os
 import os.path as osp
 import pkgutil
+import re
 import time
 import warnings
 from collections import OrderedDict
@@ -269,22 +270,23 @@ def load_from_http(filename, map_location=None, model_dir=None):
     Args:
         filename (str): checkpoint file path with modelzoo or
             torchvision prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
         model_dir (string, optional): directory in which to save the object,
             Default: None
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
+        checkpoint = model_zoo.load_url(
+            filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(filename, model_dir=model_dir)
+            checkpoint = model_zoo.load_url(
+                filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
 
@@ -370,7 +372,7 @@ def load_from_torchvision(filename, map_location=None):
     Args:
         filename (str): checkpoint file path with modelzoo or
             torchvision prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -382,7 +384,7 @@ def load_from_torchvision(filename, map_location=None):
         model_name = filename[11:]
     else:
         model_name = filename[14:]
-    return load_from_http(model_urls[model_name])
+    return load_from_http(model_urls[model_name], map_location=map_location)
 
 
 @CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
@@ -416,7 +418,7 @@ def load_from_openmmlab(filename, map_location=None):
     model_url = model_urls[model_name]
     # check if is url
     if model_url.startswith(('http://', 'https://')):
-        checkpoint = load_from_http(model_url)
+        checkpoint = load_from_http(model_url, map_location=map_location)
     else:
         filename = osp.join(_get_mmcv_home(), model_url)
         if not osp.isfile(filename):
@@ -431,7 +433,7 @@ def load_from_mmcls(filename, map_location=None):
 
     Args:
         filename (str): checkpoint file path with mmcls prefix
-        map_location (str, optional): it's not use.
+        map_location (str, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -439,7 +441,8 @@ def load_from_mmcls(filename, map_location=None):
 
     model_urls = get_mmcls_models()
     model_name = filename[8:]
-    checkpoint = load_from_http(model_urls[model_name])
+    checkpoint = load_from_http(
+        model_urls[model_name], map_location=map_location)
     checkpoint = _process_mmcls_checkpoint(checkpoint)
     return checkpoint
 
@@ -464,11 +467,45 @@ def _load_checkpoint(filename, map_location=None, logger=None):
     return CheckpointLoader.load_checkpoint(filename, map_location, logger)
 
 
+def _load_checkpoint_with_prefix(prefix, filename, map_location=None):
+    """Load partial pretrained model with specific prefix.
+
+    Args:
+        prefix (str): The prefix of sub-module.
+        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
+            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
+            details.
+        map_location (str | None): Same as :func:`torch.load`. Default: None.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    checkpoint = _load_checkpoint(filename, map_location=map_location)
+
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
+    if not prefix.endswith('.'):
+        prefix += '.'
+    prefix_len = len(prefix)
+
+    state_dict = {
+        k[prefix_len:]: v
+        for k, v in state_dict.items() if k.startswith(prefix)
+    }
+
+    assert state_dict, f'{prefix} is not in the pretrained model'
+    return state_dict
+
+
 def load_checkpoint(model,
                     filename,
                     map_location=None,
                     strict=False,
-                    logger=None):
+                    logger=None,
+                    revise_keys=[(r'^module\.', '')]):
     """Load checkpoint from a file or URI.
 
     Args:
@@ -480,6 +517,11 @@ def load_checkpoint(model,
         strict (bool): Whether to allow different params for the model and
             checkpoint.
         logger (:mod:`logging.Logger` or None): The logger for error message.
+        revise_keys (list): A list of customized keywords to modify the
+            state_dict in checkpoint. Each item is a (pattern, replacement)
+            pair of the regular expression operations. Default: strip
+            the prefix 'module.' by [(r'^module\\.', '')].
+
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -495,8 +537,8 @@ def load_checkpoint(model,
     else:
         state_dict = checkpoint
     # strip prefix of state_dict
-    if list(state_dict.keys())[0].startswith('module.'):
-        state_dict = {k[7:]: v for k, v in state_dict.items()}
+    for p, r in revise_keys:
+        state_dict = {re.sub(p, r, k): v for k, v in state_dict.items()}
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint

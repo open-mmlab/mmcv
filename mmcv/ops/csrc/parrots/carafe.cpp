@@ -1,84 +1,83 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void CARAFEForwardCUDAKernelLauncher(
-    const DArrayLite features, const DArrayLite masks, DArrayLite rfeatures,
-    DArrayLite routput, DArrayLite rmasks, DArrayLite output,
-    const int kernel_size, const int group_size, const int scale_factor,
-    cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
+                                     Tensor rfeatures, Tensor routput,
+                                     Tensor rmasks, Tensor output,
+                                     const int kernel_size,
+                                     const int group_size,
+                                     const int scale_factor);
 
 void CARAFEBackwardCUDAKernelLauncher(
-    const DArrayLite top_grad, const DArrayLite rfeatures,
-    const DArrayLite masks, DArrayLite rtop_grad, DArrayLite rbottom_grad_hs,
-    DArrayLite rbottom_grad, DArrayLite rmask_grad, DArrayLite bottom_grad,
-    DArrayLite mask_grad, const int kernel_size, const int group_size,
-    const int scale_factor, cudaStream_t stream);
+    const Tensor top_grad, const Tensor rfeatures, const Tensor masks,
+    Tensor rtop_grad, Tensor rbottom_grad_hs, Tensor rbottom_grad,
+    Tensor rmask_grad, Tensor bottom_grad, Tensor mask_grad,
+    const int kernel_size, const int group_size, const int scale_factor);
 
-void carafe_forward_cuda(CudaContext& ctx, const SSElement& attr,
-                         const OperatorBase::in_list_t& ins,
-                         OperatorBase::out_list_t& outs) {
-  int kernel_size, group_size, scale_factor;
-  SSAttrs(attr)
-      .get<int>("kernel_size", kernel_size)
-      .get<int>("group_size", group_size)
-      .get<int>("scale_factor", scale_factor)
-      .done();
-
-  const auto& features = ins[0];
-  const auto& masks = ins[1];
-
-  auto& rfeatures = outs[0];
-  auto& routput = outs[1];
-  auto& rmasks = outs[2];
-  auto& output = outs[3];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void carafe_forward_cuda(Tensor features, Tensor masks, Tensor rfeatures,
+                         Tensor routput, Tensor rmasks, Tensor output,
+                         int kernel_size, int group_size, int scale_factor) {
   CARAFEForwardCUDAKernelLauncher(features, masks, rfeatures, routput, rmasks,
-                                  output, kernel_size, group_size, scale_factor,
-                                  stream);
+                                  output, kernel_size, group_size,
+                                  scale_factor);
 }
 
-void carafe_backward_cuda(CudaContext& ctx, const SSElement& attr,
-                          const OperatorBase::in_list_t& ins,
-                          OperatorBase::out_list_t& outs) {
-  int kernel_size, group_size, scale_factor;
-  SSAttrs(attr)
-      .get<int>("kernel_size", kernel_size)
-      .get<int>("group_size", group_size)
-      .get<int>("scale_factor", scale_factor)
-      .done();
-
-  const auto& top_grad = ins[0];
-  const auto& rfeatures = ins[1];
-  const auto& masks = ins[2];
-
-  auto& rtop_grad = outs[0];
-  auto rbottom_grad_hs = outs[1];
-  auto& rbottom_grad = outs[2];
-  auto& rmask_grad = outs[3];
-  auto& bottom_grad = outs[4];
-  auto& mask_grad = outs[5];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void carafe_backward_cuda(Tensor top_grad, Tensor rfeatures, Tensor masks,
+                          Tensor rtop_grad, Tensor rbottom_grad_hs,
+                          Tensor rbottom_grad, Tensor rmask_grad,
+                          Tensor bottom_grad, Tensor mask_grad, int kernel_size,
+                          int group_size, int scale_factor) {
   CARAFEBackwardCUDAKernelLauncher(top_grad, rfeatures, masks, rtop_grad,
                                    rbottom_grad_hs, rbottom_grad, rmask_grad,
                                    bottom_grad, mask_grad, kernel_size,
-                                   group_size, scale_factor, stream);
+                                   group_size, scale_factor);
+}
+#endif
+
+void carafe_forward(Tensor features, Tensor masks, Tensor rfeatures,
+                    Tensor routput, Tensor rmasks, Tensor output,
+                    int kernel_size, int group_size, int scale_factor) {
+  if (features.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(features);
+    CHECK_CUDA_INPUT(masks);
+    CHECK_CUDA_INPUT(rfeatures);
+    CHECK_CUDA_INPUT(routput);
+    CHECK_CUDA_INPUT(rmasks);
+    CHECK_CUDA_INPUT(output);
+    carafe_forward_cuda(features, masks, rfeatures, routput, rmasks, output,
+                        kernel_size, group_size, scale_factor);
+#else
+    AT_ERROR("Carafe is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("Carafe is not implemented on CPU");
+  }
 }
 
-PARROTS_EXTENSION_REGISTER(carafe_forward)
-    .attr("kernel_size")
-    .attr("group_size")
-    .attr("scale_factor")
-    .input(2)
-    .output(4)
-    .apply(carafe_forward_cuda)
-    .done();
-
-PARROTS_EXTENSION_REGISTER(carafe_backward)
-    .attr("kernel_size")
-    .attr("group_size")
-    .attr("scale_factor")
-    .input(3)
-    .output(6)
-    .apply(carafe_backward_cuda)
-    .done();
+void carafe_backward(Tensor top_grad, Tensor rfeatures, Tensor masks,
+                     Tensor rtop_grad, Tensor rbottom_grad_hs,
+                     Tensor rbottom_grad, Tensor rmask_grad, Tensor bottom_grad,
+                     Tensor mask_grad, int kernel_size, int group_size,
+                     int scale_factor) {
+  if (top_grad.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(top_grad);
+    CHECK_CUDA_INPUT(rfeatures);
+    CHECK_CUDA_INPUT(masks);
+    CHECK_CUDA_INPUT(rtop_grad);
+    CHECK_CUDA_INPUT(rbottom_grad_hs);
+    CHECK_CUDA_INPUT(rbottom_grad);
+    CHECK_CUDA_INPUT(rmask_grad);
+    CHECK_CUDA_INPUT(bottom_grad);
+    CHECK_CUDA_INPUT(mask_grad);
+    carafe_backward_cuda(top_grad, rfeatures, masks, rtop_grad, rbottom_grad_hs,
+                         rbottom_grad, rmask_grad, bottom_grad, mask_grad,
+                         kernel_size, group_size, scale_factor);
+#else
+    AT_ERROR("Carafe is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("Carafe is not implemented on CPU");
+  }
+}

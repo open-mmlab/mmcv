@@ -1,5 +1,6 @@
 import sys
 from collections import OrderedDict
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
 import pytest
@@ -8,7 +9,9 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel
 
 from mmcv.parallel.registry import MODULE_WRAPPERS
-from mmcv.runner.checkpoint import get_state_dict, load_from_pavi
+from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
+                                    get_state_dict, load_checkpoint,
+                                    load_from_pavi)
 
 
 @MODULE_WRAPPERS.register_module()
@@ -138,6 +141,7 @@ def test_get_state_dict():
 
 
 def test_load_pavimodel_dist():
+
     sys.modules['pavi'] = MagicMock()
     sys.modules['pavi.modelcloud'] = MagicMock()
     pavimodel = Mockpavimodel()
@@ -152,10 +156,77 @@ def test_load_pavimodel_dist():
         _ = load_from_pavi('pavi://checkpoint.pth')
 
 
-def test_load_classes_name():
-    from mmcv.runner import load_checkpoint, save_checkpoint
-    import tempfile
+def test_load_checkpoint_with_prefix():
+
+    class FooModule(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.linear = nn.Linear(1, 2)
+            self.conv2d = nn.Conv2d(3, 1, 3)
+            self.conv2d_2 = nn.Conv2d(3, 2, 3)
+
+    model = FooModule()
+    nn.init.constant_(model.linear.weight, 1)
+    nn.init.constant_(model.linear.bias, 2)
+    nn.init.constant_(model.conv2d.weight, 3)
+    nn.init.constant_(model.conv2d.bias, 4)
+    nn.init.constant_(model.conv2d_2.weight, 5)
+    nn.init.constant_(model.conv2d_2.bias, 6)
+
+    with TemporaryDirectory():
+        torch.save(model.state_dict(), 'model.pth')
+        prefix = 'conv2d'
+        state_dict = _load_checkpoint_with_prefix(prefix, 'model.pth')
+        assert torch.equal(model.conv2d.state_dict()['weight'],
+                           state_dict['weight'])
+        assert torch.equal(model.conv2d.state_dict()['bias'],
+                           state_dict['bias'])
+
+        # test whether prefix is in pretrained model
+        with pytest.raises(AssertionError):
+            prefix = 'back'
+            _load_checkpoint_with_prefix(prefix, 'model.pth')
+
+
+def test_load_checkpoint():
     import os
+    import tempfile
+    import re
+
+    class PrefixModel(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.backbone = Model()
+
+    pmodel = PrefixModel()
+    model = Model()
+    checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
+
+    # add prefix
+    torch.save(model.state_dict(), checkpoint_path)
+    state_dict = load_checkpoint(
+        pmodel, checkpoint_path, revise_keys=[(r'^', 'backbone.')])
+    for key in pmodel.backbone.state_dict().keys():
+        assert torch.equal(pmodel.backbone.state_dict()[key], state_dict[key])
+    # strip prefix
+    torch.save(pmodel.state_dict(), checkpoint_path)
+    state_dict = load_checkpoint(
+        model, checkpoint_path, revise_keys=[(r'^backbone\.', '')])
+
+    for key in state_dict.keys():
+        key_stripped = re.sub(r'^backbone\.', '', key)
+        assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
+    os.remove(checkpoint_path)
+
+
+def test_load_classes_name():
+    import os
+
+    import tempfile
+
+    from mmcv.runner import load_checkpoint, save_checkpoint
     checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
     model = Model()
     save_checkpoint(model, checkpoint_path)
