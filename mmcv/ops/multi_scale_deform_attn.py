@@ -103,18 +103,18 @@ def multi_scale_deformable_attn_pytorch(value, value_spatial_shapes,
                              dim=1)
     sampling_grids = 2 * sampling_locations - 1
     sampling_value_list = []
-    for lid_, (H_, W_) in enumerate(value_spatial_shapes):
+    for level, (H_, W_) in enumerate(value_spatial_shapes):
         # bs, H_*W_, num_heads, embed_dims ->
         # bs, H_*W_, num_heads*embed_dims ->
         # bs, num_heads*embed_dims, H_*W_ ->
         # bs*num_heads, embed_dims, H_, W_
-        value_l_ = value_list[lid_].flatten(2).transpose(1, 2).reshape(
+        value_l_ = value_list[level].flatten(2).transpose(1, 2).reshape(
             bs * num_heads, embed_dims, H_, W_)
         # bs, num_queries, num_heads, num_points, 2 ->
         # bs, num_heads, num_queries, num_points, 2 ->
         # bs*num_heads, num_queries, num_points, 2
         sampling_grid_l_ = sampling_grids[:, :, :,
-                                          lid_].transpose(1, 2).flatten(0, 1)
+                                          level].transpose(1, 2).flatten(0, 1)
         # bs*num_heads, embed_dims, num_queries, num_points
         sampling_value_l_ = F.grid_sample(
             value_l_,

@@ -395,7 +395,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
   m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
-        "forward function of multi-scale deformable attention");
+        "forward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("im2col_step"));
   m.def("ms_deform_attn_backward", &ms_deform_attn_backward,
-        "backward function of multi-scale deformable attention");
+        "backward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("grad_output"),
+        py::arg("im2col_step"));
 }
