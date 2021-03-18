@@ -1,13 +1,13 @@
 #include "deform_conv_cuda_kernel.cuh"
-#include "parrots_cuda_helper.hpp"
+#include "pytorch_cuda_helper.hpp"
 
-void deformable_im2col(DArrayLite data_im, DArrayLite data_offset,
-                       const int channels, const int height, const int width,
-                       const int ksize_h, const int ksize_w, const int pad_h,
-                       const int pad_w, const int stride_h, const int stride_w,
+void deformable_im2col(Tensor data_im, Tensor data_offset, const int channels,
+                       const int height, const int width, const int ksize_h,
+                       const int ksize_w, const int pad_h, const int pad_w,
+                       const int stride_h, const int stride_w,
                        const int dilation_h, const int dilation_w,
                        const int parallel_imgs, const int deformable_group,
-                       DArrayLite data_col, cudaStream_t stream) {
+                       Tensor data_col) {
   // num_axes should be smaller than block size
   // todo: check parallel_imgs is correctly passed in
   int height_col =
@@ -17,28 +17,31 @@ void deformable_im2col(DArrayLite data_im, DArrayLite data_offset,
   int num_kernels = channels * height_col * width_col * parallel_imgs;
   int channel_per_deformable_group = channels / deformable_group;
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_im.elemType().prim(), ([&] {
-        deformable_im2col_gpu_kernel<scalar_t>
-            <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-                num_kernels, data_im.ptr<scalar_t>(),
-                data_offset.ptr<scalar_t>(), height, width, ksize_h, ksize_w,
-                pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
-                channel_per_deformable_group, parallel_imgs, channels,
-                deformable_group, height_col, width_col,
-                data_col.ptr<scalar_t>());
-      }));
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_im.scalar_type(), "deformable_im2col_gpu", ([&] {
+        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
 
-  PARROTS_CUDA_CHECK(cudaGetLastError());
+        deformable_im2col_gpu_kernel<<<GET_BLOCKS(num_kernels),
+                                       THREADS_PER_BLOCK, 0,
+                                       at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_im_, data_offset_, height, width, ksize_h,
+            ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
+            channel_per_deformable_group, parallel_imgs, channels,
+            deformable_group, height_col, width_col, data_col_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void deformable_col2im(DArrayLite data_col, DArrayLite data_offset,
-                       const int channels, const int height, const int width,
-                       const int ksize_h, const int ksize_w, const int pad_h,
-                       const int pad_w, const int stride_h, const int stride_w,
+void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
+                       const int height, const int width, const int ksize_h,
+                       const int ksize_w, const int pad_h, const int pad_w,
+                       const int stride_h, const int stride_w,
                        const int dilation_h, const int dilation_w,
                        const int parallel_imgs, const int deformable_group,
-                       DArrayLite grad_im, cudaStream_t stream) {
+                       Tensor grad_im) {
+  // todo: make sure parallel_imgs is passed in correctly
   int height_col =
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
   int width_col =
@@ -47,27 +50,29 @@ void deformable_col2im(DArrayLite data_col, DArrayLite data_offset,
       channels * ksize_h * ksize_w * height_col * width_col * parallel_imgs;
   int channel_per_deformable_group = channels / deformable_group;
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_col.elemType().prim(), ([&] {
-        deformable_col2im_gpu_kernel<<<GET_BLOCKS(num_kernels),
-                                       THREADS_PER_BLOCK, 0, stream>>>(
-            num_kernels, data_col.ptr<scalar_t>(), data_offset.ptr<scalar_t>(),
-            channels, height, width, ksize_h, ksize_w, pad_h, pad_w, stride_h,
-            stride_w, dilation_h, dilation_w, channel_per_deformable_group,
-            parallel_imgs, deformable_group, height_col, width_col,
-            grad_im.ptr<scalar_t>());
-      }));
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_col.scalar_type(), "deformable_col2im_gpu", ([&] {
+        const scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        scalar_t *grad_im_ = grad_im.data_ptr<scalar_t>();
 
-  PARROTS_CUDA_CHECK(cudaGetLastError());
+        deformable_col2im_gpu_kernel<<<GET_BLOCKS(num_kernels),
+                                       THREADS_PER_BLOCK, 0,
+                                       at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_col_, data_offset_, channels, height, width,
+            ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h,
+            dilation_w, channel_per_deformable_group, parallel_imgs,
+            deformable_group, height_col, width_col, grad_im_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
 }
 
 void deformable_col2im_coord(
-    DArrayLite data_col, DArrayLite data_im, DArrayLite data_offset,
-    const int channels, const int height, const int width, const int ksize_h,
-    const int ksize_w, const int pad_h, const int pad_w, const int stride_h,
-    const int stride_w, const int dilation_h, const int dilation_w,
-    const int parallel_imgs, const int deformable_group, DArrayLite grad_offset,
-    cudaStream_t stream) {
+    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
+    const int height, const int width, const int ksize_h, const int ksize_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const int parallel_imgs,
+    const int deformable_group, Tensor grad_offset) {
   int height_col =
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
   int width_col =
@@ -77,51 +82,55 @@ void deformable_col2im_coord(
   int channel_per_deformable_group =
       channels * ksize_h * ksize_w / deformable_group;
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_col.elemType().prim(), ([&] {
-        deformable_col2im_coord_gpu_kernel<<<GET_BLOCKS(num_kernels),
-                                             THREADS_PER_BLOCK, 0, stream>>>(
-            num_kernels, data_col.ptr<scalar_t>(), data_im.ptr<scalar_t>(),
-            data_offset.ptr<scalar_t>(), channels, height, width, ksize_h,
-            ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
-            channel_per_deformable_group, parallel_imgs,
-            2 * ksize_h * ksize_w * deformable_group, deformable_group,
-            height_col, width_col, grad_offset.ptr<scalar_t>());
-      }));
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_col.scalar_type(), "deformable_col2im_coord_gpu", ([&] {
+        const scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
+        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        scalar_t *grad_offset_ = grad_offset.data_ptr<scalar_t>();
 
-  PARROTS_CUDA_CHECK(cudaGetLastError());
+        deformable_col2im_coord_gpu_kernel<<<
+            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_col_, data_im_, data_offset_, channels, height,
+            width, ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w,
+            dilation_h, dilation_w, channel_per_deformable_group, parallel_imgs,
+            2 * ksize_h * ksize_w * deformable_group, deformable_group,
+            height_col, width_col, grad_offset_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void deform_conv_shape_check(DArrayLite input, DArrayLite offset,
-                             DArrayLite* gradOutput, DArrayLite weight, int kH,
-                             int kW, int dH, int dW, int padH, int padW,
-                             int dilationH, int dilationW, int group,
-                             int deformable_group) {
-  PARROTS_CHECKARGS(weight.ndims() == 4)
-      << "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, but got: "
-      << weight.ndims();
+void deform_conv_shape_check(Tensor input, Tensor offset, Tensor *gradOutput,
+                             Tensor weight, int kH, int kW, int dH, int dW,
+                             int padH, int padW, int dilationH, int dilationW,
+                             int group, int deformable_group) {
+  TORCH_CHECK(
+      weight.ndimension() == 4,
+      "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, but got: %s",
+      weight.ndimension());
 
-  PARROTS_CHECKARGS(weight.isContiguous())
-      << "weight tensor has to be contiguous";
+  TORCH_CHECK(weight.is_contiguous(), "weight tensor has to be contiguous");
 
-  PARROTS_CHECKARGS(kW > 0 && kH > 0)
-      << "kernel size should be greater than zero, but got kH: " << kH
-      << " kW: " << kW;
+  TORCH_CHECK(kW > 0 && kH > 0,
+              "kernel size should be greater than zero, but got kH: %d kW: %d",
+              kH, kW);
 
-  PARROTS_CHECKARGS(weight.dim(2) == kH && weight.dim(3) == kW)
-      << "kernel size should be consistent with weight, but got kH: " << kH
-      << " kW: " << kW << " weight.dim(2): " << weight.dim(2)
-      << ", weight.dim(3): " << weight.dim(3);
+  TORCH_CHECK((weight.size(2) == kH && weight.size(3) == kW),
+              "kernel size should be consistent with weight, ",
+              "but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d",
+              kH, kW, weight.size(2), weight.size(3));
 
-  PARROTS_CHECKARGS(dW > 0 && dH > 0)
-      << "stride should be greater than zero, but got dH: " << dH
-      << " dW: " << dW;
+  TORCH_CHECK(dW > 0 && dH > 0,
+              "stride should be greater than zero, but got dH: %d dW: %d", dH,
+              dW);
 
-  PARROTS_CHECKARGS(dilationW > 0 && dilationH > 0)
-      << "dilation should be greater than 0, but got dilationH: " << dilationH
-      << " dilationW: " << dilationW;
+  TORCH_CHECK(
+      dilationW > 0 && dilationH > 0,
+      "dilation should be greater than 0, but got dilationH: %d dilationW: %d",
+      dilationH, dilationW);
 
-  int ndim = input.ndims();
+  int ndim = input.ndimension();
   int dimf = 0;
   int dimh = 1;
   int dimw = 2;
@@ -132,62 +141,67 @@ void deform_conv_shape_check(DArrayLite input, DArrayLite offset,
     dimw++;
   }
 
-  PARROTS_CHECKARGS(ndim == 3 || ndim == 4)
-      << "3D or 4D input tensor expected but got: " << ndim;
+  TORCH_CHECK(ndim == 3 || ndim == 4,
+              "3D or 4D input tensor expected but got: %s", ndim);
 
-  size_t nInputPlane = weight.dim(1) * group;
-  size_t inputHeight = input.dim(dimh);
-  size_t inputWidth = input.dim(dimw);
-  size_t nOutputPlane = weight.dim(0);
-  size_t outputHeight =
+  long nInputPlane = weight.size(1) * group;
+  long inputHeight = input.size(dimh);
+  long inputWidth = input.size(dimw);
+  long nOutputPlane = weight.size(0);
+  long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
-  size_t outputWidth =
+  long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
 
-  PARROTS_CHECKARGS(nInputPlane % deformable_group == 0)
-      << "input channels must divide deformable group size";
+  TORCH_CHECK(nInputPlane % deformable_group == 0,
+              "input channels must divide deformable group size");
 
-  PARROTS_CHECKARGS(outputWidth >= 1 || outputHeight >= 1)
-      << "Given input size: (" << nInputPlane << " x " << inputHeight << " x "
-      << inputWidth << "). Calculated output size: (" << nOutputPlane << " x "
-      << outputHeight << " x " << outputWidth << "). Output size is too small";
+  if (outputWidth < 1 || outputHeight < 1)
+    AT_ERROR(
+        "Given input size: (%ld x %ld x %ld). "
+        "Calculated output size: (%ld x %ld x %ld). Output size is too small",
+        nInputPlane, inputHeight, inputWidth, nOutputPlane, outputHeight,
+        outputWidth);
 
-  PARROTS_CHECKARGS(input.dim(1) == nInputPlane)
-      << "invalid number of input planes, expected: " << nInputPlane
-      << ", but got: " << input.dim(1);
+  TORCH_CHECK(input.size(1) == nInputPlane,
+              "invalid number of input planes, expected: %d, but got: %d",
+              nInputPlane, input.size(1));
 
-  PARROTS_CHECKARGS(inputHeight >= kH && inputWidth >= kW)
-      << "input image is smaller than kernel";
+  TORCH_CHECK((inputHeight >= kH && inputWidth >= kW),
+              "input image is smaller than kernel");
 
-  PARROTS_CHECKARGS(offset.dim(2) == outputHeight &&
-                    offset.dim(3) == outputWidth)
-      << "invalid spatial dim of offset, expected height: " << outputHeight
-      << " width: " << outputWidth << ", but got height: " << offset.dim(2)
-      << " width: " << offset.dim(3);
+  TORCH_CHECK(
+      (offset.size(2) == outputHeight && offset.size(3) == outputWidth),
+      "invalid spatial size of offset, expected height: %d width: %d, but "
+      "got height: %d width: %d",
+      outputHeight, outputWidth, offset.size(2), offset.size(3));
 
-  PARROTS_CHECKARGS(offset.dim(1) == deformable_group * 2 * kH * kW)
-      << "invalid number of channels of offset";
+  TORCH_CHECK((offset.size(1) == deformable_group * 2 * kH * kW),
+              "invalid number of channels of offset");
 
   if (gradOutput != NULL) {
-    PARROTS_CHECKARGS(gradOutput->dim(dimf) == nOutputPlane)
-        << "invalid number of gradOutput planes, expected: " << nOutputPlane
-        << ", but got: " << gradOutput->dim(dimf);
+    TORCH_CHECK(
+        gradOutput->size(dimf) == nOutputPlane,
+        "invalid number of gradOutput planes, expected: %d, but got: %d",
+        nOutputPlane, gradOutput->size(dimf));
 
-    PARROTS_CHECKARGS(gradOutput->dim(dimh) == outputHeight &&
-                      gradOutput->dim(dimw) == outputWidth)
-        << "invalid dim of gradOutput, expected height: " << outputHeight
-        << " width: " << outputWidth
-        << " , but got height: " << gradOutput->dim(dimh)
-        << " width: " << gradOutput->dim(dimw);
+    TORCH_CHECK(
+        (gradOutput->size(dimh) == outputHeight &&
+         gradOutput->size(dimw) == outputWidth),
+        "invalid size of gradOutput, expected height: %d width: %d , but "
+        "got height: %d width: %d",
+        outputHeight, outputWidth, gradOutput->size(dimh),
+        gradOutput->size(dimw));
   }
 }
 
-void DeformConvForwardCUDAKernelLauncher(
-    DArrayLite input, DArrayLite weight, DArrayLite offset, DArrayLite output,
-    DArrayLite columns, DArrayLite ones, int kW, int kH, int dW, int dH,
-    int padW, int padH, int dilationW, int dilationH, int group,
-    int deformable_group, int im2col_step, CudaContext& ctx,
-    cudaStream_t stream) {
+void DeformConvForwardCUDAKernelLauncher(Tensor input, Tensor weight,
+                                         Tensor offset, Tensor output,
+                                         Tensor columns, Tensor ones, int kW,
+                                         int kH, int dW, int dH, int padW,
+                                         int padH, int dilationW, int dilationH,
+                                         int group, int deformable_group,
+                                         int im2col_step) {
   // todo: resize columns to include im2col: done
   // todo: add im2col_step as input
   // todo: add new output buffer and transpose it to output (or directly
@@ -196,45 +210,41 @@ void DeformConvForwardCUDAKernelLauncher(
 
   deform_conv_shape_check(input, offset, NULL, weight, kH, kW, dH, dW, padH,
                           padW, dilationH, dilationW, group, deformable_group);
+  at::DeviceGuard guard(input.device());
 
   int batch = 1;
-  if (input.ndims() == 3) {
+  if (input.ndimension() == 3) {
     // Force batch
     batch = 0;
-    input = input.view({1, input.dim(0), input.dim(1), input.dim(2)});
-    offset = offset.view({1, offset.dim(0), offset.dim(1), offset.dim(2)});
+    input.unsqueeze_(0);
+    offset.unsqueeze_(0);
   }
 
   // todo: assert batchsize dividable by im2col_step
 
-  size_t batchSize = input.dim(0);
-  size_t nInputPlane = input.dim(1);
-  size_t inputHeight = input.dim(2);
-  size_t inputWidth = input.dim(3);
+  long batchSize = input.size(0);
+  long nInputPlane = input.size(1);
+  long inputHeight = input.size(2);
+  long inputWidth = input.size(3);
 
-  size_t nOutputPlane = weight.dim(0);
+  long nOutputPlane = weight.size(0);
 
-  size_t outputWidth =
+  long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-  size_t outputHeight =
+  long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
-  PARROTS_CHECKARGS(offset.dim(0) == batchSize)
-      << "invalid batch size of offset";
+  TORCH_CHECK((offset.size(0) == batchSize), "invalid batch size of offset");
 
   output = output.view({batchSize / im2col_step, im2col_step, nOutputPlane,
                         outputHeight, outputWidth});
+  columns = at::zeros(
+      {nInputPlane * kW * kH, im2col_step * outputHeight * outputWidth},
+      input.options());
 
-  columns = ctx.createDArrayLite(
-      input.elemType(), DArrayShape(nInputPlane * kW * kH,
-                                    im2col_step * outputHeight * outputWidth));
-  columns.setZeros(ctx.getStream());
-
-  if (ones.ndims() != 2 ||
-      ones.dim(0) * ones.dim(1) < outputHeight * outputWidth) {
-    ones = ctx.createDArrayLite(input.elemType(),
-                                DArrayShape(outputHeight, outputWidth));
-    fill(ctx, ones, *toScalar(1));
+  if (ones.ndimension() != 2 ||
+      ones.size(0) * ones.size(1) < outputHeight * outputWidth) {
+    ones = at::ones({outputHeight, outputWidth}, input.options());
   }
 
   input = input.view({batchSize / im2col_step, im2col_step, nInputPlane,
@@ -243,45 +253,41 @@ void DeformConvForwardCUDAKernelLauncher(
       offset.view({batchSize / im2col_step, im2col_step,
                    deformable_group * 2 * kH * kW, outputHeight, outputWidth});
 
-  auto output_buffer = ctx.createDArrayLite(
-      input.elemType(), DArrayShape(batchSize / im2col_step, nOutputPlane,
-                                    im2col_step * outputHeight, outputWidth));
-  output_buffer.setZeros(ctx.getStream());
-  output_buffer = output_buffer.view(
-      {output_buffer.dim(0), group, output_buffer.dim(1) / group,
-       output_buffer.dim(2) * output_buffer.dim(3)});
+  Tensor output_buffer = at::zeros({batchSize / im2col_step, nOutputPlane,
+                                    im2col_step * outputHeight, outputWidth},
+                                   output.options());
 
-  for (size_t elt = 0; elt < batchSize / im2col_step; elt++) {
+  output_buffer = output_buffer.view(
+      {output_buffer.size(0), group, output_buffer.size(1) / group,
+       output_buffer.size(2), output_buffer.size(3)});
+
+  for (int elt = 0; elt < batchSize / im2col_step; elt++) {
     deformable_im2col(input[elt], offset[elt], nInputPlane, inputHeight,
                       inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                      dilationW, im2col_step, deformable_group, columns,
-                      stream);
+                      dilationW, im2col_step, deformable_group, columns);
 
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
-    weight = weight.view(
-        {group, nOutputPlane / group, nInputPlane / group * kH * kW});
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    weight = weight.view({group, weight.size(0) / group, weight.size(1),
+                          weight.size(2), weight.size(3)});
 
-    for (size_t g = 0; g < group; g++) {
-      auto output_g = output_buffer[elt][g];
-      auto weight_g = weight[g];
-      auto columns_g = columns[g];
-      gemm(ctx, 1, false, weight_g, false, columns_g, 1, output_g);
+    for (int g = 0; g < group; g++) {
+      output_buffer[elt][g] = output_buffer[elt][g]
+                                  .flatten(1)
+                                  .addmm_(weight[g].flatten(1), columns[g])
+                                  .view_as(output_buffer[elt][g]);
     }
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
-    weight = weight.view({nOutputPlane, nInputPlane, kH, kW});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
   }
 
   output_buffer = output_buffer.view(
-      {output_buffer.dim(0), output_buffer.dim(1) * output_buffer.dim(2),
-       output_buffer.dim(3)});
+      {output_buffer.size(0), output_buffer.size(1) * output_buffer.size(2),
+       output_buffer.size(3), output_buffer.size(4)});
 
   output_buffer = output_buffer.view({batchSize / im2col_step, nOutputPlane,
                                       im2col_step, outputHeight, outputWidth});
-  output_buffer = transpose(ctx, output_buffer, 1, 2);
-  if (!output_buffer.isContiguous()) {
-    output_buffer = ctx.cloneDArrayLite(output_buffer);
-  }
-  copy(ctx, output, output_buffer);
+  output_buffer.transpose_(1, 2);
+  output.copy_(output_buffer);
   output = output.view({batchSize, nOutputPlane, outputHeight, outputWidth});
 
   input = input.view({batchSize, nInputPlane, inputHeight, inputWidth});
@@ -291,58 +297,53 @@ void DeformConvForwardCUDAKernelLauncher(
   if (batch == 0) {
     output = output.view({nOutputPlane, outputHeight, outputWidth});
     input = input.view({nInputPlane, inputHeight, inputWidth});
-    offset = offset.view({offset.dim(1), offset.dim(2), offset.dim(3)});
+    offset = offset.view({offset.size(1), offset.size(2), offset.size(3)});
   }
 }
 
 void DeformConvBackwardInputCUDAKernelLauncher(
-    DArrayLite input, DArrayLite offset, DArrayLite gradOutput,
-    DArrayLite gradInput, DArrayLite gradOffset, DArrayLite weight,
-    DArrayLite columns, int kW, int kH, int dW, int dH, int padW, int padH,
-    int dilationW, int dilationH, int group, int deformable_group,
-    int im2col_step, CudaContext& ctx, cudaStream_t stream) {
+    Tensor input, Tensor offset, Tensor gradOutput, Tensor gradInput,
+    Tensor gradOffset, Tensor weight, Tensor columns, int kW, int kH, int dW,
+    int dH, int padW, int padH, int dilationW, int dilationH, int group,
+    int deformable_group, int im2col_step) {
   deform_conv_shape_check(input, offset, &gradOutput, weight, kH, kW, dH, dW,
                           padH, padW, dilationH, dilationW, group,
                           deformable_group);
+  at::DeviceGuard guard(input.device());
 
   int batch = 1;
 
-  if (input.ndims() == 3) {
+  if (input.ndimension() == 3) {
     // Force batch
     batch = 0;
-    input = input.view({1, input.dim(0), input.dim(1), input.dim(2)});
-    offset = offset.view({1, offset.dim(0), offset.dim(1), offset.dim(2)});
+    input = input.view({1, input.size(0), input.size(1), input.size(2)});
+    offset = offset.view({1, offset.size(0), offset.size(1), offset.size(2)});
     gradOutput = gradOutput.view(
-        {1, gradOutput.dim(0), gradOutput.dim(1), gradOutput.dim(2)});
+        {1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
   }
 
-  size_t batchSize = input.dim(0);
-  size_t nInputPlane = input.dim(1);
-  size_t inputHeight = input.dim(2);
-  size_t inputWidth = input.dim(3);
+  long batchSize = input.size(0);
+  long nInputPlane = input.size(1);
+  long inputHeight = input.size(2);
+  long inputWidth = input.size(3);
 
-  size_t nOutputPlane = weight.dim(0);
+  long nOutputPlane = weight.size(0);
 
-  size_t outputWidth =
+  long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-  size_t outputHeight =
+  long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
-  PARROTS_CHECKARGS(offset.dim(0) == batchSize)
-      << "invalid batch size of offset";
+  TORCH_CHECK((offset.size(0) == batchSize), 3, "invalid batch size of offset");
   gradInput = gradInput.view({batchSize, nInputPlane, inputHeight, inputWidth});
-  columns = ctx.createDArrayLite(
-      input.elemType(), DArrayShape(nInputPlane * kW * kH,
-                                    im2col_step * outputHeight * outputWidth));
-  columns.setZeros(ctx.getStream());
+  columns = at::zeros(
+      {nInputPlane * kW * kH, im2col_step * outputHeight * outputWidth},
+      input.options());
 
   // change order of grad output
   gradOutput = gradOutput.view({batchSize / im2col_step, im2col_step,
                                 nOutputPlane, outputHeight, outputWidth});
-  gradOutput = transpose(ctx, gradOutput, 1, 2);
-  if (!gradOutput.isContiguous()) {
-    gradOutput = ctx.cloneDArrayLite(gradOutput);
-  }
+  gradOutput.transpose_(1, 2);
 
   gradInput = gradInput.view({batchSize / im2col_step, im2col_step, nInputPlane,
                               inputHeight, inputWidth});
@@ -355,41 +356,37 @@ void DeformConvBackwardInputCUDAKernelLauncher(
       offset.view({batchSize / im2col_step, im2col_step,
                    deformable_group * 2 * kH * kW, outputHeight, outputWidth});
 
-  for (size_t elt = 0; elt < batchSize / im2col_step; elt++) {
+  for (int elt = 0; elt < batchSize / im2col_step; elt++) {
     // divide into groups
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
-    weight = weight.view({group, weight.dim(0) / group,
-                          weight.dim(1) * weight.dim(2) * weight.dim(3)});
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    weight = weight.view({group, weight.size(0) / group, weight.size(1),
+                          weight.size(2), weight.size(3)});
     gradOutput = gradOutput.view(
-        {gradOutput.dim(0), group, gradOutput.dim(1) / group,
-         gradOutput.dim(2) * gradOutput.dim(3) * gradOutput.dim(4)});
+        {gradOutput.size(0), group, gradOutput.size(1) / group,
+         gradOutput.size(2), gradOutput.size(3), gradOutput.size(4)});
 
-    for (size_t g = 0; g < group; g++) {
-      auto columns_g = columns[g];
-      gemm(ctx, 1, true, weight[g], false, gradOutput[elt][g], 0, columns_g);
+    for (int g = 0; g < group; g++) {
+      columns[g] = columns[g].addmm_(weight[g].flatten(1).transpose(0, 1),
+                                     gradOutput[elt][g].flatten(1), 0.0f, 1.0f);
     }
 
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
-    gradOutput = gradOutput.view({gradOutput.dim(0),
-                                  gradOutput.dim(1) * gradOutput.dim(2),
-                                  im2col_step, outputHeight, outputWidth});
-    weight = weight.view({nOutputPlane, nInputPlane, kH, kW});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    gradOutput = gradOutput.view(
+        {gradOutput.size(0), gradOutput.size(1) * gradOutput.size(2),
+         gradOutput.size(3), gradOutput.size(4), gradOutput.size(5)});
 
     deformable_col2im_coord(columns, input[elt], offset[elt], nInputPlane,
                             inputHeight, inputWidth, kH, kW, padH, padW, dH, dW,
                             dilationH, dilationW, im2col_step, deformable_group,
-                            gradOffset[elt], stream);
+                            gradOffset[elt]);
 
     deformable_col2im(columns, offset[elt], nInputPlane, inputHeight,
                       inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                      dilationW, im2col_step, deformable_group, gradInput[elt],
-                      stream);
+                      dilationW, im2col_step, deformable_group, gradInput[elt]);
   }
 
-  gradOutput = transpose(ctx, gradOutput, 1, 2);
-  if (!gradOutput.isContiguous()) {
-    gradOutput = ctx.cloneDArrayLite(gradOutput);
-  }
+  gradOutput.transpose_(1, 2);
   gradOutput =
       gradOutput.view({batchSize, nOutputPlane, outputHeight, outputWidth});
 
@@ -404,17 +401,17 @@ void DeformConvBackwardInputCUDAKernelLauncher(
     gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
     input = input.view({nInputPlane, inputHeight, inputWidth});
     gradInput = gradInput.view({nInputPlane, inputHeight, inputWidth});
-    offset = offset.view({offset.dim(1), offset.dim(2), offset.dim(3)});
-    gradOffset = gradOffset.view({offset.dim(1), offset.dim(2), offset.dim(3)});
+    offset = offset.view({offset.size(1), offset.size(2), offset.size(3)});
+    gradOffset =
+        gradOffset.view({offset.size(1), offset.size(2), offset.size(3)});
   }
 }
 
 void DeformConvBackwardParametersCUDAKernelLauncher(
-    DArrayLite input, DArrayLite offset, DArrayLite gradOutput,
-    DArrayLite gradWeight, DArrayLite columns, DArrayLite ones, int kW, int kH,
-    int dW, int dH, int padW, int padH, int dilationW, int dilationH, int group,
-    int deformable_group, float scale, int im2col_step, CudaContext& ctx,
-    cudaStream_t stream) {
+    Tensor input, Tensor offset, Tensor gradOutput, Tensor gradWeight,
+    Tensor columns, Tensor ones, int kW, int kH, int dW, int dH, int padW,
+    int padH, int dilationW, int dilationH, int group, int deformable_group,
+    float scale, int im2col_step) {
   // todo: transpose and reshape outGrad
   // todo: reshape columns
   // todo: add im2col_step as input
@@ -422,53 +419,52 @@ void DeformConvBackwardParametersCUDAKernelLauncher(
   deform_conv_shape_check(input, offset, &gradOutput, gradWeight, kH, kW, dH,
                           dW, padH, padW, dilationH, dilationW, group,
                           deformable_group);
+  at::DeviceGuard guard(input.device());
 
   int batch = 1;
 
-  if (input.ndims() == 3) {
+  if (input.ndimension() == 3) {
     // Force batch
     batch = 0;
-    input = input.view({1, input.dim(0), input.dim(1), input.dim(2)});
+    input = input.view(
+        at::IntList({1, input.size(0), input.size(1), input.size(2)}));
     gradOutput = gradOutput.view(
-        {1, gradOutput.dim(0), gradOutput.dim(1), gradOutput.dim(2)});
+        {1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
   }
 
-  size_t batchSize = input.dim(0);
-  size_t nInputPlane = input.dim(1);
-  size_t inputHeight = input.dim(2);
-  size_t inputWidth = input.dim(3);
+  long batchSize = input.size(0);
+  long nInputPlane = input.size(1);
+  long inputHeight = input.size(2);
+  long inputWidth = input.size(3);
 
-  size_t nOutputPlane = gradWeight.dim(0);
+  long nOutputPlane = gradWeight.size(0);
 
-  size_t outputWidth =
+  long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-  size_t outputHeight =
+  long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
-  PARROTS_CHECKARGS(offset.dim(0) == batchSize)
-      << "invalid batch size of offset";
+  TORCH_CHECK((offset.size(0) == batchSize), "invalid batch size of offset");
 
-  columns = ctx.createDArrayLite(
-      input.elemType(), DArrayShape(nInputPlane * kW * kH,
-                                    im2col_step * outputHeight * outputWidth));
-  columns.setZeros(ctx.getStream());
+  columns = at::zeros(
+      {nInputPlane * kW * kH, im2col_step * outputHeight * outputWidth},
+      input.options());
 
   gradOutput = gradOutput.view({batchSize / im2col_step, im2col_step,
                                 nOutputPlane, outputHeight, outputWidth});
-  gradOutput = transpose(ctx, gradOutput, 1, 2);
-  if (!gradOutput.isContiguous()) {
-    gradOutput = ctx.cloneDArrayLite(gradOutput);
-  }
+  gradOutput.transpose_(1, 2);
 
-  auto gradOutputBuffer = ctx.cloneDArrayLite(gradOutput);
+  Tensor gradOutputBuffer = at::zeros_like(gradOutput);
+  gradOutputBuffer =
+      gradOutputBuffer.view({batchSize / im2col_step, nOutputPlane, im2col_step,
+                             outputHeight, outputWidth});
+  gradOutputBuffer = gradOutputBuffer.contiguous();
+  gradOutputBuffer.copy_(gradOutput);
   gradOutputBuffer =
       gradOutputBuffer.view({batchSize / im2col_step, nOutputPlane,
                              im2col_step * outputHeight, outputWidth});
 
-  gradOutput = transpose(ctx, gradOutput, 1, 2);
-  if (!gradOutput.isContiguous()) {
-    gradOutput = ctx.cloneDArrayLite(gradOutput);
-  }
+  gradOutput.transpose_(1, 2);
   gradOutput =
       gradOutput.view({batchSize, nOutputPlane, outputHeight, outputWidth});
 
@@ -478,33 +474,36 @@ void DeformConvBackwardParametersCUDAKernelLauncher(
       offset.view({batchSize / im2col_step, im2col_step,
                    deformable_group * 2 * kH * kW, outputHeight, outputWidth});
 
-  for (size_t elt = 0; elt < batchSize / im2col_step; elt++) {
+  for (int elt = 0; elt < batchSize / im2col_step; elt++) {
     deformable_im2col(input[elt], offset[elt], nInputPlane, inputHeight,
                       inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                      dilationW, im2col_step, deformable_group, columns,
-                      stream);
+                      dilationW, im2col_step, deformable_group, columns);
 
     // divide into group
     gradOutputBuffer = gradOutputBuffer.view(
-        {gradOutputBuffer.dim(0), group, gradOutputBuffer.dim(1) / group,
-         gradOutputBuffer.dim(2) * gradOutputBuffer.dim(3)});
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
-    gradWeight = gradWeight.view(
-        {group, gradWeight.dim(0) / group,
-         gradWeight.dim(1) * gradWeight.dim(2) * gradWeight.dim(3)});
+        {gradOutputBuffer.size(0), group, gradOutputBuffer.size(1) / group,
+         gradOutputBuffer.size(2), gradOutputBuffer.size(3)});
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    gradWeight =
+        gradWeight.view({group, gradWeight.size(0) / group, gradWeight.size(1),
+                         gradWeight.size(2), gradWeight.size(3)});
 
     for (int g = 0; g < group; g++) {
-      auto gradWeight_g = gradWeight[g];
-      gemm(ctx, scale, false, gradOutputBuffer[elt][g], true, columns[g], 1,
-           gradWeight_g);
+      gradWeight[g] = gradWeight[g]
+                          .flatten(1)
+                          .addmm_(gradOutputBuffer[elt][g].flatten(1),
+                                  columns[g].transpose(1, 0), 1.0, scale)
+                          .view_as(gradWeight[g]);
     }
     gradOutputBuffer = gradOutputBuffer.view(
-        {gradOutputBuffer.dim(0),
-         gradOutputBuffer.dim(1) * gradOutputBuffer.dim(2),
-         im2col_step * outputHeight, outputWidth});
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
-    gradWeight = gradWeight.view(
-        {gradWeight.dim(0) * gradWeight.dim(1), nInputPlane / group, kH, kW});
+        {gradOutputBuffer.size(0),
+         gradOutputBuffer.size(1) * gradOutputBuffer.size(2),
+         gradOutputBuffer.size(3), gradOutputBuffer.size(4)});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    gradWeight = gradWeight.view({gradWeight.size(0) * gradWeight.size(1),
+                                  gradWeight.size(2), gradWeight.size(3),
+                                  gradWeight.size(4)});
   }
 
   input = input.view({batchSize, nInputPlane, inputHeight, inputWidth});

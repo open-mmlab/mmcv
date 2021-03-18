@@ -1,42 +1,51 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void TINShiftForwardCUDAKernelLauncher(const DArrayLite input,
-                                       const DArrayLite shift,
-                                       DArrayLite output, cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void TINShiftForwardCUDAKernelLauncher(Tensor input, Tensor shift,
+                                       Tensor output);
 
-void TINShiftBackwardCUDAKernelLauncher(const DArrayLite grad_output,
-                                        const DArrayLite shift,
-                                        DArrayLite grad_input,
-                                        cudaStream_t stream);
+void TINShiftBackwardCUDAKernelLauncher(Tensor grad_output, Tensor shift,
+                                        Tensor grad_input);
 
-void tin_shift_forward_cuda(CudaContext &ctx, const SSElement &attr,
-                            const OperatorBase::in_list_t &ins,
-                            OperatorBase::out_list_t &outs) {
-  const auto &input = ins[0];
-  const auto &shift = ins[1];
-  auto &output = outs[0];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  TINShiftForwardCUDAKernelLauncher(input, shift, output, stream);
+void tin_shift_forward_cuda(Tensor input, Tensor shift, Tensor output) {
+  TINShiftForwardCUDAKernelLauncher(input, shift, output);
 }
 
-void tin_shift_backward_cuda(CudaContext &ctx, const SSElement &attr,
-                             const OperatorBase::in_list_t &ins,
-                             OperatorBase::out_list_t &outs) {
-  const auto &grad_output = ins[0];
-  const auto &shift = ins[1];
-  auto &grad_input = outs[0];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  TINShiftBackwardCUDAKernelLauncher(grad_output, shift, grad_input, stream);
+void tin_shift_backward_cuda(Tensor grad_output, Tensor shift,
+                             Tensor grad_input) {
+  TINShiftBackwardCUDAKernelLauncher(grad_output, shift, grad_input);
 }
 
-PARROTS_EXTENSION_REGISTER(tin_shift_forward)
-    .input(2)
-    .output(1)
-    .apply(tin_shift_forward_cuda)
-    .done();
+#endif
 
-PARROTS_EXTENSION_REGISTER(tin_shift_backward)
-    .input(2)
-    .output(1)
-    .apply(tin_shift_backward_cuda)
-    .done();
+void tin_shift_forward(Tensor input, Tensor shift, Tensor output) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(shift);
+    CHECK_CUDA_INPUT(output);
+
+    tin_shift_forward_cuda(input, shift, output);
+#else
+    AT_ERROR("TINShift is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("TINShift is not implemented on CPU");
+  }
+}
+
+void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input) {
+  if (grad_output.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(shift);
+    CHECK_CUDA_INPUT(grad_input);
+
+    tin_shift_backward_cuda(grad_output, shift, grad_input);
+#else
+    AT_ERROR("TINShift is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("TINShift is not implemented on CPU");
+  }
+}

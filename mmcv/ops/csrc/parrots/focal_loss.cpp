@@ -1,130 +1,130 @@
-// Copyright (c) 2018, SenseTime.
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void SigmoidFocalLossForwardCUDAKernelLauncher(
-    const DArrayLite input, const DArrayLite target, const DArrayLite weight,
-    DArrayLite output, float gamma, float alpha, cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor output,
+                                               const float gamma,
+                                               const float alpha);
 
-void SigmoidFocalLossBackwardCUDAKernelLauncher(
-    const DArrayLite input, const DArrayLite target, const DArrayLite weight,
-    DArrayLite grad_input, float gamma, float alpha, cudaStream_t stream);
+void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                                Tensor weight,
+                                                Tensor grad_input,
+                                                const float gamma,
+                                                const float alpha);
 
-void SoftmaxFocalLossForwardCUDAKernelLauncher(
-    const DArrayLite input, const DArrayLite target, const DArrayLite weight,
-    DArrayLite output, float gamma, float alpha, cudaStream_t stream);
+void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor output,
+                                               const float gamma,
+                                               const float alpha);
 
-void SoftmaxFocalLossBackwardCUDAKernelLauncher(
-    const DArrayLite input, const DArrayLite target, const DArrayLite weight,
-    DArrayLite buff, DArrayLite grad_input, float gamma, float alpha,
-    cudaStream_t stream);
+void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
+                                                Tensor weight, Tensor buff,
+                                                Tensor grad_input,
+                                                const float gamma,
+                                                const float alpha);
 
-void sigmoid_focal_loss_forward_cuda(CudaContext& ctx, const SSElement& attr,
-                                     const OperatorBase::in_list_t& ins,
-                                     OperatorBase::out_list_t& outs) {
-  float gamma;
-  float alpha;
-  SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
-
-  // get inputs and outputs
-  const auto& input = ins[0];
-  const auto& target = ins[1];
-  const auto& weight = ins[2];
-
-  auto& output = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-
+void sigmoid_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,
+                                     Tensor output, float gamma, float alpha) {
   SigmoidFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
-                                            gamma, alpha, stream);
+                                            gamma, alpha);
 }
 
-void sigmoid_focal_loss_backward_cuda(CudaContext& ctx, const SSElement& attr,
-                                      const OperatorBase::in_list_t& ins,
-                                      OperatorBase::out_list_t& outs) {
-  float gamma;
-  float alpha;
-  SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
-
-  // get inputs and outputs
-  const auto& input = ins[0];
-  const auto& target = ins[1];
-  const auto& weight = ins[2];
-
-  auto& grad_input = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void sigmoid_focal_loss_backward_cuda(Tensor input, Tensor target,
+                                      Tensor weight, Tensor grad_input,
+                                      float gamma, float alpha) {
   SigmoidFocalLossBackwardCUDAKernelLauncher(input, target, weight, grad_input,
-                                             gamma, alpha, stream);
+                                             gamma, alpha);
 }
 
-void softmax_focal_loss_forward_cuda(CudaContext& ctx, const SSElement& attr,
-                                     const OperatorBase::in_list_t& ins,
-                                     OperatorBase::out_list_t& outs) {
-  float gamma;
-  float alpha;
-  SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
-
-  // get inputs and outputs
-  const auto& input = ins[0];
-  const auto& target = ins[1];
-  const auto& weight = ins[2];
-
-  auto& grad_input = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-
-  SoftmaxFocalLossForwardCUDAKernelLauncher(input, target, weight, grad_input,
-                                            gamma, alpha, stream);
+void softmax_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,
+                                     Tensor output, float gamma, float alpha) {
+  SoftmaxFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
+                                            gamma, alpha);
 }
 
-void softmax_focal_loss_backward_cuda(CudaContext& ctx, const SSElement& attr,
-                                      const OperatorBase::in_list_t& ins,
-                                      OperatorBase::out_list_t& outs) {
-  float gamma;
-  float alpha;
-  SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
-
-  // get inputs and outputs
-  const auto& input = ins[0];
-  const auto& target = ins[1];
-  const auto& weight = ins[2];
-
-  auto& buff = outs[0];
-  auto& grad_input = outs[1];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void softmax_focal_loss_backward_cuda(Tensor input, Tensor target,
+                                      Tensor weight, Tensor buff,
+                                      Tensor grad_input, float gamma,
+                                      float alpha) {
   SoftmaxFocalLossBackwardCUDAKernelLauncher(input, target, weight, buff,
-                                             grad_input, gamma, alpha, stream);
+                                             grad_input, gamma, alpha);
+}
+#endif
+
+void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
+                                Tensor output, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(output);
+
+    sigmoid_focal_loss_forward_cuda(input, target, weight, output, gamma,
+                                    alpha);
+#else
+    AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SigmoidFocalLoss is not implemented on CPU");
+  }
 }
 
-PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_forward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(1)
-    .apply(sigmoid_focal_loss_forward_cuda)
-    .done();
+void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
+                                 Tensor grad_input, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(grad_input);
 
-PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_backward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(1)
-    .apply(sigmoid_focal_loss_backward_cuda)
-    .done();
+    sigmoid_focal_loss_backward_cuda(input, target, weight, grad_input, gamma,
+                                     alpha);
+#else
+    AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SigmoidFocalLoss is not implemented on CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(softmax_focal_loss_forward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(1)
-    .apply(softmax_focal_loss_forward_cuda)
-    .done();
+void softmax_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
+                                Tensor output, float gamma, float alpha) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(output);
 
-PARROTS_EXTENSION_REGISTER(softmax_focal_loss_backward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(2)
-    .apply(softmax_focal_loss_backward_cuda)
-    .done();
+    softmax_focal_loss_forward_cuda(input, target, weight, output, gamma,
+                                    alpha);
+#else
+    AT_ERROR("SoftmaxFocalLoss is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SoftmaxFocalLoss is not implemented on CPU");
+  }
+}
+
+void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
+                                 Tensor buff, Tensor grad_input, float gamma,
+                                 float alpha) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(target);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(buff);
+    CHECK_CUDA_INPUT(grad_input);
+
+    softmax_focal_loss_backward_cuda(input, target, weight, buff, grad_input,
+                                     gamma, alpha);
+#else
+    AT_ERROR("SoftmaxFocalLoss is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("SoftmaxFocalLoss is not implemented on CPU");
+  }
+}
