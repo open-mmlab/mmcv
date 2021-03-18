@@ -41,11 +41,11 @@ def get_model_complexity_info(model,
                               flush=False,
                               ost=sys.stdout):
     """Get complexity information of a model.
-    
-    This method can calculate FLOPs
-    and parameter counts of a model with corresponding input shape. It can also
-    print complexity information for each layer in a model.
-    
+
+    This method can calculate FLOPs and parameter counts of a model with
+    corresponding input shape. It can also print complexity information for
+    each layer in a model.
+
     Supported layers are listed as below:
         - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
         - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
