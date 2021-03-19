@@ -80,7 +80,7 @@ def bias_init_with_prob(prior_prob):
 class BaseInit(object):
 
     def __init__(self, *, bias=0, bias_prob=None, layer=None):
-        self.overmodule = False
+        self.wholemodule = False
         if not isinstance(bias, (int, float)):
             raise TypeError(f'bias must be a numbel, but got a {type(bias)}')
 
@@ -126,7 +126,7 @@ class ConstantInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.overmodule:
+            if self.wholemodule:
                 constant_init(m, self.val, self.bias)
             else:
                 layername = m.__class__.__name__
@@ -163,7 +163,7 @@ class XavierInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.overmodule:
+            if self.wholemodule:
                 xavier_init(m, self.gain, self.bias, self.distribution)
             else:
                 layername = m.__class__.__name__
@@ -199,7 +199,7 @@ class NormalInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.overmodule:
+            if self.wholemodule:
                 normal_init(m, self.mean, self.std, self.bias)
             else:
                 layername = m.__class__.__name__
@@ -236,7 +236,7 @@ class UniformInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.overmodule:
+            if self.wholemodule:
                 uniform_init(m, self.a, self.b, self.bias)
             else:
                 layername = m.__class__.__name__
@@ -289,7 +289,7 @@ class KaimingInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.overmodule:
+            if self.wholemodule:
                 kaiming_init(m, self.a, self.mode, self.nonlinearity,
                              self.bias, self.distribution)
             else:
@@ -342,9 +342,9 @@ class PretrainedInit(object):
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
 
-def _initialize(module, cfg, overmodule=False):
+def _initialize(module, cfg, wholemodule=False):
     func = build_from_cfg(cfg, INITIALIZERS)
-    func.overmodule = overmodule
+    func.wholemodule = wholemodule
     func(module)
 
 
@@ -360,7 +360,7 @@ def _initialize_override(module, override, cfg):
             override_.update(cfg)
         name = override_.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), override_, overmodule=True)
+            _initialize(getattr(module, name), override_, wholemodule=True)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
 
