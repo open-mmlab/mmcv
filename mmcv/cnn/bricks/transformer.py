@@ -21,12 +21,12 @@ def build_attention(cfg, default_args=None):
     return build_from_cfg(cfg, ATTENTION, default_args)
 
 
-def build_transformerlayer(cfg, default_args=None):
+def build_transformer_layer(cfg, default_args=None):
     """Builder for transformer layer."""
     return build_from_cfg(cfg, TRANSFORMERLAYER, default_args)
 
 
-def build_transformerlayersequence(cfg, default_args=None):
+def build_transformer_layer_sequence(cfg, default_args=None):
     """Builder for transformer encoder and transformer decoder."""
     return build_from_cfg(cfg, TRANSFORMERLAYERSEQUENCE, default_args)
 
@@ -414,7 +414,7 @@ class TransformerLayerSequence(BaseModule):
         self.pre_norm = operation_order[0] == 'norm'
         self.layers = nn.ModuleList()
         for i in range(num_layers):
-            self.layers.append(build_transformerlayer(transformerlayers[i]))
+            self.layers.append(build_transformer_layer(transformerlayers[i]))
         self.embed_dims = self.layers[0].embed_dims
         self.pre_norm = self.layers[0].operation_order[0] == 'norm'
 
