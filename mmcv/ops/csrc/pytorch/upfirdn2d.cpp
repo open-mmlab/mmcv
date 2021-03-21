@@ -9,13 +9,18 @@ torch::Tensor upfirdn2d_op(const torch::Tensor& input, const torch::Tensor& kern
 #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
+#endif
 
 torch::Tensor upfirdn2d(const torch::Tensor& input, const torch::Tensor& kernel,
                         int up_x, int up_y, int down_x, int down_y,
                         int pad_x0, int pad_x1, int pad_y0, int pad_y1) {
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA(input);
     CHECK_CUDA(kernel);
 
     return upfirdn2d_op(input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1);
-}
+#else
+    AT_ERROR("UpFirDn2d is not compiled with GPU support");
 #endif
+}
+
