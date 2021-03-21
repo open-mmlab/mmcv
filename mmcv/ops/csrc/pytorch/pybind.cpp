@@ -188,7 +188,7 @@ Tensor upfirdn2d(const Tensor& input, const Tensor& kernel,
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg('input'),
-        py::arg('kernel'), py::arg('up_x'), py::arg(up_y), py::arg('down_x'),
+        py::arg('kernel'), py::arg('up_x'), py::arg('up_y'), py::arg('down_x'),
         py::arg('down_y'), py::arg('pad_x0'), py::arg('pad_x1'),
         py::arg('pad_y0'), py::arg('pad_y1'));
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
