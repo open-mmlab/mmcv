@@ -7,7 +7,7 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', ['upfirdn2d'])
+ext_module = ext_loader.load_ext('_ext', ['fused_bias_leakyrelu'])
 
 
 class FusedBiasLeakyReLUFunctionBackward(Function):

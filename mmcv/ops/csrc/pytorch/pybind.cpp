@@ -191,7 +191,7 @@ Tensor fused_bias_leakyrelu(const Tensor& input, const Tensor& bias,
                             float alpha, float scale);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg('input'));
+  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)");
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
         "fused_bias_leakyrelu (CUDA)");
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");

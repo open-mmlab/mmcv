@@ -1,7 +1,6 @@
 // Modified from
 // from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_bias_act.cpp
-
-#include <torch/extension.h>
+#include "pytorch_cpp_helper.hpp"
 
 
 torch::Tensor fused_bias_leakyrelu_op(const torch::Tensor& input, const torch::Tensor& bias, const torch::Tensor& refer,
