@@ -8,13 +8,6 @@ torch::Tensor upfirdn2d_op(const torch::Tensor& input,
                            int down_x, int down_y, int pad_x0, int pad_x1,
                            int pad_y0, int pad_y1);
 
-#define CHECK_CUDA(x) \
-  TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
-#define CHECK_CONTIGUOUS(x) \
-  TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
-#define CHECK_INPUT(x) \
-  CHECK_CUDA(x);       \
-  CHECK_CONTIGUOUS(x)
 #endif
 
 torch::Tensor upfirdn2d(const torch::Tensor& input, const torch::Tensor& kernel,

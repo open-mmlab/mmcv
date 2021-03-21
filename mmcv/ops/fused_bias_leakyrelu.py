@@ -142,8 +142,7 @@ def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
     return FusedBiasLeakyReLUFunction.apply(input, bias, negative_slope, scale)
 
 
-def bias_leakyrelu_ref(input, bias, negative_slope=0.2, scale=2**0.5):
-    x = input
+def bias_leakyrelu_ref(x, bias, negative_slope=0.2, scale=2**0.5):
 
     if bias is not None:
         assert bias.ndim == 1

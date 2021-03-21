@@ -138,6 +138,23 @@ class UpFirDn2d(Function):
 
 
 def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
+    """UpFRIDn for 2d features.
+
+    UpFIRDn is short for upsample, apply FIR filter and downsample. More
+    details can be found in:
+    https://www.mathworks.com/help/signal/ref/upfirdn.html
+
+    Args:
+        input (Tensor): Tensor with shape of (n, c, h, w).
+        kernel (Tensor): Filter kernel.
+        up (int, optional): Upsampling factor. Defaults to 1.
+        down (int, optional): Downsampling factor. Defaults to 1.
+        pad (tuple[int], optional): Padding for tensors, (x_pad, y_pad).
+            Defaults to (0, 0).
+
+    Returns:
+        Tensor: Tensor after UpFIRDn.
+    """
     if input.device.type == 'cpu':
         out = upfirdn2d_native(input, kernel, up, up, down, down, pad[0],
                                pad[1], pad[0], pad[1])
