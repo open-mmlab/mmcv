@@ -1,19 +1,19 @@
-// from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d_kernel.cu
+// from
+// https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d_kernel.cu
 // Copyright (c) 2019, NVIDIA Corporation. All rights reserved.
 //
 // This work is made available under the Nvidia Source Code License-NC.
 // To view a copy of this license, visit
 // https://nvlabs.github.io/stylegan2/license.html
 
-#include <torch/types.h>
-
 #include <ATen/ATen.h>
 #include <ATen/AccumulateType.h>
-#include <ATen/cuda/CUDAApplyUtils.cuh>
 #include <ATen/cuda/CUDAContext.h>
-
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <torch/types.h>
+
+#include <ATen/cuda/CUDAApplyUtils.cuh>
 
 static __host__ __device__ __forceinline__ int floor_div(int a, int b) {
   int c = a / b;
@@ -311,58 +311,58 @@ torch::Tensor upfirdn2d_op(const torch::Tensor &input,
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(x.scalar_type(), "upfirdn2d_cuda", [&] {
     switch (mode) {
-    case 1:
-      upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 1:
+        upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 4, 4, 16, 64>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    case 2:
-      upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 3, 3, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 2:
+        upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 3, 3, 16, 64>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    case 3:
-      upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 3:
+        upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 4, 4, 16, 64>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    case 4:
-      upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 2, 2, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 4:
+        upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 2, 2, 16, 64>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    case 5:
-      upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 5:
+        upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    case 6:
-      upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+      case 6:
+        upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
+            <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
+                                                   x.data_ptr<scalar_t>(),
+                                                   k.data_ptr<scalar_t>(), p);
 
-      break;
+        break;
 
-    default:
-      upfirdn2d_kernel_large<scalar_t><<<grid_size, block_size, 0, stream>>>(
-          out.data_ptr<scalar_t>(), x.data_ptr<scalar_t>(),
-          k.data_ptr<scalar_t>(), p);
+      default:
+        upfirdn2d_kernel_large<scalar_t><<<grid_size, block_size, 0, stream>>>(
+            out.data_ptr<scalar_t>(), x.data_ptr<scalar_t>(),
+            k.data_ptr<scalar_t>(), p);
     }
   });
 
