@@ -17,4 +17,3 @@ torch::Tensor fused_bias_leakyrelu(const torch::Tensor& input, const torch::Tens
 
     return fused_bias_leakyrelu_op(input, bias, refer, act, grad, alpha, scale);
 }
-
