@@ -298,6 +298,22 @@ class KaimingInit(BaseInit):
         module.apply(init)
 
 
+@INITIALIZERS.register_module(name='Caffe2Xavier')
+class Caffe2XavierInit(KaimingInit):
+    # `XavierFill` in Caffe2 corresponds to `kaiming_uniform_` in PyTorch
+    # Acknowledgment to FAIR's internal code
+    def __init__(self, **kwargs):
+        super().__init__(
+            a=1,
+            mode='fan_in',
+            nonlinearity='leaky_relu',
+            distribution='uniform',
+            **kwargs)
+
+    def __call__(self, module):
+        super().__call__(module)
+
+
 @INITIALIZERS.register_module(name='Pretrained')
 class PretrainedInit(object):
     """Initialize module by loading a pretrained model.
