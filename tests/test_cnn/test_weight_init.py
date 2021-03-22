@@ -221,7 +221,7 @@ def test_kaiminginit():
 
 
 def test_caffe2xavierinit():
-    """test Caffe2XavierInit"""
+    """test Caffe2XavierInit."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
     func = Caffe2XavierInit(bias=0.1, layer='Conv2d')
     func(model)
