@@ -12,7 +12,7 @@ One typical example is the config systems in most OpenMMLab projects, which use 
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
-1. Create a build method (or use default one).
+1. Create a build method (or in most cases you can just use the default one).
 2. Create a registry.
 3. Use this registry to manage the modules.
 
@@ -78,7 +78,7 @@ converter = CONVERTERS.build(converter_cfg)
 ## Hierarchy Registry
 
 Hierarchy structure is used for similar registries from different packages.
-For example, both [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMClassification](https://github.com/open-mmlab/mmclassification) have `MODEL` registry define as followed:
+For example, both [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMClassification](https://github.com/open-mmlab/mmclassification) have `MODEL` registry define as follows:
 In MMDetection:
 
 ```python

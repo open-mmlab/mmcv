@@ -4,7 +4,8 @@ from ..utils import Registry, build_from_cfg
 
 
 def build_model_from_cfg(cfg, registry, default_args=None):
-    """Build a module from config dict(s).
+    """Build a PyTorch model from config dict(s). Different from
+    ``build_from_cfg``, if cfg is a list, a ``nn.Sequential`` will be built.
 
     Args:
         cfg (dict, list[dict]): The config of modules, is is either a config

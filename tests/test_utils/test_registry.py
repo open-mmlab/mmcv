@@ -155,6 +155,7 @@ def test_multi_scope_registry():
     assert len(HOUNDS) == 1
     assert HOUNDS.get('BloodHound') is BloodHound
     assert DOGS.get('hound.BloodHound') is BloodHound
+    assert HOUNDS.get('hound.BloodHound') is BloodHound
 
     LITTLE_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='little_hound')
 
