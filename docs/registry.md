@@ -9,12 +9,15 @@ In MMCV, registry can be regarded as a mapping that maps a class to a string.
 These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
 With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
 One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
+The detailed doc could be find [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
-1. Create a build method (or in most cases you can just use the default one).
+1. Create a build method (optional, in most cases you can just use the default one).
 2. Create a registry.
 3. Use this registry to manage the modules.
+
+`build_func` argument of `Registry` is to customize how to instantiate the class instance, the default one is `build_from_cfg` implemented [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg).
 
 ### A Simple Example
 
@@ -24,6 +27,8 @@ You can find more practical examples in OpenMMLab projects.
 Assuming we want to implement a series of Dataset Converter for converting different formats of data to the expected data format.
 We create a directory as a package named `converters`.
 In the package, we first create a file to implement builders, named `converters/builder.py`, as below
+
+Note: in this example, we demonstrate how to use `build_func` argument to customize the way to build a class instance. In most cases, default one would be sufficent.
 
 ```python
 from mmcv.utils import Registry
@@ -130,5 +135,3 @@ from mmcv.cnn import MODELS as MMCV_MODELS
 net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
 net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
 ```
-
-Note that: we may avoid unused import by adding `custom_imports = dict(imports=['mmdet', 'mmcls'])` in config file.
