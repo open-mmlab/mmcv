@@ -6,10 +6,11 @@ import pytest
 import torch
 from torch import nn
 
-from mmcv.cnn import (ConstantInit, KaimingInit, NormalInit, PretrainedInit,
-                      UniformInit, XavierInit, bias_init_with_prob,
-                      caffe2_xavier_init, constant_init, initialize,
-                      kaiming_init, normal_init, uniform_init, xavier_init)
+from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
+                      PretrainedInit, UniformInit, XavierInit,
+                      bias_init_with_prob, caffe2_xavier_init, constant_init,
+                      initialize, kaiming_init, normal_init, uniform_init,
+                      xavier_init)
 
 
 def test_constant_init():
@@ -217,6 +218,15 @@ def test_kaiminginit():
                            torch.full(model[2].weight.shape, 0.))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
+
+
+def test_caffe2xavierinit():
+    """test Caffe2XavierInit."""
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
+    func = Caffe2XavierInit(bias=0.1, layer='Conv2d')
+    func(model)
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.1))
+    assert not torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.1))
 
 
 class FooModule(nn.Module):
