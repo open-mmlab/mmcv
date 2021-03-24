@@ -1,7 +1,7 @@
 """Tests the hooks with runners.
 
 CommandLine:
-    pytest tests/test_hooks.py
+    pytest tests/test_runner/test_hooks.py
     xdoctest tests/test_hooks.py zero
 """
 import logging
@@ -21,7 +21,8 @@ from torch.utils.data import DataLoader
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
                          MlflowLoggerHook, PaviLoggerHook, WandbLoggerHook,
                          build_runner)
-from mmcv.runner.hooks.lr_updater import CosineRestartLrUpdaterHook
+from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
+                                          OneCycleLrUpdaterHook)
 
 
 def test_checkpoint_hook():
@@ -246,6 +247,71 @@ def test_cosine_runner_hook():
         call('train', {
             'learning_rate': 0.0004894348370484647,
             'momentum': 0.9890211303259032
+        }, 10)
+    ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+def test_one_cycle_runner_hook():
+    """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
+    with pytest.raises(AssertionError):
+        # by_epoch should be True
+        OneCycleLrUpdaterHook(max_lr=0.1, by_epoch=True)
+
+    with pytest.raises(ValueError):
+        # expected float between 0 and 1
+        OneCycleLrUpdaterHook(max_lr=0.1, pct_start=-0.1)
+
+    with pytest.raises(ValueError):
+        # anneal_strategy should be either 'cos' or 'linear'
+        OneCycleLrUpdaterHook(max_lr=0.1, anneal_strategy='sin')
+
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner()
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='OneCycleMomentumUpdaterHook',
+        base_momentum=0.85,
+        max_momentum=0.95,
+        pct_start=0.5,
+        anneal_strategy='cos',
+        three_phase=False)
+    runner.register_hook_from_cfg(hook_cfg)
+
+    # add momentum LR scheduler
+    hook_cfg = dict(
+        type='OneCycleLrUpdaterHook',
+        max_lr=0.01,
+        pct_start=0.5,
+        anneal_strategy='cos',
+        div_factor=25,
+        final_div_factor=1e4,
+        three_phase=False)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    calls = [
+        call('train', {
+            'learning_rate': 0.0003999999999999993,
+            'momentum': 0.95
+        }, 1),
+        call('train', {
+            'learning_rate': 0.00904508879153485,
+            'momentum': 0.8595491502812526
+        }, 6),
+        call('train', {
+            'learning_rate': 4e-08,
+            'momentum': 0.95
         }, 10)
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
