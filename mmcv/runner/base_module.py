@@ -4,10 +4,13 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
+from ..utils import deprecated_api_warning
+
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
 
+    @deprecated_api_warning({'pretrained': 'init_cfg'})
     def __init__(self, init_cfg=None):
         """Initialize BaseModule, inherited from `torch.nn.Module`
 
@@ -25,12 +28,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         if init_cfg is not None:
             self.init_cfg = init_cfg
 
-        # Backward compatibility in derived classes
-        # if pretrained is not None:
-        #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
-        #         key, please consider using init_cfg')
-        #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
-
     @property
     def is_init(self):
         return self._is_init
@@ -42,9 +39,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         if not self._is_init:
             if hasattr(self, 'init_cfg'):
                 initialize(self, self.init_cfg)
-            for module in self.children():
-                if 'init_weight' in dir(module):
-                    module.init_weight()
+            for m in self.children():
+                if hasattr(m, 'init_weight'):
+                    m.init_weight()
             self._is_init = True
         else:
             warnings.warn('This module has bee initialized, \
