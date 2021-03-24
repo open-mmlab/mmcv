@@ -1,5 +1,4 @@
 import copy
-import warnings
 import math
 import warnings
 
@@ -9,10 +8,12 @@ import torch.nn as nn
 from mmcv import ConfigDict
 from mmcv.cnn import (Linear, build_activation_layer, build_norm_layer,
                       constant_init, xavier_init)
-from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttnFunction
+from mmcv.ops.multi_scale_deform_attn import (
+    MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
+from mmcv.runner.base_module import BaseModule
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMERLAYER,
-                       TRANSFORMERLAYERSEQUENCE)
+from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
+                       TRANSFORMER_LAYER_SEQUENCE)
 
 
 def build_positional_encoding(cfg, default_args=None):
@@ -25,18 +26,122 @@ def build_attention(cfg, default_args=None):
     return build_from_cfg(cfg, ATTENTION, default_args)
 
 
-def build_transformerlayer(cfg, default_args=None):
+def build_transformer_layer(cfg, default_args=None):
     """Builder for transformer layer."""
-    return build_from_cfg(cfg, TRANSFORMERLAYER, default_args)
+    return build_from_cfg(cfg, TRANSFORMER_LAYER, default_args)
 
 
-def build_transformerlayersequence(cfg, default_args=None):
+def build_transformer_layer_sequence(cfg, default_args=None):
     """Builder for transformer encoder and transformer decoder."""
-    return build_from_cfg(cfg, TRANSFORMERLAYERSEQUENCE, default_args)
+    return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
 
 
 @ATTENTION.register_module()
-class MultiScaleDeformableAttention(nn.Module):
+class MultiheadAttention(BaseModule):
+    """A warpper for torch.nn.MultiheadAttention.
+
+    This module implements MultiheadAttention with residual connection,
+    and positional encoding used in DETR is also passed as input.
+
+    Args:
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads. Same as
+            `nn.MultiheadAttention`.
+        dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
+    """
+
+    def __init__(self,
+                 embed_dims,
+                 num_heads,
+                 dropout=0.,
+                 init_cfg=None,
+                 **kwargs):
+        super(MultiheadAttention, self).__init__()
+        self.embed_dims = embed_dims
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
+                                          **kwargs)
+        self.dropout = nn.Dropout(dropout)
+        self.init_cfg = init_cfg
+
+    def forward(self,
+                query,
+                key=None,
+                value=None,
+                residual=None,
+                query_pos=None,
+                key_pos=None,
+                attn_mask=None,
+                key_padding_mask=None,
+                **kwargs):
+        """Forward function for `MultiheadAttention`.
+
+        **kwargs allow passing a more general data flow when combining
+        with other operations in `transformerlayer`.
+
+        Args:
+            query (Tensor): The input query with shape [num_queries, bs,
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+            key (Tensor): The key tensor with shape [num_keys, bs,
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+                If None, the ``query`` will be used. Defaults to None.
+            value (Tensor): The value tensor with same shape as `key`.
+                Same in `nn.MultiheadAttention.forward`. Defaults to None.
+                If None, the `key` will be used.
+            residual (Tensor): This tensor, with the same shape as x,
+                will be used for the residual link.
+                If None, `x` will be used. Defaults to None.
+            query_pos (Tensor): The positional encoding for query, with
+                the same shape as `x`. If not None, it will
+                be added to `x` before forward function. Defaults to None.
+            key_pos (Tensor): The positional encoding for `key`, with the
+                same shape as `key`. Defaults to None. If not None, it will
+                be added to `key` before forward function. If None, and
+                `query_pos` has the same shape as `key`, then `query_pos`
+                will be used for `key_pos`. Defaults to None.
+            attn_mask (Tensor): ByteTensor mask with shape [num_queries,
+                num_keys]. Same in `nn.MultiheadAttention.forward`.
+                Defaults to None.
+            key_padding_mask (Tensor): ByteTensor with shape [bs, num_keys].
+                Same in `nn.MultiheadAttention.forward`. Defaults to None.
+
+        Returns:
+            Tensor: forwarded results with shape [num_queries, bs, embed_dims].
+        """
+
+        if key is None:
+            key = query
+        if value is None:
+            value = key
+        if residual is None:
+            residual = query
+        if key_pos is None:
+            if query_pos is not None:
+                # use query_pos if key_pos is not available
+                if query_pos.shape == key.shape:
+                    key_pos = query_pos
+                else:
+                    warnings.warn(f'position encoding of key is'
+                                  f'missing in {self.__class__.__name__}.')
+        if query_pos is not None:
+            query = query + query_pos
+        if key_pos is not None:
+            key = key + key_pos
+        out = self.attn(
+            query,
+            key,
+            value=value,
+            attn_mask=attn_mask,
+            key_padding_mask=key_padding_mask)[0]
+
+        return residual + self.dropout(out)
+
+
+@ATTENTION.register_module()
+class MultiScaleDeformableAttention(BaseModule):
     """An attention module used in Deformable-Detr. `Deformable DETR:
     Deformable Transformers for End-to-End Object Detection.
 
@@ -52,6 +157,8 @@ class MultiScaleDeformableAttention(nn.Module):
             each query in each head. Default: 4.
         im2col_step (int): The step used in image_to_column.
             Default: 64.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -59,13 +166,15 @@ class MultiScaleDeformableAttention(nn.Module):
                  num_heads=8,
                  num_levels=4,
                  num_points=4,
-                 im2col_step=64):
+                 im2col_step=64,
+                 norm_cfg=None):
 
         super().__init__()
         if embed_dims % num_heads != 0:
             raise ValueError(f'embed_dims must be divisible by num_heads, '
                              f'but got {embed_dims} and {num_heads}')
         dim_per_head = embed_dims // num_heads
+        self.norm_cfg = norm_cfg
 
         # you'd better set dim_per_head to a power of 2
         # which is more efficient in the CUDA implementation
@@ -211,108 +320,15 @@ class MultiScaleDeformableAttention(nn.Module):
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
         else:
-            pass
+            output = multi_scale_deformable_attn_pytorch(
+                value, spatial_shapes, level_start_index, sampling_locations,
+                attention_weights, self.im2col_step)
         output = self.output_proj(output).permute(1, 0, 2)
         # (num_query, bs ,embed_dims)
         return output
 
 
-class MultiheadAttention(nn.Module):
-    """A warpper for torch.nn.MultiheadAttention.
-
-    This module implements MultiheadAttention with residual connection,
-    and positional encoding used in DETR is also passed as input.
-
-    Args:
-        embed_dims (int): The embedding dimension.
-        num_heads (int): Parallel attention heads. Same as
-            `nn.MultiheadAttention`.
-        dropout (float): A Dropout layer on attn_output_weights. Default: 0..
-    """
-
-    def __init__(self, embed_dims, num_heads, dropout=0., **kwargs):
-        super(MultiheadAttention, self).__init__()
-        self.embed_dims = embed_dims
-        self.num_heads = num_heads
-        self.dropout = dropout
-        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
-                                          **kwargs)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self,
-                query,
-                key=None,
-                value=None,
-                residual=None,
-                query_pos=None,
-                key_pos=None,
-                attn_mask=None,
-                key_padding_mask=None,
-                **kwargs):
-        """Forward function for `MultiheadAttention`.
-
-        **kwargs allow passing a more general data flow when combining
-        with other operations in `transformerlayer`.
-
-        Args:
-            query (Tensor): The input query with shape [num_queries, bs,
-                embed_dims]. Same in `nn.MultiheadAttention.forward`.
-            key (Tensor): The key tensor with shape [num_keys, bs,
-                embed_dims]. Same in `nn.MultiheadAttention.forward`.
-                If None, the ``query`` will be used. Defaults to None.
-            value (Tensor): The value tensor with same shape as `key`.
-                Same in `nn.MultiheadAttention.forward`. Defaults to None.
-                If None, the `key` will be used.
-            residual (Tensor): This tensor, with the same shape as x,
-                will be used for the residual link.
-                If None, `x` will be used. Defaults to None.
-            query_pos (Tensor): The positional encoding for query, with
-                the same shape as `x`. If not None, it will
-                be added to `x` before forward function. Defaults to None.
-            key_pos (Tensor): The positional encoding for `key`, with the
-                same shape as `key`. Defaults to None. If not None, it will
-                be added to `key` before forward function. If None, and
-                `query_pos` has the same shape as `key`, then `query_pos`
-                will be used for `key_pos`. Defaults to None.
-            attn_mask (Tensor): ByteTensor mask with shape [num_queries,
-                num_keys]. Same in `nn.MultiheadAttention.forward`.
-                Defaults to None.
-            key_padding_mask (Tensor): ByteTensor with shape [bs, num_keys].
-                Same in `nn.MultiheadAttention.forward`. Defaults to None.
-
-        Returns:
-            Tensor: forwarded results with shape [num_queries, bs, embed_dims].
-        """
-
-        if key is None:
-            key = query
-        if value is None:
-            value = key
-        if residual is None:
-            residual = query
-        if key_pos is None:
-            if query_pos is not None:
-                # use query_pos if key_pos is not available
-                if query_pos.shape == key.shape:
-                    key_pos = query_pos
-                else:
-                    warnings.warn(f'position encoding of key is'
-                                  f'missing in {self.__class__.__name__}.')
-        if query_pos is not None:
-            query = query + query_pos
-        if key_pos is not None:
-            key = key + key_pos
-        out = self.attn(
-            query,
-            key,
-            value=value,
-            attn_mask=attn_mask,
-            key_padding_mask=key_padding_mask)[0]
-
-        return residual + self.dropout(out)
-
-
-class FFN(nn.Module):
+class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with residual connection.
 
     Args:
@@ -327,6 +343,8 @@ class FFN(nn.Module):
             zeroed. Default 0..
         add_residual (bool, optional): Whether to add the
             residual connection. Default: `True`.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -335,7 +353,8 @@ class FFN(nn.Module):
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
                  dropout=0.,
-                 add_residual=True):
+                 add_residual=True,
+                 init_cfg=None):
         super(FFN, self).__init__()
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -344,6 +363,7 @@ class FFN(nn.Module):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
+        self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
         layers = []
@@ -372,7 +392,8 @@ class FFN(nn.Module):
         return residual + self.dropout(out)
 
 
-class BaseTransformerLayer(nn.Module):
+@TRANSFORMER_LAYER.register_module()
+class BaseTransformerLayer(BaseModule):
     """Base `TransformerLayer` for vision transformer.
 
     It can be built from `mmcv.ConfigDict` and support more flexible
@@ -404,18 +425,19 @@ class BaseTransformerLayer(nn.Module):
             Default: dict(type='LN').
         ffn_num_fcs (int): The number of fully-connected layers in FFNs.
             Default：2.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
-    def __init__(
-            self,
-            attn_cfgs=None,
-            feedforward_channels=None,
-            ffn_dropout=0.,
-            operation_order=None,
-            act_cfg=dict(type='ReLU', inplace=True),
-            norm_cfg=dict(type='LN'),
-            ffn_num_fcs=2,
-    ):
+    def __init__(self,
+                 attn_cfgs=None,
+                 feedforward_channels=None,
+                 ffn_dropout=0.,
+                 operation_order=None,
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 norm_cfg=dict(type='LN'),
+                 ffn_num_fcs=2,
+                 init_cfg=None):
 
         super(BaseTransformerLayer, self).__init__()
         assert set(operation_order) & set(
@@ -433,7 +455,7 @@ class BaseTransformerLayer(nn.Module):
                 f'of attn_cfg {num_attn} is ' \
                 f'not consistent with the number of attention' \
                 f'in operation_order {operation_order}.'
-
+        self.init_cfg = init_cfg
         self.num_attn = num_attn
         self.feedforward_channels = feedforward_channels
         self.ffn_dropout = ffn_dropout
@@ -557,7 +579,8 @@ class BaseTransformerLayer(nn.Module):
         return query
 
 
-class TransformerLayerSequence(nn.Module):
+@TRANSFORMER_LAYER_SEQUENCE.register_module()
+class TransformerLayerSequence(BaseModule):
     """Base class for TransformerEncoder and TransformerDecoder in vision
     transformer.
 
@@ -572,9 +595,11 @@ class TransformerLayerSequence(nn.Module):
              it would be repeated `num_layer` times to a
              list[`mmcv.ConfigDict`]. Default: None.
         num_layers (int): The number of `TransformerLayer`. Default: None.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
-    def __init__(self, transformerlayers=None, num_layers=None):
+    def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
         super(TransformerLayerSequence, self).__init__()
         if isinstance(transformerlayers, ConfigDict):
             transformerlayers = [
@@ -583,12 +608,13 @@ class TransformerLayerSequence(nn.Module):
         else:
             assert isinstance(transformerlayers, list) and \
                    len(transformerlayers) == num_layers
+        self.init_cfg = init_cfg
         self.num_layers = num_layers
         operation_order = transformerlayers[0]['operation_order']
         self.pre_norm = operation_order[0] == 'norm'
         self.layers = nn.ModuleList()
         for i in range(num_layers):
-            self.layers.append(build_transformerlayer(transformerlayers[i]))
+            self.layers.append(build_transformer_layer(transformerlayers[i]))
         self.embed_dims = self.layers[0].embed_dims
         self.pre_norm = self.layers[0].operation_order[0] == 'norm'
 
@@ -622,7 +648,7 @@ class TransformerLayerSequence(nn.Module):
                 shape [bs, num_queries]. Only used in self-attention
                 Default: None.
             key_padding_mask (Tensor): ByteTensor for `query`, with
-                shape [bs, num_keys].Default: None.
+                shape [bs, num_keys]. Default: None.
 
         Returns:
             Tensor: forwarded results with shape [num_queries, bs, embed_dims].
