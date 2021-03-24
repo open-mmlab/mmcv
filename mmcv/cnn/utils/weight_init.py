@@ -344,6 +344,9 @@ class PretrainedInit(object):
 
 def _initialize(module, cfg, wholemodule=False):
     func = build_from_cfg(cfg, INITIALIZERS)
+    # wholemodule flag is for override mode, there is no layer key in override
+    # and initializer will give init values for the whole module with the name
+    # in override.
     func.wholemodule = wholemodule
     func(module)
 
