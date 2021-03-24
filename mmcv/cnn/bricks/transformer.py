@@ -168,7 +168,6 @@ class MultiScaleDeformableAttention(BaseModule):
                  num_points=4,
                  im2col_step=64,
                  norm_cfg=None):
-
         super().__init__()
         if embed_dims % num_heads != 0:
             raise ValueError(f'embed_dims must be divisible by num_heads, '
@@ -207,6 +206,8 @@ class MultiScaleDeformableAttention(BaseModule):
 
     def init_weight(self):
         """Default initialization for Parameters of Module."""
+        assert self.init_cfg, 'MultiScaleDeformableAttention' \
+                              ' does not support init_cfg.'
         constant_init(self.sampling_offsets, 0.)
         thetas = torch.arange(
             self.num_heads,
@@ -303,13 +304,13 @@ class MultiScaleDeformableAttention(BaseModule):
         if reference_points.shape[-1] == 2:
             offset_normalizer = torch.stack(
                 [spatial_shapes[..., 1], spatial_shapes[..., 0]], -1)
-            sampling_locations = reference_points[:, :, None, :, None, :] + \
-                sampling_offsets / \
-                offset_normalizer[None, None, None, :, None, :]
+            sampling_locations = reference_points[:, :, None, :, None, :] \
+                + sampling_offsets \
+                / offset_normalizer[None, None, None, :, None, :]
         elif reference_points.shape[-1] == 4:
             sampling_locations = reference_points[:, :, None, :, None, :2] \
-                + sampling_offsets / self.num_points * \
-                reference_points[:, :, None, :, None, 2:] \
+                + sampling_offsets / self.num_points \
+                * reference_points[:, :, None, :, None, 2:] \
                 * 0.5
         else:
             raise ValueError(
