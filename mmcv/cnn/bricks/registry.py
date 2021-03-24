@@ -9,5 +9,5 @@ PLUGIN_LAYERS = Registry('plugin layer')
 
 POSITIONAL_ENCODING = Registry('Position encoding')
 ATTENTION = Registry('Attention')
-TRANSFORMERLAYER = Registry('TransformerLayer')
-TRANSFORMERLAYERSEQUENCE = Registry('TransformerLayerSequence')
+TRANSFORMER_LAYER = Registry('TransformerLayer')
+TRANSFORMER_LAYER_SEQUENCE = Registry('TransformerLayerSequence')

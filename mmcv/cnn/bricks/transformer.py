@@ -7,8 +7,8 @@ from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMERLAYER,
-                       TRANSFORMERLAYERSEQUENCE)
+from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
+                       TRANSFORMER_LAYER_SEQUENCE)
 
 
 def build_positional_encoding(cfg, default_args=None):
@@ -23,12 +23,12 @@ def build_attention(cfg, default_args=None):
 
 def build_transformer_layer(cfg, default_args=None):
     """Builder for transformer layer."""
-    return build_from_cfg(cfg, TRANSFORMERLAYER, default_args)
+    return build_from_cfg(cfg, TRANSFORMER_LAYER, default_args)
 
 
 def build_transformer_layer_sequence(cfg, default_args=None):
     """Builder for transformer encoder and transformer decoder."""
-    return build_from_cfg(cfg, TRANSFORMERLAYERSEQUENCE, default_args)
+    return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
 
 
 @ATTENTION.register_module()
@@ -43,7 +43,8 @@ class MultiheadAttention(BaseModule):
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
         dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
-        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -149,6 +150,8 @@ class FFN(BaseModule):
             zeroed. Default 0..
         add_residual (bool, optional): Whether to add the
             residual connection. Default: `True`.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -196,7 +199,7 @@ class FFN(BaseModule):
         return residual + self.dropout(out)
 
 
-@TRANSFORMERLAYER.register_module()
+@TRANSFORMER_LAYER.register_module()
 class BaseTransformerLayer(BaseModule):
     """Base `TransformerLayer` for vision transformer.
 
@@ -229,6 +232,8 @@ class BaseTransformerLayer(BaseModule):
             Default: dict(type='LN').
         ffn_num_fcs (int): The number of fully-connected layers in FFNs.
             Default：2.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -381,7 +386,7 @@ class BaseTransformerLayer(BaseModule):
         return query
 
 
-@TRANSFORMERLAYERSEQUENCE.register_module()
+@TRANSFORMER_LAYER_SEQUENCE.register_module()
 class TransformerLayerSequence(BaseModule):
     """Base class for TransformerEncoder and TransformerDecoder in vision
     transformer.
@@ -397,6 +402,8 @@ class TransformerLayerSequence(BaseModule):
              it would be repeated `num_layer` times to a
              list[`mmcv.ConfigDict`]. Default: None.
         num_layers (int): The number of `TransformerLayer`. Default: None.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
