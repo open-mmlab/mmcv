@@ -60,10 +60,11 @@ class MomentumUpdaterHook(Hook):
                 ]
                 momentum_groups.update({k: _momentum_group})
             return momentum_groups
-        return [
-            self.get_momentum(runner, _base_momentum)
-            for _base_momentum in self.base_momentum
-        ]
+        else:
+            return [
+                self.get_momentum(runner, _base_momentum)
+                for _base_momentum in self.base_momentum
+            ]
 
     def get_warmup_momentum(self, cur_iters):
 
