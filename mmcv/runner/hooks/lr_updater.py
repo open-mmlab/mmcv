@@ -401,7 +401,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
 
 @HOOKS.register_module()
 class OneCycleLrUpdaterHook(LrUpdaterHook):
-    """Cyclic LR Scheduler.
+    """One Cycle LR Scheduler.
 
     The 1cycle learning rate policy changes the learning rate after every
     batch. The one cycle learning rate policy is described in
