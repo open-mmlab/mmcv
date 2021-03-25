@@ -255,7 +255,7 @@ def test_cosine_runner_hook():
 def test_one_cycle_runner_hook():
     """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
     with pytest.raises(AssertionError):
-        # by_epoch should be True
+        # by_epoch should be False
         OneCycleLrUpdaterHook(max_lr=0.1, by_epoch=True)
 
     with pytest.raises(ValueError):
