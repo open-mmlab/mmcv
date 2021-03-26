@@ -308,9 +308,9 @@ class TestPhotometric:
 
         img_adjusted = mmcv.adjust_lighting(
             img,
-            np.ramdom.normal(0, 1, 2),
-            np.normal(0, 1, (3, 2)),
-            alphastd=0)
+            np.random.normal(0, 1, 2),
+            np.random.normal(0, 1, (3, 2)),
+            alphastd=0.)
         assert_array_equal(img_adjusted, img)
 
     def test_lut_transform(self):
