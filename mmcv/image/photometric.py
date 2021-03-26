@@ -332,6 +332,49 @@ def adjust_sharpness(img, factor=1., kernel=None):
     return sharpened_img.astype(img.dtype)
 
 
+def adjust_lighting(img, eigval, eigvec, alphastd=0.1, to_rgb=True):
+    """AlexNet-style PCA jitter.
+
+    This data augmentation is proposed in `ImageNet Classification with Deep
+    Convolutional Neural Networks
+    <https://dl.acm.org/doi/pdf/10.1145/3065386>`_.
+
+    Args:
+        img (ndarray): Image to be ajusted lighting. BGR order.
+        eigval (ndarray): the eigenvalue of the convariance matrix of pixel
+            values, respectively.
+        eigvec (ndarray): the eigenvector of the convariance matrix of pixel
+            values, respectively.
+        alphastd (float): The standard deviation for distribution of alpha.
+            Dafaults to 0.1
+        to_rgb (bool): Whether to convert img to rgb.
+
+    Returns:
+        ndarray: The adjusted image.
+    """
+    assert isinstance(eigval, np.ndarray) and isinstance(eigvec, np.ndarray), \
+        f'eigval and eigvec should both be of type np.ndarray, got ' \
+        f'{type(eigval)} and {type(eigvec)} instead.'
+
+    assert eigval.ndim == 1 and eigvec.ndim == 2
+    assert eigvec.shape == (3, eigval.shape[0])
+    n_eigval = eigval.shape[0]
+    assert isinstance(alphastd, float), 'alphastd should be of type float, ' \
+        f'got {type(alphastd)} instead.'
+
+    img = img.copy().astype(np.float32)
+    if to_rgb:
+        cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
+
+    alpha = np.random.normal(0, alphastd, n_eigval)
+    alter = eigvec \
+        * np.broadcast_to(alpha.reshape(1, n_eigval), (3, n_eigval)) \
+        * np.broadcast_to(eigval.reshape(1, n_eigval), (3, n_eigval))
+    alter = np.broadcast_to(alter.sum(axis=1).reshape(1, 1, 3), img.shape)
+    img_adjusted = img + alter
+    return img_adjusted
+
+
 def lut_transform(img, lut_table):
     """Transform array by look-up table.
 

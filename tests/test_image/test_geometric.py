@@ -423,6 +423,40 @@ class TestGeometric:
         padded_img = mmcv.impad_to_multiple(img, 2)
         assert padded_img.shape == (20, 12)
 
+    def test_cutout(self):
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
+
+        # shape must be int or tuple
+        with pytest.raises(AssertionError):
+            mmcv.cutout(img, 2.5)
+        # pad_val must be int or float or tuple with the same length
+        # of img channels
+        with pytest.raises(AssertionError):
+            mmcv.cutout(img, 1, (1, 2, 3))
+        with pytest.raises(TypeError):
+            mmcv.cutout(img, 1, None)
+
+        # test cutout the whole img
+        assert_array_equal(mmcv.cutout(img, 6), np.zeros_like(img))
+        # test not cutout
+        assert_array_equal(mmcv.cutout(img, 0), img)
+        # test cutout when shape is int
+        np.random.seed(0)
+        img_cutout = np.array([[1, 2, 3], [4, 0, 6], [7, 8,
+                                                      9]]).astype(np.uint8)
+        assert_array_equal(mmcv.cutout(img, 1), img_cutout)
+        img_cutout = np.array([[1, 2, 3], [4, 10, 6], [7, 8,
+                                                       9]]).astype(np.uint8)
+        assert_array_equal(mmcv.cutout(img, 1, pad_val=10), img_cutout)
+        # test cutout when shape is tuple
+        np.random.seed(0)
+        img_cutout = np.array([[1, 2, 3], [0, 0, 6], [7, 8,
+                                                      9]]).astype(np.uint8)
+        assert_array_equal(mmcv.cutout(img, (1, 2)), img_cutout)
+        img_cutout = np.array([[1, 2, 3], [10, 10, 6], [7, 8,
+                                                        9]]).astype(np.uint8)
+        assert_array_equal(mmcv.cutout(img, (1, 2), pad_val=10), img_cutout)
+
     def test_imrotate(self):
         img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
         assert_array_equal(mmcv.imrotate(img, 0), img)
