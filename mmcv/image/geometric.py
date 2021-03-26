@@ -468,7 +468,7 @@ def impad_to_multiple(img, divisor, pad_val=0):
     return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
-def imcutout(img, shape, pad_val=0):
+def cutout(img, shape, pad_val=0):
     """Randomly cut out a rectangle from the original img.
 
     Args:
@@ -477,6 +477,9 @@ def imcutout(img, shape, pad_val=0):
             int, the value will be used for both h and w.
         pad_val (int | float | tuple[int | float]): Values to be filled in the
             cut area. Defaults to 0.
+
+    Returns:
+        ndarray: The cutout image.
     """
 
     channels = 1 if img.ndim == 2 else img.shape[2]
