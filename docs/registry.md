@@ -82,56 +82,63 @@ converter = CONVERTERS.build(converter_cfg)
 
 ## Hierarchy Registry
 
-Hierarchy structure is used for similar registries from different packages.
-For example, both [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMClassification](https://github.com/open-mmlab/mmclassification) have `MODEL` registry define as follows:
-In MMDetection:
+You could also build modules from more than one OpenMMLab frameworks, e.g. you could use all backbones in [MMClassification](https://github.com/open-mmlab/mmclassification) for object detectors in [MMDetection](https://github.com/open-mmlab/mmdetection), you may also combine an object detection model in [MMDetection](https://github.com/open-mmlab/mmdetection) and semantic segmentation model in [MMSegmentation](https://github.com/open-mmlab/mmsegmentation).
 
-```python
-from mmcv.utils import Registry
-from mmcv.cnn import MODELS as MMCV_MODELS
-MODELS = Registry('model', parent=MMCV_MODELS)
+All `MODELS` registries of downstream codebases are children registries of MMCV's `MODELS` registry.
+Basic, there are two ways to build a module from downsteam codebases.
 
-@MODELS.register_module()
-class NetA(nn.Module):
-    def forward(self, x):
-        return x
-```
+1. Build from children registries.
 
-In MMClassification:
+   For example:
 
-```python
-from mmcv.utils import Registry
-from mmcv.cnn import MODELS as MMCV_MODELS
-MODELS = Registry('model', parent=MMCV_MODELS)
+   In MMDetection we define:
 
-@MODELS.register_module()
-class NetB(nn.Module):
-    def forward(self, x):
-        return x + 1
-```
+   ```python
+   from mmcv.utils import Registry
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   MODELS = Registry('model', parent=MMCV_MODELS)
 
-We could build two net in either MMDetection or MMClassification by:
+   @MODELS.register_module()
+   class NetA(nn.Module):
+       def forward(self, x):
+           return x
+   ```
 
-```python
-import mmcls # import mmcls to register models
-from mmdet.models import MODELS
-net_a = MODELS.build(cfg=dict(type='NetA'))
-net_b = MODELS.build(cfg=dict(type='mmcls.NetB'))
-```
+   In MMClassification we define:
 
-or
+   ```python
+   from mmcv.utils import Registry
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   MODELS = Registry('model', parent=MMCV_MODELS)
 
-```python
-import mmdet # import mmcls to register models
-from mmcls.models import MODELS
-net_a = MODELS.build(cfg=dict(type='mmdet.NetA'))
-net_b = MODELS.build(cfg=dict(type='NetB'))
-```
+   @MODELS.register_module()
+   class NetB(nn.Module):
+       def forward(self, x):
+           return x + 1
+   ```
 
-Build them by shared `MODELS` registry in MMCV is also feasible:
+   We could build two net in either MMDetection or MMClassification by:
 
-```python
-from mmcv.cnn import MODELS as MMCV_MODELS
-net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
-net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
-```
+   ```python
+   from mmdet.models import MODELS
+   net_a = MODELS.build(cfg=dict(type='NetA'))
+   net_b = MODELS.build(cfg=dict(type='mmcls.NetB'))
+   ```
+
+   or
+
+   ```python
+   from mmcls.models import MODELS
+   net_a = MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MODELS.build(cfg=dict(type='NetB'))
+   ```
+
+2. Build from parent registry.
+
+   The shared `MODELS` registry in MMCV is the parent registry for all downstream codebases (root registry):
+
+   ```python
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
+   ```

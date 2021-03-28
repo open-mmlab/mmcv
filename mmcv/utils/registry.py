@@ -77,9 +77,10 @@ class Registry:
             from ``parent``. Default: None.
         parent (Registry, optional): Parent registry. The class registered in
             children registry could be built from parent. Default: None.
-        scope (str, optional): The scope of registry. It is the key to index
-            children. If not specified, scope will be the name of the package
-            where class is defined, e.g. mmdet, mmcls, mmseg. Default: None.
+        scope (str, optional): The scope of registry. It is the key to search
+            for children registry. If not specified, scope will be the name of
+            the package where class is defined, e.g. mmdet, mmcls, mmseg.
+            Default: None.
     """
 
     def __init__(self, name, build_func=None, parent=None, scope=None):
