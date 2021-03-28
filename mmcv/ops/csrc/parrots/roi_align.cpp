@@ -1,177 +1,129 @@
-// Copyright (c) 2018, SenseTime.
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void ROIAlignForwardCPULauncher(DArrayLite input, DArrayLite rois,
-                                DArrayLite output, DArrayLite argmax_y,
-                                DArrayLite argmax_x, int aligned_height,
-                                int aligned_width, float spatial_scale,
-                                int sampling_ratio, int pool_mode,
-                                bool aligned);
+#ifdef MMCV_WITH_CUDA
+void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                       Tensor argmax_y, Tensor argmax_x,
+                                       int aligned_height, int aligned_width,
+                                       float spatial_scale, int sampling_ratio,
+                                       int pool_mode, bool aligned);
 
-void ROIAlignBackwardCPULauncher(DArrayLite grad_output, DArrayLite rois,
-                                 DArrayLite argmax_y, DArrayLite argmax_x,
-                                 DArrayLite grad_input, int aligned_height,
+void ROIAlignBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
+                                        Tensor argmax_y, Tensor argmax_x,
+                                        Tensor grad_input, int aligned_height,
+                                        int aligned_width, float spatial_scale,
+                                        int sampling_ratio, int pool_mode,
+                                        bool aligned);
+
+void roi_align_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
+  ROIAlignForwardCUDAKernelLauncher(
+      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
+      spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+
+void roi_align_backward_cuda(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                             Tensor argmax_x, Tensor grad_input,
+                             int aligned_height, int aligned_width,
+                             float spatial_scale, int sampling_ratio,
+                             int pool_mode, bool aligned) {
+  ROIAlignBackwardCUDAKernelLauncher(
+      grad_output, rois, argmax_y, argmax_x, grad_input, aligned_height,
+      aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+#endif
+
+void ROIAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,
+                                Tensor argmax_y, Tensor argmax_x,
+                                int aligned_height, int aligned_width,
+                                float spatial_scale, int sampling_ratio,
+                                int pool_mode, bool aligned);
+
+void ROIAlignBackwardCPULauncher(Tensor grad_output, Tensor rois,
+                                 Tensor argmax_y, Tensor argmax_x,
+                                 Tensor grad_input, int aligned_height,
                                  int aligned_width, float spatial_scale,
                                  int sampling_ratio, int pool_mode,
                                  bool aligned);
 
-void ROIAlignForwardCUDAKernelLauncher(DArrayLite input, DArrayLite rois,
-                                       DArrayLite output, DArrayLite argmax_y,
-                                       DArrayLite argmax_x, int aligned_height,
-                                       int aligned_width, float spatial_scale,
-                                       int sampling_ratio, int pool_mode,
-                                       bool aligned, cudaStream_t stream);
-
-void ROIAlignBackwardCUDAKernelLauncher(
-    DArrayLite grad_output, DArrayLite rois, DArrayLite argmax_y,
-    DArrayLite argmax_x, DArrayLite grad_input, int aligned_height,
-    int aligned_width, float spatial_scale, int sampling_ratio, int pool_mode,
-    bool aligned, cudaStream_t stream);
-
-void roi_align_forward_cpu(HostContext& ctx, const SSElement& attr,
-                           const OperatorBase::in_list_t& ins,
-                           OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
-
-  auto& input = ins[0];
-  auto& rois = ins[1];
-  auto& output = outs[0];
-  auto& argmax_y = outs[1];
-  auto& argmax_x = outs[2];
-
+void roi_align_forward_cpu(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax_y, Tensor argmax_x, int aligned_height,
+                           int aligned_width, float spatial_scale,
+                           int sampling_ratio, int pool_mode, bool aligned) {
   ROIAlignForwardCPULauncher(input, rois, output, argmax_y, argmax_x,
                              aligned_height, aligned_width, spatial_scale,
                              sampling_ratio, pool_mode, aligned);
 }
 
-void roi_align_backward_cpu(HostContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
-
-  auto& grad_output = ins[0];
-  auto& rois = ins[1];
-  auto& argmax_y = ins[2];
-  auto& argmax_x = ins[3];
-  auto& grad_input = outs[0];
-
+void roi_align_backward_cpu(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                            Tensor argmax_x, Tensor grad_input,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
   ROIAlignBackwardCPULauncher(grad_output, rois, argmax_y, argmax_x, grad_input,
                               aligned_height, aligned_width, spatial_scale,
                               sampling_ratio, pool_mode, aligned);
 }
 
-void roi_align_forward_cuda(CudaContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
+void roi_align_forward(Tensor input, Tensor rois, Tensor output,
+                       Tensor argmax_y, Tensor argmax_x, int aligned_height,
+                       int aligned_width, float spatial_scale,
+                       int sampling_ratio, int pool_mode, bool aligned) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(rois);
+    CHECK_CUDA_INPUT(output);
+    CHECK_CUDA_INPUT(argmax_y);
+    CHECK_CUDA_INPUT(argmax_x);
 
-  auto& input = ins[0];
-  auto& rois = ins[1];
-  auto& output = outs[0];
-  auto& argmax_y = outs[1];
-  auto& argmax_x = outs[2];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  ROIAlignForwardCUDAKernelLauncher(
-      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
-      spatial_scale, sampling_ratio, pool_mode, aligned, stream);
+    roi_align_forward_cuda(input, rois, output, argmax_y, argmax_x,
+                           aligned_height, aligned_width, spatial_scale,
+                           sampling_ratio, pool_mode, aligned);
+#else
+    AT_ERROR("RoIAlign is not compiled with GPU support");
+#endif
+  } else {
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(rois);
+    CHECK_CPU_INPUT(output);
+    CHECK_CPU_INPUT(argmax_y);
+    CHECK_CPU_INPUT(argmax_x);
+    roi_align_forward_cpu(input, rois, output, argmax_y, argmax_x,
+                          aligned_height, aligned_width, spatial_scale,
+                          sampling_ratio, pool_mode, aligned);
+  }
 }
 
-void roi_align_backward_cuda(CudaContext& ctx, const SSElement& attr,
-                             const OperatorBase::in_list_t& ins,
-                             OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
+void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                        Tensor argmax_x, Tensor grad_input, int aligned_height,
+                        int aligned_width, float spatial_scale,
+                        int sampling_ratio, int pool_mode, bool aligned) {
+  if (grad_output.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(rois);
+    CHECK_CUDA_INPUT(argmax_y);
+    CHECK_CUDA_INPUT(argmax_x);
+    CHECK_CUDA_INPUT(grad_input);
 
-  auto& grad_output = ins[0];
-  auto& rois = ins[1];
-  auto& argmax_y = ins[2];
-  auto& argmax_x = ins[3];
-  auto& grad_input = outs[0];
+    roi_align_backward_cuda(grad_output, rois, argmax_y, argmax_x, grad_input,
+                            aligned_height, aligned_width, spatial_scale,
+                            sampling_ratio, pool_mode, aligned);
+#else
+    AT_ERROR("RoIAlign is not compiled with GPU support");
+#endif
+  } else {
+    CHECK_CPU_INPUT(grad_output);
+    CHECK_CPU_INPUT(rois);
+    CHECK_CPU_INPUT(argmax_y);
+    CHECK_CPU_INPUT(argmax_x);
+    CHECK_CPU_INPUT(grad_input);
 
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  ROIAlignBackwardCUDAKernelLauncher(
-      grad_output, rois, argmax_y, argmax_x, grad_input, aligned_height,
-      aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned, stream);
+    roi_align_backward_cpu(grad_output, rois, argmax_y, argmax_x, grad_input,
+                           aligned_height, aligned_width, spatial_scale,
+                           sampling_ratio, pool_mode, aligned);
+  }
 }
-
-PARROTS_EXTENSION_REGISTER(roi_align_forward)
-    .attr("aligned_height")
-    .attr("aligned_width")
-    .attr("spatial_scale")
-    .attr("sampling_ratio")
-    .attr("pool_mode")
-    .attr("aligned")
-    .input(2)
-    .output(3)
-    .apply(roi_align_forward_cpu)
-#ifdef PARROTS_USE_CUDA
-    .apply(roi_align_forward_cuda)
-#endif
-    .done();
-
-PARROTS_EXTENSION_REGISTER(roi_align_backward)
-    .attr("aligned_height")
-    .attr("aligned_width")
-    .attr("spatial_scale")
-    .attr("sampling_ratio")
-    .attr("pool_mode")
-    .attr("aligned")
-    .input(4)
-    .output(1)
-    .apply(roi_align_backward_cpu)
-#ifdef PARROTS_USE_CUDA
-    .apply(roi_align_backward_cuda)
-#endif
-    .done();

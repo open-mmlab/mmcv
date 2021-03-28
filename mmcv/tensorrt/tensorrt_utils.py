@@ -1,5 +1,96 @@
+import numpy as np
+import onnx
 import tensorrt as trt
 import torch
+
+
+def preprocess_onnx(onnx_model):
+    """Modify onnx model to match with TensorRT plugins in mmcv.
+
+    There are some conflict between onnx node definition and TensorRT limit.
+    This function perform preprocess on the onnx model to solve the conflicts.
+    For example, onnx `attribute` is loaded in TensorRT on host and onnx
+    `input` is loaded on device. The shape inference is performed on host, so
+    any `input` related to shape (such as `max_output_boxes_per_class` in
+    NonMaxSuppression) should be transformed to `attribute` before conversion.
+
+    Arguments:
+        onnx_model (onnx.ModelProto): Input onnx model.
+
+    Returns:
+        onnx.ModelProto: Modified onnx model.
+    """
+    graph = onnx_model.graph
+    nodes = graph.node
+    initializers = graph.initializer
+    node_dict = {}
+    for node in nodes:
+        node_outputs = node.output
+        for output in node_outputs:
+            if len(output) > 0:
+                node_dict[output] = node
+
+    init_dict = {_.name: _ for _ in initializers}
+
+    def parse_data(name, typ):
+        if name in node_dict:
+            const_node = node_dict[name]
+            assert const_node.op_type == 'Constant'
+            raw_data = const_node.attribute[0].t.raw_data
+        elif name in init_dict:
+            raw_data = init_dict[name].raw_data
+        else:
+            raise ValueError(f'{name} not found in node or initilizer.')
+        return np.frombuffer(raw_data, typ).item()
+
+    nrof_node = len(nodes)
+    for idx in range(nrof_node):
+        node = nodes[idx]
+        node_attributes = node.attribute
+        node_inputs = node.input
+        node_outputs = node.output
+        node_name = node.name
+        # process NonMaxSuppression node
+        if node.op_type == 'NonMaxSuppression':
+            center_point_box = 0
+            max_output_boxes_per_class = 1000000
+            iou_threshold = 0.3
+            score_threshold = 0.0
+            offset = 0
+            for attribute in node_attributes:
+                if attribute.name == 'center_point_box':
+                    center_point_box = attribute.i
+                elif attribute.name == 'offset':
+                    offset = attribute.i
+
+            if len(node_inputs) >= 3:
+                max_output_boxes_per_class = parse_data(
+                    node_inputs[2], np.int64)
+
+            if len(node_inputs) >= 4:
+                iou_threshold = parse_data(node_inputs[3], np.float32)
+
+            if len(node_inputs) >= 5:
+                score_threshold = parse_data(node_inputs[4], np.float32)
+
+            new_node = onnx.helper.make_node(
+                'NonMaxSuppression',
+                node_inputs[:2],
+                node_outputs,
+                name=node_name,
+                center_point_box=center_point_box,
+                max_output_boxes_per_class=max_output_boxes_per_class,
+                iou_threshold=iou_threshold,
+                score_threshold=score_threshold,
+                offset=offset)
+
+            for output in node_outputs:
+                if output in node_dict:
+                    node_dict[output] = new_node
+            nodes.insert(idx, new_node)
+            nodes.remove(node)
+
+    return onnx_model
 
 
 def onnx2trt(onnx_model,
@@ -46,10 +137,15 @@ def onnx2trt(onnx_model,
     parser = trt.OnnxParser(network, logger)
 
     if isinstance(onnx_model, str):
-        assert parser.parse_from_file(onnx_model), 'parse onnx failed.'
-    else:
-        assert parser.parse(
-            onnx_model.SerializeToString()), 'parse onnx failed.'
+        onnx_model = onnx.load(onnx_model)
+
+    onnx_model = preprocess_onnx(onnx_model)
+
+    if not parser.parse(onnx_model.SerializeToString()):
+        error_msgs = ''
+        for error in range(parser.num_errors):
+            error_msgs += f'{parser.get_error(error)}\n'
+        raise RuntimeError(f'parse onnx failed:\n{error_msgs}')
 
     # config builder
     builder.max_workspace_size = max_workspace_size
@@ -188,6 +284,8 @@ class TRTWraper(torch.nn.Module):
         for input_name, input_tensor in inputs.items():
             idx = self.engine.get_binding_index(input_name)
 
+            if input_tensor.dtype == torch.long:
+                input_tensor = input_tensor.int()
             self.context.set_binding_shape(idx, tuple(input_tensor.shape))
             bindings[idx] = input_tensor.contiguous().data_ptr()
 

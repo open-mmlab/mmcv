@@ -7,7 +7,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -28,7 +28,7 @@ jobs:
           style: google
 
   build_without_torch:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -51,7 +51,7 @@ jobs:
           pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py
 
   build_without_ops:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       MMCV_WITH_OPS: 0
     strategy:
@@ -81,7 +81,7 @@ jobs:
           pytest tests/ --ignore=tests/test_ops
 
   build_cpu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -122,7 +122,7 @@ jobs:
           coverage report -m
 
   build_cuda:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       CUDA: 10.1.105-1
       CUDA_SHORT: 10.1
@@ -185,7 +185,7 @@ jobs:
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
-          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py
+          coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.6

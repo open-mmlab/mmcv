@@ -28,6 +28,7 @@ class TestIO:
         cls.palette_img_path = osp.join(cls.data_dir, 'palette.gif')
         cls.exif_img_path = osp.join(cls.data_dir, 'color_exif.jpg')
         cls.img = cv2.imread(cls.img_path)
+        cls.tiff_path = osp.join(cls.data_dir, 'uint16-5channel.tif')
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape
@@ -172,6 +173,11 @@ class TestIO:
 
         with pytest.raises(ValueError):
             mmcv.imread(self.img_path, 'unsupported_backend')
+
+        # backend tifffile, multi channel tiff file(> 4 channels).
+        mmcv.use_backend('tifffile')
+        img_tifffile = mmcv.imread(self.tiff_path)
+        assert img_tifffile.shape == (200, 150, 5)
 
         mmcv.use_backend('cv2')
 

@@ -1,77 +1,66 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void ROIPoolForwardCUDAKernelLauncher(const DArrayLite input,
-                                      const DArrayLite rois, DArrayLite output,
-                                      DArrayLite argmax, int pooled_height,
-                                      int pooled_width, float spatial_scale,
-                                      cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                      Tensor argmax, int pooled_height,
+                                      int pooled_width, float spatial_scale);
 
-void ROIPoolBackwardCUDAKernelLauncher(const DArrayLite grad_output,
-                                       const DArrayLite rois,
-                                       const DArrayLite argmax,
-                                       DArrayLite grad_input, int pooled_height,
-                                       int pooled_width, float spatial_scale,
-                                       cudaStream_t stream);
+void ROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
+                                       Tensor argmax, Tensor grad_input,
+                                       int pooled_height, int pooled_width,
+                                       float spatial_scale);
 
-void roi_pool_forward_cuda(CudaContext& ctx, const SSElement& attr,
-                           const OperatorBase::in_list_t& ins,
-                           OperatorBase::out_list_t& outs) {
-  int pooled_height;
-  int pooled_width;
-  float spatial_scale;
-  SSAttrs(attr)
-      .get<int>("pooled_height", pooled_height)
-      .get<int>("pooled_width", pooled_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .done();
-
-  const auto& input = ins[0];
-  const auto& rois = ins[1];
-  auto& output = outs[0];
-  auto& argmax = outs[1];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax, int pooled_height, int pooled_width,
+                           float spatial_scale) {
   ROIPoolForwardCUDAKernelLauncher(input, rois, output, argmax, pooled_height,
-                                   pooled_width, spatial_scale, stream);
+                                   pooled_width, spatial_scale);
 }
 
-void roi_pool_backward_cuda(CudaContext& ctx, const SSElement& attr,
-                            const OperatorBase::in_list_t& ins,
-                            OperatorBase::out_list_t& outs) {
-  int pooled_height;
-  int pooled_width;
-  float spatial_scale;
-  SSAttrs(attr)
-      .get<int>("pooled_height", pooled_height)
-      .get<int>("pooled_width", pooled_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .done();
-
-  const auto& grad_output = ins[0];
-  const auto& rois = ins[1];
-  const auto& argmax = ins[2];
-  auto& grad_input = outs[0];
-
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
+void roi_pool_backward_cuda(Tensor grad_output, Tensor rois, Tensor argmax,
+                            Tensor grad_input, int pooled_height,
+                            int pooled_width, float spatial_scale) {
   ROIPoolBackwardCUDAKernelLauncher(grad_output, rois, argmax, grad_input,
-                                    pooled_height, pooled_width, spatial_scale,
-                                    stream);
+                                    pooled_height, pooled_width, spatial_scale);
+}
+#endif
+
+void roi_pool_forward(Tensor input, Tensor rois, Tensor output, Tensor argmax,
+                      int pooled_height, int pooled_width,
+                      float spatial_scale) {
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(rois);
+    CHECK_CUDA_INPUT(output);
+    CHECK_CUDA_INPUT(argmax);
+
+    roi_pool_forward_cuda(input, rois, output, argmax, pooled_height,
+                          pooled_width, spatial_scale);
+#else
+    AT_ERROR("RoIPool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("RoIPool is not implemented on CPU");
+  }
 }
 
-PARROTS_EXTENSION_REGISTER(roi_pool_forward)
-    .attr("pooled_height")
-    .attr("pooled_width")
-    .attr("spatial_scale")
-    .input(2)
-    .output(2)
-    .apply(roi_pool_forward_cuda)
-    .done();
+void roi_pool_backward(Tensor grad_output, Tensor rois, Tensor argmax,
+                       Tensor grad_input, int pooled_height, int pooled_width,
+                       float spatial_scale) {
+  if (grad_output.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(grad_output);
+    CHECK_CUDA_INPUT(rois);
+    CHECK_CUDA_INPUT(argmax);
+    CHECK_CUDA_INPUT(grad_input);
 
-PARROTS_EXTENSION_REGISTER(roi_pool_backward)
-    .attr("pooled_height")
-    .attr("pooled_width")
-    .attr("spatial_scale")
-    .input(3)
-    .output(1)
-    .apply(roi_pool_backward_cuda)
-    .done();
+    roi_pool_backward_cuda(grad_output, rois, argmax, grad_input, pooled_height,
+                           pooled_width, spatial_scale);
+#else
+    AT_ERROR("RoIPool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("RoIPool is not implemented on CPU");
+  }
+}

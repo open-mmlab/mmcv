@@ -468,6 +468,61 @@ def impad_to_multiple(img, divisor, pad_val=0):
     return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
+def cutout(img, shape, pad_val=0):
+    """Randomly cut out a rectangle from the original img.
+
+    Args:
+        img (ndarray): Image to be cutout.
+        shape (int | tuple[int]): Expected cutout shape (h, w). If given as a
+            int, the value will be used for both h and w.
+        pad_val (int | float | tuple[int | float]): Values to be filled in the
+            cut area. Defaults to 0.
+
+    Returns:
+        ndarray: The cutout image.
+    """
+
+    channels = 1 if img.ndim == 2 else img.shape[2]
+    if isinstance(shape, int):
+        cut_h, cut_w = shape, shape
+    else:
+        assert isinstance(shape, tuple) and len(shape) == 2, \
+            f'shape must be a int or a tuple with length 2, but got type ' \
+            f'{type(shape)} instead.'
+        cut_h, cut_w = shape
+    if isinstance(pad_val, (int, float)):
+        pad_val = tuple([pad_val] * channels)
+    elif isinstance(pad_val, tuple):
+        assert len(pad_val) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(pad_val), channels)
+    else:
+        raise TypeError(f'Invalid type {type(pad_val)} for `pad_val`')
+
+    img_h, img_w = img.shape[:2]
+    y0 = np.random.uniform(img_h)
+    x0 = np.random.uniform(img_w)
+
+    y1 = int(max(0, y0 - cut_h / 2.))
+    x1 = int(max(0, x0 - cut_w / 2.))
+    y2 = min(img_h, y1 + cut_h)
+    x2 = min(img_w, x1 + cut_w)
+
+    if img.ndim == 2:
+        patch_shape = (y2 - y1, x2 - x1)
+    else:
+        patch_shape = (y2 - y1, x2 - x1, channels)
+
+    img_cutout = img.copy()
+    patch = np.array(
+        pad_val, dtype=img.dtype) * np.ones(
+            patch_shape, dtype=img.dtype)
+    img_cutout[y1:y2, x1:x2, ...] = patch
+
+    return img_cutout
+
+
 def _get_shear_matrix(magnitude, direction='horizontal'):
     """Generate the shear matrix for transformation.
 

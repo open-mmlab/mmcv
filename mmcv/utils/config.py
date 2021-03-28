@@ -5,6 +5,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
@@ -252,6 +253,31 @@ class Config:
         if import_custom_modules and cfg_dict.get('custom_imports', None):
             import_modules_from_strings(**cfg_dict['custom_imports'])
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
+
+    @staticmethod
+    def fromstring(cfg_str, file_format):
+        """Generate config from config str.
+
+        Args:
+            cfg_str (str): Config str.
+            file_format (str): Config file format corresponding to the
+               config str. Only py/yml/yaml/json type are supported now!
+
+        Returns:
+            obj:`Config`: Config obj.
+        """
+        if file_format not in ['.py', '.json', '.yaml', '.yml']:
+            raise IOError('Only py/yml/yaml/json type are supported now!')
+        if file_format != '.py' and 'dict(' in cfg_str:
+            # check if users specify a wrong suffix for python
+            warnings.warn(
+                'Please check "file_format", the file format may be .py')
+
+        with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
+            temp_file.write(cfg_str)
+            temp_file.flush()
+            cfg = Config.fromfile(temp_file.name)
+        return cfg
 
     @staticmethod
     def auto_argparser(description=None):

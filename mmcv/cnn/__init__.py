@@ -14,8 +14,8 @@ from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
 from .builder import MODELS, build_model_from_cfg
 # yapf: enable
 from .resnet import ResNet, make_res_layer
-from .utils import (INITIALIZERS, ConstantInit, KaimingInit, NormalInit,
-                    PretrainedInit, UniformInit, XavierInit,
+from .utils import (INITIALIZERS, Caffe2XavierInit, ConstantInit, KaimingInit,
+                    NormalInit, PretrainedInit, UniformInit, XavierInit,
                     bias_init_with_prob, caffe2_xavier_init, constant_init,
                     fuse_conv_bn, get_model_complexity_info, initialize,
                     kaiming_init, normal_init, uniform_init, xavier_init)
@@ -35,5 +35,5 @@ __all__ = [
     'Linear', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d',
     'MaxPool3d', 'Conv3d', 'initialize', 'INITIALIZERS', 'ConstantInit',
     'XavierInit', 'NormalInit', 'UniformInit', 'KaimingInit', 'PretrainedInit',
-    'MODELS', 'build_model_from_cfg'
+    'Caffe2XavierInit', 'MODELS', 'build_model_from_cfg'
 ]

@@ -15,12 +15,19 @@ if torch.__version__ != 'parrots':
 else:
     from parrots import extension
 
+    has_return_value_ops = [
+        'nms', 'softnms', 'nms_match', 'nms_rotated', 'top_pool_forward',
+        'top_pool_backward', 'bottom_pool_forward', 'bottom_pool_backward',
+        'left_pool_forward', 'left_pool_backward', 'right_pool_forward',
+        'right_pool_backward'
+    ]
+
     def load_ext(name, funcs):
         ExtModule = namedtuple('ExtModule', funcs)
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         for fun in funcs:
-            if fun in ['nms', 'softnms']:
+            if fun in has_return_value_ops:
                 ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
             else:
                 ext_list.append(

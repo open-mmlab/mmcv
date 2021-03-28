@@ -1,341 +1,286 @@
 #include "modulated_deform_conv_cuda_kernel.cuh"
-#include "parrots_cuda_helper.hpp"
+#include "pytorch_cuda_helper.hpp"
 
 void modulated_deformable_im2col_cuda(
-    const DArrayLite data_im, const DArrayLite data_offset,
-    const DArrayLite data_mask, const int batch_size, const int channels,
-    const int height_im, const int width_im, const int height_col,
-    const int width_col, const int kernel_h, const int kenerl_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w, const int deformable_group,
-    DArrayLite data_col, cudaStream_t stream) {
+    const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
+    const int batch_size, const int channels, const int height_im,
+    const int width_im, const int height_col, const int width_col,
+    const int kernel_h, const int kenerl_w, const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w, const int dilation_h,
+    const int dilation_w, const int deformable_group, Tensor data_col) {
   // num_axes should be smaller than block size
   const int channel_per_deformable_group = channels / deformable_group;
   const int num_kernels = channels * batch_size * height_col * width_col;
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_im.elemType().prim(), ([&] {
-        modulated_deformable_im2col_gpu_kernel<<<
-            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-            num_kernels, data_im.ptr<scalar_t>(), data_offset.ptr<scalar_t>(),
-            data_mask.ptr<scalar_t>(), height_im, width_im, kernel_h, kenerl_w,
-            pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
-            channel_per_deformable_group, batch_size, channels,
-            deformable_group, height_col, width_col, data_col.ptr<scalar_t>());
-      }));
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_im.scalar_type(), "modulated_deformable_im2col_gpu", ([&] {
+        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        const scalar_t *data_mask_ = data_mask.data_ptr<scalar_t>();
+        scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
 
-  PARROTS_CUDA_CHECK(cudaGetLastError());
+        modulated_deformable_im2col_gpu_kernel<<<
+            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_im_, data_offset_, data_mask_, height_im,
+            width_im, kernel_h, kenerl_w, pad_h, pad_w, stride_h, stride_w,
+            dilation_h, dilation_w, channel_per_deformable_group, batch_size,
+            channels, deformable_group, height_col, width_col, data_col_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
 }
 
 void modulated_deformable_col2im_cuda(
-    const DArrayLite data_col, const DArrayLite data_offset,
-    const DArrayLite data_mask, const int batch_size, const int channels,
-    const int height_im, const int width_im, const int height_col,
-    const int width_col, const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w, const int deformable_group,
-    DArrayLite grad_im, cudaStream_t stream) {
-  const int channel_per_deformable_group = channels / deformable_group;
-  const int num_kernels =
-      channels * kernel_h * kernel_w * batch_size * height_col * width_col;
-
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_col.elemType().prim(), ([&] {
-        modulated_deformable_col2im_gpu_kernel<<<
-            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-            num_kernels, data_col.ptr<scalar_t>(), data_offset.ptr<scalar_t>(),
-            data_mask.ptr<scalar_t>(), channels, height_im, width_im, kernel_h,
-            kernel_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
-            channel_per_deformable_group, batch_size, deformable_group,
-            height_col, width_col, grad_im.ptr<scalar_t>());
-      }));
-
-  PARROTS_CUDA_CHECK(cudaGetLastError());
-}
-
-void modulated_deformable_col2im_coord_cuda(
-    const DArrayLite data_col, const DArrayLite data_im,
-    const DArrayLite data_offset, const DArrayLite data_mask,
+    const Tensor data_col, const Tensor data_offset, const Tensor data_mask,
     const int batch_size, const int channels, const int height_im,
     const int width_im, const int height_col, const int width_col,
     const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
     const int stride_h, const int stride_w, const int dilation_h,
-    const int dilation_w, const int deformable_group, DArrayLite grad_offset,
-    DArrayLite grad_mask, cudaStream_t stream) {
+    const int dilation_w, const int deformable_group, Tensor grad_im) {
+  const int channel_per_deformable_group = channels / deformable_group;
+  const int num_kernels =
+      channels * kernel_h * kernel_w * batch_size * height_col * width_col;
+
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_col.scalar_type(), "modulated_deformable_col2im_gpu", ([&] {
+        const scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        const scalar_t *data_mask_ = data_mask.data_ptr<scalar_t>();
+        scalar_t *grad_im_ = grad_im.data_ptr<scalar_t>();
+
+        modulated_deformable_col2im_gpu_kernel<<<
+            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_col_, data_offset_, data_mask_, channels,
+            height_im, width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h,
+            stride_w, dilation_h, dilation_w, channel_per_deformable_group,
+            batch_size, deformable_group, height_col, width_col, grad_im_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
+}
+
+void modulated_deformable_col2im_coord_cuda(
+    const Tensor data_col, const Tensor data_im, const Tensor data_offset,
+    const Tensor data_mask, const int batch_size, const int channels,
+    const int height_im, const int width_im, const int height_col,
+    const int width_col, const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const int deformable_group,
+    Tensor grad_offset, Tensor grad_mask) {
   const int num_kernels = batch_size * height_col * width_col * 2 * kernel_h *
                           kernel_w * deformable_group;
   const int channel_per_deformable_group =
       channels * kernel_h * kernel_w / deformable_group;
 
-  PARROTS_DISPATCH_FLOATING_TYPES_AND_HALF(
-      data_col.elemType().prim(), ([&] {
-        modulated_deformable_col2im_coord_gpu_kernel<<<
-            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-            num_kernels, data_col.ptr<scalar_t>(), data_im.ptr<scalar_t>(),
-            data_offset.ptr<scalar_t>(), data_mask.ptr<scalar_t>(), channels,
-            height_im, width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h,
-            stride_w, dilation_h, dilation_w, channel_per_deformable_group,
-            batch_size, 2 * kernel_h * kernel_w * deformable_group,
-            deformable_group, height_col, width_col,
-            grad_offset.ptr<scalar_t>(), grad_mask.ptr<scalar_t>());
-      }));
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      data_col.scalar_type(), "modulated_deformable_col2im_coord_gpu", ([&] {
+        const scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
+        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
+        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
+        const scalar_t *data_mask_ = data_mask.data_ptr<scalar_t>();
+        scalar_t *grad_offset_ = grad_offset.data_ptr<scalar_t>();
+        scalar_t *grad_mask_ = grad_mask.data_ptr<scalar_t>();
 
-  PARROTS_CUDA_CHECK(cudaGetLastError());
+        modulated_deformable_col2im_coord_gpu_kernel<<<
+            GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
+            num_kernels, data_col_, data_im_, data_offset_, data_mask_,
+            channels, height_im, width_im, kernel_h, kernel_w, pad_h, pad_w,
+            stride_h, stride_w, dilation_h, dilation_w,
+            channel_per_deformable_group, batch_size,
+            2 * kernel_h * kernel_w * deformable_group, deformable_group,
+            height_col, width_col, grad_offset_, grad_mask_);
+      }));
+  AT_CUDA_CHECK(cudaGetLastError());
 }
 
 void ModulatedDeformConvForwardCUDAKernelLauncher(
-    DArrayLite input, DArrayLite weight, DArrayLite bias, DArrayLite ones,
-    DArrayLite offset, DArrayLite mask, DArrayLite output, DArrayLite columns,
-    int kernel_h, int kernel_w, const int stride_h, const int stride_w,
-    const int pad_h, const int pad_w, const int dilation_h,
-    const int dilation_w, const int group, const int deformable_group,
-    const bool with_bias, CudaContext& ctx, cudaStream_t stream) {
-  const int batch = input.dim(0);
-  const int channels = input.dim(1);
-  const int height = input.dim(2);
-  const int width = input.dim(3);
+    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
+    Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
+    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
+    const int dilation_h, const int dilation_w, const int group,
+    const int deformable_group, const bool with_bias) {
+  at::DeviceGuard guard(input.device());
 
-  const int channels_out = weight.dim(0);
-  const int channels_kernel = weight.dim(1);
-  const int kernel_h_ = weight.dim(2);
-  const int kernel_w_ = weight.dim(3);
+  const int batch = input.size(0);
+  const int channels = input.size(1);
+  const int height = input.size(2);
+  const int width = input.size(3);
 
-  PARROTS_CHECKARGS(kernel_h_ == kernel_h && kernel_w_ == kernel_w)
-      << "Input shape and kernel shape wont match: (" << kernel_h << " x "
-      << kernel_w << " vs " << kernel_h_ << " x " << kernel_w_ << ").";
+  const int channels_out = weight.size(0);
+  const int channels_kernel = weight.size(1);
+  const int kernel_h_ = weight.size(2);
+  const int kernel_w_ = weight.size(3);
 
-  PARROTS_CHECKARGS(channels == channels_kernel * group)
-      << "Input shape and kernel channels wont match: (" << channels << " vs "
-      << channels_kernel * group << ").";
+  if (kernel_h_ != kernel_h || kernel_w_ != kernel_w)
+    AT_ERROR("Input shape and kernel shape wont match: (%d x %d vs %d x %d).",
+             kernel_h_, kernel_w, kernel_h_, kernel_w_);
+  if (channels != channels_kernel * group)
+    AT_ERROR("Input shape and kernel channels wont match: (%d vs %d).",
+             channels, channels_kernel * group);
 
   const int height_out =
       (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
   const int width_out =
       (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
 
-  if (ones.ndims() != 2 || ones.dim(0) * ones.dim(1) < height_out * width_out) {
+  if (ones.ndimension() != 2 ||
+      ones.size(0) * ones.size(1) < height_out * width_out) {
     // Resize plane and fill with ones...
-    ones = ctx.createDArrayLite(input.elemType(),
-                                DArrayShape(height_out, width_out));
-    fill(ctx, ones, *toScalar(1));
+    ones = at::ones({height_out, width_out}, input.options());
   }
 
   // resize output
-  output = output.view({batch, channels_out, height_out, width_out});
-  output.setZeros(ctx.getStream());
-
+  output = output.view({batch, channels_out, height_out, width_out}).zero_();
   // resize temporary columns
-  columns = ctx.createDArrayLite(
-      input.elemType(),
-      DArrayShape(channels * kernel_h * kernel_w, 1 * height_out * width_out));
-  columns.setZeros(ctx.getStream());
+  columns =
+      at::zeros({channels * kernel_h * kernel_w, 1 * height_out * width_out},
+                input.options());
 
-  output = output.view({output.dim(0), group, output.dim(1) / group,
-                        output.dim(2), output.dim(3)});
+  output = output.view({output.size(0), group, output.size(1) / group,
+                        output.size(2), output.size(3)});
 
-  for (size_t b = 0; b < batch; b++) {
+  for (int b = 0; b < batch; b++) {
     modulated_deformable_im2col_cuda(
         input[b], offset[b], mask[b], 1, channels, height, width, height_out,
         width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, columns, stream);
+        dilation_h, dilation_w, deformable_group, columns);
 
     // divide into group
-    weight = weight.view({group, weight.dim(0) / group, weight.dim(1),
-                          weight.dim(2), weight.dim(3)});
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
+    weight = weight.view({group, weight.size(0) / group, weight.size(1),
+                          weight.size(2), weight.size(3)});
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
 
-    for (size_t g = 0; g < group; g++) {
-      auto output_g = output[b][g];
-      gemm(ctx, 1, false,
-           weight[g].view(
-               {weight.dim(1), weight.dim(2) * weight.dim(3) * weight.dim(4)}),
-           false, columns[g], 1, output_g);
+    for (int g = 0; g < group; g++) {
+      output[b][g] = output[b][g]
+                         .flatten(1)
+                         .addmm_(weight[g].flatten(1), columns[g])
+                         .view_as(output[b][g]);
     }
 
-    weight = weight.view({weight.dim(0) * weight.dim(1), weight.dim(2),
-                          weight.dim(3), weight.dim(4)});
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
+    weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
+                          weight.size(3), weight.size(4)});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
   }
 
-  output = output.view({output.dim(0), output.dim(1) * output.dim(2),
-                        output.dim(3), output.dim(4)});
+  output = output.view({output.size(0), output.size(1) * output.size(2),
+                        output.size(3), output.size(4)});
 
   if (with_bias) {
-    bias = bias.view({1, bias.dim(0), 1, 1});
-    add(ctx, output, bias, output);
+    output += bias.view({1, bias.size(0), 1, 1});
   }
 }
 
 void ModulatedDeformConvBackwardCUDAKernelLauncher(
-    DArrayLite input, DArrayLite weight, DArrayLite bias, DArrayLite ones,
-    DArrayLite offset, DArrayLite mask, DArrayLite columns,
-    DArrayLite grad_input, DArrayLite grad_weight, DArrayLite grad_bias,
-    DArrayLite grad_offset, DArrayLite grad_mask, DArrayLite grad_output,
+    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
+    Tensor mask, Tensor columns, Tensor grad_input, Tensor grad_weight,
+    Tensor grad_bias, Tensor grad_offset, Tensor grad_mask, Tensor grad_output,
     int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
-    const bool with_bias, CudaContext& ctx, cudaStream_t stream) {
-  const int batch = input.dim(0);
-  const int channels = input.dim(1);
-  const int height = input.dim(2);
-  const int width = input.dim(3);
+    const bool with_bias) {
+  at::DeviceGuard guard(input.device());
 
-  const int channels_kernel = weight.dim(1);
-  const int kernel_h_ = weight.dim(2);
-  const int kernel_w_ = weight.dim(3);
+  const int batch = input.size(0);
+  const int channels = input.size(1);
+  const int height = input.size(2);
+  const int width = input.size(3);
 
-  PARROTS_CHECKARGS(kernel_h_ == kernel_h && kernel_w_ == kernel_w)
-      << "Input shape and kernel shape wont match: (" << kernel_h << " x "
-      << kernel_w << " vs " << kernel_h_ << " x " << kernel_w_ << ").";
-
-  PARROTS_CHECKARGS(channels == channels_kernel * group)
-      << "Input shape and kernel channels wont match: (" << channels << " vs "
-      << channels_kernel * group << ").";
+  const int channels_kernel = weight.size(1);
+  const int kernel_h_ = weight.size(2);
+  const int kernel_w_ = weight.size(3);
+  if (kernel_h_ != kernel_h || kernel_w_ != kernel_w)
+    AT_ERROR("Input shape and kernel shape wont match: (%d x %d vs %d x %d).",
+             kernel_h_, kernel_w, kernel_h_, kernel_w_);
+  if (channels != channels_kernel * group)
+    AT_ERROR("Input shape and kernel channels wont match: (%d vs %d).",
+             channels, channels_kernel * group);
 
   const int height_out =
       (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
   const int width_out =
       (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
 
-  if (ones.ndims() != 2 || ones.dim(0) * ones.dim(1) < height_out * width_out) {
+  if (ones.ndimension() != 2 ||
+      ones.size(0) * ones.size(1) < height_out * width_out) {
     // Resize plane and fill with ones...
-    ones = ctx.createDArrayLite(input.elemType(),
-                                DArrayShape(height_out, width_out));
-    fill(ctx, ones, *toScalar(1));
+    ones = at::ones({height_out, width_out}, input.options());
   }
 
   grad_input = grad_input.view({batch, channels, height, width});
-  columns = ctx.createDArrayLite(
-      input.elemType(),
-      DArrayShape(channels * kernel_h * kernel_w, height_out * width_out));
+  columns = at::zeros({channels * kernel_h * kernel_w, height_out * width_out},
+                      input.options());
 
   grad_output =
-      grad_output.view({grad_output.dim(0), group, grad_output.dim(1) / group,
-                        grad_output.dim(2), grad_output.dim(3)});
+      grad_output.view({grad_output.size(0), group, grad_output.size(1) / group,
+                        grad_output.size(2), grad_output.size(3)});
 
-  for (size_t b = 0; b < batch; b++) {
+  for (int b = 0; b < batch; b++) {
     // divide int group
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
-    weight = weight.view({group, weight.dim(0) / group, weight.dim(1),
-                          weight.dim(2), weight.dim(3)});
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    weight = weight.view({group, weight.size(0) / group, weight.size(1),
+                          weight.size(2), weight.size(3)});
 
-    for (size_t g = 0; g < group; g++) {
-      auto columns_g = ctx.createDArrayLite(
-          weight.elemType(), DArrayShape(columns.dim(1), columns.dim(2)));
-      copy(ctx, columns_g, columns[g]);
-      auto weight_g = weight[g].view(
-          {weight.dim(1), weight.dim(2) * weight.dim(3) * weight.dim(4)});
-      weight_g = transpose(ctx, weight_g, 0, 1);
-
-      auto grad_output_bg = ctx.createDArrayLite(
-          grad_output.elemType(),
-          DArrayShape(grad_output.dim(2), grad_output.dim(3),
-                      grad_output.dim(4)));
-      copy(ctx, grad_output_bg, grad_output[b][g]);
-      grad_output_bg =
-          grad_output_bg.view({grad_output_bg.dim(0),
-                               grad_output_bg.dim(1) * grad_output_bg.dim(2)});
-
-      columns_g =
-          parrots::op::addmm(ctx, columns[g], weight_g, grad_output_bg, 0, 1);
-      auto columns_out = columns[g];
-      copy(ctx, columns_out, columns_g);
+    for (int g = 0; g < group; g++) {
+      columns[g].addmm_(weight[g].flatten(1).transpose(0, 1),
+                        grad_output[b][g].flatten(1), 0.0f, 1.0f);
     }
 
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
-    weight = weight.view({weight.dim(0) * weight.dim(1), weight.dim(2),
-                          weight.dim(3), weight.dim(4)});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
+                          weight.size(3), weight.size(4)});
 
     // gradient w.r.t. input coordinate data
     modulated_deformable_col2im_coord_cuda(
         columns, input[b], offset[b], mask[b], 1, channels, height, width,
         height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h,
         stride_w, dilation_h, dilation_w, deformable_group, grad_offset[b],
-        grad_mask[b], stream);
+        grad_mask[b]);
     // gradient w.r.t. input data
     modulated_deformable_col2im_cuda(
         columns, offset[b], mask[b], 1, channels, height, width, height_out,
         width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, grad_input[b], stream);
+        dilation_h, dilation_w, deformable_group, grad_input[b]);
 
     // gradient w.r.t. weight, dWeight should accumulate across the batch and
     // group
     modulated_deformable_im2col_cuda(
         input[b], offset[b], mask[b], 1, channels, height, width, height_out,
         width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, columns, stream);
+        dilation_h, dilation_w, deformable_group, columns);
 
-    columns = columns.view({group, columns.dim(0) / group, columns.dim(1)});
-    grad_weight =
-        grad_weight.view({group, grad_weight.dim(0) / group, grad_weight.dim(1),
-                          grad_weight.dim(2), grad_weight.dim(3)});
-    if (with_bias) {
-      grad_bias = grad_bias.view({group, grad_bias.dim(0) / group});
-    }
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    grad_weight = grad_weight.view({group, grad_weight.size(0) / group,
+                                    grad_weight.size(1), grad_weight.size(2),
+                                    grad_weight.size(3)});
+    if (with_bias)
+      grad_bias = grad_bias.view({group, grad_bias.size(0) / group});
 
-    for (size_t g = 0; g < group; g++) {
-      auto grad_weight_g = ctx.createDArrayLite(
-          grad_weight.elemType(),
-          DArrayShape(grad_weight.dim(1), grad_weight.dim(2),
-                      grad_weight.dim(3), grad_weight.dim(4)));
-      copy(ctx, grad_weight_g, grad_weight[g]);
-      grad_weight_g = grad_weight_g.view(
-          {grad_weight_g.dim(0),
-           grad_weight_g.dim(1) * grad_weight_g.dim(2) * grad_weight_g.dim(3)});
-
-      auto columns_g = columns[g];
-      columns_g = transpose(ctx, columns_g, 0, 1);
-
-      auto grad_output_bg = ctx.createDArrayLite(
-          grad_output.elemType(),
-          DArrayShape(grad_output.dim(2), grad_output.dim(3),
-                      grad_output.dim(4)));
-      copy(ctx, grad_output_bg, grad_output[b][g]);
-      grad_output_bg =
-          grad_output_bg.view({grad_output_bg.dim(0),
-                               grad_output_bg.dim(1) * grad_output_bg.dim(2)});
-
-      grad_weight_g = parrots::op::addmm(ctx, grad_weight_g, grad_output_bg,
-                                         columns_g, 1, 1);
-      auto grad_weight_out = grad_weight[g];
-      copy(ctx, grad_weight_out, grad_weight_g);
-
+    for (int g = 0; g < group; g++) {
+      grad_weight[g] =
+          grad_weight[g]
+              .flatten(1)
+              .addmm_(grad_output[b][g].flatten(1), columns[g].transpose(0, 1))
+              .view_as(grad_weight[g]);
       if (with_bias) {
-        auto grad_bias_g = ctx.createDArrayLite(grad_bias.elemType(),
-                                                DArrayShape(grad_bias.dim(1)));
-        copy(ctx, grad_bias_g, grad_bias[g]);
-        grad_bias_g = grad_bias_g.view({grad_bias_g.dim(0), 1});
-
-        auto grad_output_bg = ctx.createDArrayLite(
-            grad_output.elemType(),
-            DArrayShape(grad_output.dim(2), grad_output.dim(3),
-                        grad_output.dim(4)));
-        copy(ctx, grad_output_bg, grad_output[b][g]);
-        grad_output_bg = grad_output_bg.view(
-            {grad_output_bg.dim(0),
-             grad_output_bg.dim(1) * grad_output_bg.dim(2)});
-
-        auto ones_g = ctx.createDArrayLite(
-            ones.elemType(), DArrayShape(ones.dim(0), ones.dim(1)));
-        copy(ctx, ones_g, ones);
-        ones_g = ones_g.view({ones_g.dim(0) * ones_g.dim(1), 1});
-
-        grad_bias_g =
-            parrots::op::addmm(ctx, grad_bias_g, grad_output_bg, ones_g, 1, 1);
-
-        auto grad_bias_out = grad_bias[g];
-        copy(ctx, grad_bias_out, grad_bias_g);
+        grad_bias[g] =
+            grad_bias[g]
+                .view({-1, 1})
+                .addmm_(grad_output[b][g].flatten(1), ones.view({-1, 1}))
+                .view(-1);
       }
     }
 
-    columns = columns.view({columns.dim(0) * columns.dim(1), columns.dim(2)});
-    grad_weight = grad_weight.view({grad_weight.dim(0) * grad_weight.dim(1),
-                                    grad_weight.dim(2), grad_weight.dim(3),
-                                    grad_weight.dim(4)});
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    grad_weight = grad_weight.view({grad_weight.size(0) * grad_weight.size(1),
+                                    grad_weight.size(2), grad_weight.size(3),
+                                    grad_weight.size(4)});
     if (with_bias)
-      grad_bias =
-          grad_bias.view(DArrayShape{grad_bias.dim(0) * grad_bias.dim(1)});
+      grad_bias = grad_bias.view({grad_bias.size(0) * grad_bias.size(1)});
   }
-  grad_output = grad_output.view({grad_output.dim(0) * grad_output.dim(1),
-                                  grad_output.dim(2), grad_output.dim(3),
-                                  grad_output.dim(4)});
+  grad_output = grad_output.view({grad_output.size(0) * grad_output.size(1),
+                                  grad_output.size(2), grad_output.size(3),
+                                  grad_output.size(4)});
 }
