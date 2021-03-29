@@ -72,7 +72,7 @@ def caffe2_xavier_init(module, bias=0):
 
 
 def bias_init_with_prob(prior_prob):
-    """initialize conv/fc bias value according to giving probability."""
+    """initialize conv/fc bias value according to given probability."""
     bias_init = float(-np.log((1 - prior_prob) / prior_prob))
     return bias_init
 
@@ -425,11 +425,11 @@ def initialize(module, init_cfg):
 
         >>> model = ResNet(depth=50)
         >>> # Initialize weights with the pretrained model.
-        >>> init_cfg = dict(type='PretrainedInit',
+        >>> init_cfg = dict(type='Pretrained',
                 checkpoint='torchvision://resnet50')
         >>> initialize(model, init_cfg)
 
-        >>> # Intialize weights of a sub-module with the specific part of
+        >>> # Initialize weights of a sub-module with the specific part of
         >>> # a pretrained model by using "prefix".
         >>> url = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
         >>>     'retinanet_r50_fpn_1x_coco/'\

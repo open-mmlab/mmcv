@@ -74,23 +74,207 @@ conv = ConvModule(
 
 ### Weight initialization
 
-We wrap some initialization methods which accept a module as argument.
+During training, a proper initialization strategy is beneficial to speed the
+training or obtain a higher performance. In MMCV, we provide some commonly used
+methods for initializing modules like `nn.Conv2d`. Of course, we also provide a
+high-level APIs for initializing the entire model containing one or more
+modules.
 
-- `constant_init`
-- `xavier_init`
-- `normal_init`
-- `uniform_init`
-- `kaiming_init`
-- `caffe2_xavier_init`
-- `bias_init_with_prob`
+#### **Initialization of module**
 
-Examples:
+Initializaing modules, such as `nn.Conv2d`, `nn.Linear` and so on.
 
-```python
-conv1 = nn.Conv2d(3, 3, 1)
-normal_init(conv1, std=0.01, bias=0)
-xavier_init(conv1, distribution='uniform')
-```
+We provide the following initialization methods.
+
+- constant_init
+  Initialize module parameters with constant values.
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import constant_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # constant_init(module, val, bias=0)
+    >>> constant_init(conv1, 1, 0)
+    ```
+
+- xavier_init
+  Initialize module parameters with values according to the method
+  described in [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import xavier_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # xavier_init(module, gain=1, bias=0, distribution='normal')
+    >>> xavier_init(conv1, distribution='normal')
+    ```
+
+- normal_init
+  Initialize module parameters with the values drawn from a normal distribution.
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import normal_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # normal_init(module, mean=0, std=1, bias=0)
+    >>> normal_init(conv1, std=0.01, bias=0)
+    ```
+
+- uniform_init
+  Initialize module parameters with values drawn from a uniform distribution.
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import uniform_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # uniform_init(module, a=0, b=1, bias=0)
+    >>> uniform_init(conv1, a=0, b=1)
+    ```
+
+- kaiming_init
+  Initialize module paramters with the valuse according to the method
+  described in [Delving deep into rectifiers: Surpassing human-level
+  performance on ImageNet classification - He, K. et al. (2015)](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import kaiming_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # kaiming_init(module, a=0, mode='fan_out', nonlinearity='relu', bias=0, distribution='normal')
+    >>> kaiming_init(conv1)
+    ```
+
+- caffe2_xavier_init
+  Corresponds to `kaiming_uniform_` in PyTorch.
+
+    ```python
+    >>> import torch.nn as nn
+    >>> from mmcv.cnn.utils.weight_init import caffe2_xavier_init
+    >>> conv1 = nn.Conv2d(3, 3, 1)
+    >>> # caffe2_xavier_init(module, bias=0)
+    >>> caffe2_xavier_init(conv1)
+    ```
+
+- bias_init_with_prob
+  Initialize conv/fc bias value according to given probability proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
+
+    ```python
+    >>> from mmcv.cnn.utils.weight_init import bias_init_with_prob
+    >>> # bias_init_with_prob is proposed in Focal Loss
+    >>> bias = bias_init_with_prob(0.01)
+    >>> bias
+    -4.59511985013459
+    ```
+
+#### **Initialization of model**
+
+On the basis of the initialization method, we define the corresponding initialization classes and register them to `INITIALIZERS`, so we can
+use the configuration to initialize the model.
+
+We provide the following initialization classes.
+
+- BaseInit
+- BaseInit
+- XavierInit
+- NormalInit
+- UniformInit
+- KaimingInit
+- Caffe2XavierInit
+- PretrainedInit
+
+Next, we will introduce the use of `initialize` in detail.
+
+- Initialize whole module
+
+  Initialize whole module with same configuration.
+
+    ```python
+    import torch.nn as nn
+    from mmcv.cnn.utils.weight_init import initialize
+
+    class FooNet(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.feat = nn.Conv1d(3, 1, 3)
+            self.reg = nn.Conv2d(3, 3, 3)
+            self.cls = nn.Linear(1, 2)
+
+    model = FooNet()
+    init_cfg = dict(type='Constant', val=1 , bias=2)
+    # initialize whole module with same configuration
+    initialize(model, init_cfg)
+    ```
+
+- Initialize specific layer
+
+  Define key `layer` for initializing layer with different configuration.
+
+    ```python
+    import torch.nn as nn
+    from mmcv.cnn.utils.weight_init import initialize
+
+    class FooNet(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.feat = nn.Conv1d(3, 1, 3)
+            self.reg = nn.Conv2d(3, 3, 3)
+            self.cls = nn.Linear(1,2)
+
+    model = FooNet()
+    init_cfg = [dict(type='Constant', val=1, bias=2),
+            dict(type='Constant', layer='Conv2d', val=1),
+            dict(type='Constant', layer='Linear', val=2)]
+    # nn.Conv1d will be initialized with dict(type='Constant', val=1, bias=2)
+    # nn.Conv2d will be initialized with dict(type='Constant', layer='Conv2d', val=1)
+    # nn.Linear will be initialized with dict(type='Constant', layer='Linear', val=2)
+    initialize(model, init_cfg)
+    ```
+
+- Initialize module with specific name
+
+  Define key `override` to initialize some specific override in module.
+
+    ```python
+    import torch.nn as nn
+    from mmcv.cnn.utils.weight_init import initialize
+
+    class FooNet(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.feat = nn.Conv1d(3, 1, 3)
+            self.reg = nn.Conv2d(3, 3, 3)
+            self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
+
+    model = FooNet()
+    init_cfg = dict(type='Constant', val=1, bias=2,
+                    override=dict(type='Constant', name='reg', val=3, bias=4))
+    # nn.Conv1d and nn.Linear will be initialized with dict(type='Constant', val=1, bias=2)
+    # The module called 'reg' will be initialized with dict(type='Constant', name='reg', val=3, bias=4)
+    initialize(model, init_cfg)
+    ```
+
+- Initialize weights with the pretrained model
+
+    ```python
+    import torch.nn as nn
+    import torchvision.models as models
+    from mmcv.cnn.utils.weight_init import initialize
+
+    # initialize weights with the whole model
+    model = models.resnet50()
+    init_cfg = dict(type='Pretrained',
+                    checkpoint='torchvision://resnet50')
+    initialize(model, init_cfg)
+
+    # initialize weights of a sub-module with the specific part of a pretrained model by using 'prefix'
+    model = models.resnet50()
+    url = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
+        'retinanet_r50_fpn_1x_coco/'\
+        'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
+    init_cfg = dict(type='Pretrained',
+                    checkpoint=url, prefix='backbone.')
+    initialize(model, init_cfg)
+    ```
 
 ### Model Zoo
 
