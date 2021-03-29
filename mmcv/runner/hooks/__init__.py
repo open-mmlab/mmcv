@@ -4,8 +4,9 @@ from .closure import ClosureHook
 from .ema import EMAHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
-from .logger import (LoggerHook, MlflowLoggerHook, PaviLoggerHook,
-                     TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
+from .logger import (DvcliveLoggerHook, LoggerHook, MlflowLoggerHook,
+                     PaviLoggerHook, TensorboardLoggerHook, TextLoggerHook,
+                     WandbLoggerHook)
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .momentum_updater import MomentumUpdaterHook
@@ -16,7 +17,8 @@ from .sync_buffer import SyncBuffersHook
 __all__ = [
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
     'OptimizerHook', 'Fp16OptimizerHook', 'IterTimerHook',
-    'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook',
-    'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
-    'WandbLoggerHook', 'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook'
+    'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'DvcliveLoggerHook',
+    'MlflowLoggerHook', 'PaviLoggerHook', 'TextLoggerHook',
+    'TensorboardLoggerHook', 'WandbLoggerHook', 'MomentumUpdaterHook',
+    'SyncBuffersHook', 'EMAHook'
 ]
