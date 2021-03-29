@@ -67,6 +67,7 @@ class EpochBasedRunner(BaseRunner):
             self.run_iter(data_batch, train_mode=False)
             self.call_hook('after_val_iter')
 
+        self._iter += 1
         self.call_hook('after_val_epoch')
 
     def run(self, data_loaders, workflow, max_epochs=None, **kwargs):
