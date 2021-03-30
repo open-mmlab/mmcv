@@ -29,6 +29,7 @@ from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
+from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -44,5 +45,6 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu'
+    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
+    'RoIAlignRotated', 'roi_align_rotated'
 ]
