@@ -100,7 +100,7 @@ class TextLoggerHook(LoggerHook):
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
             # val/test time
-            # by epoch: Epoch[va] [4]
+            # by epoch: Epoch[val] [4]
             # by iter: Iter[val] [100]
             if self.by_epoch:
                 log_str = f'Epoch({log_dict["mode"]}) ' \
