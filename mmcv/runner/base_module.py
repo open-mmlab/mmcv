@@ -40,14 +40,43 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         from ..cnn import initialize
 
         if not self._is_init:
-
             if hasattr(self, 'init_cfg'):
                 initialize(self, self.init_cfg)
-                self._is_init = True
             for module in self.children():
                 if 'init_weight' in dir(module):
                     module.init_weight()
-
+            self._is_init = True
         else:
-            warnings.warn('This module has bee initialized, \
-                please call initialize(module, init_cfg) to reinitialize it')
+            warnings.warn(f'init_weight of {self.__class__.__name__} has '
+                          f'been called more than once.')
+
+    def __repr__(self):
+        s = super().__repr__()
+        if hasattr(self, 'init_cfg'):
+            s += f'\ninit_cfg={self.init_cfg}'
+        return s
+
+
+class Sequential(BaseModule, nn.Sequential):
+    """Sequential module in openmmlab.
+
+    Args:
+        init_cfg (dict, optional): Initialization config dict.
+    """
+
+    def __init__(self, *args, init_cfg=None):
+        BaseModule.__init__(self, init_cfg)
+        nn.Sequential.__init__(self, *args)
+
+
+class ModuleList(BaseModule, nn.ModuleList):
+    """ModuleList in openmmlab.
+
+    Args:
+        modules (iterable, optional): an iterable of modules to add.
+        init_cfg (dict, optional): Initialization config dict.
+    """
+
+    def __init__(self, modules=None, init_cfg=None):
+        BaseModule.__init__(self, init_cfg)
+        nn.ModuleList.__init__(self, modules)
