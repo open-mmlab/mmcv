@@ -99,9 +99,12 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
+            # val/test time
+            # by epoch: Epoch[va] [4]
+            # by iter: Iter[val] [100]
             if self.by_epoch:
                 log_str = f'Epoch({log_dict["mode"]}) ' \
-                    f'[{log_dict["epoch"]}][{log_dict["iter"]}]\t'
+                    f'[{log_dict["epoch"]}]\t'
             else:
                 log_str = f'Iter({log_dict["mode"]}) [{log_dict["iter"]}]\t'
 
