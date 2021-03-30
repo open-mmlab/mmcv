@@ -1,3 +1,8 @@
+// modified from
+// https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cuh
+// and
+// https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cu
+
 #include <cuda_fp16.h>
 #include <stdio.h>
 
@@ -13,11 +18,6 @@
 using mmcv::GridSamplerInterpolation;
 using mmcv::GridSamplerPadding;
 using mmcv::TensorDesc;
-
-//// the code copy from
-/// https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cuh
-//// and
-/// https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cu
 
 // Unnormalizes a coordinate from the -1 to +1 scale to its pixel index value,
 // where we view each pixel as an area between (idx - 0.5) and (idx + 0.5).
