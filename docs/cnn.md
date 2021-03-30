@@ -186,7 +186,7 @@ Next, we will introduce the use of `initialize` in detail.
 
 - Initialize whole module
 
-  Initialize whole module with same configuration.
+  Define key `layer` for initializing layer with same configuration.
 
     ```python
     import torch.nn as nn
@@ -200,7 +200,7 @@ Next, we will introduce the use of `initialize` in detail.
             self.cls = nn.Linear(1, 2)
 
     model = FooNet()
-    init_cfg = dict(type='Constant', val=1 , bias=2)
+    init_cfg = dict(type='Constant',layer=['Conv1d', 'Conv2d', 'Linear'], val=1 , bias=2)
     # initialize whole module with same configuration
     initialize(model, init_cfg)
     ```
@@ -221,9 +221,9 @@ Next, we will introduce the use of `initialize` in detail.
             self.cls = nn.Linear(1,2)
 
     model = FooNet()
-    init_cfg = [dict(type='Constant', val=1, bias=2),
-            dict(type='Constant', layer='Conv2d', val=1),
-            dict(type='Constant', layer='Linear', val=2)]
+    init_cfg = [dict(type='Constant', layer='Conv1d',val=1, bias=2),
+                dict(type='Constant', layer='Conv2d', val=1),
+                dict(type='Constant', layer='Linear', val=2)]
     # nn.Conv1d will be initialized with dict(type='Constant', val=1, bias=2)
     # nn.Conv2d will be initialized with dict(type='Constant', layer='Conv2d', val=1)
     # nn.Linear will be initialized with dict(type='Constant', layer='Linear', val=2)
@@ -246,7 +246,7 @@ Next, we will introduce the use of `initialize` in detail.
             self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
     model = FooNet()
-    init_cfg = dict(type='Constant', val=1, bias=2,
+    init_cfg = dict(type='Constant', val=1, bias=2, layer=['Conv1d','Conv2d'],
                     override=dict(type='Constant', name='reg', val=3, bias=4))
     # nn.Conv1d and nn.Linear will be initialized with dict(type='Constant', val=1, bias=2)
     # The module called 'reg' will be initialized with dict(type='Constant', name='reg', val=3, bias=4)
