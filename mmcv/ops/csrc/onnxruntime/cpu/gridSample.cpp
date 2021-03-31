@@ -1,8 +1,8 @@
-#include "grid_sample.h"
+#include <cmath>
 
 #include "../ort_mmcv_utils.h"
+#include "grid_sample.h"
 
-#include <cmath>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
@@ -80,11 +80,10 @@ static inline scalar_t compute_coordinates(scalar_t coord, int64_t size,
 
 // Computes the pixel source index value for a grid coordinate
 template <typename scalar_t>
-static inline scalar_t
-grid_sampler_compute_source_index(scalar_t coord,
-                                  int64_t size,
-                                  int64_t padding_mode,
-                                  bool align_corners) {
+static inline scalar_t grid_sampler_compute_source_index(scalar_t coord,
+                                                         int64_t size,
+                                                         int64_t padding_mode,
+                                                         bool align_corners) {
   coord = grid_sampler_unnormalize(coord, size, align_corners);
   coord = compute_coordinates(coord, size, padding_mode, align_corners);
   return coord;
@@ -96,12 +95,11 @@ static inline bool within_bounds_2d(int64_t h, int64_t w, int64_t H,
 }
 
 template <typename scalar_t>
-static inline scalar_t
-get_value_bounded(const scalar_t *data, scalar_t x,
-                  scalar_t y, int64_t W, int64_t H,
-                  int64_t sW, int64_t sH,
-                  int64_t padding_mode,
-                  bool align_corners) {
+static inline scalar_t get_value_bounded(const scalar_t *data, scalar_t x,
+                                         scalar_t y, int64_t W, int64_t H,
+                                         int64_t sW, int64_t sH,
+                                         int64_t padding_mode,
+                                         bool align_corners) {
   x = compute_coordinates(x, W, padding_mode, align_corners);
   y = compute_coordinates(y, H, padding_mode, align_corners);
 
