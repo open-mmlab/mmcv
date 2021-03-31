@@ -1,10 +1,10 @@
 #include "onnxruntime_register.h"
 
+#include "grid_sample.h"
 #include "nms.h"
 #include "ort_mmcv_utils.h"
 #include "roi_align.h"
 #include "soft_nms.h"
-#include "grid_sample.h"
 
 const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;
@@ -29,13 +29,11 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
-  if (auto status =
-          ortApi->CustomOpDomain_Add(domain, &c_MMCVRoiAlignCustomOp)) {
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVRoiAlignCustomOp)) {
     return status;
   }
 
-  if (auto status =
-          ortApi->CustomOpDomain_Add(domain, &c_GridSampleOp)) {
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_GridSampleOp)) {
     return status;
   }
 

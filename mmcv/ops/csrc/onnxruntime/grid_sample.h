@@ -8,7 +8,7 @@ struct GridSampleKernel {
 
   void Compute(OrtKernelContext *context);
 
- protected:
+protected:
   OrtApi api_;
   Ort::CustomOpApi ort_;
   const OrtKernelInfo *info_;
@@ -20,24 +20,24 @@ struct GridSampleKernel {
 };
 
 struct GridSampleOp : Ort::CustomOpBase<GridSampleOp, GridSampleKernel> {
-    void* CreateKernel(OrtApi api, const OrtKernelInfo *info) const {
-        return new GridSampleKernel(api, info);
-    };
+  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) const {
+    return new GridSampleKernel(api, info);
+  };
 
-    const char* GetName() const { return "grid_sampler"; };
+  const char *GetName() const { return "grid_sampler"; };
 
-    size_t GetInputTypeCount() const { return 2; };
-    ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
-        return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
-    };
+  size_t GetInputTypeCount() const { return 2; };
+  ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
+    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
+  };
 
-    size_t GetOutputTypeCount() const { return 1; };
-    ONNXTensorElementDataType GetOutputType(size_t /*index*/) const {
-        return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
-    };
+  size_t GetOutputTypeCount() const { return 1; };
+  ONNXTensorElementDataType GetOutputType(size_t /*index*/) const {
+    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
+  };
 
-    const char* GetExecutionProviderType() const {
-        return "CPUExecutionProvider";
-    };
+  const char *GetExecutionProviderType() const {
+    return "CPUExecutionProvider";
+  };
 };
 #endif
