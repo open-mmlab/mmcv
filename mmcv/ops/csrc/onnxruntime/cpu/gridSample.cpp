@@ -3,7 +3,6 @@
 #include "../ort_mmcv_utils.h"
 #include "grid_sample.h"
 
-
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #define CLIP_COORDINATES(in, out, clip_limit) \

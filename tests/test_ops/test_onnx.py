@@ -61,7 +61,13 @@ def test_grid_sampler():
     grid = grid.unsqueeze(0).repeat(1, 1, 1, 1)
 
     model = GridSample()
-    torch.onnx.export(model, (input, grid), onnx_file, opset_version=11)
+    with torch.no_grad():
+        torch.onnx.export(
+            model, (input, grid),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            opset_version=11)
 
     pytorch_output = model(input, grid)
 
