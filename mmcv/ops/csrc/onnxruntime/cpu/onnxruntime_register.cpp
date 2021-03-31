@@ -29,7 +29,8 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
-  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVRoiAlignCustomOp)) {
+  if (auto status =
+          ortApi->CustomOpDomain_Add(domain, &c_MMCVRoiAlignCustomOp)) {
     return status;
   }
 
