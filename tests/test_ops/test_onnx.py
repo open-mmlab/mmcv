@@ -23,6 +23,44 @@ class WrapFunction(nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
+class GridSample(torch.nn.Module):
+
+    def forward(self, x, y):
+        res = torch.nn.functional.grid_sample(x, grid=y, align_corners=False)
+        return res
+
+
+def test_grid_sampler():
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics()
+    input = torch.ones(1, 1, 2, 2)
+    out_h = 4
+    out_w = 4
+    h = torch.linspace(-1, 1, out_h)
+    w = torch.linspace(-1, 1, out_w)
+    grid = torch.zeros(out_h, out_w, 2)
+    grid[:, :, 0] = w.unsqueeze(0).repeat(out_h, 1)
+    grid[:, :, 1] = h.unsqueeze(0).repeat(out_w, 1).transpose(0, 1)
+    grid = grid.unsqueeze(0).repeat(1, 1, 1, 1)
+
+    model = GridSample()
+    torch.onnx.export(model, (input, grid), onnx_file, opset_version=11)
+
+    pytorch_output = model(input, grid)
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    session_options = rt.SessionOptions()
+    if os.path.exists(ort_custom_op_path):
+        session_options.register_custom_ops_library(ort_custom_op_path)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    input_feature = input.cpu().numpy()
+    grid_feature = grid.cpu().numpy()
+    onnx_output = sess.run(None, {'x': input_feature, 'y': grid_feature})
+    os.remove(onnx_file)
+    assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
 def test_nms():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
