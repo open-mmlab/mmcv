@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import copy
 import warnings
 
 import numpy as np
@@ -445,12 +446,17 @@ def initialize(module, init_cfg):
         init_cfg = [init_cfg]
 
     for cfg in init_cfg:
-        override = cfg.pop('override', None)
-        _initialize(module, cfg)
+        # should deeply copy the original config because cfg may be used by
+        # other modules, e.g., one init_cfg shared by multiple bottleneck
+        # blocks, the expected cfg will be changed after pop and will change
+        # the initialization behavior of other modules
+        cp_cfg = copy.deepcopy(cfg)
+        override = cp_cfg.pop('override', None)
+        _initialize(module, cp_cfg)
 
         if override is not None:
-            cfg.pop('layer', None)
-            _initialize_override(module, override, cfg)
+            cp_cfg.pop('layer', None)
+            _initialize_override(module, override, cp_cfg)
         else:
             # All attributes in module have same initialization.
             pass
