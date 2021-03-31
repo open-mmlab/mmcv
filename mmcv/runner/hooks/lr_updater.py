@@ -508,7 +508,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
         curr_iter = runner.iter
         start_iter = 0
         for i, (end_iter, start_lr, end_lr) in enumerate(self.lr_phases):
-            if curr_iter <= end_iter or i == len(self.lr_phases) - 1:
+            if curr_iter <= end_iter:
                 pct = (curr_iter - start_iter) / (end_iter - start_iter)
                 lr = self.anneal_func(base_lr * start_lr, base_lr * end_lr,
                                       pct)
