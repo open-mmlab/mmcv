@@ -60,6 +60,11 @@ def test_grid_sampler():
     grid[:, :, 1] = h.unsqueeze(0).repeat(out_w, 1).transpose(0, 1)
     grid = grid.unsqueeze(0).repeat(1, 1, 1, 1)
 
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('nms for onnxruntime is not compiled.')
+
     model = GridSample()
     with torch.no_grad():
         torch.onnx.export(
@@ -70,11 +75,6 @@ def test_grid_sampler():
             opset_version=11)
 
     pytorch_output = model(input, grid)
-
-    from mmcv.ops import get_onnxruntime_op_path
-    ort_custom_op_path = get_onnxruntime_op_path()
-    if not os.path.exists(ort_custom_op_path):
-        pytest.skip('nms for onnxruntime is not compiled.')
 
     session_options = rt.SessionOptions()
     session_options.register_custom_ops_library(ort_custom_op_path)
