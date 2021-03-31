@@ -67,9 +67,11 @@ def test_grid_sampler():
 
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('nms for onnxruntime is not compiled.')
+
     session_options = rt.SessionOptions()
-    if os.path.exists(ort_custom_op_path):
-        session_options.register_custom_ops_library(ort_custom_op_path)
+    session_options.register_custom_ops_library(ort_custom_op_path)
     sess = rt.InferenceSession(onnx_file, session_options)
     input_feature = input.cpu().numpy()
     grid_feature = grid.cpu().numpy()
