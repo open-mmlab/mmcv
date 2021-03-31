@@ -9,6 +9,8 @@ import pytest
 import torch
 import torch.nn as nn
 from packaging import version
+from torch.onnx.symbolic_helper import parse_args
+from torch.onnx.symbolic_registry import register_op
 
 onnx_file = 'tmp.onnx'
 
@@ -30,9 +32,24 @@ class GridSample(torch.nn.Module):
         return res
 
 
+@parse_args('v', 'v', 'i', 'i', 'i')
+def grid_sampler(g,
+                 input,
+                 grid,
+                 interpolation_mode,
+                 padding_mode,
+                 align_corners=False):
+    return g.op(
+        'mmcv::grid_sampler',
+        input,
+        grid,
+        interpolation_mode_i=interpolation_mode,
+        padding_mode_i=padding_mode,
+        align_corners_i=align_corners)
+
+
 def test_grid_sampler():
-    from mmcv.onnx.symbolic import register_extra_symbolics
-    register_extra_symbolics()
+    register_op('grid_sampler', grid_sampler, '', 11)
     input = torch.ones(1, 1, 2, 2)
     out_h = 4
     out_w = 4
