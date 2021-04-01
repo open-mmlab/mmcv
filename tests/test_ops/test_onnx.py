@@ -9,8 +9,6 @@ import pytest
 import torch
 import torch.nn as nn
 from packaging import version
-from torch.onnx.symbolic_helper import parse_args
-from torch.onnx.symbolic_registry import register_op
 
 onnx_file = 'tmp.onnx'
 
@@ -25,31 +23,7 @@ class WrapFunction(nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
-class GridSample(torch.nn.Module):
-
-    def forward(self, x, y):
-        res = torch.nn.functional.grid_sample(x, grid=y, align_corners=False)
-        return res
-
-
-@parse_args('v', 'v', 'i', 'i', 'i')
-def grid_sampler(g,
-                 input,
-                 grid,
-                 interpolation_mode,
-                 padding_mode,
-                 align_corners=False):
-    return g.op(
-        'mmcv::grid_sampler',
-        input,
-        grid,
-        interpolation_mode_i=interpolation_mode,
-        padding_mode_i=padding_mode,
-        align_corners_i=align_corners)
-
-
 def test_grid_sampler():
-    register_op('grid_sampler', grid_sampler, '', 11)
     input = torch.ones(1, 1, 2, 2)
     out_h = 4
     out_w = 4
@@ -59,31 +33,52 @@ def test_grid_sampler():
     grid[:, :, 0] = w.unsqueeze(0).repeat(out_h, 1)
     grid[:, :, 1] = h.unsqueeze(0).repeat(out_w, 1).transpose(0, 1)
     grid = grid.unsqueeze(0).repeat(1, 1, 1, 1)
-
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
-        pytest.skip('nms for onnxruntime is not compiled.')
+        pytest.skip('grid_sample for onnxruntime is not compiled.')
 
-    model = GridSample()
-    with torch.no_grad():
-        torch.onnx.export(
-            model, (input, grid),
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            opset_version=11)
+    inter_modes = ['bilinear', 'nearest']
+    padding_modes = ['zeros', 'border', 'reflection']
+    corners = [False, True]
+    for inter_mode in inter_modes:
+        for padding_mode in padding_modes:
+            for align_corner in corners:
+                pytorch_output = \
+                    torch.nn.functional.grid_sample(input,
+                                                    grid,
+                                                    mode=inter_mode,
+                                                    padding_mode=padding_mode,
+                                                    align_corners=align_corner)
+                wrapped_model = WrapFunction(torch.nn.functional.grid_sample)
+                wrapped_model.cpu().eval()
 
-    pytorch_output = model(input, grid)
+                from mmcv.onnx.symbolic import register_extra_symbolics
+                opset_version = 11
+                register_extra_symbolics(opset_version)
+                with torch.no_grad():
+                    torch.onnx.export(
+                        wrapped_model, (input, grid),
+                        onnx_file,
+                        export_params=True,
+                        keep_initializers_as_inputs=True,
+                        input_names=['input', 'grid'],
+                        opset_version=11)
 
-    session_options = rt.SessionOptions()
-    session_options.register_custom_ops_library(ort_custom_op_path)
-    sess = rt.InferenceSession(onnx_file, session_options)
-    input_feature = input.cpu().numpy()
-    grid_feature = grid.cpu().numpy()
-    onnx_output = sess.run(None, {'x': input_feature, 'y': grid_feature})
-    os.remove(onnx_file)
-    assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+                session_options = rt.SessionOptions()
+                session_options.register_custom_ops_library(ort_custom_op_path)
+                sess = rt.InferenceSession(onnx_file, session_options)
+                input_feature = input.cpu().numpy()
+                grid_feature = grid.cpu().numpy()
+                onnx_output = sess.run(None, {
+                    'input': input_feature,
+                    'grid': grid_feature
+                })
+                os.remove(onnx_file)
+                assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
+test_grid_sampler()
 
 
 def test_nms():

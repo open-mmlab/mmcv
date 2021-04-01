@@ -145,6 +145,9 @@ static inline scalar_t cubic_interp1d(scalar_t x0, scalar_t x1, scalar_t x2,
   return x0 * coeffs[0] + x1 * coeffs[1] + x2 * coeffs[2] + x3 * coeffs[3];
 }
 
+// modified from
+// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/GridSampler.cpp
+
 void GridSampleKernel::Compute(OrtKernelContext *context) {
   const bool align_corners = align_corners_;
   const int64_t padding_mode = padding_mode_;
