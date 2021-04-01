@@ -1,8 +1,8 @@
-# TensorRT Ops
+# TensorRT Custom Ops
 
 <!-- TOC -->
 
-- [TensorRT OPS](#tensort-ops)
+- [TensorRT Custom Ops](#tensorrt-custom-ops)
   - [MMCVRoiAlign](#mmcvroialign)
   - [ScatterND](#scatternd)
   - [NonMaxSuppression](#nonmaxsuppression)
