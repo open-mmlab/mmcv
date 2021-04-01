@@ -31,6 +31,11 @@ def test_grid_sample(mode, padding_mode, align_corners):
     opset_version = 11
     register_extra_symbolics(opset_version)
 
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('nms for onnxruntime is not compiled.')
+
     input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
     grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
@@ -59,11 +64,6 @@ def test_grid_sample(mode, padding_mode, align_corners):
             opset_version=11)
 
     onnx_model = onnx.load(onnx_file)
-
-    from mmcv.ops import get_onnxruntime_op_path
-    ort_custom_op_path = get_onnxruntime_op_path()
-    if not os.path.exists(ort_custom_op_path):
-        pytest.skip('nms for onnxruntime is not compiled.')
 
     session_options = rt.SessionOptions()
     session_options.register_custom_ops_library(ort_custom_op_path)
