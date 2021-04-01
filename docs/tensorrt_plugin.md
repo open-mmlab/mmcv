@@ -26,9 +26,11 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 
 |   ONNX Operator   |    TensorRT Plugin    | Note  |
 | :---------------: | :-------------------: | :---: |
-|     RoiAlign      |     MMCVRoiAlign      |   Y   |
-|     ScatterND     |       ScatterND       |   Y   |
-| NonMaxSuppression | MMCVNonMaxSuppression |  WIP  |
+| MMCVRoiAlign | [MMCVRoiAlign](./tensorrt_ops.md#mmcvroialign) | Y |
+| ScatterND | [ScatterND](./tensorrt_ops.md#scatternd) | Y |
+| NonMaxSuppression | [NonMaxSuppression](./tensorrt_ops.md#nonmaxsuppression) | Y |
+| MMCVDeformConv2d | [MMCVDeformConv2d](./tensorrt_ops.md#mmcvdeformconv2d) | Y |
+| grid_sampler | [grid_sampler](./tensorrt_ops.md#grid-sampler) | Y |
 
 Notes
 
