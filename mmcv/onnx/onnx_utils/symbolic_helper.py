@@ -229,7 +229,6 @@ def _interpolate_get_scales_if_available(g, scales):
     if len(scales) == 0:
         return None
     # scales[0] is ListType in Pytorch == 1.7.0
-    print(scales[0])
     scale_desc = 'fs' if scales[0].type().kind() == 'ListType' or (
         sum(scales[0].type().sizes()) > 1) else 'f'
     available_scales = _maybe_get_const(
