@@ -87,6 +87,7 @@ Initializaing modules, such as `nn.Conv2d`, `nn.Linear` and so on.
 We provide the following initialization methods.
 
 - constant_init
+
   Initialize module parameters with constant values.
 
     ```python
@@ -98,6 +99,7 @@ We provide the following initialization methods.
     ```
 
 - xavier_init
+
   Initialize module parameters with values according to the method
   described in [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
 
@@ -110,6 +112,7 @@ We provide the following initialization methods.
     ```
 
 - normal_init
+
   Initialize module parameters with the values drawn from a normal distribution.
 
     ```python
@@ -121,6 +124,7 @@ We provide the following initialization methods.
     ```
 
 - uniform_init
+
   Initialize module parameters with values drawn from a uniform distribution.
 
     ```python
@@ -132,6 +136,7 @@ We provide the following initialization methods.
     ```
 
 - kaiming_init
+
   Initialize module paramters with the valuse according to the method
   described in [Delving deep into rectifiers: Surpassing human-level
   performance on ImageNet classification - He, K. et al. (2015)](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)
@@ -156,6 +161,7 @@ We provide the following initialization methods.
     ```
 
 - bias_init_with_prob
+
   Initialize conv/fc bias value according to given probability proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
 
     ```python
@@ -184,7 +190,13 @@ We provide the following initialization classes.
 
 Next, we will introduce the use of `initialize` in detail.
 
-- Initialize whole module
+If we don't define `layer` key or `override` key, it will not initialize
+anything; if we define `override` but don't define `layer`, it will initialize
+parameters with the attribute name in `override`; if we only define `layer`,
+it just initialize the layer in `layer` key; if we define `override` and `layer`,
+`override` has higher priority and will override initialization mechanism.
+
+- Initialize whole module with the same configuration
 
   Define key `layer` for initializing layer with same configuration.
 
@@ -205,7 +217,7 @@ Next, we will introduce the use of `initialize` in detail.
     initialize(model, init_cfg)
     ```
 
-- Initialize specific layer
+- Initialize specific layer with different configuration
 
   Define key `layer` for initializing layer with different configuration.
 
@@ -269,11 +281,60 @@ Next, we will introduce the use of `initialize` in detail.
     # initialize weights of a sub-module with the specific part of a pretrained model by using 'prefix'
     model = models.resnet50()
     url = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
-        'retinanet_r50_fpn_1x_coco/'\
-        'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
+          'retinanet_r50_fpn_1x_coco/'\
+          'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
     init_cfg = dict(type='Pretrained',
                     checkpoint=url, prefix='backbone.')
     initialize(model, init_cfg)
+    ```
+
+- Initialization of model inherited from BaseModule
+
+    ```python
+    import torch.nn as nn
+    from mmcv.runner.base_module import BaseModule, Sequential, ModuleList
+
+    class FooConv1d(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super().__init__(init_cfg)
+            self.conv1d = nn.Conv1d(4, 1, 4)
+
+        def forward(self, x):
+            return self.conv1d(x)
+
+    class FooConv2d(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super().__init__(init_cfg)
+            self.conv2d = nn.Conv2d(3, 1, 3)
+
+        def forward(self, x):
+            return self.conv2d(x)
+
+    init_cfg = init_cfg=dict(type='Constant', val=0., bias=1.)
+    model = FooConv1d(init_cfg)
+    model.init_weight()
+
+    init_cfg1 = dict(type='Constant', val=0., bias=1.)
+    init_cfg2 = dict(type='Constant', val=2., bias=3.)
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    seq_model = Sequential(model1, model2)
+    seq_model.init_weight()
+    # inner init_cfg has highter priority
+    init_cfg = dict(type='Constant', val=4., bias=5.)
+    seq_model = Sequential(model1, model2, init_cfg=init_cfg)
+    seq_model.init_weight()
+
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    modellist = ModuleList([model1, model2])
+    modellist.init_weight()
+    # inner init_cfg has highter priority
+    init_cfg = dict(type='Constant', val=4., bias=5.)
+    modellist = ModuleList(model1, model2, init_cfg=init_cfg)
+    modellist.init_weight()
     ```
 
 ### Model Zoo
