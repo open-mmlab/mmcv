@@ -23,62 +23,63 @@ class WrapFunction(nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
-def test_grid_sampler():
-    input = torch.ones(1, 1, 2, 2)
-    out_h = 4
-    out_w = 4
-    h = torch.linspace(-1, 1, out_h)
-    w = torch.linspace(-1, 1, out_w)
-    grid = torch.zeros(out_h, out_w, 2)
-    grid[:, :, 0] = w.unsqueeze(0).repeat(out_h, 1)
-    grid[:, :, 1] = h.unsqueeze(0).repeat(out_w, 1).transpose(0, 1)
-    grid = grid.unsqueeze(0).repeat(1, 1, 1, 1)
+@pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
+@pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
+@pytest.mark.parametrize('align_corners', [True, False])
+def test_grid_sample(mode, padding_mode, align_corners):
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    opset_version = 11
+    register_extra_symbolics(opset_version)
+
+    input = torch.rand(1, 1, 10, 10)
+    grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
+    grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+
+    def func(input, grid):
+        return nn.functional.grid_sample(
+            input,
+            grid,
+            mode=mode,
+            padding_mode=padding_mode,
+            align_corners=align_corners)
+
+    wrapped_model = WrapFunction(func).eval()
+
+    input_names = ['input', 'grid']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (input.clone(), grid.clone()),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
-        pytest.skip('grid_sample for onnxruntime is not compiled.')
+        pytest.skip('nms for onnxruntime is not compiled.')
 
-    inter_modes = ['bilinear', 'nearest']
-    padding_modes = ['zeros', 'border', 'reflection']
-    corners = [False, True]
-    for inter_mode in inter_modes:
-        for padding_mode in padding_modes:
-            for align_corner in corners:
-                pytorch_output = \
-                    torch.nn.functional.grid_sample(input,
-                                                    grid,
-                                                    mode=inter_mode,
-                                                    padding_mode=padding_mode,
-                                                    align_corners=align_corner)
-                wrapped_model = WrapFunction(torch.nn.functional.grid_sample)
-                wrapped_model.cpu().eval()
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
 
-                from mmcv.onnx.symbolic import register_extra_symbolics
-                opset_version = 11
-                register_extra_symbolics(opset_version)
-                with torch.no_grad():
-                    torch.onnx.export(
-                        wrapped_model, (input, grid),
-                        onnx_file,
-                        export_params=True,
-                        keep_initializers_as_inputs=True,
-                        input_names=['input', 'grid'],
-                        opset_version=11)
-
-                session_options = rt.SessionOptions()
-                session_options.register_custom_ops_library(ort_custom_op_path)
-                sess = rt.InferenceSession(onnx_file, session_options)
-                input_feature = input.cpu().numpy()
-                grid_feature = grid.cpu().numpy()
-                onnx_output = sess.run(None, {
-                    'input': input_feature,
-                    'grid': grid_feature
-                })
-                os.remove(onnx_file)
-                assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
-
-
-test_grid_sampler()
+    # get onnx output
+    input_all = [node.name for node in onnx_model.graph.input]
+    input_initializer = [node.name for node in onnx_model.graph.initializer]
+    net_feed_input = list(set(input_all) - set(input_initializer))
+    assert (len(net_feed_input) == 2)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    ort_result = sess.run(None, {
+        'input': input.detach().numpy(),
+        'grid': grid.detach().numpy()
+    })
+    pytorch_results = wrapped_model(input.clone(), grid.clone())
+    assert np.allclose(pytorch_results, ort_result, atol=1e-3)
 
 
 def test_nms():
