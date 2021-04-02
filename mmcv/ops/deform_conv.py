@@ -179,6 +179,27 @@ deform_conv2d = DeformConv2dFunction.apply
 
 
 class DeformConv2d(nn.Module):
+    r"""Deformable 2D convolution
+    Applies a deformable 2D convolution over an input signal composed of
+    several input planes. DeformConv2d was described in the paper
+    `Deformable Convolutional Networks
+    <https://arxiv.org/pdf/1703.06211.pdf>`_
+
+    Args:
+        in_channels (int): Number of channels in the input image.
+        out_channels (int): Number of channels produced by the convolution.
+        kernel_size(int, tuple): Size of the convolving kernel.
+        stride(int, tuple): Stride of the convolution. Default: 1.
+        padding (int or tuple): Zero-padding added to both sides of the input.
+            Default: 0.
+        dilation (int or tuple): Spacing between kernel elements. Default: 1.
+        groups (int): Number of blocked connections from input.
+            channels to output channels. Default: 1.
+        deform_groups (int): Number of deformable group partitions.
+        bias (bool, optional) – If True, adds a learnable bias to the output.
+            Default: True.
+
+    """
 
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},
                             cls_name='DeformConv2d')
@@ -229,6 +250,17 @@ class DeformConv2d(nn.Module):
         self.weight.data.uniform_(-stdv, stdv)
 
     def forward(self, x, offset):
+        """Deformable Convolutional forward function
+
+        Args:
+            x (Tensor): Input feature, shape (B, C_in, H_in, W_in)
+            offset (Tensor): Offset for deformable convolution, shape
+                (B, deform_groups*kernel_size[0]*kernel_size[1]*2，
+                H_out, W_out), H_out, W_out are equal to the output's.
+
+        Returns:
+            Tensor: Output of the layer.
+        """
         # To fix an assert error in deform_conv_cuda.cpp:128
         # input image is smaller than kernel
         input_pad = (x.size(2) < self.kernel_size[0]) or (x.size(3) <
@@ -246,6 +278,18 @@ class DeformConv2d(nn.Module):
                       pad_w].contiguous()
         return out
 
+    def __repr__(self):
+        s = self.__class__.__name__
+        s += f'(in_channels={self.in_channels}, '
+        s += f'out_channels={self.out_channels}, '
+        s += f'kernel_size={self.kernel_size}, '
+        s += f'stride={self.stride}, '
+        s += f'padding={self.padding}, '
+        s += f'dilation={self.dilation}, '
+        s += f'groups={self.groups}, '
+        s += f'deform_groups={self.deform_groups}, '
+        s += f'bias={self.bias})'
+        return s
 
 @CONV_LAYERS.register_module('DCN')
 class DeformConv2dPack(DeformConv2d):
