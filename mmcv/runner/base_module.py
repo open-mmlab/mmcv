@@ -10,7 +10,6 @@ from ..utils import deprecated_api_warning
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
 
-    @deprecated_api_warning({'pretrained': 'init_cfg'})
     def __init__(self, init_cfg=None):
         """Initialize BaseModule, inherited from `torch.nn.Module`
 
@@ -28,6 +27,13 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         if init_cfg is not None:
             self.init_cfg = init_cfg
 
+        # Backward compatibility in derived classes
+        # if pretrained is not None:
+        #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
+        #         key, please consider using init_cfg')
+        #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
+
+
     @property
     def is_init(self):
         return self._is_init
@@ -44,8 +50,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     m.init_weight()
             self._is_init = True
         else:
-            warnings.warn('This module has bee initialized, \
-                please call initialize(module, init_cfg) to reinitialize it')
+            warnings.warn(f'init_weight of {self.__class__.__name__} has '
+                          f'been called more than once.')
 
     def __repr__(self):
         s = super().__repr__()

@@ -291,6 +291,28 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
+    def test_adjust_lighting(self):
+        img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.uint8)
+        img = np.stack([img, img, img], axis=-1)
+
+        # eigval and eigvec must be np.ndarray
+        with pytest.raises(AssertionError):
+            mmcv.adjust_lighting(img, 1, np.ones((3, 1)))
+        with pytest.raises(AssertionError):
+            mmcv.adjust_lighting(img, np.array([1]), (1, 1, 1))
+        # we must have the same number of eigval and eigvec
+        with pytest.raises(AssertionError):
+            mmcv.adjust_lighting(img, np.array([1]), np.eye(2))
+        with pytest.raises(AssertionError):
+            mmcv.adjust_lighting(img, np.array([1]), np.array([1]))
+
+        img_adjusted = mmcv.adjust_lighting(
+            img,
+            np.random.normal(0, 1, 2),
+            np.random.normal(0, 1, (3, 2)),
+            alphastd=0.)
+        assert_array_equal(img_adjusted, img)
+
     def test_lut_transform(self):
         lut_table = np.array(list(range(256)))
 
