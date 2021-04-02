@@ -31,7 +31,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         #         key, please consider using init_cfg')
         #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
-
     @property
     def is_init(self):
         return self._is_init
