@@ -79,6 +79,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
         'grid': grid.detach().numpy()
     })
     pytorch_results = wrapped_model(input.clone(), grid.clone())
+    os.remove(onnx_file)
     assert np.allclose(pytorch_results, ort_result, atol=1e-3)
 
 
