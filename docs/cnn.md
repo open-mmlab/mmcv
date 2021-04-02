@@ -74,6 +74,8 @@ conv = ConvModule(
 
 ### Weight initialization
 
+> code is available at [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)
+
 During training, a proper initialization strategy is beneficial to speed the
 training or obtain a higher performance. In MMCV, we provide some commonly used
 methods for initializing modules like `nn.Conv2d`. Of course, we also provide a
@@ -174,7 +176,7 @@ We provide the following initialization methods.
 
 #### **Initialization of model**
 
-On the basis of the initialization method, we define the corresponding initialization classes and register them to `INITIALIZERS`, so we can
+On the basis of the initialization methods, we define the corresponding initialization classes and register them to `INITIALIZERS`, so we can
 use the configuration to initialize the model.
 
 We provide the following initialization classes.
@@ -188,17 +190,19 @@ We provide the following initialization classes.
 - Caffe2XavierInit
 - PretrainedInit
 
-Next, we will introduce the use of `initialize` in detail.
+Before we go deeper into the usage of `initialize`, briefly introducing the
+design principle of it is helpful.
 
-If we don't define `layer` key or `override` key, it will not initialize
-anything; if we define `override` but don't define `layer`, it will initialize
-parameters with the attribute name in `override`; if we only define `layer`,
-it just initialize the layer in `layer` key; if we define `override` and `layer`,
-`override` has higher priority and will override initialization mechanism.
+- If we don't define `layer` key or `override` key, it will not initialize anything.
+- If we define `override` but don't define `layer`, it will initialize parameters with the attribute name in `override`.
+- If we only define `layer`, it just initialize the layer in `layer` key.
+- If we define `override` and `layer`, `override` has higher priority and will override initialization mechanism.
+
+Now, it is time to introduce the usage of `initialize` in detail.
 
 - Initialize whole module with the same configuration
 
-  Define key `layer` for initializing layer with same configuration.
+  Define `layer` for initializing layer with same configuration.
 
     ```python
     import torch.nn as nn
@@ -212,14 +216,14 @@ it just initialize the layer in `layer` key; if we define `override` and `layer`
             self.cls = nn.Linear(1, 2)
 
     model = FooNet()
-    init_cfg = dict(type='Constant',layer=['Conv1d', 'Conv2d', 'Linear'], val=1 , bias=2)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d', 'Linear'], val=1)
     # initialize whole module with same configuration
     initialize(model, init_cfg)
     ```
 
-- Initialize specific layer with different configuration
+- Initialize specific layer with different configurations
 
-  Define key `layer` for initializing layer with different configuration.
+  Define `layer` for initializing layer with different configurations.
 
     ```python
     import torch.nn as nn
@@ -233,18 +237,18 @@ it just initialize the layer in `layer` key; if we define `override` and `layer`
             self.cls = nn.Linear(1,2)
 
     model = FooNet()
-    init_cfg = [dict(type='Constant', layer='Conv1d',val=1, bias=2),
-                dict(type='Constant', layer='Conv2d', val=1),
-                dict(type='Constant', layer='Linear', val=2)]
-    # nn.Conv1d will be initialized with dict(type='Constant', val=1, bias=2)
-    # nn.Conv2d will be initialized with dict(type='Constant', layer='Conv2d', val=1)
-    # nn.Linear will be initialized with dict(type='Constant', layer='Linear', val=2)
+    init_cfg = [dict(type='Constant', layer='Conv1d', val=1),
+                dict(type='Constant', layer='Conv2d', val=2),
+                dict(type='Constant', layer='Linear', val=3)]
+    # nn.Conv1d will be initialized with dict(type='Constant', val=1)
+    # nn.Conv2d will be initialized with dict(type='Constant', val=2)
+    # nn.Linear will be initialized with dict(type='Constant', val=3)
     initialize(model, init_cfg)
     ```
 
-- Initialize module with specific name
+- Initialize module with the attribute name
 
-  Define key `override` to initialize some specific override in module.
+  Define `override` for initializing module with the attribute name.
 
     ```python
     import torch.nn as nn
@@ -260,8 +264,8 @@ it just initialize the layer in `layer` key; if we define `override` and `layer`
     model = FooNet()
     init_cfg = dict(type='Constant', val=1, bias=2, layer=['Conv1d','Conv2d'],
                     override=dict(type='Constant', name='reg', val=3, bias=4))
-    # nn.Conv1d and nn.Linear will be initialized with dict(type='Constant', val=1, bias=2)
-    # The module called 'reg' will be initialized with dict(type='Constant', name='reg', val=3, bias=4)
+    # self.feat and self.cls will be initialized with dict(type='Constant', val=1, bias=2)
+    # The module called 'reg' will be initialized with dict(type='Constant', val=3, bias=4)
     initialize(model, init_cfg)
     ```
 
@@ -288,7 +292,13 @@ it just initialize the layer in `layer` key; if we define `override` and `layer`
     initialize(model, init_cfg)
     ```
 
-- Initialization of model inherited from BaseModule
+- Initialize models inherited from BaseModule, Sequential, ModuleList
+
+  `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
+
+  `Sequential` is inhertied from `BaseModule` and `torch.nn.Sequential`.
+
+  `ModuleList` is inhertied from `BaseModule` and `torch.nn.ModuleList`.
 
     ```python
     import torch.nn as nn
@@ -312,27 +322,34 @@ it just initialize the layer in `layer` key; if we define `override` and `layer`
         def forward(self, x):
             return self.conv2d(x)
 
-    init_cfg = init_cfg=dict(type='Constant', val=0., bias=1.)
+    # BaseModule
+    init_cfg = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
     model = FooConv1d(init_cfg)
     model.init_weight()
 
-    init_cfg1 = dict(type='Constant', val=0., bias=1.)
-    init_cfg2 = dict(type='Constant', val=2., bias=3.)
+    # Sequential
+    init_cfg1 = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
+    init_cfg2 = dict(type='Constant', layer='Conv2d', val=2., bias=3.)
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     seq_model = Sequential(model1, model2)
     seq_model.init_weight()
     # inner init_cfg has highter priority
-    init_cfg = dict(type='Constant', val=4., bias=5.)
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
     seq_model = Sequential(model1, model2, init_cfg=init_cfg)
     seq_model.init_weight()
 
+    # ModuleList
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     modellist = ModuleList([model1, model2])
     modellist.init_weight()
     # inner init_cfg has highter priority
-    init_cfg = dict(type='Constant', val=4., bias=5.)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
     modellist = ModuleList(model1, model2, init_cfg=init_cfg)
     modellist.init_weight()
     ```
