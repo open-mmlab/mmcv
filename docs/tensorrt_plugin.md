@@ -24,13 +24,13 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 
 ## List of TensorRT plugins supported in MMCV
 
-|   ONNX Operator   |    TensorRT Plugin    | Note  |
-| :---------------: | :-------------------: | :---: |
-| MMCVRoiAlign | [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign) | Y |
-| ScatterND | [ScatterND](./tensorrt_custom_ops.md#scatternd) | Y |
-| NonMaxSuppression | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression) | Y |
-| MMCVDeformConv2d | [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d) | Y |
-| grid_sampler | [grid_sampler](./tensorrt_custom_ops.md#grid-sampler) | Y |
+|   ONNX Operator   |                         TensorRT Plugin                         | Note  |
+| :---------------: | :-------------------------------------------------------------: | :---: |
+|   MMCVRoiAlign    |      [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)      |   Y   |
+|     ScatterND     |         [ScatterND](./tensorrt_custom_ops.md#scatternd)         |   Y   |
+| NonMaxSuppression | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression) |   Y   |
+| MMCVDeformConv2d  |  [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)  |   Y   |
+|   grid_sampler    |      [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)      |   Y   |
 
 Notes
 

@@ -15,8 +15,8 @@
 
 ## List of operators for ONNX Runtime supported in MMCV
 
-| Operator |  CPU  |  GPU  |                                                Note                                                 |
-| :------: | :---: | :---: | :-------------------------------------------------------------------------------------------------: |
+|                    Operator                    |  CPU  |  GPU  |                                                Note                                                 |
+| :--------------------------------------------: | :---: | :---: | :-------------------------------------------------------------------------------------------------: |
 |  [SoftNMS](onnxruntime_custom_ops.md#softnms)  |   Y   |   N   | commit [94810f](https://github.com/open-mmlab/mmcv/commit/94810f2297871d0ea3ca650dcb2e842f5374d998) |
 | [RoiAlign](onnxruntime_custom_ops.md#roialign) |   Y   |   N   |                                                None                                                 |
 |      [NMS](onnxruntime_custom_ops.md#nms)      |   Y   |   N   |                                                None                                                 |

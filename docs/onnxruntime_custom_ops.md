@@ -11,21 +11,21 @@
 
 ## SoftNMS
 
-### Description
+<h3>Descriptions</h3>
 
 Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object Detection With One Line of Code](https://arxiv.org/abs/1704.04503) for detail.
 
-### Parameters
+<h3>Parameters</h3>
 
-| Type | Parameter | Description |
-| --- | --- | --- |
-| `float` | `iou_threshold` | IoU threshold for NMS |
-| `float` | `sigma` | hyperparameter for gaussian method |
-| `float` | `min_score` | score filter threshold |
-| `int` | `method` | method to do the nms, (0: `naive`, 1: `linear`, 2: `gaussian`) |
-| `int` | `offset` | `boxes` width or height is (x2 - x1 + offset). (0 or 1) |
+| Type    | Parameter       | Description                                                    |
+| ------- | --------------- | -------------------------------------------------------------- |
+| `float` | `iou_threshold` | IoU threshold for NMS                                          |
+| `float` | `sigma`         | hyperparameter for gaussian method                             |
+| `float` | `min_score`     | score filter threshold                                         |
+| `int`   | `method`        | method to do the nms, (0: `naive`, 1: `linear`, 2: `gaussian`) |
+| `int`   | `offset`        | `boxes` width or height is (x2 - x1 + offset). (0 or 1)        |
 
-### Inputs
+<h3>Inputs</h3>
 
 <dl>
 <dt><tt>boxes</tt>: T</dt>
@@ -34,7 +34,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Input scores. 1-D tensor of shape (N, ).</dd>
 </dl>
 
-### Outputs
+<h3>Outputs</h3>
 
 <dl>
 <dt><tt>dets</tt>: tensor(int64)</dt>
@@ -43,28 +43,28 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Output indices. 1-D tensor of shape (num_valid_boxes, ).</dd>
 </dl>
 
-### Type Constraints
+<h3>Type Constraints</h3>
 
 - T:tensor(float32)
 
 ## RoiAlign
 
-### Description
+<h3>Descriptions</h3>
 
-Perform ROIAlign on output feature, used in bbox_head of most two stage detectors.
+Perform ROIAlign on output feature, used in bbox_head of most two-stage detectors.
 
-### Parameters
+<h3>Parameters</h3>
 
-| Type | Parameter | Description |
-| --- | --- | --- |
-| `int` | `output_height` | height of output roi |
-| `int` | `output_width` | width of output roi |
-| `float` | `spatial_scale` | scale the input boxes by this |
-| `int` | `sampling_ratio` | number of inputs samples to take for each output sample. 0 to take samples densely for current models. |
-| `str` | `mode` | pooling mode in each bin. `avg` or `max` |
-| `int` | `aligned` | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly. |
+| Type    | Parameter        | Description                                                                                            |
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| `int`   | `output_height`  | height of output roi                                                                                   |
+| `int`   | `output_width`   | width of output roi                                                                                    |
+| `float` | `spatial_scale`  | scale the input boxes by this                                                                          |
+| `int`   | `sampling_ratio` | number of inputs samples to take for each output sample. 0 to take samples densely for current models. |
+| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                               |
+| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.  |
 
-### Inputs
+<h3>Inputs</h3>
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -73,31 +73,31 @@ Perform ROIAlign on output feature, used in bbox_head of most two stage detector
 <dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of input.</dd>
 </dl>
 
-### Outputs
+<h3>Outputs</h3>
 
 <dl>
 <dt><tt>feat</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
 </dl>
 
-### Type Constraints
+<h3>Type Constraints</h3>
 
 - T:tensor(float32)
 
 ## NMS
 
-### Description
+<h3>Descriptions</h3>
 
 Filter out boxes has high IOU overlap with previously selected boxes.
 
-### Parameters
+<h3>Parameters</h3>
 
-| Type | Parameter | Description |
-| --- | --- | --- |
+| Type    | Parameter       | Description                                                                                                      |
+| ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IOU. Value range [0, 1]. Default to 0. |
-| `int` | `offset` | 0 or 1, boxes' width or height is (x2 - x1 + offset). |
+| `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
 
-### Inputs
+<h3>Inputs</h3>
 
 <dl>
 <dt><tt>bboxes</tt>: T</dt>
@@ -106,13 +106,13 @@ Filter out boxes has high IOU overlap with previously selected boxes.
 <dd>Input scores. 1-D tensor of shape (num_boxes, ).</dd>
 </dl>
 
-### Outputs
+<h3>Outputs</h3>
 
 <dl>
 <dt><tt>indices</tt>: tensor(int32, Linear)</dt>
 <dd>Selected indices. 1-D tensor of shape (num_valid_boxes, ). num_valid_boxes is the number of valid boxes.</dd>
 </dl>
 
-### Type Constraints
+<h3>Type Constraints</h3>
 
 - T:tensor(float32)
