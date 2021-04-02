@@ -4,8 +4,6 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
-from ..utils import deprecated_api_warning
-
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
