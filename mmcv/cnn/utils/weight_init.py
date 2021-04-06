@@ -1,4 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import copy
+import warnings
+
 import numpy as np
 import torch.nn as nn
 
@@ -78,6 +81,7 @@ def bias_init_with_prob(prior_prob):
 class BaseInit(object):
 
     def __init__(self, *, bias=0, bias_prob=None, layer=None):
+        self.wholemodule = False
         if not isinstance(bias, (int, float)):
             raise TypeError(f'bias must be a numbel, but got a {type(bias)}')
 
@@ -90,7 +94,11 @@ class BaseInit(object):
             if not isinstance(layer, (str, list)):
                 raise TypeError(f'layer must be a str or a list of str, \
                     but got a {type(layer)}')
-
+        else:
+            layer = []
+            warnings.warn(
+                'init_cfg without layer key, if you do not define override'
+                ' key either, this init_cfg will do nothing')
         if bias_prob is not None:
             self.bias = bias_init_with_prob(bias_prob)
         else:
@@ -119,13 +127,12 @@ class ConstantInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.layer is None:
+            if self.wholemodule:
                 constant_init(m, self.val, self.bias)
             else:
                 layername = m.__class__.__name__
-                for layer_ in self.layer:
-                    if layername == layer_:
-                        constant_init(m, self.val, self.bias)
+                if layername in self.layer:
+                    constant_init(m, self.val, self.bias)
 
         module.apply(init)
 
@@ -157,13 +164,12 @@ class XavierInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.layer is None:
+            if self.wholemodule:
                 xavier_init(m, self.gain, self.bias, self.distribution)
             else:
                 layername = m.__class__.__name__
-                for layer_ in self.layer:
-                    if layername == layer_:
-                        xavier_init(m, self.gain, self.bias, self.distribution)
+                if layername in self.layer:
+                    xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
 
@@ -194,7 +200,7 @@ class NormalInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.layer is None:
+            if self.wholemodule:
                 normal_init(m, self.mean, self.std, self.bias)
             else:
                 layername = m.__class__.__name__
@@ -231,13 +237,12 @@ class UniformInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.layer is None:
+            if self.wholemodule:
                 uniform_init(m, self.a, self.b, self.bias)
             else:
                 layername = m.__class__.__name__
-                for layer_ in self.layer:
-                    if layername == layer_:
-                        uniform_init(m, self.a, self.b, self.bias)
+                if layername in self.layer:
+                    uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
 
@@ -285,15 +290,14 @@ class KaimingInit(BaseInit):
     def __call__(self, module):
 
         def init(m):
-            if self.layer is None:
+            if self.wholemodule:
                 kaiming_init(m, self.a, self.mode, self.nonlinearity,
                              self.bias, self.distribution)
             else:
                 layername = m.__class__.__name__
-                for layer_ in self.layer:
-                    if layername == layer_:
-                        kaiming_init(m, self.a, self.mode, self.nonlinearity,
-                                     self.bias, self.distribution)
+                if layername in self.layer:
+                    kaiming_init(m, self.a, self.mode, self.nonlinearity,
+                                 self.bias, self.distribution)
 
         module.apply(init)
 
@@ -355,12 +359,16 @@ class PretrainedInit(object):
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
 
-def _initialize(module, cfg):
+def _initialize(module, cfg, wholemodule=False):
     func = build_from_cfg(cfg, INITIALIZERS)
+    # wholemodule flag is for override mode, there is no layer key in override
+    # and initializer will give init values for the whole module with the name
+    # in override.
+    func.wholemodule = wholemodule
     func(module)
 
 
-def _initialize_override(module, override):
+def _initialize_override(module, override, cfg):
     if not isinstance(override, (dict, list)):
         raise TypeError(f'override must be a dict or a list of dict, \
                 but got {type(override)}')
@@ -368,9 +376,11 @@ def _initialize_override(module, override):
     override = [override] if isinstance(override, dict) else override
 
     for override_ in override:
+        if 'type' not in override_.keys():
+            override_.update(cfg)
         name = override_.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), override_)
+            _initialize(getattr(module, name), override_, wholemodule=True)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
 
@@ -436,11 +446,17 @@ def initialize(module, init_cfg):
         init_cfg = [init_cfg]
 
     for cfg in init_cfg:
-        override = cfg.pop('override', None)
-        _initialize(module, cfg)
+        # should deeply copy the original config because cfg may be used by
+        # other modules, e.g., one init_cfg shared by multiple bottleneck
+        # blocks, the expected cfg will be changed after pop and will change
+        # the initialization behavior of other modules
+        cp_cfg = copy.deepcopy(cfg)
+        override = cp_cfg.pop('override', None)
+        _initialize(module, cp_cfg)
 
         if override is not None:
-            _initialize_override(module, override)
+            cp_cfg.pop('layer', None)
+            _initialize_override(module, override, cp_cfg)
         else:
             # All attributes in module have same initialization.
             pass
