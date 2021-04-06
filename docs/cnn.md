@@ -240,6 +240,7 @@ Let us introduce the usage of `initialize` in detail.
 2. Initialize model by `override` key
 
     If we define `override` but don't define `layer`, it will initialize parameters with the attribute name in `override`.
+
     If we define `override` and `layer`, `override` has higher priority and will override initialization mechanism.
 
     ```python
@@ -289,7 +290,9 @@ Let us introduce the usage of `initialize` in detail.
 4. Initialize model inherited from BaseModule, Sequential, ModuleList
 
     `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
+
     `Sequential` is inhertied from `BaseModule` and `torch.nn.Sequential`.
+
     `ModuleList` is inhertied from `BaseModule` and `torch.nn.ModuleList`.
 
     `````python
