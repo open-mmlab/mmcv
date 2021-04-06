@@ -79,7 +79,7 @@ conv = ConvModule(
 During training, a proper initialization strategy is beneficial to speed the
 training or obtain a higher performance. In MMCV, we provide some commonly used
 methods for initializing modules like `nn.Conv2d`. Of course, we also provide a
-high-level APIs for initializing the entire model containing one or more
+high-level APIs for initializing model containing one or more
 modules.
 
 #### **Initialization of module**
@@ -181,8 +181,7 @@ use the configuration to initialize the model.
 
 We provide the following initialization classes.
 
-- BaseInit
-- BaseInit
+- ConstantInit
 - XavierInit
 - NormalInit
 - UniformInit
@@ -190,65 +189,58 @@ We provide the following initialization classes.
 - Caffe2XavierInit
 - PretrainedInit
 
-Before we go deeper into the usage of `initialize`, briefly introducing the
-design principle of it is helpful.
+Let us introduce the usage of `initialize` in detail.
 
-- If we don't define `layer` key or `override` key, it will not initialize anything.
-- If we define `override` but don't define `layer`, it will initialize parameters with the attribute name in `override`.
-- If we only define `layer`, it just initialize the layer in `layer` key.
-- If we define `override` and `layer`, `override` has higher priority and will override initialization mechanism.
+1. Initialize model by `layer` key
 
-Now, it is time to introduce the usage of `initialize` in detail.
+    If we only define `layer`, it just initialize the layer in `layer` key.
 
-- Initialize whole module with the same configuration
+- Define `layer` key for initializing module with same configuration.
 
-  Define `layer` for initializing layer with same configuration.
+  ```python
+  import torch.nn as nn
+  from mmcv.cnn.utils.weight_init import initialize
 
-    ```python
-    import torch.nn as nn
-    from mmcv.cnn.utils.weight_init import initialize
+  class FooNet(nn.Module):
+      def __init__(self):
+          super().__init__()
+          self.feat = nn.Conv1d(3, 1, 3)
+          self.reg = nn.Conv2d(3, 3, 3)
+          self.cls = nn.Linear(1, 2)
 
-    class FooNet(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.feat = nn.Conv1d(3, 1, 3)
-            self.reg = nn.Conv2d(3, 3, 3)
-            self.cls = nn.Linear(1, 2)
+  model = FooNet()
+  init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d', 'Linear'], val=1)
+  # initialize whole module with same configuration
+  initialize(model, init_cfg)
+  ```
 
-    model = FooNet()
-    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d', 'Linear'], val=1)
-    # initialize whole module with same configuration
-    initialize(model, init_cfg)
-    ```
+- Define `layer` key for initializing layer with different configurations.
 
-- Initialize specific layer with different configurations
+  ```python
+  import torch.nn as nn
+  from mmcv.cnn.utils.weight_init import initialize
 
-  Define `layer` for initializing layer with different configurations.
+  class FooNet(nn.Module):
+      def __init__(self):
+          super().__init__()
+          self.feat = nn.Conv1d(3, 1, 3)
+          self.reg = nn.Conv2d(3, 3, 3)
+          self.cls = nn.Linear(1,2)
 
-    ```python
-    import torch.nn as nn
-    from mmcv.cnn.utils.weight_init import initialize
+  model = FooNet()
+  init_cfg = [dict(type='Constant', layer='Conv1d', val=1),
+              dict(type='Constant', layer='Conv2d', val=2),
+              dict(type='Constant', layer='Linear', val=3)]
+  # nn.Conv1d will be initialized with dict(type='Constant', val=1)
+  # nn.Conv2d will be initialized with dict(type='Constant', val=2)
+  # nn.Linear will be initialized with dict(type='Constant', val=3)
+  initialize(model, init_cfg)
+  ```
 
-    class FooNet(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.feat = nn.Conv1d(3, 1, 3)
-            self.reg = nn.Conv2d(3, 3, 3)
-            self.cls = nn.Linear(1,2)
+2. Initialize model by `override` key
 
-    model = FooNet()
-    init_cfg = [dict(type='Constant', layer='Conv1d', val=1),
-                dict(type='Constant', layer='Conv2d', val=2),
-                dict(type='Constant', layer='Linear', val=3)]
-    # nn.Conv1d will be initialized with dict(type='Constant', val=1)
-    # nn.Conv2d will be initialized with dict(type='Constant', val=2)
-    # nn.Linear will be initialized with dict(type='Constant', val=3)
-    initialize(model, init_cfg)
-    ```
-
-- Initialize module with the attribute name
-
-  Define `override` for initializing module with the attribute name.
+    If we define `override` but don't define `layer`, it will initialize parameters with the attribute name in `override`.
+    If we define `override` and `layer`, `override` has higher priority and will override initialization mechanism.
 
     ```python
     import torch.nn as nn
@@ -269,14 +261,16 @@ Now, it is time to introduce the usage of `initialize` in detail.
     initialize(model, init_cfg)
     ```
 
-- Initialize weights with the pretrained model
+   *However, we should be careful If we don't define `layer` key or `override` key, it will not initialize anything.*
+
+3. Initialize model with the pretrained model
 
     ```python
     import torch.nn as nn
     import torchvision.models as models
     from mmcv.cnn.utils.weight_init import initialize
 
-    # initialize weights with the whole model
+    # initialize model with pretrained model
     model = models.resnet50()
     init_cfg = dict(type='Pretrained',
                     checkpoint='torchvision://resnet50')
@@ -292,15 +286,13 @@ Now, it is time to introduce the usage of `initialize` in detail.
     initialize(model, init_cfg)
     ```
 
-- Initialize models inherited from BaseModule, Sequential, ModuleList
+4. Initialize model inherited from BaseModule, Sequential, ModuleList
 
-  `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
+    `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
+    `Sequential` is inhertied from `BaseModule` and `torch.nn.Sequential`.
+    `ModuleList` is inhertied from `BaseModule` and `torch.nn.ModuleList`.
 
-  `Sequential` is inhertied from `BaseModule` and `torch.nn.Sequential`.
-
-  `ModuleList` is inhertied from `BaseModule` and `torch.nn.ModuleList`.
-
-    ```python
+    `````python
     import torch.nn as nn
     from mmcv.runner.base_module import BaseModule, Sequential, ModuleList
 
@@ -352,7 +344,7 @@ Now, it is time to introduce the usage of `initialize` in detail.
     model2 = FooConv2d(init_cfg2)
     modellist = ModuleList(model1, model2, init_cfg=init_cfg)
     modellist.init_weight()
-    ```
+    `````
 
 ### Model Zoo
 
