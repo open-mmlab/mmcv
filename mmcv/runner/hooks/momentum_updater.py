@@ -100,15 +100,28 @@ class MomentumUpdaterHook(Hook):
         # NOTE: when resuming from a checkpoint,
         # if 'initial_momentum' is not saved,
         # it will be set according to the optimizer params
-        for group in runner.optimizer.param_groups:
-            if 'momentum' in group.keys():
-                group.setdefault('initial_momentum', group['momentum'])
-            else:
-                group.setdefault('initial_momentum', group['betas'][0])
-        self.base_momentum = [
-            group['initial_momentum']
-            for group in runner.optimizer.param_groups
-        ]
+        if isinstance(runner.optimizer, dict):
+            self.base_momentum = {}
+            for k, optim in runner.optimizer.items():
+                for group in optim.param_groups:
+                    if 'momentum' in group.keys():
+                        group.setdefault('initial_momentum', group['momentum'])
+                    else:
+                        group.setdefault('initial_momentum', group['betas'][0])
+                _base_momentum = [
+                    group['initial_momentum'] for group in optim.param_groups
+                ]
+                self.base_momentum.update({k: _base_momentum})
+        else:
+            for group in runner.optimizer.param_groups:
+                if 'momentum' in group.keys():
+                    group.setdefault('initial_momentum', group['momentum'])
+                else:
+                    group.setdefault('initial_momentum', group['betas'][0])
+            self.base_momentum = [
+                group['initial_momentum']
+                for group in runner.optimizer.param_groups
+            ]
 
     def before_train_epoch(self, runner):
         if not self.by_epoch:
@@ -416,9 +429,11 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
         if isinstance(runner.optimizer, dict):
             momentum_groups = {}
             for k, optim in runner.optimizer.items():
-                for param_group in optim.param_groups:
-                    momentum_groups[k].append(
-                        self.get_momentum(runner, param_group))
+                _momentum_group = [
+                    self.get_momentum(runner, param_group)
+                    for param_group in optim.param_groups
+                ]
+                momentum_groups.update({k: _momentum_group})
             return momentum_groups
         else:
             momentum_groups = []
