@@ -34,7 +34,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
-        pytest.skip('nms for onnxruntime is not compiled.')
+        pytest.skip('custom ops for onnxruntime are not compiled.')
 
     input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
@@ -55,7 +55,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     with torch.no_grad():
         torch.onnx.export(
-            wrapped_model, (input.clone(), grid.clone()),
+            wrapped_model, (input, grid),
             onnx_file,
             export_params=True,
             keep_initializers_as_inputs=True,
