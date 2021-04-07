@@ -15,19 +15,19 @@
 
 <h3>Description</h3>
 
-Perform ROIAlign on output feature, used in bbox_head of most two stage
+Perform RoIAlign on output feature, used in bbox_head of most two stage
 detectors.
 
 <h3>Parameters</h3>
 
-| Type    | Parameter        | Description                                                                                            |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
-| `int`   | `output_height`  | height of output roi                                                                                   |
-| `int`   | `output_width`   | width of output roi                                                                                    |
-| `float` | `spatial_scale`  | scale the input boxes by this                                                                          |
-| `int`   | `sampling_ratio` | number of inputs samples to take for each output sample. 0 to take samples densely for current models. |
-| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                               |
-| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.  |
+| Type    | Parameter        | Description                                                                                                   |
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `int`   | `output_height`  | height of output roi                                                                                          |
+| `int`   | `output_width`   | width of output roi                                                                                           |
+| `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
+| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
+| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
+| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
 <h3>Inputs</h3>
 
@@ -96,7 +96,7 @@ None
 
 <h3>Description</h3>
 
-Filter out boxes has high IOU overlap with previously selected boxes or low score. Output the indices of valid boxes. Indices of invalid boxes will be filled with -1.
+Filter out boxes has high IoU overlap with previously selected boxes or low score. Output the indices of valid boxes. Indices of invalid boxes will be filled with -1.
 
 <h3>Parameters</h3>
 
@@ -104,7 +104,7 @@ Filter out boxes has high IOU overlap with previously selected boxes or low scor
 | ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `int`   | `center_point_box`           | 0 - the box data is supplied as [y1, x1, y2, x2], 1-the box data is supplied as [x_center, y_center, width, height].                 |
 | `int`   | `max_output_boxes_per_class` | The maximum number of boxes to be selected per batch per class. Default to 0, number of output boxes equal to number of input boxes. |
-| `float` | `iou_threshold`              | The threshold for deciding whether boxes overlap too much with respect to IOU. Value range [0, 1]. Default to 0.                     |
+| `float` | `iou_threshold`              | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0.                     |
 | `float` | `score_threshold`            | The threshold for deciding when to remove boxes based on score.                                                                      |
 | `int`   | `offset`                     | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                                                |
 

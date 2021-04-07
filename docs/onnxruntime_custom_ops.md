@@ -29,7 +29,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 
 <dl>
 <dt><tt>boxes</tt>: T</dt>
-<dd>Input boxes. 2-D tensor of shape (N, 4). N is the batch size.</dd>
+<dd>Input boxes. 2-D tensor of shape (N, 4). N is the number of boxes.</dd>
 <dt><tt>scores</tt>: T</dt>
 <dd>Input scores. 1-D tensor of shape (N, ).</dd>
 </dl>
@@ -51,18 +51,18 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 
 <h3>Descriptions</h3>
 
-Perform ROIAlign on output feature, used in bbox_head of most two-stage detectors.
+Perform RoIAlign on output feature, used in bbox_head of most two-stage detectors.
 
 <h3>Parameters</h3>
 
-| Type    | Parameter        | Description                                                                                            |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
-| `int`   | `output_height`  | height of output roi                                                                                   |
-| `int`   | `output_width`   | width of output roi                                                                                    |
-| `float` | `spatial_scale`  | scale the input boxes by this                                                                          |
-| `int`   | `sampling_ratio` | number of inputs samples to take for each output sample. 0 to take samples densely for current models. |
-| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                               |
-| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.  |
+| Type    | Parameter        | Description                                                                                                   |
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `int`   | `output_height`  | height of output roi                                                                                          |
+| `int`   | `output_width`   | width of output roi                                                                                           |
+| `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
+| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
+| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
+| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
 <h3>Inputs</h3>
 
@@ -88,13 +88,13 @@ Perform ROIAlign on output feature, used in bbox_head of most two-stage detector
 
 <h3>Descriptions</h3>
 
-Filter out boxes has high IOU overlap with previously selected boxes.
+Filter out boxes has high IoU overlap with previously selected boxes.
 
 <h3>Parameters</h3>
 
 | Type    | Parameter       | Description                                                                                                      |
 | ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IOU. Value range [0, 1]. Default to 0. |
+| `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0. |
 | `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
 
 <h3>Inputs</h3>
