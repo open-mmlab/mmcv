@@ -47,8 +47,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     module.init_weight()
             self._is_init = True
         else:
-            warnings.warn('This module has bee initialized, \
-                please call initialize(module, init_cfg) to reinitialize it')
+            warnings.warn(f'init_weight of {self.__class__.__name__} has '
+                          f'been called more than once.')
 
     def __repr__(self):
         s = super().__repr__()

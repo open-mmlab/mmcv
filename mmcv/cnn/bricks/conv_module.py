@@ -146,6 +146,8 @@ class ConvModule(nn.Module):
                 norm_channels = in_channels
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
             self.add_module(self.norm_name, norm)
+        else:
+            self.norm_name = None
 
         # build activation layer
         if self.with_activation:
@@ -162,7 +164,10 @@ class ConvModule(nn.Module):
 
     @property
     def norm(self):
-        return getattr(self, self.norm_name)
+        if self.norm_name:
+            return getattr(self, self.norm_name)
+        else:
+            return None
 
     def init_weights(self):
         # 1. It is mainly for customized conv layers with their own

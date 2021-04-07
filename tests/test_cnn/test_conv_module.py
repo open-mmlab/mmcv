@@ -75,7 +75,7 @@ def test_conv_module():
     assert conv.with_activation
     assert hasattr(conv, 'activate')
     assert not conv.with_norm
-    assert not hasattr(conv, 'norm')
+    assert conv.norm is None
     x = torch.rand(1, 3, 256, 256)
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
@@ -83,7 +83,7 @@ def test_conv_module():
     # conv
     conv = ConvModule(3, 8, 2, act_cfg=None)
     assert not conv.with_norm
-    assert not hasattr(conv, 'norm')
+    assert conv.norm is None
     assert not conv.with_activation
     assert not hasattr(conv, 'activate')
     x = torch.rand(1, 3, 256, 256)

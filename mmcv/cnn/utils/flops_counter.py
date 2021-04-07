@@ -56,7 +56,8 @@ def get_model_complexity_info(model,
             ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``,
             ``nn.AdaptiveAvgPool2d``, ``nn.AdaptiveAvgPool3d``.
         - BatchNorms: ``nn.BatchNorm1d``, ``nn.BatchNorm2d``,
-            ``nn.BatchNorm3d``.
+            ``nn.BatchNorm3d``, ``nn.GroupNorm``, ``nn.InstanceNorm1d``,
+            ``InstanceNorm2d``, ``InstanceNorm3d``, ``nn.LayerNorm``.
         - Linear: ``nn.Linear``.
         - Deconvolution: ``nn.ConvTranspose2d``.
         - Upsample: ``nn.Upsample``.
@@ -426,11 +427,12 @@ def pool_flops_counter_hook(module, input, output):
     module.__flops__ += int(np.prod(input.shape))
 
 
-def bn_flops_counter_hook(module, input, output):
+def norm_flops_counter_hook(module, input, output):
     input = input[0]
 
     batch_flops = np.prod(input.shape)
-    if module.affine:
+    if (getattr(module, 'affine', False)
+            or getattr(module, 'elementwise_affine', False)):
         batch_flops *= 2
     module.__flops__ += int(batch_flops)
 
@@ -577,10 +579,15 @@ def get_modules_mapping():
         nn.AdaptiveAvgPool2d: pool_flops_counter_hook,
         nn.AdaptiveMaxPool3d: pool_flops_counter_hook,
         nn.AdaptiveAvgPool3d: pool_flops_counter_hook,
-        # BNs
-        nn.BatchNorm1d: bn_flops_counter_hook,
-        nn.BatchNorm2d: bn_flops_counter_hook,
-        nn.BatchNorm3d: bn_flops_counter_hook,
+        # normalizations
+        nn.BatchNorm1d: norm_flops_counter_hook,
+        nn.BatchNorm2d: norm_flops_counter_hook,
+        nn.BatchNorm3d: norm_flops_counter_hook,
+        nn.GroupNorm: norm_flops_counter_hook,
+        nn.InstanceNorm1d: norm_flops_counter_hook,
+        nn.InstanceNorm2d: norm_flops_counter_hook,
+        nn.InstanceNorm3d: norm_flops_counter_hook,
+        nn.LayerNorm: norm_flops_counter_hook,
         # FC
         nn.Linear: linear_flops_counter_hook,
         mmcv.cnn.bricks.Linear: linear_flops_counter_hook,

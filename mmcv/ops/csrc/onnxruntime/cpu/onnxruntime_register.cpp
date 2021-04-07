@@ -1,5 +1,6 @@
 #include "onnxruntime_register.h"
 
+#include "grid_sample.h"
 #include "nms.h"
 #include "ort_mmcv_utils.h"
 #include "roi_align.h"
@@ -9,6 +10,7 @@ const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;
 NmsOp c_NmsOp;
 MMCVRoiAlignCustomOp c_MMCVRoiAlignCustomOp;
+GridSampleOp c_GridSampleOp;
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
                                           const OrtApiBase *api) {
@@ -29,6 +31,10 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
 
   if (auto status =
           ortApi->CustomOpDomain_Add(domain, &c_MMCVRoiAlignCustomOp)) {
+    return status;
+  }
+
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_GridSampleOp)) {
     return status;
   }
 
