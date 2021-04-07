@@ -179,7 +179,8 @@ deform_conv2d = DeformConv2dFunction.apply
 
 
 class DeformConv2d(nn.Module):
-    r"""Deformable 2D convolution
+    r"""Deformable 2D convolution.
+
     Applies a deformable 2D convolution over an input signal composed of
     several input planes. DeformConv2d was described in the paper
     `Deformable Convolutional Networks
@@ -250,13 +251,22 @@ class DeformConv2d(nn.Module):
         self.weight.data.uniform_(-stdv, stdv)
 
     def forward(self, x, offset):
-        """Deformable Convolutional forward function
+        """Deformable Convolutional forward function.
 
         Args:
             x (Tensor): Input feature, shape (B, C_in, H_in, W_in)
             offset (Tensor): Offset for deformable convolution, shape
                 (B, deform_groups*kernel_size[0]*kernel_size[1]*2，
                 H_out, W_out), H_out, W_out are equal to the output's.
+
+                An offset is like `[y0, x0, y1, x1, y2, x2, ..., y8, x8]`.
+                The spatial arrangement is like:
+
+                .. code:: text
+
+                    (x0, y0) (x1, y1) (x2, y2)
+                    (x3, y3) (x4, y4) (x5, y5)
+                    (x6, y6) (x7, y7) (x8, y8)
 
         Returns:
             Tensor: Output of the layer.
@@ -290,6 +300,7 @@ class DeformConv2d(nn.Module):
         s += f'deform_groups={self.deform_groups}, '
         s += f'bias={self.bias})'
         return s
+
 
 @CONV_LAYERS.register_module('DCN')
 class DeformConv2dPack(DeformConv2d):
