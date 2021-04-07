@@ -9,7 +9,7 @@ In MMCV, registry can be regarded as a mapping that maps a class to a string.
 These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
 With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
 One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
-The detailed doc could be find [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
+The API reference could be find [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
@@ -28,35 +28,17 @@ Assuming we want to implement a series of Dataset Converter for converting diffe
 We create a directory as a package named `converters`.
 In the package, we first create a file to implement builders, named `converters/builder.py`, as below
 
-Note: in this example, we demonstrate how to use `build_func` argument to customize the way to build a class instance. In most cases, default one would be sufficent.
-
 ```python
 from mmcv.utils import Registry
-
-# create a build function
-def build_converter(cfg, registry, *args, **kwargs):
-    cfg_ = cfg.copy()
-    converter_type = cfg_.pop('type')
-    if converter_type not in registry:
-        raise KeyError(f'Unrecognized task type {converter_type}')
-    else:
-        converter_cls = registry.get(converter_type)
-
-    converter = converter_cls(*args, **kwargs, **cfg_)
-    return converter
-
 # create a registry for converters
-CONVERTERS = Registry('converter', build_func=build_converter)
+CONVERTERS = Registry('converter')
 ```
-
-*Note: similar functions like `build_from_cfg` and `build_model_from_cfg` is already implemented, you may directly use them instead of implementing by yourself.*
 
 Then we can implement different converters in the package. For example, implement `Converter1` in `converters/converter1.py`
 
 ```python
 
 from .builder import CONVERTERS
-
 
 # use the registry to manage the module
 @CONVERTERS.register_module()
@@ -80,12 +62,39 @@ converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
 converter = CONVERTERS.build(converter_cfg)
 ```
 
+## Customize Build Function
+
+Suppose we would like to customize how `converters` are built, we could implement a customized `build_func` and pass it into the registry.
+
+```python
+from mmcv.utils import Registry
+
+# create a build function
+def build_converter(cfg, registry, *args, **kwargs):
+    cfg_ = cfg.copy()
+    converter_type = cfg_.pop('type')
+    if converter_type not in registry:
+        raise KeyError(f'Unrecognized converter type {converter_type}')
+    else:
+        converter_cls = registry.get(converter_type)
+
+    converter = converter_cls(*args, **kwargs, **cfg_)
+    return converter
+
+# create a registry for converters and pass ``build_converter`` function
+CONVERTERS = Registry('converter', build_func=build_converter)
+```
+
+Note: in this example, we demonstrate how to use the `build_func` argument to customize the way to build a class instance.
+The functionality is similar to the default `build_from_cfg`. In most cases, default one would be sufficient.
+`build_model_from_cfg` is also implemented to build PyTorch module in `nn.Sequentail`, you may directly use them instead of implementing by yourself.
+
 ## Hierarchy Registry
 
 You could also build modules from more than one OpenMMLab frameworks, e.g. you could use all backbones in [MMClassification](https://github.com/open-mmlab/mmclassification) for object detectors in [MMDetection](https://github.com/open-mmlab/mmdetection), you may also combine an object detection model in [MMDetection](https://github.com/open-mmlab/mmdetection) and semantic segmentation model in [MMSegmentation](https://github.com/open-mmlab/mmsegmentation).
 
 All `MODELS` registries of downstream codebases are children registries of MMCV's `MODELS` registry.
-Basic, there are two ways to build a module from downsteam codebases.
+Basically, there are two ways to build a module from child or sibling registries.
 
 1. Build from children registries.
 
