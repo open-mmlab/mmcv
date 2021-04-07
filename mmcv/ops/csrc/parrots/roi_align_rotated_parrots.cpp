@@ -6,9 +6,10 @@
 using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
-void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                    const OperatorBase::in_list_t& ins,
-                                    OperatorBase::out_list_t& outs) {
+void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx,
+                                            const SSElement& attr,
+                                            const OperatorBase::in_list_t& ins,
+                                            OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -23,14 +24,14 @@ void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx, const SSElement& a
   const auto& input = buildATensor(ctx, ins[0]);
   const auto& rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
-  roi_align_rotated_forward_cuda(input, rois, output,
-                            pooled_height, pooled_width, spatial_scale,
-                            sample_num);
+  roi_align_rotated_forward_cuda(input, rois, output, pooled_height,
+                                 pooled_width, spatial_scale, sample_num);
 }
 
-void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-                                        const OperatorBase::in_list_t& ins,
-                                        OperatorBase::out_list_t& outs) {
+void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
+                                             const SSElement& attr,
+                                             const OperatorBase::in_list_t& ins,
+                                             OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -46,8 +47,8 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx, const SSElement& 
   const auto& rois = buildATensor(ctx, ins[1]);
   auto grad_input = buildATensor(ctx, outs[0]);
   roi_align_rotated_backward_cuda(grad_output, rois, grad_input,
-                            pooled_height, pooled_width, spatial_scale,
-                            sample_num);
+                                  pooled_height, pooled_width, spatial_scale,
+                                  sample_num);
 }
 
 
