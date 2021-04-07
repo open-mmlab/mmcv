@@ -4,7 +4,7 @@
 
 - [Onnxruntime Custom Ops](#onnxruntime-custom-ops)
   - [SoftNMS](#softnms)
-  - [RoiAlign](#roialign)
+  - [RoIAlign](#roialign)
   - [NMS](#nms)
 
 <!-- TOC -->
@@ -47,7 +47,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 
 - T:tensor(float32)
 
-## RoiAlign
+## RoIAlign
 
 <h3>Descriptions</h3>
 
