@@ -5,14 +5,12 @@ CommandLine:
     xdoctest tests/test_hooks.py zero
 """
 import logging
-from mmcv.utils import config
 import os.path as osp
 import re
 import shutil
 import sys
 import tempfile
 from unittest.mock import MagicMock, call
-from _pytest.monkeypatch import annotated_getattr
 
 import pytest
 import torch
@@ -320,7 +318,7 @@ def test_one_cycle_runner_hook():
 
 
 def test_onecycle_lr_updater_hook():
-    """Test OneCycleLrUpdaterHook"""
+    """Test OneCycleLrUpdaterHook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(
