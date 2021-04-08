@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import numbers
 from math import cos, pi
 
 from .hook import HOOKS, Hook
@@ -398,6 +399,124 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                                      progress / (end_iter - start_iter))
 
 
+@HOOKS.register_module()
+class OneCycleLrUpdaterHook(LrUpdaterHook):
+    """One Cycle LR Scheduler.
+
+    The 1cycle learning rate policy changes the learning rate after every
+    batch. The one cycle learning rate policy is described in
+    https://arxiv.org/pdf/1708.07120.pdf
+
+    Args:
+        max_lr (float or list): Upper learning rate boundaries in the cycle
+            for each parameter group.
+        pct_start (float): The percentage of the cycle (in number of steps)
+            spent increasing the learning rate.
+            Default: 0.3
+        anneal_strategy (str): {'cos', 'linear'}
+            Specifies the annealing strategy: 'cos' for cosine annealing,
+            'linear' for linear annealing.
+            Default: 'cos'
+        div_factor (float): Determines the initial learning rate via
+            initial_lr = max_lr/div_factor
+            Default: 25
+        final_div_factor (float): Determines the minimum learning rate via
+            min_lr = initial_lr/final_div_factor
+            Default: 1e4
+        three_phase (bool): If three_phase is True, use a third phase of the
+            schedule to annihilate the learning rate according to
+            final_div_factor instead of modifying the second phase (the first
+            two phases will be symmetrical about the step indicated by
+            pct_start).
+            Default: False
+    """
+
+    def __init__(self,
+                 max_lr,
+                 pct_start=0.3,
+                 anneal_strategy='cos',
+                 div_factor=25,
+                 final_div_factor=1e4,
+                 three_phase=False,
+                 **kwargs):
+        # validate by_epoch, currently only support by_epoch = False
+        if 'by_epoch' not in kwargs:
+            kwargs['by_epoch'] = False
+        else:
+            assert not kwargs['by_epoch'], \
+                'currently only support "by_epoch" = False'
+        if not isinstance(max_lr, (numbers.Number, list, dict)):
+            raise ValueError('the type of max_lr must be the one of list or '
+                             f'dict, but got {type(max_lr)}')
+        self._max_lr = max_lr
+        # validate pct_start
+        if pct_start < 0 or pct_start > 1 or not isinstance(pct_start, float):
+            raise ValueError('expected float between 0 and 1 pct_start, but '
+                             f'got {pct_start}')
+        self.pct_start = pct_start
+        # validate anneal_strategy
+        if anneal_strategy not in ['cos', 'linear']:
+            raise ValueError('anneal_strategy must be one of "cos" or '
+                             f'"linear", instead got {anneal_strategy}')
+        elif anneal_strategy == 'cos':
+            self.anneal_func = annealing_cos
+        elif anneal_strategy == 'linear':
+            self.anneal_func = annealing_linear
+        self.div_factor = div_factor
+        self.final_div_factor = final_div_factor
+        self.three_phase = three_phase
+        self.lr_phases = []  # init lr_phases
+        super(OneCycleLrUpdaterHook, self).__init__(**kwargs)
+
+    def before_run(self, runner):
+        if isinstance(runner.optimizer, dict):
+            self.base_lr = {}
+            for k, optim in runner.optimizer.items():
+                _max_lr = format_param(k, optim, self._max_lr)
+                self.base_lr[k] = [lr / self.div_factor for lr in _max_lr]
+                for group, lr in zip(optim.param_groups, self.base_lr[k]):
+                    group.setdefault('initial_lr', lr)
+        else:
+            k = type(runner.optimizer).__name__
+            _max_lr = format_param(k, runner.optimizer, self._max_lr)
+            self.base_lr = [lr / self.div_factor for lr in _max_lr]
+            for group, lr in zip(runner.optimizer.param_groups, self.base_lr):
+                group.setdefault('initial_lr', lr)
+
+        if self.three_phase:
+            self.lr_phases.append([
+                float(self.pct_start * runner.max_iters) - 1, 1,
+                self.div_factor
+            ])
+            self.lr_phases.append([
+                float(2 * self.pct_start * runner.max_iters) - 2,
+                self.div_factor, 1
+            ])
+            self.lr_phases.append(
+                [runner.max_iters - 1, 1, 1 / self.final_div_factor])
+        else:
+            self.lr_phases.append([
+                float(self.pct_start * runner.max_iters) - 1, 1,
+                self.div_factor
+            ])
+            self.lr_phases.append([
+                runner.max_iters - 1, self.div_factor,
+                1 / self.final_div_factor
+            ])
+
+    def get_lr(self, runner, base_lr):
+        curr_iter = runner.iter
+        start_iter = 0
+        for i, (end_iter, start_lr, end_lr) in enumerate(self.lr_phases):
+            if curr_iter <= end_iter:
+                pct = (curr_iter - start_iter) / (end_iter - start_iter)
+                lr = self.anneal_func(base_lr * start_lr, base_lr * end_lr,
+                                      pct)
+                break
+            start_iter = end_iter
+        return lr
+
+
 def annealing_cos(start, end, factor, weight=1):
     """Calculate annealing cos learning rate.
 
@@ -414,3 +533,31 @@ def annealing_cos(start, end, factor, weight=1):
     """
     cos_out = cos(pi * factor) + 1
     return end + 0.5 * weight * (start - end) * cos_out
+
+
+def annealing_linear(start, end, factor):
+    """Calculate annealing linear learning rate.
+
+    Linear anneal from `start` to `end` as percentage goes from 0.0 to 1.0.
+
+    Args:
+        start (float): The starting learning rate of the linear annealing.
+        end (float): The ending learing rate of the linear annealing.
+        factor (float): The coefficient of `pi` when calculating the current
+            percentage. Range from 0.0 to 1.0.
+    """
+    return start + (end - start) * factor
+
+
+def format_param(name, optim, param):
+    if isinstance(param, numbers.Number):
+        return [param] * len(optim.param_groups)
+    elif isinstance(param, (list, tuple)):  # multi param groups
+        if len(param) != len(optim.param_groups):
+            raise ValueError(f'expected {len(optim.param_groups)} '
+                             f'values for {name}, got {len(param)}')
+        return param
+    else:  # multi optimizers
+        if name not in param:
+            raise KeyError(f'{name} is not found in {param.keys()}')
+        return param[name]
