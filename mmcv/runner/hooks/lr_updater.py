@@ -484,8 +484,9 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
             total_steps = runner.max_iters
         if total_steps < runner.max_iters:
             raise ValueError(
-                f'The total steps {total_steps} must be greater than or '
-                f'equal to max iterations {runner.max_iters} of runner')
+                'The total steps must be greater than or equal to max '
+                f'iterations {runner.max_iters} of runner, but total steps '
+                f'is {total_steps}.')
 
         if isinstance(runner.optimizer, dict):
             self.base_lr = {}

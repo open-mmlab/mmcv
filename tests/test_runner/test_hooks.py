@@ -5,12 +5,14 @@ CommandLine:
     xdoctest tests/test_hooks.py zero
 """
 import logging
+from mmcv.utils import config
 import os.path as osp
 import re
 import shutil
 import sys
 import tempfile
 from unittest.mock import MagicMock, call
+from _pytest.monkeypatch import annotated_getattr
 
 import pytest
 import torch
@@ -315,6 +317,55 @@ def test_one_cycle_runner_hook():
         }, 10)
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+def test_onecycle_lr_updater_hook():
+    """Test OneCycleLrUpdaterHook"""
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(
+        runner_type='IterBasedRunner', max_epochs=None, max_iters=10)
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='OneCycleLrUpdaterHook',
+        max_lr=0.01,
+        total_steps=2,
+        pct_start=0.5,
+        anneal_strategy='linear',
+        div_factor=25,
+        final_div_factor=1e4,
+        three_phase=False)
+    # test total_steps < max_iters
+    with pytest.raises(ValueError):
+        runner.register_hook_from_cfg(hook_cfg)
+        runner.run([loader], [('train', 1)])
+
+    # test total_steps > max_iters
+    max_iters = 10
+    args = dict(
+        max_lr=0.01,
+        total_steps=12,
+        pct_start=0.5,
+        anneal_strategy='linear',
+        div_factor=25,
+        final_div_factor=1e4)
+    hook_cfg.update(args)
+    runner = _build_demo_runner(
+        runner_type='IterBasedRunner', max_epochs=None, max_iters=10)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.run([loader], [('train', 1)])
+    lr_last = runner.current_lr()
+
+    t = torch.tensor([0.0], requires_grad=True)
+    optim = torch.optim.SGD([t], lr=0.01)
+    lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optim, **args)
+    lr_target = []
+    for _ in range(max_iters):
+        optim.step()
+        lr_target.append(optim.param_groups[0]['lr'])
+        lr_scheduler.step()
+
+    assert lr_target[-1] == lr_last[0]
 
 
 def test_cosine_restart_lr_update_hook():
