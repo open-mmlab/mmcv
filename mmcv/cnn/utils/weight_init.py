@@ -376,14 +376,25 @@ def _initialize_override(module, override, cfg):
     override = [override] if isinstance(override, dict) else override
 
     for override_ in override:
+
         cp_cfg = copy.deepcopy(override_)
-        if 'type' not in cp_cfg.keys():
-            cp_cfg.update(cfg)
         name = cp_cfg.pop('name', None)
+        if name is None:
+            raise ValueError('`override` must contain the key "name",'
+                             f'but got {cp_cfg}')
+        # if override only has name kay, it means use origial init_cfg
+        if not cp_cfg:
+            cp_cfg.update(cfg)
+        # if override has name kay and other args except type key, it will
+        # raise error
+        elif 'type' not in cp_cfg.keys():
+            raise ValueError(f'`override` need "type" key, but got {cp_cfg}')
+
         if hasattr(module, name):
             _initialize(getattr(module, name), cp_cfg, wholemodule=True)
         else:
-            raise RuntimeError(f'module did not have attribute {name}')
+            raise RuntimeError(f'module did not have attribute {name}, '
+                               f'but init_cfg is {cp_cfg}.')
 
 
 def initialize(module, init_cfg):
