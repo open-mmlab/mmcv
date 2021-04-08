@@ -1,16 +1,15 @@
 import copy
 import math
-
-import torch
-from mmcv.cnn import constant_init, xavier_init
-from mmcv.ops.multi_scale_deform_attn import (
-    MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
 import warnings
 
+import torch
 import torch.nn as nn
 
 from mmcv import ConfigDict
-from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
+from mmcv.cnn import (Linear, build_activation_layer, build_norm_layer,
+                      constant_init, xavier_init)
+from mmcv.ops.multi_scale_deform_attn import (
+    MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
 from mmcv.runner.base_module import BaseModule
 from mmcv.utils import build_from_cfg
 from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
