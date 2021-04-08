@@ -316,9 +316,7 @@ def test_one_cycle_runner_hook():
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
-
-def test_onecycle_lr_updater_hook():
-    """Test OneCycleLrUpdaterHook."""
+    # Test OneCycleLrUpdaterHook
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(
