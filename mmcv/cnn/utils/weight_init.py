@@ -376,11 +376,12 @@ def _initialize_override(module, override, cfg):
     override = [override] if isinstance(override, dict) else override
 
     for override_ in override:
-        if 'type' not in override_.keys():
-            override_.update(cfg)
-        name = override_.pop('name', None)
+        cp_cfg = copy.deepcopy(override_)
+        if 'type' not in cp_cfg.keys():
+            cp_cfg.update(cfg)
+        name = cp_cfg.pop('name', None)
         if hasattr(module, name):
-            _initialize(getattr(module, name), override_, wholemodule=True)
+            _initialize(getattr(module, name), cp_cfg, wholemodule=True)
         else:
             raise RuntimeError(f'module did not have attribute {name}')
 
