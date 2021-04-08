@@ -197,7 +197,7 @@ class DeformConv2d(nn.Module):
         groups (int): Number of blocked connections from input.
             channels to output channels. Default: 1.
         deform_groups (int): Number of deformable group partitions.
-        bias (bool, optional) – If True, adds a learnable bias to the output.
+        bias (bool): If True, adds a learnable bias to the output.
             Default: True.
 
     """
