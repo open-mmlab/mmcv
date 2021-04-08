@@ -482,7 +482,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
             total_steps = self.total_steps
         else:
             total_steps = runner.max_iters
-        if runner.max_iters > total_steps:
+        if total_steps < runner.max_iters:
             raise ValueError(
                 f'The total steps {total_steps} must be greater than or '
                 f'equal to max iterations {runner.max_iters} of runner')
