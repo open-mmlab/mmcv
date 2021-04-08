@@ -321,7 +321,6 @@ def test_one_cycle_runner_hook():
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(
         runner_type='IterBasedRunner', max_epochs=None, max_iters=10)
-    # add momentum scheduler
     hook_cfg = dict(
         type='OneCycleLrUpdaterHook',
         max_lr=0.01,
