@@ -432,13 +432,12 @@ def test_wandb_hook():
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
-    hook.wandb.log.assert_called_with(
-        {
-            'learning_rate': 0.02,
-            'momentum': 0.95,
-            'global_step': 6
-        },
-        commit=True)
+    hook.wandb.log.assert_called_with({
+        'learning_rate': 0.02,
+        'momentum': 0.95
+    },
+                                      step=6,
+                                      commit=True)
     hook.wandb.join.assert_called_with()
 
 
