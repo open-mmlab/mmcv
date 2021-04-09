@@ -430,7 +430,6 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
             optim.step()
             lr_target.append(optim.param_groups[0]['lr'])
             lr_scheduler.step()
-
         assert lr_target[-1] == lr_last[0]
 
 
