@@ -3,15 +3,15 @@
 <!-- TOC -->
 
 - [TensorRT Custom Ops](#tensorrt-custom-ops)
-  - [MMCVRoiAlign](#mmcvroialign)
+  - [MMCVRoIAlign](#mmcvroialign)
   - [ScatterND](#scatternd)
   - [NonMaxSuppression](#nonmaxsuppression)
   - [MMCVDeformConv2d](#mmcvdeformconv2d)
-  - [grid sampler](#grid-sampler)
+  - [grid_sampler](#grid_sampler)
 
 <!-- TOC -->
 
-## MMCVRoiAlign
+## MMCVRoIAlign
 
 <h3>Description</h3>
 
@@ -169,7 +169,7 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 
 - T:tensor(float32, Linear)
 
-## grid sampler
+## grid_sampler
 
 <h3>Description</h3>
 
