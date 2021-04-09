@@ -251,6 +251,7 @@ def test_cosine_runner_hook():
     ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
+
 @pytest.mark.parametrize('max_iters', (10, 2))
 def test_one_cycle_runner_hook(max_iters):
     """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
@@ -321,14 +322,16 @@ def test_one_cycle_runner_hook(max_iters):
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(
         runner_type='IterBasedRunner', max_epochs=None, max_iters=max_iters)
-    
-    args = dict(max_lr=0.01,
-            total_steps=5,
-            pct_start=0.5,
-            anneal_strategy='linear',
-            div_factor=25,
-            final_div_factor=1e4,)
-    hook= OneCycleLrUpdaterHook(**args)
+
+    args = dict(
+        max_lr=0.01,
+        total_steps=5,
+        pct_start=0.5,
+        anneal_strategy='linear',
+        div_factor=25,
+        final_div_factor=1e4,
+    )
+    hook = OneCycleLrUpdaterHook(**args)
     runner.register_hook(hook)
     if max_iters == 10:
         # test total_steps < max_iters
