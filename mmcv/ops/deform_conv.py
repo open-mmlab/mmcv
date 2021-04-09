@@ -1,4 +1,5 @@
 import math
+from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -6,6 +7,7 @@ import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
+from torch import Tensor
 
 from mmcv.utils import deprecated_api_warning
 from ..cnn import CONV_LAYERS
@@ -205,15 +207,15 @@ class DeformConv2d(nn.Module):
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},
                             cls_name='DeformConv2d')
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 deform_groups=1,
-                 bias=False):
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, Tuple[int, ...]],
+                 stride: Union[int, Tuple[int, ...]] = 1,
+                 padding: Union[int, Tuple[int, ...]] = 0,
+                 dilation: Union[int, Tuple[int, ...]] = 1,
+                 groups: int = 1,
+                 deform_groups: int = 1,
+                 bias: bool = False) -> None:
         super(DeformConv2d, self).__init__()
 
         assert not bias, \
@@ -232,6 +234,7 @@ class DeformConv2d(nn.Module):
         self.dilation = _pair(dilation)
         self.groups = groups
         self.deform_groups = deform_groups
+        self.bias = bias
         # enable compatibility with nn.Conv2d
         self.transposed = False
         self.output_padding = _single(0)
@@ -250,7 +253,7 @@ class DeformConv2d(nn.Module):
         stdv = 1. / math.sqrt(n)
         self.weight.data.uniform_(-stdv, stdv)
 
-    def forward(self, x, offset):
+    def forward(self, x: Tensor, offset: Tensor) -> Tensor:
         """Deformable Convolutional forward function.
 
         Args:
@@ -290,14 +293,14 @@ class DeformConv2d(nn.Module):
 
     def __repr__(self):
         s = self.__class__.__name__
-        s += f'(in_channels={self.in_channels}, '
-        s += f'out_channels={self.out_channels}, '
-        s += f'kernel_size={self.kernel_size}, '
-        s += f'stride={self.stride}, '
-        s += f'padding={self.padding}, '
-        s += f'dilation={self.dilation}, '
-        s += f'groups={self.groups}, '
-        s += f'deform_groups={self.deform_groups}, '
+        s += f'(in_channels={self.in_channels},\n'
+        s += f'out_channels={self.out_channels},\n'
+        s += f'kernel_size={self.kernel_size},\n'
+        s += f'stride={self.stride},\n'
+        s += f'padding={self.padding},\n'
+        s += f'dilation={self.dilation},\n'
+        s += f'groups={self.groups},\n'
+        s += f'deform_groups={self.deform_groups},\n'
         s += f'bias={self.bias})'
         return s
 
