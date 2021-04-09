@@ -82,15 +82,26 @@ class LrUpdaterHook(Hook):
             return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
 
     def get_warmup_lr(self, cur_iters):
-        if self.warmup == 'constant':
-            warmup_lr = [_lr * self.warmup_ratio for _lr in self.regular_lr]
-        elif self.warmup == 'linear':
-            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
-            warmup_lr = [_lr * (1 - k) for _lr in self.regular_lr]
-        elif self.warmup == 'exp':
-            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
-            warmup_lr = [_lr * k for _lr in self.regular_lr]
-        return warmup_lr
+
+        def _get_warmup_lr(cur_iters, regular_lr):
+            if self.warmup == 'constant':
+                warmup_lr = [_lr * self.warmup_ratio for _lr in regular_lr]
+            elif self.warmup == 'linear':
+                k = (1 - cur_iters / self.warmup_iters) * (1 -
+                                                           self.warmup_ratio)
+                warmup_lr = [_lr * (1 - k) for _lr in regular_lr]
+            elif self.warmup == 'exp':
+                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+                warmup_lr = [_lr * k for _lr in regular_lr]
+            return warmup_lr
+
+        if isinstance(self.regular_lr, dict):
+            lr_groups = {}
+            for key, regular_lr in self.regular_lr.items():
+                lr_groups[key] = _get_warmup_lr(cur_iters, regular_lr)
+            return lr_groups
+        else:
+            return _get_warmup_lr(cur_iters, self.regular_lr)
 
     def before_run(self, runner):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,

@@ -31,51 +31,97 @@ class MomentumUpdaterHook(Hook):
         ]  # expected momentum if no warming up is performed
 
     def _set_momentum(self, runner, momentum_groups):
-        for param_group, mom in zip(runner.optimizer.param_groups,
-                                    momentum_groups):
-            if 'momentum' in param_group.keys():
-                param_group['momentum'] = mom
-            elif 'betas' in param_group.keys():
-                param_group['betas'] = (mom, param_group['betas'][1])
+        if isinstance(runner.optimizer, dict):
+            for k, optim in runner.optimizer.items():
+                for param_group, mom in zip(optim.param_groups,
+                                            momentum_groups[k]):
+                    if 'momentum' in param_group.keys():
+                        param_group['momentum'] = mom
+                    elif 'betas' in param_group.keys():
+                        param_group['betas'] = (mom, param_group['betas'][1])
+        else:
+            for param_group, mom in zip(runner.optimizer.param_groups,
+                                        momentum_groups):
+                if 'momentum' in param_group.keys():
+                    param_group['momentum'] = mom
+                elif 'betas' in param_group.keys():
+                    param_group['betas'] = (mom, param_group['betas'][1])
 
     def get_momentum(self, runner, base_momentum):
         raise NotImplementedError
 
     def get_regular_momentum(self, runner):
-        return [
-            self.get_momentum(runner, _base_momentum)
-            for _base_momentum in self.base_momentum
-        ]
+        if isinstance(runner.optimizer, dict):
+            momentum_groups = {}
+            for k in runner.optimizer.keys():
+                _momentum_group = [
+                    self.get_momentum(runner, _base_momentum)
+                    for _base_momentum in self.base_momentum[k]
+                ]
+                momentum_groups.update({k: _momentum_group})
+            return momentum_groups
+        else:
+            return [
+                self.get_momentum(runner, _base_momentum)
+                for _base_momentum in self.base_momentum
+            ]
 
     def get_warmup_momentum(self, cur_iters):
-        if self.warmup == 'constant':
-            warmup_momentum = [
-                _momentum / self.warmup_ratio
-                for _momentum in self.regular_momentum
-            ]
-        elif self.warmup == 'linear':
-            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
-            warmup_momentum = [
-                _momentum / (1 - k) for _momentum in self.regular_mom
-            ]
-        elif self.warmup == 'exp':
-            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
-            warmup_momentum = [_momentum / k for _momentum in self.regular_mom]
-        return warmup_momentum
+
+        def _get_warmup_momentum(cur_iters, regular_momentum):
+            if self.warmup == 'constant':
+                warmup_momentum = [
+                    _momentum / self.warmup_ratio
+                    for _momentum in self.regular_momentum
+                ]
+            elif self.warmup == 'linear':
+                k = (1 - cur_iters / self.warmup_iters) * (1 -
+                                                           self.warmup_ratio)
+                warmup_momentum = [
+                    _momentum / (1 - k) for _momentum in self.regular_mom
+                ]
+            elif self.warmup == 'exp':
+                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+                warmup_momentum = [
+                    _momentum / k for _momentum in self.regular_mom
+                ]
+            return warmup_momentum
+
+        if isinstance(self.regular_momentum, dict):
+            momentum_groups = {}
+            for key, regular_momentum in self.regular_momentum.items():
+                momentum_groups[key] = _get_warmup_momentum(
+                    cur_iters, regular_momentum)
+            return momentum_groups
+        else:
+            return _get_warmup_momentum(cur_iters, self.regular_momentum)
 
     def before_run(self, runner):
         # NOTE: when resuming from a checkpoint,
         # if 'initial_momentum' is not saved,
         # it will be set according to the optimizer params
-        for group in runner.optimizer.param_groups:
-            if 'momentum' in group.keys():
-                group.setdefault('initial_momentum', group['momentum'])
-            else:
-                group.setdefault('initial_momentum', group['betas'][0])
-        self.base_momentum = [
-            group['initial_momentum']
-            for group in runner.optimizer.param_groups
-        ]
+        if isinstance(runner.optimizer, dict):
+            self.base_momentum = {}
+            for k, optim in runner.optimizer.items():
+                for group in optim.param_groups:
+                    if 'momentum' in group.keys():
+                        group.setdefault('initial_momentum', group['momentum'])
+                    else:
+                        group.setdefault('initial_momentum', group['betas'][0])
+                _base_momentum = [
+                    group['initial_momentum'] for group in optim.param_groups
+                ]
+                self.base_momentum.update({k: _base_momentum})
+        else:
+            for group in runner.optimizer.param_groups:
+                if 'momentum' in group.keys():
+                    group.setdefault('initial_momentum', group['momentum'])
+                else:
+                    group.setdefault('initial_momentum', group['betas'][0])
+            self.base_momentum = [
+                group['initial_momentum']
+                for group in runner.optimizer.param_groups
+            ]
 
     def before_train_epoch(self, runner):
         if not self.by_epoch:
@@ -383,9 +429,11 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
         if isinstance(runner.optimizer, dict):
             momentum_groups = {}
             for k, optim in runner.optimizer.items():
-                for param_group in optim.param_groups:
-                    momentum_groups[k].append(
-                        self.get_momentum(runner, param_group))
+                _momentum_group = [
+                    self.get_momentum(runner, param_group)
+                    for param_group in optim.param_groups
+                ]
+                momentum_groups.update({k: _momentum_group})
             return momentum_groups
         else:
             momentum_groups = []
