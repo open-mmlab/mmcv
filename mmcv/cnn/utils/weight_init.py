@@ -527,7 +527,7 @@ def initialize(module, init_cfg):
 
 
 def _no_grad_trunc_normal_(tensor: Tensor, mean: float, std: float, a: float,
-                           b: float):
+                           b: float) -> Tensor:
     # Method based on
     # https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
     # Modified from
