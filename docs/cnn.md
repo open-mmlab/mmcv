@@ -212,6 +212,11 @@ Let us introduce the usage of `initialize` in detail.
   init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d', 'Linear'], val=1)
   # initialize whole module with same configuration
   initialize(model, init_cfg)
+  # model.feat.weight
+  # Parameter containing:
+  # tensor([[[1., 1., 1.],
+  #          [1., 1., 1.],
+  #          [1., 1., 1.]]], requires_grad=True)
   ```
 
 - Define `layer` key for initializing layer with different configurations.
@@ -235,6 +240,15 @@ Let us introduce the usage of `initialize` in detail.
   # nn.Conv2d will be initialized with dict(type='Constant', val=2)
   # nn.Linear will be initialized with dict(type='Constant', val=3)
   initialize(model, init_cfg)
+  # model.reg.weight
+  # Parameter containing:
+  # tensor([[[[2., 2., 2.],
+  #           [2., 2., 2.],
+  #           [2., 2., 2.]],
+  #          ...,
+  #          [[2., 2., 2.],
+  #           [2., 2., 2.],
+  #           [2., 2., 2.]]]], requires_grad=True)
   ```
 
 2. Initialize model by `override` key
@@ -255,11 +269,20 @@ Let us introduce the usage of `initialize` in detail.
             self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
     model = FooNet()
-    init_cfg = dict(type='Constant', val=1, bias=2, layer=['Conv1d','Conv2d'],
+    init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
                     override=dict(type='Constant', name='reg', val=3, bias=4))
     # self.feat and self.cls will be initialized with dict(type='Constant', val=1, bias=2)
     # The module called 'reg' will be initialized with dict(type='Constant', val=3, bias=4)
     initialize(model, init_cfg)
+    # model.reg.weight
+    # Parameter containing:
+    # tensor([[[[3., 3., 3.],
+    #           [3., 3., 3.],
+    #           [3., 3., 3.]],
+    #           ...,
+    #           [[3., 3., 3.],
+    #            [3., 3., 3.],
+    #            [3., 3., 3.]]]], requires_grad=True)
     ```
 
    *However, we should be careful If we don't define `layer` key or `override` key, it will not initialize anything.*
@@ -273,9 +296,28 @@ Let us introduce the usage of `initialize` in detail.
 
     # initialize model with pretrained model
     model = models.resnet50()
+    # model.conv1.weight
+    # Parameter containing:
+    # tensor([[[[-6.7435e-03, -2.3531e-02, -9.0143e-03,  ..., -2.1245e-03,
+    #            -1.8077e-03,  3.0338e-03],
+    #           [-1.2603e-02, -2.7831e-02,  2.3187e-02,  ..., -1.5793e-02,
+    #             1.1655e-02,  4.5889e-03],
+    #           [-3.7916e-02,  1.2014e-02,  1.3815e-02,  ..., -4.2651e-03,
+    #             1.7314e-02, -9.9998e-03],
+    #           ...,
+
     init_cfg = dict(type='Pretrained',
                     checkpoint='torchvision://resnet50')
     initialize(model, init_cfg)
+    # model.conv1.weight
+    # Parameter containing:
+    # tensor([[[[ 1.3335e-02,  1.4664e-02, -1.5351e-02,  ..., -4.0896e-02,
+    #            -4.3034e-02, -7.0755e-02],
+    #           [ 4.1205e-03,  5.8477e-03,  1.4948e-02,  ...,  2.2060e-03,
+    #            -2.0912e-02, -3.8517e-02],
+    #           [ 2.2331e-02,  2.3595e-02,  1.6120e-02,  ...,  1.0281e-01,
+    #             6.2641e-02,  5.1977e-02],
+    #           ...,
 
     # initialize weights of a sub-module with the specific part of a pretrained model by using 'prefix'
     model = models.resnet50()
@@ -321,6 +363,12 @@ Let us introduce the usage of `initialize` in detail.
     init_cfg = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
     model = FooConv1d(init_cfg)
     model.init_weight()
+    # model.conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #        [0., 0., 0., 0.],
+    #        [0., 0., 0., 0.],
+    #        [0., 0., 0., 0.]]], requires_grad=True)
 
     # Sequential
     init_cfg1 = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
@@ -329,24 +377,86 @@ Let us introduce the usage of `initialize` in detail.
     model2 = FooConv2d(init_cfg2)
     seq_model = Sequential(model1, model2)
     seq_model.init_weight()
+    # seq_model[0].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # seq_model[1].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
+
     # inner init_cfg has highter priority
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
     seq_model = Sequential(model1, model2, init_cfg=init_cfg)
     seq_model.init_weight()
+    # seq_model[0].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # seq_model[1].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
 
     # ModuleList
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     modellist = ModuleList([model1, model2])
     modellist.init_weight()
+    # modellist[0].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modellist[1].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
+
     # inner init_cfg has highter priority
-    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
-    modellist = ModuleList(model1, model2, init_cfg=init_cfg)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+    modellist = ModuleList([model1, model2], init_cfg=init_cfg)
     modellist.init_weight()
+    # modellist[0].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modellist[1].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
     `````
 
 ### Model Zoo
