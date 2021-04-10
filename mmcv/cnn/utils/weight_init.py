@@ -35,6 +35,18 @@ def normal_init(module, mean=0, std=1, bias=0):
         nn.init.constant_(module.bias, bias)
 
 
+def trunc_normal_init(module: nn.Module,
+                      mean: float = 0,
+                      std: float = 1,
+                      a: float = -2,
+                      b: float = 2,
+                      bias: float = 0) -> None:
+    if hasattr(module, 'weight') and module.weight is not None:
+        nn.init.trunc_normal_(module.weight, mean, std, a, b)  # type: ignore
+    if hasattr(module, 'bias') and module.bias is not None:
+        nn.init.constant_(module.bias, bias)  # type: ignore
+
+
 def uniform_init(module, a=0, b=1, bias=0):
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.uniform_(module.weight, a, b)
@@ -207,6 +219,55 @@ class NormalInit(BaseInit):
                 for layer_ in self.layer:
                     if layername == layer_:
                         normal_init(m, self.mean, self.std, self.bias)
+
+        module.apply(init)
+
+
+@INITIALIZERS.register_module(name='TruncNormal')
+class TruncNormalInit(BaseInit):
+    r"""Initialize module parameters with the values drawn from the normal
+    distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)` with values
+    outside :math:`[a, b]`.
+
+    Args:
+        mean (float): the mean of the normal distribution. Defaults to 0.
+        std (float):  the standard deviation of the normal distribution.
+            Defaults to 1.
+        a (float): The minimum cutoff value.
+        b ( float): The maximum cutoff value.
+        bias (float): the value to fill the bias or define
+            initialization type for bias. Defaults to 0.
+        bias_prob (float, optional): the probability for bias initialization.
+            Defaults to None.
+        layer (str | list[str], optional): the layer will be initialized.
+            Defaults to None.
+
+    """
+
+    def __init__(self,
+                 mean: float = 0,
+                 std: float = 1,
+                 a: float = -2,
+                 b: float = 2,
+                 **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.mean = mean
+        self.std = std
+        self.a = a
+        self.b = b
+
+    def __call__(self, module: nn.Module) -> None:
+
+        def init(m):
+            if self.wholemodule:
+                trunc_normal_init(m, self.mean, self.std, self.a, self.b,
+                                  self.bias)
+            else:
+                layername = m.__class__.__name__
+                for layer_ in self.layer:
+                    if layername == layer_:
+                        trunc_normal_init(m, self.mean, self.std, self.a,
+                                          self.b, self.bias)
 
         module.apply(init)
 

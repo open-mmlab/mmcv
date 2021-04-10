@@ -7,10 +7,10 @@ import torch
 from torch import nn
 
 from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
-                      PretrainedInit, UniformInit, XavierInit,
+                      PretrainedInit, TruncNormalInit, UniformInit, XavierInit,
                       bias_init_with_prob, caffe2_xavier_init, constant_init,
-                      initialize, kaiming_init, normal_init, uniform_init,
-                      xavier_init)
+                      initialize, kaiming_init, normal_init, trunc_normal_init,
+                      uniform_init, xavier_init)
 
 
 def test_constant_init():
@@ -44,6 +44,16 @@ def test_normal_init():
     assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
     conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
     normal_init(conv_module_no_bias)
+    # TODO: sanity check distribution, e.g. mean, std
+
+
+def test_truncated_normal_init():
+    conv_module = nn.Conv2d(3, 16, 3)
+    trunc_normal_init(conv_module, bias=0.1)
+    # TODO: sanity check of weight distribution, e.g. mean, std
+    assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
+    conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
+    trunc_normal_init(conv_module_no_bias)
     # TODO: sanity check distribution, e.g. mean, std
 
 
@@ -160,6 +170,33 @@ def test_normalinit():
 
     func = NormalInit(
         mean=300, std=1e-5, bias_prob=0.01, layer=['Conv2d', 'Linear'])
+    res = bias_init_with_prob(0.01)
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert model[0].bias.allclose(torch.tensor(res))
+    assert model[2].bias.allclose(torch.tensor(res))
+
+
+def test_trunc_normal_init():
+    """test TruncNormalInit class."""
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
+
+    func = TruncNormalInit(
+        mean=100, std=1e-5, bias=200, a=0, b=200, layer=['Conv2d', 'Linear'])
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(100.))
+    assert model[2].weight.allclose(torch.tensor(100.))
+    assert model[0].bias.allclose(torch.tensor(200.))
+    assert model[2].bias.allclose(torch.tensor(200.))
+
+    func = TruncNormalInit(
+        mean=300,
+        std=1e-5,
+        a=100,
+        b=400,
+        bias_prob=0.01,
+        layer=['Conv2d', 'Linear'])
     res = bias_init_with_prob(0.01)
     func(model)
     assert model[0].weight.allclose(torch.tensor(300.))
