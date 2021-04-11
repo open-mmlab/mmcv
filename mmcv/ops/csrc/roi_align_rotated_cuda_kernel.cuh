@@ -19,7 +19,9 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     const scalar_t *bottom_data,
     const scalar_t *bottom_rois,
     const scalar_t spatial_scale,
-    const int sample_num, const int channels,
+    const int sample_num,
+    const bool aligned,
+    const int channels,
     const int height, const int width,
     const int pooled_height, const int pooled_width,
     scalar_t *top_data) {
@@ -34,16 +36,18 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     int roi_batch_ind = offset_bottom_rois[0];
 
     // Do not using rounding; this implementation detail is critical
-    scalar_t roi_center_w = offset_bottom_rois[1] * spatial_scale;
-    scalar_t roi_center_h = offset_bottom_rois[2] * spatial_scale;
+    scalar_t offset = aligned ? (scalar_t)0.5 : (scalar_t)0.0;
+    scalar_t roi_center_w = offset_bottom_rois[1] * spatial_scale - offset;
+    scalar_t roi_center_h = offset_bottom_rois[2] * spatial_scale - offset;
     scalar_t roi_width = offset_bottom_rois[3] * spatial_scale;
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
-
-    // Force malformed ROIs to be 1x1
-    roi_width = max(roi_width, (scalar_t)1.);
-    roi_height = max(roi_height, (scalar_t)1.);
+    if (!aligned) {  // for backward-compatibility only
+        // Force malformed ROIs to be 1x1
+        roi_width = max(roi_width, (scalar_t)1.);
+        roi_height = max(roi_height, (scalar_t)1.);
+      }
     scalar_t bin_size_h = static_cast<scalar_t>(roi_height) /
         static_cast<scalar_t>(pooled_height);
     scalar_t bin_size_w = static_cast<scalar_t>(roi_width) /
@@ -98,8 +102,8 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
 template <typename scalar_t>
 __global__ void roi_align_rotated_backward_cuda_kernel(
     const int nthreads, const scalar_t *top_diff, const scalar_t *bottom_rois,
-    const scalar_t spatial_scale, const int sample_num, const int channels,
-    const int height, const int width, const int pooled_height,
+    const scalar_t spatial_scale, const int sample_num, const bool aligned,
+    const int channels, const int height, const int width, const int pooled_height,
     const int pooled_width, scalar_t *bottom_diff) {
 
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
@@ -113,17 +117,19 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
     int roi_batch_ind = offset_bottom_rois[0];
 
     // Do not round
-    scalar_t roi_center_w = offset_bottom_rois[1] * spatial_scale;
-    scalar_t roi_center_h = offset_bottom_rois[2] * spatial_scale;
+    scalar_t offset = aligned ? (scalar_t)0.5 : (scalar_t)0.0;
+    scalar_t roi_center_w = offset_bottom_rois[1] * spatial_scale - offset;
+    scalar_t roi_center_h = offset_bottom_rois[2] * spatial_scale - offset;
     scalar_t roi_width = offset_bottom_rois[3] * spatial_scale;
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
 
-
-    // Force malformed ROIs to be 1x1
-    roi_width = max(roi_width, (scalar_t)1.);
-    roi_height = max(roi_height, (scalar_t)1.);
+    if (!aligned) {  // for backward-compatibility only
+        // Force malformed ROIs to be 1x1
+        roi_width = max(roi_width, (scalar_t)1.);
+        roi_height = max(roi_height, (scalar_t)1.);
+      }
     scalar_t bin_size_h = static_cast<scalar_t>(roi_height) /
         static_cast<scalar_t>(pooled_height);
     scalar_t bin_size_w = static_cast<scalar_t>(roi_width) /

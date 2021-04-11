@@ -10,7 +10,8 @@ ext_module = ext_loader.load_ext(
 class RoIAlignRotatedFunction(Function):
 
     @staticmethod
-    def symbolic(g, features, rois, out_size, spatial_scale, sample_num):
+    def symbolic(g, features, rois, out_size, spatial_scale, sample_num,
+                 aligned):
         if isinstance(out_size, int):
             out_h = out_size
             out_w = out_size
@@ -29,10 +30,17 @@ class RoIAlignRotatedFunction(Function):
             output_height_i=out_h,
             output_width_i=out_h,
             spatial_scale_i=spatial_scale,
-            sampling_ratio_i=sample_num)
+            sampling_ratio_i=sample_num,
+            aligned_i=aligned)
 
     @staticmethod
-    def forward(ctx, features, rois, out_size, spatial_scale, sample_num=0):
+    def forward(ctx,
+                features,
+                rois,
+                out_size,
+                spatial_scale,
+                sample_num=0,
+                aligned=True):
         if isinstance(out_size, int):
             out_h = out_size
             out_w = out_size
@@ -46,6 +54,7 @@ class RoIAlignRotatedFunction(Function):
                 '"out_size" must be an integer or tuple of integers')
         ctx.spatial_scale = spatial_scale
         ctx.sample_num = sample_num
+        ctx.aligned = aligned
         ctx.save_for_backward(rois)
         ctx.feature_size = features.size()
 
@@ -61,7 +70,8 @@ class RoIAlignRotatedFunction(Function):
                 pooled_height=out_h,
                 pooled_width=out_w,
                 spatial_scale=spatial_scale,
-                sample_num=sample_num)
+                sample_num=sample_num,
+                aligned=aligned)
         else:
             raise NotImplementedError
 
@@ -71,6 +81,7 @@ class RoIAlignRotatedFunction(Function):
     def backward(ctx, grad_output):
         feature_size = ctx.feature_size
         spatial_scale = ctx.spatial_scale
+        aligned = ctx.aligned
         sample_num = ctx.sample_num
         rois = ctx.saved_tensors[0]
         assert (feature_size is not None and grad_output.is_cuda)
@@ -90,7 +101,8 @@ class RoIAlignRotatedFunction(Function):
                 pooled_height=out_h,
                 pooled_width=out_w,
                 spatial_scale=spatial_scale,
-                sample_num=sample_num)
+                sample_num=sample_num,
+                aligned=aligned)
         return grad_input, grad_rois, None, None, None
 
 
@@ -99,14 +111,15 @@ roi_align_rotated = RoIAlignRotatedFunction.apply
 
 class RoIAlignRotated(nn.Module):
 
-    def __init__(self, out_size, spatial_scale, sample_num=0):
+    def __init__(self, out_size, spatial_scale, sample_num=0, aligned=True):
         super(RoIAlignRotated, self).__init__()
 
         self.out_size = out_size
         self.spatial_scale = float(spatial_scale)
         self.sample_num = int(sample_num)
+        self.aligned = aligned
 
     def forward(self, features, rois):
         return RoIAlignRotatedFunction.apply(features, rois, self.out_size,
                                              self.spatial_scale,
-                                             self.sample_num)
+                                             self.sample_num, self.aligned)

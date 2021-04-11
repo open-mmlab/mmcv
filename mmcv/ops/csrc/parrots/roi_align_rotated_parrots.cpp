@@ -19,13 +19,15 @@ void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx,
       .get<int>("pooled_width", pooled_width)
       .get<float>("spatial_scale", spatial_scale)
       .get<int>("sample_num", sample_num)
+      .get<bool>("aligned", aligned)
       .done();
 
   const auto& input = buildATensor(ctx, ins[0]);
   const auto& rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
   roi_align_rotated_forward_cuda(input, rois, output, pooled_height,
-                                 pooled_width, spatial_scale, sample_num);
+                                 pooled_width, spatial_scale, sample_num,
+                                 aligned);
 }
 
 void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
@@ -36,11 +38,13 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
   int pooled_width;
   float spatial_scale;
   int sample_num;
+  bool aligned;
   SSAttrs(attr)
       .get<int>("pooled_height", pooled_height)
       .get<int>("pooled_width", pooled_width)
       .get<float>("spatial_scale", spatial_scale)
       .get<int>("sample_num", sample_num)
+      .get<bool>("aligned", aligned)
       .done();
 
   const auto& grad_output = buildATensor(ctx, ins[0]);
@@ -48,7 +52,7 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
   auto grad_input = buildATensor(ctx, outs[0]);
   roi_align_rotated_backward_cuda(grad_output, rois, grad_input,
                                   pooled_height, pooled_width, spatial_scale,
-                                  sample_num);
+                                  sample_num, aligned);
 }
 
 
@@ -57,6 +61,7 @@ PARROTS_EXTENSION_REGISTER(roi_align_rotated_forward)
     .attr("pooled_width")
     .attr("spatial_scale")
     .attr("sample_num")
+    .attr("aligned")
     .input(2)
     .output(1)
     .apply(roi_align_rotated_forward_cuda_parrots)
@@ -67,6 +72,7 @@ PARROTS_EXTENSION_REGISTER(roi_align_rotated_backward)
     .attr("pooled_width")
     .attr("spatial_scale")
     .attr("sample_num")
+    .attr("aligned")
     .input(2)
     .output(1)
     .apply(roi_align_rotated_backward_cuda_parrots)

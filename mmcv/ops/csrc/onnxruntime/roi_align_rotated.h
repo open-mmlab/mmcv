@@ -19,6 +19,7 @@ struct MMCVRoIAlignRotatedKernel {
     sampling_ratio_ =
         ort_.KernelInfoGetAttribute<int64_t>(info, "sampling_ratio");
     spatial_scale_ = ort_.KernelInfoGetAttribute<float>(info, "spatial_scale");
+    aligned_ = ort_.KernelInfoGetAttribute<int64_t>(info, "aligned");
   }
 
   void Compute(OrtKernelContext* context);
@@ -29,6 +30,7 @@ struct MMCVRoIAlignRotatedKernel {
   int aligned_width_;
   float spatial_scale_;
   int sampling_ratio_;
+  bool aligned_;
 };
 
 struct MMCVRoIAlignRotatedCustomOp

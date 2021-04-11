@@ -5,6 +5,7 @@ void ROIAlignRotatedForwardCUDAKernelLauncher(const at::Tensor features,
                                               const at::Tensor rois,
                                               const float spatial_scale,
                                               const int sample_num,
+                                              const bool aligned,
                                               const int channels,
                                               const int height,
                                               const int width,
@@ -17,6 +18,7 @@ void ROIAlignRotatedBackwardCUDAKernelLauncher(const at::Tensor top_grad,
                                                const at::Tensor rois,
                                                const float spatial_scale,
                                                const int sample_num,
+                                               const bool aligned,
                                                const int channels,
                                                const int height,
                                                const int width,
@@ -28,7 +30,7 @@ void ROIAlignRotatedBackwardCUDAKernelLauncher(const at::Tensor top_grad,
 void roi_align_rotated_forward_cuda(Tensor features, Tensor rois,
                                     Tensor output,
                                     int pooled_height, int pooled_width,
-                                    float spatial_scale, int sample_num) {
+                                    float spatial_scale, int sample_num, bool aligned) {
   // Number of ROIs
   int num_rois = rois.size(0);
   int size_rois = rois.size(1);
@@ -41,7 +43,7 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois,
   int data_height = features.size(2);
   int data_width = features.size(3);
   ROIAlignRotatedForwardCUDAKernelLauncher(features, rois, spatial_scale,
-                                           sample_num, num_channels,
+                                           sample_num, aligned, num_channels,
                                            data_height, data_width, num_rois,
                                            pooled_height, pooled_width,
                                            output);
@@ -50,7 +52,8 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois,
 void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad,
                                      int pooled_height, int pooled_width,
-                                     float spatial_scale, int sample_num) {
+                                     float spatial_scale, int sample_num,
+                                     bool aligned) {
   // Number of ROIs
   int num_rois = rois.size(0);
   int size_rois = rois.size(1);
@@ -62,7 +65,7 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
   ROIAlignRotatedBackwardCUDAKernelLauncher(top_grad, rois, spatial_scale,
-                                            sample_num, num_channels,
+                                            sample_num, aligned, num_channels,
                                             data_height, data_width, num_rois,
                                             pooled_height, pooled_width,
                                             bottom_grad);
@@ -73,7 +76,7 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
                                int pooled_height,
                                int pooled_width, float spatial_scale,
-                               int sample_num) {
+                               int sample_num, bool aligned) {
   if (input.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input);
@@ -82,7 +85,7 @@ void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
 
     roi_align_rotated_forward_cuda(input, rois, output,
                                    pooled_height, pooled_width, spatial_scale,
-                                   sample_num);
+                                   sample_num, aligned);
 #else
     AT_ERROR("RoIAlignRotated is not compiled with GPU support");
 #endif
@@ -94,7 +97,7 @@ void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
 void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
                                 int pooled_width, float spatial_scale,
-                                int sample_num) {
+                                int sample_num, bool aligned) {
   if (grad_output.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
@@ -103,7 +106,7 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
 
     roi_align_rotated_backward_cuda(grad_output, rois, grad_input,
                                     pooled_height, pooled_width, spatial_scale,
-                                    sample_num);
+                                    sample_num, aligned);
 #else
     AT_ERROR("RoIAlignRotated is not compiled with GPU support");
 #endif
