@@ -308,7 +308,7 @@ def test_roialign_rotated():
 
     def warpped_function(torch_input, torch_rois):
         return roi_align_rotated(torch_input, torch_rois, (pool_w, pool_h),
-                                 spatial_scale, sampling_ratio, True)
+                                 spatial_scale, sampling_ratio, True, False)
 
     for case in inputs:
         np_input = np.array(case[0], dtype=np.float32)
@@ -320,7 +320,7 @@ def test_roialign_rotated():
         with torch.no_grad():
             pytorch_output = roi_align_rotated(input, rois, (pool_w, pool_h),
                                                spatial_scale, sampling_ratio,
-                                               True)
+                                               True, False)
 
         # export and load onnx model
         wrapped_model = WrapFunction(warpped_function)
@@ -347,7 +347,7 @@ def test_roialign_rotated():
         assert (len(net_feed_input) == 2)
         sess = rt.InferenceSession(onnx_file, session_options)
         onnx_output = sess.run(None, {
-            'input': input.detach().numpy(),
+            'features': input.detach().numpy(),
             'rois': rois.detach().numpy()
         })
         onnx_output = onnx_output[0]

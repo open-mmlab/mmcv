@@ -29,7 +29,7 @@ class RoIAlignRotatedFunction(Function):
             rois,
             output_height_i=out_h,
             output_width_i=out_h,
-            spatial_scale_i=spatial_scale,
+            spatial_scale_f=spatial_scale,
             sampling_ratio_i=sample_num,
             aligned_i=aligned,
             clockwise_i=clockwise)

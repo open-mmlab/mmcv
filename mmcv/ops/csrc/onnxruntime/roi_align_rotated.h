@@ -31,8 +31,8 @@ struct MMCVRoIAlignRotatedKernel {
   int aligned_width_;
   float spatial_scale_;
   int sampling_ratio_;
-  bool aligned_;
-  bool clockwise_;
+  int aligned_;
+  int clockwise_;
 };
 
 struct MMCVRoIAlignRotatedCustomOp
