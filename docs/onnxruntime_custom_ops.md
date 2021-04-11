@@ -4,19 +4,39 @@
 
 - [Onnxruntime Custom Ops](#onnxruntime-custom-ops)
   - [SoftNMS](#softnms)
+    - [Description](#description)
+    - [Parameters](#parameters)
+    - [Inputs](#inputs)
+    - [Outputs](#outputs)
+    - [Type Constraints](#type-constraints)
   - [RoIAlign](#roialign)
+    - [Description](#description-1)
+    - [Parameters](#parameters-1)
+    - [Inputs](#inputs-1)
+    - [Outputs](#outputs-1)
+    - [Type Constraints](#type-constraints-1)
   - [NMS](#nms)
+    - [Description](#description-2)
+    - [Parameters](#parameters-2)
+    - [Inputs](#inputs-2)
+    - [Outputs](#outputs-2)
+    - [Type Constraints](#type-constraints-2)
   - [grid_sampler](#grid_sampler)
+    - [Description](#description-3)
+    - [Parameters](#parameters-3)
+    - [Inputs](#inputs-3)
+    - [Outputs](#outputs-3)
+    - [Type Constraints](#type-constraints-3)
 
 <!-- TOC -->
 
 ## SoftNMS
 
-<h3>Descriptions</h3>
+### Description
 
 Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object Detection With One Line of Code](https://arxiv.org/abs/1704.04503) for detail.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type    | Parameter       | Description                                                    |
 | ------- | --------------- | -------------------------------------------------------------- |
@@ -26,7 +46,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 | `int`   | `method`        | method to do the nms, (0: `naive`, 1: `linear`, 2: `gaussian`) |
 | `int`   | `offset`        | `boxes` width or height is (x2 - x1 + offset). (0 or 1)        |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>boxes</tt>: T</dt>
@@ -35,7 +55,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Input scores. 1-D tensor of shape (N, ).</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>dets</tt>: tensor(int64)</dt>
@@ -44,17 +64,17 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Output indices. 1-D tensor of shape (num_valid_boxes, ).</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32)
 
 ## RoIAlign
 
-<h3>Descriptions</h3>
+### Description
 
 Perform RoIAlign on output feature, used in bbox_head of most two-stage detectors.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -65,7 +85,7 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 | `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
 | `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -74,31 +94,31 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 <dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of input.</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>feat</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32)
 
 ## NMS
 
-<h3>Descriptions</h3>
+### Description
 
 Filter out boxes has high IoU overlap with previously selected boxes.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type    | Parameter       | Description                                                                                                      |
 | ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0. |
 | `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>bboxes</tt>: T</dt>
@@ -107,24 +127,24 @@ Filter out boxes has high IoU overlap with previously selected boxes.
 <dd>Input scores. 1-D tensor of shape (num_boxes, ).</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>indices</tt>: tensor(int32, Linear)</dt>
 <dd>Selected indices. 1-D tensor of shape (num_valid_boxes, ). num_valid_boxes is the number of valid boxes.</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32)
 
 ## grid_sampler
 
-<h3>Description</h3>
+### Description
 
 Perform sample from `input` with pixel locations from `grid`.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
 | ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -132,7 +152,7 @@ Perform sample from `input` with pixel locations from `grid`.
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -141,13 +161,13 @@ Perform sample from `input` with pixel locations from `grid`.
 <dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW is the height and width of offset and output. </dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear)

@@ -4,21 +4,46 @@
 
 - [TensorRT Custom Ops](#tensorrt-custom-ops)
   - [MMCVRoIAlign](#mmcvroialign)
+    - [Description](#description)
+    - [Parameters](#parameters)
+    - [Inputs](#inputs)
+    - [Outputs](#outputs)
+    - [Type Constraints](#type-constraints)
   - [ScatterND](#scatternd)
+    - [Description](#description-1)
+    - [Parameters](#parameters-1)
+    - [Inputs](#inputs-1)
+    - [Outputs](#outputs-1)
+    - [Type Constraints](#type-constraints-1)
   - [NonMaxSuppression](#nonmaxsuppression)
+    - [Description](#description-2)
+    - [Parameters](#parameters-2)
+    - [Inputs](#inputs-2)
+    - [Outputs](#outputs-2)
+    - [Type Constraints](#type-constraints-2)
   - [MMCVDeformConv2d](#mmcvdeformconv2d)
+    - [Description](#description-3)
+    - [Parameters](#parameters-3)
+    - [Inputs](#inputs-3)
+    - [Outputs](#outputs-3)
+    - [Type Constraints](#type-constraints-3)
   - [grid_sampler](#grid_sampler)
+    - [Description](#description-4)
+    - [Parameters](#parameters-4)
+    - [Inputs](#inputs-4)
+    - [Outputs](#outputs-4)
+    - [Type Constraints](#type-constraints-4)
 
 <!-- TOC -->
 
 ## MMCVRoIAlign
 
-<h3>Description</h3>
+### Description
 
 Perform RoIAlign on output feature, used in bbox_head of most two stage
 detectors.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -29,7 +54,7 @@ detectors.
 | `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
 | `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -38,20 +63,20 @@ detectors.
 <dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of inputs[0].</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element output[0][r-1] is a pooled feature map corresponding to the r-th RoI inputs[1][r-1].<dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear)
 
 ## ScatterND
 
-<h3>Description</h3>
+### Description
 
 ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape[-1] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
 
@@ -64,11 +89,11 @@ The `output` is calculated via the following equation:
       output[indices[idx]] = updates[idx]
 ```
 
-<h3>Parameters</h3>
+### Parameters
 
 None
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -81,24 +106,24 @@ None
 <dd>Tensor of rank q + r - indices_shape[-1] - 1.</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Tensor of rank r >= 1.</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear), tensor(int32, Linear)
 
 ## NonMaxSuppression
 
-<h3>Description</h3>
+### Description
 
 Filter out boxes has high IoU overlap with previously selected boxes or low score. Output the indices of valid boxes. Indices of invalid boxes will be filled with -1.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type    | Parameter                    | Description                                                                                                                          |
 | ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -108,7 +133,7 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 | `float` | `score_threshold`            | The threshold for deciding when to remove boxes based on score.                                                                      |
 | `int`   | `offset`                     | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                                                |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -117,7 +142,7 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 <dd>Input scores. 3-D tensor of shape (num_batches, num_classes, spatial_dimension).</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: tensor(int32, Linear)</dt>
@@ -126,17 +151,17 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 <dd>All invalid indices will be filled with -1.</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear)
 
 ## MMCVDeformConv2d
 
-<h3>Description</h3>
+### Description
 
 Perform Deformable Convolution on input feature, read [Deformable Convolutional Network](https://arxiv.org/abs/1703.06211) for detail.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type           | Parameter          | Description                                                                                                                       |
 | -------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -147,7 +172,7 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 | `int`          | `group`            | Split input into groups. `input_channel` should be divisible by the number of groups.                                             |
 | `int`          | `im2col_step`      | DeformableConv2d use im2col to compute convolution. im2col_step is used to split input and offset, reduce memory usage of column. |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -158,24 +183,24 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 <dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear)
 
 ## grid_sampler
 
-<h3>Description</h3>
+### Description
 
 Perform sample from `input` with pixel locations from `grid`.
 
-<h3>Parameters</h3>
+### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
 | ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -183,7 +208,7 @@ Perform sample from `input` with pixel locations from `grid`.
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
 
-<h3>Inputs</h3>
+### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -192,13 +217,13 @@ Perform sample from `input` with pixel locations from `grid`.
 <dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW is the height and width of offset and output. </dd>
 </dl>
 
-<h3>Outputs</h3>
+### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
 </dl>
 
-<h3>Type Constraints</h3>
+### Type Constraints
 
 - T:tensor(float32, Linear)
