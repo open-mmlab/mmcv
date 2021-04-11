@@ -582,10 +582,10 @@ def trunc_normal_(tensor: Tensor,
     https://github.com/pytorch/pytorch/blob/master/torch/nn/init.py
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
-        mean: the mean of the normal distribution
-        std: the standard deviation of the normal distribution
-        a: the minimum cutoff value
-        b: the maximum cutoff value
+        tensor (``torch.Tensor``): an n-dimensional `torch.Tensor`.
+        mean (float): the mean of the normal distribution.
+        std (float): the standard deviation of the normal distribution.
+        a (float): the minimum cutoff value.
+        b (float): the maximum cutoff value.
     """
     return _no_grad_trunc_normal_(tensor, mean, std, a, b)
