@@ -305,8 +305,10 @@ def test_cosine_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_one_cycle_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimziers, max_iters', [(True, 10), (True, 2),
+                                                         (False, 10),
+                                                         (False, 2)])
+def test_one_cycle_runner_hook(multi_optimziers, max_iters):
     """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
     with pytest.raises(AssertionError):
         # by_epoch should be False
@@ -395,6 +397,40 @@ def test_one_cycle_runner_hook(multi_optimziers):
             }, 10)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+    # Test OneCycleLrUpdaterHook
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(
+        runner_type='IterBasedRunner', max_epochs=None, max_iters=max_iters)
+
+    args = dict(
+        max_lr=0.01,
+        total_steps=5,
+        pct_start=0.5,
+        anneal_strategy='linear',
+        div_factor=25,
+        final_div_factor=1e4,
+    )
+    hook = OneCycleLrUpdaterHook(**args)
+    runner.register_hook(hook)
+    if max_iters == 10:
+        # test total_steps < max_iters
+        with pytest.raises(ValueError):
+            runner.run([loader], [('train', 1)])
+    else:
+        # test total_steps > max_iters
+        runner.run([loader], [('train', 1)])
+        lr_last = runner.current_lr()
+        t = torch.tensor([0.0], requires_grad=True)
+        optim = torch.optim.SGD([t], lr=0.01)
+        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optim, **args)
+        lr_target = []
+        for _ in range(max_iters):
+            optim.step()
+            lr_target.append(optim.param_groups[0]['lr'])
+            lr_scheduler.step()
+        assert lr_target[-1] == lr_last[0]
 
 
 @pytest.mark.parametrize('multi_optimziers', (True, False))
