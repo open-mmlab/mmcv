@@ -20,6 +20,7 @@ void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx,
       .get<float>("spatial_scale", spatial_scale)
       .get<int>("sample_num", sample_num)
       .get<bool>("aligned", aligned)
+      .get<bool>("clockwise", clockwise)
       .done();
 
   const auto& input = buildATensor(ctx, ins[0]);
@@ -27,7 +28,7 @@ void roi_align_rotated_forward_cuda_parrots(CudaContext& ctx,
   auto output = buildATensor(ctx, outs[0]);
   roi_align_rotated_forward_cuda(input, rois, output, pooled_height,
                                  pooled_width, spatial_scale, sample_num,
-                                 aligned);
+                                 aligned, clockwise);
 }
 
 void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
@@ -45,6 +46,7 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
       .get<float>("spatial_scale", spatial_scale)
       .get<int>("sample_num", sample_num)
       .get<bool>("aligned", aligned)
+      .get<bool>("clockwise", clockwise)
       .done();
 
   const auto& grad_output = buildATensor(ctx, ins[0]);
@@ -52,7 +54,7 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
   auto grad_input = buildATensor(ctx, outs[0]);
   roi_align_rotated_backward_cuda(grad_output, rois, grad_input,
                                   pooled_height, pooled_width, spatial_scale,
-                                  sample_num, aligned);
+                                  sample_num, aligned, clockwise);
 }
 
 
@@ -62,6 +64,7 @@ PARROTS_EXTENSION_REGISTER(roi_align_rotated_forward)
     .attr("spatial_scale")
     .attr("sample_num")
     .attr("aligned")
+    .attr("clockwise")
     .input(2)
     .output(1)
     .apply(roi_align_rotated_forward_cuda_parrots)
@@ -73,6 +76,7 @@ PARROTS_EXTENSION_REGISTER(roi_align_rotated_backward)
     .attr("spatial_scale")
     .attr("sample_num")
     .attr("aligned")
+    .attr("clockwise")
     .input(2)
     .output(1)
     .apply(roi_align_rotated_backward_cuda_parrots)

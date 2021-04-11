@@ -21,6 +21,7 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     const scalar_t spatial_scale,
     const int sample_num,
     const bool aligned,
+    const bool clockwise,
     const int channels,
     const int height, const int width,
     const int pooled_height, const int pooled_width,
@@ -43,6 +44,9 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
+    if (clockwise){
+        theta = -theta;  // If clockwise, the angle needs to be reversed.
+      }
     if (!aligned) {  // for backward-compatibility only
         // Force malformed ROIs to be 1x1
         roi_width = max(roi_width, (scalar_t)1.);
@@ -71,7 +75,7 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     scalar_t sinscalar_theta = sin(theta);
 
     // We do average (integral) pooling inside a bin
-    const scalar_t count = roi_bin_grid_h * roi_bin_grid_w;  // e.g. = 4
+    const scalar_t count = max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
 
     scalar_t output_val = 0.;
     for (int iy = 0; iy < roi_bin_grid_h; iy++) {  // e.g., iy = 0, 1
@@ -83,9 +87,9 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
             static_cast<scalar_t>(ix + .5f) * bin_size_w /
                 static_cast<scalar_t>(roi_bin_grid_w);
 
-        // Rotate by theta around the center and translate
-        scalar_t x = xx * cosscalar_theta - yy * sinscalar_theta + roi_center_w;
-        scalar_t y = xx * sinscalar_theta + yy * cosscalar_theta + roi_center_h;
+        // Rotate by theta (counterclockwise) around the center and translate
+        scalar_t y = yy * cosscalar_theta - xx * sinscalar_theta + roi_center_h;
+        scalar_t x = yy * sinscalar_theta + xx * cosscalar_theta + roi_center_w;
 
         scalar_t val = bilinear_interpolate<scalar_t>(
             offset_bottom_data, height, width, y, x, index);
@@ -102,7 +106,7 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
 template <typename scalar_t>
 __global__ void roi_align_rotated_backward_cuda_kernel(
     const int nthreads, const scalar_t *top_diff, const scalar_t *bottom_rois,
-    const scalar_t spatial_scale, const int sample_num, const bool aligned,
+    const scalar_t spatial_scale, const int sample_num, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int pooled_height,
     const int pooled_width, scalar_t *bottom_diff) {
 
@@ -124,7 +128,9 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
-
+    if (clockwise){
+        theta = -theta;  // If clockwise, the angle needs to be reversed.
+      }
     if (!aligned) {  // for backward-compatibility only
         // Force malformed ROIs to be 1x1
         roi_width = max(roi_width, (scalar_t)1.);
@@ -169,8 +175,8 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
                 static_cast<scalar_t>(roi_bin_grid_w);
 
         // Rotate by theta around the center and translate
-        scalar_t x = xx * cosTheta - yy * sinTheta + roi_center_w;
-        scalar_t y = xx * sinTheta + yy * cosTheta + roi_center_h;
+        scalar_t y = yy * cosTheta - xx * sinTheta + roi_center_h;
+        scalar_t x = yy * sinTheta + xx * cosTheta + roi_center_w;
 
         scalar_t w1, w2, w3, w4;
         int x_low, x_high, y_low, y_high;

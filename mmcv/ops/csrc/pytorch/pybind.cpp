@@ -193,12 +193,12 @@ Tensor fused_bias_leakyrelu(const Tensor& input, const Tensor& bias,
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
                                int pooled_height,
                                int pooled_width, float spatial_scale,
-                               int sample_num, bool aligned);
+                               int sample_num, bool aligned, bool clockwise);
 
 void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
                                 int pooled_width, float spatial_scale,
-                                int sample_num, bool aligned);
+                                int sample_num, bool aligned, bool clockwise);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)");
@@ -394,9 +394,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
-        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"));
+        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
+        py::arg("clockwise"));
   m.def("roi_align_rotated_backward", &roi_align_rotated_backward,
         "roi_align_rotated backward", py::arg("grad_output"), py::arg("rois"),
         py::arg("grad_input"), py::arg("pooled_height"), py::arg("pooled_width"),
-        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"));
+        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
+        py::arg("clockwise"));
 }
