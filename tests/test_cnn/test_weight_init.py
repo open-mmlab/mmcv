@@ -410,3 +410,12 @@ def test_initialize():
             bias=2,
             override=dict(name='conv2d_2', val=3, bias=4))
         initialize(foonet, init_cfg)
+
+    # test override wiout name
+    with pytest.raises(ValueError):
+        init_cfg = dict(
+            type='Constant',
+            val=1,
+            bias=2,
+            override=dict(type='Constant', val=3, bias=4))
+        initialize(foonet, init_cfg)
