@@ -71,18 +71,18 @@ void roi_align_rotated_forward_cpu(Tensor features, Tensor rois, Tensor output,
                                    int pooled_height, int pooled_width,
                                    float spatial_scale, int sample_num,
                                    bool aligned, bool clockwise) {
-  ROIAlignRotatedForwardCPULauncher(
-      features, rois, output, pooled_height, pooled_width, spatial_scale,
-      sample_num, aligned, clockwise);
+  ROIAlignRotatedForwardCPULauncher(features, rois, output, pooled_height,
+                                    pooled_width, spatial_scale, sample_num,
+                                    aligned, clockwise);
 }
 
 void roi_align_rotated_backward_cpu(Tensor features, Tensor rois, Tensor output,
-                                   int pooled_height, int pooled_width,
-                                   float spatial_scale, int sample_num,
-                                   bool aligned, bool clockwise) {
-  ROIAlignRotatedBackwardCPULauncher(
-      features, rois, output, pooled_height, pooled_width, spatial_scale,
-      sample_num, aligned, clockwise);
+                                    int pooled_height, int pooled_width,
+                                    float spatial_scale, int sample_num,
+                                    bool aligned, bool clockwise) {
+  ROIAlignRotatedBackwardCPULauncher(features, rois, output, pooled_height,
+                                     pooled_width, spatial_scale, sample_num,
+                                     aligned, clockwise);
 }
 
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
@@ -133,8 +133,8 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
     CHECK_CPU_INPUT(rois);
     CHECK_CPU_INPUT(grad_input);
 
-    roi_align_rotated_backward_cpu(grad_output, rois, grad_input,
-                                   pooled_height, pooled_width, spatial_scale,
-                                   sample_num, aligned, clockwise);
+    roi_align_rotated_backward_cpu(grad_output, rois, grad_input, pooled_height,
+                                   pooled_width, spatial_scale, sample_num,
+                                   aligned, clockwise);
   }
 }

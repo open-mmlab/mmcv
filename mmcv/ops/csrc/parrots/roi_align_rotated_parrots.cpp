@@ -84,8 +84,8 @@ void roi_align_rotated_forward_cpu_parrots(HostContext& ctx,
   const auto& rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
   roi_align_rotated_forward_cpu(input, rois, output, pooled_height,
-                                 pooled_width, spatial_scale, sample_num,
-                                 aligned, clockwise);
+                                pooled_width, spatial_scale, sample_num,
+                                aligned, clockwise);
 }
 
 void roi_align_rotated_backward_cpu_parrots(HostContext& ctx,
@@ -111,8 +111,8 @@ void roi_align_rotated_backward_cpu_parrots(HostContext& ctx,
   const auto& rois = buildATensor(ctx, ins[1]);
   auto grad_input = buildATensor(ctx, outs[0]);
   roi_align_rotated_backward_cpu(grad_output, rois, grad_input, pooled_height,
-                                  pooled_width, spatial_scale, sample_num,
-                                  aligned, clockwise);
+                                 pooled_width, spatial_scale, sample_num,
+                                 aligned, clockwise);
 }
 
 PARROTS_EXTENSION_REGISTER(roi_align_rotated_forward)
