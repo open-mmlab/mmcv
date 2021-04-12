@@ -273,6 +273,8 @@ def test_initialize():
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 1.))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 2.))
+    assert init_cfg == dict(
+        type='Constant', layer=['Conv2d', 'Linear'], val=1, bias=2)
 
     # test init_cfg with list type
     init_cfg = [
@@ -284,6 +286,10 @@ def test_initialize():
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 3.))
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 4.))
+    assert init_cfg == [
+        dict(type='Constant', layer='Conv2d', val=1, bias=2),
+        dict(type='Constant', layer='Linear', val=3, bias=4)
+    ]
 
     # test layer key and override key
     init_cfg = dict(
@@ -305,6 +311,13 @@ def test_initialize():
                        torch.full(foonet.conv2d_2.weight.shape, 3.))
     assert torch.equal(foonet.conv2d_2.bias,
                        torch.full(foonet.conv2d_2.bias.shape, 4.))
+    assert init_cfg == dict(
+        type='Constant',
+        val=1,
+        bias=2,
+        layer=['Conv2d', 'Linear'],
+        override=dict(type='Constant', name='conv2d_2', val=3, bias=4))
+
     # test override key
     init_cfg = dict(
         type='Constant', val=5, bias=6, override=dict(name='conv2d_2'))
@@ -321,6 +334,8 @@ def test_initialize():
                        torch.full(foonet.conv2d_2.weight.shape, 5.))
     assert torch.equal(foonet.conv2d_2.bias,
                        torch.full(foonet.conv2d_2.bias.shape, 6.))
+    assert init_cfg == dict(
+        type='Constant', val=5, bias=6, override=dict(name='conv2d_2'))
 
     init_cfg = dict(
         type='Pretrained',
@@ -344,6 +359,11 @@ def test_initialize():
                            torch.full(foonet.conv2d_2.weight.shape, 3.))
         assert torch.equal(foonet.conv2d_2.bias,
                            torch.full(foonet.conv2d_2.bias.shape, 4.))
+    assert init_cfg == dict(
+        type='Pretrained',
+        checkpoint='modelA.pth',
+        override=dict(type='Constant', name='conv2d_2', val=3, bias=4))
+
     # test init_cfg type
     with pytest.raises(TypeError):
         init_cfg = 'init_cfg'
@@ -382,11 +402,11 @@ def test_initialize():
             ])
         initialize(foonet, init_cfg)
 
-    # test override without type
+    # test override with args except type
     with pytest.raises(ValueError):
         init_cfg = dict(
             type='Constant',
             val=1,
             bias=2,
-            override=dict(name='conv2d_3', val=3, bias=4))
+            override=dict(name='conv2d_2', val=3, bias=4))
         initialize(foonet, init_cfg)
