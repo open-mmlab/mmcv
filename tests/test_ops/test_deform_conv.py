@@ -59,6 +59,9 @@ class TestDeformconv(object):
                            gt_deform_weight_grad, threshold)
 
         from mmcv.ops import DeformConv2d
+        # test bias
+        model = DeformConv2d(1, 1, 2, stride=1, padding=0)
+        assert not hasattr(model, 'bias')
         # test bias=True
         with pytest.raises(AssertionError):
             model = DeformConv2d(1, 1, 2, stride=1, padding=0, bias=True)
