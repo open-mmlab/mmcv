@@ -18,6 +18,7 @@ research projects as below:
 - [MMPose](https://github.com/open-mmlab/mmpose): Pose estimation toolbox and benchmark
 - [MMAction2](https://github.com/open-mmlab/mmaction2): Action understanding toolbox and benchmark
 - [MMClassification](https://github.com/open-mmlab/mmclassification): Image classification toolbox and benchmark
+- [MMOCR](https://github.com/open-mmlab/mmocr): A Comprehensive Toolbox for Text Detection, Recognition and Understanding
 
 It provides the following functionalities.
 

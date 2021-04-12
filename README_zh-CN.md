@@ -19,6 +19,7 @@ MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目
 - [MMTracking](https://github.com/open-mmlab/mmtracking): 一体化视频目标感知平台
 - [MMPose](https://github.com/open-mmlab/mmpose): 姿态估计工具箱
 - [MMEditing](https://github.com/open-mmlab/mmediting): 图像视频编辑工具箱
+- [MMOCR](https://github.com/open-mmlab/mmocr): 全流程文字检测识别理解工具包
 
 MMCV 提供了如下众多功能：
 
