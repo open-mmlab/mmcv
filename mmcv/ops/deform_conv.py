@@ -300,8 +300,8 @@ class DeformConv2d(nn.Module):
         s += f'dilation={self.dilation},\n'
         s += f'groups={self.groups},\n'
         s += f'deform_groups={self.deform_groups},\n'
-        if not hasattr(self, 'bias'):
-            s += 'deform_groups=False)'
+        # bias is not supported in DeformConv2d.
+        s += 'deform_groups=False)'
         return s
 
 
