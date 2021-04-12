@@ -36,7 +36,8 @@ struct MMCVRoIAlignRotatedKernel {
 };
 
 struct MMCVRoIAlignRotatedCustomOp
-    : Ort::CustomOpBase<MMCVRoIAlignRotatedCustomOp, MMCVRoIAlignRotatedKernel> {
+    : Ort::CustomOpBase<MMCVRoIAlignRotatedCustomOp,
+                        MMCVRoIAlignRotatedKernel> {
   void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
     return new MMCVRoIAlignRotatedKernel(api, info);
   }

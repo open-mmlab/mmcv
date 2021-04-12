@@ -52,11 +52,10 @@ void roi_align_rotated_backward_cuda_parrots(CudaContext& ctx,
   const auto& grad_output = buildATensor(ctx, ins[0]);
   const auto& rois = buildATensor(ctx, ins[1]);
   auto grad_input = buildATensor(ctx, outs[0]);
-  roi_align_rotated_backward_cuda(grad_output, rois, grad_input,
-                                  pooled_height, pooled_width, spatial_scale,
-                                  sample_num, aligned, clockwise);
+  roi_align_rotated_backward_cuda(grad_output, rois, grad_input, pooled_height,
+                                  pooled_width, spatial_scale, sample_num,
+                                  aligned, clockwise);
 }
-
 
 PARROTS_EXTENSION_REGISTER(roi_align_rotated_forward)
     .attr("pooled_height")

@@ -191,9 +191,9 @@ Tensor fused_bias_leakyrelu(const Tensor& input, const Tensor& bias,
                             float scale);
 
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
-                               int pooled_height,
-                               int pooled_width, float spatial_scale,
-                               int sample_num, bool aligned, bool clockwise);
+                               int pooled_height, int pooled_width,
+                               float spatial_scale, int sample_num,
+                               bool aligned, bool clockwise);
 
 void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
@@ -398,7 +398,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("clockwise"));
   m.def("roi_align_rotated_backward", &roi_align_rotated_backward,
         "roi_align_rotated backward", py::arg("grad_output"), py::arg("rois"),
-        py::arg("grad_input"), py::arg("pooled_height"), py::arg("pooled_width"),
-        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
-        py::arg("clockwise"));
+        py::arg("grad_input"), py::arg("pooled_height"),
+        py::arg("pooled_width"), py::arg("spatial_scale"),
+        py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
 }

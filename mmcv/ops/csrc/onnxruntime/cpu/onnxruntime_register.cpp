@@ -4,8 +4,8 @@
 #include "nms.h"
 #include "ort_mmcv_utils.h"
 #include "roi_align.h"
-#include "soft_nms.h"
 #include "roi_align_rotated.h"
+#include "soft_nms.h"
 
 const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;
