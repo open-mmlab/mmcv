@@ -1,4 +1,3 @@
-from _pytest.fixtures import get_parametrized_fixture_keys
 import numpy as np
 import pytest
 import torch
