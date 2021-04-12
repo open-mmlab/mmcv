@@ -36,10 +36,10 @@ __global__ void roi_pool_forward_cuda_kernel(
     T bin_size_h = roi_h / static_cast<T>(pooled_height);
 
     // the corresponding bin region
-    int bin_x1 = floor(static_cast<T>(pw) * bin_size_w + roi_x1);
-    int bin_y1 = floor(static_cast<T>(ph) * bin_size_h + roi_y1);
-    int bin_x2 = ceil(static_cast<T>(pw + 1) * bin_size_w + roi_x1);
-    int bin_y2 = ceil(static_cast<T>(ph + 1) * bin_size_h + roi_y1);
+    int bin_x1 = floorf(static_cast<T>(pw) * bin_size_w + roi_x1);
+    int bin_y1 = floorf(static_cast<T>(ph) * bin_size_h + roi_y1);
+    int bin_x2 = ceilf(static_cast<T>(pw + 1) * bin_size_w + roi_x1);
+    int bin_y2 = ceilf(static_cast<T>(ph + 1) * bin_size_h + roi_y1);
 
     // add roi offsets and clip to input boundaries
     bin_x1 = min(max(bin_x1, 0), width);

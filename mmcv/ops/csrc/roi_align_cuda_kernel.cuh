@@ -54,10 +54,11 @@ __global__ void roi_align_forward_cuda_kernel(
     int roi_bin_grid_h =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(ceil(roi_height / pooled_height));
-    int roi_bin_grid_w = (sampling_ratio > 0)
-                             ? sampling_ratio
-                             : static_cast<int>(ceil(roi_width / pooled_width));
+            : static_cast<int>(ceilf(roi_height / pooled_height));
+    int roi_bin_grid_w =
+        (sampling_ratio > 0)
+            ? sampling_ratio
+            : static_cast<int>(ceilf(roi_width / pooled_width));
 
     if (pool_mode == 0) {
       // We do max pooling inside a bin
@@ -168,11 +169,11 @@ __global__ void roi_align_backward_cuda_kernel(
       int roi_bin_grid_h =
           (sampling_ratio > 0)
               ? sampling_ratio
-              : static_cast<int>(ceil(roi_height / pooled_height));
+              : static_cast<int>(ceilf(roi_height / pooled_height));
       int roi_bin_grid_w =
           (sampling_ratio > 0)
               ? sampling_ratio
-              : static_cast<int>(ceil(roi_width / pooled_width));
+              : static_cast<int>(ceilf(roi_width / pooled_width));
 
       // We do average (integral) pooling inside a bin
       const T count = roi_bin_grid_h * roi_bin_grid_w;  // e.g. = 4
