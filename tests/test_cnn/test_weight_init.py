@@ -402,7 +402,7 @@ def test_initialize():
             ])
         initialize(foonet, init_cfg)
 
-    # test override with args except type
+    # test override with args except type key
     with pytest.raises(ValueError):
         init_cfg = dict(
             type='Constant',
@@ -411,7 +411,7 @@ def test_initialize():
             override=dict(name='conv2d_2', val=3, bias=4))
         initialize(foonet, init_cfg)
 
-    # test override wiout name
+    # test override without name
     with pytest.raises(ValueError):
         init_cfg = dict(
             type='Constant',
