@@ -56,6 +56,35 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
 }
 #endif
 
+void ROIAlignRotatedForwardCPULauncher(Tensor input, Tensor rois, Tensor output,
+                                       int aligned_height, int aligned_width,
+                                       float spatial_scale, int sampling_ratio,
+                                       bool aligned, bool clockwise);
+
+void ROIAlignRotatedBackwardCPULauncher(Tensor grad_output, Tensor rois,
+                                        Tensor grad_input, int aligned_height,
+                                        int aligned_width, float spatial_scale,
+                                        int sampling_ratio, bool aligned,
+                                        bool clockwise);
+
+void roi_align_rotated_forward_cpu(Tensor features, Tensor rois, Tensor output,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale, int sample_num,
+                                   bool aligned, bool clockwise) {
+  ROIAlignRotatedForwardCPULauncher(
+      features, rois, output, pooled_height, pooled_width, spatial_scale,
+      sample_num, aligned, clockwise);
+}
+
+void roi_align_rotated_backward_cpu(Tensor features, Tensor rois, Tensor output,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale, int sample_num,
+                                   bool aligned, bool clockwise) {
+  ROIAlignRotatedBackwardCPULauncher(
+      features, rois, output, pooled_height, pooled_width, spatial_scale,
+      sample_num, aligned, clockwise);
+}
+
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
                                int pooled_height, int pooled_width,
                                float spatial_scale, int sample_num,
@@ -73,7 +102,13 @@ void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
     AT_ERROR("RoIAlignRotated is not compiled with GPU support");
 #endif
   } else {
-    AT_ERROR("RoIAlignRotated is not supported for cpu");
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(rois);
+    CHECK_CPU_INPUT(output);
+
+    roi_align_rotated_forward_cpu(input, rois, output, pooled_height,
+                                  pooled_width, spatial_scale, sample_num,
+                                  aligned, clockwise);
   }
 }
 
@@ -94,6 +129,12 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
     AT_ERROR("RoIAlignRotated is not compiled with GPU support");
 #endif
   } else {
-    AT_ERROR("RoIAlignRotated is not supported for cpu");
+    CHECK_CPU_INPUT(grad_output);
+    CHECK_CPU_INPUT(rois);
+    CHECK_CPU_INPUT(grad_input);
+
+    roi_align_rotated_backward_cpu(grad_output, rois, grad_input,
+                                   pooled_height, pooled_width, spatial_scale,
+                                   sample_num, aligned, clockwise);
   }
 }

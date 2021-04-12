@@ -34,10 +34,6 @@ void ROIAlignRotatedBackwardCUDAKernelLauncher(
         const scalar_t *top_diff = top_grad.data<scalar_t>();
         const scalar_t *rois_data = rois.data<scalar_t>();
         scalar_t *bottom_diff = bottom_grad.data<scalar_t>();
-        if (sizeof(scalar_t) == sizeof(double)) {
-          fprintf(stderr, "double is not supported\n");
-          exit(-1);
-        }
 
         roi_align_rotated_backward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
