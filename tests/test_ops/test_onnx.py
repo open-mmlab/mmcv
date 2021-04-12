@@ -290,6 +290,8 @@ def test_roialign_rotated():
         pytest.skip('roi_align_aligned op is not successfully compiled')
 
     ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
     # roi align config
     pool_h = 2
     pool_w = 2
