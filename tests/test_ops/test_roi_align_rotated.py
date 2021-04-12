@@ -50,6 +50,8 @@ sampling_ratio = 2
 
 
 def _test_roialign_rotated_gradcheck(device, dtype):
+    if not torch.cuda.is_available() and device == 'cuda':
+        pytest.skip('unittest does not support GPU yet.')
     try:
         from mmcv.ops import RoIAlignRotated
     except ModuleNotFoundError:
@@ -75,6 +77,8 @@ def _test_roialign_rotated_gradcheck(device, dtype):
 
 
 def _test_roialign_rotated_allclose(device, dtype):
+    if not torch.cuda.is_available() and device == 'cuda':
+        pytest.skip('unittest does not support GPU yet.')
     try:
         from mmcv.ops import roi_align_rotated
     except ModuleNotFoundError:
