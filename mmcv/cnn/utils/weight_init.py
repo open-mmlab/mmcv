@@ -376,13 +376,26 @@ def _initialize_override(module, override, cfg):
     override = [override] if isinstance(override, dict) else override
 
     for override_ in override:
-        if 'type' not in override_.keys():
-            override_.update(cfg)
-        name = override_.pop('name', None)
+
+        cp_override = copy.deepcopy(override_)
+        name = cp_override.pop('name', None)
+        if name is None:
+            raise ValueError('`override` must contain the key "name",'
+                             f'but got {cp_override}')
+        # if override only has name kay, it means use args in init_cfg
+        if not cp_override:
+            cp_override.update(cfg)
+        # if override has name key and other args except type key, it will
+        # raise error
+        elif 'type' not in cp_override.keys():
+            raise ValueError(
+                f'`override` need "type" key, but got {cp_override}')
+
         if hasattr(module, name):
-            _initialize(getattr(module, name), override_, wholemodule=True)
+            _initialize(getattr(module, name), cp_override, wholemodule=True)
         else:
-            raise RuntimeError(f'module did not have attribute {name}')
+            raise RuntimeError(f'module did not have attribute {name}, '
+                               f'but init_cfg is {cp_override}.')
 
 
 def initialize(module, init_cfg):
@@ -394,10 +407,9 @@ def initialize(module, init_cfg):
             define initializer. OpenMMLab has implemented 6 initializers
             including ``Constant``, ``Xavier``, ``Normal``, ``Uniform``,
             ``Kaiming``, and ``Pretrained``.
-
     Example:
         >>> module = nn.Linear(2, 3, bias=True)
-        >>> init_cfg = dict(type='Constant', val =1 , bias =2)
+        >>> init_cfg = dict(type='Constant', layer='Linear', val =1 , bias =2)
         >>> initialize(module, init_cfg)
 
         >>> module = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
@@ -407,11 +419,7 @@ def initialize(module, init_cfg):
                 dict(type='Constant', layer='Linear', val=2)]
         >>> initialize(module, init_cfg)
 
-        >>> # Omitting ``'layer'`` initialize module with same configuration
-        >>> init_cfg = dict(type='Constant', val=1, bias=2)
-        >>> initialize(module, init_cfg)
-
-        >>> # define key``'override'`` to initialize some specific override in
+        >>> # define key``'override'`` to initialize some specific part in
         >>> # module
         >>> class FooNet(nn.Module):
         >>>     def __init__(self):
@@ -420,7 +428,7 @@ def initialize(module, init_cfg):
         >>>         self.reg = nn.Conv2d(16, 10, 3)
         >>>         self.cls = nn.Conv2d(16, 5, 3)
         >>> model = FooNet()
-        >>> init_cfg = dict(type='Constant', val=1, bias=2,
+        >>> init_cfg = dict(type='Constant', val=1, bias=2, layer='Conv2d',
         >>>     override=dict(type='Constant', name='reg', val=3, bias=4))
         >>> initialize(model, init_cfg)
 

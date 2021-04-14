@@ -228,8 +228,13 @@ def _interpolate_size_to_scales(g, input, output_size, dim):
 def _interpolate_get_scales_if_available(g, scales):
     if len(scales) == 0:
         return None
+    # scales[0] is NoneType in Pytorch == 1.5.1
+    # scales[0] is TensorType with sizes = [] in Pytorch == 1.6.0
     # scales[0] is ListType in Pytorch == 1.7.0
-    scale_desc = 'fs' if scales[0].type().kind() == 'ListType' else 'f'
+    # scales[0] is TensorType with sizes = [2] in Pytorch == 1.8.0
+    scale_desc = 'fs' if scales[0].type().kind() == 'ListType' or (
+        scales[0].type().kind() == 'TensorType' and
+        (sum(scales[0].type().sizes()) > 1)) else 'f'
     available_scales = _maybe_get_const(
         scales[0], scale_desc) != -1 and not _is_none(scales[0])
 

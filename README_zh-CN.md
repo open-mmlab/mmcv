@@ -10,15 +10,15 @@
 
 MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目，例如：
 
-- [MMCV](https://github.com/open-mmlab/mmcv): 计算机视觉基础库
-- [MMClassification](https://github.com/open-mmlab/mmclassification): 图像分类工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): 新一代通用 3D 目标检测平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): 语义分割工具箱
+- [MMEditing](https://github.com/open-mmlab/mmediting): 图像视频编辑工具箱
+- [MMPose](https://github.com/open-mmlab/mmpose): 姿态估计工具箱
 - [MMAction2](https://github.com/open-mmlab/mmaction2): 新一代视频理解工具箱
 - [MMTracking](https://github.com/open-mmlab/mmtracking): 一体化视频目标感知平台
-- [MMPose](https://github.com/open-mmlab/mmpose): 姿态估计工具箱
-- [MMEditing](https://github.com/open-mmlab/mmediting): 图像视频编辑工具箱
+- [MMClassification](https://github.com/open-mmlab/mmclassification): 图像分类工具箱
+- [MMOCR](https://github.com/open-mmlab/mmocr): 全流程文字检测识别理解工具包
 
 MMCV 提供了如下众多功能：
 

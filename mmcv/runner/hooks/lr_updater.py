@@ -82,15 +82,26 @@ class LrUpdaterHook(Hook):
             return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
 
     def get_warmup_lr(self, cur_iters):
-        if self.warmup == 'constant':
-            warmup_lr = [_lr * self.warmup_ratio for _lr in self.regular_lr]
-        elif self.warmup == 'linear':
-            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
-            warmup_lr = [_lr * (1 - k) for _lr in self.regular_lr]
-        elif self.warmup == 'exp':
-            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
-            warmup_lr = [_lr * k for _lr in self.regular_lr]
-        return warmup_lr
+
+        def _get_warmup_lr(cur_iters, regular_lr):
+            if self.warmup == 'constant':
+                warmup_lr = [_lr * self.warmup_ratio for _lr in regular_lr]
+            elif self.warmup == 'linear':
+                k = (1 - cur_iters / self.warmup_iters) * (1 -
+                                                           self.warmup_ratio)
+                warmup_lr = [_lr * (1 - k) for _lr in regular_lr]
+            elif self.warmup == 'exp':
+                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+                warmup_lr = [_lr * k for _lr in regular_lr]
+            return warmup_lr
+
+        if isinstance(self.regular_lr, dict):
+            lr_groups = {}
+            for key, regular_lr in self.regular_lr.items():
+                lr_groups[key] = _get_warmup_lr(cur_iters, regular_lr)
+            return lr_groups
+        else:
+            return _get_warmup_lr(cur_iters, self.regular_lr)
 
     def before_run(self, runner):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
@@ -410,6 +421,9 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
     Args:
         max_lr (float or list): Upper learning rate boundaries in the cycle
             for each parameter group.
+        total_steps (int, optional): The total number of steps in the cycle.
+            Note that if a value is not provided here, it will be the max_iter
+            of runner. Default: None.
         pct_start (float): The percentage of the cycle (in number of steps)
             spent increasing the learning rate.
             Default: 0.3
@@ -433,6 +447,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self,
                  max_lr,
+                 total_steps=None,
                  pct_start=0.3,
                  anneal_strategy='cos',
                  div_factor=25,
@@ -449,6 +464,11 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
             raise ValueError('the type of max_lr must be the one of list or '
                              f'dict, but got {type(max_lr)}')
         self._max_lr = max_lr
+        if total_steps is not None:
+            if not isinstance(total_steps, int):
+                raise ValueError('the type of total_steps must be int, but'
+                                 f'got {type(total_steps)}')
+            self.total_steps = total_steps
         # validate pct_start
         if pct_start < 0 or pct_start > 1 or not isinstance(pct_start, float):
             raise ValueError('expected float between 0 and 1 pct_start, but '
@@ -469,6 +489,16 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
         super(OneCycleLrUpdaterHook, self).__init__(**kwargs)
 
     def before_run(self, runner):
+        if hasattr(self, 'total_steps'):
+            total_steps = self.total_steps
+        else:
+            total_steps = runner.max_iters
+        if total_steps < runner.max_iters:
+            raise ValueError(
+                'The total steps must be greater than or equal to max '
+                f'iterations {runner.max_iters} of runner, but total steps '
+                f'is {total_steps}.')
+
         if isinstance(runner.optimizer, dict):
             self.base_lr = {}
             for k, optim in runner.optimizer.items():
@@ -484,25 +514,18 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
                 group.setdefault('initial_lr', lr)
 
         if self.three_phase:
+            self.lr_phases.append(
+                [float(self.pct_start * total_steps) - 1, 1, self.div_factor])
             self.lr_phases.append([
-                float(self.pct_start * runner.max_iters) - 1, 1,
-                self.div_factor
-            ])
-            self.lr_phases.append([
-                float(2 * self.pct_start * runner.max_iters) - 2,
-                self.div_factor, 1
+                float(2 * self.pct_start * total_steps) - 2, self.div_factor, 1
             ])
             self.lr_phases.append(
-                [runner.max_iters - 1, 1, 1 / self.final_div_factor])
+                [total_steps - 1, 1, 1 / self.final_div_factor])
         else:
-            self.lr_phases.append([
-                float(self.pct_start * runner.max_iters) - 1, 1,
-                self.div_factor
-            ])
-            self.lr_phases.append([
-                runner.max_iters - 1, self.div_factor,
-                1 / self.final_div_factor
-            ])
+            self.lr_phases.append(
+                [float(self.pct_start * total_steps) - 1, 1, self.div_factor])
+            self.lr_phases.append(
+                [total_steps - 1, self.div_factor, 1 / self.final_div_factor])
 
     def get_lr(self, runner, base_lr):
         curr_iter = runner.iter

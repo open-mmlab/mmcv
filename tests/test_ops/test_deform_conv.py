@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import torch
 
 input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
@@ -55,6 +56,20 @@ class TestDeformconv(object):
                            gt_offset_bias_grad, threshold)
         assert np.allclose(model.weight.grad.detach().cpu().numpy(),
                            gt_deform_weight_grad, threshold)
+
+        from mmcv.ops import DeformConv2d
+        # test bias
+        model = DeformConv2d(1, 1, 2, stride=1, padding=0)
+        assert not hasattr(model, 'bias')
+        # test bias=True
+        with pytest.raises(AssertionError):
+            model = DeformConv2d(1, 1, 2, stride=1, padding=0, bias=True)
+        # test in_channels % group != 0
+        with pytest.raises(AssertionError):
+            model = DeformConv2d(3, 2, 3, groups=2)
+        # test out_channels % group != 0
+        with pytest.raises(AssertionError):
+            model = DeformConv2d(3, 4, 3, groups=3)
 
     def test_deformconv(self):
         self._test_deformconv(torch.double)

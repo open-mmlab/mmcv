@@ -42,9 +42,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         if not self._is_init:
             if hasattr(self, 'init_cfg'):
                 initialize(self, self.init_cfg)
-            for module in self.children():
-                if 'init_weight' in dir(module):
-                    module.init_weight()
+            for m in self.children():
+                if hasattr(m, 'init_weight'):
+                    m.init_weight()
             self._is_init = True
         else:
             warnings.warn(f'init_weight of {self.__class__.__name__} has '

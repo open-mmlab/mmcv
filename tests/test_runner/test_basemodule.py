@@ -336,10 +336,12 @@ def test_sequential_model_weight_init():
     assert torch.equal(seq_model[1].conv2d.bias,
                        torch.full(seq_model[1].conv2d.bias.shape, 3.))
     # inner init_cfg has highter priority
+    layers = [build_from_cfg(cfg, COMPONENTS) for cfg in seq_model_cfg]
     seq_model = Sequential(
         *layers,
         init_cfg=dict(
             type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.))
+    seq_model.init_weight()
     assert torch.equal(seq_model[0].conv1d.weight,
                        torch.full(seq_model[0].conv1d.weight.shape, 0.))
     assert torch.equal(seq_model[0].conv1d.bias,
@@ -371,8 +373,12 @@ def test_modulelist_weight_init():
     assert torch.equal(modellist[1].conv2d.bias,
                        torch.full(modellist[1].conv2d.bias.shape, 3.))
     # inner init_cfg has highter priority
+    layers = [build_from_cfg(cfg, COMPONENTS) for cfg in models_cfg]
     modellist = ModuleList(
-        layers, init_cfg=dict(type='Constant', val=4., bias=5.))
+        layers,
+        init_cfg=dict(
+            type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.))
+    modellist.init_weight()
     assert torch.equal(modellist[0].conv1d.weight,
                        torch.full(modellist[0].conv1d.weight.shape, 0.))
     assert torch.equal(modellist[0].conv1d.bias,
