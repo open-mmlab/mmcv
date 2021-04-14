@@ -157,6 +157,8 @@ class MultiScaleDeformableAttention(BaseModule):
             each query in each head. Default: 4.
         im2col_step (int): The step used in image_to_column.
             Default: 64.
+        dropout (float): A Dropout layer on `inp_residual`.
+            Default: 0..
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -167,13 +169,17 @@ class MultiScaleDeformableAttention(BaseModule):
                  num_levels=4,
                  num_points=4,
                  im2col_step=64,
-                 norm_cfg=None):
-        super().__init__()
+                 dropout=0.1,
+                 norm_cfg=None,
+                 init_cfg=None):
+        super().__init__(init_cfg)
         if embed_dims % num_heads != 0:
             raise ValueError(f'embed_dims must be divisible by num_heads, '
                              f'but got {embed_dims} and {num_heads}')
         dim_per_head = embed_dims // num_heads
         self.norm_cfg = norm_cfg
+        self.init_cfg = init_cfg
+        self.dropout = nn.Dropout(dropout)
 
         # you'd better set dim_per_head to a power of 2
         # which is more efficient in the CUDA implementation
@@ -206,8 +212,6 @@ class MultiScaleDeformableAttention(BaseModule):
 
     def init_weight(self):
         """Default initialization for Parameters of Module."""
-        assert self.init_cfg, 'MultiScaleDeformableAttention' \
-                              ' does not support init_cfg.'
         constant_init(self.sampling_offsets, 0.)
         thetas = torch.arange(
             self.num_heads,
@@ -275,11 +279,9 @@ class MultiScaleDeformableAttention(BaseModule):
             key = query
         if value is None:
             value = key
-        else:
-            assert value is key or key is None, 'In the implementation of' \
-                'MultiScaleDeformableAttention, value is key.'
-        assert residual is None, 'MultiScaleDeformableAttention dose not' \
-                                 'support add residual'
+
+        if residual is None:
+            inp_residual = key
         if query_pos is not None:
             query = query + query_pos
 
@@ -298,9 +300,13 @@ class MultiScaleDeformableAttention(BaseModule):
         sampling_offsets = self.sampling_offsets(query).view(
             bs, num_query, self.num_heads, self.num_levels, self.num_points, 2)
         attention_weights = self.attention_weights(query).view(
-            bs, num_query, self.num_heads, self.num_levels, self.num_points)
+            bs, num_query, self.num_heads, self.num_levels * self.num_points)
         attention_weights = attention_weights.softmax(-1)
-        # N, num_query, num_heads, num_levels, num_points, 2
+
+        attention_weights = attention_weights.view(bs, num_query,
+                                                   self.num_heads,
+                                                   self.num_levels,
+                                                   self.num_points)
         if reference_points.shape[-1] == 2:
             offset_normalizer = torch.stack(
                 [spatial_shapes[..., 1], spatial_shapes[..., 0]], -1)
@@ -326,7 +332,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 attention_weights, self.im2col_step)
         output = self.output_proj(output).permute(1, 0, 2)
         # (num_query, bs ,embed_dims)
-        return output
+        return output + self.dropout(inp_residual)
 
 
 class FFN(BaseModule):
