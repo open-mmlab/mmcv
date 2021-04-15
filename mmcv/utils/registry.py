@@ -1,5 +1,6 @@
-import inspect
 import warnings
+
+import inspect
 from functools import partial
 
 from .misc import is_seq_of
@@ -239,11 +240,6 @@ class Registry:
             module_name = module_class.__name__
         if isinstance(module_name, str):
             module_name = [module_name]
-        else:
-            assert is_seq_of(
-                module_name,
-                str), ('module_name should be either of None, an '
-                       f'instance of str or list, but got {type(module_name)}')
         for name in module_name:
             if not force and name in self._module_dict:
                 raise KeyError(f'{name} is already registered '
@@ -304,8 +300,10 @@ class Registry:
             return module
 
         # raise the error ahead of time
-        if not (name is None or isinstance(name, str)):
-            raise TypeError(f'name must be a str, but got {type(name)}')
+        if not (name is None or isinstance(name, str) or is_seq_of(name, str)):
+            raise TypeError(
+                'name must be either of None, an instance of str or list,'
+                f' but got {type(name)}')
 
         # use it as a decorator: @x.register_module()
         def _register(cls):
