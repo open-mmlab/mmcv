@@ -66,9 +66,6 @@ class PaviLoggerHook(LoggerHook):
                 self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
-        if self.add_graph:
-            self.writer.add_graph(runner.model)
-
     def get_step(self, runner):
         """Get the total training step/epoch."""
         if self.get_mode(runner) == 'val' and self.by_epoch:
@@ -95,3 +92,9 @@ class PaviLoggerHook(LoggerHook):
                     tag=self.run_name,
                     snapshot_file_path=ckpt_path,
                     iteration=iteration)
+
+    @master_only
+    def before_train_epoch(self, runner):
+        if self.get_epoch() == 1:
+            if self.add_graph:
+                self.writer.add_graph(runner.model, runner.data_loader)
