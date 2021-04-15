@@ -1,5 +1,4 @@
 import os
-import sys
 
 import numpy as np
 import torch
@@ -15,7 +14,8 @@ ext_module = ext_loader.load_ext(
 class NMSop(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, bboxes, scores, iou_threshold, score_threshold, max_num, offset):
+    def forward(ctx, bboxes, scores, iou_threshold, score_threshold, max_num,
+                offset):
         valid_mask = scores > score_threshold
         bboxes, scores = bboxes[valid_mask], scores[valid_mask]
 
@@ -26,7 +26,8 @@ class NMSop(torch.autograd.Function):
         return inds
 
     @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, score_threshold, max_num, offset):
+    def symbolic(g, bboxes, scores, iou_threshold, score_threshold, max_num,
+                 offset):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         # TensorRT nms plugin is aligned with original nms in ONNXRuntime
@@ -45,7 +46,9 @@ class NMSop(torch.autograd.Function):
 
             from torch.onnx.symbolic_helper import _is_value
             if not _is_value(max_num):
-                max_num = g.op("Constant", value_t=torch.tensor(max_num, dtype=torch.long))
+                max_num = g.op(
+                    'Constant',
+                    value_t=torch.tensor(max_num, dtype=torch.long))
             max_output_per_class = max_num
             iou_threshold = g.op(
                 'Constant',
@@ -54,7 +57,8 @@ class NMSop(torch.autograd.Function):
                 'Constant',
                 value_t=torch.tensor([score_threshold], dtype=torch.float))
             nms_out = g.op('NonMaxSuppression', boxes, scores,
-                max_output_per_class, iou_threshold, score_threshold)
+                            max_output_per_class, iou_threshold,
+                            score_threshold)
             return squeeze(
                 g,
                 select(
@@ -62,7 +66,6 @@ class NMSop(torch.autograd.Function):
                     g.op(
                         'Constant',
                         value_t=torch.tensor([2], dtype=torch.long))), 1)
-            
 
 
 class SoftNMSop(torch.autograd.Function):
@@ -154,7 +157,8 @@ def nms(boxes, scores, iou_threshold, score_threshold=0, max_num=-1, offset=0):
     else:
         if max_num < 0:
             max_num = boxes.shape[0]
-        inds = NMSop.apply(boxes, scores, iou_threshold, score_threshold, max_num, offset)
+        inds = NMSop.apply(boxes, scores, iou_threshold, score_threshold,
+                           max_num, offset)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
