@@ -1,6 +1,0 @@
-Requirement already satisfied: Ruby in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (0.0.2)
-Requirement already satisfied: nltk<4 in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (from Ruby) (3.6.1)
-Requirement already satisfied: tqdm in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (from nltk<4->Ruby) (4.51.0)
-Requirement already satisfied: click in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (from nltk<4->Ruby) (7.1.2)
-Requirement already satisfied: joblib in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (from nltk<4->Ruby) (1.0.1)
-Requirement already satisfied: regex in /home/SENSETIME/liguankai/miniconda3/lib/python3.8/site-packages (from nltk<4->Ruby) (2021.4.4)
