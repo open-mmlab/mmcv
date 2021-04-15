@@ -120,10 +120,8 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
         if rois.size(1) == 5:
             rois = rois[:, 1:]
         abs_img_points = rel_roi_points.clone()
-        a = abs_img_points[:, :, 0] * (
-            rois[:, None, 2] - rois[:, None, 0])
-        b = abs_img_points[:, :, 1] * (
-            rois[:, None, 3] - rois[:, None, 1])
+        a = abs_img_points[:, :, 0] * (rois[:, None, 2] - rois[:, None, 0])
+        b = abs_img_points[:, :, 1] * (rois[:, None, 3] - rois[:, None, 1])
         a += rois[:, None, 0]
         b += rois[:, None, 1]
         abs_img_points = torch.stack([a, b], dim=2)
@@ -132,17 +130,15 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
 
 def get_shape_from_feature_map(x):
     if torch.onnx.is_in_onnx_export():
-        img_shape = shape_as_tensor(
-            x)[2:].flip(0).view(1, 1, 2).to(x.device).float()
+        img_shape = shape_as_tensor(x)[2:].flip(0).view(1, 1, 2).to(
+            x.device).float()
     else:
-        img_shape = torch.tensor(
-            x.shape[2:]).flip(0).view(1, 1, 2).to(x.device).float()
+        img_shape = torch.tensor(x.shape[2:]).flip(0).view(1, 1, 2).to(
+            x.device).float()
     return img_shape
 
 
-def abs_img_point_to_rel_img_point(abs_img_points,
-                                   img,
-                                   spatial_scale=1.):
+def abs_img_point_to_rel_img_point(abs_img_points, img, spatial_scale=1.):
     """Convert image based absolute point coordinates to image based relative
     coordinates for sampling.
 
@@ -219,11 +215,11 @@ def point_sample(input, points, align_corners=False, **kwargs):
         add_dim = True
         points = points.unsqueeze(2)
     if torch.onnx.is_in_onnx_export():
-        output = bilinear_grid_sample(input, denormalize(points),
-                                      align_corners=align_corners)
+        output = bilinear_grid_sample(
+            input, denormalize(points), align_corners=align_corners)
     else:
-        output = F.grid_sample(input, denormalize(points),
-                               align_corners=align_corners, **kwargs)
+        output = F.grid_sample(
+            input, denormalize(points), align_corners=align_corners, **kwargs)
     if add_dim:
         output = output.squeeze(3)
     return output
@@ -259,8 +255,8 @@ class SimpleRoIAlign(nn.Module):
             feat = features[0].unsqueeze(0)
             rel_img_points = rel_roi_point_to_rel_img_point(
                 rois, rel_roi_points, feat, self.spatial_scale).unsqueeze(0)
-            point_feat = point_sample(feat, rel_img_points,
-                                      align_corners=not self.aligned)
+            point_feat = point_sample(
+                feat, rel_img_points, align_corners=not self.aligned)
             point_feats = [point_feat.squeeze(0).transpose(0, 1)]
         else:
             point_feats = []
