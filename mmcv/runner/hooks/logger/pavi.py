@@ -6,6 +6,7 @@ import os.path as osp
 import yaml
 
 import mmcv
+from ....parallel.utils import is_module_wrapper
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -94,7 +95,12 @@ class PaviLoggerHook(LoggerHook):
                     iteration=iteration)
 
     @master_only
-    def before_train_epoch(self, runner):
-        if self.get_epoch() == 1:
-            if self.add_graph:
-                self.writer.add_graph(runner.model, runner.data_loader)
+    def before_epoch(self, runner):
+        if runner.epoch == 0 and self.add_graph:
+            data = next(iter(runner.data_loader))
+            image = data['img_info'][0].cuda()
+            if is_module_wrapper(runner.model):
+                _model = runner.model.module
+            else:
+                _model = runner.model
+            self.writer.add_graph(_model, image)
