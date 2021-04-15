@@ -163,8 +163,8 @@ def abs_img_point_to_rel_img_point(abs_img_points,
     if isinstance(img, tuple):
         h, w = img
         scale = torch.tensor([w, h],
-                            dtype=torch.float,
-                            device=abs_img_points.device)
+                             dtype=torch.float,
+                             device=abs_img_points.device)
         scale = scale.view(1, 1, 2)
     else:
         scale = get_shape_from_feature_map(img)
@@ -219,9 +219,11 @@ def point_sample(input, points, align_corners=False, **kwargs):
         add_dim = True
         points = points.unsqueeze(2)
     if torch.onnx.is_in_onnx_export():
-        output = bilinear_grid_sample(input, denormalize(points), align_corners=align_corners)
+        output = bilinear_grid_sample(input, denormalize(points),
+                                      align_corners=align_corners)
     else:
-        output = F.grid_sample(input, denormalize(points), align_corners=align_corners, **kwargs)
+        output = F.grid_sample(input, denormalize(points),
+                               align_corners=align_corners, **kwargs)
     if add_dim:
         output = output.squeeze(3)
     return output
@@ -257,7 +259,8 @@ class SimpleRoIAlign(nn.Module):
             feat = features[0].unsqueeze(0)
             rel_img_points = rel_roi_point_to_rel_img_point(
                 rois, rel_roi_points, feat, self.spatial_scale).unsqueeze(0)
-            point_feat = point_sample(feat, rel_img_points, align_corners=not self.aligned)
+            point_feat = point_sample(feat, rel_img_points,
+                                      align_corners=not self.aligned)
             point_feats = [point_feat.squeeze(0).transpose(0, 1)]
         else:
             point_feats = []
