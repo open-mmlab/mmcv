@@ -181,3 +181,7 @@ you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/
 ## Contributing
 
 We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.
+
+## License
+
+Some operations in `MMCV` are with other licenses instead of Apache 2.0. Please refer to [LICENSES.md](LICENSES.md) for the careful check, if you are using our code for commercial matters.
