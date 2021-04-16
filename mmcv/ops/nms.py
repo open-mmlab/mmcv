@@ -57,8 +57,8 @@ class NMSop(torch.autograd.Function):
                 'Constant',
                 value_t=torch.tensor([score_threshold], dtype=torch.float))
             nms_out = g.op('NonMaxSuppression', boxes, scores,
-                            max_output_per_class, iou_threshold,
-                            score_threshold)
+                           max_output_per_class, iou_threshold,
+                           score_threshold)
             return squeeze(
                 g,
                 select(
