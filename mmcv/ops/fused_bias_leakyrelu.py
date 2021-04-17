@@ -93,7 +93,7 @@
 
 # =======================================================================
 
-# modify from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py # noqa:E501
+# modified from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py # noqa:E501
 
 import torch
 import torch.nn.functional as F

@@ -178,11 +178,9 @@ c. 安装完整版并且编译 onnxruntime 的自定义算子
 
 我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
-<<<<<<< HEAD
 ## 许可证
 
 在 `MMCV` 中，有一部分功能并不是使用的 Apache2.0 证书，我们在 [证书](LICENSES.md) 中详细的列出了这些功能已经他们对应的证书，如果您正在从事盈利性活动，请谨慎参考此文档。
-=======
 ## 欢迎加入 OpenMMLab 社区
 
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
@@ -201,4 +199,3 @@ c. 安装完整版并且编译 onnxruntime 的自定义算子
 - 🔥 提供与各行各业开发者充分交流的平台
 
 干货满满 📘，等你来撩 💗，OpenMMLab 社区期待您的加入 👬
->>>>>>> 5504b5fbcf5731c5e47de2abfd38dea704972497

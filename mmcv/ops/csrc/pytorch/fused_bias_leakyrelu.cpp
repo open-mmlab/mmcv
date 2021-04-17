@@ -96,7 +96,6 @@ THE POSSIBILITY OF SUCH DAMAGES.
 =======================================================================
 */
 // Modified from
-// from
 // https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_bias_act.cpp
 #include "pytorch_cpp_helper.hpp"
 
