@@ -144,6 +144,8 @@ class EvalHook(Hook):
                 warnings.warn('runner.meta is None. Creating an empty one.')
                 runner.meta = dict()
             runner.meta.setdefault('hook_msgs', dict())
+            self.best_ckpt_path = runner.meta['hook_msgs'].get(
+                'best_ckpt', None)
 
     def before_train_iter(self, runner):
         """Evaluate the model only at the start of training by iteration."""
@@ -237,16 +239,15 @@ class EvalHook(Hook):
             best_score = key_score
             runner.meta['hook_msgs']['best_score'] = best_score
 
-            best_ckpt_path = runner.meta['hook_msgs'].get('best_ckpt', None)
-
-            if best_ckpt_path and osp.isfile(best_ckpt_path):
-                os.remove(best_ckpt_path)
+            if self.best_ckpt_path and osp.isfile(self.best_ckpt_path):
+                os.remove(self.best_ckpt_path)
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
-            runner.save_checkpoint(
-                runner.work_dir, best_ckpt_name, create_symlink=False)
             self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
+
+            runner.save_checkpoint(
+                runner.work_dir, best_ckpt_name, create_symlink=False)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(

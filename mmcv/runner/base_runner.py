@@ -339,6 +339,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
+        if self.meta is None:
+            self.meta = dict()
         self.meta.setdefault('hook_msgs', dict())
         # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
         self.meta['hook_msgs'].update(checkpoint['meta']['hook_msgs'])
