@@ -94,7 +94,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import constant_init
+    >>> from mmcv.cnn import constant_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # constant_init(module, val, bias=0)
     >>> constant_init(conv1, 1, 0)
@@ -107,7 +107,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import xavier_init
+    >>> from mmcv.cnn import xavier_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # xavier_init(module, gain=1, bias=0, distribution='normal')
     >>> xavier_init(conv1, distribution='normal')
@@ -119,7 +119,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import normal_init
+    >>> from mmcv.cnn import normal_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # normal_init(module, mean=0, std=1, bias=0)
     >>> normal_init(conv1, std=0.01, bias=0)
@@ -131,7 +131,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import uniform_init
+    >>> from mmcv.cnn import uniform_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # uniform_init(module, a=0, b=1, bias=0)
     >>> uniform_init(conv1, a=0, b=1)
@@ -145,7 +145,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import kaiming_init
+    >>> from mmcv.cnn import kaiming_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # kaiming_init(module, a=0, mode='fan_out', nonlinearity='relu', bias=0, distribution='normal')
     >>> kaiming_init(conv1)
@@ -156,7 +156,7 @@ We provide the following initialization methods.
 
     ```python
     >>> import torch.nn as nn
-    >>> from mmcv.cnn.utils.weight_init import caffe2_xavier_init
+    >>> from mmcv.cnn import caffe2_xavier_init
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # caffe2_xavier_init(module, bias=0)
     >>> caffe2_xavier_init(conv1)
@@ -167,7 +167,7 @@ We provide the following initialization methods.
   Initialize conv/fc bias value according to given probability proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
 
     ```python
-    >>> from mmcv.cnn.utils.weight_init import bias_init_with_prob
+    >>> from mmcv.cnn import bias_init_with_prob
     >>> # bias_init_with_prob is proposed in Focal Loss
     >>> bias = bias_init_with_prob(0.01)
     >>> bias
@@ -195,11 +195,13 @@ Let us introduce the usage of `initialize` in detail.
 
     If we only define `layer`, it just initialize the layer in `layer` key.
 
+    NOTE: Value of `layer` key is the class name with attributes weights and bias of Pytorch, so `MultiheadAttention layer` is not supported.
+
 - Define `layer` key for initializing module with same configuration.
 
   ```python
   import torch.nn as nn
-  from mmcv.cnn.utils.weight_init import initialize
+  from mmcv.cnn import initialize
 
   class FooNet(nn.Module):
       def __init__(self):
@@ -223,7 +225,7 @@ Let us introduce the usage of `initialize` in detail.
 
   ```python
   import torch.nn as nn
-  from mmcv.cnn.utils.weight_init import initialize
+  from mmcv.cnn.utils import initialize
 
   class FooNet(nn.Module):
       def __init__(self):
@@ -253,13 +255,11 @@ Let us introduce the usage of `initialize` in detail.
 
 2. Initialize model by `override` key
 
-    If we define `override` but don't define `layer`, it will initialize parameters with the attribute name in `override`.
-
-    If we define `override` and `layer`, `override` has higher priority and will override initialization mechanism.
+- When initializing some specific part with its attribute name, we can use `override` key, and the value in `override` will ignore the value in init_cfg.
 
     ```python
     import torch.nn as nn
-    from mmcv.cnn.utils.weight_init import initialize
+    from mmcv.cnn import initialize
 
     class FooNet(nn.Module):
         def __init__(self):
@@ -268,6 +268,8 @@ Let us introduce the usage of `initialize` in detail.
             self.reg = nn.Conv2d(3, 3, 3)
             self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
+    # if we would like to initialize model's weights as 1 and bias as 2
+    # but weight in `cls` as 3 and bias 4, we can use override key
     model = FooNet()
     init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
                     override=dict(type='Constant', name='reg', val=3, bias=4))
@@ -285,14 +287,47 @@ Let us introduce the usage of `initialize` in detail.
     #            [3., 3., 3.]]]], requires_grad=True)
     ```
 
-   *However, we should be careful If we don't define `layer` key or `override` key, it will not initialize anything.*
+- If `layer` is None in init_cfg, only sub-module with the name in override will be initialized, and type and other args in override can be omitted.
+
+    ```python
+    model = FooNet()
+    init_cfg = dict(type='Constant', val=1, bias=2, override=dict(name='reg'))
+    # self.feat and self.cls will be initialized by Pytorch
+    # The module called 'reg' will be initialized with dict(type='Constant', val=1, bias=2)
+    initialize(model, init_cfg)
+    # model.reg.weight
+    # Parameter containing:
+    # tensor([[[[1., 1., 1.],
+    #           [1., 1., 1.],
+    #           [1., 1., 1.]],
+    #           ...,
+    #           [[1., 1., 1.],
+    #            [1., 1., 1.],
+    #            [1., 1., 1.]]]], requires_grad=True)
+    ```
+
+- If we don't define `layer` key or `override` key, it will not initialize anything.
+
+- Invalid usage
+
+   ```python
+   # It is invalid that override don't have name key
+   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
+                   val=1, bias=2,
+                   override=dict(type='Constant', val=3, bias=4))
+
+   # It is also invalid that override has name and other args except type
+   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
+                   val=1, bias=2,
+                   override=dict(name='reg', val=3, bias=4))
+   ```
 
 3. Initialize model with the pretrained model
 
     ```python
     import torch.nn as nn
     import torchvision.models as models
-    from mmcv.cnn.utils.weight_init import initialize
+    from mmcv.cnn import initialize
 
     # initialize model with pretrained model
     model = models.resnet50()
@@ -339,7 +374,7 @@ Let us introduce the usage of `initialize` in detail.
 
     `````python
     import torch.nn as nn
-    from mmcv.runner.base_module import BaseModule, Sequential, ModuleList
+    from mmcv.runner import BaseModule, Sequential, ModuleList
 
     class FooConv1d(BaseModule):
 
