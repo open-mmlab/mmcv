@@ -46,11 +46,12 @@ def test_registry():
     assert CATS.get('PersianCat') is None
     assert 'PersianCat' not in CATS
 
-    @CATS.register_module(name='Siamese')
+    @CATS.register_module(name=['Siamese', 'Siamese2'])
     class SiameseCat:
         pass
 
     assert CATS.get('Siamese').__name__ == 'SiameseCat'
+    assert CATS.get('Siamese2').__name__ == 'SiameseCat'
 
     class SphynxCat:
         pass
