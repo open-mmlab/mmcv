@@ -339,6 +339,9 @@ class BaseRunner(metaclass=ABCMeta):
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
+        self.meta.setdefault('hook_msgs', dict())
+        # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
+        self.meta['hook_msgs'].update(checkpoint['meta']['hook_msgs'])
 
         # Re-calculate the number of iterations when resuming
         # models with different number of GPUs
