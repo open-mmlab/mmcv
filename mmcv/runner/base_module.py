@@ -22,8 +22,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # define default value of init_cfg instead of hard code
         # in init_weigt() function
         self._is_init = False
-        if init_cfg is not None:
-            self.init_cfg = init_cfg
+        self.init_cfg = init_cfg
 
         # Backward compatibility in derived classes
         # if pretrained is not None:
@@ -40,7 +39,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         from ..cnn import initialize
 
         if not self._is_init:
-            if hasattr(self, 'init_cfg'):
+            if self.init_cfg:
                 initialize(self, self.init_cfg)
             for m in self.children():
                 if hasattr(m, 'init_weight'):
@@ -52,7 +51,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
     def __repr__(self):
         s = super().__repr__()
-        if hasattr(self, 'init_cfg'):
+        if self.init_cfg:
             s += f'\ninit_cfg={self.init_cfg}'
         return s
 
