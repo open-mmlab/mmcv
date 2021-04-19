@@ -332,7 +332,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 attention_weights, self.im2col_step)
         output = self.output_proj(output).permute(1, 0, 2)
         # (num_query, bs ,embed_dims)
-        return output + self.dropout(inp_residual)
+        return self.dropout(output) + inp_residual
 
 
 class FFN(BaseModule):
