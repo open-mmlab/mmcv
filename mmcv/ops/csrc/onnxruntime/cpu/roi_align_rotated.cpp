@@ -1,9 +1,9 @@
+// Modified from
+// https://github.com/facebookresearch/detectron2/tree/master/detectron2/layers/csrc/ROIAlignRotated
+// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 #include "roi_align_rotated.h"
-
 #include "../ort_mmcv_utils.h"
 
-// Implementation taken from
-// https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/ROIAlignRotated/ROIAlignRotated_cpu.cpp
 struct PreCalc {
   int pos1;
   int pos2;
