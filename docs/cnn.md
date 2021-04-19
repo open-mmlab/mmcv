@@ -74,17 +74,17 @@ conv = ConvModule(
 
 ### Weight initialization
 
-> code is available at [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)
+> Implementation details are available at [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)
 
-During training, a proper initialization strategy is beneficial to speed the
+During training, a proper initialization strategy is beneficial to speed up the
 training or obtain a higher performance. In MMCV, we provide some commonly used
-methods for initializing modules like `nn.Conv2d`. Of course, we also provide a
-high-level APIs for initializing model containing one or more
+methods for initializing modules like `nn.Conv2d`. Of course, we also provide
+high-level APIs for initializing models containing one or more
 modules.
 
-#### **Initialization of module**
+#### **Initialization functions**
 
-Initializaing modules, such as `nn.Conv2d`, `nn.Linear` and so on.
+Initialize a `nn.Module` such as `nn.Conv2d`, `nn.Linear` in a functional way.
 
 We provide the following initialization methods.
 
@@ -152,7 +152,8 @@ We provide the following initialization methods.
     ```
 
 - caffe2_xavier_init
-  Corresponds to `kaiming_uniform_` in PyTorch.
+
+  The xavier initialization is implemented in caffe2, which corresponds to `kaiming_uniform_` in PyTorch.
 
     ```python
     >>> import torch.nn as nn
@@ -164,7 +165,7 @@ We provide the following initialization methods.
 
 - bias_init_with_prob
 
-  Initialize conv/fc bias value according to given probability proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
+  Initialize conv/fc bias value according to a given probability, as proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
 
     ```python
     >>> from mmcv.cnn import bias_init_with_prob
@@ -174,7 +175,7 @@ We provide the following initialization methods.
     -4.59511985013459
     ```
 
-#### **Initialization of model**
+#### **Initializers and configs**
 
 On the basis of the initialization methods, we define the corresponding initialization classes and register them to `INITIALIZERS`, so we can
 use the configuration to initialize the model.
