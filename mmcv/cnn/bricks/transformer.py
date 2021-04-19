@@ -281,7 +281,7 @@ class MultiScaleDeformableAttention(BaseModule):
             value = key
 
         if residual is None:
-            inp_residual = key
+            inp_residual = query
         if query_pos is not None:
             query = query + query_pos
 
