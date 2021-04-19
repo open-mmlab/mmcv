@@ -1,3 +1,36 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@gengenkai 
+gengenkai
+/
+mmcv
+forked from open-mmlab/mmcv
+0
+0
+628
+Code
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+mmcv/mmcv/runner/hooks/logger/pavi.py /
+@gengenkai
+gengenkai change data loader to image
+Latest commit fcfc54f 4 days ago
+ History
+ 9 contributors
+@hellock@Johnson-Wang@xvjiarui@OceanPang@ZwwWayne@gengenkai@nbei@hejm37@daavoo
+106 lines (94 sloc)  3.89 KB
+ 
 # Copyright (c) Open-MMLab. All rights reserved.
 import json
 import os
@@ -6,6 +39,7 @@ import os.path as osp
 import yaml
 
 import mmcv
+from ....parallel.utils import is_module_wrapper
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -66,9 +100,6 @@ class PaviLoggerHook(LoggerHook):
                 self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
-        if self.add_graph:
-            self.writer.add_graph(runner.model)
-
     def get_step(self, runner):
         """Get the total training step/epoch."""
         if self.get_mode(runner) == 'val' and self.by_epoch:
@@ -95,3 +126,14 @@ class PaviLoggerHook(LoggerHook):
                     tag=self.run_name,
                     snapshot_file_path=ckpt_path,
                     iteration=iteration)
+
+    @master_only
+    def before_epoch(self, runner):
+        if runner.epoch == 0 and self.add_graph:
+            if is_module_wrapper(runner.model):
+                _model = runner.model.module
+            else:
+                _model = runner.model
+            data = next(iter(runner.data_loader))
+            image = data['img_info'][0].cuda()
+            self.writer.add_graph(_model, image)
