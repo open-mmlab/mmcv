@@ -145,7 +145,7 @@ def abs_img_point_to_rel_img_point(abs_img_points, img, spatial_scale=1.):
     Args:
         abs_img_points (Tensor): Image based absolute point coordinates,
             shape (N, P, 2)
-        img (tuple): (height, width) of image or feature map.
+        img (tuple/Tensor): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
