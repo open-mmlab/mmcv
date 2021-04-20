@@ -481,20 +481,21 @@ class BaseRunner(metaclass=ABCMeta):
                                 custom_hooks_config=None):
         """Register default and custom hooks for training.
 
-        Default hooks include:
+        Default and custom hooks include:
 
-        - LrUpdaterHook
-        - MomentumUpdaterHook
-        - OptimizerStepperHook
-        - CheckpointSaverHook
-        - IterTimerHook
-        - LoggerHook(s)
+          Hooks                 Priority
+        - LrUpdaterHook         10
+        - MomentumUpdaterHook   30
+        - OptimizerStepperHook  50
+        - CheckpointSaverHook   70
+        - IterTimerHook         80
+        - LoggerHook(s)         90
+        - CustomHook(s)         50 (default)
         """
-        #                                                     priority
-        self.register_lr_hook(lr_config)                    # 10
-        self.register_momentum_hook(momentum_config)        # 30
-        self.register_optimizer_hook(optimizer_config)      # 50
-        self.register_checkpoint_hook(checkpoint_config)    # 70
-        self.register_timer_hook(timer_config)              # 80
-        self.register_logger_hooks(log_config)              # 90
-        self.register_custom_hooks(custom_hooks_config)     # 50 (default)
+        self.register_lr_hook(lr_config)
+        self.register_momentum_hook(momentum_config)
+        self.register_optimizer_hook(optimizer_config)
+        self.register_checkpoint_hook(checkpoint_config)
+        self.register_timer_hook(timer_config)
+        self.register_logger_hooks(log_config)
+        self.register_custom_hooks(custom_hooks_config)
