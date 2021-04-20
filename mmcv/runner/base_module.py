@@ -34,7 +34,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     def is_init(self):
         return self._is_init
 
-    def init_weight(self):
+    def init_weights(self):
         """Initialize the weights."""
         from ..cnn import initialize
 
@@ -42,8 +42,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             if self.init_cfg:
                 initialize(self, self.init_cfg)
             for m in self.children():
-                if hasattr(m, 'init_weight'):
-                    m.init_weight()
+                if hasattr(m, 'init_weights'):
+                    m.init_weights()
             self._is_init = True
         else:
             warnings.warn(f'init_weight of {self.__class__.__name__} has '
