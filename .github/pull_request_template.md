@@ -15,6 +15,7 @@ If this PR introduces a new feature, it is better to list some use cases here, a
 
 ## Checklist
 
-1. The modification is covered by complete unit tests. If not, please add more unit test to ensure the correctness.
-2. If the modification has potential influence on downstream projects, this PR is tested with downstream projects, like MMDet or MMCls.
-3. The documentation has been modified accordingly, like docstring or example tutorials.
+1. Pre-commit or other linting tools are used to fix the potential lint issues.
+2. The modification is covered by complete unit tests. If not, please add more unit test to ensure the correctness.
+3. If the modification has potential influence on downstream projects, this PR is tested with downstream projects, like MMDet or MMCls.
+4. The documentation has been modified accordingly, like docstring or example tutorials.
