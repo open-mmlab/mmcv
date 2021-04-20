@@ -386,7 +386,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
             hook = lr_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority=10)
 
     def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
@@ -407,7 +407,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
             hook = momentum_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority=30)
 
     def register_optimizer_hook(self, optimizer_config):
         if optimizer_config is None:
@@ -417,7 +417,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
         else:
             hook = optimizer_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority=50)
 
     def register_checkpoint_hook(self, checkpoint_config):
         if checkpoint_config is None:
@@ -427,7 +427,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
         else:
             hook = checkpoint_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority=70)
 
     def register_logger_hooks(self, log_config):
         if log_config is None:
@@ -436,7 +436,7 @@ class BaseRunner(metaclass=ABCMeta):
         for info in log_config['hooks']:
             logger_hook = mmcv.build_from_cfg(
                 info, HOOKS, default_args=dict(interval=log_interval))
-            self.register_hook(logger_hook, priority='VERY_LOW')
+            self.register_hook(logger_hook, priority=90)
 
     def register_timer_hook(self, timer_config):
         if timer_config is None:
@@ -446,7 +446,20 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(timer_config_, HOOKS)
         else:
             hook = timer_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority=80)
+
+    def register_custom_hooks(self, custom_config):
+        if custom_config is None:
+            return
+
+        if not isinstance(custom_config, list):
+            custom_config = [custom_config]
+
+        for item in custom_config:
+            if isinstance(item, dict):
+                self.register_hook_from_cfg(item)
+            else:
+                self.register_hook(item, priority='NORMAL')
 
     def register_profiler_hook(self, profiler_config):
         if profiler_config is None:
@@ -464,8 +477,9 @@ class BaseRunner(metaclass=ABCMeta):
                                 checkpoint_config=None,
                                 log_config=None,
                                 momentum_config=None,
-                                timer_config=dict(type='IterTimerHook')):
-        """Register default hooks for training.
+                                timer_config=dict(type='IterTimerHook'),
+                                custom_hooks_config=None):
+        """Register default and custom hooks for training.
 
         Default hooks include:
 
@@ -476,9 +490,11 @@ class BaseRunner(metaclass=ABCMeta):
         - IterTimerHook
         - LoggerHook(s)
         """
-        self.register_lr_hook(lr_config)
-        self.register_momentum_hook(momentum_config)
-        self.register_optimizer_hook(optimizer_config)
-        self.register_checkpoint_hook(checkpoint_config)
-        self.register_timer_hook(timer_config)
-        self.register_logger_hooks(log_config)
+        #                                                     priority
+        self.register_lr_hook(lr_config)                    # 10
+        self.register_momentum_hook(momentum_config)        # 30
+        self.register_optimizer_hook(optimizer_config)      # 50
+        self.register_checkpoint_hook(checkpoint_config)    # 70
+        self.register_timer_hook(timer_config)              # 80
+        self.register_logger_hooks(log_config)              # 90
+        self.register_custom_hooks(custom_hooks_config)     # 50 (default)
