@@ -22,12 +22,11 @@ A clear and concise description of what the bug is, including what results are e
 
 1. What command, code, or script did you run?
 
-```none
+```bash
 A placeholder for the command.
 ```
 
 2. Did you make any modifications on the code? Did you understand what you have modified?
-3. What project (e.g, MMDetection, MMAction2) did you use?
 
 **Environment**
 
@@ -37,10 +36,10 @@ A placeholder for the command.
     - Other environment variables that may be related (such as `$PATH`, `$LD_LIBRARY_PATH`, `$PYTHONPATH`, etc.)
 
 **Error traceback**
-If applicable, paste the error trackback here.
+If applicable, paste the error traceback here.
 
 ```none
-A placeholder for trackback.
+A placeholder for traceback.
 ```
 
 **Bug fix**

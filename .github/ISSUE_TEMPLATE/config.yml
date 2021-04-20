@@ -2,8 +2,8 @@ blank_issues_enabled: false
 
 contact_links:
   - name: Common Issues
-    url: https://mmdetection.readthedocs.io/en/latest/faq.html
+    url: https://mmcv.readthedocs.io/en/latest/trouble_shooting.html
     about: Check if your issue already has solutions
   - name: MMDetection Documentation
-    url: https://mmdetection.readthedocs.io/en/latest/
+    url: https://mmcv.readthedocs.io/en/latest/
     about: Check if your question is answered in docs
