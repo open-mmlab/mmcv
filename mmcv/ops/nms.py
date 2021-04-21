@@ -14,21 +14,24 @@ ext_module = ext_loader.load_ext(
 class NMSop(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, bboxes, scores, iou_threshold, score_threshold, max_num,
-                offset):
-        valid_mask = scores > score_threshold
-        bboxes, scores = bboxes[valid_mask], scores[valid_mask]
-        valid_inds = torch.nonzero(valid_mask, as_tuple=False).squeeze(dim=1)
+    def forward(ctx, bboxes, scores, iou_threshold, offset, score_threshold,
+                max_num):
+        if torch.onnx.is_in_onnx_export():
+            valid_mask = scores > score_threshold
+            bboxes, scores = bboxes[valid_mask], scores[valid_mask]
+            valid_inds = torch.nonzero(
+                valid_mask, as_tuple=False).squeeze(dim=1)
 
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
 
-        inds = valid_inds[inds[:max_num]]
+        if torch.onnx.is_in_onnx_export():
+            inds = valid_inds[inds[:max_num]]
         return inds
 
     @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, score_threshold, max_num,
-                 offset):
+    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
+                 max_num):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         # TensorRT nms plugin is aligned with original nms in ONNXRuntime
@@ -105,7 +108,7 @@ class SoftNMSop(torch.autograd.Function):
 
 
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
-def nms(boxes, scores, iou_threshold, score_threshold=0, max_num=-1, offset=0):
+def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
     """Dispatch to either CPU or GPU NMS implementations.
 
     The input can be either torch tensor or numpy array. GPU NMS will be used
@@ -160,8 +163,8 @@ def nms(boxes, scores, iou_threshold, score_threshold=0, max_num=-1, offset=0):
     else:
         if max_num < 0:
             max_num = boxes.shape[0]
-        inds = NMSop.apply(boxes, scores, iou_threshold, score_threshold,
-                           max_num, offset)
+        inds = NMSop.apply(boxes, scores, iou_threshold, offset,
+                           score_threshold, max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
