@@ -179,7 +179,7 @@ def rel_roi_point_to_rel_img_point(rois,
         rois (Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
         rel_roi_points (Tensor): Point coordinates inside RoI, relative to
             RoI, location, range (0, 1), shape (N, P, 2)
-        img_shape (tuple): (height, width) of image or feature map.
+        img (tuple/Tensor): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
@@ -251,7 +251,7 @@ class SimpleRoIAlign(nn.Module):
         rel_roi_points = generate_grid(
             num_rois, self.output_size, device=rois.device)
 
-        if torch.onnx.is_in_onnx_export():
+        if torch.onnx.is_in_onnx_export() and num_imgs == 1:
             feat = features[0].unsqueeze(0)
             rel_img_points = rel_roi_point_to_rel_img_point(
                 rois, rel_roi_points, feat, self.spatial_scale).unsqueeze(0)
