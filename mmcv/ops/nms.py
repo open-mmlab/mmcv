@@ -119,9 +119,9 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
         boxes (torch.Tensor or np.ndarray): boxes in shape (N, 4).
         scores (torch.Tensor or np.ndarray): scores in shape (N, ).
         iou_threshold (float): IoU threshold for NMS.
+        offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
         score_threshold (float): score threshold for NMS.
         max_num (int): maximum number of boxes after NMS.
-        offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the \
