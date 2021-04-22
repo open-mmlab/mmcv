@@ -65,7 +65,6 @@ class MultiheadAttention(BaseModule):
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
                                           **kwargs)
         self.dropout = nn.Dropout(dropout)
-        self.init_cfg = init_cfg
 
     def forward(self,
                 query,
@@ -370,7 +369,6 @@ class FFN(BaseModule):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
-        self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
         layers = []
@@ -621,7 +619,6 @@ class TransformerLayerSequence(BaseModule):
         else:
             assert isinstance(transformerlayers, list) and \
                    len(transformerlayers) == num_layers
-        self.init_cfg = init_cfg
         self.num_layers = num_layers
         operation_order = transformerlayers[0]['operation_order']
         self.pre_norm = operation_order[0] == 'norm'

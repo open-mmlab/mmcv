@@ -1,14 +1,3 @@
-/*!
-**************************************************************************************************
-* Deformable DETR
-* Copyright (c) 2020 SenseTime. All Rights Reserved.
-* Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-**************************************************************************************************
-* Modified from
-*https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
-**************************************************************************************************
-*/
-
 #include "pytorch_cpp_helper.hpp"
 
 std::string get_compiler_version();
@@ -214,6 +203,16 @@ Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
                             const Tensor &refer, int act, int grad, float alpha,
                             float scale);
 
+void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
+                               int pooled_height, int pooled_width,
+                               float spatial_scale, int sample_num,
+                               bool aligned, bool clockwise);
+
+void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
+                                Tensor grad_input, int pooled_height,
+                                int pooled_width, float spatial_scale,
+                                int sample_num, bool aligned, bool clockwise);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)");
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
@@ -405,6 +404,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
+        "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
+        py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
+        py::arg("clockwise"));
+  m.def("roi_align_rotated_backward", &roi_align_rotated_backward,
+        "roi_align_rotated backward", py::arg("grad_output"), py::arg("rois"),
+        py::arg("grad_input"), py::arg("pooled_height"),
+        py::arg("pooled_width"), py::arg("spatial_scale"),
+        py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
   m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
         "forward function of multi-scale deformable attention",
         py::arg("value"), py::arg("value_spatial_shapes"),
