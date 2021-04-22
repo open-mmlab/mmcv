@@ -98,6 +98,7 @@ We provide the following initialization methods.
     >>> conv1 = nn.Conv2d(3, 3, 1)
     >>> # constant_init(module, val, bias=0)
     >>> constant_init(conv1, 1, 0)
+    >>> conv1.weight
     ```
 
 - xavier_init
@@ -398,7 +399,7 @@ Let us introduce the usage of `initialize` in detail.
     # BaseModule
     init_cfg = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
     model = FooConv1d(init_cfg)
-    model.init_weight()
+    model.init_weights()
     # model.conv1d.weight
     # Parameter containing:
     # tensor([[[0., 0., 0., 0.],
@@ -412,7 +413,7 @@ Let us introduce the usage of `initialize` in detail.
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     seq_model = Sequential(model1, model2)
-    seq_model.init_weight()
+    seq_model.init_weights()
     # seq_model[0].conv1d.weight
     # Parameter containing:
     # tensor([[[0., 0., 0., 0.],
@@ -434,7 +435,7 @@ Let us introduce the usage of `initialize` in detail.
     model2 = FooConv2d(init_cfg2)
     init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
     seq_model = Sequential(model1, model2, init_cfg=init_cfg)
-    seq_model.init_weight()
+    seq_model.init_weights()
     # seq_model[0].conv1d.weight
     # Parameter containing:
     # tensor([[[0., 0., 0., 0.],
@@ -455,7 +456,7 @@ Let us introduce the usage of `initialize` in detail.
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     modellist = ModuleList([model1, model2])
-    modellist.init_weight()
+    modellist.init_weights()
     # modellist[0].conv1d.weight
     # Parameter containing:
     # tensor([[[0., 0., 0., 0.],
@@ -477,7 +478,7 @@ Let us introduce the usage of `initialize` in detail.
     model2 = FooConv2d(init_cfg2)
     init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
     modellist = ModuleList([model1, model2], init_cfg=init_cfg)
-    modellist.init_weight()
+    modellist.init_weights()
     # modellist[0].conv1d.weight
     # Parameter containing:
     # tensor([[[0., 0., 0., 0.],
