@@ -101,6 +101,7 @@ class PaviLoggerHook(LoggerHook):
                 _model = runner.model.module
             else:
                 _model = runner.model
+            device = next(_model.parameters()).device
             data = next(iter(runner.data_loader))
-            image = data['img_info'][0].cuda()
+            image = data['img_info'][0].to(device)
             self.writer.add_graph(_model, image)
