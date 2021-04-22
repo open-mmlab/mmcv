@@ -24,11 +24,13 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 
 ## List of TensorRT plugins supported in MMCV
 
-|   ONNX Operator   |    TensorRT Plugin    | Note  |
-| :---------------: | :-------------------: | :---: |
-|     RoiAlign      |     MMCVRoiAlign      |   Y   |
-|     ScatterND     |       ScatterND       |   Y   |
-| NonMaxSuppression | MMCVNonMaxSuppression |  WIP  |
+|   ONNX Operator   |                         TensorRT Plugin                         | MMCV Releases |
+| :---------------: | :-------------------------------------------------------------: | :-----------: |
+|   MMCVRoiAlign    |      [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)      |     1.2.6     |
+|     ScatterND     |         [ScatterND](./tensorrt_custom_ops.md#scatternd)         |     1.2.6     |
+| NonMaxSuppression | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression) |     1.3.0     |
+| MMCVDeformConv2d  |  [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)  |     1.3.0     |
+|   grid_sampler    |      [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)      |    master     |
 
 Notes
 

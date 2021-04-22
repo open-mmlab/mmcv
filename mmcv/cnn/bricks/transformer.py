@@ -1,6 +1,7 @@
 import copy
 import warnings
 
+import torch
 import torch.nn as nn
 
 from mmcv import ConfigDict
@@ -53,14 +54,13 @@ class MultiheadAttention(BaseModule):
                  dropout=0.,
                  init_cfg=None,
                  **kwargs):
-        super(MultiheadAttention, self).__init__()
+        super(MultiheadAttention, self).__init__(init_cfg)
         self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.dropout = dropout
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
                                           **kwargs)
         self.dropout = nn.Dropout(dropout)
-        self.init_cfg = init_cfg
 
     def forward(self,
                 query,
@@ -162,7 +162,7 @@ class FFN(BaseModule):
                  dropout=0.,
                  add_residual=True,
                  init_cfg=None):
-        super(FFN, self).__init__()
+        super(FFN, self).__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
         self.embed_dims = embed_dims
@@ -170,7 +170,6 @@ class FFN(BaseModule):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
-        self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
         layers = []
@@ -193,7 +192,7 @@ class FFN(BaseModule):
         """
         out = self.layers(x)
         if not self.add_residual:
-            return out
+            return self.dropout(out)
         if residual is None:
             residual = x
         return residual + self.dropout(out)
@@ -246,7 +245,7 @@ class BaseTransformerLayer(BaseModule):
                  ffn_num_fcs=2,
                  init_cfg=None):
 
-        super(BaseTransformerLayer, self).__init__()
+        super(BaseTransformerLayer, self).__init__(init_cfg)
         assert set(operation_order) & set(
             ['self_attn', 'norm', 'ffn', 'cross_attn']) == \
             set(operation_order), f'The operation_order of' \
@@ -338,6 +337,12 @@ class BaseTransformerLayer(BaseModule):
         inp_residual = query
         if attn_masks is None:
             attn_masks = [None for _ in range(self.num_attn)]
+        elif isinstance(attn_masks, torch.Tensor):
+            attn_masks = [
+                copy.deepcopy(attn_masks) for _ in range(self.num_attn)
+            ]
+            warnings.warn(f'Use same attn_mask in all attentions in '
+                          f'{self.__class__.__name__} ')
         else:
             assert len(attn_masks) == self.num_attn, f'The length of ' \
                         f'attn_masks {len(attn_masks)} must be equal ' \
@@ -407,7 +412,7 @@ class TransformerLayerSequence(BaseModule):
     """
 
     def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
-        super(TransformerLayerSequence, self).__init__()
+        super(TransformerLayerSequence, self).__init__(init_cfg)
         if isinstance(transformerlayers, ConfigDict):
             transformerlayers = [
                 copy.deepcopy(transformerlayers) for _ in range(num_layers)
@@ -415,7 +420,6 @@ class TransformerLayerSequence(BaseModule):
         else:
             assert isinstance(transformerlayers, list) and \
                    len(transformerlayers) == num_layers
-        self.init_cfg = init_cfg
         self.num_layers = num_layers
         operation_order = transformerlayers[0]['operation_order']
         self.pre_norm = operation_order[0] == 'norm'

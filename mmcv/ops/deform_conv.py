@@ -200,7 +200,7 @@ class DeformConv2d(nn.Module):
             channels to output channels. Default: 1.
         deform_groups (int): Number of deformable group partitions.
         bias (bool): If True, adds a learnable bias to the output.
-            Default: True.
+            Default: False.
 
     """
 
@@ -234,7 +234,6 @@ class DeformConv2d(nn.Module):
         self.dilation = _pair(dilation)
         self.groups = groups
         self.deform_groups = deform_groups
-        self.bias = bias
         # enable compatibility with nn.Conv2d
         self.transposed = False
         self.output_padding = _single(0)
@@ -301,7 +300,8 @@ class DeformConv2d(nn.Module):
         s += f'dilation={self.dilation},\n'
         s += f'groups={self.groups},\n'
         s += f'deform_groups={self.deform_groups},\n'
-        s += f'bias={self.bias})'
+        # bias is not supported in DeformConv2d.
+        s += 'deform_groups=False)'
         return s
 
 
