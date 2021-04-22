@@ -97,20 +97,11 @@ class PaviLoggerHook(LoggerHook):
     @master_only
     def before_epoch(self, runner):
         if runner.epoch == 0 and self.add_graph:
-<<<<<<< HEAD
-=======
-            data = next(iter(runner.data_loader))
-            image = data['img_info'][0].cuda()
->>>>>>> f48e57624de22d79b369647ae5458478e75342b2
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
             else:
                 _model = runner.model
-<<<<<<< HEAD
             device = next(_model.parameters()).device
             data = next(iter(runner.data_loader))
             image = data['img_info'][0].to(device)
             self.writer.add_graph(_model, image)
-=======
-            self.writer.add_graph(_model, image)
->>>>>>> f48e57624de22d79b369647ae5458478e75342b2
