@@ -10,15 +10,15 @@
 
 MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目，例如：
 
-- [MMCV](https://github.com/open-mmlab/mmcv): 计算机视觉基础库
-- [MMClassification](https://github.com/open-mmlab/mmclassification): 图像分类工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): 新一代通用 3D 目标检测平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): 语义分割工具箱
+- [MMEditing](https://github.com/open-mmlab/mmediting): 图像视频编辑工具箱
+- [MMPose](https://github.com/open-mmlab/mmpose): 姿态估计工具箱
 - [MMAction2](https://github.com/open-mmlab/mmaction2): 新一代视频理解工具箱
 - [MMTracking](https://github.com/open-mmlab/mmtracking): 一体化视频目标感知平台
-- [MMPose](https://github.com/open-mmlab/mmpose): 姿态估计工具箱
-- [MMEditing](https://github.com/open-mmlab/mmediting): 图像视频编辑工具箱
+- [MMClassification](https://github.com/open-mmlab/mmclassification): 图像分类工具箱
+- [MMOCR](https://github.com/open-mmlab/mmocr): 全流程文字检测识别理解工具包
 
 MMCV 提供了如下众多功能：
 
@@ -177,3 +177,22 @@ c. 安装完整版并且编译 onnxruntime 的自定义算子
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING.md)来了解参与项目贡献的相关指引。
+
+## 欢迎加入 OpenMMLab 社区
+
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+
+<div align="center">
+<img src="docs/_static/zhihu_qrcode.jpg" height="400" />  <img src="docs/_static/qq_group_qrcode.jpg" height="400" />
+</div>
+
+我们会在 OpenMMLab 社区为大家
+
+- 📢 分享 AI 框架的前沿核心技术
+- 💻 解读 PyTorch 常用模块源码
+- 📰 发布 OpenMMLab 的相关新闻
+- 🚀 介绍 OpenMMLab 开发的前沿算法
+- 🏃 获取更高效的问题答疑和意见反馈
+- 🔥 提供与各行各业开发者充分交流的平台
+
+干货满满 📘，等你来撩 💗，OpenMMLab 社区期待您的加入 👬

@@ -17,6 +17,7 @@ Contents
    cnn.md
    ops.md
    build.md
+   deployment.rst
    trouble_shooting.md
    api.rst
 
