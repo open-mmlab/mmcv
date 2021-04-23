@@ -1,10 +1,13 @@
 # Modified from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend  # noqa
 
+from os import path as osp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.modules.utils import _pair
 from torch.onnx.operators import shape_as_tensor
+
+from mmcv.ops import get_onnxruntime_op_path
 
 
 def bilinear_grid_sample(im, grid, align_corners=False):
@@ -54,6 +57,11 @@ def bilinear_grid_sample(im, grid, align_corners=False):
     Id = torch.gather(im_padded, 2, x1_y1)
 
     return (Ia * wa + Ib * wb + Ic * wc + Id * wd).reshape(n, c, gh, gw)
+
+
+def is_in_onnx_export_without_custom_ops():
+    ort_custom_op_path = get_onnxruntime_op_path()
+    return torch.onnx.is_in_onnx_export() and not osp.exists(ort_custom_op_path)
 
 
 def normalize(grid):
@@ -214,7 +222,7 @@ def point_sample(input, points, align_corners=False, **kwargs):
     if points.dim() == 3:
         add_dim = True
         points = points.unsqueeze(2)
-    if torch.onnx.is_in_onnx_export():
+    if is_in_onnx_export_without_custom_ops():
         output = bilinear_grid_sample(
             input, denormalize(points), align_corners=align_corners)
     else:
