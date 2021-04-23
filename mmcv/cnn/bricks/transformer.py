@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
-from mmcv.runner.base_module import BaseModule
+from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils import build_from_cfg
 from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
                        TRANSFORMER_LAYER_SEQUENCE)
@@ -270,7 +270,7 @@ class BaseTransformerLayer(BaseModule):
         self.norm_cfg = norm_cfg
         self.ffn_num_fcs = ffn_num_fcs
         self.pre_norm = operation_order[0] == 'norm'
-        self.attentions = nn.ModuleList()
+        self.attentions = ModuleList()
 
         index = 0
         for operation in operation_order:
@@ -280,14 +280,14 @@ class BaseTransformerLayer(BaseModule):
                 index += 1
 
         self.embed_dims = self.attentions[0].embed_dims
-        self.ffns = nn.ModuleList()
+        self.ffns = ModuleList()
         num_ffns = operation_order.count('ffn')
         for _ in range(num_ffns):
             self.ffns.append(
                 FFN(self.embed_dims, feedforward_channels, ffn_num_fcs,
                     act_cfg, ffn_dropout))
 
-        self.norms = nn.ModuleList()
+        self.norms = ModuleList()
         num_norms = operation_order.count('norm')
         for _ in range(num_norms):
             self.norms.append(build_norm_layer(norm_cfg, self.embed_dims)[1])
@@ -423,7 +423,7 @@ class TransformerLayerSequence(BaseModule):
         self.num_layers = num_layers
         operation_order = transformerlayers[0]['operation_order']
         self.pre_norm = operation_order[0] == 'norm'
-        self.layers = nn.ModuleList()
+        self.layers = ModuleList()
         for i in range(num_layers):
             self.layers.append(build_transformer_layer(transformerlayers[i]))
         self.embed_dims = self.layers[0].embed_dims
