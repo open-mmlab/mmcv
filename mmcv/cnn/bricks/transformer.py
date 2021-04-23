@@ -43,7 +43,8 @@ class MultiheadAttention(BaseModule):
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
+        attn_drop (float): A Dropout layer on attn_output_weights. Default 0.0.
+        proj_drop (float): The drop out rate after attention. Default 0.0.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -51,16 +52,16 @@ class MultiheadAttention(BaseModule):
     def __init__(self,
                  embed_dims,
                  num_heads,
-                 dropout=0.,
+                 attn_drop=0.,
+                 proj_drop=0.,
                  init_cfg=None,
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
         self.embed_dims = embed_dims
         self.num_heads = num_heads
-        self.dropout = dropout
-        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(proj_drop)
 
     def forward(self,
                 query,
