@@ -92,6 +92,19 @@ void modulated_deform_conv_backward(
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias);
 
+Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
+                              const Tensor &level_start_index,
+                              const Tensor &sampling_loc,
+                              const Tensor &attn_weight, const int im2col_step);
+
+std::vector<Tensor> ms_deform_attn_backward(const Tensor &value,
+                                            const Tensor &spatial_shapes,
+                                            const Tensor &level_start_index,
+                                            const Tensor &sampling_loc,
+                                            const Tensor &attn_weight,
+                                            const Tensor &grad_output,
+                                            const int im2col_step);
+
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
@@ -182,12 +195,12 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const float iou_threshold,
                    const int multi_label);
 
-Tensor upfirdn2d(const Tensor& input, const Tensor& kernel, int up_x, int up_y,
+Tensor upfirdn2d(const Tensor &input, const Tensor &kernel, int up_x, int up_y,
                  int down_x, int down_y, int pad_x0, int pad_x1, int pad_y0,
                  int pad_y1);
 
-Tensor fused_bias_leakyrelu(const Tensor& input, const Tensor& bias,
-                            const Tensor& refer, int act, int grad, float alpha,
+Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
+                            const Tensor &refer, int act, int grad, float alpha,
                             float scale);
 
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
@@ -401,4 +414,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
+  m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
+        "forward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("im2col_step"));
+  m.def("ms_deform_attn_backward", &ms_deform_attn_backward,
+        "backward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("grad_output"),
+        py::arg("im2col_step"));
 }
