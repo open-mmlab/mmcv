@@ -407,7 +407,7 @@ class BaseTransformerLayer(BaseModule):
     named `attn_cfgs`. It is worth mentioning that it supports `prenorm`
     when you specifying `norm` as the first element of `operation_order`.
     More details about the `prenorm`: `On Layer Normalization in the
-    Transformer Architecture <https://arxiv.org/abs/2007.08103>`_ .
+    Transformer Architecture <https://arxiv.org/abs/2002.04745>`_ .
 
     Args:
         attn_cfgs (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict` | None )):
