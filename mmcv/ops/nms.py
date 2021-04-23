@@ -16,7 +16,8 @@ class NMSop(torch.autograd.Function):
     @staticmethod
     def forward(ctx, bboxes, scores, iou_threshold, offset, score_threshold,
                 max_num):
-        if torch.onnx.is_in_onnx_export():
+        is_filtering_by_score = score_threshold > 0
+        if is_filtering_by_score:
             valid_mask = scores > score_threshold
             bboxes, scores = bboxes[valid_mask], scores[valid_mask]
             valid_inds = torch.nonzero(
@@ -25,8 +26,9 @@ class NMSop(torch.autograd.Function):
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
 
-        if torch.onnx.is_in_onnx_export():
-            inds = valid_inds[inds[:max_num]]
+        inds = inds[:max_num]
+        if is_filtering_by_score:
+            inds = valid_inds[inds]
         return inds
 
     @staticmethod
@@ -306,6 +308,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # TODO: more elegant way to handle the dimension issue.
         scores = dets[:, 4]
     else:
+        max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):
             mask = (idxs == id).nonzero(as_tuple=False).view(-1)
@@ -314,6 +317,8 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
         keep = total_mask.nonzero(as_tuple=False).view(-1)
         keep = keep[scores[keep].argsort(descending=True)]
+        if max_num > 0:
+            keep = keep[:max_num]
         boxes = boxes[keep]
         scores = scores[keep]
 
