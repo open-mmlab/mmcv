@@ -33,7 +33,7 @@ def single_gpu_test(model, data_loader):
         results.extend(result)
 
         # use the first key as main key to calculate the batch size
-        batch_size = len(next(iter(data.values())))
+        batch_size = len(result)
         for _ in range(batch_size):
             prog_bar.update()
     return results
