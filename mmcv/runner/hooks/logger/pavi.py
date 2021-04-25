@@ -22,7 +22,8 @@ class PaviLoggerHook(LoggerHook):
                  interval=10,
                  ignore_last=True,
                  reset_flag=True,
-                 by_epoch=True):
+                 by_epoch=True,
+                 img_key='img_info'):
         super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag,
                                              by_epoch)
         self.init_kwargs = init_kwargs
