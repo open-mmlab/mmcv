@@ -29,6 +29,7 @@ class PaviLoggerHook(LoggerHook):
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt
+        self.img_key=img_key
 
     @master_only
     def before_run(self, runner):
@@ -104,5 +105,5 @@ class PaviLoggerHook(LoggerHook):
                 _model = runner.model
             device = next(_model.parameters()).device
             data = next(iter(runner.data_loader))
-            image = data['img_info'][0].to(device)
+            image = data[self.img_key][0:1].to(device)
             self.writer.add_graph(_model, image)
