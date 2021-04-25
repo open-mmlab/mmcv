@@ -69,6 +69,8 @@ def test_registry():
                  "<locals>.Munchkin'>, ")
     repr_str += ("'Siamese': <class 'test_registry.test_registry."
                  "<locals>.SiameseCat'>, ")
+    repr_str += ("'Siamese2': <class 'test_registry.test_registry."
+                 "<locals>.SiameseCat'>, ")
     repr_str += ("'Sphynx': <class 'test_registry.test_registry."
                  "<locals>.SphynxCat'>, ")
     repr_str += ("'Sphynx1': <class 'test_registry.test_registry."
