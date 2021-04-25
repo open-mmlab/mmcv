@@ -1,3 +1,5 @@
+# modified from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py # noqa:E501
+
 # Copyright (c) 2021, NVIDIA Corporation. All rights reserved.
 # NVIDIA Source Code License for StyleGAN2 with Adaptive Discriminator
 # Augmentation (ADA)
@@ -92,8 +94,6 @@
 # THE POSSIBILITY OF SUCH DAMAGES.
 
 # =======================================================================
-
-# modified from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py # noqa:E501
 
 import torch
 import torch.nn.functional as F

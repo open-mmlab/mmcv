@@ -1,3 +1,6 @@
+// Modified from
+// https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d.cpp
+
 /*
 Copyright (c) 2021, NVIDIA Corporation. All rights reserved.
 
@@ -95,8 +98,7 @@ THE POSSIBILITY OF SUCH DAMAGES.
 
 =======================================================================
 */
-// from
-// https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d.cpp
+
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA
