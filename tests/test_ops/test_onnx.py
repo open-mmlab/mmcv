@@ -23,6 +23,43 @@ class WrapFunction(nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
+def process_grid_sample(func, input, grid, ort_custom_op_path=''):
+    wrapped_model = WrapFunction(func).eval()
+
+    input_names = ['input', 'grid']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (input, grid),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    session_options = rt.SessionOptions()
+    if ort_custom_op_path:
+        session_options.register_custom_ops_library(ort_custom_op_path)
+
+    # get onnx output
+    input_all = [node.name for node in onnx_model.graph.input]
+    input_initializer = [node.name for node in onnx_model.graph.initializer]
+    net_feed_input = list(set(input_all) - set(input_initializer))
+    assert (len(net_feed_input) == 2)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    ort_result = sess.run(None, {
+        'input': input.detach().numpy(),
+        'grid': grid.detach().numpy()
+    })
+    pytorch_results = wrapped_model(input.clone(), grid.clone())
+    os.remove(onnx_file)
+    assert np.allclose(pytorch_results, ort_result, atol=1e-3)
+
+
 @pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
@@ -48,39 +85,21 @@ def test_grid_sample(mode, padding_mode, align_corners):
             padding_mode=padding_mode,
             align_corners=align_corners)
 
-    wrapped_model = WrapFunction(func).eval()
+    return process_grid_sample(func, input, grid, ort_custom_op_path)
 
-    input_names = ['input', 'grid']
-    output_names = ['output']
 
-    with torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (input, grid),
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=input_names,
-            output_names=output_names,
-            opset_version=11)
+@pytest.mark.parametrize('align_corners', [True, False])
+def test_bilinear_grid_sample(align_corners):
+    from mmcv.ops.point_sample import bilinear_grid_sample
 
-    onnx_model = onnx.load(onnx_file)
+    input = torch.rand(1, 1, 10, 10)
+    grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
+    grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
 
-    session_options = rt.SessionOptions()
-    session_options.register_custom_ops_library(ort_custom_op_path)
+    def func(input, grid):
+        return bilinear_grid_sample(input, grid, align_corners=align_corners)
 
-    # get onnx output
-    input_all = [node.name for node in onnx_model.graph.input]
-    input_initializer = [node.name for node in onnx_model.graph.initializer]
-    net_feed_input = list(set(input_all) - set(input_initializer))
-    assert (len(net_feed_input) == 2)
-    sess = rt.InferenceSession(onnx_file, session_options)
-    ort_result = sess.run(None, {
-        'input': input.detach().numpy(),
-        'grid': grid.detach().numpy()
-    })
-    pytorch_results = wrapped_model(input.clone(), grid.clone())
-    os.remove(onnx_file)
-    assert np.allclose(pytorch_results, ort_result, atol=1e-3)
+    return process_grid_sample(func, input, grid)
 
 
 def test_nms():
