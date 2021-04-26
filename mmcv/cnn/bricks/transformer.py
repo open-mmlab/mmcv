@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
-from mmcv.runner.base_module import BaseModule, ModuleList
+from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
 from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
                        TRANSFORMER_LAYER_SEQUENCE)
@@ -43,7 +43,8 @@ class MultiheadAttention(BaseModule):
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
+        attn_drop (float): A Dropout layer on attn_output_weights. Default 0.0.
+        proj_drop (float): The drop out rate after attention. Default 0.0.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -51,16 +52,16 @@ class MultiheadAttention(BaseModule):
     def __init__(self,
                  embed_dims,
                  num_heads,
-                 dropout=0.,
+                 attn_drop=0.,
+                 proj_drop=0.,
                  init_cfg=None,
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
         self.embed_dims = embed_dims
         self.num_heads = num_heads
-        self.dropout = dropout
-        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(proj_drop)
 
     def forward(self,
                 query,
@@ -176,12 +177,12 @@ class FFN(BaseModule):
         in_channels = embed_dims
         for _ in range(num_fcs - 1):
             layers.append(
-                nn.Sequential(
+                Sequential(
                     Linear(in_channels, feedforward_channels), self.activate,
                     nn.Dropout(dropout)))
             in_channels = feedforward_channels
         layers.append(Linear(feedforward_channels, embed_dims))
-        self.layers = nn.Sequential(*layers)
+        self.layers = Sequential(*layers)
         self.dropout = nn.Dropout(dropout)
         self.add_residual = add_residual
 
