@@ -165,7 +165,7 @@ class FixedLrUpdaterHook(LrUpdaterHook):
 @HOOKS.register_module()
 class StepLrUpdaterHook(LrUpdaterHook):
 
-    def __init__(self, step, gamma=0.1, **kwargs):
+    def __init__(self, step, gamma=0.1, min_lr=None, **kwargs):
         assert isinstance(step, (list, int))
         if isinstance(step, list):
             for s in step:
@@ -176,6 +176,7 @@ class StepLrUpdaterHook(LrUpdaterHook):
             raise TypeError('"step" must be a list or integer')
         self.step = step
         self.gamma = gamma
+        self.min_lr = min_lr
         super(StepLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
@@ -189,7 +190,11 @@ class StepLrUpdaterHook(LrUpdaterHook):
             if progress < s:
                 exp = i
                 break
-        return base_lr * self.gamma**exp
+        lr = base_lr * self.gamma**exp
+        if self.min_lr is not None:
+            # clip to a minimum value
+            lr = max(lr, self.min_lr)
+        return lr
 
 
 @HOOKS.register_module()
