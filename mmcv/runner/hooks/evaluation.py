@@ -29,7 +29,7 @@ class EvalHook(Hook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in ``runner.meta['hook_msgs']`` to keep
+            checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
             best score value and best checkpoint path, which will be also
             loaded when resume checkpoint. Options are the evaluation metrics
             to the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
@@ -295,7 +295,7 @@ class DistEvalHook(EvalHook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in ``runner.meta['hook_msgs']`` to keep
+            checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
             best score value and best checkpoint path, which will be also
             loaded when resume checkpoint. Options are the evaluation metrics
             to the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
