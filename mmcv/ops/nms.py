@@ -26,7 +26,8 @@ class NMSop(torch.autograd.Function):
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
 
-        inds = inds[:max_num]
+        if max_num > 0:
+            inds = inds[:max_num]
         if is_filtering_by_score:
             inds = valid_inds[inds]
         return inds
@@ -50,11 +51,15 @@ class NMSop(torch.autograd.Function):
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
 
-            from torch.onnx.symbolic_helper import _is_value
+            from torch.onnx.symbolic_helper import _is_value, _size_helper
             if not _is_value(max_num):
-                max_num = g.op(
-                    'Constant',
-                    value_t=torch.tensor(max_num, dtype=torch.long))
+                if max_num > 0:
+                    max_num = g.op(
+                        'Constant',
+                        value_t=torch.tensor(max_num, dtype=torch.long))
+                else:
+                    dim = g.op('Constant', value_t=torch.tensor(0))
+                    max_num = _size_helper(g, bboxes, dim)
             max_output_per_class = max_num
             iou_threshold = g.op(
                 'Constant',
@@ -163,8 +168,6 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
         }
         inds = ext_module.nms(*indata_list, **indata_dict)
     else:
-        if max_num < 0:
-            max_num = boxes.shape[0]
         inds = NMSop.apply(boxes, scores, iou_threshold, offset,
                            score_threshold, max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
