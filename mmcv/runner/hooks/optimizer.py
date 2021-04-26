@@ -52,22 +52,25 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
         to take care of the optimization procedure.
 
         Args:
-            loss_scale (float | str | dict): Scale factor multiplied with loss.
+            loss_scale (float | str | dict): Scale factor configuration.
                 If loss_scale is a float, static loss scaling will be used with
                 the specified scale. If loss_scale is a string, it must be
                 'dynamic', then dynamic loss scaling will be used.
-                It can also be a dict containing arguments of LossScaler.
+                It can also be a dict containing arguments of GradScalar.
                 Defaults to 512. For Pytorch >= 1.6, mmcv uses official
                 implementation of GradScaler. If you use a dict version of
                 loss_scale to create GradScaler, plese refer to:
                 https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler
-                for the parameters. Here is an example:
-                loss_scale = dict(
-                    init_scale=65536.0,
-                    growth_factor=2.0,
-                    backoff_factor=0.5,
-                    growth_interval=2000
-                )
+                for the parameters.
+
+        Examples:
+            >>> loss_scale = dict(
+            ...     init_scale=65536.0,
+            ...     growth_factor=2.0,
+            ...     backoff_factor=0.5,
+            ...     growth_interval=2000
+            ... )
+            >>> optimizer = Fp16OptimizerHook(loss_scale=loss_scale)
         """
 
         def __init__(self,
@@ -155,7 +158,7 @@ else:
         Refer to https://arxiv.org/abs/1710.03740 for more details.
 
         Args:
-            loss_scale (float | str | dict): Scale factor multiplied with loss.
+            loss_scale (float | str | dict): Scale factor configuration.
                 If loss_scale is a float, static loss scaling will be used with
                 the specified scale. If loss_scale is a string, it must be
                 'dynamic', then dynamic loss scaling will be used.

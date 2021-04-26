@@ -238,7 +238,7 @@ def wrap_fp16_model(model):
     Otherwise:
     1. Convert FP32 model to FP16.
     2. Remain some necessary layers to be FP32, e.g., normalization layers.
-    3. Set fp16 flag inside the model to True.
+    3. Set `fp16_enabled` flag inside the model to True.
 
     Args:
         model (nn.Module): Model in FP32.
