@@ -276,6 +276,7 @@ class BaseTransformerLayer(BaseModule):
         for operation in operation_order:
             if operation in ['self_attn', 'cross_attn']:
                 attention = build_attention(attn_cfgs[index])
+                attention.operation_name = operation
                 self.attentions.append(attention)
                 index += 1
 
