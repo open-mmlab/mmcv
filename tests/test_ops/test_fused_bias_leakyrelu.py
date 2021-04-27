@@ -1,6 +1,12 @@
 import pytest
 import torch
-from torch.autograd import gradcheck, gradgradcheck
+
+_USING_PARROTS = True
+try:
+    from parrots.autograd import gradcheck
+except ImportError:
+    from torch.autograd import gradcheck, gradgradcheck
+    _USING_PARROTS = False
 
 
 class TestFusedBiasLeakyReLU(object):
@@ -16,13 +22,22 @@ class TestFusedBiasLeakyReLU(object):
     def test_gradient(self):
 
         from mmcv.ops import FusedBiasLeakyReLU
-        gradcheck(
-            FusedBiasLeakyReLU(2).cuda(),
-            self.input_tensor,
-            eps=1e-4,
-            atol=1e-3)
+        if _USING_PARROTS:
+            gradcheck(
+                FusedBiasLeakyReLU(2).cuda(),
+                self.input_tensor,
+                delta=1e-4,
+                pt_atol=1e-3)
+        else:
+            gradcheck(
+                FusedBiasLeakyReLU(2).cuda(),
+                self.input_tensor,
+                eps=1e-4,
+                atol=1e-3)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
+    @pytest.mark.skipif(
+        not torch.cuda.is_available() or _USING_PARROTS,
+        reason='requires cuda')
     def test_gradgradient(self):
 
         from mmcv.ops import FusedBiasLeakyReLU

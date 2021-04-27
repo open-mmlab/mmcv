@@ -46,11 +46,12 @@ def test_registry():
     assert CATS.get('PersianCat') is None
     assert 'PersianCat' not in CATS
 
-    @CATS.register_module(name='Siamese')
+    @CATS.register_module(name=['Siamese', 'Siamese2'])
     class SiameseCat:
         pass
 
     assert CATS.get('Siamese').__name__ == 'SiameseCat'
+    assert CATS.get('Siamese2').__name__ == 'SiameseCat'
 
     class SphynxCat:
         pass
@@ -68,6 +69,8 @@ def test_registry():
                  "<locals>.Munchkin'>, ")
     repr_str += ("'Siamese': <class 'test_registry.test_registry."
                  "<locals>.SiameseCat'>, ")
+    repr_str += ("'Siamese2': <class 'test_registry.test_registry."
+                 "<locals>.SiameseCat'>, ")
     repr_str += ("'Sphynx': <class 'test_registry.test_registry."
                  "<locals>.SphynxCat'>, ")
     repr_str += ("'Sphynx1': <class 'test_registry.test_registry."
@@ -78,7 +81,7 @@ def test_registry():
     assert repr(CATS) == repr_str
 
     # name type
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         CATS.register_module(name=7474741, module=SphynxCat)
 
     # the registered module should be a class
