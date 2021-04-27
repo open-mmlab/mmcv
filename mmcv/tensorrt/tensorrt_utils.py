@@ -32,11 +32,30 @@ def preprocess_onnx(onnx_model):
 
     init_dict = {_.name: _ for _ in initializers}
 
-    def parse_data(name, typ):
+    nodes_to_remove = []
+
+    def is_node_without_output(name):
+        for node_name, node in node_dict.items():
+            if node not in nodes_to_remove:
+                if name in node.input:
+                    return False
+        return True
+
+    def mark_nodes_to_remove(name):
+        node = node_dict[name]
+        nodes_to_remove.append(node)
+        for input_node_name in node.input:
+            if is_node_without_output(input_node_name):
+                mark_nodes_to_remove(input_node_name)
+
+    def parse_data(name, typ, default_value=0):
         if name in node_dict:
-            const_node = node_dict[name]
-            assert const_node.op_type == 'Constant'
-            raw_data = const_node.attribute[0].t.raw_data
+            node = node_dict[name]
+            if node.op_type == 'Constant':
+                raw_data = node.attribute[0].t.raw_data
+            else:
+                mark_nodes_to_remove(name)
+                return default_value
         elif name in init_dict:
             raw_data = init_dict[name].raw_data
         else:
@@ -65,10 +84,11 @@ def preprocess_onnx(onnx_model):
 
             if len(node_inputs) >= 3:
                 max_output_boxes_per_class = parse_data(
-                    node_inputs[2], np.int64)
+                    node_inputs[2], np.int64, max_output_boxes_per_class)
 
             if len(node_inputs) >= 4:
-                iou_threshold = parse_data(node_inputs[3], np.float32)
+                iou_threshold = parse_data(node_inputs[3], np.float32,
+                                           iou_threshold)
 
             if len(node_inputs) >= 5:
                 score_threshold = parse_data(node_inputs[4], np.float32)
@@ -89,6 +109,9 @@ def preprocess_onnx(onnx_model):
                     node_dict[output] = new_node
             nodes.insert(idx, new_node)
             nodes.remove(node)
+
+    for node in nodes_to_remove:
+        nodes.remove(node)
 
     return onnx_model
 
