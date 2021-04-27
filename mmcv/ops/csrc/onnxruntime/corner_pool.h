@@ -1,11 +1,14 @@
 #ifndef ONNXRUNTIME_CORNER_POOL_H
 #define ONNXRUNTIME_CORNER_POOL_H
 
+#include <assert.h>
+#include <string>
 #include <onnxruntime_cxx_api.h>
 
-struct MMCVTopPoolKernel {
+struct MMCVCornerPoolKernel {
     public:
-        MMCVTopPoolKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info): ort_(ort) {
+        MMCVCornerPoolKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info): ort_(ort) {
+            mode_ = ort_.KernelInfoGetAttribute<int64_t>(info, "mode");
             // create allocator
             allocator_ = Ort::AllocatorWithDefaultOptions();
         }
@@ -15,14 +18,16 @@ struct MMCVTopPoolKernel {
     private:
         Ort::CustomOpApi ort_;
         Ort::AllocatorWithDefaultOptions allocator_;
+
+        int64_t mode_;
 };
 
-struct MMCVTopPoolCustomOp : Ort::CustomOpBase<MMCVTopPoolCustomOp, MMCVTopPoolKernel> {
+struct MMCVCornerPoolCustomOp : Ort::CustomOpBase<MMCVCornerPoolCustomOp, MMCVCornerPoolKernel> {
     void *CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
-        return new MMCVTopPoolKernel(api, info);
+        return new MMCVCornerPoolKernel(api, info);
     }
 
-    const char* GetName() const { return "MMCVTopPool"; }
+    const char* GetName() const { return "MMCVCornerPool"; }
 
     size_t GetInputTypeCount() const { return 1; }
     ONNXTensorElementDataType GetInputType(size_t) const {

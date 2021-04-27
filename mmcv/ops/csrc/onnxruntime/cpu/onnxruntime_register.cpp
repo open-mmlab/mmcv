@@ -14,7 +14,7 @@ NmsOp c_NmsOp;
 MMCVRoiAlignCustomOp c_MMCVRoiAlignCustomOp;
 MMCVRoIAlignRotatedCustomOp c_MMCVRoIAlignRotatedCustomOp;
 GridSampleOp c_GridSampleOp;
-MMCVTopPoolCustomOp c_MMCVTopPoolCustomOp;
+MMCVCornerPoolCustomOp c_MMCVCornerPoolCustomOp;
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
                                           const OrtApiBase *api) {
@@ -47,7 +47,7 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
-  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVTopPoolCustomOp)) {
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCornerPoolCustomOp)) {
     return status;
   }
 
