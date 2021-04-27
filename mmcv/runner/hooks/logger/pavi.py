@@ -106,4 +106,5 @@ class PaviLoggerHook(LoggerHook):
             device = next(_model.parameters()).device
             data = next(iter(runner.data_loader))
             image = data[self.img_key][0:1].to(device)
-            self.writer.add_graph(_model, image)
+            with torch.no_grad():
+                self.writer.add_graph(_model, image)
