@@ -112,10 +112,9 @@ Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
 
 std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float> > pixel_group(Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
-                                            Tensor kernel_contour,
-                                            int kernel_region_num, float distance_threshold
-                                          );
+std::vector<std::vector<float> > pixel_group(
+    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+    Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
@@ -330,8 +329,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("offset"));
   m.def("nms_match", &nms_match, "nms_match (CPU) ", py::arg("dets"),
         py::arg("iou_threshold"));
-  m.def("pixel_group", &pixel_group, "pixel group (CPU) ", py::arg("score"), py::arg("mask"),
-        py::arg("embedding"), py::arg("kernel_label"), py::arg("kernel_contour"), py::arg("kernel_region_label"),
+  m.def("pixel_group", &pixel_group, "pixel group (CPU) ", py::arg("score"),
+        py::arg("mask"), py::arg("embedding"), py::arg("kernel_label"),
+        py::arg("kernel_contour"), py::arg("kernel_region_label"),
         py::arg("distance_threshold"));
   m.def("roi_align_forward", &roi_align_forward, "roi_align forward",
         py::arg("input"), py::arg("rois"), py::arg("output"),
