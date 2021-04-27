@@ -32,7 +32,8 @@ def single_gpu_test(model, data_loader):
             result = model(return_loss=False, **data)
         results.extend(result)
 
-        # Assume result has the same length of batch_size, refer to https://github.com/open-mmlab/mmcv/issues/985
+        # Assume result has the same length of batch_size
+        # refer to https://github.com/open-mmlab/mmcv/issues/985
         batch_size = len(result)
         for _ in range(batch_size):
             prog_bar.update()
