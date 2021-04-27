@@ -14,6 +14,11 @@ ext_module = ext_loader.load_ext('_ext', [
 class TopPoolFunction(Function):
 
     @staticmethod
+    def symbolic(g, input):
+        output = g.op('mmcv::MMCVTopPool', input)
+        return output
+
+    @staticmethod
     def forward(ctx, input):
         output = ext_module.top_pool_forward(input)
         ctx.save_for_backward(input)
