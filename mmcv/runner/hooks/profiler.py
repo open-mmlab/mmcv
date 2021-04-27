@@ -10,14 +10,18 @@ from .hook import HOOKS, Hook
 
 @HOOKS.register_module()
 class ProfilerHook(Hook):
-    """Profiler to analyze perfromance during training and inference.
+    """Profiler to analyze perfromance during training.
 
     PyTorch Profiler is a tool that allows the collection of the performance
-    metrics during the training and inference. More details on Profiler can
-    be found at
+    metrics during the training. More details on Profiler can be found at
     https://pytorch.org/docs/1.8.1/profiler.html#torch.profiler.profile
 
     Args:
+        by_epoch (bool): Profile performance by epoch or by iteration.
+            Default: True.
+        profile_iters (int): Number of iterations for profiling.
+            If ``by_epoch=True``, num_iters indicates epochs, otherwise it
+            indicates iterations. Default: 1.
         activities (list[str]): List of activity groups (CPU, CUDA) to use in
             profiling. Default: ['cpu', 'cuda'].
         schedule (dict, optional): Config of generating the callable schedule.
@@ -47,6 +51,8 @@ class ProfilerHook(Hook):
     """
 
     def __init__(self,
+                 by_epoch: bool = True,
+                 profile_iters: int = 1,
                  activities: List[str] = ['cpu', 'cuda'],
                  schedule: Optional[dict] = None,
                  on_trace_ready: Optional[Union[Callable, dict]] = None,
@@ -60,6 +66,14 @@ class ProfilerHook(Hook):
         except ImportError:
             raise ImportError('profiler is the new feature of torch1.8.1, '
                               f'but your verison is {torch.__version__}')
+
+        assert isinstance(by_epoch, bool), '``by_epoch`` should be a boolean.'
+        self.by_epoch = by_epoch
+
+        if profile_iters < 1:
+            raise ValueError('profile_iters should be greater than 0, but got '
+                             f'{profile_iters}')
+        self.profile_iters = profile_iters
 
         if not isinstance(activities, list):
             raise ValueError(
@@ -89,6 +103,14 @@ class ProfilerHook(Hook):
 
     @master_only
     def before_run(self, runner):
+        if self.by_epoch and runner.max_epochs < self.profile_iters:
+            raise ValueError('self.profile_iters should not be greater than '
+                             f'{runner.max_epochs}')
+
+        if not self.by_epoch and runner.max_iters < self.profile_iters:
+            raise ValueError('self.profile_iters should not be greater than '
+                             f'{runner.max_iters}')
+
         if callable(self.on_trace_ready):  # handler
             _on_trace_ready = self.on_trace_ready
         elif isinstance(self.on_trace_ready, dict):  # config of handler
@@ -139,16 +161,18 @@ class ProfilerHook(Hook):
         runner.logger.info('profiler is profiling...')
 
     @master_only
+    def after_train_epoch(self, runner):
+        if self.by_epoch and runner.epoch == self.profile_iters - 1:
+            runner.logger.info('profiler may take a few minutes...')
+            self.profiler.__exit__(None, None, None)
+            if self.json_trace_path is not None:
+                self.profiler.export_chrome_trace(self.json_trace_path)
+
+    @master_only
     def after_train_iter(self, runner):
         self.profiler.step()
-
-    @master_only
-    def after_val_iter(self, runner):
-        self.profiler.step()
-
-    @master_only
-    def after_run(self, runner):
-        runner.logger.info('profiler may take a few minutes...')
-        self.profiler.__exit__(None, None, None)
-        if self.json_trace_path is not None:
-            self.profiler.export_chrome_trace(self.json_trace_path)
+        if not self.by_epoch and runner.iter == self.profile_iters - 1:
+            runner.logger.info('profiler may take a few minutes...')
+            self.profiler.__exit__(None, None, None)
+            if self.json_trace_path is not None:
+                self.profiler.export_chrome_trace(self.json_trace_path)
