@@ -164,6 +164,17 @@ class FixedLrUpdaterHook(LrUpdaterHook):
 
 @HOOKS.register_module()
 class StepLrUpdaterHook(LrUpdaterHook):
+    """Step LR scheduler with min_lr clipping.
+
+    Args:
+        step (int | list[int]): Step to decay the LR. If an int value is given,
+            regard it as the decay interval. If a list is given, decay LR at
+            these steps.
+        gamma (float, optional): Decay LR ratio. Default: 0.1.
+        min_lr (float, optional): Minimum LR value to keep. If LR after decay
+            is lower than `min_lr`, it will be clipped to this value. If None
+            is given, we don't perform lr clipping. Default: None.
+    """
 
     def __init__(self, step, gamma=0.1, min_lr=None, **kwargs):
         assert isinstance(step, (list, int))
