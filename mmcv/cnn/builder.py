@@ -1,5 +1,4 @@
-import torch.nn as nn
-
+from ..runner import Sequential
 from ..utils import Registry, build_from_cfg
 
 
@@ -22,7 +21,7 @@ def build_model_from_cfg(cfg, registry, default_args=None):
         modules = [
             build_from_cfg(cfg_, registry, default_args) for cfg_ in cfg
         ]
-        return nn.Sequential(*modules)
+        return Sequential(*modules)
     else:
         return build_from_cfg(cfg, registry, default_args)
 
