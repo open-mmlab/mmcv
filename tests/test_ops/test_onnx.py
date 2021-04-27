@@ -93,9 +93,11 @@ def test_nms():
     np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
     boxes = torch.from_numpy(np_boxes)
     scores = torch.from_numpy(np_scores)
-    pytorch_dets, _ = nms(boxes, scores, iou_threshold=0.3, offset=0)
+    pytorch_dets, _ = nms(
+        boxes, scores, iou_threshold=0.3, offset=0, score_threshold=0)
     pytorch_score = pytorch_dets[:, 4]
-    nms = partial(nms, iou_threshold=0.3, offset=0)
+    nms = partial(
+        nms, iou_threshold=0.3, offset=0, score_threshold=0, max_num=100)
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
