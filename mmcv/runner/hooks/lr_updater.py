@@ -361,6 +361,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                  target_ratio=(10, 1e-4),
                  cyclic_times=1,
                  step_ratio_up=0.4,
+                 anneal_strategy='cos',
                  **kwargs):
         if isinstance(target_ratio, float):
             target_ratio = (target_ratio, target_ratio / 1e5)
@@ -380,6 +381,14 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
         self.lr_phases = []  # init lr_phases
+        # validate anneal_strategy
+        if anneal_strategy not in ['cos', 'linear']:
+            raise ValueError('anneal_strategy must be one of "cos" or '
+                             f'"linear", instead got {anneal_strategy}')
+        elif anneal_strategy == 'cos':
+            self.anneal_func = annealing_cos
+        elif anneal_strategy == 'linear':
+            self.anneal_func = annealing_linear
 
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
@@ -405,7 +414,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             curr_iter %= max_iter_per_phase
             if start_iter <= curr_iter < end_iter:
                 progress = curr_iter - start_iter
-                return annealing_cos(base_lr * start_ratio,
+                return self.anneal_func(base_lr * start_ratio,
                                      base_lr * end_ratio,
                                      progress / (end_iter - start_iter))
 
