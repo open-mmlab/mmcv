@@ -25,9 +25,14 @@ class FusedBiasLeakyReLUFunctionBackward(Function):
 
         empty = grad_output.new_empty(0)
 
-        grad_input = ext_module.fused_bias_leakyrelu(grad_output, empty, out,
-                                                     3, 1, negative_slope,
-                                                     scale)
+        grad_input = ext_module.fused_bias_leakyrelu(
+            grad_output,
+            empty,
+            out,
+            act=3,
+            grad=1,
+            alpha=negative_slope,
+            scale=scale)
 
         dim = [0]
 
@@ -46,8 +51,13 @@ class FusedBiasLeakyReLUFunctionBackward(Function):
         # the first part is zero. Thus, we direct consider the second part
         # which is similar with the first order deviation in implementation.
         gradgrad_out = ext_module.fused_bias_leakyrelu(
-            gradgrad_input, gradgrad_bias.to(out.dtype), out, 3, 1,
-            ctx.negative_slope, ctx.scale)
+            gradgrad_input,
+            gradgrad_bias,
+            out,
+            act=3,
+            grad=1,
+            alpha=ctx.negative_slope,
+            scale=ctx.scale)
 
         return gradgrad_out, None, None, None
 
@@ -57,8 +67,15 @@ class FusedBiasLeakyReLUFunction(Function):
     @staticmethod
     def forward(ctx, input, bias, negative_slope, scale):
         empty = input.new_empty(0)
-        out = ext_module.fused_bias_leakyrelu(input, bias, empty, 3, 0,
-                                              negative_slope, scale)
+
+        out = ext_module.fused_bias_leakyrelu(
+            input,
+            bias,
+            empty,
+            act=3,
+            grad=0,
+            alpha=negative_slope,
+            scale=scale)
         ctx.save_for_backward(out)
         ctx.negative_slope = negative_slope
         ctx.scale = scale
