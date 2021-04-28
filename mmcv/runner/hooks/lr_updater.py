@@ -347,7 +347,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
     triangular policy inside a cycle. This improves the performance in the
     3D detection area.
 
-    args:
+    Args:
         by_epoch (bool): Whether to update LR by epoch.
         target_ratio (tuple[float]): Relative ratio of the highest LR and the
             lowest LR to the initial LR.
