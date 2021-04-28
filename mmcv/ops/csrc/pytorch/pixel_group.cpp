@@ -1,3 +1,5 @@
+// It is modified from https://github.com/WenmuZhou/PAN.pytorch
+
 #include "pytorch_cpp_helper.hpp"
 
 std::vector<std::vector<float>> estimate_confidence(int32_t* label,
