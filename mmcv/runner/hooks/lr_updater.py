@@ -347,13 +347,17 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
     triangular policy inside a cycle. This improves the performance in the
     3D detection area.
 
-    Attributes:
+    args:
+        by_epoch (bool): Whether to update LR by epoch.
         target_ratio (tuple[float]): Relative ratio of the highest LR and the
             lowest LR to the initial LR.
         cyclic_times (int): Number of cycles during training
         step_ratio_up (float): The ratio of the increasing process of LR in
             the total cycle.
-        by_epoch (bool): Whether to update LR by epoch.
+        anneal_strategy (str): {'cos', 'linear'}
+            Specifies the annealing strategy: 'cos' for cosine annealing,
+            'linear' for linear annealing.
+            Default: 'cos'
     """
 
     def __init__(self,
@@ -415,8 +419,8 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             if start_iter <= curr_iter < end_iter:
                 progress = curr_iter - start_iter
                 return self.anneal_func(base_lr * start_ratio,
-                                     base_lr * end_ratio,
-                                     progress / (end_iter - start_iter))
+                                        base_lr * end_ratio,
+                                        progress / (end_iter - start_iter))
 
 
 @HOOKS.register_module()
