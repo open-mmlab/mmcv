@@ -214,9 +214,14 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int sample_num, bool aligned, bool clockwise);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)");
+  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
+        py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
+        py::arg("down_y"), py::arg("pad_x0"), py::arg("pad_x1"),
+        py::arg("pad_y0"), py::arg("pad_y1"));
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
-        "fused_bias_leakyrelu (CUDA)");
+        "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
+        py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
+        py::arg("scale"));
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
