@@ -52,7 +52,7 @@ class FusedBiasLeakyReLUFunctionBackward(Function):
         # which is similar with the first order deviation in implementation.
         gradgrad_out = ext_module.fused_bias_leakyrelu(
             gradgrad_input,
-            gradgrad_bias,
+            gradgrad_bias.to(out.dtype),
             out,
             act=3,
             grad=1,
