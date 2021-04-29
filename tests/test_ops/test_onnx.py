@@ -460,8 +460,6 @@ def test_corner_pool(mode, opset=11):
     if not os.path.exists(ort_custom_op_path):
         pytest.skip('custom ops for onnxruntime are not compiled.')
 
-    input = torch.rand((2, 3, 9, 12))  # (n,c,h,w)
-
     from mmcv.ops.corner_pool import CornerPool
 
     def corner_pool_func(input):
@@ -469,6 +467,8 @@ def test_corner_pool(mode, opset=11):
         return corner_pool_module.corner_pool.apply(input)
 
     wrapped_model = WrapFunction(corner_pool_func).eval()
+
+    input = torch.rand((2, 3, 9, 12))  # (n,c,h,w)
 
     with torch.no_grad():
         torch.onnx.export(
