@@ -90,7 +90,7 @@ void  MMCVCornerPoolKernel::Compute(OrtKernelContext *context) {
     // get output memory
     OrtTensorDimensions out_dimensions(ort_, input);
     OrtValue *output = ort_.KernelContext_GetOutput(context, 0, out_dimensions.data(), out_dimensions.size());
-    T *output_data = ort_.GetTensorMutableData<T>(output);    
+    T *output_data = ort_.GetTensorMutableData<T>(output);
 
     // 'top': 0, 'bottom': 1, 'left': 2, 'right':3
     assert(mode == 0 || mode == 1 || mode == 2 || mode == 3);
