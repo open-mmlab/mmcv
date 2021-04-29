@@ -40,12 +40,22 @@ def bilinear_grid_sample(im, grid, align_corners=False):
 
     # Apply default for grid_sample function zero padding
     im_padded = F.pad(im, pad=[1, 1, 1, 1], mode='constant', value=0)
+    padded_h = h + 2
+    padded_w = w + 2
     # save points positions after padding
     x0, x1, y0, y1 = x0 + 1, x1 + 1, y0 + 1, y1 + 1
+    # Clip coordinates to padded image size
+    x0[x0 < 0] = 0
+    x0[x0 > padded_w - 1] = padded_w - 1
+    x1[x1 < 0] = 0
+    x1[x1 > padded_w - 1] = padded_w - 1
+    y0[y0 < 0] = 0
+    y0[y0 > padded_h - 1] = padded_h - 1
+    y1[y1 < 0] = 0
+    y1[y1 > padded_h - 1] = padded_h - 1
 
     im_padded = im_padded.view(n, c, -1)
 
-    padded_w = w + 2
     x0_y0 = (x0 + y0 * padded_w).unsqueeze(1).expand(-1, c, -1)
     x0_y1 = (x0 + y1 * padded_w).unsqueeze(1).expand(-1, c, -1)
     x1_y0 = (x1 + y0 * padded_w).unsqueeze(1).expand(-1, c, -1)

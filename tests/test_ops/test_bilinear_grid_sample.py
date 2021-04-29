@@ -10,12 +10,14 @@ class TestBilinearGridSample(object):
     def _test_bilinear_grid_sample(self,
                                    dtype=torch.float,
                                    align_corners=False,
+                                   multiplier=1,
                                    precision=1e-3):
         from mmcv.ops.point_sample import bilinear_grid_sample
 
-        input = torch.rand(1, 1, 10, 10, dtype=dtype)
+        input = torch.rand(1, 1, 20, 20, dtype=dtype)
         grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
         grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+        grid *= multiplier
 
         out = bilinear_grid_sample(input, grid, align_corners=align_corners)
         ref_out = F.grid_sample(input, grid, align_corners=align_corners)
@@ -28,3 +30,12 @@ class TestBilinearGridSample(object):
         self._test_bilinear_grid_sample(torch.double, True)
         self._test_bilinear_grid_sample(torch.float, False)
         self._test_bilinear_grid_sample(torch.float, True)
+        self._test_bilinear_grid_sample(torch.float, False)
+        self._test_bilinear_grid_sample(torch.float, True, 5)
+        self._test_bilinear_grid_sample(torch.float, False, 10)
+        self._test_bilinear_grid_sample(torch.float, True, -6)
+        self._test_bilinear_grid_sample(torch.float, False, -10)
+        self._test_bilinear_grid_sample(torch.double, True, 5)
+        self._test_bilinear_grid_sample(torch.double, False, 10)
+        self._test_bilinear_grid_sample(torch.double, True, -6)
+        self._test_bilinear_grid_sample(torch.double, False, -10)
