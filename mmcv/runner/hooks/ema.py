@@ -67,7 +67,7 @@ class EMAHook(Hook):
         for name, parameter in self.model_parameters.items():
             buffer_name = self.param_ema_buffer[name]
             buffer_parameter = self.model_buffers[buffer_name]
-            buffer_parameter.mul_(1 - momentum).add_(momentum, parameter.data)
+            buffer_parameter.mul_(1 - momentum).add_(parameter.data, alpha=momentum)
 
     def after_train_epoch(self, runner):
         """We load parameter values from ema backup to model before the
