@@ -1,12 +1,12 @@
 #include "onnxruntime_register.h"
 
+#include "corner_pool.h"
 #include "grid_sample.h"
 #include "nms.h"
 #include "ort_mmcv_utils.h"
 #include "roi_align.h"
 #include "roi_align_rotated.h"
 #include "soft_nms.h"
-#include "corner_pool.h"
 
 const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;
@@ -47,7 +47,8 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
-  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCornerPoolCustomOp)) {
+  if (auto status =
+          ortApi->CustomOpDomain_Add(domain, &c_MMCVCornerPoolCustomOp)) {
     return status;
   }
 
