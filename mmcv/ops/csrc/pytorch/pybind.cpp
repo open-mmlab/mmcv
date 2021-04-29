@@ -116,6 +116,11 @@ std::vector<std::vector<float> > pixel_group(
     Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
     Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
+std::vector<std::vector<int> > contour_expand(Tensor kernel_mask,
+                                              Tensor internal_kernel_label,
+                                              int min_kernel_area,
+                                              int kernel_num);
+
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
                        int aligned_width, float spatial_scale,
@@ -333,6 +338,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("mask"), py::arg("embedding"), py::arg("kernel_label"),
         py::arg("kernel_contour"), py::arg("kernel_region_label"),
         py::arg("distance_threshold"));
+  m.def("contour_expand", &contour_expand, "contour exapnd (CPU) ",
+        py::arg("kernel_mask"), py::arg("internal_kernel_label"),
+        py::arg("min_kernel_area"), py::arg("kernel_num"));
   m.def("roi_align_forward", &roi_align_forward, "roi_align forward",
         py::arg("input"), py::arg("rois"), py::arg("output"),
         py::arg("argmax_y"), py::arg("argmax_x"), py::arg("aligned_height"),
