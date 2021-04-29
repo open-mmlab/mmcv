@@ -129,11 +129,11 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
         if rois.size(1) == 5:
             rois = rois[:, 1:]
         abs_img_points = rel_roi_points.clone()
-        a = abs_img_points[:, :, 0] * (rois[:, None, 2] - rois[:, None, 0])
-        b = abs_img_points[:, :, 1] * (rois[:, None, 3] - rois[:, None, 1])
-        a += rois[:, None, 0]
-        b += rois[:, None, 1]
-        abs_img_points = torch.stack([a, b], dim=2)
+        xs = abs_img_points[:, :, 0] * (rois[:, None, 2] - rois[:, None, 0])
+        ys = abs_img_points[:, :, 1] * (rois[:, None, 3] - rois[:, None, 1])
+        xs += rois[:, None, 0]
+        ys += rois[:, None, 1]
+        abs_img_points = torch.stack([xs, ys], dim=2)
     return abs_img_points
 
 
@@ -261,11 +261,11 @@ class SimpleRoIAlign(nn.Module):
             num_rois, self.output_size, device=rois.device)
 
         if torch.onnx.is_in_onnx_export() and num_imgs == 1:
-            feat = features[0].unsqueeze(0)
             rel_img_points = rel_roi_point_to_rel_img_point(
-                rois, rel_roi_points, feat, self.spatial_scale).unsqueeze(0)
+                rois, rel_roi_points, features,
+                self.spatial_scale).unsqueeze(0)
             point_feat = point_sample(
-                feat, rel_img_points, align_corners=not self.aligned)
+                features, rel_img_points, align_corners=not self.aligned)
             point_feats = [point_feat.squeeze(0).transpose(0, 1)]
         else:
             point_feats = []
