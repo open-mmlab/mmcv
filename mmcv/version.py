@@ -3,7 +3,7 @@
 __version__ = '1.3.2'
 
 
-def parse_version_info(version_str):
+def parse_version_info(version_str: str) -> tuple:
     """Parse a version string into a tuple.
 
     Args:
