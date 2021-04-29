@@ -200,7 +200,7 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 ### Outputs
 
 <dl>
-<dt><tt>output</tt>: tensor(int64)</dt>
+<dt><tt>output</tt>: T</dt>
 <dd>Output the pooled features. 4-D tensor of shape (N, C, H, W).</dd>
 </dl>
 
