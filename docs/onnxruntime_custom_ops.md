@@ -27,7 +27,7 @@
     - [Inputs](#inputs-3)
     - [Outputs](#outputs-3)
     - [Type Constraints](#type-constraints-3)
-  - [CornerPool](#corner_pool)
+  - [CornerPool](#cornerpool)
     - [Description](#description-4)
     - [Parameters](#parameters-4)
     - [Inputs](#inputs-4)

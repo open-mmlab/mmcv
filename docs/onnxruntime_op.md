@@ -21,7 +21,7 @@
 |     [RoIAlign](onnxruntime_custom_ops.md#roialign)     |   Y   |   N   |     1.2.5     |
 |          [NMS](onnxruntime_custom_ops.md#nms)          |   Y   |   N   |     1.2.7     |
 | [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) |   Y   |   N   |    master     |
-| [CornerPool](onnxruntime_custom_ops.md#corner_pool)    |   Y   |   N   |    master     |
+| [CornerPool](onnxruntime_custom_ops.md#cornerpool)    |   Y   |   N   |    master     |
 
 ## How to build custom operators for ONNX Runtime
 

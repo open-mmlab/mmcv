@@ -2,9 +2,8 @@
 #include "../ort_mmcv_utils.h"
 
 void TopPoolForwardCPU(const float *input, float *output,
-                          const int nthreads, const int channels,
-                          const int height, const int width) {
-    int batch_size = nthreads / channels / width / height;
+                       const int batch_size, const int channels,
+                       const int height, const int width) {
     for (int n = 0; n < batch_size; n++) {
         int index_n = n * channels * width * height;
         for (int c = 0; c < channels; c++) {
@@ -23,9 +22,8 @@ void TopPoolForwardCPU(const float *input, float *output,
 }
 
 void BottomPoolForwardCPU(const float *input, float *output,
-                          const int nthreads, const int channels,
+                          const int batch_size, const int channels,
                           const int height, const int width) {
-    int batch_size = nthreads / channels / width / height;
     for (int n = 0; n < batch_size; n++) {
         int index_n = n * channels * width * height;
         for (int c = 0; c < channels; c++) {
@@ -44,9 +42,8 @@ void BottomPoolForwardCPU(const float *input, float *output,
 }
 
 void LeftPoolForwardCPU(const float *input, float *output,
-                          const int nthreads, const int channels,
-                          const int height, const int width) {
-    int batch_size = nthreads / channels / width / height;
+                        const int batch_size, const int channels,
+                        const int height, const int width) {
     for (int n = 0; n < batch_size; n++) {
         int index_n = n * channels * width * height;
         for (int c = 0; c < channels; c++) {
@@ -65,9 +62,8 @@ void LeftPoolForwardCPU(const float *input, float *output,
 }
 
 void RightPoolForwardCPU(const float *input, float *output,
-                          const int nthreads, const int channels,
-                          const int height, const int width) {
-    int batch_size = nthreads / channels / width / height;
+                         const int batch_size, const int channels,
+                         const int height, const int width) {
     for (int n = 0; n < batch_size; n++) {
         int index_n = n * channels * width * height;
         for (int c = 0; c < channels; c++) {
@@ -94,22 +90,19 @@ void  MMCVCornerPoolKernel::Compute(OrtKernelContext *context) {
     // get output memory
     OrtTensorDimensions out_dimensions(ort_, input);
     OrtValue *output = ort_.KernelContext_GetOutput(context, 0, out_dimensions.data(), out_dimensions.size());
-    T *output_data = ort_.GetTensorMutableData<T>(output);
-
-    // get output_size
-    int batch_size = out_dimensions.data()[0];
-    int input_channels = out_dimensions.data()[1];
-    int input_height = out_dimensions.data()[2];
-    int input_width = out_dimensions.data()[3];
-    int output_size = batch_size * input_channels * input_height * input_width;
+    T *output_data = ort_.GetTensorMutableData<T>(output);    
 
     // 'top': 0, 'bottom': 1, 'left': 2, 'right':3
     assert(mode == 0 || mode == 1 || mode == 2 || mode == 3);
 
     // do corner_pool
-    if (mode == 0) TopPoolForwardCPU(input_data, output_data, output_size, input_channels, input_height, input_width);
-    else if (mode == 1) BottomPoolForwardCPU(input_data, output_data, output_size, input_channels, input_height, input_width);
-    else if (mode == 2) LeftPoolForwardCPU(input_data, output_data, output_size, input_channels, input_height, input_width);
-    else RightPoolForwardCPU(input_data, output_data, output_size, input_channels, input_height, input_width);
+    int batch_size = out_dimensions.data()[0];
+    int input_channels = out_dimensions.data()[1];
+    int input_height = out_dimensions.data()[2];
+    int input_width = out_dimensions.data()[3];
+    if (mode == 0) TopPoolForwardCPU(input_data, output_data, batch_size, input_channels, input_height, input_width);
+    else if (mode == 1) BottomPoolForwardCPU(input_data, output_data, batch_size, input_channels, input_height, input_width);
+    else if (mode == 2) LeftPoolForwardCPU(input_data, output_data, batch_size, input_channels, input_height, input_width);
+    else RightPoolForwardCPU(input_data, output_data, batch_size, input_channels, input_height, input_width);
 
 }
