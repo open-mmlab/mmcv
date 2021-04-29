@@ -207,4 +207,3 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 ### Type Constraints
 
 - T:tensor(float32)
-
