@@ -295,8 +295,8 @@ class BaseTransformerLayer(BaseModule):
                  ffn_cfgs=dict(
                      embed_dims=256,
                      feedforward_channels=1024,
-                     ffn_num_fcs=2,
-                     ffn_dropout=0.,
+                     num_fcs=2,
+                     ffn_drop=0.,
                      act_cfg=dict(type='ReLU', inplace=True),
                  ),
                  operation_order=None,
@@ -340,7 +340,7 @@ class BaseTransformerLayer(BaseModule):
         self.ffns = ModuleList()
         num_ffns = operation_order.count('ffn')
         if isinstance(ffn_cfgs, dict):
-            ffn_cfgs = ConfigDict(attn_cfgs)
+            ffn_cfgs = ConfigDict(ffn_cfgs)
         if isinstance(ffn_cfgs, ConfigDict):
             ffn_cfgs = [copy.deepcopy(ffn_cfgs) for _ in range(num_ffns)]
         assert len(ffn_cfgs) == num_ffns
@@ -349,7 +349,7 @@ class BaseTransformerLayer(BaseModule):
                 ffn_cfgs['embed_dims'] = self.embed_dims
             else:
                 assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims
-            self.ffns.append(**ffn_cfgs[ffn_index])
+            self.ffns.append(FFN(**ffn_cfgs[ffn_index]))
 
         self.norms = ModuleList()
         num_norms = operation_order.count('norm')
