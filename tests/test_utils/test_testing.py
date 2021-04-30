@@ -183,20 +183,11 @@ def test_assert_params_all_zeros():
 
 
 def test_check_python_script(capsys):
-    captured = mmcv.utils.check_python_script(
-        './tests/data/scripts/hello.py z', capsys)
-    assert captured == 'hello z!\n'
-    captured = mmcv.utils.check_python_script(
-        './tests/data/scripts/hello.py zz', capsys)
+    mmcv.utils.check_python_script('./tests/data/scripts/hello.py zz')
+    captured = capsys.readouterr().out
     assert captured == 'hello zz!\n'
-    print('lalala')
-    captured = mmcv.utils.check_python_script(
-        './tests/data/scripts/hello.py lizz', capsys)
+    mmcv.utils.check_python_script('./tests/data/scripts/hello.py lizz')
+    captured = capsys.readouterr().out
     assert captured == 'hello lizz!\n'
     with pytest.raises(SystemExit):
-        mmcv.utils.check_python_script('./tests/data/scripts/hello.py li zz',
-                                       capsys)
-    captured = mmcv.utils.check_python_script(
-        'python tests/data/scripts/hello.py lizz', capsys)
-    assert captured == 'hello lizz!\n'
-    mmcv.utils.check_python_script('python tests/data/scripts/hello.py zz')
+        mmcv.utils.check_python_script('./tests/data/scripts/hello.py li zz')
