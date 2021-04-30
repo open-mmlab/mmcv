@@ -8,8 +8,56 @@ from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
-                       TRANSFORMER_LAYER_SEQUENCE)
+from .registry import (ATTENTION, DROPOUT_LAYERS, POSITIONAL_ENCODING,
+                       TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE)
+
+
+def drop_path(x, drop_prob: float = 0., training: bool = False):
+    """Drop paths (Stochastic Depth) per sample (when applied in main path of
+    residual blocks).
+
+    Code copied from
+    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+    """
+    if drop_prob == 0. or not training:
+        return x
+    keep_prob = 1 - drop_prob
+    shape = (x.shape[0], ) + (1, ) * (
+        x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    random_tensor = keep_prob + torch.rand(
+        shape, dtype=x.dtype, device=x.device)
+    random_tensor.floor_()
+    output = x.div(keep_prob) * random_tensor
+    return output
+
+
+@DROPOUT_LAYERS.register_module()
+class DropPath(nn.Module):
+    """Drop paths (Stochastic Depth) per sample  (when applied in main path of
+    residual blocks).
+
+    Code copied from
+    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+    """
+
+    def __init__(self, drop_prob=0.1):
+        super(DropPath, self).__init__()
+        self.drop_prob = drop_prob
+
+    def forward(self, x):
+        return drop_path(x, self.drop_prob, self.training)
+
+
+@DROPOUT_LAYERS.register_module()
+class DropOut(nn.Dropout):
+
+    def __init__(self, drop_prob=0.1, inplace=False):
+        super().__init__(p=drop_prob, inplace=inplace)
+
+
+def build_dropout(cfg, default_args=None):
+    """Builder for drop out layers."""
+    return build_from_cfg(cfg, DROPOUT_LAYERS, default_args)
 
 
 def build_positional_encoding(cfg, default_args=None):
@@ -43,7 +91,10 @@ class MultiheadAttention(BaseModule):
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        dropout (float):w A Dropout layer on attn_output_weights. Default: 0..
+        attn_drop (float): A Dropout layer on attn_output_weights.
+            Default: 0..
+        dropout_layer (obj:`ConfigDict`): The dropout_layer used
+            when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -51,16 +102,17 @@ class MultiheadAttention(BaseModule):
     def __init__(self,
                  embed_dims,
                  num_heads,
-                 dropout=0.,
+                 attn_drop=0.,
+                 dropout_layer=dict(type='DropOut', drop_prob=0.),
                  init_cfg=None,
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
         self.embed_dims = embed_dims
         self.num_heads = num_heads
-        self.dropout = dropout
-        self.attn = nn.MultiheadAttention(embed_dims, num_heads, dropout,
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout_layer = build_dropout(
+            dropout_layer) if dropout_layer else nn.Identity()
         self.init_cfg = init_cfg
 
     def forward(self,
@@ -133,7 +185,7 @@ class MultiheadAttention(BaseModule):
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask)[0]
 
-        return residual + self.dropout(out)
+        return residual + self.dropout_layer(out)
 
 
 class FFN(BaseModule):
@@ -141,26 +193,30 @@ class FFN(BaseModule):
 
     Args:
         embed_dims (int): The feature dimension. Same as
-            `MultiheadAttention`.
+            `MultiheadAttention`. Defaults: 256.
         feedforward_channels (int): The hidden dimension of FFNs.
+            Defaults: 1024.
         num_fcs (int, optional): The number of fully-connected layers in
             FFNs. Default: 2.
         act_cfg (dict, optional): The activation config for FFNs.
             Default: dict(type='ReLU')
-        dropout (float, optional): Probability of an element to be
-            zeroed. Default 0..
+        ffn_drop (float, optional): Probability of an element to be
+            zeroed in MLP. Default 0.0.
         add_residual (bool, optional): Whether to add the
             residual connection. Default: `True`.
+        dropout_layer (obj:`ConfigDict`): The dropout_layer used
+            when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
 
     def __init__(self,
-                 embed_dims,
-                 feedforward_channels,
+                 embed_dims=256,
+                 feedforward_channels=1024,
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
-                 dropout=0.,
+                 ffn_drop=0.,
+                 dropout_layer=None,
                  add_residual=True,
                  init_cfg=None):
         super(FFN, self).__init__(init_cfg)
@@ -170,7 +226,6 @@ class FFN(BaseModule):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        self.dropout = dropout
         self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
@@ -180,11 +235,13 @@ class FFN(BaseModule):
             layers.append(
                 nn.Sequential(
                     Linear(in_channels, feedforward_channels), self.activate,
-                    nn.Dropout(dropout)))
+                    nn.Dropout(ffn_drop)))
             in_channels = feedforward_channels
         layers.append(Linear(feedforward_channels, embed_dims))
+        layers.append(nn.Dropout(ffn_drop))
         self.layers = nn.Sequential(*layers)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout_layer = build_dropout(
+            dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_residual = add_residual
 
     def forward(self, x, residual=None):
@@ -194,10 +251,10 @@ class FFN(BaseModule):
         """
         out = self.layers(x)
         if not self.add_residual:
-            return self.dropout(out)
+            return self.dropout_layer(out)
         if residual is None:
             residual = x
-        return residual + self.dropout(out)
+        return residual + self.dropout_layer(out)
 
 
 @TRANSFORMER_LAYER.register_module()
@@ -219,32 +276,32 @@ class BaseTransformerLayer(BaseModule):
             corresponding attentions in operation_order.
             If it is a dict, all of the attention modules in operation_order
             will be built with this config. Default: None.
-        feedforward_channels (int): The hidden dimension for FFNs.
-            Default: None.
-        ffn_dropout (float): Probability of an element to be zeroed
-            in ffn. Default 0..
+        ffn_cfgs (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict` | None )):
+            Configs for FFN, The order of the configs in the list should be
+            consistent with corresponding ffn in operation_order.
+            If it is a dict, all of the attention modules in operation_order
+            will be built with this config.
         operation_order (tuple[str]): The execution order of operation
             in transformer. Such as ('self_attn', 'norm', 'ffn', 'norm').
             Support `prenorm` when you specifying first element as `norm`.
             Default：None.
-        act_cfg (dict): The activation config for FFNs.
-            Default: dict(type='ReLU')
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='LN').
-        ffn_num_fcs (int): The number of fully-connected layers in FFNs.
-            Default：2.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
 
     def __init__(self,
                  attn_cfgs=None,
-                 feedforward_channels=None,
-                 ffn_dropout=0.,
+                 ffn_cfgs=dict(
+                     embed_dims=256,
+                     feedforward_channels=1024,
+                     ffn_num_fcs=2,
+                     ffn_dropout=0.,
+                     act_cfg=dict(type='ReLU', inplace=True),
+                 ),
                  operation_order=None,
-                 act_cfg=dict(type='ReLU', inplace=True),
                  norm_cfg=dict(type='LN'),
-                 ffn_num_fcs=2,
                  init_cfg=None):
 
         super(BaseTransformerLayer, self).__init__(init_cfg)
@@ -263,14 +320,11 @@ class BaseTransformerLayer(BaseModule):
                 f'of attn_cfg {num_attn} is ' \
                 f'not consistent with the number of attention' \
                 f'in operation_order {operation_order}.'
+
         self.init_cfg = init_cfg
         self.num_attn = num_attn
-        self.feedforward_channels = feedforward_channels
-        self.ffn_dropout = ffn_dropout
         self.operation_order = operation_order
-        self.act_cfg = act_cfg
         self.norm_cfg = norm_cfg
-        self.ffn_num_fcs = ffn_num_fcs
         self.pre_norm = operation_order[0] == 'norm'
         self.attentions = nn.ModuleList()
 
@@ -282,12 +336,18 @@ class BaseTransformerLayer(BaseModule):
                 index += 1
 
         self.embed_dims = self.attentions[0].embed_dims
+
         self.ffns = nn.ModuleList()
         num_ffns = operation_order.count('ffn')
-        for _ in range(num_ffns):
-            self.ffns.append(
-                FFN(self.embed_dims, feedforward_channels, ffn_num_fcs,
-                    act_cfg, ffn_dropout))
+        if isinstance(ffn_cfgs, ConfigDict):
+            ffn_cfgs = [copy.deepcopy(ffn_cfgs) for _ in range(num_ffns)]
+        assert len(ffn_cfgs) == num_ffns
+        for ffn_index in range(num_ffns):
+            if 'embed_dims' not in ffn_cfgs[ffn_index]:
+                ffn_cfgs['embed_dims'] = self.embed_dims
+            else:
+                assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims
+            self.ffns.append(**ffn_cfgs[ffn_index])
 
         self.norms = nn.ModuleList()
         num_norms = operation_order.count('norm')
@@ -424,13 +484,11 @@ class TransformerLayerSequence(BaseModule):
                    len(transformerlayers) == num_layers
         self.init_cfg = init_cfg
         self.num_layers = num_layers
-        operation_order = transformerlayers[0]['operation_order']
-        self.pre_norm = operation_order[0] == 'norm'
         self.layers = nn.ModuleList()
         for i in range(num_layers):
             self.layers.append(build_transformer_layer(transformerlayers[i]))
         self.embed_dims = self.layers[0].embed_dims
-        self.pre_norm = self.layers[0].operation_order[0] == 'norm'
+        self.pre_norm = self.layers[0].pre_norm
 
     def forward(self,
                 query,
