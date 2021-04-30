@@ -339,6 +339,8 @@ class BaseTransformerLayer(BaseModule):
 
         self.ffns = ModuleList()
         num_ffns = operation_order.count('ffn')
+        if isinstance(ffn_cfgs, dict):
+            ffn_cfgs = ConfigDict(attn_cfgs)
         if isinstance(ffn_cfgs, ConfigDict):
             ffn_cfgs = [copy.deepcopy(ffn_cfgs) for _ in range(num_ffns)]
         assert len(ffn_cfgs) == num_ffns
