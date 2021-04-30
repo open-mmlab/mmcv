@@ -16,7 +16,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of
     residual blocks).
 
-    Code copied from
+    We follow the implementation
     https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
     """
     if drop_prob == 0. or not training:
@@ -36,7 +36,7 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of
     residual blocks).
 
-    Code copied from
+    We follow the implementation
     https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
     """
 
