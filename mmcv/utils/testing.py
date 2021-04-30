@@ -7,12 +7,18 @@ from typing import Any, Dict, List
 from unittest.mock import patch
 
 
-def check_script(cmd, capsys):
-    """Run the cmd script with `__main__`, and return the captured stdout as
-    string."""
+def check_python_script(cmd, capsys):
+    """Run the python cmd script with `__main__`, and return the captured
+    stdout as string. Currently it support two forms of cmd lines.
+
+    - ./tests/data/scripts/hello.py zz
+    - python tests/data/scripts/hello.py zz
+    """
     # first clear stdout and stderr
     capsys.readouterr()
     args = split(cmd)
+    if args[0] == 'python':
+        args = args[1:]
     with patch.object(sys, 'argv', args):
         run_path(args[0], run_name='__main__')
     captured = capsys.readouterr().out
