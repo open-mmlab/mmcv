@@ -6,7 +6,7 @@ import warnings
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Say hello.')
-    parser.add_argument('name', help='Path to sdk json file.')
+    parser.add_argument('name', help='To whom.')
 
     args = parser.parse_args()
 
