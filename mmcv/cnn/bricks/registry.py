@@ -7,6 +7,8 @@ PADDING_LAYERS = Registry('padding layer')
 UPSAMPLE_LAYERS = Registry('upsample layer')
 PLUGIN_LAYERS = Registry('plugin layer')
 
+DROPOUT_LAYERS = Registry('Drop out layers')
+
 POSITIONAL_ENCODING = Registry('Position encoding')
 ATTENTION = Registry('Attention')
 TRANSFORMER_LAYER = Registry('TransformerLayer')
