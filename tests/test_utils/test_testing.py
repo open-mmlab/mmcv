@@ -199,3 +199,4 @@ def test_check_python_script(capsys):
     captured = mmcv.utils.check_python_script(
         'python tests/data/scripts/hello.py lizz', capsys)
     assert captured == 'hello lizz!\n'
+    mmcv.utils.check_python_script('python tests/data/scripts/hello.py zz')
