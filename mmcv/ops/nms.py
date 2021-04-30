@@ -51,15 +51,14 @@ class NMSop(torch.autograd.Function):
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
 
-            from torch.onnx.symbolic_helper import _is_value, _size_helper
-            if not _is_value(max_num):
-                if max_num > 0:
-                    max_num = g.op(
-                        'Constant',
-                        value_t=torch.tensor(max_num, dtype=torch.long))
-                else:
-                    dim = g.op('Constant', value_t=torch.tensor(0))
-                    max_num = _size_helper(g, bboxes, dim)
+            from torch.onnx.symbolic_helper import _size_helper
+            if max_num > 0:
+                max_num = g.op(
+                    'Constant',
+                    value_t=torch.tensor(max_num, dtype=torch.long))
+            else:
+                dim = g.op('Constant', value_t=torch.tensor(0))
+                max_num = _size_helper(g, bboxes, dim)
             max_output_per_class = max_num
             iou_threshold = g.op(
                 'Constant',
