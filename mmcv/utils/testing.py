@@ -8,8 +8,10 @@ from unittest.mock import patch
 
 
 def check_python_script(cmd):
-    """Run the python cmd script with `__main__`, and return the captured
-    stdout as string. Currently it support two forms of cmd lines.
+    """Run the python cmd script with `__main__` using `runpy.run_path`.
+    Currently it support two forms of cmd lines. The difference between
+    `os.system` is that, this function exectues code in the current process, so
+    that it can be tracked by coverage tools.
 
     - ./tests/data/scripts/hello.py zz
     - python tests/data/scripts/hello.py zz
