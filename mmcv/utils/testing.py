@@ -1,6 +1,22 @@
 # Copyright (c) Open-MMLab.
+import sys
 from collections.abc import Iterable
+from runpy import run_path
+from shlex import split
 from typing import Any, Dict, List
+from unittest.mock import patch
+
+
+def check_script(cmd, capsys):
+    """Run the cmd script with `__main__`, and return the captured stdout as
+    string."""
+    # first clear stdout and stderr
+    capsys.readouterr()
+    args = split(cmd)
+    with patch.object(sys, 'argv', args):
+        run_path(args[0], run_name='__main__')
+    captured = capsys.readouterr().out
+    return captured
 
 
 def _any(judge_result):
