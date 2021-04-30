@@ -448,6 +448,16 @@ class BaseRunner(metaclass=ABCMeta):
             hook = timer_config
         self.register_hook(hook)
 
+    def register_profiler_hook(self, profiler_config):
+        if profiler_config is None:
+            return
+        if isinstance(profiler_config, dict):
+            profiler_config.setdefault('type', 'ProfilerHook')
+            hook = mmcv.build_from_cfg(profiler_config, HOOKS)
+        else:
+            hook = profiler_config
+        self.register_hook(hook)
+
     def register_training_hooks(self,
                                 lr_config,
                                 optimizer_config=None,
