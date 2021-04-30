@@ -270,7 +270,7 @@ class SimpleRoIAlign(nn.Module):
         rel_roi_points = generate_grid(
             num_rois, self.output_size, device=rois.device)
 
-        if torch.onnx.is_in_onnx_export() and num_imgs == 1:
+        if torch.onnx.is_in_onnx_export() and rois.shape[0] == 1:
             rel_img_points = rel_roi_point_to_rel_img_point(
                 rois, rel_roi_points, features,
                 self.spatial_scale).unsqueeze(0)
