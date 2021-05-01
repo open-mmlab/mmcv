@@ -506,7 +506,7 @@ def test_cummax_cummin(key, opset=11):
         warnings.warn('test_cummax_cummin should be ran with pytorch >= 1.5.0')
         return
 
-    # register custom op `mmcv::cummax`
+    # register custom op `mmcv::cummax` and `mmcv::cummin`
     from mmcv.onnx.symbolic import register_extra_symbolics
     register_extra_symbolics(opset)
 
