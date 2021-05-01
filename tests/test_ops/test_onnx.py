@@ -448,3 +448,69 @@ def test_interpolate():
     if os.path.exists(onnx_file):
         os.remove(onnx_file)
     assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
+
+
+def test_cummax(opset=11):
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+
+    # only support pytorch >= 1.5.0
+    if version.parse(torch.__version__) < version.parse('1.5.0'):
+        warnings.warn('test_cummax should be ran with pytorch >= 1.5.0')
+        return
+
+    # register custom op `mmcv::cummax`
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics(opset)
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    input_list = [
+        # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
+        torch.rand((2, 3, 4, 1, 5)),
+        torch.rand((1)),
+        torch.rand((2, 0, 1)),  # tensor.numel() is 0
+        torch.FloatTensor(),  # empty tensor
+    ]
+
+    for i, input in enumerate(input_list):
+        ndims = input.dim()
+        # valid dim range is [-ndims, ndims-1]
+        # test for all `dim` value which is valid
+        for dim in range(-ndims, ndims):
+            cummax_func = partial(torch.cummax, dim=dim)
+            wrapped_model = WrapFunction(cummax_func).eval()
+
+            with torch.no_grad():
+                torch.onnx.export(
+                    wrapped_model,
+                    input,
+                    onnx_file,
+                    export_params=True,
+                    keep_initializers_as_inputs=True,
+                    input_names=['input'],
+                    output_names=['output', 'indices'],
+                    opset_version=opset)
+
+            onnx_model = onnx.load(onnx_file)
+            input_all = [node.name for node in onnx_model.graph.input]
+            input_initializer = [
+                node.name for node in onnx_model.graph.initializer
+            ]
+            net_feed_input = list(set(input_all) - set(input_initializer))
+            assert (len(net_feed_input) == 1)
+
+            session_options = rt.SessionOptions()
+            session_options.register_custom_ops_library(ort_custom_op_path)
+            sess = rt.InferenceSession(onnx_file, session_options)
+            ort_output, ort_inds = sess.run(None,
+                                            {'input': input.detach().numpy()})
+            pytorch_output, pytorch_inds = wrapped_model(input.clone())
+            pytorch_output = pytorch_output.detach().numpy()
+            pytorch_inds = pytorch_inds.detach().numpy()
+            assert np.allclose(pytorch_output, ort_output, atol=1e-5)
+            assert np.all(pytorch_inds == ort_inds)
+            os.remove(onnx_file)
