@@ -16,7 +16,7 @@ def parse_args():
 def main():
     args = parse_args()
     print(f'hello {args.name}!')
-    if args.name == 'lizz':
+    if args.name == 'agent':
         warnings.warn('I have a secret!')
 
 
