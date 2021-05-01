@@ -450,6 +450,52 @@ def test_interpolate():
     assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
 
 
+@pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
+def test_corner_pool(mode, opset=11):
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    from mmcv.ops.corner_pool import CornerPool
+
+    def corner_pool_func(input):
+        corner_pool_module = CornerPool(mode)
+        return corner_pool_module.corner_pool.apply(input)
+
+    wrapped_model = WrapFunction(corner_pool_func).eval()
+
+    input = torch.rand((2, 3, 9, 12))  # (n,c,h,w)
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model,
+            input,
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=['input'],
+            output_names=['output'],
+            opset_version=opset)
+
+    onnx_model = onnx.load(onnx_file)
+    input_all = [node.name for node in onnx_model.graph.input]
+    input_initializer = [node.name for node in onnx_model.graph.initializer]
+    net_feed_input = list(set(input_all) - set(input_initializer))
+    assert (len(net_feed_input) == 1)
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    ort_result = sess.run(None, {'input': input.detach().numpy()})
+    pytorch_results = wrapped_model(input.clone())
+    os.remove(onnx_file)
+    assert np.allclose(pytorch_results, ort_result, atol=1e-5)
+
+
 @pytest.mark.parametrize('key', ['cummax', 'cummin'])
 def test_cummax_cummin(key, opset=11):
     if torch.__version__ == 'parrots':

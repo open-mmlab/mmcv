@@ -10,8 +10,16 @@ ext_module = ext_loader.load_ext('_ext', [
     'right_pool_forward', 'right_pool_backward'
 ])
 
+_mode_dict = {'top': 0, 'bottom': 1, 'left': 2, 'right': 3}
+
 
 class TopPoolFunction(Function):
+
+    @staticmethod
+    def symbolic(g, input):
+        output = g.op(
+            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['top']))
+        return output
 
     @staticmethod
     def forward(ctx, input):
@@ -29,6 +37,12 @@ class TopPoolFunction(Function):
 class BottomPoolFunction(Function):
 
     @staticmethod
+    def symbolic(g, input):
+        output = g.op(
+            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['bottom']))
+        return output
+
+    @staticmethod
     def forward(ctx, input):
         output = ext_module.bottom_pool_forward(input)
         ctx.save_for_backward(input)
@@ -44,6 +58,12 @@ class BottomPoolFunction(Function):
 class LeftPoolFunction(Function):
 
     @staticmethod
+    def symbolic(g, input):
+        output = g.op(
+            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['left']))
+        return output
+
+    @staticmethod
     def forward(ctx, input):
         output = ext_module.left_pool_forward(input)
         ctx.save_for_backward(input)
@@ -57,6 +77,12 @@ class LeftPoolFunction(Function):
 
 
 class RightPoolFunction(Function):
+
+    @staticmethod
+    def symbolic(g, input):
+        output = g.op(
+            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['right']))
+        return output
 
     @staticmethod
     def forward(ctx, input):
