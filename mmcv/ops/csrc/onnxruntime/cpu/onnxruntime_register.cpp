@@ -50,15 +50,18 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
+  if (auto status =
+          ortApi->CustomOpDomain_Add(domain, &c_MMCVCornerPoolCustomOp)) {
+    return status;
+  }
+
   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCumMaxCustomOp)) {
     return status;
   }
 
   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCumMinCustomOp)) {
-    if (auto status =
-            ortApi->CustomOpDomain_Add(domain, &c_MMCVCornerPoolCustomOp)) {
-      return status;
-    }
-
-    return ortApi->AddCustomOpDomain(options, domain);
+    return status;
   }
+
+  return ortApi->AddCustomOpDomain(options, domain);
+}
