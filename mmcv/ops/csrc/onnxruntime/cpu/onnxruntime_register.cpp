@@ -3,10 +3,10 @@
 #include "grid_sample.h"
 #include "nms.h"
 #include "ort_mmcv_utils.h"
+#include "reduce_ops.h"
 #include "roi_align.h"
 #include "roi_align_rotated.h"
 #include "soft_nms.h"
-#include "reduce_ops.h"
 
 const char *c_MMCVOpDomain = "mmcv";
 SoftNmsOp c_SoftNmsOp;
