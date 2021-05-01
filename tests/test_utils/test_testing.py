@@ -188,6 +188,7 @@ def test_check_python_script(capsys):
     assert captured == 'hello zz!\n'
     mmcv.utils.check_python_script('./tests/data/scripts/hello.py lizz')
     captured = capsys.readouterr().out
-    assert captured == 'hello lizz!\n'
+    assert captured == 'hello agent!\n'
+    # Make sure that wrong cmd raises an error
     with pytest.raises(SystemExit):
         mmcv.utils.check_python_script('./tests/data/scripts/hello.py li zz')
