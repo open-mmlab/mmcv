@@ -450,13 +450,14 @@ def test_interpolate():
     assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
 
 
-def test_cummax(opset=11):
+@pytest.mark.parametrize('key', ['cummax', 'cummin'])
+def test_cummax_cummin(key, opset=11):
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
 
     # only support pytorch >= 1.5.0
     if version.parse(torch.__version__) < version.parse('1.5.0'):
-        warnings.warn('test_cummax should be ran with pytorch >= 1.5.0')
+        warnings.warn('test_cummax_cummin should be ran with pytorch >= 1.5.0')
         return
 
     # register custom op `mmcv::cummax`
@@ -476,12 +477,14 @@ def test_cummax(opset=11):
         torch.FloatTensor(),  # empty tensor
     ]
 
+    cummax_cummin_funcs = {'cummax': torch.cummax, 'cummin': torch.cummin}
+
     for i, input in enumerate(input_list):
         ndims = input.dim()
         # valid dim range is [-ndims, ndims-1]
         # test for all `dim` value which is valid
         for dim in range(-ndims, ndims):
-            cummax_func = partial(torch.cummax, dim=dim)
+            cummax_func = partial(cummax_cummin_funcs[key], dim=dim)
             wrapped_model = WrapFunction(cummax_func).eval()
 
             with torch.no_grad():

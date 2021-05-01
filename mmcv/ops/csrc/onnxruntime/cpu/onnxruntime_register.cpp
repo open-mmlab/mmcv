@@ -15,6 +15,7 @@ MMCVRoiAlignCustomOp c_MMCVRoiAlignCustomOp;
 MMCVRoIAlignRotatedCustomOp c_MMCVRoIAlignRotatedCustomOp;
 GridSampleOp c_GridSampleOp;
 MMCVCumMaxCustomOp c_MMCVCumMaxCustomOp;
+MMCVCumMinCustomOp c_MMCVCumMinCustomOp;
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
                                           const OrtApiBase *api) {
@@ -48,6 +49,10 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
   }
 
   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCumMaxCustomOp)) {
+    return status;
+  }
+
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVCumMinCustomOp)) {
     return status;
   }
 

@@ -61,6 +61,7 @@ void tensor_dim_apply3(const T1 *input, T1 *output, T2 *indices,
   std::vector<int64_t> counter(ndims, 0);
 
   while (!dim_apply_finished) {
+    // call `func` once to update output and indices
     func(input, output, indices, input_dim_size, stride);
     if (ndims == 1) break;
     for (int64_t dim_i = 0; dim_i < ndims; dim_i++) {
@@ -96,6 +97,34 @@ void tensor_dim_apply3(const T1 *input, T1 *output, T2 *indices,
   }      // while
 }
 
+template <typename T1, typename T2, typename Operation>
+void CumMax_CumMin_CPU(const T1 *input, T1 *output, T2 *indices,
+                       int64_t *reversed_dim_cumprod, const int64_t dim,
+                       const OrtTensorDimensions &out_dimensions) {
+  // calculate numel
+  const int64_t ndims = out_dimensions.size();
+  int64_t numel = 1;
+  for (int64_t dim_i = 0; dim_i < ndims; dim_i++) {
+    numel *= out_dimensions.data()[dim_i];
+  }
+
+  // cummax is only applied to input which is non-zero dim and non-empty
+  if (numel) {
+    // compute the cumulative production on dimension size,
+    // which is then used for computing the stride or size of a specific `dim`.
+    reversed_dim_cumprod[ndims - 1] = out_dimensions.data()[ndims - 1];
+    for (int64_t dim_i = ndims - 2; dim_i >= 0; dim_i--) {
+      reversed_dim_cumprod[dim_i] =
+          reversed_dim_cumprod[dim_i + 1] * out_dimensions.data()[dim_i];
+    }
+
+    // do cummax or cummin besed on `Operation` type
+    tensor_dim_apply3<float, int64_t>(
+        input, output, indices, dim, ndims, reversed_dim_cumprod,
+        cummax_cummin_helper<float, int64_t, Operation>);
+  }
+}
+
 void MMCVCumMaxKernel::Compute(OrtKernelContext *context) {
   // get input
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
@@ -111,32 +140,45 @@ void MMCVCumMaxKernel::Compute(OrtKernelContext *context) {
       context, 1, out_dimensions.data(), out_dimensions.size());
   int64_t *indices_data = ort_.GetTensorMutableData<int64_t>(indices);
 
-  // calculate numel
+  // allocate tmp memory for computing the cumulative production on dimension
+  // size
   const int64_t ndims = out_dimensions.size();
   assert(ndims > 0);
-  int64_t numel = 1;
-  for (int64_t dim_i = 0; dim_i < ndims; dim_i++) {
-    numel *= out_dimensions.data()[dim_i];
-  }
+  int64_t *reversed_dim_cumprod =
+      (int64_t *)allocator_.Alloc(sizeof(int64_t) * ndims);
 
-  // cummax is only applied to input which is non-zero dim and non-empty
-  if (numel) {
-    // allocate tmp memory, compute the cumulative production on dimension size,
-    // which is then used for computing the stride or size of a specific `dim`.
-    int64_t *reversed_dim_cumprod =
-        (int64_t *)allocator_.Alloc(sizeof(int64_t) * ndims);
-    reversed_dim_cumprod[ndims - 1] = out_dimensions.data()[ndims - 1];
-    for (int64_t dim_i = ndims - 2; dim_i >= 0; dim_i--) {
-      reversed_dim_cumprod[dim_i] =
-          reversed_dim_cumprod[dim_i + 1] * out_dimensions.data()[dim_i];
-    }
+  // dim should be wrapped if it's negative (e.g. -1)
+  const int64_t dim = maybe_wrap_dim(dim_, ndims);
+  CumMax_CumMin_CPU<float, int64_t, std::greater_equal<float>>(
+      input_data, output_data, indices_data, reversed_dim_cumprod, dim,
+      out_dimensions);
+}
 
-    // dim should be wrapped if it's negative (e.g. -1)
-    const int64_t dim = maybe_wrap_dim(dim_, ndims);
+void MMCVCumMinKernel::Compute(OrtKernelContext *context) {
+  // get input
+  const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
+  const float *input_data =
+      reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
 
-    // do cummax
-    tensor_dim_apply3<float, int64_t>(
-        input_data, output_data, indices_data, dim, ndims, reversed_dim_cumprod,
-        cummax_cummin_helper<float, int64_t, std::greater_equal<float>>);
-  }
+  // get ouput
+  OrtTensorDimensions out_dimensions(ort_, input);
+  OrtValue *output = ort_.KernelContext_GetOutput(
+      context, 0, out_dimensions.data(), out_dimensions.size());
+  float *output_data = ort_.GetTensorMutableData<float>(output);
+  OrtValue *indices = ort_.KernelContext_GetOutput(
+      context, 1, out_dimensions.data(), out_dimensions.size());
+  int64_t *indices_data = ort_.GetTensorMutableData<int64_t>(indices);
+
+  // allocate tmp memory for computing the cumulative production on dimension
+  // size
+  const int64_t ndims = out_dimensions.size();
+  assert(ndims > 0);
+  int64_t *reversed_dim_cumprod =
+      (int64_t *)allocator_.Alloc(sizeof(int64_t) * ndims);
+
+  // dim should be wrapped if it's negative (e.g. -1)
+  const int64_t dim = maybe_wrap_dim(dim_, ndims);
+  CumMax_CumMin_CPU<float, int64_t, std::less_equal<float>>(
+      input_data, output_data, indices_data, reversed_dim_cumprod, dim,
+      out_dimensions);
 }

@@ -401,6 +401,11 @@ def cummax(g, input, dim):
     return g.op('mmcv::cummax', input, dim_i=dim, outputs=2)
 
 
+@parse_args('v', 'i')
+def cummin(g, input, dim):
+    return g.op('mmcv::cummin', input, dim_i=dim, outputs=2)
+
+
 def register_extra_symbolics(opset=11):
     register_op('one_hot', one_hot, '', opset)
     register_op('im2col', im2col, '', opset)
@@ -427,3 +432,4 @@ def register_extra_symbolics(opset=11):
     register_op('new_full', new_full, '', opset)
     register_op('grid_sampler', grid_sampler, '', opset)
     register_op('cummax', cummax, '', opset)
+    register_op('cummin', cummin, '', opset)
