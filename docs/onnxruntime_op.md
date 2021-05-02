@@ -15,10 +15,13 @@
 
 ## List of operators for ONNX Runtime supported in MMCV
 
-| Operator |  CPU  |  GPU  |                                                Note                                                 |
-| :------: | :---: | :---: | :-------------------------------------------------------------------------------------------------: |
-| SoftNMS  |   Y   |   N   | commit [94810f](https://github.com/open-mmlab/mmcv/commit/94810f2297871d0ea3ca650dcb2e842f5374d998) |
-| RoiAlign |   Y   |   N   |                                                None                                                 |
+|                        Operator                        |  CPU  |  GPU  | MMCV Releases |
+| :----------------------------------------------------: | :---: | :---: | :-----------: |
+|      [SoftNMS](onnxruntime_custom_ops.md#softnms)      |   Y   |   N   |     1.2.3     |
+|     [RoIAlign](onnxruntime_custom_ops.md#roialign)     |   Y   |   N   |     1.2.5     |
+|          [NMS](onnxruntime_custom_ops.md#nms)          |   Y   |   N   |     1.2.7     |
+| [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) |   Y   |   N   |    master     |
+| [CornerPool](onnxruntime_custom_ops.md#cornerpool)    |   Y   |   N   |    master     |
 
 ## How to build custom operators for ONNX Runtime
 

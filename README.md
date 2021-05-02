@@ -11,13 +11,16 @@ English | [简体中文](README_zh-CN.md)
 MMCV is a foundational library for computer vision research and supports many
 research projects as below:
 
-- [MMDetection](https://github.com/open-mmlab/mmdetection): Detection toolbox and benchmark
-- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): General 3D object detection toolbox and benchmark
-- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): Semantic segmentation toolbox and benchmark
-- [MMEditing](https://github.com/open-mmlab/mmediting): Image and video editing toolbox
-- [MMPose](https://github.com/open-mmlab/mmpose): Pose estimation toolbox and benchmark
-- [MMAction2](https://github.com/open-mmlab/mmaction2): Action understanding toolbox and benchmark
-- [MMClassification](https://github.com/open-mmlab/mmclassification): Image classification toolbox and benchmark
+- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
+- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
+- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
+- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
+- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
+- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
+- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
+- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition and understanding toolbox.
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 
 It provides the following functionalities.
 
@@ -37,18 +40,12 @@ Note: MMCV requires Python 3.6+.
 
 There are two versions of MMCV:
 
-- **mmcv**: lite, without CUDA ops but all other features, similar to mmcv<1.0.0. It is useful when you do not need those CUDA ops.
 - **mmcv-full**: comprehensive, with full features and various CUDA ops out of box. It takes longer time to build.
+- **mmcv**: lite, without CUDA ops but all other features, similar to mmcv<1.0.0. It is useful when you do not need those CUDA ops.
 
-**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other.
+**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full verion is highly recommended if CUDA is avaliable`.
 
-a. Install the lite version.
-
-```python
-pip install mmcv
-```
-
-b. Install the full version.
+a. Install the full version.
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/).
 
@@ -164,6 +161,12 @@ pip install mmcv-full
 ```
 
 Note that the local compiling may take up to 10 mins.
+
+b. Install the lite version.
+
+```python
+pip install mmcv
+```
 
 c. Install full version with custom operators for onnxruntime
 

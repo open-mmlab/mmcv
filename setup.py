@@ -257,7 +257,6 @@ def get_extensions():
         include_path = os.path.abspath('./mmcv/ops/csrc/onnxruntime')
         include_dirs.append(include_path)
         include_dirs.append(os.path.join(ort_path, 'include'))
-        include_dirs += include_paths(cuda=True)
 
         op_files = glob.glob('./mmcv/ops/csrc/onnxruntime/cpu/*')
         if onnxruntime.get_device() == 'GPU' or os.getenv('FORCE_CUDA',
@@ -266,8 +265,10 @@ def get_extensions():
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files += glob.glob('./mmcv/ops/csrc/onnxruntime/gpu/*')
+            include_dirs += include_paths(cuda=True)
             library_dirs += library_paths(cuda=True)
         else:
+            include_dirs += include_paths(cuda=False)
             library_dirs += library_paths(cuda=False)
 
         kwargs['library_dirs'] = library_dirs

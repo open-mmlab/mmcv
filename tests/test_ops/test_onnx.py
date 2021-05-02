@@ -23,6 +23,66 @@ class WrapFunction(nn.Module):
         return self.wrapped_function(*args, **kwargs)
 
 
+@pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
+@pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
+@pytest.mark.parametrize('align_corners', [True, False])
+def test_grid_sample(mode, padding_mode, align_corners):
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    opset_version = 11
+    register_extra_symbolics(opset_version)
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    input = torch.rand(1, 1, 10, 10)
+    grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
+    grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+
+    def func(input, grid):
+        return nn.functional.grid_sample(
+            input,
+            grid,
+            mode=mode,
+            padding_mode=padding_mode,
+            align_corners=align_corners)
+
+    wrapped_model = WrapFunction(func).eval()
+
+    input_names = ['input', 'grid']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (input, grid),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+
+    # get onnx output
+    input_all = [node.name for node in onnx_model.graph.input]
+    input_initializer = [node.name for node in onnx_model.graph.initializer]
+    net_feed_input = list(set(input_all) - set(input_initializer))
+    assert (len(net_feed_input) == 2)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    ort_result = sess.run(None, {
+        'input': input.detach().numpy(),
+        'grid': grid.detach().numpy()
+    })
+    pytorch_results = wrapped_model(input.clone(), grid.clone())
+    os.remove(onnx_file)
+    assert np.allclose(pytorch_results, ort_result, atol=1e-3)
+
+
 def test_nms():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
@@ -220,6 +280,85 @@ def test_roialign():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
+def test_roialign_rotated():
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+    try:
+        from mmcv.ops import roi_align_rotated
+        from mmcv.ops import get_onnxruntime_op_path
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('roi_align_aligned op is not successfully compiled')
+
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+    # roi align config
+    pool_h = 2
+    pool_w = 2
+    spatial_scale = 1.0
+    sampling_ratio = 2
+
+    inputs = [([[[[1., 2.], [3., 4.]]]], [[0., 0.5, 0.5, 1., 1., 0]]),
+              ([[[[1., 2.], [3., 4.]]]], [[0., 0.5, 0.5, 1., 1., np.pi / 2]]),
+              ([[[[1., 2.], [3., 4.]],
+                 [[4., 3.], [2., 1.]]]], [[0., 0.5, 0.5, 1., 1., 0]]),
+              ([[[[1., 2., 5., 6.], [3., 4., 7., 8.], [9., 10., 13., 14.],
+                  [11., 12., 15., 16.]]]], [[0., 1.5, 1.5, 3., 3., 0]]),
+              ([[[[1., 2., 5., 6.], [3., 4., 7., 8.], [9., 10., 13., 14.],
+                  [11., 12., 15., 16.]]]], [[0., 1.5, 1.5, 3., 3.,
+                                             np.pi / 2]])]
+
+    def warpped_function(torch_input, torch_rois):
+        return roi_align_rotated(torch_input, torch_rois, (pool_w, pool_h),
+                                 spatial_scale, sampling_ratio, True, False)
+
+    for case in inputs:
+        np_input = np.array(case[0], dtype=np.float32)
+        np_rois = np.array(case[1], dtype=np.float32)
+        input = torch.from_numpy(np_input)
+        rois = torch.from_numpy(np_rois)
+
+        # compute pytorch_output
+        with torch.no_grad():
+            pytorch_output = roi_align_rotated(input, rois, (pool_w, pool_h),
+                                               spatial_scale, sampling_ratio,
+                                               True, False)
+
+        # export and load onnx model
+        wrapped_model = WrapFunction(warpped_function)
+        with torch.no_grad():
+            torch.onnx.export(
+                wrapped_model, (input, rois),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['features', 'rois'],
+                opset_version=11)
+
+        onnx_model = onnx.load(onnx_file)
+        session_options = rt.SessionOptions()
+        if os.path.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
+
+        # compute onnx_output
+        input_all = [node.name for node in onnx_model.graph.input]
+        input_initializer = [
+            node.name for node in onnx_model.graph.initializer
+        ]
+        net_feed_input = list(set(input_all) - set(input_initializer))
+        assert (len(net_feed_input) == 2)
+        sess = rt.InferenceSession(onnx_file, session_options)
+        onnx_output = sess.run(None, {
+            'features': input.detach().numpy(),
+            'rois': rois.detach().numpy()
+        })
+        onnx_output = onnx_output[0]
+
+        # allclose
+        os.remove(onnx_file)
+        assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
     if torch.__version__ == 'parrots':
@@ -285,32 +424,6 @@ def test_roipool():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
-def test_simplify():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
-    from mmcv.onnx.simplify import simplify
-
-    # only support PyTorch >= 1.5.0
-    if version.parse(torch.__version__) < version.parse('1.5.0'):
-        pytest.skip('mmcv.onnx.simplify only support with PyTorch >= 1.5.0')
-
-    def foo(x):
-        y = x.view((x.shape[0], x.shape[1], x.shape[3], x.shape[2]))
-        return y
-
-    net = WrapFunction(foo)
-    dummy_input = torch.randn(2, 3, 4, 5)
-    torch.onnx.export(net, dummy_input, onnx_file, input_names=['input'])
-    ori_onnx_model = onnx.load(onnx_file)
-
-    feed_input = [{'input': dummy_input.detach().cpu().numpy()}]
-    slim_onnx_model = simplify(ori_onnx_model, feed_input, onnx_file)
-    numel_before = len(ori_onnx_model.graph.node)
-    numel_after = len(slim_onnx_model.graph.node)
-    os.remove(onnx_file)
-    assert numel_before == 18 and numel_after == 1, 'Simplify failed.'
-
-
 def test_interpolate():
     from mmcv.onnx.symbolic import register_extra_symbolics
     opset_version = 11
@@ -335,3 +448,49 @@ def test_interpolate():
     if os.path.exists(onnx_file):
         os.remove(onnx_file)
     assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
+
+
+@pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
+def test_corner_pool(mode, opset=11):
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    from mmcv.ops.corner_pool import CornerPool
+
+    def corner_pool_func(input):
+        corner_pool_module = CornerPool(mode)
+        return corner_pool_module.corner_pool.apply(input)
+
+    wrapped_model = WrapFunction(corner_pool_func).eval()
+
+    input = torch.rand((2, 3, 9, 12))  # (n,c,h,w)
+
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model,
+            input,
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=['input'],
+            output_names=['output'],
+            opset_version=opset)
+
+    onnx_model = onnx.load(onnx_file)
+    input_all = [node.name for node in onnx_model.graph.input]
+    input_initializer = [node.name for node in onnx_model.graph.initializer]
+    net_feed_input = list(set(input_all) - set(input_initializer))
+    assert (len(net_feed_input) == 1)
+
+    session_options = rt.SessionOptions()
+    session_options.register_custom_ops_library(ort_custom_op_path)
+    sess = rt.InferenceSession(onnx_file, session_options)
+    ort_result = sess.run(None, {'input': input.detach().numpy()})
+    pytorch_results = wrapped_model(input.clone())
+    os.remove(onnx_file)
+    assert np.allclose(pytorch_results, ort_result, atol=1e-5)
