@@ -1,8 +1,8 @@
 // It is modified from https://github.com/whai362/PSENet
-#include "pytorch_cpp_helper.hpp"
-
 #include <iostream>
 #include <queue>
+
+#include "pytorch_cpp_helper.hpp"
 
 using namespace std;
 
