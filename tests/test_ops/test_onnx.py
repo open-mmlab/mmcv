@@ -501,9 +501,16 @@ def test_cummax_cummin(key, opset=11):
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
 
-    # only support pytorch >= 1.5.0
-    if version.parse(torch.__version__) < version.parse('1.5.0'):
-        warnings.warn('test_cummax_cummin should be ran with pytorch >= 1.5.0')
+    # Note generally `cummax` or `cummin` is exportable to ONNX
+    # as long as the pytorch version >= 1.5.0, since `torch.cummax`
+    # is only supported with torch >= 1.5.0.
+    # But when `cummax` or `cummin` serves as an intermediate component
+    # whose outputs is used as inputs for another modules, it's expected
+    # that pytorch version must be >= 1.7.0. Otherwise error appears like:
+    # `RuntimeError: tuple  appears in op that does not forward tuples,
+    # unsupported 'kind: prim::PythonOp`.
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        warnings.warn('test_cummax_cummin should be ran with pytorch >= 1.7.0')
         return
 
     # register custom op `mmcv::cummax` and `mmcv::cummin`
