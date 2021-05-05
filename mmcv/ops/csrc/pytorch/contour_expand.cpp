@@ -16,9 +16,8 @@ class Point2d {
 };
 
 void kernel_dilate(const uint8_t *data, IntArrayRef data_shape,
-                       const int *label_map,
-                       int &label_num, int &min_area,
-                       vector<vector<int>> &text_line) {
+                   const int *label_map, int &label_num, int &min_area,
+                   vector<vector<int>> &text_line) {
   std::vector<int> area(label_num + 1);
   int kernel_num = data_shape[0];
   int height = data_shape[1];
@@ -64,8 +63,8 @@ void kernel_dilate(const uint8_t *data, IntArrayRef data_shape,
 
         if (tmp_x < 0 || tmp_x >= (int)text_line.size()) continue;
         if (tmp_y < 0 || tmp_y >= (int)text_line[1].size()) continue;
-        int kernel_value = data[kernel_id * height * width +
-                                tmp_x * width + tmp_y];
+        int kernel_value =
+            data[kernel_id * height * width + tmp_x * width + tmp_y];
         if (kernel_value == 0) continue;
         if (text_line[tmp_x][tmp_y] > 0) continue;
 
@@ -102,8 +101,8 @@ std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
   IntArrayRef label_map_shape = internal_kernel_label.sizes();
   vector<vector<int>> text_line;
 
-  kernel_dilate(ptr_data, data_shape, data_label_map,
-                    kernel_num, min_kernel_area, text_line);
+  kernel_dilate(ptr_data, data_shape, data_label_map, kernel_num,
+                min_kernel_area, text_line);
 
   return text_line;
 }
