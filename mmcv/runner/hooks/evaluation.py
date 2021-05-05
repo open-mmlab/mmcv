@@ -178,6 +178,7 @@ class EvalHook(Hook):
 
         from mmcv.engine import single_gpu_test
         results = single_gpu_test(runner.model, self.dataloader)
+        runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
         if self.save_best:
             self._save_ckpt(runner, key_score)
@@ -368,6 +369,7 @@ class DistEvalHook(EvalHook):
             gpu_collect=self.gpu_collect)
         if runner.rank == 0:
             print('\n')
+            runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
 
             if self.save_best:
