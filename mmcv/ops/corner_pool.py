@@ -140,6 +140,15 @@ class CornerPool(nn.Module):
 
     def forward(self, x):
         if torch.__version__ != 'parrots' and torch.__version__ >= '1.5.0':
+            if torch.onnx.is_in_onnx_export():
+                assert torch.__version__ >= '1.7.0', \
+                    'When `cummax` serves as an intermediate component whose '\
+                    'outputs is used as inputs for another modules, it\'s '\
+                    'expected that pytorch version must be >= 1.7.0, '\
+                    'otherwise Error appears like: `RuntimeError: tuple '\
+                    'appears in op that does not forward tuples, unsupported '\
+                    'kind: prim::PythonOp`.'
+
             dim, flip = self.cummax_dim_flip[self.mode]
             if flip:
                 x = x.flip(dim)
