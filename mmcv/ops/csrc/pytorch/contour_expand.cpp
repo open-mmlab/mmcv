@@ -15,25 +15,28 @@ class Point2d {
   Point2d(int _x, int _y) : x(_x), y(_y) {}
 };
 
-void growing_text_line(const uint8_t *data, IntArrayRef data_shape,
+void kernel_dilate(const uint8_t *data, IntArrayRef data_shape,
                        const int *label_map,
-
-                       IntArrayRef label_shape, int &label_num, int &min_area,
+                       int &label_num, int &min_area,
                        vector<vector<int>> &text_line) {
   std::vector<int> area(label_num + 1);
-  for (int x = 0; x < label_shape[0]; ++x) {
-    for (int y = 0; y < label_shape[1]; ++y) {
-      int label = label_map[x * label_shape[1] + y];
+  int kernel_num = data_shape[0];
+  int height = data_shape[1];
+  int width = data_shape[2];
+
+  for (int x = 0; x < height; ++x) {
+    for (int y = 0; y < width; ++y) {
+      int label = label_map[x * width + y];
       if (label == 0) continue;
       area[label] += 1;
     }
   }
 
   queue<Point2d> queue, next_queue;
-  for (int x = 0; x < label_shape[0]; ++x) {
-    vector<int> row(label_shape[1]);
-    for (int y = 0; y < label_shape[1]; ++y) {
-      int label = label_map[x * label_shape[1] + y];
+  for (int x = 0; x < height; ++x) {
+    vector<int> row(width);
+    for (int y = 0; y < width; ++y) {
+      int label = label_map[x * width + y];
       if (label == 0) continue;
       if (area[label] < min_area) continue;
 
@@ -46,8 +49,7 @@ void growing_text_line(const uint8_t *data, IntArrayRef data_shape,
 
   int dx[] = {-1, 1, 0, 0};
   int dy[] = {0, 0, -1, 1};
-
-  for (int kernel_id = data_shape[0] - 2; kernel_id >= 0; --kernel_id) {
+  for (int kernel_id = kernel_num - 2; kernel_id >= 0; --kernel_id) {
     while (!queue.empty()) {
       Point2d point = queue.front();
       queue.pop();
@@ -62,8 +64,8 @@ void growing_text_line(const uint8_t *data, IntArrayRef data_shape,
 
         if (tmp_x < 0 || tmp_x >= (int)text_line.size()) continue;
         if (tmp_y < 0 || tmp_y >= (int)text_line[1].size()) continue;
-        int kernel_value = data[kernel_id * data_shape[1] * data_shape[2] +
-                                tmp_x * data_shape[2] + tmp_y];
+        int kernel_value = data[kernel_id * height * width +
+                                tmp_x * width + tmp_y];
         if (kernel_value == 0) continue;
         if (text_line[tmp_x][tmp_y] > 0) continue;
 
@@ -100,7 +102,7 @@ std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
   IntArrayRef label_map_shape = internal_kernel_label.sizes();
   vector<vector<int>> text_line;
 
-  growing_text_line(ptr_data, data_shape, data_label_map, label_map_shape,
+  kernel_dilate(ptr_data, data_shape, data_label_map,
                     kernel_num, min_kernel_area, text_line);
 
   return text_line;

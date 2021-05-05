@@ -106,6 +106,8 @@ std::vector<std::vector<float>> pixel_group_cpu(
       for (size_t i = 0; i < embedding_dim; i++) {
         dis +=
             pow(kernel_cv[i] - ptr_embedding_tmp[tmpx * embedding_dim + i], 2);
+        // ignore further computing if dis is big enough
+        if (dis >= threshold_square) break;
       }
       if (dis >= threshold_square) continue;
       contour_pixels.push(std::make_tuple(tmpy, tmpx, l));
