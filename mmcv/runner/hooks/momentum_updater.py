@@ -470,11 +470,12 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
             end_iter = phase['end_iter']
             if curr_iter <= end_iter or i == len(self.momentum_phases) - 1:
                 pct = (curr_iter - start_iter) / (end_iter - start_iter)
-                lr = self.anneal_func(param_group[phase['start_momentum']],
-                                      param_group[phase['end_momentum']], pct)
+                momentum = self.anneal_func(
+                    param_group[phase['start_momentum']],
+                    param_group[phase['end_momentum']], pct)
                 break
             start_iter = end_iter
-        return lr
+        return momentum
 
     def get_regular_momentum(self, runner):
         if isinstance(runner.optimizer, dict):
