@@ -149,6 +149,57 @@ class MomentumUpdaterHook(Hook):
 
 
 @HOOKS.register_module()
+class StepMomentumUpdaterHook(MomentumUpdaterHook):
+    """Step momentum scheduler with min value clipping.
+
+    Args:
+        step (int | list[int]): Step to decay the momentum. If an int value is
+            given, regard it as the decay interval. If a list is given, decay
+            momentum at these steps.
+        gamma (float, optional): Decay momentum ratio. Default: 0.5.
+        min_momentum (float, optional): Minimum momentum value to keep. If
+            momentum after decay is lower than this value, it will be clipped
+            accordingly. If None is given, we don't perform lr clipping.
+            Default: None.
+    """
+
+    def __init__(self, step, gamma=0.5, min_momentum=None, **kwargs):
+        assert isinstance(step, (list, int))
+        if isinstance(step, list):
+            for s in step:
+                assert isinstance(s, int) and s > 0
+        elif isinstance(step, int):
+            assert step > 0
+        else:
+            raise TypeError('"step" must be a list or integer')
+        self.step = step
+        self.gamma = gamma
+        self.min_momentum = min_momentum
+        super(StepMomentumUpdaterHook, self).__init__(**kwargs)
+
+    def get_momentum(self, runner, base_momentum):
+        progress = runner.epoch if self.by_epoch else runner.iter
+
+        if isinstance(self.step, int):
+            momentum = base_momentum * (self.gamma**(progress // self.step))
+            if self.min_momentum is not None:
+                # clip to a minimum value
+                momentum = max(momentum, self.min_momentum)
+            return momentum
+
+        exp = len(self.step)
+        for i, s in enumerate(self.step):
+            if progress < s:
+                exp = i
+                break
+        momentum = base_momentum * self.gamma**exp
+        if self.min_momentum is not None:
+            # clip to a minimum value
+            momentum = max(momentum, self.min_momentum)
+        return momentum
+
+
+@HOOKS.register_module()
 class CosineAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
 
     def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
