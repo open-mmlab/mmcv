@@ -93,11 +93,12 @@ def test_nms():
     np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
     boxes = torch.from_numpy(np_boxes)
     scores = torch.from_numpy(np_scores)
-    pytorch_dets, _ = nms(
-        boxes, scores, iou_threshold=0.3, offset=0, score_threshold=0)
-    pytorch_score = pytorch_dets[:, 4]
+
     nms = partial(
-        nms, iou_threshold=0.3, offset=0, score_threshold=0, max_num=100)
+        nms, iou_threshold=0.3, offset=0, score_threshold=0, max_num=0)
+    pytorch_dets, _ = nms(boxes, scores)
+    pytorch_score = pytorch_dets[:, 4]
+
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
@@ -108,14 +109,12 @@ def test_nms():
             keep_initializers_as_inputs=True,
             input_names=['boxes', 'scores'],
             opset_version=11)
+
     onnx_model = onnx.load(onnx_file)
-
     ort_custom_op_path = get_onnxruntime_op_path()
-    if not os.path.exists(ort_custom_op_path):
-        pytest.skip('nms for onnxruntime is not compiled.')
-
     session_options = rt.SessionOptions()
-    session_options.register_custom_ops_library(ort_custom_op_path)
+    if os.path.exists(ort_custom_op_path):
+        session_options.register_custom_ops_library(ort_custom_op_path)
 
     # get onnx output
     input_all = [node.name for node in onnx_model.graph.input]

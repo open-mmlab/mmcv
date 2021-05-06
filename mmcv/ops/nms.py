@@ -48,10 +48,11 @@ class NMSop(torch.autograd.Function):
                 offset_i=int(offset))
         else:
             from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            from ..onnx.onnx_utils.symbolic_helper import _size_helper
+
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
 
-            from torch.onnx.symbolic_helper import _size_helper
             if max_num > 0:
                 max_num = g.op(
                     'Constant',
