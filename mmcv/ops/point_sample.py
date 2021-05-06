@@ -1,6 +1,7 @@
 # Modified from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend  # noqa
 
 from os import path as osp
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
