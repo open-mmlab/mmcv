@@ -91,6 +91,9 @@ def test_grid_sample(mode, padding_mode, align_corners):
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_bilinear_grid_sample(align_corners):
     from mmcv.ops.point_sample import bilinear_grid_sample
+    # only support pytorch >= 1.4.0
+    if version.parse(torch.__version__) < version.parse('1.4.0'):
+        pytest.skip('Only support PyTorch >= 1.4.0')
 
     input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
