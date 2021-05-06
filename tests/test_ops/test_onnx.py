@@ -510,8 +510,7 @@ def test_cummax_cummin(key, opset=11):
     # `RuntimeError: tuple  appears in op that does not forward tuples,
     # unsupported 'kind: prim::PythonOp`.
     if version.parse(torch.__version__) < version.parse('1.7.0'):
-        warnings.warn('test_cummax_cummin should be ran with pytorch >= 1.7.0')
-        return
+        pytest.skip('test_cummax_cummin should be ran with pytorch >= 1.7.0')
 
     # register custom op `mmcv::cummax` and `mmcv::cummin`
     from mmcv.onnx.symbolic import register_extra_symbolics
@@ -532,7 +531,7 @@ def test_cummax_cummin(key, opset=11):
 
     cummax_cummin_funcs = {'cummax': torch.cummax, 'cummin': torch.cummin}
 
-    for i, input in enumerate(input_list):
+    for input in input_list:
         ndims = input.dim()
         # valid dim range is [-ndims, ndims-1]
         # test for all `dim` value which is valid
