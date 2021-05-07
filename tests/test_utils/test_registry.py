@@ -235,6 +235,12 @@ def test_build_from_cfg():
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
+    cfg = None
+    model = mmcv.build_from_cfg(
+        cfg, BACKBONES, default_args=dict(type=ResNet, depth=50))
+    assert isinstance(model, ResNet)
+    assert model.depth == 50 and model.stages == 4
+
     # not a registry
     with pytest.raises(TypeError):
         cfg = dict(type='VGG')
