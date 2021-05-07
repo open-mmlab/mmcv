@@ -219,14 +219,6 @@ def soft_nms(boxes,
                                      float(min_score), method_dict[method],
                                      int(offset))
 
-    if torch.onnx.is_in_onnx_export():
-        # not using inds.size(0) here, instead we get shape as tensor to avoid
-        # converting a tensor to Python int index, which might cause the trace
-        # to be incorrect
-        num = torch._shape_as_tensor(inds)[0]
-        dets = dets[torch.arange(num).to(inds.device)]
-        return dets, inds
-
     dets = dets[:inds.size(0)]
 
     if is_numpy:
