@@ -27,6 +27,12 @@
     - [Inputs](#inputs-3)
     - [Outputs](#outputs-3)
     - [Type Constraints](#type-constraints-3)
+  - [CornerPool](#cornerpool)
+    - [Description](#description-4)
+    - [Parameters](#parameters-4)
+    - [Inputs](#inputs-4)
+    - [Outputs](#outputs-4)
+    - [Type Constraints](#type-constraints-4)
 
 <!-- TOC -->
 
@@ -171,3 +177,33 @@ Perform sample from `input` with pixel locations from `grid`.
 ### Type Constraints
 
 - T:tensor(float32, Linear)
+
+## CornerPool
+
+### Description
+
+Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as Paired Keypoints](https://arxiv.org/abs/1808.01244) for more details.
+
+### Parameters
+
+| Type    | Parameter       | Description                                                      |
+| ------- | --------------- | ---------------------------------------------------------------- |
+| `int`   | `mode`          | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
+
+### Inputs
+
+<dl>
+<dt><tt>input</tt>: T</dt>
+<dd>Input features. 4-D tensor of shape (N, C, H, W). N is the batch size.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>output</tt>: T</dt>
+<dd>Output the pooled features. 4-D tensor of shape (N, C, H, W).</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32)

@@ -2,6 +2,7 @@
 // https://github.com/facebookresearch/detectron2/tree/master/detectron2/layers/csrc/ROIAlignRotated
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 #include "roi_align_rotated.h"
+
 #include "../ort_mmcv_utils.h"
 
 struct PreCalc {

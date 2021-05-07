@@ -7,7 +7,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from mmcv.utils import TORCH_VERSION
 from .dist_utils import allreduce_grads as _allreduce_grads
+
+try:
+    # If PyTorch version >= 1.6.0, torch.cuda.amp.autocast would be imported
+    # and used; otherwise, auto fp16 will adopt mmcv's implementation.
+    # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
+    # manually, so the behavior may not be consistant with real amp.
+    from torch.cuda.amp import autocast
+except ImportError:
+    pass
 
 
 def cast_tensor_type(inputs, src_type, dst_type):
@@ -45,7 +55,8 @@ def auto_fp16(apply_to=None, out_fp32=False):
     This decorator is useful when you write custom modules and want to support
     mixed precision training. If inputs arguments are fp32 tensors, they will
     be converted to fp16 automatically. Arguments other than fp32 tensors are
-    ignored.
+    ignored. If you are using PyTorch >= 1.6, torch.cuda.amp is used as the
+    backend, otherwise, original mmcv implementation will be adopted.
 
     Args:
         apply_to (Iterable, optional): The argument names to be converted.
@@ -82,6 +93,7 @@ def auto_fp16(apply_to=None, out_fp32=False):
                                 'method of nn.Module')
             if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
+
             # get the arg spec of the decorated method
             args_info = getfullargspec(old_func)
             # get the argument names to be casted
@@ -107,7 +119,11 @@ def auto_fp16(apply_to=None, out_fp32=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            output = old_func(*new_args, **new_kwargs)
+            if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+                with autocast(enabled=True):
+                    output = old_func(*new_args, **new_kwargs)
+            else:
+                output = old_func(*new_args, **new_kwargs)
             # cast the results back to fp32 if necessary
             if out_fp32:
                 output = cast_tensor_type(output, torch.half, torch.float)
@@ -125,7 +141,9 @@ def force_fp32(apply_to=None, out_fp16=False):
     mixed precision training. If there are some inputs that must be processed
     in fp32 mode, then this decorator can handle it. If inputs arguments are
     fp16 tensors, they will be converted to fp32 automatically. Arguments other
-    than fp16 tensors are ignored.
+    than fp16 tensors are ignored. If you are using PyTorch >= 1.6,
+    torch.cuda.amp is used as the backend, otherwise, original mmcv
+    implementation will be adopted.
 
     Args:
         apply_to (Iterable, optional): The argument names to be converted.
@@ -186,7 +204,11 @@ def force_fp32(apply_to=None, out_fp16=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            output = old_func(*new_args, **new_kwargs)
+            if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+                with autocast(enabled=False):
+                    output = old_func(*new_args, **new_kwargs)
+            else:
+                output = old_func(*new_args, **new_kwargs)
             # cast the results back to fp32 if necessary
             if out_fp16:
                 output = cast_tensor_type(output, torch.float, torch.half)
@@ -207,16 +229,25 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
 def wrap_fp16_model(model):
     """Wrap the FP32 model to FP16.
 
+    If you are using PyTorch >= 1.6, torch.cuda.amp is used as the
+    backend, otherwise, original mmcv implementation will be adopted.
+
+    For PyTorch >= 1.6, this function will
+    1. Set fp16 flag inside the model to True.
+
+    Otherwise:
     1. Convert FP32 model to FP16.
     2. Remain some necessary layers to be FP32, e.g., normalization layers.
+    3. Set `fp16_enabled` flag inside the model to True.
 
     Args:
         model (nn.Module): Model in FP32.
     """
-    # convert model to fp16
-    model.half()
-    # patch the normalization layers to make it work in fp32 mode
-    patch_norm_fp32(model)
+    if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.6.0':
+        # convert model to fp16
+        model.half()
+        # patch the normalization layers to make it work in fp32 mode
+        patch_norm_fp32(model)
     # set `fp16_enabled` flag
     for m in model.modules():
         if hasattr(m, 'fp16_enabled'):
