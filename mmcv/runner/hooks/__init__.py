@@ -11,6 +11,7 @@ from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .momentum_updater import MomentumUpdaterHook
 from .optimizer import Fp16OptimizerHook, OptimizerHook
+from .profiler import ProfilerHook
 from .sampler_seed import DistSamplerSeedHook
 from .sync_buffer import SyncBuffersHook
 
@@ -20,5 +21,5 @@ __all__ = [
     'DistSamplerSeedHook', 'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
     'WandbLoggerHook', 'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook',
-    'EvalHook', 'DistEvalHook'
+    'EvalHook', 'DistEvalHook', 'ProfilerHook'
 ]

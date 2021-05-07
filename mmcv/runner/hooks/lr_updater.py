@@ -164,8 +164,19 @@ class FixedLrUpdaterHook(LrUpdaterHook):
 
 @HOOKS.register_module()
 class StepLrUpdaterHook(LrUpdaterHook):
+    """Step LR scheduler with min_lr clipping.
 
-    def __init__(self, step, gamma=0.1, **kwargs):
+    Args:
+        step (int | list[int]): Step to decay the LR. If an int value is given,
+            regard it as the decay interval. If a list is given, decay LR at
+            these steps.
+        gamma (float, optional): Decay LR ratio. Default: 0.1.
+        min_lr (float, optional): Minimum LR value to keep. If LR after decay
+            is lower than `min_lr`, it will be clipped to this value. If None
+            is given, we don't perform lr clipping. Default: None.
+    """
+
+    def __init__(self, step, gamma=0.1, min_lr=None, **kwargs):
         assert isinstance(step, (list, int))
         if isinstance(step, list):
             for s in step:
@@ -176,20 +187,29 @@ class StepLrUpdaterHook(LrUpdaterHook):
             raise TypeError('"step" must be a list or integer')
         self.step = step
         self.gamma = gamma
+        self.min_lr = min_lr
         super(StepLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
 
         if isinstance(self.step, int):
-            return base_lr * (self.gamma**(progress // self.step))
+            lr = base_lr * (self.gamma**(progress // self.step))
+            if self.min_lr is not None:
+                # clip to a minimum value
+                lr = max(lr, self.min_lr)
+            return lr
 
         exp = len(self.step)
         for i, s in enumerate(self.step):
             if progress < s:
                 exp = i
                 break
-        return base_lr * self.gamma**exp
+        lr = base_lr * self.gamma**exp
+        if self.min_lr is not None:
+            # clip to a minimum value
+            lr = max(lr, self.min_lr)
+        return lr
 
 
 @HOOKS.register_module()
