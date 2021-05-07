@@ -194,18 +194,15 @@ class StepLrUpdaterHook(LrUpdaterHook):
         progress = runner.epoch if self.by_epoch else runner.iter
 
         if isinstance(self.step, int):
-            lr = base_lr * (self.gamma**(progress // self.step))
-            if self.min_lr is not None:
-                # clip to a minimum value
-                lr = max(lr, self.min_lr)
-            return lr
+            stage = progress // self.step
+        else:
+            stage = len(self.step)
+            for i, s in enumerate(self.step):
+                if progress < s:
+                    stage = i
+                    break
 
-        exp = len(self.step)
-        for i, s in enumerate(self.step):
-            if progress < s:
-                exp = i
-                break
-        lr = base_lr * self.gamma**exp
+        lr = base_lr * (self.gamma**stage)
         if self.min_lr is not None:
             # clip to a minimum value
             lr = max(lr, self.min_lr)

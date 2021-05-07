@@ -181,18 +181,15 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
         progress = runner.epoch if self.by_epoch else runner.iter
 
         if isinstance(self.step, int):
-            momentum = base_momentum * (self.gamma**(progress // self.step))
-            if self.min_momentum is not None:
-                # clip to a minimum value
-                momentum = max(momentum, self.min_momentum)
-            return momentum
+            stage = progress // self.step
+        else:
+            stage = len(self.step)
+            for i, s in enumerate(self.step):
+                if progress < s:
+                    stage = i
+                    break
 
-        exp = len(self.step)
-        for i, s in enumerate(self.step):
-            if progress < s:
-                exp = i
-                break
-        momentum = base_momentum * self.gamma**exp
+        momentum = base_momentum * (self.gamma**stage)
         if self.min_momentum is not None:
             # clip to a minimum value
             momentum = max(momentum, self.min_momentum)
