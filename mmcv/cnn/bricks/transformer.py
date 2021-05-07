@@ -116,7 +116,7 @@ class MultiheadAttention(BaseModule):
                           'set `attn_drop`(float) '
                           'and `dropout_layer`(dict) ')
             attn_drop = kwargs['dropout']
-            dropout_layer['drop_prob'] = kwargs['dropout']
+            dropout_layer['drop_prob'] = kwargs.pop('dropout')
 
         self.embed_dims = embed_dims
         self.num_heads = num_heads
@@ -430,7 +430,7 @@ class FFN(BaseModule):
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
         if 'dropout' in kwargs:
-            warnings.warn('The arguments `dropout` in FFN'
+            warnings.warn('The arguments `dropout` in FFN '
                           'has been deprecated, now you can independently '
                           'set `ffn_drop`(float) '
                           'and `dropout_layer`(dict) ')
@@ -523,15 +523,15 @@ class BaseTransformerLayer(BaseModule):
             feedforward_channels='feedforward_channels',
             ffn_dropout='ffn_drop',
             ffn_num_fcs='num_fcs')
-        for ori_name, new_name in deprecated_args:
+        for ori_name, new_name in deprecated_args.items():
             if ori_name in kwargs:
                 warnings.warn(
-                    f'The arguments {ori_name} in BaseTransformerLayer '
-                    f'has been deprecated, now you should set {new_name} '
+                    f'The arguments `{ori_name}` in BaseTransformerLayer '
+                    f'has been deprecated, now you should set `{new_name}` '
                     f'and other FFN related arguments '
                     f'to a dict named `ffn_cfgs`. ')
                 assert isinstance(ffn_cfgs, dict)
-                attn_cfgs[new_name] = kwargs[ori_name]
+                ffn_cfgs[new_name] = kwargs[ori_name]
 
         super(BaseTransformerLayer, self).__init__(init_cfg)
         assert set(operation_order) & set(
