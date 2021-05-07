@@ -106,6 +106,14 @@ class MultiheadAttention(BaseModule):
                  init_cfg=None,
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
+        if 'dropout' in kwargs:
+            warnings.warn('The arguments `dropout` in MultiheadAttention'
+                          'has been deprecated, now you can independently'
+                          'set `attn_drop`(float) '
+                          'and `dropout_layer`(dict) ')
+            attn_drop = kwargs['dropout']
+            dropout_layer['drop_prob'] = kwargs['dropout']
+
         self.embed_dims = embed_dims
         self.num_heads = num_heads
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
@@ -217,10 +225,18 @@ class FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_residual=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 **kwargs):
         super(FFN, self).__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
+        if 'dropout' in kwargs:
+            warnings.warn('The arguments `dropout` in FFN'
+                          'has been deprecated, now you can independently '
+                          'set `ffn_drop`(float) '
+                          'and `dropout_layer`(dict) ')
+            ffn_drop = kwargs['dropout']
+
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
@@ -301,7 +317,22 @@ class BaseTransformerLayer(BaseModule):
                  ),
                  operation_order=None,
                  norm_cfg=dict(type='LN'),
-                 init_cfg=None):
+                 init_cfg=None,
+                 **kwargs):
+
+        deprecated_args = dict(
+            feedforward_channels='feedforward_channels',
+            ffn_dropout='ffn_drop',
+            ffn_num_fcs='num_fcs')
+        for ori_name, new_name in deprecated_args:
+            if ori_name in kwargs:
+                warnings.warn(
+                    f'The arguments {ori_name} in BaseTransformerLayer '
+                    f'has been deprecated, now you should set {new_name} '
+                    f'and other FFN related arguments '
+                    f'to a dict named `ffn_cfgs`. ')
+                assert isinstance(ffn_cfgs, dict)
+                attn_cfgs[new_name] = kwargs[ori_name]
 
         super(BaseTransformerLayer, self).__init__(init_cfg)
         assert set(operation_order) & set(
@@ -524,7 +555,7 @@ class TransformerLayerSequence(BaseModule):
                 shape [bs, num_keys]. Default: None.
 
         Returns:
-            Tensor: forwarded results with shape [num_queries, bs, embed_dims].
+            Tensor:  results with shape [num_queries, bs, embed_dims].
         """
         for layer in self.layers:
             query = layer(
