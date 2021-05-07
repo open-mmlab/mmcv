@@ -111,8 +111,8 @@ class MultiheadAttention(BaseModule):
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
         if 'dropout' in kwargs:
-            warnings.warn('The arguments `dropout` in MultiheadAttention'
-                          'has been deprecated, now you can independently'
+            warnings.warn('The arguments `dropout` in MultiheadAttention '
+                          'has been deprecated, now you can independently '
                           'set `attn_drop`(float) '
                           'and `dropout_layer`(dict) ')
             attn_drop = kwargs['dropout']
@@ -434,7 +434,7 @@ class FFN(BaseModule):
                           'has been deprecated, now you can independently '
                           'set `ffn_drop`(float) '
                           'and `dropout_layer`(dict) ')
-            ffn_drop = kwargs['dropout']
+            ffn_drop = kwargs.pop('dropout')
 
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
