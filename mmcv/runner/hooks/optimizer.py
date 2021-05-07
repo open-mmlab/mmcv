@@ -70,7 +70,7 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             ...     backoff_factor=0.5,
             ...     growth_interval=2000
             ... )
-            >>> optimizer = Fp16OptimizerHook(loss_scale=loss_scale)
+            >>> optimizer_hook = Fp16OptimizerHook(loss_scale=loss_scale)
         """
 
         def __init__(self,
