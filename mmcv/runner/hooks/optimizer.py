@@ -99,6 +99,12 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             """Preparing steps before Mixed Precision Training."""
             # wrap model mode to fp16
             wrap_fp16_model(runner.model)
+            # resume from state dict
+            if 'fp16.loss_scaler' in runner.meta:
+                scaler_state_dict = runner.meta['fp16.loss_scaler']
+                self.loss_scaler.load_state_dict(scaler_state_dict)
+                # TODO: delete it.
+                self.loaded_indicator = True
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
             """Copy gradients from fp16 model to fp32 weight copy."""
@@ -125,6 +131,7 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             2. Backward the loss to obtain the gradients.
             3. Unscale the optimizer’s gradient tensors.
             4. Call optimizer.step() and update scale factor.
+            5. Save loss_scaler state_dict for resume purpose.
             """
             # clear grads of last iteration
             runner.model.zero_grad()
@@ -142,6 +149,9 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             # backward and update scaler
             self.loss_scaler.step(runner.optimizer)
             self.loss_scaler.update(self._scale_update_param)
+
+            # save state_dict of loss_scaler
+            runner.meta['fp16.loss_scaler'] = self.loss_scaler.state_dict()
 else:
 
     @HOOKS.register_module()
@@ -210,6 +220,10 @@ else:
             runner.optimizer.state = state
             # convert model to fp16
             wrap_fp16_model(runner.model)
+            # resume from state dict
+            if 'fp16.loss_scaler' in runner.meta:
+                scaler_state_dict = runner.meta['fp16.loss_scaler']
+                self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
             """Copy gradients from fp16 model to fp32 weight copy."""
@@ -236,6 +250,7 @@ else:
             3. Copy gradients from the model to the fp32 weight copy.
             4. Scale the gradients back and update the fp32 weight copy.
             5. Copy back the params from fp32 weight copy to the fp16 model.
+            6. Save loss_scaler state_dict for resume purpose.
             """
             # clear grads of last iteration
             runner.model.zero_grad()
@@ -276,3 +291,6 @@ else:
             if has_overflow:
                 runner.logger.warning('Check overflow, downscale loss scale '
                                       f'to {self.loss_scaler.cur_scale}')
+
+            # save state_dict of loss_scaler
+            runner.meta['fp16.loss_scaler'] = self.loss_scaler.state_dict()

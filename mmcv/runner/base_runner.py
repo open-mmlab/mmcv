@@ -324,6 +324,7 @@ class BaseRunner(metaclass=ABCMeta):
     def resume(self,
                checkpoint,
                resume_optimizer=True,
+               resume_meta=True,
                map_location='default'):
         if map_location == 'default':
             if torch.cuda.is_available():
@@ -352,6 +353,9 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
+
+        if resume_meta:
+            self.meta = checkpoint['meta']
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
