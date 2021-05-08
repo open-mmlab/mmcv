@@ -11,5 +11,6 @@ DROPOUT_LAYERS = Registry('Drop out layers')
 
 POSITIONAL_ENCODING = Registry('Position encoding')
 ATTENTION = Registry('Attention')
+FEEDFORWARD_NETWORK = Registry('Feed-forward Network')
 TRANSFORMER_LAYER = Registry('TransformerLayer')
 TRANSFORMER_LAYER_SEQUENCE = Registry('TransformerLayerSequence')
