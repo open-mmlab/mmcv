@@ -70,6 +70,7 @@ class DeformConv2dFunction(Function):
         ctx.deform_groups = deform_groups
         ctx.im2col_step = im2col_step
 
+        weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, weight)
 
         output = input.new_empty(
