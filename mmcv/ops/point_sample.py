@@ -271,13 +271,14 @@ class SimpleRoIAlign(nn.Module):
         rel_roi_points = generate_grid(
             num_rois, self.output_size, device=rois.device)
 
-        if torch.onnx.is_in_onnx_export() and rois.shape[0] == 1:
+        if torch.onnx.is_in_onnx_export():
             rel_img_points = rel_roi_point_to_rel_img_point(
-                rois, rel_roi_points, features,
-                self.spatial_scale).unsqueeze(0)
-            point_feat = point_sample(
+                rois, rel_roi_points, features, self.spatial_scale)
+            rel_img_points = rel_img_points.reshape(num_imgs, -1,
+                                                    *rel_img_points.shape[1:])
+            point_feats = point_sample(
                 features, rel_img_points, align_corners=not self.aligned)
-            point_feats = [point_feat.squeeze(0).transpose(0, 1)]
+            point_feats = point_feats.transpose(1, 2)
         else:
             point_feats = []
             for batch_ind in range(num_imgs):
@@ -293,9 +294,10 @@ class SimpleRoIAlign(nn.Module):
                     point_feat = point_feat.squeeze(0).transpose(0, 1)
                     point_feats.append(point_feat)
 
+            point_feats = torch.cat(point_feats, dim=0)
+
         channels = features.size(1)
-        roi_feats = torch.cat(point_feats, dim=0)
-        roi_feats = roi_feats.reshape(num_rois, channels, *self.output_size)
+        roi_feats = point_feats.reshape(num_rois, channels, *self.output_size)
 
         return roi_feats
 
