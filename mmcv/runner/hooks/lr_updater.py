@@ -356,8 +356,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             the total cycle.
         anneal_strategy (str): {'cos', 'linear'}
             Specifies the annealing strategy: 'cos' for cosine annealing,
-            'linear' for linear annealing.
-            Default: 'cos'
+            'linear' for linear annealing. Default: 'cos'.
     """
 
     def __init__(self,
