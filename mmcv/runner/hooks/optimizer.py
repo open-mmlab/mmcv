@@ -103,8 +103,6 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             if 'fp16.loss_scaler' in runner.meta:
                 scaler_state_dict = runner.meta['fp16.loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
-                # TODO: delete it.
-                self.loaded_indicator = True
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
             """Copy gradients from fp16 model to fp32 weight copy."""

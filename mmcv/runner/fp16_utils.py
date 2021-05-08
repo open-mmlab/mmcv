@@ -397,7 +397,7 @@ class LossScaler:
         self.cur_scale = state_dict['cur_scale']
         self.cur_iter = state_dict['cur_iter']
         self.mode = state_dict['mode']
-        self.last_overflow_iter = state_dict['last_overflow']
+        self.last_overflow_iter = state_dict['last_overflow_iter']
         self.scale_factor = state_dict['scale_factor']
         self.scale_window = state_dict['scale_window']
 
