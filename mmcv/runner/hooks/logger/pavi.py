@@ -34,6 +34,7 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(PaviLoggerHook, self).before_run(runner)
         try:
             from pavi import SummaryWriter
         except ImportError:

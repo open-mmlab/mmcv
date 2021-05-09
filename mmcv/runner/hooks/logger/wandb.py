@@ -32,6 +32,7 @@ class WandbLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(WandbLoggerHook, self).before_run(runner)
         if self.wandb is None:
             self.import_wandb()
         if self.init_kwargs:

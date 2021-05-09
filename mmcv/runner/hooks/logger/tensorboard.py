@@ -22,6 +22,7 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(TensorboardLoggerHook, self).before_run(runner)
         if TORCH_VERSION < '1.1' or TORCH_VERSION == 'parrots':
             try:
                 from tensorboardX import SummaryWriter

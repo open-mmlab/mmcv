@@ -60,6 +60,7 @@ class MlflowLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(MlflowLoggerHook, self).before_run(runner)
         if self.exp_name is not None:
             self.mlflow.set_experiment(self.exp_name)
         if self.tags is not None:
