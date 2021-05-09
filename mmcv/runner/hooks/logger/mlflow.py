@@ -13,7 +13,7 @@ class MlflowLoggerHook(LoggerHook):
                  log_model=True,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
+                 reset_flag=False,
                  by_epoch=True):
         """Class to log metrics and (optionally) a trained model to MLflow.
 

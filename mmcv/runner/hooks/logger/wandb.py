@@ -11,7 +11,7 @@ class WandbLoggerHook(LoggerHook):
                  init_kwargs=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
+                 reset_flag=False,
                  commit=True,
                  by_epoch=True,
                  with_step=True):

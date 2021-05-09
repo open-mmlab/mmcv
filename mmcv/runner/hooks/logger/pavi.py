@@ -22,7 +22,7 @@ class PaviLoggerHook(LoggerHook):
                  add_last_ckpt=False,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
+                 reset_flag=False,
                  by_epoch=True,
                  img_key='img_info'):
         super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag,
