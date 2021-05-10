@@ -118,8 +118,8 @@ Take custom operator `soft_nms` for example.
 ## Known Issues
 
 - "RuntimeError: tuple appears in op that does not forward tuples, unsupported kind: `prim::PythonOp`."
-   1. Note generally `cummax` or `cummin` is exportable to ONNX as long as the torch version >= 1.5.0,since `torch.cummax` is only supported with torch >= 1.5.0. But when `cummax` or `cummin` serves as an intermediate component whose outputs is used as inputs for another modules, it's expected that pytorch version must be >= 1.7.0. Otherwise the above error might arise, when you run the exported ONNX model with onnxruntime.
-   2. Solution: Update the torch version to 1.7.0 or higher.
+   1. Note generally `cummax` or `cummin` is exportable to ONNX as long as the torch version >= 1.5.0, since `torch.cummax` is only supported with torch >= 1.5.0. But when `cummax` or `cummin` serves as an intermediate component whose outputs is used as inputs for another modules, it's expected that torch version must be >= 1.7.0. Otherwise the above error might arise, when running exported ONNX model with onnxruntime.
+   2. Solution: update the torch version to 1.7.0 or higher.
 
 ## References
 
