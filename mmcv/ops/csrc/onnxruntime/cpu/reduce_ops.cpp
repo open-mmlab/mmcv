@@ -1,9 +1,10 @@
+#include "reduce_ops.h"
+
 #include <assert.h>
 
 #include <vector>
 
 #include "../ort_mmcv_utils.h"
-#include "reduce_ops.h"
 
 // modified from
 // https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/ReduceOps.cpp
