@@ -33,6 +33,18 @@
     - [Inputs](#inputs-4)
     - [Outputs](#outputs-4)
     - [Type Constraints](#type-constraints-4)
+  - [cummax](#cummax)
+    - [Description](#description-5)
+    - [Parameters](#parameters-5)
+    - [Inputs](#inputs-5)
+    - [Outputs](#outputs-5)
+    - [Type Constraints](#type-constraints-5)
+  - [cummin](#cummin)
+    - [Description](#description-6)
+    - [Parameters](#parameters-6)
+    - [Inputs](#inputs-6)
+    - [Outputs](#outputs-6)
+    - [Type Constraints](#type-constraints-6)
 
 <!-- TOC -->
 
@@ -202,6 +214,70 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>Output the pooled features. 4-D tensor of shape (N, C, H, W).</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32)
+
+## cummax
+
+### Description
+
+Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum elements of `input` in the dimension `dim`. And `indices` is the index location of each maximum value found in the dimension `dim`. Read [torch.cummax](https://pytorch.org/docs/stable/generated/torch.cummax.html) for more details.
+
+### Parameters
+
+| Type    | Parameter       | Description                                                      |
+| ------- | --------------- | ---------------------------------------------------------------- |
+| `int`   | `dim`           | the dimension to do the operation over                           |
+
+### Inputs
+
+<dl>
+<dt><tt>input</tt>: T</dt>
+<dd>The input tensor with various shapes. Tensor with empty element is also supported.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>output</tt>: T</dt>
+<dd>Output the cumulative maximum elements of `input` in the dimension `dim`, with the same shape and dtype as `input`.</dd>
+<dt><tt>indices</tt>: tensor(int64)</dt>
+<dd>Output the index location of each cumulative maximum value found in the dimension `dim`, with the same shape as `input`.</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32)
+
+## cummin
+
+### Description
+
+Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum elements of `input` in the dimension `dim`. And `indices` is the index location of each minimum value found in the dimension `dim`. Read [torch.cummin](https://pytorch.org/docs/stable/generated/torch.cummin.html) for more details.
+
+### Parameters
+
+| Type    | Parameter       | Description                                                      |
+| ------- | --------------- | ---------------------------------------------------------------- |
+| `int`   | `dim`           | the dimension to do the operation over                           |
+
+### Inputs
+
+<dl>
+<dt><tt>input</tt>: T</dt>
+<dd>The input tensor with various shapes. Tensor with empty element is also supported.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>output</tt>: T</dt>
+<dd>Output the cumulative minimum elements of `input` in the dimension `dim`, with the same shape and dtype as `input`.</dd>
+<dt><tt>indices</tt>: tensor(int64)</dt>
+<dd>Output the index location of each cumulative minimum value found in the dimension `dim`, with the same shape as `input`.</dd>
 </dl>
 
 ### Type Constraints

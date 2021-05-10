@@ -494,3 +494,78 @@ def test_corner_pool(mode, opset=11):
     pytorch_results = wrapped_model(input.clone())
     os.remove(onnx_file)
     assert np.allclose(pytorch_results, ort_result, atol=1e-5)
+
+
+@pytest.mark.parametrize('key', ['cummax', 'cummin'])
+def test_cummax_cummin(key, opset=11):
+    if torch.__version__ == 'parrots':
+        pytest.skip('onnx is not supported in parrots directly')
+
+    # Note generally `cummax` or `cummin` is exportable to ONNX
+    # as long as the pytorch version >= 1.5.0, since `torch.cummax`
+    # is only supported with torch >= 1.5.0.
+    # But when `cummax` or `cummin` serves as an intermediate component
+    # whose outputs is used as inputs for another modules, it's expected
+    # that pytorch version must be >= 1.7.0. Otherwise error appears like:
+    # `RuntimeError: tuple  appears in op that does not forward tuples,
+    # unsupported 'kind: prim::PythonOp`.
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        pytest.skip('test_cummax_cummin should be ran with pytorch >= 1.7.0')
+
+    # register custom op `mmcv::cummax` and `mmcv::cummin`
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics(opset)
+
+    from mmcv.ops import get_onnxruntime_op_path
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    input_list = [
+        # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
+        torch.rand((2, 3, 4, 1, 5)),
+        torch.rand((1)),
+        torch.rand((2, 0, 1)),  # tensor.numel() is 0
+        torch.FloatTensor(),  # empty tensor
+    ]
+
+    cummax_cummin_funcs = {'cummax': torch.cummax, 'cummin': torch.cummin}
+
+    for input in input_list:
+        ndims = input.dim()
+        # valid dim range is [-ndims, ndims-1]
+        # test for all `dim` value which is valid
+        for dim in range(-ndims, ndims):
+            cummax_func = partial(cummax_cummin_funcs[key], dim=dim)
+            wrapped_model = WrapFunction(cummax_func).eval()
+
+            with torch.no_grad():
+                torch.onnx.export(
+                    wrapped_model,
+                    input,
+                    onnx_file,
+                    export_params=True,
+                    keep_initializers_as_inputs=True,
+                    input_names=['input'],
+                    output_names=['output', 'indices'],
+                    opset_version=opset)
+
+            onnx_model = onnx.load(onnx_file)
+            input_all = [node.name for node in onnx_model.graph.input]
+            input_initializer = [
+                node.name for node in onnx_model.graph.initializer
+            ]
+            net_feed_input = list(set(input_all) - set(input_initializer))
+            assert (len(net_feed_input) == 1)
+
+            session_options = rt.SessionOptions()
+            session_options.register_custom_ops_library(ort_custom_op_path)
+            sess = rt.InferenceSession(onnx_file, session_options)
+            ort_output, ort_inds = sess.run(None,
+                                            {'input': input.detach().numpy()})
+            pytorch_output, pytorch_inds = wrapped_model(input.clone())
+            pytorch_output = pytorch_output.detach().numpy()
+            pytorch_inds = pytorch_inds.detach().numpy()
+            assert np.allclose(pytorch_output, ort_output, atol=1e-5)
+            assert np.all(pytorch_inds == ort_inds)
+            os.remove(onnx_file)
