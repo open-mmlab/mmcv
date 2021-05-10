@@ -90,9 +90,9 @@ class Config:
 
     @staticmethod
     def _validate_py_syntax(filename):
-        with open(filename, 'rb') as f:
-            # reading in this way help resolve some coding error on windows
-            content = f.read().decode()
+        with open(filename, 'r', encoding='utf-8') as f:
+            # Setting encoding explicitly help resolve some coding issue on windows
+            content = f.read()
         try:
             ast.parse(content)
         except SyntaxError as e:
@@ -110,9 +110,9 @@ class Config:
             fileBasename=file_basename,
             fileBasenameNoExtension=file_basename_no_extension,
             fileExtname=file_extname)
-        with open(filename, 'rb') as f:
-            # reading in this way help resolve some coding error on windows
-            config_file = f.read().decode()
+        with open(filename, 'r', encoding='utf-8') as f:
+            # Setting encoding explicitly help resolve some coding issue on windows
+            config_file = f.read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
             value = value.replace('\\', '/')
@@ -161,9 +161,9 @@ class Config:
             temp_config_file.close()
 
         cfg_text = filename + '\n'
-        with open(filename, 'rb') as f:
-            # reading in this way help resolve some coding error on windows
-            cfg_text += f.read().decode()
+        with open(filename, 'r', encoding='utf-8') as f:
+            # Setting encoding explicitly help resolve some coding issue on windows
+            cfg_text += f.read()
 
         if BASE_KEY in cfg_dict:
             cfg_dir = osp.dirname(filename)
