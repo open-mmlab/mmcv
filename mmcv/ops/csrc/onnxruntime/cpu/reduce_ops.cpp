@@ -1,10 +1,9 @@
-#include "reduce_ops.h"
-
 #include <assert.h>
 
 #include <vector>
 
 #include "../ort_mmcv_utils.h"
+#include "reduce_ops.h"
 
 // modified from
 // https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/ReduceOps.cpp
@@ -47,9 +46,12 @@ void cummax_cummin_helper(const T1 *input, T1 *output, T2 *indices,
 }
 
 // modified `tensor_dim_apply3` from
-// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/TensorDimApply.h
-// currently `tensor_dim_apply3` is only used for `cummax` and `cummin`,
-// according to the official pytorch source codes.
+// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/TensorDimApply.h.
+// the difference is that: (1) use `reversed_dim_cumprod` for fast computing of
+// tensor `size` and `stride`. (2) the same `stride` is used for input, output,
+// and indices, since it's unnecessary to use separate values. currently
+// `tensor_dim_apply3` is only used for `cummax` and `cummin`, according to the
+// official pytorch projects: https://github.com/pytorch/pytorch.
 template <typename T1, typename T2, typename Function>
 void tensor_dim_apply3(const T1 *input, T1 *output, T2 *indices,
                        const int64_t dim, const int64_t ndims,
