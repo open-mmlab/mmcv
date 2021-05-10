@@ -23,7 +23,8 @@ from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
                          build_runner)
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
-                                          OneCycleLrUpdaterHook)
+                                          OneCycleLrUpdaterHook,
+                                          StepLrUpdaterHook)
 
 
 def test_checkpoint_hook():
@@ -534,6 +535,182 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
                 'learning_rate': 0.0009549150281252633,
                 'momentum': 0.95
             }, 10)
+        ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+@pytest.mark.parametrize('multi_optimziers', (True, False))
+def test_step_lr_update_hook(multi_optimziers):
+    """Test StepLrUpdaterHook."""
+    with pytest.raises(TypeError):
+        # `step` should be specified
+        StepLrUpdaterHook()
+    with pytest.raises(AssertionError):
+        # if `step` is int, should be positive
+        StepLrUpdaterHook(-10)
+    with pytest.raises(AssertionError):
+        # if `step` is list of int, should all be positive
+        StepLrUpdaterHook([10, 16, -20])
+
+    # test StepLrUpdaterHook with int `step` value
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((30, 2)))
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add step LR scheduler
+    hook = StepLrUpdaterHook(by_epoch=False, step=5, gamma=0.5, min_lr=1e-3)
+    runner.register_hook(hook)
+    runner.register_hook(IterTimerHook())
+
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.01,
+                    'learning_rate/model2': 0.005,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 6),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.0025,
+                    'learning_rate/model2': 0.00125,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 16),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.00125,
+                    'learning_rate/model2': 0.001,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 21),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.001,
+                    'learning_rate/model2': 0.001,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 26),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.001,
+                    'learning_rate/model2': 0.001,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 30)
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 1),
+            call('train', {
+                'learning_rate': 0.01,
+                'momentum': 0.95
+            }, 6),
+            call('train', {
+                'learning_rate': 0.0025,
+                'momentum': 0.95
+            }, 16),
+            call('train', {
+                'learning_rate': 0.00125,
+                'momentum': 0.95
+            }, 21),
+            call('train', {
+                'learning_rate': 0.001,
+                'momentum': 0.95
+            }, 26),
+            call('train', {
+                'learning_rate': 0.001,
+                'momentum': 0.95
+            }, 30)
+        ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+    # test StepLrUpdaterHook with list[int] `step` value
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add step LR scheduler
+    hook = StepLrUpdaterHook(by_epoch=False, step=[4, 6, 8], gamma=0.1)
+    runner.register_hook(hook)
+    runner.register_hook(IterTimerHook())
+
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.002,
+                    'learning_rate/model2': 0.001,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 5),
+            call(
+                'train', {
+                    'learning_rate/model1': 2.0000000000000004e-4,
+                    'learning_rate/model2': 1.0000000000000002e-4,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 7),
+            call(
+                'train', {
+                    'learning_rate/model1': 2.0000000000000005e-05,
+                    'learning_rate/model2': 1.0000000000000003e-05,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9
+                }, 9)
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 1),
+            call('train', {
+                'learning_rate': 0.002,
+                'momentum': 0.95
+            }, 5),
+            call('train', {
+                'learning_rate': 2.0000000000000004e-4,
+                'momentum': 0.95
+            }, 7),
+            call('train', {
+                'learning_rate': 2.0000000000000005e-05,
+                'momentum': 0.95
+            }, 9)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 

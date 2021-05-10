@@ -3,6 +3,7 @@ import json
 import os
 import os.path as osp
 
+import torch
 import yaml
 
 import mmcv
@@ -29,7 +30,7 @@ class PaviLoggerHook(LoggerHook):
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt
-        self.img_key=img_key
+        self.img_key = img_key
 
     @master_only
     def before_run(self, runner):
