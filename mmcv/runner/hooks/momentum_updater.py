@@ -1,3 +1,4 @@
+import mmcv
 from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos, annealing_linear, format_param
 
@@ -146,6 +147,54 @@ class MomentumUpdaterHook(Hook):
             else:
                 warmup_momentum = self.get_warmup_momentum(cur_iter)
                 self._set_momentum(runner, warmup_momentum)
+
+
+@HOOKS.register_module()
+class StepMomentumUpdaterHook(MomentumUpdaterHook):
+    """Step momentum scheduler with min value clipping.
+
+    Args:
+        step (int | list[int]): Step to decay the momentum. If an int value is
+            given, regard it as the decay interval. If a list is given, decay
+            momentum at these steps.
+        gamma (float, optional): Decay momentum ratio. Default: 0.5.
+        min_momentum (float, optional): Minimum momentum value to keep. If
+            momentum after decay is lower than this value, it will be clipped
+            accordingly. If None is given, we don't perform lr clipping.
+            Default: None.
+    """
+
+    def __init__(self, step, gamma=0.5, min_momentum=None, **kwargs):
+        if isinstance(step, list):
+            assert mmcv.is_list_of(step, int)
+            assert all([s > 0 for s in step])
+        elif isinstance(step, int):
+            assert step > 0
+        else:
+            raise TypeError('"step" must be a list or integer')
+        self.step = step
+        self.gamma = gamma
+        self.min_momentum = min_momentum
+        super(StepMomentumUpdaterHook, self).__init__(**kwargs)
+
+    def get_momentum(self, runner, base_momentum):
+        progress = runner.epoch if self.by_epoch else runner.iter
+
+        # calculate exponential term
+        if isinstance(self.step, int):
+            exp = progress // self.step
+        else:
+            exp = len(self.step)
+            for i, s in enumerate(self.step):
+                if progress < s:
+                    exp = i
+                    break
+
+        momentum = base_momentum * (self.gamma**exp)
+        if self.min_momentum is not None:
+            # clip to a minimum value
+            momentum = max(momentum, self.min_momentum)
+        return momentum
 
 
 @HOOKS.register_module()
@@ -419,11 +468,12 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
             end_iter = phase['end_iter']
             if curr_iter <= end_iter or i == len(self.momentum_phases) - 1:
                 pct = (curr_iter - start_iter) / (end_iter - start_iter)
-                lr = self.anneal_func(param_group[phase['start_momentum']],
-                                      param_group[phase['end_momentum']], pct)
+                momentum = self.anneal_func(
+                    param_group[phase['start_momentum']],
+                    param_group[phase['end_momentum']], pct)
                 break
             start_iter = end_iter
-        return lr
+        return momentum
 
     def get_regular_momentum(self, runner):
         if isinstance(runner.optimizer, dict):

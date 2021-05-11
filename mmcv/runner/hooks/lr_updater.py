@@ -2,6 +2,7 @@
 import numbers
 from math import cos, pi
 
+import mmcv
 from .hook import HOOKS, Hook
 
 
@@ -177,10 +178,9 @@ class StepLrUpdaterHook(LrUpdaterHook):
     """
 
     def __init__(self, step, gamma=0.1, min_lr=None, **kwargs):
-        assert isinstance(step, (list, int))
         if isinstance(step, list):
-            for s in step:
-                assert isinstance(s, int) and s > 0
+            assert mmcv.is_list_of(step, int)
+            assert all([s > 0 for s in step])
         elif isinstance(step, int):
             assert step > 0
         else:
@@ -193,19 +193,17 @@ class StepLrUpdaterHook(LrUpdaterHook):
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
 
+        # calculate exponential term
         if isinstance(self.step, int):
-            lr = base_lr * (self.gamma**(progress // self.step))
-            if self.min_lr is not None:
-                # clip to a minimum value
-                lr = max(lr, self.min_lr)
-            return lr
+            exp = progress // self.step
+        else:
+            exp = len(self.step)
+            for i, s in enumerate(self.step):
+                if progress < s:
+                    exp = i
+                    break
 
-        exp = len(self.step)
-        for i, s in enumerate(self.step):
-            if progress < s:
-                exp = i
-                break
-        lr = base_lr * self.gamma**exp
+        lr = base_lr * (self.gamma**exp)
         if self.min_lr is not None:
             # clip to a minimum value
             lr = max(lr, self.min_lr)
