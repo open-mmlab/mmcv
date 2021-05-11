@@ -167,8 +167,7 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
     def __init__(self, step, gamma=0.5, min_momentum=None, **kwargs):
         if isinstance(step, list):
             assert mmcv.is_list_of(step, int)
-            for s in step:
-                assert s > 0
+            assert all([s > 0 for s in step])
         elif isinstance(step, int):
             assert step > 0
         else:
