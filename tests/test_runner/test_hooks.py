@@ -6,22 +6,21 @@ CommandLine:
 """
 import logging
 import os.path as osp
+
+import pytest
 import re
 import shutil
 import sys
 import tempfile
-from unittest.mock import MagicMock, call
-
-import pytest
 import torch
 import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
+from unittest.mock import MagicMock, call
 
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
-                         MlflowLoggerHook, PaviLoggerHook, WandbLoggerHook,
-                         build_runner)
-from mmcv.runner.hooks.hook import HOOKS, Hook
+                         MlflowLoggerHook, NeptuneLoggerHook, PaviLoggerHook,
+                         WandbLoggerHook, build_runner)
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
@@ -913,6 +912,22 @@ def test_wandb_hook():
                                       step=6,
                                       commit=True)
     hook.wandb.join.assert_called_with()
+
+
+def test_neptune_hook():
+    sys.modules['neptune'] = MagicMock()
+    sys.modules['neptune.new'] = MagicMock()
+    runner = _build_demo_runner()
+    hook = NeptuneLoggerHook()
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.neptune.init.assert_called_with()
+    hook.run['momentum'].log.assert_called_with(0.95, step=6)
+    hook.run.stop.assert_called_with()
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
