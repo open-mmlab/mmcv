@@ -21,10 +21,10 @@ from torch.utils.data import DataLoader
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
                          MlflowLoggerHook, PaviLoggerHook, WandbLoggerHook,
                          build_runner)
+from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
-from mmcv.runner.hooks.hook import HOOKS, Hook
 
 
 def test_checkpoint_hook():
@@ -124,8 +124,10 @@ def test_ema_hook():
 
 
 def test_custom_hook():
+
     @HOOKS.register_module()
     class ToyHook(Hook):
+
         def __init__(self, info, *args, **kwargs):
             super().__init__()
             self.info = info
@@ -856,7 +858,6 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
                        max_epochs=1,
                        max_iters=None,
                        multi_optimziers=False):
-
 
     log_config = dict(
         interval=1, hooks=[
