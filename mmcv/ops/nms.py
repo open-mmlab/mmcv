@@ -282,18 +282,21 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # This assumes `dets` has 5 dimensions where
         # the last dimension is score.
         # TODO: more elegant way to handle the dimension issue.
+        # Some nms would reweight the score, such as SoftNMS
         scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
+        scores_list = []
         for id in torch.unique(idxs):
             mask = (idxs == id).nonzero(as_tuple=False).view(-1)
             dets, keep = nms_op(boxes_for_nms[mask], scores[mask], **nms_cfg_)
             total_mask[mask[keep]] = True
-
+            scores_list.append(dets[:, 4])
+        scores = torch.cat(scores_list)
+        scores, inds = scores.sort(descending=True)
         keep = total_mask.nonzero(as_tuple=False).view(-1)
-        keep = keep[scores[keep].argsort(descending=True)]
+        keep = keep[inds]
         boxes = boxes[keep]
-        scores = scores[keep]
 
     return torch.cat([boxes, scores[:, None]], -1), keep
 
