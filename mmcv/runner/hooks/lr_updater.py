@@ -3,7 +3,6 @@ import numbers
 from math import cos, pi
 
 import mmcv
-
 from .hook import HOOKS, Hook
 
 
