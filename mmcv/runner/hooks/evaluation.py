@@ -32,7 +32,7 @@ class EvalHook(Hook):
             checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
             best score value and best checkpoint path, which will be also
             loaded when resume checkpoint. Options are the evaluation metrics
-            to the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
+            on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
              ``OrderedDict`` result will be used. Default: None.
@@ -298,7 +298,7 @@ class DistEvalHook(EvalHook):
             checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
             best score value and best checkpoint path, which will be also
             loaded when resume checkpoint. Options are the evaluation metrics
-            to the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
+            on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
              ``OrderedDict`` result will be used. Default: None.
