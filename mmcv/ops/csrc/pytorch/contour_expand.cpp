@@ -48,6 +48,10 @@ void kernel_dilate(const uint8_t *data, IntArrayRef data_shape,
 
   int dx[] = {-1, 1, 0, 0};
   int dy[] = {0, 0, -1, 1};
+  vector<int> kernel_step(kernel_num);
+  std::for_each(kernel_step.begin(), kernel_step.end(),
+                [=](int &k) { return k * height * width; });
+
   for (int kernel_id = kernel_num - 2; kernel_id >= 0; --kernel_id) {
     while (!queue.empty()) {
       Point2d point = queue.front();
@@ -61,10 +65,9 @@ void kernel_dilate(const uint8_t *data, IntArrayRef data_shape,
         int tmp_x = x + dx[d];
         int tmp_y = y + dy[d];
 
-        if (tmp_x < 0 || tmp_x >= (int)text_line.size()) continue;
-        if (tmp_y < 0 || tmp_y >= (int)text_line[1].size()) continue;
-        int kernel_value =
-            data[kernel_id * height * width + tmp_x * width + tmp_y];
+        if (tmp_x < 0 || tmp_x >= height) continue;
+        if (tmp_y < 0 || tmp_y >= width) continue;
+        int kernel_value = data[kernel_step[kernel_id] + tmp_x * width + tmp_y];
         if (kernel_value == 0) continue;
         if (text_line[tmp_x][tmp_y] > 0) continue;
 

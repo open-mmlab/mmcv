@@ -51,11 +51,8 @@ std::vector<std::vector<float>> pixel_group_cpu(
   auto ptr_kernel_label = kernel_label.data_ptr<int32_t>();
   std::queue<std::tuple<int, int, int32_t>> contour_pixels;
   auto embedding_dim = embedding.size(2);
-  float** kernel_vector = new float*[kernel_region_num];
-  for (int i = 0; i < kernel_region_num; ++i) {
-    kernel_vector[i] = new float[embedding_dim + 1];
-    memset(kernel_vector[i], 0, (embedding_dim + 1) * sizeof(float));
-  }
+  std::vector<std::vector<float>> kernel_vector(
+      kernel_region_num, std::vector<float>(embedding_dim + 1, 0));
 
   Tensor text_label;
   text_label = kernel_label.clone();
@@ -88,18 +85,19 @@ std::vector<std::vector<float>> pixel_group_cpu(
   int dx[4] = {-1, 1, 0, 0};
   int dy[4] = {0, 0, -1, 1};
   while (!contour_pixels.empty()) {
-    auto q_n = contour_pixels.front();
+    auto query_pixel = contour_pixels.front();
     contour_pixels.pop();
-    int y = std::get<0>(q_n);
-    int x = std::get<1>(q_n);
-    int32_t l = std::get<2>(q_n);
+    int y = std::get<0>(query_pixel);
+    int x = std::get<1>(query_pixel);
+    int32_t l = std::get<2>(query_pixel);
     auto kernel_cv = kernel_vector[l];
     for (int idx = 0; idx < 4; idx++) {
       int tmpy = y + dy[idx];
       int tmpx = x + dx[idx];
-      auto p_res = ptr_text_label + tmpy * width;
+      auto ptr_text_label_tmp = ptr_text_label + tmpy * width;
       if (tmpy < 0 || tmpy >= height || tmpx < 0 || tmpx >= width) continue;
-      if (!ptr_mask[tmpy * width + tmpx] || p_res[tmpx] > 0) continue;
+      if (!ptr_mask[tmpy * width + tmpx] || ptr_text_label_tmp[tmpx] > 0)
+        continue;
 
       float dis = 0;
       auto ptr_embedding_tmp = ptr_embedding + tmpy * width * embedding_dim;
@@ -111,13 +109,9 @@ std::vector<std::vector<float>> pixel_group_cpu(
       }
       if (dis >= threshold_square) continue;
       contour_pixels.push(std::make_tuple(tmpy, tmpx, l));
-      p_res[tmpx] = l;
+      ptr_text_label_tmp[tmpx] = l;
     }
   }
-  for (int i = 0; i < kernel_region_num; ++i) {
-    delete[] kernel_vector[i];
-  }
-  delete[] kernel_vector;
 
   return estimate_confidence(ptr_text_label, ptr_score, kernel_region_num,
                              height, width);
