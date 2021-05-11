@@ -1,3 +1,5 @@
+import mmcv
+
 from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos, annealing_linear, format_param
 
@@ -164,10 +166,10 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
     """
 
     def __init__(self, step, gamma=0.5, min_momentum=None, **kwargs):
-        assert isinstance(step, (list, int))
         if isinstance(step, list):
+            assert mmcv.is_list_of(step, int)
             for s in step:
-                assert isinstance(s, int) and s > 0
+                assert s > 0
         elif isinstance(step, int):
             assert step > 0
         else:
@@ -180,16 +182,17 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
     def get_momentum(self, runner, base_momentum):
         progress = runner.epoch if self.by_epoch else runner.iter
 
+        # calculate exponential term
         if isinstance(self.step, int):
-            stage = progress // self.step
+            exp = progress // self.step
         else:
-            stage = len(self.step)
+            exp = len(self.step)
             for i, s in enumerate(self.step):
                 if progress < s:
-                    stage = i
+                    exp = i
                     break
 
-        momentum = base_momentum * (self.gamma**stage)
+        momentum = base_momentum * (self.gamma**exp)
         if self.min_momentum is not None:
             # clip to a minimum value
             momentum = max(momentum, self.min_momentum)
