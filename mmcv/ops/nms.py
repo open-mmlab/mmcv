@@ -282,7 +282,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # This assumes `dets` has 5 dimensions where
         # the last dimension is score.
         # TODO: more elegant way to handle the dimension issue.
-        # Some nms would reweight the score, such as SoftNMS
+        # Some type of nms would reweight the score, such as SoftNMS
         scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
