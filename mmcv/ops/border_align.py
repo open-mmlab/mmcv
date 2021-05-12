@@ -12,21 +12,12 @@ ext_module = ext_loader.load_ext(
 class BorderAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, boxes, output_size, spatial_scale, sampling_ratio,
-                 pool_mode, aligned):
+    def symbolic(g, input, boxes, pool_size):
         return g.op(
-            'mmcv::MMCVBorderAlign',
-            input,
-            boxes,
-            output_height_i=output_size[0],
-            output_width_i=output_size[1],
-            spatial_scale_f=spatial_scale,
-            sampling_ratio_i=sampling_ratio,
-            mode_s=pool_mode,
-            aligned_i=aligned)
+            'mmcv::MMCVBorderAlign', input, boxes, pool_size_i=pool_size)
 
     @staticmethod
-    def forward(ctx, input, boxes, pool_size=10):
+    def forward(ctx, input, boxes, pool_size):
         ctx.pool_size = pool_size
         ctx.input_shape = input.size()
 
