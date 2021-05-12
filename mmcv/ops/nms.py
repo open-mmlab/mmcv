@@ -218,6 +218,7 @@ def soft_nms(boxes,
                                      float(iou_threshold), float(sigma),
                                      float(min_score), method_dict[method],
                                      int(offset))
+
     dets = dets[:inds.size(0)]
 
     if is_numpy:

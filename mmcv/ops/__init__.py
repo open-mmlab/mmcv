@@ -1,5 +1,5 @@
 from .bbox import bbox_overlaps
-from .border_align import BorderAlign, border_align
+from .border_align import BorderAlign
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
