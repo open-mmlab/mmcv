@@ -293,7 +293,7 @@ def load_from_http(filename, map_location=None, model_dir=None):
 @CheckpointLoader.register_scheme(prefixes='pavi://')
 def load_from_pavi(filename, map_location=None):
     """load checkpoint through the file path prefixed with pavi. In distributed
-    setting, this function only download checkpoint at local rank 0.
+    setting, this function dowload ckpt at all ranks to seperate temp dir.
 
     Args:
         filename (str): checkpoint file path with pavi prefix
@@ -312,23 +312,12 @@ def load_from_pavi(filename, map_location=None):
     except ImportError:
         raise ImportError(
             'Please install pavi to load checkpoint from modelcloud.')
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
-    if rank == 0:
-        model = modelcloud.get(model_path)
-        with TemporaryDirectory() as tmp_dir:
-            downloaded_file = osp.join(tmp_dir, model.name)
-            model.download(downloaded_file)
-            checkpoint = torch.load(downloaded_file, map_location=map_location)
-    if world_size > 1:
-        torch.distributed.barrier()
-        if rank > 0:
-            model = modelcloud.get(model_path)
-            with TemporaryDirectory() as tmp_dir:
-                downloaded_file = osp.join(tmp_dir, model.name)
-                model.download(downloaded_file)
-                checkpoint = torch.load(
-                    downloaded_file, map_location=map_location)
+
+    model = modelcloud.get(model_path)
+    with TemporaryDirectory() as tmp_dir:
+        downloaded_file = osp.join(tmp_dir, model.name)
+        model.download(downloaded_file)
+        checkpoint = torch.load(downloaded_file, map_location=map_location)
     return checkpoint
 
 
@@ -346,21 +335,14 @@ def load_from_ceph(filename, map_location=None, backend='ceph'):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
+
     allowed_backends = ['ceph']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
-    if rank == 0:
-        fileclient = FileClient(backend=backend)
-        buffer = io.BytesIO(fileclient.get(filename))
-        checkpoint = torch.load(buffer, map_location=map_location)
-    if world_size > 1:
-        torch.distributed.barrier()
-        if rank > 0:
-            fileclient = FileClient(backend=backend)
-            buffer = io.BytesIO(fileclient.get(filename))
-            checkpoint = torch.load(buffer, map_location=map_location)
+
+    fileclient = FileClient(backend=backend)
+    buffer = io.BytesIO(fileclient.get(filename))
+    checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
 
