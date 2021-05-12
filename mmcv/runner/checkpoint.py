@@ -293,7 +293,8 @@ def load_from_http(filename, map_location=None, model_dir=None):
 @CheckpointLoader.register_scheme(prefixes='pavi://')
 def load_from_pavi(filename, map_location=None):
     """load checkpoint through the file path prefixed with pavi. In distributed
-    setting, this function dowload ckpt at all ranks to seperate temp dir.
+    setting, this function dowload ckpt at all ranks to to different temporary
+    directories.
 
     Args:
         filename (str): checkpoint file path with pavi prefix
@@ -323,8 +324,9 @@ def load_from_pavi(filename, map_location=None):
 
 @CheckpointLoader.register_scheme(prefixes='s3://')
 def load_from_ceph(filename, map_location=None, backend='ceph'):
-    """load checkpoint through the file path prefixed with s3. In distributed
-    setting, this function only download checkpoint at local rank 0.
+    """load checkpoint through the file path prefixed with s3.  In distributed
+    setting, this function dowload ckpt at all ranks to to different temporary
+    directories.
 
     Args:
         filename (str): checkpoint file path with s3 prefix
