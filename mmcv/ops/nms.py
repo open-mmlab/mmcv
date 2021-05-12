@@ -286,15 +286,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         scores = dets[:, 4]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
-        scores_list = []
+        # Some type of nms would reweight the score, such as SoftNMS
+        scores_after_nms = scores.new_zeros(scores.size())
         for id in torch.unique(idxs):
             mask = (idxs == id).nonzero(as_tuple=False).view(-1)
             dets, keep = nms_op(boxes_for_nms[mask], scores[mask], **nms_cfg_)
             total_mask[mask[keep]] = True
-            scores_list.append(dets[:, 4])
-        scores = torch.cat(scores_list)
-        scores, inds = scores.sort(descending=True)
+            scores_after_nms[mask[keep]] = dets[:, -1]
         keep = total_mask.nonzero(as_tuple=False).view(-1)
+        scores, inds = scores_after_nms[keep].sort(descending=True)
         keep = keep[inds]
         boxes = boxes[keep]
 
