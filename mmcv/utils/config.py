@@ -91,7 +91,7 @@ class Config:
     @staticmethod
     def _validate_py_syntax(filename):
         with open(filename, 'r', encoding='utf-8') as f:
-            # Setting encoding explicitly help resolve some coding issue on windows
+            # Setting encoding explicitly to resolve coding issue on windows
             content = f.read()
         try:
             ast.parse(content)
@@ -111,7 +111,7 @@ class Config:
             fileBasenameNoExtension=file_basename_no_extension,
             fileExtname=file_extname)
         with open(filename, 'r', encoding='utf-8') as f:
-            # Setting encoding explicitly help resolve some coding issue on windows
+            # Setting encoding explicitly to resolve coding issue on windows
             config_file = f.read()
         for key, value in support_templates.items():
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
