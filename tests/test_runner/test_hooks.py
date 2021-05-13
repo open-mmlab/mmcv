@@ -21,6 +21,7 @@ from unittest.mock import MagicMock, call
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, PaviLoggerHook,
                          WandbLoggerHook, build_runner)
+from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
