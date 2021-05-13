@@ -73,7 +73,7 @@ def caffe2_xavier_init(module, bias=0):
 
 
 def bias_init_with_prob(prior_prob):
-    """initialize conv/fc bias value according to given probability."""
+    """initialize conv/fc bias value according to a given probability value."""
     bias_init = float(-np.log((1 - prior_prob) / prior_prob))
     return bias_init
 

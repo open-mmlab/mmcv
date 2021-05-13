@@ -82,7 +82,7 @@ methods for initializing modules like `nn.Conv2d`. Of course, we also provide
 high-level APIs for initializing models containing one or more
 modules.
 
-#### **Initialization functions**
+#### Initialization functions
 
 Initialize a `nn.Module` such as `nn.Conv2d`, `nn.Linear` in a functional way.
 
@@ -176,7 +176,7 @@ We provide the following initialization methods.
     -4.59511985013459
     ```
 
-#### **Initializers and configs**
+#### Initializers and configs
 
 On the basis of the initialization methods, we define the corresponding initialization classes and register them to `INITIALIZERS`, so we can
 use the configuration to initialize the model.
