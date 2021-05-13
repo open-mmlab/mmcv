@@ -1,6 +1,25 @@
 # Copyright (c) Open-MMLab.
+import sys
 from collections.abc import Iterable
+from runpy import run_path
+from shlex import split
 from typing import Any, Dict, List
+from unittest.mock import patch
+
+
+def check_python_script(cmd):
+    """Run the python cmd script with `__main__`. The difference between
+    `os.system` is that, this function exectues code in the current process, so
+    that it can be tracked by coverage tools. Currently it supports two forms:
+
+    - ./tests/data/scripts/hello.py zz
+    - python tests/data/scripts/hello.py zz
+    """
+    args = split(cmd)
+    if args[0] == 'python':
+        args = args[1:]
+    with patch.object(sys, 'argv', args):
+        run_path(args[0], run_name='__main__')
 
 
 def _any(judge_result):
