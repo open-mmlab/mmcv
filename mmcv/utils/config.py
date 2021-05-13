@@ -162,7 +162,7 @@ class Config:
 
         cfg_text = filename + '\n'
         with open(filename, 'r', encoding='utf-8') as f:
-            # Setting encoding explicitly help resolve some coding issue on windows
+            # Setting encoding explicitly to resolve coding issue on windows
             cfg_text += f.read()
 
         if BASE_KEY in cfg_dict:
