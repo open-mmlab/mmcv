@@ -7,7 +7,9 @@ TORCH_VERSION = torch.__version__
 is_rocm_pytorch = False
 if torch.__version__ >= '1.5':
     from torch.utils.cpp_extension import ROCM_HOME
-    is_rocm_pytorch = True if ((torch.version.hip is not None) and (ROCM_HOME is not None)) else False
+    is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                               (ROCM_HOME is not None)) else False
+
 
 def _get_cuda_home():
     if TORCH_VERSION == 'parrots':

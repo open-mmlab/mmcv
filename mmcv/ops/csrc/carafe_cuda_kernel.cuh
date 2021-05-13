@@ -46,7 +46,7 @@ __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
 #ifdef HIP_DIFF
     val += __shfl_down(FULL_MASK, val, offset);
 #else
-    val += __shfl_down_sync(FULL_MASK, val, offset);#endif
+    val += __shfl_down_sync(FULL_MASK, val, offset);
 #endif
   return val;
 }
