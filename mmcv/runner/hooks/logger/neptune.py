@@ -44,7 +44,6 @@ class NeptuneLoggerHook(LoggerHook):
         if tags:
             for tag_name, tag_value in tags.items():
                 if self.with_step:
-                    print(tag_name, tag_value)
                     self.run[tag_name].log(
                         tag_value, step=self.get_iter(runner))
                 else:
