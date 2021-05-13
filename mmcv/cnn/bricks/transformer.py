@@ -84,30 +84,46 @@ def build_transformer_layer_sequence(cfg, default_args=None):
     return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
 
 
+def bnc_to_nbc(forward):
+
+    def forward_warper(self, **kwargs):
+        convert_keys = ('key', 'value', 'value')
+        for key in kwargs.keys():
+            if key in convert_keys:
+                kwargs[key] = kwargs[key].transpose(0, 1)
+        return forward(self, **kwargs).transpose(0, 1)
+
+    return forward_warper
+
+
 @ATTENTION.register_module()
 class MultiheadAttention(BaseModule):
-    """A warpper for torch.nn.MultiheadAttention.
+    """A warpper for Attention.
 
     This module implements MultiheadAttention with residual connection,
     and positional encoding used in DETR is also passed as input.
 
     Args:
         embed_dims (int): The embedding dimension.
-        num_heads (int): Parallel attention heads. Same as
-            `nn.MultiheadAttention`.
+        num_heads (int): Parallel attention heads.
         attn_drop (float): A Dropout layer on attn_output_weights. Default 0.0.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
+        batch_first (bool): Key, Query and Value are shape of
+            (batch, n, embed_dim)
+            or (n, batch, embed_dim). Default to False.
     """
 
     def __init__(self,
                  embed_dims,
                  num_heads,
                  attn_drop=0.,
+                 proj_drop=0.,
                  dropout_layer=dict(type='DropOut', drop_prob=0.),
                  init_cfg=None,
+                 batch_first=False,
                  **kwargs):
         super(MultiheadAttention, self).__init__(init_cfg)
         if 'dropout' in kwargs:
@@ -120,8 +136,14 @@ class MultiheadAttention(BaseModule):
 
         self.embed_dims = embed_dims
         self.num_heads = num_heads
+        self.batch_first = batch_first
+
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
+        if self.batch_first:
+            self.attn.forward = bnc_to_nbc(self.attn.forward)
+
+        self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
         self.init_cfg = init_cfg
@@ -143,9 +165,11 @@ class MultiheadAttention(BaseModule):
 
         Args:
             query (Tensor): The input query with shape [num_queries, bs,
-                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+                embed_dims] if self.batch_first is False, else
+                [bs, num_queries embed_dims].
             key (Tensor): The key tensor with shape [num_keys, bs,
-                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+                embed_dims] if self.batch_first is False, else
+                [bs, num_keys, embed_dims] .
                 If None, the ``query`` will be used. Defaults to None.
             value (Tensor): The value tensor with same shape as `key`.
                 Same in `nn.MultiheadAttention.forward`. Defaults to None.
@@ -165,10 +189,13 @@ class MultiheadAttention(BaseModule):
                 num_keys]. Same in `nn.MultiheadAttention.forward`.
                 Defaults to None.
             key_padding_mask (Tensor): ByteTensor with shape [bs, num_keys].
-                Same in `nn.MultiheadAttention.forward`. Defaults to None.
+                Defaults to None.
 
         Returns:
-            Tensor: forwarded results with shape [num_queries, bs, embed_dims].
+            Tensor: forwarded results with shape
+                [num_queries, bs, embed_dims]
+                if self.batch_first is False, else
+                [bs, num_queries embed_dims].
         """
 
         if key is None:
@@ -190,13 +217,13 @@ class MultiheadAttention(BaseModule):
         if key_pos is not None:
             key = key + key_pos
         out = self.attn(
-            query,
-            key,
+            query=query,
+            key=key,
             value=value,
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask)[0]
 
-        return residual + self.dropout_layer(out)
+        return residual + self.dropout_layer(self.proj_drop(out))
 
 
 @ATTENTION.register_module()
@@ -503,6 +530,9 @@ class BaseTransformerLayer(BaseModule):
             Default: dict(type='LN').
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
+        batch_first (bool): Key, Query and Value are shape
+            of (batch, n, embed_dim)
+            or (n, batch, embed_dim). Default to False.
     """
 
     def __init__(self,
@@ -517,6 +547,7 @@ class BaseTransformerLayer(BaseModule):
                  operation_order=None,
                  norm_cfg=dict(type='LN'),
                  init_cfg=None,
+                 batch_first=False,
                  **kwargs):
 
         deprecated_args = dict(
@@ -534,12 +565,16 @@ class BaseTransformerLayer(BaseModule):
                 ffn_cfgs[new_name] = kwargs[ori_name]
 
         super(BaseTransformerLayer, self).__init__(init_cfg)
+
+        self.batch_first = batch_first
+
         assert set(operation_order) & set(
             ['self_attn', 'norm', 'ffn', 'cross_attn']) == \
             set(operation_order), f'The operation_order of' \
             f' {self.__class__.__name__} should ' \
             f'contains all four operation type ' \
             f"{['self_attn', 'norm', 'ffn', 'cross_attn']}"
+
         num_attn = operation_order.count('self_attn') + operation_order.count(
             'cross_attn')
         if isinstance(attn_cfgs, ConfigDict):
@@ -560,6 +595,10 @@ class BaseTransformerLayer(BaseModule):
         index = 0
         for operation in operation_order:
             if operation in ['self_attn', 'cross_attn']:
+                if 'batch_first' in attn_cfgs[index]:
+                    assert self.batch_first == attn_cfgs[index]['batch_first']
+                else:
+                    attn_cfgs[index]['batch_first'] = self.batch_first
                 attention = build_attention(attn_cfgs[index])
                 attention.operation_name = operation
                 self.attentions.append(attention)
@@ -601,12 +640,14 @@ class BaseTransformerLayer(BaseModule):
         **kwargs contains some specific arguments of attentions.
 
         Args:
-            query (Tensor): Input query with the shape
-                `(num_queries, bs, embed_dims)`.
-            key (Tensor): The key tensor with shape
-                `(num_keys, bs, embed_dims)`.
-            value (Tensor): The value tensor with shape
-                `(num_keys, bs, embed_dims)`.
+            query (Tensor): The input query with shape
+                [num_queries, bs, embed_dims] if
+                self.batch_first is False, else
+                [bs, num_queries embed_dims].
+            key (Tensor): The key tensor with shape [num_keys, bs,
+                embed_dims] if self.batch_first is False, else
+                [bs, num_keys, embed_dims] .
+            value (Tensor): The value tensor with same shape as `key`.
             query_pos (Tensor): The positional encoding for `query`.
                 Default: None.
             key_pos (Tensor): The positional encoding for `key`.
