@@ -223,20 +223,23 @@ def get_extensions():
         is_rocm_pytorch = False
         if torch.__version__ >= '1.5':
             from torch.utils.cpp_extension import ROCM_HOME
-            is_rocm_pytorch = True if ((torch.version.hip is not None) and (ROCM_HOME is not None)) else False
+            is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                                       (ROCM_HOME is not None)) else False
 
-        this_dir = "mmcv/ops/csrc/"
+        this_dir = 'mmcv/ops/csrc/'
         if is_rocm_pytorch:
             from torch.utils.hipify import hipify_python
+
             hipify_python.hipify(
                 project_directory=this_dir,
-                    output_directory=this_dir,
-                    includes="mmcv/ops/csrc/*",
-                    show_detailed=True,
+                output_directory=this_dir,
+                includes='mmcv/ops/csrc/*',
+                show_detailed=True,
                 is_pytorch_extension=True,
             )
             define_macros += [('MMCV_WITH_CUDA', None)]
             define_macros += [('HIP_DIFF', None)]
+            cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
             extension = CUDAExtension
