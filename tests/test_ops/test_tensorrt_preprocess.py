@@ -5,7 +5,7 @@ import onnx
 import torch
 
 from mmcv.ops import nms
-from mmcv.tensorrt.tensorrt_utils import preprocess_onnx
+from mmcv.tensorrt.preprocess import preprocess_onnx
 
 
 def remove_tmp_file(func):
@@ -14,9 +14,11 @@ def remove_tmp_file(func):
     def wrapper(*args, **kwargs):
         onnx_file = 'tmp.onnx'
         kwargs['onnx_file'] = onnx_file
-        result = func(*args, **kwargs)
-        if os.path.exists(onnx_file):
-            os.remove(onnx_file)
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            if os.path.exists(onnx_file):
+                os.remove(onnx_file)
         return result
 
     return wrapper
@@ -45,12 +47,12 @@ def export_nms_module_to_onnx(module, onnx_file):
 
 def test_can_handle_nms_with_constant_maxnum():
 
-    class NMS_with_const_maxnum(torch.nn.Module):
+    class ModuleNMS(torch.nn.Module):
 
         def forward(self, boxes, scores):
             return nms(boxes, scores, iou_threshold=0.4, max_num=10)
 
-    onnx_model = export_nms_module_to_onnx(NMS_with_const_maxnum)
+    onnx_model = export_nms_module_to_onnx(ModuleNMS)
     preprocess_onnx_model = preprocess_onnx(onnx_model)
     for node in preprocess_onnx_model.graph.node:
         if 'NonMaxSuppression' in node.name:
@@ -59,12 +61,12 @@ def test_can_handle_nms_with_constant_maxnum():
 
 def test_can_handle_nms_with_undefined_maxnum():
 
-    class NMS_with_const_maxnum(torch.nn.Module):
+    class ModuleNMS(torch.nn.Module):
 
         def forward(self, boxes, scores):
             return nms(boxes, scores, iou_threshold=0.4)
 
-    onnx_model = export_nms_module_to_onnx(NMS_with_const_maxnum)
+    onnx_model = export_nms_module_to_onnx(ModuleNMS)
     preprocess_onnx_model = preprocess_onnx(onnx_model)
     for node in preprocess_onnx_model.graph.node:
         if 'NonMaxSuppression' in node.name:
