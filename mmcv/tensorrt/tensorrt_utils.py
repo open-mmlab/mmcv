@@ -32,18 +32,18 @@ def preprocess_onnx(onnx_model):
 
     init_dict = {_.name: _ for _ in initializers}
 
-    nodes_to_remove = []
+    nodes_name_to_remove = set()
 
     def is_node_without_output(name):
         for node_name, node in node_dict.items():
-            if node not in nodes_to_remove:
+            if node_name not in nodes_name_to_remove:
                 if name in node.input:
                     return False
         return True
 
     def mark_nodes_to_remove(name):
         node = node_dict[name]
-        nodes_to_remove.append(node)
+        nodes_name_to_remove.add(name)
         for input_node_name in node.input:
             if is_node_without_output(input_node_name):
                 mark_nodes_to_remove(input_node_name)
@@ -85,13 +85,16 @@ def preprocess_onnx(onnx_model):
             if len(node_inputs) >= 3:
                 max_output_boxes_per_class = parse_data(
                     node_inputs[2], np.int64, max_output_boxes_per_class)
+                mark_nodes_to_remove(node_inputs[2])
 
             if len(node_inputs) >= 4:
                 iou_threshold = parse_data(node_inputs[3], np.float32,
                                            iou_threshold)
+                mark_nodes_to_remove(node_inputs[3])
 
             if len(node_inputs) >= 5:
                 score_threshold = parse_data(node_inputs[4], np.float32)
+                mark_nodes_to_remove(node_inputs[4])
 
             new_node = onnx.helper.make_node(
                 'NonMaxSuppression',
@@ -110,8 +113,8 @@ def preprocess_onnx(onnx_model):
             nodes.insert(idx, new_node)
             nodes.remove(node)
 
-    for node in nodes_to_remove:
-        nodes.remove(node)
+    for node_name in nodes_name_to_remove:
+        nodes.remove(node_dict[node_name])
 
     return onnx_model
 
