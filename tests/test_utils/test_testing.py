@@ -180,3 +180,15 @@ def test_assert_params_all_zeros():
 
     nn.init.normal_(demo_module.weight, mean=0, std=0.01)
     assert not mmcv.assert_params_all_zeros(demo_module)
+
+
+def test_check_python_script(capsys):
+    mmcv.utils.check_python_script('./tests/data/scripts/hello.py zz')
+    captured = capsys.readouterr().out
+    assert captured == 'hello zz!\n'
+    mmcv.utils.check_python_script('./tests/data/scripts/hello.py agent')
+    captured = capsys.readouterr().out
+    assert captured == 'hello agent!\n'
+    # Make sure that wrong cmd raises an error
+    with pytest.raises(SystemExit):
+        mmcv.utils.check_python_script('./tests/data/scripts/hello.py li zz')

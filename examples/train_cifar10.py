@@ -159,7 +159,8 @@ def main():
         lr_config=cfg.lr_config,
         optimizer_config=cfg.optimizer_config,
         checkpoint_config=cfg.checkpoint_config,
-        log_config=cfg.log_config)
+        log_config=cfg.log_config,
+        custom_hooks_config=cfg.get('custom_train_hooks', None))
     if dist:
         runner.register_hook(DistSamplerSeedHook())
 

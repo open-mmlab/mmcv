@@ -2,6 +2,7 @@
 import numbers
 from math import cos, pi
 
+import mmcv
 from .hook import HOOKS, Hook
 
 
@@ -177,10 +178,9 @@ class StepLrUpdaterHook(LrUpdaterHook):
     """
 
     def __init__(self, step, gamma=0.1, min_lr=None, **kwargs):
-        assert isinstance(step, (list, int))
         if isinstance(step, list):
-            for s in step:
-                assert isinstance(s, int) and s > 0
+            assert mmcv.is_list_of(step, int)
+            assert all([s > 0 for s in step])
         elif isinstance(step, int):
             assert step > 0
         else:
@@ -193,19 +193,17 @@ class StepLrUpdaterHook(LrUpdaterHook):
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
 
+        # calculate exponential term
         if isinstance(self.step, int):
-            lr = base_lr * (self.gamma**(progress // self.step))
-            if self.min_lr is not None:
-                # clip to a minimum value
-                lr = max(lr, self.min_lr)
-            return lr
+            exp = progress // self.step
+        else:
+            exp = len(self.step)
+            for i, s in enumerate(self.step):
+                if progress < s:
+                    exp = i
+                    break
 
-        exp = len(self.step)
-        for i, s in enumerate(self.step):
-            if progress < s:
-                exp = i
-                break
-        lr = base_lr * self.gamma**exp
+        lr = base_lr * (self.gamma**exp)
         if self.min_lr is not None:
             # clip to a minimum value
             lr = max(lr, self.min_lr)
@@ -367,13 +365,16 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
     triangular policy inside a cycle. This improves the performance in the
     3D detection area.
 
-    Attributes:
+    Args:
+        by_epoch (bool): Whether to update LR by epoch.
         target_ratio (tuple[float]): Relative ratio of the highest LR and the
             lowest LR to the initial LR.
         cyclic_times (int): Number of cycles during training
         step_ratio_up (float): The ratio of the increasing process of LR in
             the total cycle.
-        by_epoch (bool): Whether to update LR by epoch.
+        anneal_strategy (str): {'cos', 'linear'}
+            Specifies the annealing strategy: 'cos' for cosine annealing,
+            'linear' for linear annealing. Default: 'cos'.
     """
 
     def __init__(self,
@@ -381,6 +382,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                  target_ratio=(10, 1e-4),
                  cyclic_times=1,
                  step_ratio_up=0.4,
+                 anneal_strategy='cos',
                  **kwargs):
         if isinstance(target_ratio, float):
             target_ratio = (target_ratio, target_ratio / 1e5)
@@ -400,6 +402,14 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
         self.lr_phases = []  # init lr_phases
+        # validate anneal_strategy
+        if anneal_strategy not in ['cos', 'linear']:
+            raise ValueError('anneal_strategy must be one of "cos" or '
+                             f'"linear", instead got {anneal_strategy}')
+        elif anneal_strategy == 'cos':
+            self.anneal_func = annealing_cos
+        elif anneal_strategy == 'linear':
+            self.anneal_func = annealing_linear
 
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
@@ -425,9 +435,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             curr_iter %= max_iter_per_phase
             if start_iter <= curr_iter < end_iter:
                 progress = curr_iter - start_iter
-                return annealing_cos(base_lr * start_ratio,
-                                     base_lr * end_ratio,
-                                     progress / (end_iter - start_iter))
+                return self.anneal_func(base_lr * start_ratio,
+                                        base_lr * end_ratio,
+                                        progress / (end_iter - start_iter))
 
 
 @HOOKS.register_module()
