@@ -87,7 +87,7 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 def bnc_to_nbc(forward):
 
     def forward_warper(**kwargs):
-        convert_keys = ('key', 'value', 'value')
+        convert_keys = ('key', 'query', 'value')
         for key in kwargs.keys():
             if key in convert_keys:
                 kwargs[key] = kwargs[key].transpose(0, 1)
