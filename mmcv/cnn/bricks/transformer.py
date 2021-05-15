@@ -86,7 +86,7 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 
 def bnc_to_nbc(forward):
 
-    def forward_warper(**kwargs):
+    def forward_wrapper(**kwargs):
         convert_keys = ('key', 'query', 'value')
         for key in kwargs.keys():
             if key in convert_keys:
@@ -94,12 +94,12 @@ def bnc_to_nbc(forward):
         attn_output, attn_output_weights = forward(**kwargs)
         return attn_output.transpose(0, 1), attn_output_weights
 
-    return forward_warper
+    return forward_wrapper
 
 
 @ATTENTION.register_module()
 class MultiheadAttention(BaseModule):
-    """A warpper for Attention.
+    """A wrapper for Attention.
 
     This module implements MultiheadAttention with residual connection,
     and positional encoding used in DETR is also passed as input.
