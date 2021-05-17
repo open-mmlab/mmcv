@@ -6,6 +6,34 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class NeptuneLoggerHook(LoggerHook):
+    """Class to log metrics to NeptuneAI.
+
+    It requires `neptune-client` to be installed.
+
+    Args:
+        init_kwargs:
+            project (str): Name of a project in a form of
+                namespace/project_name. If None, the value of
+                NEPTUNE_PROJECT environment variable will be taken.
+            api_token (str): User’s API token.
+                If None, the value of NEPTUNE_API_TOKEN environment
+                variable will be taken. Note: It is strongly recommended
+                to use NEPTUNE_API_TOKEN environment variable rather than
+                placing your API token in plain text in your source code.
+            name (str, optional, default is 'Untitled'): Editable name of
+                the run. Name is displayed in the run's Details and in
+                Runs table as a column.
+            Check https://docs.neptune.ai/api-reference/neptune#init for
+                more init arguments.
+        interval (int): Logging interval (every k iterations).
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+        reset_flag (bool): Whether to clear the output buffer after logging
+        by_epoch (bool): Whether EpochBasedRunner is used.
+
+    .. _NeptuneAI:
+        https://docs.neptune.ai/you-should-know/logging-metadata
+    """
 
     def __init__(self,
                  init_kwargs=None,
@@ -14,34 +42,7 @@ class NeptuneLoggerHook(LoggerHook):
                  reset_flag=True,
                  with_step=True,
                  by_epoch=True):
-        """Class to log metrics to NeptuneAI.
 
-        It requires `neptune-client` to be installed.
-
-        Args:
-            init_kwargs:
-                project (str): Name of a project in a form of
-                    namespace/project_name. If None, the value of
-                    NEPTUNE_PROJECT environment variable will be taken.
-                api_token (str): User’s API token.
-                    If None, the value of NEPTUNE_API_TOKEN environment
-                    variable will be taken. Note: It is strongly recommended
-                    to use NEPTUNE_API_TOKEN environment variable rather than
-                    placing your API token in plain text in your source code.
-                name (str, optional, default is 'Untitled'): Editable name of
-                    the run. Name is displayed in the run's Details and in
-                    Runs table as a column.
-                Check https://docs.neptune.ai/api-reference/neptune#init for
-                    more init arguments.
-            interval (int): Logging interval (every k iterations).
-            ignore_last (bool): Ignore the log of last iterations in each epoch
-                if less than `interval`.
-            reset_flag (bool): Whether to clear the output buffer after logging
-            by_epoch (bool): Whether EpochBasedRunner is used.
-
-        .. _NeptuneAI:
-            https://docs.neptune.ai/you-should-know/logging-metadata
-        """
         super(NeptuneLoggerHook, self).__init__(interval, ignore_last,
                                                 reset_flag, by_epoch)
         self.import_neptune()
