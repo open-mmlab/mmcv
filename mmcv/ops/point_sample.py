@@ -12,6 +12,21 @@ from mmcv.ops import get_onnxruntime_op_path
 
 
 def bilinear_grid_sample(im, grid, align_corners=False):
+    """Given an input and a flow-field grid, computes the output using input
+    values and pixel locations from grid. Supported only bilinear
+    interpolation method to sample the input pixels.
+
+    Args:
+        im (torch.Tensor): Input feature map, shape (N, C, H, W)
+        grid (torch.Tensor): Point coordinates, shape (N, Hg, Wg, 2)
+        align_corners {bool}: If set to True, the extrema (-1 and 1) are
+            considered as referring to the center points of the input’s
+            corner pixels. If set to False, they are instead considered as
+            referring to the corner points of the input’s corner pixels,
+            making the sampling more resolution agnostic.
+    Returns:
+        torch.Tensor: A tensor with sampled points, shape (N, C, Hg, Wg)
+    """
     n, c, h, w = im.shape
     gn, gh, gw, _ = grid.shape
     assert n == gn
@@ -141,6 +156,8 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
         if rois.size(1) == 5:
             rois = rois[:, 1:]
         abs_img_points = rel_roi_points.clone()
+        # To avoid an error during exporting to onnx use independent
+        # variables instead inplace computation
         xs = abs_img_points[:, :, 0] * (rois[:, None, 2] - rois[:, None, 0])
         ys = abs_img_points[:, :, 1] * (rois[:, None, 3] - rois[:, None, 1])
         xs += rois[:, None, 0]
@@ -150,6 +167,14 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
 
 
 def get_shape_from_feature_map(x):
+    """Get spatial resolution of input feature map considering exporting to
+    onnx mode.
+
+    Args:
+        x (torch.Tensor): Input tensor, shape (N, C, H, W)
+    Returns:
+        torch.Tensor: Spatial resolution (width, height), shape (1, 1, 2)
+    """
     if torch.onnx.is_in_onnx_export():
         img_shape = shape_as_tensor(x)[2:].flip(0).view(1, 1, 2).to(
             x.device).float()
@@ -236,6 +261,9 @@ def point_sample(input, points, align_corners=False, **kwargs):
         add_dim = True
         points = points.unsqueeze(2)
     if is_in_onnx_export_without_custom_ops():
+        # If custom ops for onnx runtime not compiled use python
+        # implementation of grid_sample function to make onnx graph
+        # with supported nodes
         output = bilinear_grid_sample(
             input, denormalize(points), align_corners=align_corners)
     else:
