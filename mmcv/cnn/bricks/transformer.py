@@ -153,7 +153,6 @@ class MultiheadAttention(BaseModule):
         self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
-        self.init_cfg = init_cfg
 
     def forward(self,
                 query,
@@ -223,6 +222,7 @@ class MultiheadAttention(BaseModule):
             query = query + query_pos
         if key_pos is not None:
             key = key + key_pos
+
         out = self.attn(
             query=query,
             key=key,
@@ -252,6 +252,9 @@ class MultiScaleDeformableAttention(BaseModule):
             Default: 64.
         dropout (float): A Dropout layer on `inp_residual`.
             Default: 0..
+        batch_first (bool): Key, Query and Value are shape of
+            (batch, n, embed_dim)
+            or (n, batch, embed_dim). Default to False.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -263,6 +266,7 @@ class MultiScaleDeformableAttention(BaseModule):
                  num_points=4,
                  im2col_step=64,
                  dropout=0.1,
+                 batch_first=False,
                  norm_cfg=None,
                  init_cfg=None):
         super().__init__(init_cfg)
@@ -271,8 +275,8 @@ class MultiScaleDeformableAttention(BaseModule):
                              f'but got {embed_dims} and {num_heads}')
         dim_per_head = embed_dims // num_heads
         self.norm_cfg = norm_cfg
-        self.init_cfg = init_cfg
         self.dropout = nn.Dropout(dropout)
+        self.batch_first = batch_first
 
         # you'd better set dim_per_head to a power of 2
         # which is more efficient in the CUDA implementation
@@ -321,6 +325,7 @@ class MultiScaleDeformableAttention(BaseModule):
         constant_init(self.attention_weights, val=0., bias=0.)
         xavier_init(self.value_proj, distribution='uniform', bias=0.)
         xavier_init(self.output_proj, distribution='uniform', bias=0.)
+        self._is_init = True
 
     def forward(self,
                 query,
@@ -377,10 +382,10 @@ class MultiScaleDeformableAttention(BaseModule):
             inp_residual = query
         if query_pos is not None:
             query = query + query_pos
-
-        # change to (bs, num_query ,embed_dims)
-        query = query.permute(1, 0, 2)
-        value = value.permute(1, 0, 2)
+        if not self.batch_first:
+            # change to (bs, num_query ,embed_dims)
+            query = query.permute(1, 0, 2)
+            value = value.permute(1, 0, 2)
 
         bs, num_query, _ = query.shape
         bs, num_key, _ = value.shape
@@ -423,8 +428,13 @@ class MultiScaleDeformableAttention(BaseModule):
             output = multi_scale_deformable_attn_pytorch(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
-        output = self.output_proj(output).permute(1, 0, 2)
-        # (num_query, bs ,embed_dims)
+
+        output = self.output_proj(output)
+
+        if not self.batch_first:
+            # (num_query, bs ,embed_dims)
+            output = output.permute(1, 0, 2)
+
         return self.dropout(output) + inp_residual
 
 
@@ -475,7 +485,6 @@ class FFN(BaseModule):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        self.init_cfg = init_cfg
         self.activate = build_activation_layer(act_cfg)
 
         layers = []
@@ -570,7 +579,6 @@ class BaseTransformerLayer(BaseModule):
                     f'has been deprecated, now you should set `{new_name}` '
                     f'and other FFN related arguments '
                     f'to a dict named `ffn_cfgs`. ')
-                assert isinstance(ffn_cfgs, dict)
                 ffn_cfgs[new_name] = kwargs[ori_name]
 
         super(BaseTransformerLayer, self).__init__(init_cfg)
@@ -594,7 +602,6 @@ class BaseTransformerLayer(BaseModule):
                 f'not consistent with the number of attention' \
                 f'in operation_order {operation_order}.'
 
-        self.init_cfg = init_cfg
         self.num_attn = num_attn
         self.operation_order = operation_order
         self.norm_cfg = norm_cfg
@@ -759,7 +766,7 @@ class TransformerLayerSequence(BaseModule):
 
     def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
         super(TransformerLayerSequence, self).__init__(init_cfg)
-        if isinstance(transformerlayers, ConfigDict):
+        if isinstance(transformerlayers, (ConfigDict, dict)):
             transformerlayers = [
                 copy.deepcopy(transformerlayers) for _ in range(num_layers)
             ]
