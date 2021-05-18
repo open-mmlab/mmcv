@@ -41,7 +41,6 @@ def export_nms_module_to_onnx(module, onnx_file):
         output_names=['output'])
 
     onnx_model = onnx.load(onnx_file)
-    onnx.checker.check_model(onnx_model)
     return onnx_model
 
 
