@@ -12,8 +12,9 @@ from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, DROPOUT_LAYERS, POSITIONAL_ENCODING,
-                       TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE)
+from .registry import (ATTENTION, FEEDFORWARD_NETWORK, DROPOUT_LAYERS,
+                       POSITIONAL_ENCODING, TRANSFORMER_LAYER,
+                       TRANSFORMER_LAYER_SEQUENCE)
 
 
 def drop_path(x, drop_prob: float = 0., training: bool = False):
@@ -72,6 +73,11 @@ def build_positional_encoding(cfg, default_args=None):
 def build_attention(cfg, default_args=None):
     """Builder for attention."""
     return build_from_cfg(cfg, ATTENTION, default_args)
+
+
+def build_feedforward_network(cfg, default_args=None):
+    """Builder for feed-forward network (FFN)."""
+    return build_from_cfg(cfg, FEEDFORWARD_NETWORK, default_args)
 
 
 def build_transformer_layer(cfg, default_args=None):
@@ -422,6 +428,7 @@ class MultiScaleDeformableAttention(BaseModule):
         return self.dropout(output) + inp_residual
 
 
+@FEEDFORWARD_NETWORK.register_module()
 class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with residual connection.
 
@@ -539,6 +546,7 @@ class BaseTransformerLayer(BaseModule):
     def __init__(self,
                  attn_cfgs=None,
                  ffn_cfgs=dict(
+                     type='FFN',
                      embed_dims=256,
                      feedforward_channels=1024,
                      num_fcs=2,
@@ -619,7 +627,9 @@ class BaseTransformerLayer(BaseModule):
                 ffn_cfgs['embed_dims'] = self.embed_dims
             else:
                 assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims
-            self.ffns.append(FFN(**ffn_cfgs[ffn_index]))
+            self.ffns.append(
+                build_feedforward_network(ffn_cfgs[ffn_index],
+                                          dict(type='FFN')))
 
         self.norms = ModuleList()
         num_norms = operation_order.count('norm')
