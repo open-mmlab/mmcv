@@ -1,12 +1,12 @@
 import os
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import onnx
 import pytest
 import torch
 import torch.nn as nn
-from typing import Callable
 
 try:
     from mmcv.tensorrt import (TRTWraper, is_tensorrt_plugin_loaded, onnx2trt,
