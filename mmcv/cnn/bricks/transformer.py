@@ -12,7 +12,7 @@ from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, FEEDFORWARD_NETWORK, DROPOUT_LAYERS,
+from .registry import (ATTENTION, DROPOUT_LAYERS, FEEDFORWARD_NETWORK,
                        POSITIONAL_ENCODING, TRANSFORMER_LAYER,
                        TRANSFORMER_LAYER_SEQUENCE)
 
