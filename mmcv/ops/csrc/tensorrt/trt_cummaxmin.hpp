@@ -9,7 +9,7 @@ enum TRT_CUMCMPTYPE { TRT_CUMMAX = 0, TRT_CUMMIN = 1 };
 
 // implement of cummax and cummin
 class CumMaxMinPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
-public:
+ public:
   CumMaxMinPluginDynamic(const std::string &name, int dim,
                          TRT_CUMCMPTYPE cumType);
 
@@ -22,10 +22,9 @@ public:
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
-  nvinfer1::DimsExprs
-  getOutputDimensions(int outputIndex, const nvinfer1::DimsExprs *inputs,
-                      int nbInputs,
-                      nvinfer1::IExprBuilder &exprBuilder) override;
+  nvinfer1::DimsExprs getOutputDimensions(
+      int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
+      nvinfer1::IExprBuilder &exprBuilder) override;
   bool supportsFormatCombination(int pos,
                                  const nvinfer1::PluginTensorDesc *inOut,
                                  int nbInputs, int nbOutputs) override;
@@ -59,14 +58,14 @@ public:
   void setPluginNamespace(const char *pluginNamespace) override;
   const char *getPluginNamespace() const override;
 
-protected:
+ protected:
   const std::string mLayerName;
   std::string mNamespace;
 
   int mDim;
   TRT_CUMCMPTYPE mCumType;
 
-protected:
+ protected:
   // To prevent compiler warnings.
   using nvinfer1::IPluginV2DynamicExt::canBroadcastInputAcrossBatch;
   using nvinfer1::IPluginV2DynamicExt::configurePlugin;
@@ -79,7 +78,7 @@ protected:
 
 // cummax and cummin creator
 class CumMaxMinPluginDynamicCreator : public nvinfer1::IPluginCreator {
-public:
+ public:
   CumMaxMinPluginDynamicCreator(TRT_CUMCMPTYPE cumType);
 
   const char *getPluginName() const override;
@@ -88,9 +87,8 @@ public:
 
   const nvinfer1::PluginFieldCollection *getFieldNames() override;
 
-  nvinfer1::IPluginV2 *
-  createPlugin(const char *name,
-               const nvinfer1::PluginFieldCollection *fc) override;
+  nvinfer1::IPluginV2 *createPlugin(
+      const char *name, const nvinfer1::PluginFieldCollection *fc) override;
 
   nvinfer1::IPluginV2 *deserializePlugin(const char *name,
                                          const void *serialData,
@@ -100,7 +98,7 @@ public:
 
   const char *getPluginNamespace() const override;
 
-protected:
+ protected:
   TRT_CUMCMPTYPE mCumType;
   nvinfer1::PluginFieldCollection mFC;
   std::vector<nvinfer1::PluginField> mPluginAttributes;
@@ -109,16 +107,16 @@ protected:
 
 // cummax creator
 class CumMaxPluginDynamicCreator : public CumMaxMinPluginDynamicCreator {
-public:
+ public:
   CumMaxPluginDynamicCreator();
   const char *getPluginName() const override;
 };
 
 // cummin creator
 class CumMinPluginDynamicCreator : public CumMaxMinPluginDynamicCreator {
-public:
+ public:
   CumMinPluginDynamicCreator();
   const char *getPluginName() const override;
 };
 
-#endif TRT_CUMMAXMIN_HPP // TRT_CUMMAXMIN_HPP
+#endif TRT_CUMMAXMIN_HPP  // TRT_CUMMAXMIN_HPP

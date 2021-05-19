@@ -26,18 +26,18 @@ __global__ void cummaxmin_kernel(const scalar_t *input, scalar_t *output_value,
       cum_offset += cum_stride;
       const auto cum_value_current = input[cum_offset];
       switch (cum_type) {
-      case 0: // max
-        if (cum_value_current > cum_value) {
-          cum_value = cum_value_current;
-          cum_index = cum_index_current;
-        }
-        break;
-      case 1: // min
-        if (cum_value_current < cum_value) {
-          cum_value = cum_value_current;
-          cum_index = cum_index_current;
-        }
-        break;
+        case 0:  // max
+          if (cum_value_current > cum_value) {
+            cum_value = cum_value_current;
+            cum_index = cum_index_current;
+          }
+          break;
+        case 1:  // min
+          if (cum_value_current < cum_value) {
+            cum_value = cum_value_current;
+            cum_index = cum_index_current;
+          }
+          break;
       }
       output_value[cum_offset] = cum_value;
       output_index[cum_offset] = cum_index;

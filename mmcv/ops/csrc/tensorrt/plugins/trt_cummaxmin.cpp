@@ -19,7 +19,7 @@ static const char *PLUGIN_VERSION{"1"};
 static const char *CUMMAXMIN_PLUGIN_NAME{"cummaxmin"};
 static const char *CUMMAX_PLUGIN_NAME{"cummax"};
 static const char *CUMMIN_PLUGIN_NAME{"cummin"};
-} // namespace
+}  // namespace
 
 CumMaxMinPluginDynamic::CumMaxMinPluginDynamic(const std::string &name, int dim,
                                                TRT_CUMCMPTYPE cumType)
@@ -52,21 +52,21 @@ bool CumMaxMinPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
   switch (pos) {
-  // input[0]
-  case 0:
-    return (inOut[pos].type == nvinfer1::DataType::kFLOAT ||
-            inOut[pos].type == nvinfer1::DataType::kINT32) &&
-           inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
-  // output[0]
-  case 1:
-    return inOut[pos].type == inOut[0].type &&
-           inOut[pos].format == inOut[0].format;
-  // output[1]
-  case 2:
-    return inOut[pos].type == nvinfer1::DataType::kINT32 &&
-           inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
-  default:
-    return false;
+    // input[0]
+    case 0:
+      return (inOut[pos].type == nvinfer1::DataType::kFLOAT ||
+              inOut[pos].type == nvinfer1::DataType::kINT32) &&
+             inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+    // output[0]
+    case 1:
+      return inOut[pos].type == inOut[0].type &&
+             inOut[pos].format == inOut[0].format;
+    // output[1]
+    case 2:
+      return inOut[pos].type == nvinfer1::DataType::kINT32 &&
+             inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+    default:
+      return false;
   }
 }
 
@@ -84,7 +84,6 @@ int CumMaxMinPluginDynamic::enqueue(
     const nvinfer1::PluginTensorDesc *inputDesc,
     const nvinfer1::PluginTensorDesc *outputDesc, const void *const *inputs,
     void *const *outputs, void *workSpace, cudaStream_t stream) {
-
   const void *input = inputs[0];
   void *output_value = outputs[0];
   int *output_index = (int *)outputs[1];
@@ -93,18 +92,18 @@ int CumMaxMinPluginDynamic::enqueue(
   int nbDims = inputDesc[0].dims.nbDims;
 
   switch (inputDesc[0].type) {
-  case nvinfer1::DataType::kFLOAT:
-    CumMaxMinForwardLauncher_float((float *)input, (float *)output_value,
-                                   output_index, dims, nbDims, mDim,
-                                   int(mCumType), stream);
-    break;
-  case nvinfer1::DataType::kINT32:
-    CumMaxMinForwardLauncher_int32((int *)input, (int *)output_value,
-                                   output_index, dims, nbDims, mDim,
-                                   int(mCumType), stream);
-    break;
-  default:
-    break;
+    case nvinfer1::DataType::kFLOAT:
+      CumMaxMinForwardLauncher_float((float *)input, (float *)output_value,
+                                     output_index, dims, nbDims, mDim,
+                                     int(mCumType), stream);
+      break;
+    case nvinfer1::DataType::kINT32:
+      CumMaxMinForwardLauncher_int32((int *)input, (int *)output_value,
+                                     output_index, dims, nbDims, mDim,
+                                     int(mCumType), stream);
+      break;
+    default:
+      break;
   }
 
   return 0;
@@ -113,24 +112,24 @@ int CumMaxMinPluginDynamic::enqueue(
 nvinfer1::DataType CumMaxMinPluginDynamic::getOutputDataType(
     int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
   switch (index) {
-  case 0:
-    return inputTypes[0];
-  case 1:
-    return nvinfer1::DataType::kINT32;
-  default:
-    break;
+    case 0:
+      return inputTypes[0];
+    case 1:
+      return nvinfer1::DataType::kINT32;
+    default:
+      break;
   }
 }
 
 // IPluginV2 Methods
 const char *CumMaxMinPluginDynamic::getPluginType() const {
   switch (mCumType) {
-  case TRT_CUMCMPTYPE::TRT_CUMMAX:
-    return CUMMAX_PLUGIN_NAME;
-  case TRT_CUMCMPTYPE::TRT_CUMMIN:
-    return CUMMIN_PLUGIN_NAME;
-  default:
-    return "UnknownCumType";
+    case TRT_CUMCMPTYPE::TRT_CUMMAX:
+      return CUMMAX_PLUGIN_NAME;
+    case TRT_CUMCMPTYPE::TRT_CUMMIN:
+      return CUMMIN_PLUGIN_NAME;
+    default:
+      return "UnknownCumType";
   }
 }
 
