@@ -9,6 +9,7 @@ import torch
 from torch.optim import Optimizer
 
 import mmcv
+
 from .base_runner import BaseRunner
 from .builder import RUNNERS
 from .checkpoint import save_checkpoint
@@ -80,6 +81,8 @@ class IterBasedRunner(BaseRunner):
         if 'log_vars' in outputs:
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
         self.outputs = outputs
+        print('val--outputs',self.outputs)
+        ss
         self.call_hook('after_val_iter')
         self._inner_iter += 1
 
