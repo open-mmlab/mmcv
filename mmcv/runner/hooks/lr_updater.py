@@ -614,3 +614,186 @@ def format_param(name, optim, param):
         if name not in param:
             raise KeyError(f'{name} is not found in {param.keys()}')
         return param[name]
+
+
+@HOOKS.register_module()
+class ReduceLrUpdateHook(LrUpdaterHook):
+
+    def __init__(self,
+                 periods,
+                 val_metric=None,
+                 mode='min',
+                 factor=0.1,
+                 patience=10,
+                 threshold=1e-4,
+                 thresh_mode='rel',
+                 cooldown=0,
+                 min_lr=0.,
+                 eps=1e-8):
+        self.periods = periods
+        self.val_metric = val_metric
+        if mode not in ['min', 'max']:
+            raise ValueError(
+                'mode must be one of "min" or "max", instead got {mode}')
+        self.mode = mode
+        if factor >= 1.0:
+            raise ValueError('Factor should be < 1.0')
+        self.factor = factor
+        self.patience = patience
+        self.threshold = threshold
+        if threshold_mode not in ['rel', 'abs']:
+            raise ValueError(
+                'thresh_mode must be one of "rel" or "abs", instead got {threshold_mode}'
+            )
+        self.threshold_mode = threshold_mode
+        self.cooldown = cooldown
+        self.cooldown_counter = 0
+        self.best = None
+        self.num_bad_epochs = None
+        self.mode_worse = None  # the worse value for the chosen mode
+        if isinstance(min_lr, list) or isinstance(min_lr, tuple):
+            for l in min_lr:
+                assert isinstance(l, float)
+        elif isinstance(min_lr, float):
+            pass
+        else:
+            raise TypeError('"min_lr" must be a list or float')
+        self.min_lr = min_lr
+        self.eps = eps
+        self.last_epoch = 0
+        # self.last_reduce_lr = []
+        self._init_is_better(self.mode)
+        self._reset()
+
+    def get_lr(self, runner, regular_lr):
+        if self.num_bad_epochs > self.patience:
+            self.cooldown_counter = self.cooldown
+            self.num_bad_epochs = 0
+            if regular_lr - regular_lr * self.factor > self.eps:
+                new_lr = regular_lr * self.factor
+            else:
+                new_lr = regular_lr
+            return new_lr
+        else:
+            return regular_lr
+
+    def get_regular_lr(self, runner):
+        if isinstance(runner.optimizer, dict):
+            lr_groups = {}
+            for k in runner.optimizer.keys():
+                _lr_group = [
+                    self.get_lr(runner, _regular_lr)
+                    for _regular_lr in self.regular_lr[k]
+                ]
+                lr_groups.update({k: _lr_group})
+                # self.regular_lr.update({k: _lr_group})
+            return lr_groups
+        else:
+            return [
+                self.get_lr(runner, _regular_lr)
+                for _regular_lr in self.regular_lr
+            ]
+
+    def _init_is_better(self, mode):
+        if mode == 'min':
+            self.mode_worse = inf
+        else:
+            self.mode_worse = -inf
+
+    def _reset(self):
+        self.best = self.mode_worse
+        self.cooldown_counter = 0
+        self.num_bad_epochs = 0
+
+    def is_better(self, a, best):
+        if self.mode == 'min' and self.threshold_mode == 'rel':
+            rel_epsilon = 1. - self.threshold
+            return a < best * rel_epsilon
+
+        elif self.mode == 'min' and self.threshold_mode == 'abs':
+            return a < best - self.threshold
+
+        elif self.mode == 'max' and self.threshold_mode == 'rel':
+            rel_epsilon = 1. + self.threshold
+            return a > best * rel_epsilon
+
+        else:
+            return a > best + self.threshold
+
+    @property
+    def in_cooldown(self):
+        return self.cooldown_counter > 0
+
+    def after_train_epoch(self, runner):
+        if not self.by_epoch:
+            return
+        cur_epoch = runner.epoch
+        if self.warmup is not None and self.warmup_by_epoch:
+            if cur_epoch <= self.warmup_epochs:
+                return
+        if cur_epoch in self.periods:
+            current = runner.outputs.loss
+            if is_better(current, self.best):
+                self.best = current
+                self.num_bad_epochs = 0
+            else:
+                self.num_bad_epochs += 1
+
+            if self.in_cooldown:
+                self.cooldown_counter -= 1
+                self.num_bad_epochs = 0
+
+    def after_train_iter(self, runner):
+        if self.by_epoch:
+            return
+        cur_iter = runner.iter
+        if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
+            return
+        if cur_iter in self.periods:
+            current = runner.outputs.loss
+            if is_better(current, self.best):
+                self.best = current
+                self.num_bad_epochs = 0
+            else:
+                self.num_bad_epochs += 1
+
+            if self.in_cooldown:
+                self.cooldown_counter -= 1
+                self.num_bad_epochs = 0
+
+    def after_val_epoch(self, runner):
+        if not self.by_epoch:
+            return 
+        cur_epoch = runner.epoch 
+        if self.warmup is not None and self.warmup_by_epoch:
+            if cur_epoch <= self.warmup_epochs:
+                return 
+        if cur_epoch in self.periods:
+            current = runner.outputs[self.val_metric]
+            if is_better(current, self.best):
+                self.best = current
+                self.num_bad_epochs = 0
+            else:
+                self.num_bad_epochs += 1
+
+            if self.in_cooldown:
+                self.cooldown_counter -= 1
+                self.num_bad_epochs = 0
+
+    def after_val_iter(self, runner):
+        if self.by_epoch:
+            return
+        cur_iter = runner.iter
+        if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
+            return
+        if cur_iter in self.periods:
+            current = runner.outputs[self.val_metric] 
+            if is_better(current, self.best):
+                self.best = current
+                self.num_bad_epochs = 0
+            else:
+                self.num_bad_epochs += 1
+
+            if self.in_cooldown:
+                self.cooldown_counter -= 1
+                self.num_bad_epochs = 0
