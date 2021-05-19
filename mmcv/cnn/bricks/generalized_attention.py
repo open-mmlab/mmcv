@@ -170,6 +170,7 @@ class GeneralizedAttention(nn.Module):
                                q_stride,
                                kv_stride,
                                device,
+                               dtype,
                                feat_dim,
                                wave_length=1000):
         h_idxs = torch.linspace(0, h - 1, h).to(device)
@@ -204,7 +205,7 @@ class GeneralizedAttention(nn.Module):
         embedding_y = torch.cat(
             ((h_diff / dim_mat).sin(), (h_diff / dim_mat).cos()), dim=2)
 
-        return embedding_x, embedding_y
+        return embedding_x.to(dtype=dtype), embedding_y.to(dtype=dtype)
 
     def forward(self, x_input):
         num_heads = self.num_heads
@@ -234,7 +235,7 @@ class GeneralizedAttention(nn.Module):
         if self.attention_type[1] or self.attention_type[3]:
             position_embed_x, position_embed_y = self.get_position_embedding(
                 h, w, h_kv, w_kv, self.q_stride, self.kv_stride,
-                x_input.device, self.position_embedding_dim)
+                x_input.device, x_input.dtype, self.position_embedding_dim)
             # (n, num_heads, w, w_kv, dim)
             position_feat_x = self.appr_geom_fc_x(position_embed_x).\
                 view(1, w, w_kv, num_heads, self.qk_embed_dim).\
