@@ -41,7 +41,7 @@ def export_nms_module_to_onnx(module, onnx_file):
         output_names=['output'])
 
     onnx_model = onnx.load(onnx_file)
-    if torch.__version__.split('+')[0] > '1.3.1':
+    if torch.__version__.split('+')[0] > '1.4.0':
         onnx.checker.check_model(onnx_model)
     return onnx_model
 
