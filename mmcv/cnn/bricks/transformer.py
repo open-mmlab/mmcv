@@ -39,6 +39,10 @@ class DropPath(nn.Module):
 
     We follow the implementation
     https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+
+    Args:
+        drop_prob (float): Probability of an element to
+            be zeroed. Default: 0.1
     """
 
     def __init__(self, drop_prob=0.1):
@@ -87,6 +91,9 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 
 
 def bnc_to_nbc(forward):
+    """This function can adjust the shape of dataflow('key', 'query', 'value')
+    from batch_first (batch, num_query, embed_dims) to num_query_first
+    (num_query ,batch, embed_dims)"""
 
     def forward_wrapper(**kwargs):
         convert_keys = ('key', 'query', 'value')
@@ -131,8 +138,8 @@ class MultiheadAttention(BaseModule):
         super(MultiheadAttention, self).__init__(init_cfg)
         if 'dropout' in kwargs:
             warnings.warn('The arguments `dropout` in MultiheadAttention '
-                          'has been deprecated, now you can independently '
-                          'set `attn_drop`(float) '
+                          'has been deprecated, now you can separately '
+                          'set `attn_drop`(float), proj_drop(float), '
                           'and `dropout_layer`(dict) ')
             attn_drop = kwargs['dropout']
             dropout_layer['drop_prob'] = kwargs.pop('dropout')
@@ -243,7 +250,7 @@ class FFN(BaseModule):
         act_cfg (dict, optional): The activation config for FFNs.
             Default: dict(type='ReLU')
         ffn_drop (float, optional): Probability of an element to be
-            zeroed in MLP. Default 0.0.
+            zeroed in FFN. Default 0.0.
         add_residual (bool, optional): Whether to add the
             residual connection. Default: `True`.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used

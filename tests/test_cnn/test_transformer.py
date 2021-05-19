@@ -55,6 +55,7 @@ def test_multiheadattention():
 
 def test_ffn():
     with pytest.raises(AssertionError):
+        # num_fcs should be no less than 2
         FFN(num_fcs=1)
     ffn = FFN(dropout=0)
     input_tensor = torch.rand(2, 20, 256)
@@ -114,6 +115,8 @@ def test_transformerlayersequence():
     assert len(squeue.layers) == 6
     assert squeue.pre_norm is False
     with pytest.raises(AssertionError):
+        # if transformerlayers is a list, len(transformerlayers)
+        # should be equal to num_layers
         TransformerLayerSequence(
             num_layers=6,
             transformerlayers=[
