@@ -80,8 +80,7 @@ def test_basetransformerlayer():
     assert baselayer.batch_first is False
     assert baselayer.ffns[0].feedforward_channels == feedforward_channels
 
-    attn_cfgs = dict(
-        type='MultiScaleDeformableAttention', num_heads=8, embed_dims=256),
+    attn_cfgs = dict(type='MultiheadAttention', num_heads=8, embed_dims=256),
     feedforward_channels = 2048
     ffn_dropout = 0.1
     operation_order = ('self_attn', 'norm', 'ffn', 'norm')
@@ -105,7 +104,7 @@ def test_transformerlayersequence():
                     embed_dims=256,
                     num_heads=8,
                     dropout=0.1),
-                dict(type='MultiScaleDeformableAttention', embed_dims=256)
+                dict(type='MultiheadAttention', embed_dims=256, num_heads=4)
             ],
             feedforward_channels=1024,
             ffn_dropout=0.1,
@@ -125,9 +124,7 @@ def test_transformerlayersequence():
                             embed_dims=256,
                             num_heads=8,
                             dropout=0.1),
-                        dict(
-                            type='MultiScaleDeformableAttention',
-                            embed_dims=256)
+                        dict(type='MultiheadAttention', embed_dims=256)
                     ],
                     feedforward_channels=1024,
                     ffn_dropout=0.1,
