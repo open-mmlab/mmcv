@@ -1,3 +1,6 @@
+# modified from
+# https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
+
 import torch
 import torch.nn as nn
 from torch.autograd import Function
@@ -7,9 +10,6 @@ from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext', ['border_align_forward', 'border_align_backward'])
-
-# modified from
-# https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
 
 class BorderAlignFunction(Function):
