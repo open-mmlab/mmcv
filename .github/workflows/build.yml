@@ -203,9 +203,9 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        torch: [1.7.0]
+        torch: [1.7.1]
         include:
-          - torch: 1.7.0
+          - torch: 1.7.1
             torchvision: 0.8.1
     steps:
       - uses: actions/checkout@v2
@@ -219,7 +219,7 @@ jobs:
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
+        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
         run: |
           rm -rf .eggs
