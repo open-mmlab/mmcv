@@ -11,16 +11,16 @@ class NeptuneLoggerHook(LoggerHook):
     It requires `neptune-client` to be installed.
 
     Args:
-        init_kwargs:
-            project (str): Name of a project in a form of
+        init_kwargs (dict): a dict contains the initialization keys as below:
+            - project (str): Name of a project in a form of
                 namespace/project_name. If None, the value of
                 NEPTUNE_PROJECT environment variable will be taken.
-            api_token (str): User’s API token.
+            - api_token (str): User’s API token.
                 If None, the value of NEPTUNE_API_TOKEN environment
                 variable will be taken. Note: It is strongly recommended
                 to use NEPTUNE_API_TOKEN environment variable rather than
                 placing your API token in plain text in your source code.
-            name (str, optional, default is 'Untitled'): Editable name of
+            - name (str, optional, default is 'Untitled'): Editable name of
                 the run. Name is displayed in the run's Details and in
                 Runs table as a column.
             Check https://docs.neptune.ai/api-reference/neptune#init for
