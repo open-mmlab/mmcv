@@ -478,3 +478,88 @@ def test_grid_sample(mode, padding_mode, align_corners):
     if os.path.exists(trt_file):
         os.remove(trt_file)
     assert torch.allclose(pytorch_results, trt_results)
+
+
+@pytest.mark.parametrize('dynamic_export', [True, False])
+def test_instance_norm(dynamic_export):
+
+    n, c, h, w = 2, 3, 10, 10
+    norm = nn.InstanceNorm2d(c, affine=True).cuda()
+    data = torch.randn(n, c, h, w).cuda()
+    norm.weight.requires_grad = False
+    norm.bias.requires_grad = False
+
+    def func(data):
+        return norm(data)
+
+    wrapped_model = WrapFunction(func).eval().cuda()
+
+    input_names = ['input']
+    output_names = ['output']
+    dynamic_axes = None
+    if dynamic_export:
+        dynamic_axes = {
+            'input': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+            'output': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+        }
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (data.clone(), ),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            dynamic_axes=dynamic_axes,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wraper
+    if dynamic_export:
+        opt_shape_dict = {
+            'input':
+            [list(data.shape),
+             list(data.shape), [2 * n, c, 2 * h, 2 * w]],
+        }
+    else:
+        opt_shape_dict = {
+            'input': [list(data.shape),
+                      list(data.shape),
+                      list(data.shape)],
+        }
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWraper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': data.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = wrapped_model(data.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    assert torch.allclose(pytorch_results, trt_results)

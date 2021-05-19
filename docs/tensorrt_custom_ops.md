@@ -33,6 +33,12 @@
     - [Inputs](#inputs-4)
     - [Outputs](#outputs-4)
     - [Type Constraints](#type-constraints-4)
+  - [MMCVInstanceNormalization](#mmcvinstancenormalization)
+    - [Description](#description-5)
+    - [Parameters](#parameters-5)
+    - [Inputs](#inputs-5)
+    - [Outputs](#outputs-5)
+    - [Type Constraints](#type-constraints-5)
 
 <!-- TOC -->
 
@@ -222,6 +228,42 @@ Perform sample from `input` with pixel locations from `grid`.
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32, Linear)
+
+## MMCVInstanceNormalization
+
+### Description
+
+Carries out instance normalization as described in the paper https://arxiv.org/abs/1607.08022.
+
+y = scale * (x - mean) / sqrt(variance + epsilon) + B, where mean and variance are computed per instance per channel.
+
+### Parameters
+
+| Type    | Parameter | Description                                                          |
+| ------- | --------- | -------------------------------------------------------------------- |
+| `float` | `epsilon` | The epsilon value to use to avoid division by zero. Default is 1e-05 |
+
+### Inputs
+
+<dl>
+<dt><tt>input</tt>: T</dt>
+<dd>Input data tensor from the previous operator; dimensions for image case are (N x C x H x W), where N is the batch size, C is the number of channels, and H and W are the height and the width of the data. For non image case, the dimensions are in the form of (N x C x D1 x D2 ... Dn), where N is the batch size.</dd>
+<dt><tt>scale</tt>: T</dt>
+<dd>The input 1-dimensional scale tensor of size C.</dd>
+<dt><tt>B</tt>: T</dt>
+<dd>The input 1-dimensional bias tensor of size C.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>output</tt>: T</dt>
+<dd>The output tensor of the same shape as input.</dd>
 </dl>
 
 ### Type Constraints
