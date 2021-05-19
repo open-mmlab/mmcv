@@ -57,8 +57,11 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.with_bias = bias is not None
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
-        # until the code is modified for torch.cuda.amp.autocast,
-        # we need to cast weight to avoid type mismatch in fp16 training
+        # The flag for whether to use fp16 (pytorch < 1.6.0) or
+        # map (pytorch >= 1.6.0) is the type of "offset", we
+        # cast weight and input to temporarily support fp16 and
+        # amp whatever the pytorch version is.
+        input = input.to(offset.dtype)
         weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(

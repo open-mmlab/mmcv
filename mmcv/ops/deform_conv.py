@@ -70,8 +70,11 @@ class DeformConv2dFunction(Function):
         ctx.deform_groups = deform_groups
         ctx.im2col_step = im2col_step
 
-        # until the code is modified for torch.cuda.amp.autocast,
-        # we need to cast weight to avoid type mismatch in fp16 training
+        # The flag for whether to use fp16 (pytorch < 1.6.0) or
+        # map (pytorch >= 1.6.0) is the type of "offset", we
+        # cast weight and input to temporarily support fp16 and
+        # amp whatever the pytorch version is.
+        input = input.to(offset.dtype)
         weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, weight)
 
