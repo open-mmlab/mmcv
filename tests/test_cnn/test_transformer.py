@@ -39,9 +39,9 @@ def test_multiheadattention():
     key_batch_first = torch.rand(batch_dim, num_query, embed_dim)
     key_query_first = key_batch_first.transpose(0, 1)
 
-    assert attn_query_first(input_query_first,
-                            key_query_first).sum() == attn_batch_first(
-                                input_batch_first, key_batch_first).sum()
+    assert torch.allclose(
+        attn_query_first(input_query_first, key_query_first).sum(),
+        attn_batch_first(input_batch_first, key_batch_first).sum())
 
     residue = torch.ones_like(input_query_first)
 
