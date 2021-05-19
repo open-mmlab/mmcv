@@ -33,8 +33,9 @@ def test_multiheadattention():
     input_batch_first = torch.rand(batch_dim, num_query, embed_dim)
     input_query_first = input_batch_first.transpose(0, 1)
 
-    assert attn_query_first(input_query_first).sum() == attn_batch_first(
-        input_batch_first).sum()
+    assert torch.allclose(
+        attn_query_first(input_query_first).sum(),
+        attn_batch_first(input_batch_first).sum())
 
     key_batch_first = torch.rand(batch_dim, num_query, embed_dim)
     key_query_first = key_batch_first.transpose(0, 1)
@@ -58,7 +59,7 @@ def test_ffn():
     ffn = FFN(dropout=0)
     input_tensor = torch.rand(2, 20, 256)
     input_tensor_nbc = input_tensor.transpose(0, 1)
-    assert ffn(input_tensor).sum() == ffn(input_tensor_nbc).sum()
+    assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
     residue = torch.rand_like(input_tensor)
     torch.allclose(
         ffn(input_tensor, residue).sum(),
