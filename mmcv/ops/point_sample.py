@@ -13,8 +13,8 @@ from mmcv.ops import get_onnxruntime_op_path
 
 def bilinear_grid_sample(im, grid, align_corners=False):
     """Given an input and a flow-field grid, computes the output using input
-    values and pixel locations from grid. Supported only bilinear
-    interpolation method to sample the input pixels.
+    values and pixel locations from grid. Supported only bilinear interpolation
+    method to sample the input pixels.
 
     Args:
         im (torch.Tensor): Input feature map, shape (N, C, H, W)
