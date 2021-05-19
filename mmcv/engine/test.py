@@ -73,7 +73,10 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
 
         if rank == 0:
             batch_size = len(result)
-            for _ in range(batch_size * world_size):
+            batch_size_all = batch_size * world_size
+            if batch_size_all + prog_bar.completed > len(dataset):
+                batch_size_all = len(dataset) - prog_bar.completed
+            for _ in range(batch_size_all):
                 prog_bar.update()
 
     # collect results from all ranks

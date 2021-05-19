@@ -21,7 +21,9 @@ from torch.utils.data import DataLoader
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
                          MlflowLoggerHook, PaviLoggerHook, WandbLoggerHook,
                          build_runner)
+from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
+                                          CyclicLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 
@@ -120,6 +122,53 @@ def test_ema_hook():
     assert contain_ema_buffer
     shutil.rmtree(runner.work_dir)
     shutil.rmtree(work_dir)
+
+
+def test_custom_hook():
+
+    @HOOKS.register_module()
+    class ToyHook(Hook):
+
+        def __init__(self, info, *args, **kwargs):
+            super().__init__()
+            self.info = info
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test if custom_hooks is None
+    runner.register_custom_hooks(None)
+    assert len(runner.hooks) == 0
+    # test if custom_hooks is dict list
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=51, info=51),
+        dict(type='ToyHook', priority=49, info=49)
+    ]
+    runner.register_custom_hooks(custom_hooks_cfg)
+    assert [hook.info for hook in runner.hooks] == [49, 51]
+    # test if custom_hooks is object and without priority
+    runner.register_custom_hooks(ToyHook(info='default'))
+    assert len(runner.hooks) == 3 and runner.hooks[1].info == 'default'
+    shutil.rmtree(runner.work_dir)
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test register_training_hooks order
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=1, info='custom 1'),
+        dict(type='ToyHook', priority=89, info='custom 89')
+    ]
+    runner.register_training_hooks(
+        lr_config=ToyHook('lr'),
+        optimizer_config=ToyHook('optimizer'),
+        checkpoint_config=ToyHook('checkpoint'),
+        log_config=dict(interval=1, hooks=[dict(type='ToyHook', info='log')]),
+        momentum_config=ToyHook('momentum'),
+        timer_config=ToyHook('timer'),
+        custom_hooks_config=custom_hooks_cfg)
+    hooks_order = [
+        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint', 'timer',
+        'custom 89', 'log'
+    ]
+    assert [hook.info for hook in runner.hooks] == hooks_order
+    shutil.rmtree(runner.work_dir)
 
 
 def test_pavi_hook():
@@ -539,7 +588,7 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
 
 
 @pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_step_lr_update_hook(multi_optimziers):
+def test_step_runner_hook(multi_optimziers):
     """Test StepLrUpdaterHook."""
     with pytest.raises(TypeError):
         # `step` should be specified
@@ -555,6 +604,15 @@ def test_step_lr_update_hook(multi_optimziers):
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((30, 2)))
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='StepMomentumUpdaterHook',
+        by_epoch=False,
+        step=5,
+        gamma=0.5,
+        min_momentum=0.05)
+    runner.register_hook_from_cfg(hook_cfg)
 
     # add step LR scheduler
     hook = StepLrUpdaterHook(by_epoch=False, step=5, gamma=0.5, min_lr=1e-3)
@@ -582,36 +640,36 @@ def test_step_lr_update_hook(multi_optimziers):
                 'train', {
                     'learning_rate/model1': 0.01,
                     'learning_rate/model2': 0.005,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 0.475,
+                    'momentum/model2': 0.45
                 }, 6),
             call(
                 'train', {
                     'learning_rate/model1': 0.0025,
                     'learning_rate/model2': 0.00125,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 0.11875,
+                    'momentum/model2': 0.1125
                 }, 16),
             call(
                 'train', {
                     'learning_rate/model1': 0.00125,
                     'learning_rate/model2': 0.001,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 0.059375,
+                    'momentum/model2': 0.05625
                 }, 21),
             call(
                 'train', {
                     'learning_rate/model1': 0.001,
                     'learning_rate/model2': 0.001,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 0.05,
+                    'momentum/model2': 0.05
                 }, 26),
             call(
                 'train', {
                     'learning_rate/model1': 0.001,
                     'learning_rate/model2': 0.001,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 0.05,
+                    'momentum/model2': 0.05
                 }, 30)
         ]
     else:
@@ -622,23 +680,23 @@ def test_step_lr_update_hook(multi_optimziers):
             }, 1),
             call('train', {
                 'learning_rate': 0.01,
-                'momentum': 0.95
+                'momentum': 0.475
             }, 6),
             call('train', {
                 'learning_rate': 0.0025,
-                'momentum': 0.95
+                'momentum': 0.11875
             }, 16),
             call('train', {
                 'learning_rate': 0.00125,
-                'momentum': 0.95
+                'momentum': 0.059375
             }, 21),
             call('train', {
                 'learning_rate': 0.001,
-                'momentum': 0.95
+                'momentum': 0.05
             }, 26),
             call('train', {
                 'learning_rate': 0.001,
-                'momentum': 0.95
+                'momentum': 0.05
             }, 30)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
@@ -647,6 +705,14 @@ def test_step_lr_update_hook(multi_optimziers):
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='StepMomentumUpdaterHook',
+        by_epoch=False,
+        step=[4, 6, 8],
+        gamma=0.1)
+    runner.register_hook_from_cfg(hook_cfg)
 
     # add step LR scheduler
     hook = StepLrUpdaterHook(by_epoch=False, step=[4, 6, 8], gamma=0.1)
@@ -674,22 +740,22 @@ def test_step_lr_update_hook(multi_optimziers):
                 'train', {
                     'learning_rate/model1': 0.002,
                     'learning_rate/model2': 0.001,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 9.5e-2,
+                    'momentum/model2': 9.000000000000001e-2
                 }, 5),
             call(
                 'train', {
                     'learning_rate/model1': 2.0000000000000004e-4,
                     'learning_rate/model2': 1.0000000000000002e-4,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 9.500000000000001e-3,
+                    'momentum/model2': 9.000000000000003e-3
                 }, 7),
             call(
                 'train', {
                     'learning_rate/model1': 2.0000000000000005e-05,
                     'learning_rate/model2': 1.0000000000000003e-05,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9
+                    'momentum/model1': 9.500000000000002e-4,
+                    'momentum/model2': 9.000000000000002e-4
                 }, 9)
         ]
     else:
@@ -700,16 +766,105 @@ def test_step_lr_update_hook(multi_optimziers):
             }, 1),
             call('train', {
                 'learning_rate': 0.002,
-                'momentum': 0.95
+                'momentum': 0.095
             }, 5),
+            call(
+                'train', {
+                    'learning_rate': 2.0000000000000004e-4,
+                    'momentum': 9.500000000000001e-3
+                }, 7),
+            call(
+                'train', {
+                    'learning_rate': 2.0000000000000005e-05,
+                    'momentum': 9.500000000000002e-4
+                }, 9)
+        ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+@pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 8),
+                                                         (False, 8)])
+def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
+    """Test CyclicLrUpdateHook."""
+    with pytest.raises(AssertionError):
+        # by_epoch should be False
+        CyclicLrUpdaterHook(by_epoch=True)
+
+    with pytest.raises(AssertionError):
+        # target_ratio" must be either float or tuple/list of two floats
+        CyclicLrUpdaterHook(by_epoch=False, target_ratio=(10.0, 0.1, 0.2))
+
+    with pytest.raises(AssertionError):
+        # step_ratio_up" must be in range [0,1)
+        CyclicLrUpdaterHook(by_epoch=False, step_ratio_up=1.4)
+
+    with pytest.raises(ValueError):
+        # anneal_strategy must be one of "cos" or "linear"
+        CyclicLrUpdaterHook(by_epoch=False, anneal_strategy='sin')
+
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(
+        runner_type='IterBasedRunner',
+        max_epochs=None,
+        max_iters=max_iters,
+        multi_optimziers=multi_optimizers)
+
+    # add cyclic LR scheduler
+    hook = CyclicLrUpdaterHook(
+        by_epoch=False,
+        target_ratio=(10.0, 1.0),
+        cyclic_times=1,
+        step_ratio_up=0.5,
+        anneal_strategy='linear')
+    runner.register_hook(hook)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    if multi_optimizers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.155,
+                    'learning_rate/model2': 0.0775,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 4),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.155,
+                    'learning_rate/model2': 0.0775,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 6)
+        ]
+    else:
+        calls = [
             call('train', {
-                'learning_rate': 2.0000000000000004e-4,
+                'learning_rate': 0.02,
                 'momentum': 0.95
-            }, 7),
+            }, 1),
             call('train', {
-                'learning_rate': 2.0000000000000005e-05,
+                'learning_rate': 0.155,
                 'momentum': 0.95
-            }, 9)
+            }, 4),
+            call('train', {
+                'learning_rate': 0.155,
+                'momentum': 0.95
+            }, 6),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
@@ -760,10 +915,10 @@ def test_wandb_hook():
     hook.wandb.join.assert_called_with()
 
 
-def _build_demo_runner(runner_type='EpochBasedRunner',
-                       max_epochs=1,
-                       max_iters=None,
-                       multi_optimziers=False):
+def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
+                                    max_epochs=1,
+                                    max_iters=None,
+                                    multi_optimziers=False):
 
     class Model(nn.Module):
 
@@ -793,11 +948,6 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
     else:
         optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.95)
 
-    log_config = dict(
-        interval=1, hooks=[
-            dict(type='TextLoggerHook'),
-        ])
-
     tmp_dir = tempfile.mkdtemp()
     runner = build_runner(
         dict(type=runner_type),
@@ -808,6 +958,22 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
             logger=logging.getLogger(),
             max_epochs=max_epochs,
             max_iters=max_iters))
+    return runner
+
+
+def _build_demo_runner(runner_type='EpochBasedRunner',
+                       max_epochs=1,
+                       max_iters=None,
+                       multi_optimziers=False):
+
+    log_config = dict(
+        interval=1, hooks=[
+            dict(type='TextLoggerHook'),
+        ])
+
+    runner = _build_demo_runner_without_hook(runner_type, max_epochs,
+                                             max_iters, multi_optimziers)
+
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
     return runner

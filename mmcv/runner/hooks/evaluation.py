@@ -29,13 +29,13 @@ class EvalHook(Hook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in ``runner.meta['hook_msgs']``.
-            Options are the evaluation metrics to the test dataset. e.g.,
-            ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
-            segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
-            ``auto``, the first key of the returned ``OrderedDict`` result
-            will be used. The interval of ``EvalHook`` should be
-            divisible of that in ``CheckpointHook``. Default: None.
+            checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
+            best score value and best checkpoint path, which will be also
+            loaded when resume checkpoint. Options are the evaluation metrics
+            on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
+            detection and instance segmentation. ``AR@100`` for proposal
+            recall. If ``save_best`` is ``auto``, the first key of the returned
+             ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -144,6 +144,8 @@ class EvalHook(Hook):
                 warnings.warn('runner.meta is None. Creating an empty one.')
                 runner.meta = dict()
             runner.meta.setdefault('hook_msgs', dict())
+            self.best_ckpt_path = runner.meta['hook_msgs'].get(
+                'best_ckpt', None)
 
     def before_train_iter(self, runner):
         """Evaluate the model only at the start of training by iteration."""
@@ -178,6 +180,7 @@ class EvalHook(Hook):
 
         from mmcv.engine import single_gpu_test
         results = single_gpu_test(runner.model, self.dataloader)
+        runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
         if self.save_best:
             self._save_ckpt(runner, key_score)
@@ -241,10 +244,11 @@ class EvalHook(Hook):
                 os.remove(self.best_ckpt_path)
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
-            runner.save_checkpoint(
-                runner.work_dir, best_ckpt_name, create_symlink=False)
             self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
+
+            runner.save_checkpoint(
+                runner.work_dir, best_ckpt_name, create_symlink=False)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(
@@ -292,13 +296,13 @@ class DistEvalHook(EvalHook):
             default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
-            checkpoint would be save in ``runner.meta['hook_msgs']``.
-            Options are the evaluation metrics to the test dataset. e.g.,
-            ``bbox_mAP``, ``segm_mAP`` for bbox detection and instance
-            segmentation. ``AR@100`` for proposal recall. If ``save_best`` is
-            ``auto``, the first key of the returned ``OrderedDict`` result
-            will be used. The interval of ``EvalHook`` should depend on
-            ``CheckpointHook``. Default: None.
+            checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
+            best score value and best checkpoint path, which will be also
+            loaded when resume checkpoint. Options are the evaluation metrics
+            on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
+            detection and instance segmentation. ``AR@100`` for proposal
+            recall. If ``save_best`` is ``auto``, the first key of the returned
+             ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -368,6 +372,7 @@ class DistEvalHook(EvalHook):
             gpu_collect=self.gpu_collect)
         if runner.rank == 0:
             print('\n')
+            runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
 
             if self.save_best:

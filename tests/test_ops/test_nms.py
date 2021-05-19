@@ -157,3 +157,22 @@ class Testnms(object):
         assert torch.equal(keep, seq_keep)
         assert torch.equal(boxes, seq_boxes)
         assert torch.equal(keep, torch.from_numpy(results['keep']))
+
+        nms_cfg = dict(type='soft_nms', iou_threshold=0.7)
+        boxes, keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            nms_cfg,
+            class_agnostic=False)
+
+        nms_cfg.update(split_thr=100)
+        seq_boxes, seq_keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            nms_cfg,
+            class_agnostic=False)
+
+        assert torch.equal(keep, seq_keep)
+        assert torch.equal(boxes, seq_boxes)
