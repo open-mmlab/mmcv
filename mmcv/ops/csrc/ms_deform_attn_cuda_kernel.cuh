@@ -15,7 +15,8 @@
 #include "pytorch_cuda_helper.hpp"
 
 #ifdef _WIN32
-#define floor floorf
+#define ___floor floor
+#define floor(x) ___floor((double)(x))
 #endif
 
 const int CUDA_NUM_THREADS = 1024;

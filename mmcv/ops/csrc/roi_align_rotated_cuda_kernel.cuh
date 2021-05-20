@@ -16,7 +16,8 @@
 #endif  // MMCV_WITH_TRT
 
 #ifdef _WIN32
-#define ceil ceilf
+#define ___ceil ceil
+#define ceil(x) ___ceil((double)(x))
 #endif
 
 /*** Forward ***/
