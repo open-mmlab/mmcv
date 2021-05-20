@@ -437,10 +437,10 @@ class BaseRunner(metaclass=ABCMeta):
     def register_logger_hooks(self, log_config):
         if log_config is None:
             return
-        log_interval = log_config['interval']
-        for info in log_config['hooks']:
+        hooks = log_config.pop('hooks')
+        for info in hooks:
             logger_hook = mmcv.build_from_cfg(
-                info, HOOKS, default_args=dict(interval=log_interval))
+                info, HOOKS, default_args=log_config)
             self.register_hook(logger_hook, priority=90)
 
     def register_timer_hook(self, timer_config):
