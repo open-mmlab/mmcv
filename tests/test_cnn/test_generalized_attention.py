@@ -62,9 +62,14 @@ def test_context_block():
     assert out.shape == imgs.shape
 
     # test fp16 with attention_type='1111'
-    imgs = torch.randn(2, 16, 20, 20).cuda().to(torch.half)
-    gen_attention_block = GeneralizedAttention(
-        16, spatial_range=-1, num_heads=8, attention_type='1111', kv_stride=2)
-    gen_attention_block.cuda().type(torch.half)
-    out = gen_attention_block(imgs)
-    assert out.shape == imgs.shape
+    if torch.cuda.is_available():
+        imgs = torch.randn(2, 16, 20, 20).cuda().to(torch.half)
+        gen_attention_block = GeneralizedAttention(
+            16,
+            spatial_range=-1,
+            num_heads=8,
+            attention_type='1111',
+            kv_stride=2)
+        gen_attention_block.cuda().type(torch.half)
+        out = gen_attention_block(imgs)
+        assert out.shape == imgs.shape
