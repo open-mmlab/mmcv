@@ -205,6 +205,8 @@ class GeneralizedAttention(nn.Module):
         embedding_y = torch.cat(
             ((h_diff / dim_mat).sin(), (h_diff / dim_mat).cos()), dim=2)
 
+        # the default type of Tensor is float32, leading to type mismatch
+        # in fp16 mode. Cast it to support fp16 mode.
         return embedding_x.to(dtype=dtype), embedding_y.to(dtype=dtype)
 
     def forward(self, x_input):
