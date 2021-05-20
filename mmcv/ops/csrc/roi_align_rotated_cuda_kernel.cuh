@@ -15,6 +15,10 @@
 #endif  // MMCV_USE_PARROTS
 #endif  // MMCV_WITH_TRT
 
+#ifdef _WIN32
+#define ceil ceilf
+#endif
+
 /*** Forward ***/
 template <typename scalar_t>
 __global__ void roi_align_rotated_forward_cuda_kernel(

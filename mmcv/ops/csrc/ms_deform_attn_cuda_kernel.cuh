@@ -14,6 +14,10 @@
 #include "common_cuda_helper.hpp"
 #include "pytorch_cuda_helper.hpp"
 
+#ifdef _WIN32
+#define floor floorf
+#endif
+
 const int CUDA_NUM_THREADS = 1024;
 inline int GET_BLOCKS(const int N, const int num_threads) {
   return (N + num_threads - 1) / num_threads;
