@@ -4,7 +4,6 @@
 // during the backward. (2) `wh` is directly computed by `boxes`, rather than
 // passing it as argument to forward or backward functions.
 
-
 #ifndef BORDER_ALIGN_CUDA_KERNEL_CUH
 #define BORDER_ALIGN_CUDA_KERNEL_CUH
 
@@ -18,7 +17,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif  // MMCV_USE_PARROTS
 #endif  // MMCV_WITH_TRT
-
 
 enum BorderMode { Top = 0, Left = 1, Bottom = 2, Right = 3 };
 
