@@ -60,8 +60,6 @@ class NeptuneLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        if self.neptune is None:
-            self.import_neptune()
         if self.init_kwargs:
             self.run = self.neptune.init(**self.init_kwargs)
         else:
