@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
+from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer, DropPath,
                                          MultiheadAttention,
                                          TransformerLayerSequence)
 
@@ -135,3 +135,16 @@ def test_transformerlayersequence():
                     operation_order=('self_attn', 'norm', 'cross_attn', 'norm',
                                      'ffn', 'norm'))
             ])
+
+
+def test_drop_path():
+    drop_path = DropPath(drop_prob=0)
+    test_in = torch.rand(2, 3, 4, 5)
+    assert test_in is drop_path(test_in)
+
+    drop_path = DropPath(drop_prob=0.1)
+    drop_path.training = False
+    test_in = torch.rand(2, 3, 4, 5)
+    assert test_in is drop_path(test_in)
+    drop_path.training = True
+    assert test_in is not drop_path(test_in)

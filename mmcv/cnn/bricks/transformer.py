@@ -13,7 +13,7 @@ from .registry import (ATTENTION, DROPOUT_LAYERS, FEEDFORWARD_NETWORK,
                        TRANSFORMER_LAYER_SEQUENCE)
 
 
-def drop_path(x, drop_prob: float = 0., training: bool = False):
+def drop_path(x, drop_prob=0., training=False):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of
     residual blocks).
 
@@ -27,8 +27,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
         x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(
         shape, dtype=x.dtype, device=x.device)
-    random_tensor.floor_()
-    output = x.div(keep_prob) * random_tensor
+    output = x.div(keep_prob) * random_tensor.floor()
     return output
 
 
@@ -56,7 +55,7 @@ class DropPath(nn.Module):
 @DROPOUT_LAYERS.register_module()
 class DropOut(nn.Dropout):
 
-    def __init__(self, drop_prob=0.1, inplace=False):
+    def __init__(self, drop_prob=0.5, inplace=False):
         super().__init__(p=drop_prob, inplace=inplace)
 
 
@@ -98,6 +97,7 @@ def bnc_to_nbc(forward):
     def forward_wrapper(**kwargs):
         convert_keys = ('key', 'query', 'value')
         for key in kwargs.keys():
+
             if key in convert_keys:
                 kwargs[key] = kwargs[key].transpose(0, 1)
         attn_output, attn_output_weights = forward(**kwargs)
@@ -111,12 +111,15 @@ class MultiheadAttention(BaseModule):
     """A wrapper for Attention.
 
     This module implements MultiheadAttention with residual connection,
-    and positional encoding used in DETR is also passed as input.
+    and positional encoding  is also passed as input.
 
     Args:
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads.
-        attn_drop (float): A Dropout layer on attn_output_weights. Default 0.0.
+        attn_drop (float): A Dropout layer on attn_output_weights.
+            Default: 0.0.
+        proj_drop (float): A Dropout layer after `nn.MultiheadAttention`.
+            Default: 0.0.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
@@ -152,7 +155,6 @@ class MultiheadAttention(BaseModule):
                                           **kwargs)
         if self.batch_first:
             self.attn.forward = bnc_to_nbc(self.attn.forward)
-
         self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
@@ -407,14 +409,16 @@ class BaseTransformerLayer(BaseModule):
         self.attentions = ModuleList()
 
         index = 0
-        for operation in operation_order:
-            if operation in ['self_attn', 'cross_attn']:
+        for operation_name in operation_order:
+            if operation_name in ['self_attn', 'cross_attn']:
                 if 'batch_first' in attn_cfgs[index]:
                     assert self.batch_first == attn_cfgs[index]['batch_first']
                 else:
                     attn_cfgs[index]['batch_first'] = self.batch_first
                 attention = build_attention(attn_cfgs[index])
-                attention.operation_name = operation
+                # Some custom attentions used as `self_attn`
+                # or `cross_attn` can have different behavior.
+                attention.operation_name = operation_name
                 self.attentions.append(attention)
                 index += 1
 
