@@ -71,7 +71,7 @@ class DeformConv2dFunction(Function):
         ctx.im2col_step = im2col_step
 
         # The flag for whether to use fp16 (pytorch < 1.6.0) or
-        # map (pytorch >= 1.6.0) is the type of "offset", we
+        # amp (pytorch >= 1.6.0) is the type of "offset", we
         # cast weight and input to temporarily support fp16 and
         # amp whatever the pytorch version is.
         input = input.to(offset.dtype)
