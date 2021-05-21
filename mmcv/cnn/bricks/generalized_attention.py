@@ -173,16 +173,20 @@ class GeneralizedAttention(nn.Module):
                                dtype,
                                feat_dim,
                                wave_length=1000):
-        h_idxs = torch.linspace(0, h - 1, h).to(device)
+        # the default type of Tensor is float32, leading to type mismatch
+        # in fp16 mode. Cast it to support fp16 mode.
+        h_idxs = torch.linspace(0, h - 1, h).to(device=device, dtype=dtype)
         h_idxs = h_idxs.view((h, 1)) * q_stride
 
-        w_idxs = torch.linspace(0, w - 1, w).to(device)
+        w_idxs = torch.linspace(0, w - 1, w).to(device=device, dtype=dtype)
         w_idxs = w_idxs.view((w, 1)) * q_stride
 
-        h_kv_idxs = torch.linspace(0, h_kv - 1, h_kv).to(device)
+        h_kv_idxs = torch.linspace(0, h_kv - 1, h_kv).to(
+            device=device, dtype=dtype)
         h_kv_idxs = h_kv_idxs.view((h_kv, 1)) * kv_stride
 
-        w_kv_idxs = torch.linspace(0, w_kv - 1, w_kv).to(device)
+        w_kv_idxs = torch.linspace(0, w_kv - 1, w_kv).to(
+            device=device, dtype=dtype)
         w_kv_idxs = w_kv_idxs.view((w_kv, 1)) * kv_stride
 
         # (h, h_kv, 1)
@@ -193,9 +197,10 @@ class GeneralizedAttention(nn.Module):
         w_diff = w_idxs.unsqueeze(1) - w_kv_idxs.unsqueeze(0)
         w_diff *= self.position_magnitude
 
-        feat_range = torch.arange(0, feat_dim / 4).to(device)
+        feat_range = torch.arange(0, feat_dim / 4).to(
+            device=device, dtype=dtype)
 
-        dim_mat = torch.Tensor([wave_length]).to(device)
+        dim_mat = torch.Tensor([wave_length]).to(device=device, dtype=dtype)
         dim_mat = dim_mat**((4. / feat_dim) * feat_range)
         dim_mat = dim_mat.view((1, 1, -1))
 
@@ -205,9 +210,7 @@ class GeneralizedAttention(nn.Module):
         embedding_y = torch.cat(
             ((h_diff / dim_mat).sin(), (h_diff / dim_mat).cos()), dim=2)
 
-        # the default type of Tensor is float32, leading to type mismatch
-        # in fp16 mode. Cast it to support fp16 mode.
-        return embedding_x.to(dtype=dtype), embedding_y.to(dtype=dtype)
+        return embedding_x, embedding_y
 
     def forward(self, x_input):
         num_heads = self.num_heads
