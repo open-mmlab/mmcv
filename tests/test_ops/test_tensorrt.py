@@ -481,18 +481,14 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
 
 @pytest.mark.parametrize('dynamic_export', [True, False])
-def test_instance_norm(dynamic_export):
+@pytest.mark.parametrize('fp16_mode', [True, False])
+def test_instance_norm(dynamic_export, fp16_mode):
 
     n, c, h, w = 2, 3, 10, 10
-    norm = nn.InstanceNorm2d(c, affine=True).cuda()
     data = torch.randn(n, c, h, w).cuda()
-    norm.weight.requires_grad = False
-    norm.bias.requires_grad = False
+    norm = nn.InstanceNorm2d(c, affine=True)
 
-    def func(data):
-        return norm(data)
-
-    wrapped_model = WrapFunction(func).eval().cuda()
+    wrapped_model = WrapFunction(norm).eval().cuda()
 
     input_names = ['input']
     output_names = ['output']
@@ -537,7 +533,6 @@ def test_instance_norm(dynamic_export):
                       list(data.shape)],
         }
     # trt config
-    fp16_mode = False
     max_workspace_size = 1 << 30
 
     trt_engine = onnx2trt(

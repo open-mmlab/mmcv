@@ -4,6 +4,7 @@
 #ifndef TRT_INSTANCE_NORMALIZATION_PLUGIN_H
 #define TRT_INSTANCE_NORMALIZATION_PLUGIN_H
 #include <cudnn.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -12,16 +13,17 @@
 
 typedef unsigned short half_type;
 
-class InstanceNormalizationPlugin final : public nvinfer1::IPluginV2DynamicExt {
+class InstanceNormalizationDynamic final
+    : public nvinfer1::IPluginV2DynamicExt {
  public:
-  InstanceNormalizationPlugin(const std::string& name, float epsilon);
+  InstanceNormalizationDynamic(const std::string& name, float epsilon);
 
-  InstanceNormalizationPlugin(const std::string& name, void const* serialData,
-                              size_t serialLength);
+  InstanceNormalizationDynamic(const std::string& name, void const* serialData,
+                               size_t serialLength);
 
-  InstanceNormalizationPlugin() = delete;
+  InstanceNormalizationDynamic() = delete;
 
-  ~InstanceNormalizationPlugin() override;
+  ~InstanceNormalizationDynamic() override;
 
   int getNbOutputs() const override;
 
@@ -87,11 +89,11 @@ class InstanceNormalizationPlugin final : public nvinfer1::IPluginV2DynamicExt {
   std::string mPluginNamespace{};
 };
 
-class InstanceNormalizationPluginCreator : public nvinfer1::IPluginCreator {
+class InstanceNormalizationDynamicCreator : public nvinfer1::IPluginCreator {
  public:
-  InstanceNormalizationPluginCreator();
+  InstanceNormalizationDynamicCreator();
 
-  ~InstanceNormalizationPluginCreator() override = default;
+  ~InstanceNormalizationDynamicCreator() override = default;
 
   const char* getPluginName() const override;
 

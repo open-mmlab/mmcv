@@ -30,36 +30,36 @@ constexpr const char* PLUGIN_VERSION{"1"};
 constexpr const char* PLUGIN_NAME{"MMCVInstanceNormalization"};
 }  // namespace
 
-PluginFieldCollection InstanceNormalizationPluginCreator::mFC{};
-std::vector<PluginField> InstanceNormalizationPluginCreator::mPluginAttributes;
+PluginFieldCollection InstanceNormalizationDynamicCreator::mFC{};
+std::vector<PluginField> InstanceNormalizationDynamicCreator::mPluginAttributes;
 
-InstanceNormalizationPlugin::InstanceNormalizationPlugin(
+InstanceNormalizationDynamic::InstanceNormalizationDynamic(
     const std::string& name, float epsilon)
     : mLayerName(name), mEpsilon(epsilon) {}
 
-InstanceNormalizationPlugin::InstanceNormalizationPlugin(
+InstanceNormalizationDynamic::InstanceNormalizationDynamic(
     const std::string& name, void const* serialData, size_t serialLength)
     : mLayerName(name) {
   deserialize_value(&serialData, &serialLength, &mEpsilon);
 }
 
-InstanceNormalizationPlugin::~InstanceNormalizationPlugin() {}
+InstanceNormalizationDynamic::~InstanceNormalizationDynamic() {}
 
-// InstanceNormalizationPlugin returns one output.
-int InstanceNormalizationPlugin::getNbOutputs() const { return 1; }
+// InstanceNormalizationDynamic returns one output.
+int InstanceNormalizationDynamic::getNbOutputs() const { return 1; }
 
-DimsExprs InstanceNormalizationPlugin::getOutputDimensions(
+DimsExprs InstanceNormalizationDynamic::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
     nvinfer1::IExprBuilder& exprBuilder) {
   nvinfer1::DimsExprs output(inputs[0]);
   return output;
 }
 
-int InstanceNormalizationPlugin::initialize() { return 0; }
+int InstanceNormalizationDynamic::initialize() { return 0; }
 
-void InstanceNormalizationPlugin::terminate() {}
+void InstanceNormalizationDynamic::terminate() {}
 
-size_t InstanceNormalizationPlugin::getWorkspaceSize(
+size_t InstanceNormalizationDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc* inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const {
   int n = inputs[0].dims.d[0];
@@ -68,7 +68,7 @@ size_t InstanceNormalizationPlugin::getWorkspaceSize(
   return mmcv::getAlignedSize(n * c * elem_size) * 2;
 }
 
-int InstanceNormalizationPlugin::enqueue(
+int InstanceNormalizationDynamic::enqueue(
     const nvinfer1::PluginTensorDesc* inputDesc,
     const nvinfer1::PluginTensorDesc* outputDesc, const void* const* inputs,
     void* const* outputs, void* workspace, cudaStream_t stream) {
@@ -116,59 +116,59 @@ int InstanceNormalizationPlugin::enqueue(
   return 0;
 }
 
-size_t InstanceNormalizationPlugin::getSerializationSize() const {
+size_t InstanceNormalizationDynamic::getSerializationSize() const {
   return serialized_size(mEpsilon);
 }
 
-void InstanceNormalizationPlugin::serialize(void* buffer) const {
+void InstanceNormalizationDynamic::serialize(void* buffer) const {
   serialize_value(&buffer, mEpsilon);
 }
 
-bool InstanceNormalizationPlugin::supportsFormatCombination(
+bool InstanceNormalizationDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
     int nbOutputs) {
   return ((inOut[pos].type == nvinfer1::DataType::kFLOAT ||
            inOut[pos].type == nvinfer1::DataType::kHALF) &&
-          inOut[pos].format == nvinfer1::PluginFormat::kNCHW &&
+          inOut[pos].format == nvinfer1::PluginFormat::kLINEAR &&
           inOut[pos].type == inOut[0].type);
 }
 
-const char* InstanceNormalizationPlugin::getPluginType() const {
+const char* InstanceNormalizationDynamic::getPluginType() const {
   return PLUGIN_NAME;
 }
 
-const char* InstanceNormalizationPlugin::getPluginVersion() const {
+const char* InstanceNormalizationDynamic::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-void InstanceNormalizationPlugin::destroy() { delete this; }
+void InstanceNormalizationDynamic::destroy() { delete this; }
 
-IPluginV2DynamicExt* InstanceNormalizationPlugin::clone() const {
-  auto* plugin = new InstanceNormalizationPlugin{mLayerName, mEpsilon};
+IPluginV2DynamicExt* InstanceNormalizationDynamic::clone() const {
+  auto* plugin = new InstanceNormalizationDynamic{mLayerName, mEpsilon};
   plugin->setPluginNamespace(mPluginNamespace.c_str());
   return plugin;
 }
 
 // Set plugin namespace
-void InstanceNormalizationPlugin::setPluginNamespace(
+void InstanceNormalizationDynamic::setPluginNamespace(
     const char* pluginNamespace) {
   mPluginNamespace = pluginNamespace;
 }
 
-const char* InstanceNormalizationPlugin::getPluginNamespace() const {
+const char* InstanceNormalizationDynamic::getPluginNamespace() const {
   return mPluginNamespace.c_str();
 }
 
-nvinfer1::DataType InstanceNormalizationPlugin::getOutputDataType(
+nvinfer1::DataType InstanceNormalizationDynamic::getOutputDataType(
     int index, const nvinfer1::DataType* inputTypes, int nbInputs) const {
   return inputTypes[0];
 }
 
 // Attach the plugin object to an execution context and grant the plugin the
 // access to some context resource.
-void InstanceNormalizationPlugin::attachToContext(cudnnContext* cudnnContext,
-                                                  cublasContext* cublasContext,
-                                                  IGpuAllocator* gpuAllocator) {
+void InstanceNormalizationDynamic::attachToContext(
+    cudnnContext* cudnnContext, cublasContext* cublasContext,
+    IGpuAllocator* gpuAllocator) {
   _cudnn_handle = cudnnContext;
   cudnnCreateTensorDescriptor(&_b_desc);
   cudnnCreateTensorDescriptor(&_x_desc);
@@ -176,18 +176,18 @@ void InstanceNormalizationPlugin::attachToContext(cudnnContext* cudnnContext,
 }
 
 // Detach the plugin object from its execution context.
-void InstanceNormalizationPlugin::detachFromContext() {
+void InstanceNormalizationDynamic::detachFromContext() {
   cudnnDestroyTensorDescriptor(_y_desc);
   cudnnDestroyTensorDescriptor(_x_desc);
   cudnnDestroyTensorDescriptor(_b_desc);
 }
 
-void InstanceNormalizationPlugin::configurePlugin(
+void InstanceNormalizationDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc* in, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc* out, int nbOutputs) {}
 
-// InstanceNormalizationPluginCreator methods
-InstanceNormalizationPluginCreator::InstanceNormalizationPluginCreator() {
+// InstanceNormalizationDynamicCreator methods
+InstanceNormalizationDynamicCreator::InstanceNormalizationDynamicCreator() {
   mPluginAttributes.clear();
   mPluginAttributes.emplace_back(
       PluginField("epsilon", nullptr, PluginFieldType::kFLOAT32, 1));
@@ -196,20 +196,20 @@ InstanceNormalizationPluginCreator::InstanceNormalizationPluginCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char* InstanceNormalizationPluginCreator::getPluginName() const {
+const char* InstanceNormalizationDynamicCreator::getPluginName() const {
   return PLUGIN_NAME;
 }
 
-const char* InstanceNormalizationPluginCreator::getPluginVersion() const {
+const char* InstanceNormalizationDynamicCreator::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
 const PluginFieldCollection*
-InstanceNormalizationPluginCreator::getFieldNames() {
+InstanceNormalizationDynamicCreator::getFieldNames() {
   return &mFC;
 }
 
-IPluginV2DynamicExt* InstanceNormalizationPluginCreator::createPlugin(
+IPluginV2DynamicExt* InstanceNormalizationDynamicCreator::createPlugin(
     const char* name, const nvinfer1::PluginFieldCollection* fc) {
   float epsilon = 1e-5;
   const PluginField* fields = fc->fields;
@@ -220,25 +220,25 @@ IPluginV2DynamicExt* InstanceNormalizationPluginCreator::createPlugin(
     }
   }
 
-  InstanceNormalizationPlugin* obj =
-      new InstanceNormalizationPlugin(name, epsilon);
+  InstanceNormalizationDynamic* obj =
+      new InstanceNormalizationDynamic(name, epsilon);
   obj->setPluginNamespace(mNamespace.c_str());
   return obj;
 }
 
-IPluginV2DynamicExt* InstanceNormalizationPluginCreator::deserializePlugin(
+IPluginV2DynamicExt* InstanceNormalizationDynamicCreator::deserializePlugin(
     const char* name, const void* serialData, size_t serialLength) {
-  InstanceNormalizationPlugin* obj =
-      new InstanceNormalizationPlugin{name, serialData, serialLength};
+  InstanceNormalizationDynamic* obj =
+      new InstanceNormalizationDynamic{name, serialData, serialLength};
   obj->setPluginNamespace(mNamespace.c_str());
   return obj;
 }
 
-void InstanceNormalizationPluginCreator::setPluginNamespace(
+void InstanceNormalizationDynamicCreator::setPluginNamespace(
     const char* libNamespace) {
   mNamespace = libNamespace;
 }
 
-const char* InstanceNormalizationPluginCreator::getPluginNamespace() const {
+const char* InstanceNormalizationDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }
