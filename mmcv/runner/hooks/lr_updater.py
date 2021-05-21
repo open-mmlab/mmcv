@@ -729,7 +729,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         if self.warmup is not None and self.warmup_by_epoch:
             if cur_epoch <= self.warmup_epochs:
                 return
-        if cur_epoch in self.periods:
+        if cur_epoch in self.periods and self.val_metric is None:
             current = runner.outputs.loss
             if is_better(current, self.best):
                 self.best = current
@@ -747,7 +747,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         cur_iter = runner.iter
         if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
             return
-        if cur_iter in self.periods:
+        if cur_iter in self.periods and self.val_metric is None:
             current = runner.outputs.loss
             if is_better(current, self.best):
                 self.best = current
@@ -766,7 +766,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         if self.warmup is not None and self.warmup_by_epoch:
             if cur_epoch <= self.warmup_epochs:
                 return 
-        if cur_epoch in self.periods:
+        if cur_epoch in self.periods and self.val_metric is not None:
             current = runner.outputs[self.val_metric]
             if is_better(current, self.best):
                 self.best = current
@@ -784,7 +784,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         cur_iter = runner.iter
         if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
             return
-        if cur_iter in self.periods:
+        if cur_iter in self.periods and self.val_metric is not None:
             current = runner.outputs[self.val_metric] 
             if is_better(current, self.best):
                 self.best = current
@@ -795,7 +795,3 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             if self.in_cooldown:
                 self.cooldown_counter -= 1
                 self.num_bad_epochs = 0
-<<<<<<< HEAD
-=======
-
->>>>>>> 7eb4b0a402277bbab6dd0ac32321e5c54f9f28d3
