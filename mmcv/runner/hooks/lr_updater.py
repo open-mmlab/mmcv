@@ -587,7 +587,6 @@ def annealing_cos(start, end, factor, weight=1):
     return end + 0.5 * weight * (start - end) * cos_out
 
 
-<<<<<<< HEAD
 def annealing_linear(start, end, factor):
     """Calculate annealing linear learning rate.
 
@@ -616,8 +615,6 @@ def format_param(name, optim, param):
         return param[name]
 
 
-=======
->>>>>>> 7eb4b0a402277bbab6dd0ac32321e5c54f9f28d3
 @HOOKS.register_module()
 class ReduceLrUpdateHook(LrUpdaterHook):
 
@@ -663,7 +660,6 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         self.min_lr = min_lr
         self.eps = eps
         self.last_epoch = 0
-        # self.last_reduce_lr = []
         self._init_is_better(self.mode)
         self._reset()
 
