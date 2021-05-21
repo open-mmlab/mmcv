@@ -3,7 +3,6 @@ from functools import wraps
 
 import onnx
 import torch
-from packaging import version
 
 from mmcv.ops import nms
 from mmcv.tensorrt.preprocess import preprocess_onnx
@@ -42,9 +41,6 @@ def export_nms_module_to_onnx(module, onnx_file):
         output_names=['output'])
 
     onnx_model = onnx.load(onnx_file)
-    # only support pytorch > 1.4.0
-    if version.parse(torch.__version__) > version.parse('1.4.0'):
-        onnx.checker.check_model(onnx_model)
     return onnx_model
 
 
