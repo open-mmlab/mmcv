@@ -57,10 +57,13 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.with_bias = bias is not None
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
-        # The flag for whether to use fp16 (pytorch < 1.6.0) or
-        # amp (pytorch >= 1.6.0) is the type of "offset", we
-        # cast weight and input to temporarily support fp16 and
-        # amp whatever the pytorch version is.
+        # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
+        # amp won't cast the type of model (float32), but "offset" is cast
+        # to float16 by nn.Conv2d automatically, leading to the type
+        # mismatch with input (when it is float32) or weight.
+        # The flag for whether to use fp16 or amp is the type of "offset",
+        # we cast weight and input to temporarily support fp16 and amp
+        # whatever the pytorch version is.
         input = input.to(offset.dtype)
         weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
