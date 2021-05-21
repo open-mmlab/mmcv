@@ -266,7 +266,7 @@ def requires_executable(prerequisites):
 
 
 def deprecated_api_warning(name_dict, cls_name=None):
-    """A decorator to check if some argments are deprecate and try to replace
+    """A decorator to check if some arguments are deprecate and try to replace
     deprecate src_arg_name to dst_arg_name.
 
     Args:

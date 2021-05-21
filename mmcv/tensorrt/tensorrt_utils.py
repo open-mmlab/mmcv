@@ -40,7 +40,7 @@ def preprocess_onnx(onnx_model):
         elif name in init_dict:
             raw_data = init_dict[name].raw_data
         else:
-            raise ValueError(f'{name} not found in node or initilizer.')
+            raise ValueError(f'{name} not found in node or initializer.')
         return np.frombuffer(raw_data, typ).item()
 
     nrof_node = len(nodes)
@@ -225,8 +225,8 @@ def torch_device_from_trt(device):
         return TypeError('%s is not supported by torch' % device)
 
 
-class TRTWraper(torch.nn.Module):
-    """TensorRT engine Wraper.
+class TRTWrapper(torch.nn.Module):
+    """TensorRT engine Wrapper.
 
     Arguments:
         engine (tensorrt.ICudaEngine): TensorRT engine to wrap
@@ -239,7 +239,7 @@ class TRTWraper(torch.nn.Module):
     """
 
     def __init__(self, engine, input_names, output_names):
-        super(TRTWraper, self).__init__()
+        super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)
@@ -247,7 +247,7 @@ class TRTWraper(torch.nn.Module):
         if not isinstance(self.engine, trt.ICudaEngine):
             raise TypeError('engine should be str or trt.ICudaEngine')
 
-        self._register_state_dict_hook(TRTWraper._on_state_dict)
+        self._register_state_dict_hook(TRTWrapper._on_state_dict)
         self.context = self.engine.create_execution_context()
 
         self.input_names = input_names

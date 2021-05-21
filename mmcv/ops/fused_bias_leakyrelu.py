@@ -195,15 +195,15 @@ class FusedBiasLeakyReLU(nn.Module):
 
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a
-    scale similarly with Kaiming initalization. However, since the
+    scale similarly with Kaiming initialization. However, since the
     :math:`1 + \alpha^2` : is too small, we can just ignore it. Therefore, the
-    final sacle is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
+    final scale is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
     your own scale.
 
     TODO: Implement the CPU version.
 
     Args:
-        channel (int): The channnel number of the feature map.
+        channel (int): The channel number of the feature map.
         negative_slope (float, optional): Same as nn.LeakyRelu.
             Defaults to 0.2.
         scale (float, optional): A scalar to adjust the variance of the feature
@@ -230,9 +230,9 @@ def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
 
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a
-    scale similarly with Kaiming initalization. However, since the
+    scale similarly with Kaiming initialization. However, since the
     :math:`1 + \alpha^2` : is too small, we can just ignore it. Therefore, the
-    final sacle is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
+    final scale is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
     your own scale.
 
     Args:
