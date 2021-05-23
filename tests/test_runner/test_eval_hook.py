@@ -246,19 +246,24 @@ def test_eval_hook():
         runner.register_hook(eval_hook)
         runner.run([loader], [('train', 1)], 2)
 
-        ckpt_path = osp.join(tmpdir, 'best_acc_epoch_2.pth')
+        old_ckpt_path = osp.join(tmpdir, 'best_acc_epoch_2.pth')
 
-        assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
-        assert osp.exists(ckpt_path)
+        assert runner.meta['hook_msgs']['best_ckpt'] == old_ckpt_path
+        assert osp.exists(old_ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == 4
 
-        resume_from = osp.join(tmpdir, 'latest.pth')
+        resume_from = old_ckpt_path
         loader = DataLoader(ExampleDataset())
         eval_hook = EvalHook(data_loader, save_best='acc')
         runner = EpochBasedRunner(model=model, work_dir=tmpdir, logger=logger)
         runner.register_checkpoint_hook(dict(interval=1))
         runner.register_hook(eval_hook)
+
         runner.resume(resume_from)
+        assert runner.meta['hook_msgs']['best_ckpt'] == old_ckpt_path
+        assert osp.exists(old_ckpt_path)
+        assert runner.meta['hook_msgs']['best_score'] == 4
+
         runner.run([loader], [('train', 1)], 8)
 
         ckpt_path = osp.join(tmpdir, 'best_acc_epoch_4.pth')
@@ -266,6 +271,7 @@ def test_eval_hook():
         assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
         assert osp.exists(ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == 7
+        assert not osp.exists(old_ckpt_path)
 
 
 @patch('mmcv.engine.single_gpu_test', MagicMock)

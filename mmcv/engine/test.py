@@ -32,8 +32,9 @@ def single_gpu_test(model, data_loader):
             result = model(return_loss=False, **data)
         results.extend(result)
 
-        # use the first key as main key to calculate the batch size
-        batch_size = len(next(iter(data.values())))
+        # Assume result has the same length of batch_size
+        # refer to https://github.com/open-mmlab/mmcv/issues/985
+        batch_size = len(result)
         for _ in range(batch_size):
             prog_bar.update()
     return results
@@ -72,7 +73,10 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
 
         if rank == 0:
             batch_size = len(result)
-            for _ in range(batch_size * world_size):
+            batch_size_all = batch_size * world_size
+            if batch_size_all + prog_bar.completed > len(dataset):
+                batch_size_all = len(dataset) - prog_bar.completed
+            for _ in range(batch_size_all):
                 prog_bar.update()
 
     # collect results from all ranks

@@ -1,4 +1,4 @@
-// from
+// Modified from
 // https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d_kernel.cu
 // Copyright (c) 2019, NVIDIA Corporation. All rights reserved.
 //

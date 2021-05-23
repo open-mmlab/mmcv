@@ -92,12 +92,34 @@ void modulated_deform_conv_backward(
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias);
 
+Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
+                              const Tensor &level_start_index,
+                              const Tensor &sampling_loc,
+                              const Tensor &attn_weight, const int im2col_step);
+
+std::vector<Tensor> ms_deform_attn_backward(const Tensor &value,
+                                            const Tensor &spatial_shapes,
+                                            const Tensor &level_start_index,
+                                            const Tensor &sampling_loc,
+                                            const Tensor &attn_weight,
+                                            const Tensor &grad_output,
+                                            const int im2col_step);
+
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset);
 
 std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
+
+std::vector<std::vector<float> > pixel_group(
+    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+    Tensor kernel_contour, int kernel_region_num, float distance_threshold);
+
+std::vector<std::vector<int> > contour_expand(Tensor kernel_mask,
+                                              Tensor internal_kernel_label,
+                                              int min_kernel_area,
+                                              int kernel_num);
 
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
@@ -182,18 +204,33 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const float iou_threshold,
                    const int multi_label);
 
-Tensor upfirdn2d(const Tensor& input, const Tensor& kernel, int up_x, int up_y,
+Tensor upfirdn2d(const Tensor &input, const Tensor &kernel, int up_x, int up_y,
                  int down_x, int down_y, int pad_x0, int pad_x1, int pad_y0,
                  int pad_y1);
 
-Tensor fused_bias_leakyrelu(const Tensor& input, const Tensor& bias,
-                            const Tensor& refer, int act, int grad, float alpha,
+Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
+                            const Tensor &refer, int act, int grad, float alpha,
                             float scale);
 
+void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
+                               int pooled_height, int pooled_width,
+                               float spatial_scale, int sample_num,
+                               bool aligned, bool clockwise);
+
+void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
+                                Tensor grad_input, int pooled_height,
+                                int pooled_width, float spatial_scale,
+                                int sample_num, bool aligned, bool clockwise);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)");
+  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
+        py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
+        py::arg("down_y"), py::arg("pad_x0"), py::arg("pad_x1"),
+        py::arg("pad_y0"), py::arg("pad_y1"));
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
-        "fused_bias_leakyrelu (CUDA)");
+        "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
+        py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
+        py::arg("scale"));
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
@@ -297,6 +334,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("offset"));
   m.def("nms_match", &nms_match, "nms_match (CPU) ", py::arg("dets"),
         py::arg("iou_threshold"));
+  m.def("pixel_group", &pixel_group, "pixel group (CPU) ", py::arg("score"),
+        py::arg("mask"), py::arg("embedding"), py::arg("kernel_label"),
+        py::arg("kernel_contour"), py::arg("kernel_region_label"),
+        py::arg("distance_threshold"));
+  m.def("contour_expand", &contour_expand, "contour exapnd (CPU) ",
+        py::arg("kernel_mask"), py::arg("internal_kernel_label"),
+        py::arg("min_kernel_area"), py::arg("kernel_num"));
   m.def("roi_align_forward", &roi_align_forward, "roi_align forward",
         py::arg("input"), py::arg("rois"), py::arg("output"),
         py::arg("argmax_y"), py::arg("argmax_x"), py::arg("aligned_height"),
@@ -381,4 +425,25 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
+        "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
+        py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
+        py::arg("clockwise"));
+  m.def("roi_align_rotated_backward", &roi_align_rotated_backward,
+        "roi_align_rotated backward", py::arg("grad_output"), py::arg("rois"),
+        py::arg("grad_input"), py::arg("pooled_height"),
+        py::arg("pooled_width"), py::arg("spatial_scale"),
+        py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
+  m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
+        "forward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("im2col_step"));
+  m.def("ms_deform_attn_backward", &ms_deform_attn_backward,
+        "backward function of multi-scale deformable attention",
+        py::arg("value"), py::arg("value_spatial_shapes"),
+        py::arg("value_level_start_index"), py::arg("sampling_locations"),
+        py::arg("attention_weights"), py::arg("grad_output"),
+        py::arg("im2col_step"));
 }
