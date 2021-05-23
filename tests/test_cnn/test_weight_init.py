@@ -178,7 +178,7 @@ def test_normalinit():
     assert model[2].bias.allclose(torch.tensor(res))
 
 
-def test_trunc_normal_init():
+def test_truncnormalinit():
     """test TruncNormalInit class."""
     model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
 
