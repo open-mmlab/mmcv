@@ -1,8 +1,10 @@
 coverage
 lmdb
+numpy
 onnx==1.7.0
 onnxoptimizer
 onnxruntime==1.4.0
 pytest
 PyTurboJPEG
+scripy
 tiffile

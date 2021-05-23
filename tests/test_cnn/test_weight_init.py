@@ -1,9 +1,11 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import random
 from tempfile import TemporaryDirectory
 
 import numpy as np
 import pytest
 import torch
+from scipy import stats
 from torch import nn
 
 from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
@@ -47,11 +49,30 @@ def test_normal_init():
     # TODO: sanity check distribution, e.g. mean, std
 
 
-def test_truncated_normal_init():
+def test_trunc_normal_init():
+
+    def _random_float(a, b):
+        return (b - a) * random.random() + a
+
+    def _is_trunc_normal(tensor, mean, std, a, b):
+        # scipy's trunc norm is suited for data drawn from N(0, 1),
+        # so we need to transform our data to test it using scipy.
+        z_samples = (tensor.view(-1) - mean) / std
+        z_samples = z_samples.tolist()
+        a0 = (a - mean) / std
+        b0 = (b - mean) / std
+        p_value = stats.kstest(z_samples, 'truncnorm', args=(a0, b0))[1]
+        return p_value > 0.0001
+
     conv_module = nn.Conv2d(3, 16, 3)
-    trunc_normal_init(conv_module, bias=0.1)
-    # TODO: sanity check of weight distribution, e.g. mean, std
+    mean = _random_float(-3, 3)
+    std = _random_float(.01, 1)
+    a = _random_float(mean - 2 * std, mean)
+    b = _random_float(mean, mean + 2 * std)
+    trunc_normal_init(conv_module, mean, std, a, b, bias=0.1)
+    assert _is_trunc_normal(conv_module.weight, mean, std, a, b)
     assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
+
     conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
     trunc_normal_init(conv_module_no_bias)
     # TODO: sanity check distribution, e.g. mean, std
