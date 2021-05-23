@@ -64,7 +64,7 @@ class ModulatedDeformConv2dFunction(Function):
         # The flag for whether to use fp16 or amp is the type of "offset",
         # we cast weight and input to temporarily support fp16 and amp
         # whatever the pytorch version is.
-        input = input.to(offset.dtype)
+        input = input.type_as(offset)
         weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
