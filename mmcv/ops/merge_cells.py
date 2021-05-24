@@ -10,7 +10,7 @@ from ..cnn import ConvModule
 class BaseMergeCell(nn.Module):
     """The basic class for cells used in NAS-FPN and NAS-FCOS.
 
-    BaseMergeCell takes 2 inputs. After applying concolution
+    BaseMergeCell takes 2 inputs. After applying convolution
     on them, they are resized to the target size. Then,
     they go through binary_op, which depends on the type of cell.
     If with_out_conv is True, the result of output will go through

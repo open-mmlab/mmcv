@@ -140,7 +140,7 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
             it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
             candidates are `color`, `grayscale` and `unchanged`.
-            Note that the `turbojpeg` backened does not support `unchanged`.
+            Note that the `turbojpeg` backend does not support `unchanged`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
         backend (str | None): The image decoding backend type. Options are
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
@@ -234,7 +234,7 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
     Args:
         img (ndarray): Image array to be written.
         file_path (str): Image file path.
-        params (None or list): Same as opencv's :func:`imwrite` interface.
+        params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
 

@@ -88,7 +88,7 @@ Here is an example.
 import torch
 import onnx
 
-from mmcv.tensorrt import (TRTWraper, onnx2trt, save_trt_engine,
+from mmcv.tensorrt import (TRTWrapper, onnx2trt, save_trt_engine,
                                    is_tensorrt_plugin_loaded)
 
 assert is_tensorrt_plugin_loaded(), 'Requires to complie TensorRT plugins in mmcv'
@@ -117,7 +117,7 @@ trt_engine = onnx2trt(
 save_trt_engine(trt_engine, trt_file)
 
 # Run inference with TensorRT
-trt_model = TRTWraper(trt_file, ['input'], ['output'])
+trt_model = TRTWrapper(trt_file, ['input'], ['output'])
 
 with torch.no_grad():
     trt_outputs = trt_model({'input': inputs})
@@ -161,7 +161,7 @@ Below are the main steps:
 
 ### Reminders
 
-- Some of the [custom ops](https://mmcv.readthedocs.io/en/latest/ops.html) in `mmcv` have their cuda implementations, which could be refered.
+- Some of the [custom ops](https://mmcv.readthedocs.io/en/latest/ops.html) in `mmcv` have their cuda implementations, which could be referred.
 
 ## Known Issues
 

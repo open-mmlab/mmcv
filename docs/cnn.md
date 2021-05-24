@@ -370,9 +370,9 @@ Let us introduce the usage of `initialize` in detail.
 
     `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
 
-    `Sequential` is inhertied from `BaseModule` and `torch.nn.Sequential`.
+    `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
 
-    `ModuleList` is inhertied from `BaseModule` and `torch.nn.ModuleList`.
+    `ModuleList` is inherited from `BaseModule` and `torch.nn.ModuleList`.
 
     `````python
     import torch.nn as nn
@@ -534,5 +534,5 @@ The following types are supported for `filename` argument of `mmcv.load_checkpoi
 
 - filepath: The filepath of the checkpoint.
 - `http://xxx` and `https://xxx`: The link to download the checkpoint. The `SHA256` postfix should be contained in the filename.
-- `torchvison://xxx`: The model links in `torchvision.models`.Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
+- `torchvision://xxx`: The model links in `torchvision.models`.Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
 - `open-mmlab://xxx`: The model links or filepath provided in default and additional json files.

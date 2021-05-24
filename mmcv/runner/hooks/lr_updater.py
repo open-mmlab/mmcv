@@ -361,7 +361,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
     Implement the cyclical learning rate policy (CLR) described in
     https://arxiv.org/pdf/1506.01186.pdf
 
-    Different from the original paper, we use cosine anealing rather than
+    Different from the original paper, we use cosine annealing rather than
     triangular policy inside a cycle. This improves the performance in the
     3D detection area.
 

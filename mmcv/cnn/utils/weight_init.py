@@ -98,7 +98,7 @@ class BaseInit(object):
     def __init__(self, *, bias=0, bias_prob=None, layer=None):
         self.wholemodule = False
         if not isinstance(bias, (int, float)):
-            raise TypeError(f'bias must be a numbel, but got a {type(bias)}')
+            raise TypeError(f'bias must be a number, but got a {type(bias)}')
 
         if bias_prob is not None:
             if not isinstance(bias_prob, float):
