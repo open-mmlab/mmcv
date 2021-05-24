@@ -11,7 +11,7 @@ class WandbLoggerHook(LoggerHook):
                  init_kwargs=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
+                 reset_flag=False,
                  commit=True,
                  by_epoch=True,
                  with_step=True):
@@ -32,6 +32,7 @@ class WandbLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(WandbLoggerHook, self).before_run(runner)
         if self.wandb is None:
             self.import_wandb()
         if self.init_kwargs:

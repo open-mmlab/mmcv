@@ -528,7 +528,7 @@ def _get_shear_matrix(magnitude, direction='horizontal'):
 
     Args:
         magnitude (int | float): The magnitude used for shear.
-        direction (str): Thie flip direction, either "horizontal"
+        direction (str): The flip direction, either "horizontal"
             or "vertical".
 
     Returns:
@@ -552,7 +552,7 @@ def imshear(img,
         img (ndarray): Image to be sheared with format (h, w)
             or (h, w, c).
         magnitude (int | float): The magnitude used for shear.
-        direction (str): Thie flip direction, either "horizontal"
+        direction (str): The flip direction, either "horizontal"
             or "vertical".
         border_value (int | tuple[int]): Value used in case of a
             constant border.

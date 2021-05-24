@@ -10,7 +10,7 @@ from .hook import HOOKS, Hook
 
 @HOOKS.register_module()
 class ProfilerHook(Hook):
-    """Profiler to analyze perfromance during training.
+    """Profiler to analyze performance during training.
 
     PyTorch Profiler is a tool that allows the collection of the performance
     metrics during the training. More details on Profiler can be found at
@@ -67,7 +67,7 @@ class ProfilerHook(Hook):
             from torch import profiler  # torch version >= 1.8.1
         except ImportError:
             raise ImportError('profiler is the new feature of torch1.8.1, '
-                              f'but your verison is {torch.__version__}')
+                              f'but your version is {torch.__version__}')
 
         assert isinstance(by_epoch, bool), '``by_epoch`` should be a boolean.'
         self.by_epoch = by_epoch
@@ -120,10 +120,10 @@ class ProfilerHook(Hook):
             trace_type = trace_cfg.pop('type')  # log_trace handler
             if trace_type == 'log_trace':
 
-                def _log_hanlder(prof):
+                def _log_handler(prof):
                     print(prof.key_averages().table(**trace_cfg))
 
-                _on_trace_ready = _log_hanlder
+                _on_trace_ready = _log_handler
             elif trace_type == 'tb_trace':  # tensorboard_trace handler
                 try:
                     import torch_tb_profiler  # noqa: F401

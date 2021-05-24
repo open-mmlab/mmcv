@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import onnx
@@ -478,6 +479,102 @@ def test_grid_sample(mode, padding_mode, align_corners):
     if os.path.exists(trt_file):
         os.remove(trt_file)
     assert torch.allclose(pytorch_results, trt_results)
+
+
+@pytest.mark.parametrize('func', [torch.cummax, torch.cummin])
+def test_cummin_cummax(func: Callable):
+    # Note generally `cummax` or `cummin` is exportable to ONNX
+    # as long as the pytorch version >= 1.5.0, since `torch.cummax`
+    # is only supported with torch >= 1.5.0.
+    # But when `cummax` or `cummin` serves as an intermediate component
+    # whose outputs is used as inputs for another modules, it's expected
+    # that pytorch version must be >= 1.7.0. Otherwise error appears like:
+    # `RuntimeError: tuple  appears in op that does not forward tuples,
+    # unsupported 'kind: prim::PythonOp`.
+    from packaging import version
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        pytest.skip('test_cummax_cummin should be ran with pytorch >= 1.7.0')
+
+    opset = 11
+    # register custom op `mmcv::cummax` and `mmcv::cummin`
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics(opset)
+
+    input_list = [
+        # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
+        torch.rand((2, 3, 4, 1, 5)).cuda(),
+        torch.rand((1)).cuda()
+    ]
+
+    input_names = ['input']
+    output_names = ['output', 'indices']
+
+    for input in input_list:
+        ndims = input.dim()
+        # valid dim range is [-ndims, ndims-1]
+        # test for all `dim` value which is valid
+        for dim in range(-ndims, ndims):
+            cummax_func = partial(func, dim=dim)
+            wrapped_model = WrapFunction(cummax_func).eval().cuda()
+
+            with torch.no_grad():
+                torch.onnx.export(
+                    wrapped_model,
+                    input,
+                    onnx_file,
+                    export_params=True,
+                    keep_initializers_as_inputs=False,
+                    input_names=input_names,
+                    output_names=output_names,
+                    opset_version=opset)
+
+            onnx_model = onnx.load(onnx_file)
+
+            # create trt engine and wraper
+            opt_shape_dict = {
+                'input':
+                [list(input.shape),
+                 list(input.shape),
+                 list(input.shape)]
+            }
+            # trt config
+            fp16_mode = False
+            max_workspace_size = 1 << 30
+
+            trt_engine = onnx2trt(
+                onnx_model,
+                opt_shape_dict,
+                fp16_mode=fp16_mode,
+                max_workspace_size=max_workspace_size)
+
+            # remove ONNX model after conversion
+            if os.path.exists(onnx_file):
+                os.remove(onnx_file)
+
+            # save TensorRT model
+            save_trt_engine(trt_engine, trt_file)
+
+            # load and wrap TensorRT model
+            trt_model = TRTWraper(trt_file)
+
+            # remove trt model after loading
+            if os.path.exists(trt_file):
+                os.remove(trt_file)
+
+            # compute trt output
+            with torch.no_grad():
+                trt_results = trt_model({'input': input.contiguous().clone()})
+                trt_output = trt_results['output']
+                trt_indices = trt_results['indices']
+
+            # compute pytorch output
+            with torch.no_grad():
+                pytorch_results = wrapped_model(input.clone())
+                pytorch_output = pytorch_results[0]
+                pytorch_indices = pytorch_results[1]
+
+            torch.testing.assert_allclose(trt_output, pytorch_output)
+            torch.testing.assert_allclose(trt_indices, pytorch_indices)
 
 
 @pytest.mark.parametrize('dynamic_export', [True, False])

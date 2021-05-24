@@ -69,7 +69,7 @@ a = 1
 b = dict(b1=[0, 1, 2], b2=None)
 ```
 
-#### Inherit from base config without overlaped keys
+#### Inherit from base config without overlapped keys
 
 `config_b.py`
 
@@ -90,7 +90,7 @@ d = 'string'
 
 New fields in `config_b.py` are combined with old fields in `config_a.py`
 
-#### Inherit from base config with overlaped keys
+#### Inherit from base config with overlapped keys
 
 `config_c.py`
 
@@ -203,7 +203,7 @@ for i, task in enumerate(mmcv.track_iter_progress(tasks)):
 
 ### Timer
 
-It is convinient to compute the runtime of a code block with `Timer`.
+It is convenient to compute the runtime of a code block with `Timer`.
 
 ```python
 import time

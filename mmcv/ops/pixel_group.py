@@ -14,7 +14,7 @@ def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
     Arguments:
         score (np.array or Tensor): The foreground score with size hxw.
         mask (np.array or Tensor): The foreground mask with size hxw.
-        embedding (np.array or Tensor): The emdedding with size hxwxc to
+        embedding (np.array or Tensor): The embedding with size hxwxc to
             distinguish instances.
         kernel_label (np.array or Tensor): The instance kernel index with
             size hxw.

@@ -33,12 +33,24 @@
     - [Inputs](#inputs-4)
     - [Outputs](#outputs-4)
     - [Type Constraints](#type-constraints-4)
-  - [MMCVInstanceNormalization](#mmcvinstancenormalization)
+  - [cummax](#cummax)
     - [Description](#description-5)
     - [Parameters](#parameters-5)
     - [Inputs](#inputs-5)
     - [Outputs](#outputs-5)
     - [Type Constraints](#type-constraints-5)
+  - [cummin](#cummin)
+    - [Description](#description-6)
+    - [Parameters](#parameters-6)
+    - [Inputs](#inputs-6)
+    - [Outputs](#outputs-6)
+    - [Type Constraints](#type-constraints-6)
+  - [MMCVInstanceNormalization](#mmcvinstancenormalization)
+    - [Description](#description-7)
+    - [Parameters](#parameters-7)
+    - [Inputs](#inputs-7)
+    - [Outputs](#outputs-7)
+    - [Type Constraints](#type-constraints-7)
 
 <!-- TOC -->
 
@@ -228,6 +240,70 @@ Perform sample from `input` with pixel locations from `grid`.
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32, Linear)
+
+## cummax
+
+### Description
+
+Returns a namedtuple (`values`, `indices`) where `values` is the cumulative maximum of elements of `input` in the dimension `dim`. And `indices` is the index location of each maximum value found in the dimension `dim`.
+
+### Parameters
+
+| Type  | Parameter | Description                             |
+| ----- | --------- | --------------------------------------- |
+| `int` | `dim`     | The dimension to do the operation over. |
+
+### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>The input tensor.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output values.</dd>
+<dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
+<dd>Output indices.</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32, Linear)
+
+## cummin
+
+### Description
+
+Returns a namedtuple (`values`, `indices`) where `values` is the cumulative minimum of elements of `input` in the dimension `dim`. And `indices` is the index location of each minimum value found in the dimension `dim`.
+
+### Parameters
+
+| Type  | Parameter | Description                             |
+| ----- | --------- | --------------------------------------- |
+| `int` | `dim`     | The dimension to do the operation over. |
+
+### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>The input tensor.</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output values.</dd>
+<dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
+<dd>Output indices.</dd>
 </dl>
 
 ### Type Constraints

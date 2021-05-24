@@ -14,7 +14,7 @@ class TensorboardLoggerHook(LoggerHook):
                  log_dir=None,
                  interval=10,
                  ignore_last=True,
-                 reset_flag=True,
+                 reset_flag=False,
                  by_epoch=True):
         super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
                                                     reset_flag, by_epoch)
@@ -22,6 +22,7 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
+        super(TensorboardLoggerHook, self).before_run(runner)
         if TORCH_VERSION < '1.1' or TORCH_VERSION == 'parrots':
             try:
                 from tensorboardX import SummaryWriter
