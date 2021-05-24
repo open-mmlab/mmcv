@@ -4,6 +4,7 @@
 #include "trt_instance_norm.hpp"
 
 #include <cuda_fp16.h>
+
 #include <stdexcept>
 
 #include "trt_serialize.hpp"
