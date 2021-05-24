@@ -240,7 +240,7 @@ class TRTWrapper(torch.nn.Module):
         output_names should be the same as onnx model.
     """
 
-    def __init__(self, engine, input_names, output_names):
+    def __init__(self, engine, input_names=None, output_names=None):
         super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
@@ -252,6 +252,11 @@ class TRTWrapper(torch.nn.Module):
         self._register_state_dict_hook(TRTWrapper._on_state_dict)
         self.context = self.engine.create_execution_context()
 
+        # get input and output names from engine
+        if input_names is None or output_names is None:
+            names = [_ for _ in self.engine]
+            input_names = list(filter(self.engine.binding_is_input, names))
+            output_names = list(set(names) - set(input_names))
         self.input_names = input_names
         self.output_names = output_names
 

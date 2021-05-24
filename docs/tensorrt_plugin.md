@@ -30,7 +30,9 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 |     ScatterND     |         [ScatterND](./tensorrt_custom_ops.md#scatternd)         |     1.2.6     |
 | NonMaxSuppression | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression) |     1.3.0     |
 | MMCVDeformConv2d  |  [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)  |     1.3.0     |
-|   grid_sampler    |      [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)      |    master     |
+|   grid_sampler    |      [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)      |     1.3.1     |
+|      cummax       |            [cummax](./tensorrt_custom_ops.md#cummax)            |    master     |
+|      cummin       |            [cummin](./tensorrt_custom_ops.md#cummin)            |    master     |
 
 Notes
 
