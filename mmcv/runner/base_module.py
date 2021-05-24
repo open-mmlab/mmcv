@@ -22,7 +22,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         super(BaseModule, self).__init__()
         # define default value of init_cfg instead of hard code
-        # in init_weigt() function
+        # in init_weight() function
         self._is_init = False
         self.init_cfg = init_cfg
 

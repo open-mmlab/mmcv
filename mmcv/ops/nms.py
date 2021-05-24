@@ -385,7 +385,7 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
             be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
-        labels (Tensor): boxes's label in shape (N,).
+        labels (Tensor): boxes' label in shape (N,).
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the \

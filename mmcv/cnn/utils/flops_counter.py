@@ -237,7 +237,7 @@ def print_model_with_flops(model,
 
         >>> model = ExampleModel()
         >>> x = (3, 16, 16)
-        to print the complexity inforamtion state for each layer, you can use
+        to print the complexity information state for each layer, you can use
         >>> get_model_complexity_info(model, x)
         or directly use
         >>> print_model_with_flops(model, 4579784.0, 37361)

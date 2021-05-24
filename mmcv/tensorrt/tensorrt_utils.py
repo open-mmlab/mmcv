@@ -1,8 +1,10 @@
+import warnings
+
 import onnx
 import tensorrt as trt
 import torch
 
-from mmcv.tensorrt.preprocess import preprocess_onnx
+from .preprocess import preprocess_onnx
 
 
 def onnx2trt(onnx_model,
@@ -137,8 +139,8 @@ def torch_device_from_trt(device):
         return TypeError('%s is not supported by torch' % device)
 
 
-class TRTWraper(torch.nn.Module):
-    """TensorRT engine Wraper.
+class TRTWrapper(torch.nn.Module):
+    """TensorRT engine Wrapper.
 
     Arguments:
         engine (tensorrt.ICudaEngine): TensorRT engine to wrap
@@ -150,8 +152,8 @@ class TRTWraper(torch.nn.Module):
         output_names should be the same as onnx model.
     """
 
-    def __init__(self, engine, input_names, output_names):
-        super(TRTWraper, self).__init__()
+    def __init__(self, engine, input_names=None, output_names=None):
+        super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)
@@ -159,9 +161,14 @@ class TRTWraper(torch.nn.Module):
         if not isinstance(self.engine, trt.ICudaEngine):
             raise TypeError('engine should be str or trt.ICudaEngine')
 
-        self._register_state_dict_hook(TRTWraper._on_state_dict)
+        self._register_state_dict_hook(TRTWrapper._on_state_dict)
         self.context = self.engine.create_execution_context()
 
+        # get input and output names from engine
+        if input_names is None or output_names is None:
+            names = [_ for _ in self.engine]
+            input_names = list(filter(self.engine.binding_is_input, names))
+            output_names = list(set(names) - set(input_names))
         self.input_names = input_names
         self.output_names = output_names
 
@@ -217,3 +224,11 @@ class TRTWraper(torch.nn.Module):
                                       torch.cuda.current_stream().cuda_stream)
 
         return outputs
+
+
+class TRTWraper(TRTWrapper):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        warnings.warn('TRTWraper will be deprecated in'
+                      ' future. Please use TRTWrapper instead')
