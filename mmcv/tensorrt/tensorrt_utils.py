@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import onnx
 import tensorrt as trt
@@ -305,3 +307,11 @@ class TRTWrapper(torch.nn.Module):
                                       torch.cuda.current_stream().cuda_stream)
 
         return outputs
+
+
+class TRTWraper(TRTWrapper):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        warnings.warn('TRTWraper will be deprecated in'
+                      ' future. Please use TRTWrapper instead')
