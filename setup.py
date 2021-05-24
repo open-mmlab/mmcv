@@ -4,6 +4,8 @@ import re
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
+import psutil
+
 EXT_TYPE = ''
 try:
     import torch
@@ -216,7 +218,9 @@ def get_extensions():
         from torch.utils.cpp_extension import CppExtension, CUDAExtension
 
         # prevent ninja from using too many resources
-        os.environ.setdefault('MAX_JOBS', '4')
+        num_cpu = len(psutil.Process().cpu_affinity())
+        cpu_use = max(1, num_cpu - 1)
+        os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
         extra_compile_args = {'cxx': []}
 
