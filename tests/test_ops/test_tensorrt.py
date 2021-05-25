@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 try:
-    from mmcv.tensorrt import (TRTWraper, is_tensorrt_plugin_loaded, onnx2trt,
+    from mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
                                save_trt_engine)
 except ImportError:
     pytest.skip(
@@ -95,7 +95,7 @@ def test_roialign():
             fp16_mode=fp16_mode,
             max_workspace_size=max_workspace_size)
         save_trt_engine(trt_engine, trt_file)
-        trt_model = TRTWraper(trt_file, ['input', 'rois'], ['roi_feat'])
+        trt_model = TRTWrapper(trt_file, ['input', 'rois'], ['roi_feat'])
 
         with torch.no_grad():
             trt_outputs = trt_model({'input': input, 'rois': rois})
@@ -155,7 +155,7 @@ def test_nms():
         fp16_mode=fp16_mode,
         max_workspace_size=max_workspace_size)
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, ['boxes', 'scores'], ['dets', 'inds'])
+    trt_model = TRTWrapper(trt_file, ['boxes', 'scores'], ['dets', 'inds'])
 
     with torch.no_grad():
         trt_outputs = trt_model({'boxes': boxes, 'scores': scores})
@@ -237,7 +237,7 @@ def test_batched_nms():
         fp16_mode=fp16_mode,
         max_workspace_size=max_workspace_size)
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({
@@ -311,7 +311,7 @@ def test_scatternd():
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': data.clone()})
@@ -387,7 +387,7 @@ def test_deform_conv():
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': x.clone()})
@@ -463,7 +463,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': input.clone(), 'grid': grid.clone()})
@@ -555,7 +555,7 @@ def test_cummin_cummax(func: Callable):
             save_trt_engine(trt_engine, trt_file)
 
             # load and wrap TensorRT model
-            trt_model = TRTWraper(trt_file)
+            trt_model = TRTWrapper(trt_file)
 
             # remove trt model after loading
             if os.path.exists(trt_file):
@@ -639,7 +639,7 @@ def test_instance_norm(dynamic_export, fp16_mode):
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': data.clone()})
