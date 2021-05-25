@@ -119,7 +119,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0):
         beta = 1 - alpha
     colored_img = cv2.addWeighted(img, alpha, gray_img, beta, gamma)
     if not colored_img.dtype == np.uint8:
-        # Note when the dtype of `img` is not defaultly `np.uint8`
+        # Note when the dtype of `img` is not the default `np.uint8`
         # (e.g. np.float32), the value in `colored_img` got from cv2
         # is not guaranteed to be in range [0, 255], so here clip
         # is needed.
@@ -320,9 +320,9 @@ def adjust_sharpness(img, factor=1., kernel=None):
         # adopted from PIL.ImageFilter.SMOOTH
         kernel = np.array([[1., 1., 1.], [1., 5., 1.], [1., 1., 1.]]) / 13
     assert isinstance(kernel, np.ndarray), \
-        f'kernel must be of type np.ndarrray, but got {type(kernel)} instead.'
+        f'kernel must be of type np.ndarray, but got {type(kernel)} instead.'
     assert kernel.ndim == 2, \
-        f'kernel must have a dimention of 2, but got {kernel.ndim} instead.'
+        f'kernel must have a dimension of 2, but got {kernel.ndim} instead.'
 
     degenerated = cv2.filter2D(img, -1, kernel)
     sharpened_img = cv2.addWeighted(
@@ -340,13 +340,13 @@ def adjust_lighting(img, eigval, eigvec, alphastd=0.1, to_rgb=True):
     <https://dl.acm.org/doi/pdf/10.1145/3065386>`_.
 
     Args:
-        img (ndarray): Image to be ajusted lighting. BGR order.
+        img (ndarray): Image to be adjusted lighting. BGR order.
         eigval (ndarray): the eigenvalue of the convariance matrix of pixel
             values, respectively.
         eigvec (ndarray): the eigenvector of the convariance matrix of pixel
             values, respectively.
         alphastd (float): The standard deviation for distribution of alpha.
-            Dafaults to 0.1
+            Defaults to 0.1
         to_rgb (bool): Whether to convert img to rgb.
 
     Returns:

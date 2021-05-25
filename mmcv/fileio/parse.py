@@ -28,13 +28,13 @@ def list_from_file(filename, prefix='', offset=0, max_num=0):
 def dict_from_file(filename, key_type=str):
     """Load a text file and parse the content as a dict.
 
-    Each line of the text file will be two or more columns splited by
+    Each line of the text file will be two or more columns split by
     whitespaces or tabs. The first column will be parsed as dict keys, and
     the following columns will be parsed as dict values.
 
     Args:
         filename(str): Filename.
-        key_type(type): Type of the dict's keys. str is user by default and
+        key_type(type): Type of the dict keys. str is user by default and
             type conversion will be performed if specified.
 
     Returns:

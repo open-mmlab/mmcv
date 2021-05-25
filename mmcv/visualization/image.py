@@ -15,7 +15,7 @@ def imshow(img, win_name='', wait_time=0):
         wait_time (int): Value of waitKey param.
     """
     cv2.imshow(win_name, imread(img))
-    if wait_time == 0:  # prevent from hangning if windows was closed
+    if wait_time == 0:  # prevent from hanging if windows was closed
         while True:
             ret = cv2.waitKey(1)
 

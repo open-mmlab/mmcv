@@ -1,16 +1,18 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import random
 from tempfile import TemporaryDirectory
 
 import numpy as np
 import pytest
 import torch
+from scipy import stats
 from torch import nn
 
 from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
-                      PretrainedInit, UniformInit, XavierInit,
+                      PretrainedInit, TruncNormalInit, UniformInit, XavierInit,
                       bias_init_with_prob, caffe2_xavier_init, constant_init,
-                      initialize, kaiming_init, normal_init, uniform_init,
-                      xavier_init)
+                      initialize, kaiming_init, normal_init, trunc_normal_init,
+                      uniform_init, xavier_init)
 
 
 def test_constant_init():
@@ -44,6 +46,35 @@ def test_normal_init():
     assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
     conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
     normal_init(conv_module_no_bias)
+    # TODO: sanity check distribution, e.g. mean, std
+
+
+def test_trunc_normal_init():
+
+    def _random_float(a, b):
+        return (b - a) * random.random() + a
+
+    def _is_trunc_normal(tensor, mean, std, a, b):
+        # scipy's trunc norm is suited for data drawn from N(0, 1),
+        # so we need to transform our data to test it using scipy.
+        z_samples = (tensor.view(-1) - mean) / std
+        z_samples = z_samples.tolist()
+        a0 = (a - mean) / std
+        b0 = (b - mean) / std
+        p_value = stats.kstest(z_samples, 'truncnorm', args=(a0, b0))[1]
+        return p_value > 0.0001
+
+    conv_module = nn.Conv2d(3, 16, 3)
+    mean = _random_float(-3, 3)
+    std = _random_float(.01, 1)
+    a = _random_float(mean - 2 * std, mean)
+    b = _random_float(mean, mean + 2 * std)
+    trunc_normal_init(conv_module, mean, std, a, b, bias=0.1)
+    assert _is_trunc_normal(conv_module.weight, mean, std, a, b)
+    assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
+
+    conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
+    trunc_normal_init(conv_module_no_bias)
     # TODO: sanity check distribution, e.g. mean, std
 
 
@@ -160,6 +191,33 @@ def test_normalinit():
 
     func = NormalInit(
         mean=300, std=1e-5, bias_prob=0.01, layer=['Conv2d', 'Linear'])
+    res = bias_init_with_prob(0.01)
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert model[0].bias.allclose(torch.tensor(res))
+    assert model[2].bias.allclose(torch.tensor(res))
+
+
+def test_truncnormalinit():
+    """test TruncNormalInit class."""
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
+
+    func = TruncNormalInit(
+        mean=100, std=1e-5, bias=200, a=0, b=200, layer=['Conv2d', 'Linear'])
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(100.))
+    assert model[2].weight.allclose(torch.tensor(100.))
+    assert model[0].bias.allclose(torch.tensor(200.))
+    assert model[2].bias.allclose(torch.tensor(200.))
+
+    func = TruncNormalInit(
+        mean=300,
+        std=1e-5,
+        a=100,
+        b=400,
+        bias_prob=0.01,
+        layer=['Conv2d', 'Linear'])
     res = bias_init_with_prob(0.01)
     func(model)
     assert model[0].weight.allclose(torch.tensor(300.))

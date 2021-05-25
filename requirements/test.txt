@@ -5,4 +5,5 @@ onnxoptimizer
 onnxruntime==1.4.0
 pytest
 PyTurboJPEG
+scipy
 tiffile

@@ -97,13 +97,13 @@ Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
                               const Tensor &sampling_loc,
                               const Tensor &attn_weight, const int im2col_step);
 
-std::vector<Tensor> ms_deform_attn_backward(const Tensor &value,
-                                            const Tensor &spatial_shapes,
-                                            const Tensor &level_start_index,
-                                            const Tensor &sampling_loc,
-                                            const Tensor &attn_weight,
-                                            const Tensor &grad_output,
-                                            const int im2col_step);
+void ms_deform_attn_backward(const Tensor &value, const Tensor &spatial_shapes,
+                             const Tensor &level_start_index,
+                             const Tensor &sampling_loc,
+                             const Tensor &attn_weight,
+                             const Tensor &grad_output, Tensor &grad_value,
+                             Tensor &grad_sampling_loc,
+                             Tensor &grad_attn_weight, const int im2col_step);
 
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
@@ -221,6 +221,14 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
                                 int pooled_width, float spatial_scale,
                                 int sample_num, bool aligned, bool clockwise);
+
+void border_align_forward(const Tensor &input, const Tensor &boxes,
+                          Tensor output, Tensor argmax_idx,
+                          const int pool_size);
+
+void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
+                           const Tensor &argmax_idx, Tensor grad_input,
+                           const int pool_size);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -445,5 +453,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("value"), py::arg("value_spatial_shapes"),
         py::arg("value_level_start_index"), py::arg("sampling_locations"),
         py::arg("attention_weights"), py::arg("grad_output"),
-        py::arg("im2col_step"));
+        py::arg("grad_value"), py::arg("grad_sampling_loc"),
+        py::arg("grad_attn_weight"), py::arg("im2col_step"));
+  m.def("border_align_forward", &border_align_forward,
+        "forward function of border_align", py::arg("input"), py::arg("boxes"),
+        py::arg("output"), py::arg("argmax_idx"), py::arg("pool_size"));
+  m.def("border_align_backward", &border_align_backward,
+        "backward function of border_align", py::arg("grad_output"),
+        py::arg("boxes"), py::arg("argmax_idx"), py::arg("grad_input"),
+        py::arg("pool_size"));
 }
