@@ -110,6 +110,9 @@ def preprocess_onnx(onnx_model):
                     node_dict[output] = new_node
             nodes.insert(idx, new_node)
             nodes.remove(node)
+        elif node.op_type == 'InstanceNormalization':
+            # directly change op name
+            node.op_type = 'MMCVInstanceNormalization'
 
     for node_name in nodes_name_to_remove:
         nodes.remove(node_dict[node_name])

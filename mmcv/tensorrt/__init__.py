@@ -15,13 +15,15 @@ def is_tensorrt_available():
 __all__ = []
 
 if is_tensorrt_available():
-    from .tensorrt_utils import (TRTWraper, load_trt_engine, onnx2trt,
-                                 save_trt_engine)
+    from .tensorrt_utils import (TRTWraper, TRTWrapper, load_trt_engine,
+                                 onnx2trt, save_trt_engine)
 
     # load tensorrt plugin lib
     load_tensorrt_plugin()
 
-    __all__.append(
-        ['onnx2trt', 'save_trt_engine', 'load_trt_engine', 'TRTWraper'])
+    __all__.append([
+        'onnx2trt', 'save_trt_engine', 'load_trt_engine', 'TRTWraper',
+        'TRTWrapper'
+    ])
 
 __all__.append(['is_tensorrt_plugin_loaded', 'preprocess_onnx'])
