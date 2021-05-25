@@ -1,8 +1,13 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 from math import cos, pi
+import torch 
+model = torch.nn.Conv2d(1,3,1)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+sche = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', 0.1, 2)
 
 import mmcv
+from mmcv.runner.hooks import optimizer
 from .hook import HOOKS, Hook
 
 class LrUpdaterHook(Hook):
@@ -625,7 +630,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                  factor=0.1,
                  patience=10,
                  threshold=1e-4,
-                 thresh_mode='rel',
+                 threshold_mode='rel',
                  cooldown=0,
                  min_lr=0.,
                  eps=1e-8):
@@ -650,13 +655,6 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         self.best = None
         self.num_bad_epochs = None
         self.mode_worse = None  # the worse value for the chosen mode
-        if isinstance(min_lr, list) or isinstance(min_lr, tuple):
-            for l in min_lr:
-                assert isinstance(l, float)
-        elif isinstance(min_lr, float):
-            pass
-        else:
-            raise TypeError('"min_lr" must be a list or float')
         self.min_lr = min_lr
         self.eps = eps
         self.last_epoch = 0
@@ -668,7 +666,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             self.cooldown_counter = self.cooldown
             self.num_bad_epochs = 0
             if regular_lr - regular_lr * self.factor > self.eps:
-                new_lr = regular_lr * self.factor
+                new_lr = max(regular_lr * self.factor, self.min_lr)
             else:
                 new_lr = regular_lr
             return new_lr
@@ -694,9 +692,9 @@ class ReduceLrUpdateHook(LrUpdaterHook):
 
     def _init_is_better(self, mode):
         if mode == 'min':
-            self.mode_worse = inf
+            self.mode_worse = float('inf')
         else:
-            self.mode_worse = -inf
+            self.mode_worse = float('-inf')
 
     def _reset(self):
         self.best = self.mode_worse
@@ -731,7 +729,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                 return
         if cur_epoch in self.periods and self.val_metric is None:
             current = runner.outputs.loss
-            if is_better(current, self.best):
+            if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
             else:
@@ -749,7 +747,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             return
         if cur_iter in self.periods and self.val_metric is None:
             current = runner.outputs.loss
-            if is_better(current, self.best):
+            if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
             else:
@@ -768,7 +766,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                 return 
         if cur_epoch in self.periods and self.val_metric is not None:
             current = runner.outputs[self.val_metric]
-            if is_better(current, self.best):
+            if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
             else:
@@ -786,7 +784,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             return
         if cur_iter in self.periods and self.val_metric is not None:
             current = runner.outputs[self.val_metric] 
-            if is_better(current, self.best):
+            if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
             else:
