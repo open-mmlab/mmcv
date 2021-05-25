@@ -222,6 +222,14 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int pooled_width, float spatial_scale,
                                 int sample_num, bool aligned, bool clockwise);
 
+void border_align_forward(const Tensor &input, const Tensor &boxes,
+                          Tensor output, Tensor argmax_idx,
+                          const int pool_size);
+
+void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
+                           const Tensor &argmax_idx, Tensor grad_input,
+                           const int pool_size);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -447,4 +455,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("attention_weights"), py::arg("grad_output"),
         py::arg("grad_value"), py::arg("grad_sampling_loc"),
         py::arg("grad_attn_weight"), py::arg("im2col_step"));
+  m.def("border_align_forward", &border_align_forward,
+        "forward function of border_align", py::arg("input"), py::arg("boxes"),
+        py::arg("output"), py::arg("argmax_idx"), py::arg("pool_size"));
+  m.def("border_align_backward", &border_align_backward,
+        "backward function of border_align", py::arg("grad_output"),
+        py::arg("boxes"), py::arg("argmax_idx"), py::arg("grad_input"),
+        py::arg("pool_size"));
 }

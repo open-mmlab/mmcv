@@ -1,4 +1,5 @@
 from .bbox import bbox_overlaps
+from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
@@ -48,5 +49,6 @@ __all__ = [
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand'
+    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
+    'BorderAlign', 'border_align'
 ]
