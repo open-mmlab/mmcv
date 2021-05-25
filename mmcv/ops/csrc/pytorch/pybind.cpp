@@ -453,7 +453,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("value"), py::arg("value_spatial_shapes"),
         py::arg("value_level_start_index"), py::arg("sampling_locations"),
         py::arg("attention_weights"), py::arg("grad_output"),
-        py::arg("im2col_step"));
+        py::arg("grad_value"), py::arg("grad_sampling_loc"),
+        py::arg("grad_attn_weight"), py::arg("im2col_step"));
   m.def("border_align_forward", &border_align_forward,
         "forward function of border_align", py::arg("input"), py::arg("boxes"),
         py::arg("output"), py::arg("argmax_idx"), py::arg("pool_size"));
