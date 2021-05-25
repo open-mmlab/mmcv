@@ -394,7 +394,7 @@ class BaseTransformerLayer(BaseModule):
 
         num_attn = operation_order.count('self_attn') + operation_order.count(
             'cross_attn')
-        if isinstance(attn_cfgs, ConfigDict):
+        if isinstance(attn_cfgs, dict):
             attn_cfgs = [copy.deepcopy(attn_cfgs) for _ in range(num_attn)]
         else:
             assert num_attn == len(attn_cfgs), f'The length ' \
@@ -428,7 +428,7 @@ class BaseTransformerLayer(BaseModule):
         num_ffns = operation_order.count('ffn')
         if isinstance(ffn_cfgs, dict):
             ffn_cfgs = ConfigDict(ffn_cfgs)
-        if isinstance(ffn_cfgs, ConfigDict):
+        if isinstance(ffn_cfgs, dict):
             ffn_cfgs = [copy.deepcopy(ffn_cfgs) for _ in range(num_ffns)]
         assert len(ffn_cfgs) == num_ffns
         for ffn_index in range(num_ffns):
@@ -447,8 +447,8 @@ class BaseTransformerLayer(BaseModule):
 
     def forward(self,
                 query,
-                key,
-                value,
+                key=None,
+                value=None,
                 query_pos=None,
                 key_pos=None,
                 attn_masks=None,
@@ -568,7 +568,7 @@ class TransformerLayerSequence(BaseModule):
 
     def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
         super(TransformerLayerSequence, self).__init__(init_cfg)
-        if isinstance(transformerlayers, (ConfigDict, dict)):
+        if isinstance(transformerlayers, dict):
             transformerlayers = [
                 copy.deepcopy(transformerlayers) for _ in range(num_layers)
             ]
