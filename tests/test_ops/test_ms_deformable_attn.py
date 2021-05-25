@@ -1,9 +1,15 @@
 import pytest
 import torch
-from torch.autograd import gradcheck
 
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
+
+_USING_PARROTS = True
+try:
+    from parrots.autograd import gradcheck
+except ImportError:
+    from torch.autograd import gradcheck
+    _USING_PARROTS = False
 
 
 def test_forward_multi_scale_deformable_attn_pytorch():
@@ -118,8 +124,13 @@ def test_gradient_numerical(channels,
     value.requires_grad = grad_value
     sampling_locations.requires_grad = grad_sampling_loc
     attention_weights.requires_grad = grad_attn_weight
-
-    assert gradcheck(
-        func,
-        (value.double(), shapes, level_start_index,
-         sampling_locations.double(), attention_weights.double(), im2col_step))
+    if _USING_PARROTS:
+        assert gradcheck(
+            func, (value.double(), shapes, level_start_index,
+                   sampling_locations.double(), attention_weights.double(),
+                   im2col_step),
+            no_grads=[shapes, level_start_index])
+    else:
+        assert gradcheck(func, (value.double(), shapes, level_start_index,
+                                sampling_locations.double(),
+                                attention_weights.double(), im2col_step))
