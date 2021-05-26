@@ -1,14 +1,10 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 from math import cos, pi
-import torch 
-model = torch.nn.Conv2d(1,3,1)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
-sche = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', 0.1, 2)
 
 import mmcv
-from mmcv.runner.hooks import optimizer
 from .hook import HOOKS, Hook
+
 
 class LrUpdaterHook(Hook):
     """LR Scheduler in MMCV.
@@ -633,7 +629,13 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                  threshold_mode='rel',
                  cooldown=0,
                  min_lr=0.,
-                 eps=1e-8):
+                 eps=1e-8,
+                 **kwargs):
+        if isinstance(periods, list):
+            assert mmcv.is_list_of(periods, int)
+            assert all([s > 0 for s in periods])
+        else:
+            raise TypeError('"periods" must be a list')
         self.periods = periods
         self.val_metric = val_metric
         if mode not in ['min', 'max']:
@@ -646,9 +648,8 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         self.patience = patience
         self.threshold = threshold
         if threshold_mode not in ['rel', 'abs']:
-            raise ValueError(
-                'thresh_mode must be one of "rel" or "abs", instead got {threshold_mode}'
-            )
+            raise ValueError('thresh_mode must be one of "rel" or "abs",\
+                 instead got {threshold_mode}')
         self.threshold_mode = threshold_mode
         self.cooldown = cooldown
         self.cooldown_counter = 0
@@ -660,6 +661,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         self.last_epoch = 0
         self._init_is_better(self.mode)
         self._reset()
+        super(ReduceLrUpdateHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, regular_lr):
         if self.num_bad_epochs > self.patience:
@@ -759,11 +761,11 @@ class ReduceLrUpdateHook(LrUpdaterHook):
 
     def after_val_epoch(self, runner):
         if not self.by_epoch:
-            return 
-        cur_epoch = runner.epoch 
+            return
+        cur_epoch = runner.epoch
         if self.warmup is not None and self.warmup_by_epoch:
             if cur_epoch <= self.warmup_epochs:
-                return 
+                return
         if cur_epoch in self.periods and self.val_metric is not None:
             current = runner.outputs[self.val_metric]
             if self.is_better(current, self.best):
@@ -783,7 +785,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
             return
         if cur_iter in self.periods and self.val_metric is not None:
-            current = runner.outputs[self.val_metric] 
+            current = runner.outputs[self.val_metric]
             if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0

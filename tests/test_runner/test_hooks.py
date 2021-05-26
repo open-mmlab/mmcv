@@ -16,6 +16,7 @@ import pytest
 import torch
 import torch.nn as nn
 from torch.nn.init import constant_
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
@@ -25,6 +26,7 @@ from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
+                                          ReduceLrUpdateHook,
                                           StepLrUpdaterHook)
 
 
@@ -867,6 +869,52 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
             }, 6),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+@pytest.mark.parametrize('multi_optimziers', (True, False))
+def test_reduce_lr_update_hook(multi_optimziers):
+    """Test ReduceLrUpdateHook."""
+    with pytest.raises(TypeError):
+        # periods should be specified
+        ReduceLrUpdateHook()
+
+    with pytest.raises(AssertionError):
+        # periods should all be positive
+        ReduceLrUpdateHook(periods=[1, 2, -2])
+
+    with pytest.raises(ValueError):
+        # mode should be either 'min' or 'max'
+        ReduceLrUpdateHook(periods=[0, 1], mode='sum')
+
+    with pytest.raises(ValueError):
+        # factor should be < 1.0
+        ReduceLrUpdateHook(periods=[0, 1], mode='min', factor=1.0)
+
+    with pytest.raises(ValueError):
+        # threshold_mode should be 'rel' or 'abs'
+        ReduceLrUpdateHook(
+            periods=[0, 1], mode='min', factor=1.0, threshold_mode='sum')
+
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    hook = ReduceLROnPlateau(
+        periods=list(range(20)), mode='min', factor=0.1, patience=2)
+    runner.register_hook(hook)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        pass
+    else:
+        pass
 
 
 @pytest.mark.parametrize('log_model', (True, False))
