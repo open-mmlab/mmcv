@@ -238,8 +238,7 @@ class TruncNormalInit(BaseInit):
             Defaults to 1.
         a (float): The minimum cutoff value.
         b ( float): The maximum cutoff value.
-        bias (float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
