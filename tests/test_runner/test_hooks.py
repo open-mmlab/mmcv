@@ -15,8 +15,8 @@ from unittest.mock import MagicMock, call
 import pytest
 import torch
 import torch.nn as nn
+import torch.utils.data as Data
 from torch.nn.init import constant_
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
@@ -896,11 +896,22 @@ def test_reduce_lr_update_hook(multi_optimziers):
             periods=[0, 1], mode='min', factor=1.0, threshold_mode='sum')
 
     sys.modules['pavi'] = MagicMock()
-    loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    x = torch.ones((30, 1))
+    y = torch.ones((30, 1)) * 5
+    loader = DataLoader(Data.TensorDataset(x, y))
+    runner = _build_reduceLR_runner(
+        runner_type='IterBasedRunner',
+        multi_optimziers=multi_optimziers,
+        max_iters=30,
+        max_epochs=None)
 
-    hook = ReduceLROnPlateau(
-        periods=list(range(20)), mode='min', factor=0.1, patience=2)
+    hook = ReduceLrUpdateHook(
+        periods=list(range(30)),
+        mode='min',
+        factor=0.1,
+        patience=2,
+        threshold=0,
+        by_epoch=False)
     runner.register_hook(hook)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
@@ -912,9 +923,45 @@ def test_reduce_lr_update_hook(multi_optimziers):
 
     assert hasattr(hook, 'writer')
     if multi_optimziers:
-        pass
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.5,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.9,
+                    'momentum/model2': 0.95,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.05,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.9,
+                    'momentum/model2': 0.95,
+                }, 19),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.005000000000000001,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.9,
+                    'momentum/model2': 0.95,
+                }, 22)
+        ]
     else:
-        pass
+        calls = [
+            call('train', {
+                'learning_rate': 0.5,
+                'momentum': 0.9
+            }, 1),
+            call('train', {
+                'learning_rate': 0.05,
+                'momentum': 0.9
+            }, 19),
+            call('train', {
+                'learning_rate': 0.005000000000000001,
+                'momentum': 0.9
+            }, 22)
+        ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
 @pytest.mark.parametrize('log_model', (True, False))
@@ -1009,6 +1056,77 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
     return runner
 
 
+def _build_reduceLR_runner_without_hook(runner_type='EpochBasedRunner',
+                                        max_epochs=1,
+                                        max_iters=None,
+                                        multi_optimziers=False):
+
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.linear = nn.Linear(1, 1)
+            self.conv = nn.Conv2d(3, 3, 3)
+            torch.nn.init.constant_(self.linear.weight, 1)
+            torch.nn.init.constant_(self.linear.bias, 1)
+
+        def forward(self, x):
+            return self.linear(x)
+
+        def train_step(self, x, optimizer, **kwargs):
+            if isinstance(optimizer, dict):
+                for name, optim in optimizer.items():
+                    optim.zero_grad()
+            else:
+                optimizer.zero_grad()
+            loss_fn = torch.nn.MSELoss()
+            pred = self.forward(x[0])
+            # print('x[0]--',x[0],'pred--',pred,'x[1]--',x[1])
+            loss_ = loss_fn(pred, x[1])
+            loss_.backward()
+            if isinstance(optimizer, dict):
+                for name, optim in optimizer.items():
+                    optim.step()
+            else:
+                optimizer.step()
+            # print('x.shape',x[0].shape,x[1].shape) # 1 2  1 2
+            print('x[0]--', x[0], 'pred--', pred.data, 'x[1]--', x[1],
+                  'loss--', loss_)
+            print('weights(w): ', self.linear.weight.data, ' grad--',
+                  self.linear.weight.grad)
+            print('bias(b): ', self.linear.bias.data, ' grad --',
+                  self.linear.bias.grad)
+            return dict(loss=loss_)
+
+        def val_step(self, x, optimizer, **kwargs):
+            loss_fn = torch.nn.MSELoss()
+            return dict(loss=loss_fn(self.forward(x[0]), x[1]))
+
+    model = Model()
+
+    if multi_optimziers:
+        optimizer = {
+            'model1':
+            torch.optim.SGD(model.linear.parameters(), lr=0.5, momentum=0.9),
+            'model2':
+            torch.optim.SGD(model.conv.parameters(), lr=0.01, momentum=0.95),
+        }
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.5, momentum=0.9)
+
+    tmp_dir = tempfile.mkdtemp()
+    runner = build_runner(
+        dict(type=runner_type),
+        default_args=dict(
+            model=model,
+            work_dir=tmp_dir,
+            optimizer=optimizer,
+            logger=logging.getLogger(),
+            max_epochs=max_epochs,
+            max_iters=max_iters))
+    return runner
+
+
 def _build_demo_runner(runner_type='EpochBasedRunner',
                        max_epochs=1,
                        max_iters=None,
@@ -1021,6 +1139,24 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
 
     runner = _build_demo_runner_without_hook(runner_type, max_epochs,
                                              max_iters, multi_optimziers)
+
+    runner.register_checkpoint_hook(dict(interval=1))
+    runner.register_logger_hooks(log_config)
+    return runner
+
+
+def _build_reduceLR_runner(runner_type='EpochBasedRunner',
+                           max_epochs=1,
+                           max_iters=None,
+                           multi_optimziers=False):
+
+    log_config = dict(
+        interval=1, hooks=[
+            dict(type='TextLoggerHook'),
+        ])
+
+    runner = _build_reduceLR_runner_without_hook(runner_type, max_epochs,
+                                                 max_iters, multi_optimziers)
 
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)

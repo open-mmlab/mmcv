@@ -618,6 +618,44 @@ def format_param(name, optim, param):
 
 @HOOKS.register_module()
 class ReduceLrUpdateHook(LrUpdaterHook):
+    """ReduceLROnPlateau Scheduler.
+
+    Reduce learning rate when a metric has stopped improving. This scheduler
+    reads a metrics quantity and if no improvement is seen for a 'patience'
+    number of epochs, the learning rate is reduced.
+
+    Args:
+        periods (list[int]): Periods that taking the metric value in count.
+        val_metric (string): The key of the validation metric in outputs. If
+        val_metric is None, the metrics will be loss value.
+        mode (str): One of `min`, `max`. In `min` mode, lr will
+            be reduced when the quantity monitored has stopped
+            decreasing; in `max` mode it will be reduced when the
+            quantity monitored has stopped increasing. Default: 'min'.
+        factor (float): Factor by which the learning rate will be
+            reduced. new_lr = lr * factor. Default: 0.1.
+        patience (int): Number of epochs with no improvement after
+            which learning rate will be reduced. For example, if
+            `patience = 2`, then we will ignore the first 2 epochs
+            with no improvement, and will only decrease the LR after the
+            3rd epoch if the loss still hasn't improved then.
+            Default: 10.
+        threshold (float): Threshold for measuring the new optimum,
+            to only focus on significant changes. Default: 1e-4.
+        threshold_mode (str): One of `rel`, `abs`. In `rel` mode,
+            dynamic_threshold = best * ( 1 + threshold ) in 'max'
+            mode or best * ( 1 - threshold ) in `min` mode.
+            In `abs` mode, dynamic_threshold = best + threshold in
+            `max` mode or best - threshold in `min` mode. Default: 'rel'.
+        cooldown (int): Number of epochs to wait before resuming
+            normal operation after lr has been reduced. Default: 0.
+        min_lr (float, optional): Minimum LR value to keep. If LR after decay
+            is lower than `min_lr`, it will be clipped to this value.
+            Default: 0.
+        eps (float): Minimal decay applied to lr. If the difference
+            between new and old lr is smaller than eps, the update is
+            ignored. Default: 1e-8.
+    """
 
     def __init__(self,
                  periods,
@@ -633,7 +671,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                  **kwargs):
         if isinstance(periods, list):
             assert mmcv.is_list_of(periods, int)
-            assert all([s > 0 for s in periods])
+            assert all([s >= 0 for s in periods])
         else:
             raise TypeError('"periods" must be a list')
         self.periods = periods
@@ -676,6 +714,8 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             return regular_lr
 
     def get_regular_lr(self, runner):
+        if not self.regular_lr:
+            self.regular_lr = self.base_lr
         if isinstance(runner.optimizer, dict):
             lr_groups = {}
             for k in runner.optimizer.keys():
@@ -684,7 +724,6 @@ class ReduceLrUpdateHook(LrUpdaterHook):
                     for _regular_lr in self.regular_lr[k]
                 ]
                 lr_groups.update({k: _lr_group})
-                # self.regular_lr.update({k: _lr_group})
             return lr_groups
         else:
             return [
@@ -707,14 +746,11 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         if self.mode == 'min' and self.threshold_mode == 'rel':
             rel_epsilon = 1. - self.threshold
             return a < best * rel_epsilon
-
         elif self.mode == 'min' and self.threshold_mode == 'abs':
             return a < best - self.threshold
-
         elif self.mode == 'max' and self.threshold_mode == 'rel':
             rel_epsilon = 1. + self.threshold
             return a > best * rel_epsilon
-
         else:
             return a > best + self.threshold
 
@@ -730,7 +766,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             if cur_epoch <= self.warmup_epochs:
                 return
         if cur_epoch in self.periods and self.val_metric is None:
-            current = runner.outputs.loss
+            current = runner.outputs['loss']
             if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
@@ -740,6 +776,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             if self.in_cooldown:
                 self.cooldown_counter -= 1
                 self.num_bad_epochs = 0
+        print('epoch--', cur_epoch, ' lr:', self.regular_lr)
 
     def after_train_iter(self, runner):
         if self.by_epoch:
@@ -748,7 +785,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         if self.warmup_epochs is not None and cur_iter <= self.warmup_iters:
             return
         if cur_iter in self.periods and self.val_metric is None:
-            current = runner.outputs.loss
+            current = runner.outputs['loss']
             if self.is_better(current, self.best):
                 self.best = current
                 self.num_bad_epochs = 0
