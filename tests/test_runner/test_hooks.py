@@ -1081,7 +1081,6 @@ def _build_reduceLR_runner_without_hook(runner_type='EpochBasedRunner',
                 optimizer.zero_grad()
             loss_fn = torch.nn.MSELoss()
             pred = self.forward(x[0])
-            # print('x[0]--',x[0],'pred--',pred,'x[1]--',x[1])
             loss_ = loss_fn(pred, x[1])
             loss_.backward()
             if isinstance(optimizer, dict):
@@ -1089,13 +1088,6 @@ def _build_reduceLR_runner_without_hook(runner_type='EpochBasedRunner',
                     optim.step()
             else:
                 optimizer.step()
-            # print('x.shape',x[0].shape,x[1].shape) # 1 2  1 2
-            print('x[0]--', x[0], 'pred--', pred.data, 'x[1]--', x[1],
-                  'loss--', loss_)
-            print('weights(w): ', self.linear.weight.data, ' grad--',
-                  self.linear.weight.grad)
-            print('bias(b): ', self.linear.bias.data, ' grad --',
-                  self.linear.bias.grad)
             return dict(loss=loss_)
 
         def val_step(self, x, optimizer, **kwargs):
