@@ -151,7 +151,7 @@ class ConstantInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     constant_init(m, self.val, self.bias)
 
         module.apply(init)
@@ -189,7 +189,7 @@ class XavierInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
@@ -226,7 +226,7 @@ class NormalInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     normal_init(m, self.mean, self.std, self.bias)
 
         module.apply(init)
@@ -274,7 +274,7 @@ class TruncNormalInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     trunc_normal_init(m, self.mean, self.std, self.a, self.b,
                                       self.bias)
 
@@ -312,7 +312,7 @@ class UniformInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
@@ -367,7 +367,7 @@ class KaimingInit(BaseInit):
             else:
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
-                if bool(set(self.layer) & set([layername] + basesname)):
+                if len(set(self.layer) & set([layername] + basesname)):
                     kaiming_init(m, self.a, self.mode, self.nonlinearity,
                                  self.bias, self.distribution)
 
