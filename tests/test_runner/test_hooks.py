@@ -821,7 +821,7 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
         cyclic_times=1,
         step_ratio_up=0.5,
         anneal_strategy='linear',
-        gamma=0.8)
+        gamma=1)
     runner.register_hook(hook)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
