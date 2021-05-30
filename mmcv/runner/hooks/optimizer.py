@@ -100,8 +100,8 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             # wrap model mode to fp16
             wrap_fp16_model(runner.model)
             # resume from state dict
-            if 'fp16.loss_scaler' in runner.meta:
-                scaler_state_dict = runner.meta['fp16.loss_scaler']
+            if 'fp16' in runner.meta and 'loss_scaler' in runner.meta['fp16']:
+                scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
@@ -149,7 +149,8 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             self.loss_scaler.update(self._scale_update_param)
 
             # save state_dict of loss_scaler
-            runner.meta['fp16.loss_scaler'] = self.loss_scaler.state_dict()
+            runner.meta.setdefault(
+                'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()
 else:
 
     @HOOKS.register_module()
@@ -219,8 +220,8 @@ else:
             # convert model to fp16
             wrap_fp16_model(runner.model)
             # resume from state dict
-            if 'fp16.loss_scaler' in runner.meta:
-                scaler_state_dict = runner.meta['fp16.loss_scaler']
+            if 'fp16' in runner.meta and 'loss_scaler' in runner.meta['fp16']:
+                scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
@@ -291,4 +292,5 @@ else:
                                       f'to {self.loss_scaler.cur_scale}')
 
             # save state_dict of loss_scaler
-            runner.meta['fp16.loss_scaler'] = self.loss_scaler.state_dict()
+            runner.meta.setdefault(
+                'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()
