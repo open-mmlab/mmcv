@@ -802,7 +802,7 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
         # anneal_strategy must be one of "cos" or "linear"
         CyclicLrUpdaterHook(by_epoch=False, anneal_strategy='sin')
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AssertionError):
         # gamma must be in range (0, 1]
         CyclicLrUpdaterHook(by_epoch=False, gamma=0)
 
