@@ -55,7 +55,10 @@ class EvalHook(Hook):
 
     rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
     init_value_map = {'greater': -inf, 'less': inf}
-    greater_keys = ['acc', 'top', 'AR@', 'auc', 'precision', 'mAP']
+    greater_keys = [
+        'acc', 'top', 'AR@', 'auc', 'precision', 'mAP', 'mDice', 'mIoU',
+        'mAcc', 'aAcc'
+    ]
     less_keys = ['loss']
 
     def __init__(self,
