@@ -126,7 +126,8 @@ def test_nms():
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
-    nms = partial(nms, iou_threshold=0.7, offset=0)
+    nms = partial(
+        nms, iou_threshold=0.7, offset=0, score_threshold=0.1, max_num=100)
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
@@ -195,7 +196,7 @@ def test_batched_nms():
     fp16_mode = False
     max_workspace_size = 1 << 30
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
-    nms_cfg = dict(type='nms', iou_threshold=0.7)
+    nms_cfg = dict(type='nms', iou_threshold=0.7, score_threshold=0.1)
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
     idxs = torch.from_numpy(data['idxs']).cuda()
