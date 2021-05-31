@@ -279,6 +279,45 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
 
 
 @HOOKS.register_module()
+class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
+    """Flat + Cosine lr schedule.
+    https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128
+    """
+
+    def __init__(self,
+                 start_pct=0.75,
+                 min_lr=None,
+                 min_lr_ratio=None,
+                 **kwargs):
+        assert (min_lr is None) ^ (min_lr_ratio is None)
+        assert start_pct >= 0 and start_pct < 1
+        self.start_pct = start_pct
+        self.min_lr = min_lr
+        self.min_lr_ratio = min_lr_ratio
+        super(FlatCosineAnnealingLrUpdaterHook, self).__init__(**kwargs)
+
+    def get_lr(self, runner, base_lr):
+        if self.by_epoch:
+            start = round(runner.max_epochs * self.start_pct)
+            progress = runner.epoch - start
+            max_progress = runner.max_epochs - start
+        else:
+            start = round(runner.max_iters * self.start_pct)
+            progress = runner.iter - start
+            max_progress = runner.max_iters - start
+
+        if self.min_lr_ratio is not None:
+            target_lr = base_lr * self.min_lr_ratio
+        else:
+            target_lr = self.min_lr
+
+        if progress < 0:
+            return base_lr
+        else:
+            return annealing_cos(base_lr, target_lr, progress / max_progress)
+
+
+@HOOKS.register_module()
 class CosineRestartLrUpdaterHook(LrUpdaterHook):
     """Cosine annealing with restarts learning rate scheme.
 
