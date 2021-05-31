@@ -1,7 +1,7 @@
-Welcome to MMCV's documentation!
-=================================
+欢迎来到 MMCV 的中文文档！
+=============================
 
-You can switch between Chinese and English documents in the lower-left corner of the layout.
+您可以在页面左下角切换中英文文档。
 
 .. toctree::
    :maxdepth: 2
