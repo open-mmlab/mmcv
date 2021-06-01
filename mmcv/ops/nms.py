@@ -1,5 +1,4 @@
 import os
-import sys
 
 import numpy as np
 import torch
@@ -15,13 +14,27 @@ ext_module = ext_loader.load_ext(
 class NMSop(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, bboxes, scores, iou_threshold, offset):
+    def forward(ctx, bboxes, scores, iou_threshold, offset, score_threshold,
+                max_num):
+        is_filtering_by_score = score_threshold > 0
+        if is_filtering_by_score:
+            valid_mask = scores > score_threshold
+            bboxes, scores = bboxes[valid_mask], scores[valid_mask]
+            valid_inds = torch.nonzero(
+                valid_mask, as_tuple=False).squeeze(dim=1)
+
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+
+        if max_num > 0:
+            inds = inds[:max_num]
+        if is_filtering_by_score:
+            inds = valid_inds[inds]
         return inds
 
     @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, offset):
+    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
+                 max_num):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         # TensorRT nms plugin is aligned with original nms in ONNXRuntime
@@ -35,16 +48,28 @@ class NMSop(torch.autograd.Function):
                 offset_i=int(offset))
         else:
             from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            from ..onnx.onnx_utils.symbolic_helper import _size_helper
+
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-            max_output_per_class = g.op(
-                'Constant',
-                value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+
+            if max_num > 0:
+                max_num = g.op(
+                    'Constant',
+                    value_t=torch.tensor(max_num, dtype=torch.long))
+            else:
+                dim = g.op('Constant', value_t=torch.tensor(0))
+                max_num = _size_helper(g, bboxes, dim)
+            max_output_per_class = max_num
             iou_threshold = g.op(
                 'Constant',
                 value_t=torch.tensor([iou_threshold], dtype=torch.float))
+            score_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([score_threshold], dtype=torch.float))
             nms_out = g.op('NonMaxSuppression', boxes, scores,
-                           max_output_per_class, iou_threshold)
+                           max_output_per_class, iou_threshold,
+                           score_threshold)
             return squeeze(
                 g,
                 select(
@@ -90,7 +115,7 @@ class SoftNMSop(torch.autograd.Function):
 
 
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
-def nms(boxes, scores, iou_threshold, offset=0):
+def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
     """Dispatch to either CPU or GPU NMS implementations.
 
     The input can be either torch tensor or numpy array. GPU NMS will be used
@@ -102,6 +127,8 @@ def nms(boxes, scores, iou_threshold, offset=0):
         scores (torch.Tensor or np.ndarray): scores in shape (N, ).
         iou_threshold (float): IoU threshold for NMS.
         offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
+        score_threshold (float): score threshold for NMS.
+        max_num (int): maximum number of boxes after NMS.
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the \
@@ -141,7 +168,8 @@ def nms(boxes, scores, iou_threshold, offset=0):
         }
         inds = ext_module.nms(*indata_list, **indata_dict)
     else:
-        inds = NMSop.apply(boxes, scores, iou_threshold, offset)
+        inds = NMSop.apply(boxes, scores, iou_threshold, offset,
+                           score_threshold, max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -285,6 +313,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # Some type of nms would reweight the score, such as SoftNMS
         scores = dets[:, 4]
     else:
+        max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         # Some type of nms would reweight the score, such as SoftNMS
         scores_after_nms = scores.new_zeros(scores.size())
@@ -294,9 +323,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
             total_mask[mask[keep]] = True
             scores_after_nms[mask[keep]] = dets[:, -1]
         keep = total_mask.nonzero(as_tuple=False).view(-1)
+
         scores, inds = scores_after_nms[keep].sort(descending=True)
         keep = keep[inds]
         boxes = boxes[keep]
+
+        if max_num > 0:
+            keep = keep[:max_num]
+            boxes = boxes[:max_num]
+            scores = scores[:max_num]
 
     return torch.cat([boxes, scores[:, None]], -1), keep
 

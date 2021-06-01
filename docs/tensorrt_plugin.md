@@ -34,6 +34,7 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 |          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    |    master     |
 |          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    |    master     |
 | MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) |    master     |
+
 Notes
 
 - All plugins listed above are developed on TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0
