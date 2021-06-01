@@ -355,6 +355,95 @@ def test_cosine_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
+@pytest.mark.parametrize('multi_optimziers', (True, False))
+def test_flat_cosine_runner_hook(multi_optimziers):
+    """xdoctest -m tests/test_hooks.py test_flat_cosine_runner_hook."""
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+
+    hook_cfg = dict(
+        type='CosineAnnealingMomentumUpdaterHook',
+        min_momentum_ratio=0.99 / 0.95,
+        by_epoch=False,
+        warmup_iters=2,
+        warmup_ratio=0.9 / 0.95)
+    runner.register_hook_from_cfg(hook_cfg)
+
+    # add momentum LR scheduler
+    hook_cfg = dict(
+        type='FlatCosineAnnealingLrUpdaterHook',
+        by_epoch=False,
+        min_lr_ratio=0,
+        warmup_iters=2,
+        warmup_ratio=0.9,
+        start_pct=0.5)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.97,
+                    'momentum/model2': 0.9189473684210527,
+                }, 6),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.018090169943749474,
+                    'learning_rate/model2': 0.009045084971874737,
+                    'momentum/model1': 0.976180339887499,
+                    'momentum/model2': 0.9248024272618413
+                }, 7),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.0019098300562505265,
+                    'learning_rate/model2': 0.0009549150281252633,
+                    'momentum/model1': 0.9890211303259032,
+                    'momentum/model2': 0.9369673866245399,
+                }, 10)
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 1),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.97
+            }, 6),
+            call('train', {
+                'learning_rate': 0.018090169943749474,
+                'momentum': 0.976180339887499
+            }, 7),
+            call('train', {
+                    'learning_rate': 0.0019098300562505265,
+                    'momentum': 0.9890211303259032
+            }, 10)
+        ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
 @pytest.mark.parametrize('multi_optimziers, max_iters', [(True, 10), (True, 2),
                                                          (False, 10),
                                                          (False, 2)])

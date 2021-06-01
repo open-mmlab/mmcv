@@ -281,6 +281,7 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
 @HOOKS.register_module()
 class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
     """Flat + Cosine lr schedule.
+
     https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128
     """
 
