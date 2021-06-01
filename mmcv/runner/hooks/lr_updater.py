@@ -301,8 +301,9 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
                  min_lr_ratio=None,
                  **kwargs):
         assert (min_lr is None) ^ (min_lr_ratio is None)
-        assert start_pct >= 0 and start_pct < 1, \
-            '"start_pct" must be in range [0, 1)'
+        if start_pct < 0 or start_pct > 1 or not isinstance(start_pct, float):
+            raise ValueError('expected float between 0 and 1 start_pct, but '
+                             f'got {start_pct}')
         self.start_pct = start_pct
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
