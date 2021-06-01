@@ -626,7 +626,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
 
     Args:
         periods (list[int]): Periods that taking the metric value in count.
-        val_metric (string): The key of the validation metric in outputs. If
+        val_metric (string): Metrics to be evaluated. If
         val_metric is None, the metrics will be loss value.
         mode (str): One of `min`, `max`. In `min` mode, lr will
             be reduced when the quantity monitored has stopped
@@ -657,25 +657,24 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             ignored. Default: 1e-8.
     """
 
-    def __init__(self,
-                 periods,
-                 val_metric=None,
-                 mode='min',
-                 factor=0.1,
-                 patience=10,
-                 threshold=1e-4,
-                 threshold_mode='rel',
-                 cooldown=0,
-                 min_lr=0.,
-                 eps=1e-8,
-                 **kwargs):
-        if isinstance(periods, list):
-            assert mmcv.is_list_of(periods, int)
-            assert all([s >= 0 for s in periods])
-        else:
-            raise TypeError('"periods" must be a list')
+    def __init__(
+            self,
+            periods,
+            val_metric=None,  # 'mIoU', 'mAcc', 'aACC', 'mAP', 'mDice'...
+            mode='min',
+            factor=0.1,
+            patience=10,
+            threshold=1e-4,
+            threshold_mode='rel',
+            cooldown=0,
+            min_lr=0.,
+            eps=1e-8,
+            **kwargs):
+        assert isinstance(periods, list), '"periods" must be a list'
+        assert mmcv.is_list_of(periods, int) and all([s >= 0 for s in periods])
         self.periods = periods
         self.val_metric = val_metric
+
         if mode not in ['min', 'max']:
             raise ValueError(
                 'mode must be one of "min" or "max", instead got {mode}')
@@ -685,6 +684,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         self.factor = factor
         self.patience = patience
         self.threshold = threshold
+
         if threshold_mode not in ['rel', 'abs']:
             raise ValueError('thresh_mode must be one of "rel" or "abs",\
                  instead got {threshold_mode}')
