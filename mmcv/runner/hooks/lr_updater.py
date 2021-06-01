@@ -282,7 +282,17 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
 class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
     """Flat + Cosine lr schedule.
 
-    https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128
+    Modified from https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128 # noqa: E501
+
+    Args:
+        start_pct (float): When to start annealing the learning rate
+            after the percentage of the total training steps.
+            The value should be in range [0, 1).
+            Default: 0.75
+        min_lr (float): The minimum lr. Default: None.
+        min_lr_ratio (float): The ratio of minimum lr to the base lr.
+            Either `min_lr` or `min_lr_ratio` should be specified.
+            Default: None.
     """
 
     def __init__(self,
@@ -291,7 +301,8 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
                  min_lr_ratio=None,
                  **kwargs):
         assert (min_lr is None) ^ (min_lr_ratio is None)
-        assert start_pct >= 0 and start_pct < 1
+        assert start_pct >= 0 and start_pct < 1, \
+            '"start_pct" must be in range [0, 1)'
         self.start_pct = start_pct
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
