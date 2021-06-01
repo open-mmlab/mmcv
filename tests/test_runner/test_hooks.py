@@ -24,6 +24,7 @@ from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
+                                          FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 
@@ -361,6 +362,14 @@ def test_flat_cosine_runner_hook(multi_optimziers):
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    with pytest.raises(AssertionError):
+        # by_epoch should be False
+        FlatCosineAnnealingLrUpdaterHook(by_epoch=True)
+
+    with pytest.raises(ValueError):
+        # expected float between 0 and 1
+        FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1)
 
     # add momentum scheduler
 
