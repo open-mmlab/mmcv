@@ -367,17 +367,7 @@ def test_flat_cosine_runner_hook(multi_optimziers):
         # expected float between 0 and 1
         FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1)
 
-    # add momentum scheduler
-
-    hook_cfg = dict(
-        type='CosineAnnealingMomentumUpdaterHook',
-        min_momentum_ratio=0.99 / 0.95,
-        by_epoch=False,
-        warmup_iters=2,
-        warmup_ratio=0.9 / 0.95)
-    runner.register_hook_from_cfg(hook_cfg)
-
-    # add momentum LR scheduler
+    # add LR scheduler
     hook_cfg = dict(
         type='FlatCosineAnnealingLrUpdaterHook',
         by_epoch=False,
@@ -398,55 +388,39 @@ def test_flat_cosine_runner_hook(multi_optimziers):
     assert hasattr(hook, 'writer')
     if multi_optimziers:
         calls = [
-            call(
-                'train', {
-                    'learning_rate/model1': 0.02,
-                    'learning_rate/model2': 0.01,
-                    'momentum/model1': 0.95,
-                    'momentum/model2': 0.9,
-                }, 1),
-            call(
-                'train', {
-                    'learning_rate/model1': 0.02,
-                    'learning_rate/model2': 0.01,
-                    'momentum/model1': 0.97,
-                    'momentum/model2': 0.9189473684210527,
-                }, 6),
+            call('train', {
+                'learning_rate/model1': 0.02,
+                'learning_rate/model2': 0.01,
+            }, 1),
+            call('train', {
+                'learning_rate/model1': 0.02,
+                'learning_rate/model2': 0.01,
+            }, 6),
             call(
                 'train', {
                     'learning_rate/model1': 0.018090169943749474,
                     'learning_rate/model2': 0.009045084971874737,
-                    'momentum/model1': 0.976180339887499,
-                    'momentum/model2': 0.9248024272618413
                 }, 7),
             call(
                 'train', {
                     'learning_rate/model1': 0.0019098300562505265,
                     'learning_rate/model2': 0.0009549150281252633,
-                    'momentum/model1': 0.9890211303259032,
-                    'momentum/model2': 0.9369673866245399,
                 }, 10)
         ]
     else:
         calls = [
             call('train', {
                 'learning_rate': 0.02,
-                'momentum': 0.95
             }, 1),
             call('train', {
                 'learning_rate': 0.02,
-                'momentum': 0.97
             }, 6),
-            call(
-                'train', {
-                    'learning_rate': 0.018090169943749474,
-                    'momentum': 0.976180339887499
-                }, 7),
-            call(
-                'train', {
-                    'learning_rate': 0.0019098300562505265,
-                    'momentum': 0.9890211303259032
-                }, 10)
+            call('train', {
+                'learning_rate': 0.018090169943749474,
+            }, 7),
+            call('train', {
+                'learning_rate': 0.0019098300562505265,
+            }, 10)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
