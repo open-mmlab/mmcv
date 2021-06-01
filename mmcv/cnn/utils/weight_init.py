@@ -131,8 +131,7 @@ class ConstantInit(BaseInit):
 
     Args:
         val (int | float): the value to fill the weights in the module with
-        bias (int | float): the value to fill the bias or
-        define initialization type for bias. Defaults to 0.
+        bias (int | float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
@@ -166,8 +165,7 @@ class XavierInit(BaseInit):
 
     Args:
         gain (int | float): an optional scaling factor. Defaults to 1.
-        bias (int | float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (int | float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         distribution (str): distribution either be ``'normal'``
@@ -204,8 +202,7 @@ class NormalInit(BaseInit):
         mean (int | float):the mean of the normal distribution. Defaults to 0.
         std (int | float): the standard deviation of the normal distribution.
             Defaults to 1.
-        bias (int | float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (int | float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
@@ -244,8 +241,7 @@ class TruncNormalInit(BaseInit):
             Defaults to 1.
         a (float): The minimum cutoff value.
         b ( float): The maximum cutoff value.
-        bias (float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
@@ -291,8 +287,7 @@ class UniformInit(BaseInit):
             Defaults to 0.
         b (int | float): the upper bound of the uniform distribution.
             Defaults to 1.
-        bias (int | float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (int | float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
@@ -336,8 +331,7 @@ class KaimingInit(BaseInit):
         nonlinearity (str): the non-linear function (`nn.functional` name),
             recommended to use only with ``'relu'`` or ``'leaky_relu'`` .
             Defaults to 'relu'.
-        bias (int | float): the value to fill the bias or define
-            initialization type for bias. Defaults to 0.
+        bias (int | float): the value to fill the bias. Defaults to 0.
         bias_prob (float, optional): the probability for bias initialization.
             Defaults to None.
         distribution (str): distribution either be ``'normal'`` or
