@@ -432,14 +432,16 @@ def test_flat_cosine_runner_hook(multi_optimziers):
                 'learning_rate': 0.02,
                 'momentum': 0.97
             }, 6),
-            call('train', {
-                'learning_rate': 0.018090169943749474,
-                'momentum': 0.976180339887499
-            }, 7),
-            call('train', {
+            call(
+                'train', {
+                    'learning_rate': 0.018090169943749474,
+                    'momentum': 0.976180339887499
+                }, 7),
+            call(
+                'train', {
                     'learning_rate': 0.0019098300562505265,
                     'momentum': 0.9890211303259032
-            }, 10)
+                }, 10)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
