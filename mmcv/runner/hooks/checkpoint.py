@@ -24,8 +24,8 @@ class CheckpointHook(Hook):
             In some cases we want only the latest few checkpoints and would
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
-        save_last (bool): Whether to force the last checkpoint to be saved
-            regardless of interval.
+        save_last (bool, int): Whether to force the last several checkpoints to
+            be saved regardless of interval. Default: True.
         sync_buffer (bool): Whether to synchronize buffers in different
             gpus. Default: False.
     """
@@ -44,7 +44,7 @@ class CheckpointHook(Hook):
         self.save_optimizer = save_optimizer
         self.out_dir = out_dir
         self.max_keep_ckpts = max_keep_ckpts
-        self.save_last = save_last
+        self.save_last = int(save_last)
         self.args = kwargs
         self.sync_buffer = sync_buffer
 
@@ -58,10 +58,10 @@ class CheckpointHook(Hook):
 
         # save checkpoint for following cases:
         # 1. every ``self.interval`` epochs
-        # 2. reach the last epoch of training
-        if self.every_n_epochs(
-                runner, self.interval) or (self.save_last
-                                           and self.is_last_epoch(runner)):
+        # 2. reach the last `self.save_last` epochs of training
+        if self.every_n_epochs(runner, self.interval) or (
+                self.save_last
+                and self.near_last_epoch(runner, self.save_last)):
             runner.logger.info(
                 f'Saving checkpoint at {runner.epoch + 1} epochs')
             if self.sync_buffer:
@@ -109,10 +109,10 @@ class CheckpointHook(Hook):
 
         # save checkpoint for following cases:
         # 1. every ``self.interval`` iterations
-        # 2. reach the last iteration of training
-        if self.every_n_iters(
-                runner, self.interval) or (self.save_last
-                                           and self.is_last_iter(runner)):
+        # 2. reach the last `self.save_last` iterations of training
+        if self.every_n_iters(runner, self.interval) or (
+                self.save_last
+                and self.near_last_iter(runner, self.save_last)):
             runner.logger.info(
                 f'Saving checkpoint at {runner.iter + 1} iterations')
             if self.sync_buffer:

@@ -5,6 +5,7 @@ CommandLine:
     xdoctest tests/test_hooks.py zero
 """
 import logging
+import os
 import os.path as osp
 import re
 import shutil
@@ -51,6 +52,16 @@ def test_checkpoint_hook():
     runner.run([loader], [('train', 1)])
     assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
         runner.work_dir, 'iter_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+    # test save_last
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=3)
+    runner.meta = dict()
+    checkpointhook = CheckpointHook(interval=3, by_epoch=True, save_last=2)
+    runner.register_hook(checkpointhook)
+    runner.run([loader], [('train', 1)])
+    saved_ckpts = [f for f in os.listdir(runner.work_dir) if f[:5] == 'epoch']
+    assert set(saved_ckpts) == {'epoch_2.pth', 'epoch_3.pth'}
     shutil.rmtree(runner.work_dir)
 
 
