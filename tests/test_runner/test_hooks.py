@@ -364,8 +364,8 @@ def test_flat_cosine_runner_hook(multi_optimziers):
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
 
     with pytest.raises(ValueError):
-        # expected float between 0 and 1
-        FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1)
+        # start_pct: expected float between 0 and 1
+        FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1, min_lr_ratio=0)
 
     # add LR scheduler
     hook_cfg = dict(
