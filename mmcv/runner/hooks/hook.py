@@ -65,3 +65,9 @@ class Hook:
 
     def is_last_iter(self, runner):
         return runner.iter + 1 == runner._max_iters
+
+    def near_last_epoch(self, runner, num_epochs):
+        return runner.epoch + num_epochs >= runner._max_epochs
+
+    def near_last_iter(self, runner, num_iters):
+        return runner.iter + num_iters >= runner._max_iters
