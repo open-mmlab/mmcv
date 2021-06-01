@@ -661,14 +661,14 @@ class ReduceLrUpdateHook(LrUpdaterHook):
     def __init__(self,
                  periods: list,
                  val_metric: Optional[str] = None,
-                 mode: str = 'min',
-                 factor: float = 0.1,
-                 patience: int = 10,
-                 threshold: float = 1e-4,
-                 threshold_mode: str = 'rel',
-                 cooldown: int = 0,
-                 min_lr: float = 0.,
-                 eps: float = 1e-8,
+                 mode: Optional[str] = 'min',
+                 factor: Optional[float] = 0.1,
+                 patience: Optional[int] = 10,
+                 threshold: Optional[float] = 1e-4,
+                 threshold_mode: Optional[str] = 'rel',
+                 cooldown: Optional[int] = 0,
+                 min_lr: Optional[float] = 0.,
+                 eps: Optional[float] = 1e-8,
                  **kwargs):
         assert isinstance(periods, list), '"periods" must be a list'
         assert mmcv.is_list_of(periods, int) and all([s >= 0 for s in periods])
