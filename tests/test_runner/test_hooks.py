@@ -363,10 +363,6 @@ def test_flat_cosine_runner_hook(multi_optimziers):
     loader = DataLoader(torch.ones((10, 2)))
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
 
-    with pytest.raises(AssertionError):
-        # by_epoch should be False
-        FlatCosineAnnealingLrUpdaterHook(by_epoch=True)
-
     with pytest.raises(ValueError):
         # expected float between 0 and 1
         FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1)
