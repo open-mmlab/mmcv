@@ -33,7 +33,7 @@ def test_checkpoint_hook():
 
     # test epoch based runner
     loader = DataLoader(torch.ones((5, 2)))
-    runner = _build_demo_runner('EpochBasedRunner', max_epochs=1)
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
     runner.meta = dict()
     checkpointhook = CheckpointHook(interval=1, by_epoch=True)
     runner.register_hook(checkpointhook)
@@ -43,7 +43,7 @@ def test_checkpoint_hook():
     shutil.rmtree(runner.work_dir)
 
     # test iter based runner
-    runner = _build_demo_runner(
+    runner = _build_demo_runner_without_hook(
         'IterBasedRunner', max_iters=1, max_epochs=None)
     runner.meta = dict()
     checkpointhook = CheckpointHook(interval=1, by_epoch=False)
