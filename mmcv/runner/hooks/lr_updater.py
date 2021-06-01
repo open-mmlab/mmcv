@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import numbers
 from math import cos, pi
+from typing import Optional
 
 import mmcv
 from .hook import HOOKS, Hook
@@ -626,8 +627,8 @@ class ReduceLrUpdateHook(LrUpdaterHook):
 
     Args:
         periods (list[int]): Periods that taking the metric value in count.
-        val_metric (string): Metrics to be evaluated. If
-        val_metric is None, the metrics will be loss value.
+        val_metric (str, optional): Metrics to be evaluated. If val_metric is
+            None, the metrics will be loss value. Default: None.
         mode (str): One of `min`, `max`. In `min` mode, lr will
             be reduced when the quantity monitored has stopped
             decreasing; in `max` mode it will be reduced when the
@@ -657,19 +658,18 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             ignored. Default: 1e-8.
     """
 
-    def __init__(
-            self,
-            periods,
-            val_metric=None,  # 'mIoU', 'mAcc', 'aACC', 'mAP', 'mDice'...
-            mode='min',
-            factor=0.1,
-            patience=10,
-            threshold=1e-4,
-            threshold_mode='rel',
-            cooldown=0,
-            min_lr=0.,
-            eps=1e-8,
-            **kwargs):
+    def __init__(self,
+                 periods: list,
+                 val_metric: Optional[str] = None,
+                 mode: str = 'min',
+                 factor: float = 0.1,
+                 patience: int = 10,
+                 threshold: float = 1e-4,
+                 threshold_mode: str = 'rel',
+                 cooldown: int = 0,
+                 min_lr: float = 0.,
+                 eps: float = 1e-8,
+                 **kwargs):
         assert isinstance(periods, list), '"periods" must be a list'
         assert mmcv.is_list_of(periods, int) and all([s >= 0 for s in periods])
         self.periods = periods
