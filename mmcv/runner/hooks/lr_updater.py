@@ -289,8 +289,8 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
             after the percentage of the total training steps.
             The value should be in range [0, 1).
             Default: 0.75
-        min_lr (float): The minimum lr. Default: None.
-        min_lr_ratio (float): The ratio of minimum lr to the base lr.
+        min_lr (float, optional): The minimum lr. Default: None.
+        min_lr_ratio (float, optional): The ratio of minimum lr to the base lr.
             Either `min_lr` or `min_lr_ratio` should be specified.
             Default: None.
     """
