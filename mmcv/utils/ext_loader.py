@@ -16,22 +16,46 @@ else:
     from parrots import extension
 
     has_return_value_ops = [
-        'nms', 'softnms', 'nms_match', 'nms_rotated', 'top_pool_forward',
-        'top_pool_backward', 'bottom_pool_forward', 'bottom_pool_backward',
-        'left_pool_forward', 'left_pool_backward', 'right_pool_forward',
-        'right_pool_backward'
+        'nms',
+        'softnms',
+        'nms_match',
+        'nms_rotated',
+        'top_pool_forward',
+        'top_pool_backward',
+        'bottom_pool_forward',
+        'bottom_pool_backward',
+        'left_pool_forward',
+        'left_pool_backward',
+        'right_pool_forward',
+        'right_pool_backward',
+        'fused_bias_leakyrelu',
+        'upfirdn2d',
+        'ms_deform_attn_forward',
     ]
+
+    def get_fake_func(name):
+
+        def fake_func(*args, **kwargs):
+            raise RuntimeError(
+                '{} is not supported in parrots now'.format(name))
+
+        return fake_func
 
     def load_ext(name, funcs):
         ExtModule = namedtuple('ExtModule', funcs)
         ext_list = []
         lib_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         for fun in funcs:
-            if fun in has_return_value_ops:
-                ext_list.append(extension.load(fun, name, lib_dir=lib_root).op)
+            try:
+                ext_fun = extension.load(fun, name, lib_dir=lib_root)
+            except Exception:
+                ext_fun = get_fake_func(fun)
+                ext_list.append(ext_fun)
             else:
-                ext_list.append(
-                    extension.load(fun, name, lib_dir=lib_root).op_)
+                if fun in has_return_value_ops:
+                    ext_list.append(ext_fun.op)
+                else:
+                    ext_list.append(ext_fun.op_)
         return ExtModule(*ext_list)
 
 

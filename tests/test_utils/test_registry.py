@@ -46,11 +46,12 @@ def test_registry():
     assert CATS.get('PersianCat') is None
     assert 'PersianCat' not in CATS
 
-    @CATS.register_module(name='Siamese')
+    @CATS.register_module(name=['Siamese', 'Siamese2'])
     class SiameseCat:
         pass
 
     assert CATS.get('Siamese').__name__ == 'SiameseCat'
+    assert CATS.get('Siamese2').__name__ == 'SiameseCat'
 
     class SphynxCat:
         pass
@@ -68,6 +69,8 @@ def test_registry():
                  "<locals>.Munchkin'>, ")
     repr_str += ("'Siamese': <class 'test_registry.test_registry."
                  "<locals>.SiameseCat'>, ")
+    repr_str += ("'Siamese2': <class 'test_registry.test_registry."
+                 "<locals>.SiameseCat'>, ")
     repr_str += ("'Sphynx': <class 'test_registry.test_registry."
                  "<locals>.SphynxCat'>, ")
     repr_str += ("'Sphynx1': <class 'test_registry.test_registry."
@@ -78,7 +81,7 @@ def test_registry():
     assert repr(CATS) == repr_str
 
     # name type
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         CATS.register_module(name=7474741, module=SphynxCat)
 
     # the registered module should be a class
@@ -130,6 +133,57 @@ def test_registry():
         assert CATS.get('NewCat2').__name__ == 'NewCat2'
 
     # end: test old APIs
+
+
+def test_multi_scope_registry():
+    DOGS = mmcv.Registry('dogs')
+    assert DOGS.name == 'dogs'
+    assert DOGS.scope == 'test_registry'
+    assert DOGS.module_dict == {}
+    assert len(DOGS) == 0
+
+    @DOGS.register_module()
+    class GoldenRetriever:
+        pass
+
+    assert len(DOGS) == 1
+    assert DOGS.get('GoldenRetriever') is GoldenRetriever
+
+    HOUNDS = mmcv.Registry('dogs', parent=DOGS, scope='hound')
+
+    @HOUNDS.register_module()
+    class BloodHound:
+        pass
+
+    assert len(HOUNDS) == 1
+    assert HOUNDS.get('BloodHound') is BloodHound
+    assert DOGS.get('hound.BloodHound') is BloodHound
+    assert HOUNDS.get('hound.BloodHound') is BloodHound
+
+    LITTLE_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='little_hound')
+
+    @LITTLE_HOUNDS.register_module()
+    class Dachshund:
+        pass
+
+    assert len(LITTLE_HOUNDS) == 1
+    assert LITTLE_HOUNDS.get('Dachshund') is Dachshund
+    assert LITTLE_HOUNDS.get('hound.BloodHound') is BloodHound
+    assert HOUNDS.get('little_hound.Dachshund') is Dachshund
+    assert DOGS.get('hound.little_hound.Dachshund') is Dachshund
+
+    MID_HOUNDS = mmcv.Registry('dogs', parent=HOUNDS, scope='mid_hound')
+
+    @MID_HOUNDS.register_module()
+    class Beagle:
+        pass
+
+    assert MID_HOUNDS.get('Beagle') is Beagle
+    assert HOUNDS.get('mid_hound.Beagle') is Beagle
+    assert DOGS.get('hound.mid_hound.Beagle') is Beagle
+    assert LITTLE_HOUNDS.get('hound.mid_hound.Beagle') is Beagle
+    assert MID_HOUNDS.get('hound.BloodHound') is BloodHound
+    assert MID_HOUNDS.get('hound.Dachshund') is None
 
 
 def test_build_from_cfg():

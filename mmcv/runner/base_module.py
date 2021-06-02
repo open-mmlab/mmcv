@@ -4,6 +4,8 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
+from mmcv import ConfigDict
+
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
@@ -20,10 +22,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         super(BaseModule, self).__init__()
         # define default value of init_cfg instead of hard code
-        # in init_weigt() function
+        # in init_weight() function
         self._is_init = False
-        if init_cfg is not None:
-            self.init_cfg = init_cfg
+        self.init_cfg = init_cfg
 
         # Backward compatibility in derived classes
         # if pretrained is not None:
@@ -35,24 +36,31 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     def is_init(self):
         return self._is_init
 
-    def init_weight(self):
+    def init_weights(self):
         """Initialize the weights."""
         from ..cnn import initialize
 
         if not self._is_init:
-            if hasattr(self, 'init_cfg'):
+            if self.init_cfg:
                 initialize(self, self.init_cfg)
-            for module in self.children():
-                if 'init_weight' in dir(module):
-                    module.init_weight()
+                if isinstance(self.init_cfg, (dict, ConfigDict)):
+                    # Avoid the parameters of the pre-training model
+                    # being overwritten by the init_weights
+                    # of the children.
+                    if self.init_cfg['type'] == 'Pretrained':
+                        return
+
+            for m in self.children():
+                if hasattr(m, 'init_weights'):
+                    m.init_weights()
             self._is_init = True
         else:
-            warnings.warn(f'init_weight of {self.__class__.__name__} has '
+            warnings.warn(f'init_weights of {self.__class__.__name__} has '
                           f'been called more than once.')
 
     def __repr__(self):
         s = super().__repr__()
-        if hasattr(self, 'init_cfg'):
+        if self.init_cfg:
             s += f'\ninit_cfg={self.init_cfg}'
         return s
 

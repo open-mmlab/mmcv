@@ -380,6 +380,32 @@ def new_full(g,
     return full(g, size, fill_value, dtype, layout, device, pin_memory)
 
 
+@parse_args('v', 'v', 'i', 'i', 'i')
+def grid_sampler(g,
+                 input,
+                 grid,
+                 interpolation_mode,
+                 padding_mode,
+                 align_corners=False):
+    return g.op(
+        'mmcv::grid_sampler',
+        input,
+        grid,
+        interpolation_mode_i=interpolation_mode,
+        padding_mode_i=padding_mode,
+        align_corners_i=align_corners)
+
+
+@parse_args('v', 'i')
+def cummax(g, input, dim):
+    return g.op('mmcv::cummax', input, dim_i=dim, outputs=2)
+
+
+@parse_args('v', 'i')
+def cummin(g, input, dim):
+    return g.op('mmcv::cummin', input, dim_i=dim, outputs=2)
+
+
 def register_extra_symbolics(opset=11):
     register_op('one_hot', one_hot, '', opset)
     register_op('im2col', im2col, '', opset)
@@ -404,3 +430,6 @@ def register_extra_symbolics(opset=11):
     register_op('upsample_trilinear3d', upsample_trilinear3d, '', opset)
     register_op('upsample_bicubic2d', upsample_bicubic2d, '', opset)
     register_op('new_full', new_full, '', opset)
+    register_op('grid_sampler', grid_sampler, '', opset)
+    register_op('cummax', cummax, '', opset)
+    register_op('cummin', cummin, '', opset)

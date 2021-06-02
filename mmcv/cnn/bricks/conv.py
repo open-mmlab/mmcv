@@ -14,7 +14,7 @@ def build_conv_layer(cfg, *args, **kwargs):
     Args:
         cfg (None or dict): The conv layer config, which should contain:
             - type (str): Layer type.
-            - layer args: Args needed to instantiate an activation layer.
+            - layer args: Args needed to instantiate an conv layer.
         args (argument list): Arguments passed to the `__init__`
             method of the corresponding conv layer.
         kwargs (keyword arguments): Keyword arguments passed to the `__init__`
