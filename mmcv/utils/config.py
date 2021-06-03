@@ -275,11 +275,19 @@ class Config:
             # check if users specify a wrong suffix for python
             warnings.warn(
                 'Please check "file_format", the file format may be .py')
-
-        with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
-            temp_file.write(cfg_str)
-            temp_file.flush()
-            cfg = Config.fromfile(temp_file.name)
+        if platform.system() == 'Windows':
+            # fix permission denied error.
+            from os import unlink
+            with tempfile.NamedTemporaryFile('w', suffix=file_format, delete=False) as temp_file:
+                temp_file.write(cfg_str)
+                temp_file.close()
+                cfg = Config.fromfile(temp_file.name)
+                unlink(temp_file.name)
+        else:
+            with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
+                temp_file.write(cfg_str)
+                temp_file.flush()
+                cfg = Config.fromfile(temp_file.name)
         return cfg
 
     @staticmethod
