@@ -70,6 +70,15 @@ class DeformConv2dFunction(Function):
         ctx.deform_groups = deform_groups
         ctx.im2col_step = im2col_step
 
+        # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
+        # amp won't cast the type of model (float32), but "offset" is cast
+        # to float16 by nn.Conv2d automatically, leading to the type
+        # mismatch with input (when it is float32) or weight.
+        # The flag for whether to use fp16 or amp is the type of "offset",
+        # we cast weight and input to temporarily support fp16 and amp
+        # whatever the pytorch version is.
+        input = input.type_as(offset)
+        weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, weight)
 
         output = input.new_empty(

@@ -11,7 +11,8 @@ from .progressbar import (ProgressBar, track_iter_progress,
                           track_parallel_progress, track_progress)
 from .testing import (assert_attrs_equal, assert_dict_contains_subset,
                       assert_dict_has_keys, assert_is_norm_layer,
-                      assert_keys_equal, assert_params_all_zeros)
+                      assert_keys_equal, assert_params_all_zeros,
+                      check_python_script)
 from .timer import Timer, TimerError, check_time
 from .version_utils import digit_version, get_git_hash
 
@@ -28,7 +29,7 @@ except ImportError:
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
         'digit_version', 'get_git_hash', 'import_modules_from_strings',
         'assert_dict_contains_subset', 'assert_attrs_equal',
-        'assert_dict_has_keys', 'assert_keys_equal'
+        'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script'
     ]
 else:
     from .env import collect_env
@@ -57,5 +58,5 @@ else:
         'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena',
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
-        'assert_params_all_zeros'
+        'assert_params_all_zeros', 'check_python_script'
     ]
