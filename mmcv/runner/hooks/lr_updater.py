@@ -629,31 +629,31 @@ class ReduceLrUpdateHook(LrUpdaterHook):
         periods (list[int]): Periods that taking the metric value in count.
         val_metric (str, optional): Metrics to be evaluated. If val_metric is
             None, the metrics will be loss value. Default: None.
-        mode (str): One of `min`, `max`. In `min` mode, lr will
+        mode (str, optional): One of `min`, `max`. In `min` mode, lr will
             be reduced when the quantity monitored has stopped
             decreasing; in `max` mode it will be reduced when the
             quantity monitored has stopped increasing. Default: 'min'.
-        factor (float): Factor by which the learning rate will be
+        factor (float, optional): Factor by which the learning rate will be
             reduced. new_lr = lr * factor. Default: 0.1.
-        patience (int): Number of epochs with no improvement after
+        patience (int, optional): Number of epochs with no improvement after
             which learning rate will be reduced. For example, if
             `patience = 2`, then we will ignore the first 2 epochs
             with no improvement, and will only decrease the LR after the
             3rd epoch if the loss still hasn't improved then.
             Default: 10.
-        threshold (float): Threshold for measuring the new optimum,
+        threshold (float, optional): Threshold for measuring the new optimum,
             to only focus on significant changes. Default: 1e-4.
-        threshold_mode (str): One of `rel`, `abs`. In `rel` mode,
+        threshold_mode (str, optional): One of `rel`, `abs`. In `rel` mode,
             dynamic_threshold = best * ( 1 + threshold ) in 'max'
             mode or best * ( 1 - threshold ) in `min` mode.
             In `abs` mode, dynamic_threshold = best + threshold in
             `max` mode or best - threshold in `min` mode. Default: 'rel'.
-        cooldown (int): Number of epochs to wait before resuming
+        cooldown (int, optional): Number of epochs to wait before resuming
             normal operation after lr has been reduced. Default: 0.
         min_lr (float, optional): Minimum LR value to keep. If LR after decay
             is lower than `min_lr`, it will be clipped to this value.
             Default: 0.
-        eps (float): Minimal decay applied to lr. If the difference
+        eps (float, optional): Minimal decay applied to lr. If the difference
             between new and old lr is smaller than eps, the update is
             ignored. Default: 1e-8.
     """
@@ -661,14 +661,14 @@ class ReduceLrUpdateHook(LrUpdaterHook):
     def __init__(self,
                  periods: list,
                  val_metric: Optional[str] = None,
-                 mode: Optional[str] = 'min',
-                 factor: Optional[float] = 0.1,
-                 patience: Optional[int] = 10,
-                 threshold: Optional[float] = 1e-4,
-                 threshold_mode: Optional[str] = 'rel',
-                 cooldown: Optional[int] = 0,
-                 min_lr: Optional[float] = 0.,
-                 eps: Optional[float] = 1e-8,
+                 mode: str = 'min',
+                 factor: float = 0.1,
+                 patience: int = 10,
+                 threshold: float = 1e-4,
+                 threshold_mode: str = 'rel',
+                 cooldown: int = 0,
+                 min_lr: float = 0.,
+                 eps: float = 1e-8,
                  **kwargs):
         assert isinstance(periods, list), '"periods" must be a list'
         assert mmcv.is_list_of(periods, int) and all([s >= 0 for s in periods])
@@ -679,9 +679,11 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             raise ValueError(
                 'mode must be one of "min" or "max", instead got {mode}')
         self.mode = mode
+
         if factor >= 1.0:
             raise ValueError('Factor should be < 1.0')
         self.factor = factor
+
         self.patience = patience
         self.threshold = threshold
 
@@ -689,6 +691,7 @@ class ReduceLrUpdateHook(LrUpdaterHook):
             raise ValueError('thresh_mode must be one of "rel" or "abs",\
                  instead got {threshold_mode}')
         self.threshold_mode = threshold_mode
+
         self.cooldown = cooldown
         self.cooldown_counter = 0
         self.best = None
