@@ -340,7 +340,6 @@ class DistEvalHook(EvalHook):
         broadcast_bn_buffer (bool): Whether to broadcast the
             buffer(running_mean and running_var) of rank 0 to other rank
             before evaluation. Default: True.
-        multi_
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
     """
