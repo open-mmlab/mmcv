@@ -6,6 +6,21 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class DvcliveLoggerHook(LoggerHook):
+    """Class to log metrics with dvclive.
+
+    It requires `dvclive`_ to be installed.
+
+    Args:
+        path (str): directory where dvclive will write TSV log files.
+        interval (int): Logging interval (every k iterations).
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+        reset_flag (bool): Whether to clear the output buffer after logging
+        by_epoch (bool): Whether EpochBasedRunner is used.
+
+    .. _dvclive:
+        https://dvc.org/doc/dvclive
+    """
 
     def __init__(self,
                  path,
@@ -13,21 +28,7 @@ class DvcliveLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=True,
                  by_epoch=True):
-        """Class to log metrics with dvclive.
 
-        It requires `dvclive`_ to be installed.
-
-        Args:
-            path (str): directory where dvclive will write TSV log files.
-            interval (int): Logging interval (every k iterations).
-            ignore_last (bool): Ignore the log of last iterations in each epoch
-                if less than `interval`.
-            reset_flag (bool): Whether to clear the output buffer after logging
-            by_epoch (bool): Whether EpochBasedRunner is used.
-
-        .. _dvclive:
-            https://dvc.org/doc/dvclive
-        """
         super(DvcliveLoggerHook, self).__init__(interval, ignore_last,
                                                 reset_flag, by_epoch)
         self.path = path
