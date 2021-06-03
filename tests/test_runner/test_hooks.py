@@ -57,7 +57,8 @@ def test_checkpoint_hook():
     # test save_last
     runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=3)
     runner.meta = dict()
-    checkpointhook = CheckpointHook(interval=3, by_epoch=True, save_last=2)
+    checkpointhook = CheckpointHook(
+        interval=3, by_epoch=True, save_last=True, num_last_ckpts=2)
     runner.register_hook(checkpointhook)
     runner.run([loader], [('train', 1)])
     saved_ckpts = [f for f in os.listdir(runner.work_dir) if f[:5] == 'epoch']
