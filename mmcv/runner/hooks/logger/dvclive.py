@@ -11,12 +11,16 @@ class DvcliveLoggerHook(LoggerHook):
     It requires `dvclive`_ to be installed.
 
     Args:
-        path (str): directory where dvclive will write TSV log files.
+        path (str): Directory where dvclive will write TSV log files.
         interval (int): Logging interval (every k iterations).
+            Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`.
-        reset_flag (bool): Whether to clear the output buffer after logging
+            Default: True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default: True.
         by_epoch (bool): Whether EpochBasedRunner is used.
+            Default: True.
 
     .. _dvclive:
         https://dvc.org/doc/dvclive
