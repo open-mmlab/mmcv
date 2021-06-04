@@ -62,14 +62,14 @@ def bilinear_grid_sample(im, grid, align_corners=False):
     x0, x1, y0, y1 = x0 + 1, x1 + 1, y0 + 1, y1 + 1
 
     # Clip coordinates to padded image size
-    x0[x0 < 0] = 0
-    x0[x0 > padded_w - 1] = padded_w - 1
-    x1[x1 < 0] = 0
-    x1[x1 > padded_w - 1] = padded_w - 1
-    y0[y0 < 0] = 0
-    y0[y0 > padded_h - 1] = padded_h - 1
-    y1[y1 < 0] = 0
-    y1[y1 > padded_h - 1] = padded_h - 1
+    x0 = torch.where(x0 < 0, 0, x0)
+    x0 = torch.where(x0 > padded_w - 1, padded_w - 1, x0)
+    x1 = torch.where(x1 < 0, 0, x1)
+    x1 = torch.where(x1 > padded_w - 1, padded_w - 1, x1)
+    y0 = torch.where(y0 < 0, 0, y0)
+    y0 = torch.where(y0 > padded_h - 1, padded_h - 1, y0)
+    y1 = torch.where(y1 < 0, 0, y1)
+    y1 = torch.where(y1 > padded_h - 1, padded_h - 1, y1)
 
     im_padded = im_padded.view(n, c, -1)
 
