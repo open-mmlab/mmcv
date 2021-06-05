@@ -112,6 +112,6 @@ img1 (左) and img2 (右)
 
 ![optical flow](_static/flow_img2toimg1.png)
 
-变换后的图像和真实图像的区别
+变换后的图像和真实图像的差异
 
 ![warpped image](_static/flow_warp_diff.png)
