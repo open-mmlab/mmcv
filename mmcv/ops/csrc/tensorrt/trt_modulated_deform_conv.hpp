@@ -1,5 +1,5 @@
-#ifndef TRT_DEFORM_CONV_HPP
-#define TRT_DEFORM_CONV_HPP
+#ifndef TRT_MODULATED_DEFORM_CONV_HPP
+#define TRT_MODULATED_DEFORM_CONV_HPP
 #include <cublas_v2.h>
 
 #include <memory>
@@ -8,21 +8,22 @@
 
 #include "trt_plugin_helper.hpp"
 
-class DeformableConvPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
+class ModulatedDeformableConvPluginDynamic
+    : public nvinfer1::IPluginV2DynamicExt {
  public:
-  DeformableConvPluginDynamic(const std::string &name,
-                              const nvinfer1::Dims &stride,
-                              const nvinfer1::Dims &padding,
-                              const nvinfer1::Dims &dilation,
-                              const int deformableGroup, const int group,
-                              int im2colStep);
+  ModulatedDeformableConvPluginDynamic(const std::string &name,
+                                       const nvinfer1::Dims stride,
+                                       const nvinfer1::Dims padding,
+                                       const nvinfer1::Dims dilation,
+                                       const int deformableGroup,
+                                       const int group);
 
-  DeformableConvPluginDynamic(const std::string name, const void *data,
-                              size_t length);
+  ModulatedDeformableConvPluginDynamic(const std::string name, const void *data,
+                                       size_t length);
 
-  DeformableConvPluginDynamic() = delete;
+  ModulatedDeformableConvPluginDynamic() = delete;
 
-  ~DeformableConvPluginDynamic();
+  ~ModulatedDeformableConvPluginDynamic();
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -74,7 +75,7 @@ class DeformableConvPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   nvinfer1::Dims mDilation;
   int mDeformableGroup;
   int mGroup;
-  int mIm2colStep;
+  bool mWithBias;
 
   cublasHandle_t m_cublas_handle;
 
@@ -89,9 +90,10 @@ class DeformableConvPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class DeformableConvPluginDynamicCreator : public nvinfer1::IPluginCreator {
+class ModulatedDeformableConvPluginDynamicCreator
+    : public nvinfer1::IPluginCreator {
  public:
-  DeformableConvPluginDynamicCreator();
+  ModulatedDeformableConvPluginDynamicCreator();
 
   const char *getPluginName() const override;
 
@@ -115,4 +117,4 @@ class DeformableConvPluginDynamicCreator : public nvinfer1::IPluginCreator {
   static std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
-#endif  // TRT_DEFORM_CONV_HPP
+#endif  // TRT_MODULATED_DEFORM_CONV_HPP

@@ -20,13 +20,12 @@ class ModulatedDeformConv2dFunction(Function):
     @staticmethod
     def symbolic(g, input, offset, mask, weight, bias, stride, padding,
                  dilation, groups, deform_groups):
+        input_tensors = [input, offset, mask, weight]
+        if bias is not None:
+            input_tensors.append(bias)
         return g.op(
-            'MMCVModulatedDeformConv2d',
-            input,
-            offset,
-            mask,
-            weight,
-            bias,
+            'mmcv::MMCVModulatedDeformConv2d',
+            *input_tensors,
             stride_i=stride,
             padding_i=padding,
             dilation_i=dilation,
