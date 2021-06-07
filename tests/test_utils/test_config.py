@@ -225,21 +225,22 @@ def test_merge_from_multiple_bases():
 
 
 def test_base_variables():
-    cfg_file = osp.join(data_path, 'config/t.py')
-    cfg = Config.fromfile(cfg_file)
-    assert isinstance(cfg, Config)
-    assert cfg.filename == cfg_file
-    # cfg.field
-    assert cfg.item1 == [1, 2]
-    assert cfg.item2.a == 0
-    assert cfg.item3 is False
-    assert cfg.item4 == 'test'
-    assert cfg.item5 == dict(a=0, b=1)
-    assert cfg.item6 == [dict(a=0), dict(b=1)]
-    assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
-    assert cfg.item8 == 't.py'
-    assert cfg.item9 == dict(a=0)
-    assert cfg.item10 == [3.1, 4.2, 5.3]
+    for file in ['t.py', 't.json', 't.yaml']:
+        cfg_file = osp.join(data_path, f'config/{file}')
+        cfg = Config.fromfile(cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        # cfg.field
+        assert cfg.item1 == [1, 2]
+        assert cfg.item2.a == 0
+        assert cfg.item3 is False
+        assert cfg.item4 == 'test'
+        assert cfg.item5 == dict(a=0, b=1)
+        assert cfg.item6 == [dict(a=0), dict(b=1)]
+        assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
+        assert cfg.item8 == file
+        assert cfg.item9 == dict(a=0)
+        assert cfg.item10 == [3.1, 4.2, 5.3]
 
 
 def test_merge_recursive_bases():
