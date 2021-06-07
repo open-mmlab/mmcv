@@ -2,7 +2,7 @@
     "_base_": [
         "./t.py"
     ],
-    "base": "haha",
+    "base": "base.item8",
     "item11": {{ base.item8 }},
     "item12": {{ base.item9 }},
     "item13": {{ base.item10 }},

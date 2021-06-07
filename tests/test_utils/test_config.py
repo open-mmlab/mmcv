@@ -249,6 +249,7 @@ def test_base_variables():
         assert isinstance(cfg, Config)
         assert cfg.filename == cfg_file
         # cfg.field
+        assert cfg.base == 'base.item8'
         assert cfg.item1 == [1, 2]
         assert cfg.item2.a == 0
         assert cfg.item3 is False
