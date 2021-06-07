@@ -165,9 +165,19 @@ item1 = 'a'
 item2 = dict(item3 = 'b')
 ```
 
+`config_g.py`
+
 ```python
 _base_ = ['./base.py']
 item = dict(a = {{ base.item1 }}, b = {{ base.item2.item3 }})
+```
+
+```python
+>>> cfg = Config.fromfile('./config_g.py')
+>>> print(cfg.pretty_text)
+item1 = 'a'
+item2 = dict(item3='b')
+item = dict(a='a', b='b')
 ```
 
 ### ProgressBar
