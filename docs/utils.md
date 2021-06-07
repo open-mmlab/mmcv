@@ -154,6 +154,22 @@ _base_ = ['./config_a.py', './config_e.py']
 ...      d='string')
 ```
 
+#### Reference variables from base
+
+You can reference variables defined in base using the following grammar.
+
+`base.py`
+
+```python
+item1 = 'a'
+item2 = dict(item3 = 'b')
+```
+
+```python
+_base_ = ['./base.py']
+item = dict(a = {{ base.item1 }}, b = {{ base.item2.item3 }})
+```
+
 ### ProgressBar
 
 If you want to apply a method to a list of items and track the progress, `track_progress`
