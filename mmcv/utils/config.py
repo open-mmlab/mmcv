@@ -143,6 +143,7 @@ class Config:
 
     @staticmethod
     def _substitute_base_vars(cfg, base_var_dict, base_cfg):
+        """Substitute variable strings to their actual values."""
         cfg = copy.deepcopy(cfg)
 
         if isinstance(cfg, dict):
@@ -192,7 +193,7 @@ class Config:
                                                    temp_config_file.name)
             else:
                 shutil.copyfile(filename, temp_config_file.name)
-            # Substitute base variables
+            # Substitute base variables from placeholders to strings
             base_var_dict = Config._pre_substitute_base_vars(
                 temp_config_file.name, temp_config_file.name)
 
@@ -239,7 +240,7 @@ class Config:
                     raise KeyError('Duplicate key is not allowed among bases')
                 base_cfg_dict.update(c)
 
-            # Subtitute base variables
+            # Subtitute base variables from strings to their actual values
             cfg_dict = Config._substitute_base_vars(cfg_dict, base_var_dict,
                                                     base_cfg_dict)
 
