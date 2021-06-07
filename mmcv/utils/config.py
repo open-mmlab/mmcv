@@ -164,6 +164,11 @@ class Config:
                 Config._substitute_base_vars(c, base_var_dict, base_cfg)
                 for c in cfg
             ]
+        elif isinstance(cfg, str) and cfg in base_var_dict:
+            new_v = base_cfg
+            for new_k in base_var_dict[cfg].split('.'):
+                new_v = new_v[new_k]
+            cfg = new_v
 
         return cfg
 
