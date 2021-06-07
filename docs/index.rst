@@ -3,6 +3,8 @@ Welcome to MMCV's documentation!
 
 You can switch between Chinese and English documents in the lower-left corner of the layout.
 
+.. mdinclude:: readme.md
+
 .. toctree::
    :maxdepth: 2
 
