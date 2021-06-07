@@ -26,8 +26,8 @@ class CheckpointHook(Hook):
             Default: -1, which means unlimited.
         save_last (bool): Whether to force the last several checkpoints to
             be saved regardless of interval. Default: True.
-        num_last_ckpts (int): How many last checkpoints to be saved if
-            ``save_last=True``. Default: 1.
+        num_last_ckpts (int): The number of the last several checkpoints to be
+            saved if ``save_last=True``. Default: 1.
         sync_buffer (bool): Whether to synchronize buffers in different
             gpus. Default: False.
     """
