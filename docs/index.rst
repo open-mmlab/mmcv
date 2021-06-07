@@ -22,6 +22,11 @@ Contents
    registry.md
    cnn.md
    ops.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Deployment
+
    deployment.rst
 
 .. toctree::
