@@ -1,11 +1,17 @@
-
-.. mdinclude:: readme.md
-
 Contents
 ========
 
 .. toctree::
    :maxdepth: 2
+   :caption: Getting started
+
+   introduction.md
+   installation.md
+   build.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Learning MMCV
 
    io.md
    image.md
@@ -16,9 +22,16 @@ Contents
    registry.md
    cnn.md
    ops.md
-   build.md
    deployment.rst
+
+.. toctree::
+   :caption: FAQ
+
    trouble_shooting.md
+
+.. toctree::
+   :caption: API Reference
+
    api.rst
 
 
