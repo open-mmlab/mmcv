@@ -1,12 +1,13 @@
 ## Runner
 
-The runner class is designed to manage the training. It eases the training process with less code demanded from users while staying flexible and configurable. The main features are as listed: 
+The runner class is designed to manage the training. It eases the training process with less code demanded from users while staying flexible and configurable. The main features are as listed:
 
 - Support `EpochBasedRunner` and `IterBasedRunner` for different scenarios.
 - Support customized workflow to allow switching between different modes while training. Currently, supported modes are train and val.
-- Enable extensibility through various Hooks, including hooks defined in MMCV and customized ones. 
+- Enable extensibility through various Hooks, including hooks defined in MMCV and customized ones.
 
 ## EpochBasedRunner
+
 As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, [('train', 2), ('val', 1)] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iters. Currently, MMDetection uses `EpochBasedRunner` by default.
 
 Let's take a look at its core logic:
@@ -39,6 +40,7 @@ def epoch_runner(self, data_loader, **kwargs):
 ```
 
 ## IterBasedRunner
+
 Different from `EpochBasedRunner`, workflow in `IterBasedRunner` should be set based on iterations. For example, [('train', 2), ('val', 1)] means running 2 iters for training and 1 iter for validation, iteratively. Currently, MMSegmentation uses `IterBasedRunner` by default.
 
 Let's take a look at its core logic:
@@ -58,10 +60,11 @@ while curr_iter < max_iters:
         for _ in range(iters):
             iter_runner(iter_loaders[i], **kwargs)
 ```
+
 Currently, we support 2 modes: train and val. Let's take a look at their core logic:
 
 ```python
-# Currently, epoch_runner could be either train or val
+# Currently, iter_runner could be either train or val
 def iter_runner(self, data_loader, **kwargs):
     # get batch data for 1 iter
     data_batch = next(data_loader)
@@ -71,11 +74,11 @@ def iter_runner(self, data_loader, **kwargs):
     self.call_hook('after_train(val)_iter')
 ```
 
-Other than the basic functionalities explained above, `EpochBasedRunner` and `IterBasedRunner` provide methods such as `resume`, `save_checkpoint` and `register_hook`. In case you are not familiar with the term Hook mentioned earlier, we also provide a [tutorial]() about it. Essntially, a hook is functionality to alter or augument the code behaviors through predefined api. It allows users to have their own code called under certain circumstances. It makes code extensible in a non-intrusive manner.
+Other than the basic functionalities explained above, `EpochBasedRunner` and `IterBasedRunner` provide methods such as `resume`, `save_checkpoint` and `register_hook`. In case you are not familiar with the term Hook mentioned earlier, we also provide a [tutorial]() about it. Essentially, a hook is functionality to alter or augment the code behaviors through predefined api. It allows users to have their own code called under certain circumstances. It makes code extensible in a non-intrusive manner.
 
 ## A Simple Example
 
-We will walk you through the usage of runner with a classification task. The following code only contains essential steps for demonstration purpose. Please see [the link]() for the complete code. The following steps are neccesary for any training tasks.
+We will walk you through the usage of runner with a classification task. The following code only contains essential steps for demonstration purposes. Please see [the link]() for the complete code. The following steps are necessary for any training tasks.
 
 **(1) Initialize dataloader, model, optimizer, etc.**
 
@@ -115,13 +118,13 @@ runner = build_runner(
 runner.register_training_hooks(
     # configs of learning rate，it is typically set as:
     # lr_config = dict(policy='step', step=[100, 150])
-    cfg.lr_config, 
+    cfg.lr_config,
     # configuration of optimizer, e.g. grad_clip
     optimizer_config,
     # configuration of saving checkpoints, it is typically set as:
     # checkpoint_config = dict(interval=1)，saving checkpoints every epochs
-    cfg.checkpoint_config, 
-    # configuration of logs 
+    cfg.checkpoint_config,
+    # configuration of logs
     cfg.log_config,
     ...)
 
@@ -152,6 +155,4 @@ Let's take `EpochBasedRunner` for example and go a little bit into details about
 - Say we want to put both train and val in the workflow, then we can set: workflow = [('train', 3), ('val',1)]. The runner will first execute train for 3 epochs and then switch to val mode and execute val for 1 epoch. The workflow will be repeated until the current epoch hit the max_epochs.
 - Workflow is highly flexible. Therefore, you can set workflow = [('val', 1), ('train',1)] if you would like the runner to validate first and train after.
 
-The code we demostrated above is already in `train.py` in MM repositories. Simply modify the corresponding keys in the configuration files and the script will execute expected workflow automatically.
-
-
+The code we demonstrated above is already in `train.py` in MM repositories. Simply modify the corresponding keys in the configuration files and the script will execute the expected workflow automatically.
