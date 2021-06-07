@@ -2,13 +2,13 @@
 
 The runner class is designed to manage the training. It eases the training process with less code demanded from users while staying flexible and configurable. The main features are as listed:
 
-- Support `EpochBasedRunner` and `IterBasedRunner` for different scenarios.
+- Support `EpochBasedRunner` and `IterBasedRunner` for different scenarios. Implementing customized runners is also allowed to meet customized needs.
 - Support customized workflow to allow switching between different modes while training. Currently, supported modes are train and val.
 - Enable extensibility through various Hooks, including hooks defined in MMCV and customized ones.
 
 ## EpochBasedRunner
 
-As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, [('train', 2), ('val', 1)] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iters. Currently, MMDetection uses `EpochBasedRunner` by default.
+As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, [('train', 2), ('val', 1)] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iterations. Currently, MMDetection uses `EpochBasedRunner` by default.
 
 Let's take a look at its core logic:
 
@@ -26,17 +26,18 @@ while curr_epoch < max_epochs:
             epoch_runner(data_loaders[i], **kwargs)
 ```
 
-Currently, we support 2 modes: train and val. Let's take a look at their core logic:
+Currently, we support 2 modes: train and val. Let's take train function for example and have a look at its core logic:
 
 ```python
 # Currently, epoch_runner could be either train or val
-def epoch_runner(self, data_loader, **kwargs):
+def train(self, data_loader, **kwargs):
     # traverse the dataset and get batch data for 1 epoch
     for i, data_batch in enumerate(data_loader):
-        self.call_hook('before_train(val)_iter')
-        self.run_iter(data_batch, train_mode=True or False, **kwargs)
-        self.call_hook('after_train(val)_iter')
-   self.call_hook('after_train(val)_epoch')
+        self.call_hook('before_train_iter')
+        # set train_mode as False in val function
+        self.run_iter(data_batch, train_mode=True, **kwargs)
+        self.call_hook('after_train_iter')
+   self.call_hook('after_train_epoch')
 ```
 
 ## IterBasedRunner
@@ -61,24 +62,24 @@ while curr_iter < max_iters:
             iter_runner(iter_loaders[i], **kwargs)
 ```
 
-Currently, we support 2 modes: train and val. Let's take a look at their core logic:
+Currently, we support 2 modes: train and val. Let's take val function for example and have a look at its core logic:
 
 ```python
 # Currently, iter_runner could be either train or val
-def iter_runner(self, data_loader, **kwargs):
+def val(self, data_loader, **kwargs):
     # get batch data for 1 iter
     data_batch = next(data_loader)
-    self.call_hook('before_train(val)_iter')
-    outputs = self.model.train(val)_step(data_batch, self.optimizer, **kwargs)
+    self.call_hook('before_val_iter')
+    outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
     self.outputs = outputs
-    self.call_hook('after_train(val)_iter')
+    self.call_hook('after_val_iter')
 ```
 
-Other than the basic functionalities explained above, `EpochBasedRunner` and `IterBasedRunner` provide methods such as `resume`, `save_checkpoint` and `register_hook`. In case you are not familiar with the term Hook mentioned earlier, we also provide a [tutorial]() about it. Essentially, a hook is functionality to alter or augment the code behaviors through predefined api. It allows users to have their own code called under certain circumstances. It makes code extensible in a non-intrusive manner.
+Other than the basic functionalities explained above, `EpochBasedRunner` and `IterBasedRunner` provide methods such as `resume`, `save_checkpoint` and `register_hook`. In case you are not familiar with the term Hook mentioned earlier, we will also provide a tutorial about it.(coming soon...) Essentially, a hook is functionality to alter or augment the code behaviors through predefined api. It allows users to have their own code called under certain circumstances. It makes code extensible in a non-intrusive manner.
 
 ## A Simple Example
 
-We will walk you through the usage of runner with a classification task. The following code only contains essential steps for demonstration purposes. Please see [the link]() for the complete code. The following steps are necessary for any training tasks.
+We will walk you through the usage of runner with a classification task. The following code only contains essential steps for demonstration purposes. The following steps are necessary for any training tasks.
 
 **(1) Initialize dataloader, model, optimizer, etc.**
 
