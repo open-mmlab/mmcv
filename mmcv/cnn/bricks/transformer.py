@@ -8,60 +8,9 @@ from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
-from .registry import (ATTENTION, DROPOUT_LAYERS, FEEDFORWARD_NETWORK,
-                       POSITIONAL_ENCODING, TRANSFORMER_LAYER,
-                       TRANSFORMER_LAYER_SEQUENCE)
-
-
-def drop_path(x, drop_prob=0., training=False):
-    """Drop paths (Stochastic Depth) per sample (when applied in main path of
-    residual blocks).
-
-    We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
-    """
-    if drop_prob == 0. or not training:
-        return x
-    keep_prob = 1 - drop_prob
-    shape = (x.shape[0], ) + (1, ) * (
-        x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
-    random_tensor = keep_prob + torch.rand(
-        shape, dtype=x.dtype, device=x.device)
-    output = x.div(keep_prob) * random_tensor.floor()
-    return output
-
-
-@DROPOUT_LAYERS.register_module()
-class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of
-    residual blocks).
-
-    We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
-
-    Args:
-        drop_prob (float): Probability of an element to
-            be zeroed. Default: 0.1
-    """
-
-    def __init__(self, drop_prob=0.1):
-        super(DropPath, self).__init__()
-        self.drop_prob = drop_prob
-
-    def forward(self, x):
-        return drop_path(x, self.drop_prob, self.training)
-
-
-@DROPOUT_LAYERS.register_module()
-class DropOut(nn.Dropout):
-
-    def __init__(self, drop_prob=0.5, inplace=False):
-        super().__init__(p=drop_prob, inplace=inplace)
-
-
-def build_dropout(cfg, default_args=None):
-    """Builder for drop out layers."""
-    return build_from_cfg(cfg, DROPOUT_LAYERS, default_args)
+from .drop import build_dropout
+from .registry import (ATTENTION, FEEDFORWARD_NETWORK, POSITIONAL_ENCODING,
+                       TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE)
 
 
 def build_positional_encoding(cfg, default_args=None):
@@ -97,7 +46,6 @@ def bnc_to_nbc(forward):
     def forward_wrapper(**kwargs):
         convert_keys = ('key', 'query', 'value')
         for key in kwargs.keys():
-
             if key in convert_keys:
                 kwargs[key] = kwargs[key].transpose(0, 1)
         attn_output, attn_output_weights = forward(**kwargs)
