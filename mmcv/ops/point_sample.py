@@ -8,8 +8,6 @@ import torch.nn.functional as F
 from torch.nn.modules.utils import _pair
 from torch.onnx.operators import shape_as_tensor
 
-from mmcv.ops import get_onnxruntime_op_path
-
 
 def bilinear_grid_sample(im, grid, align_corners=False):
     """Given an input and a flow-field grid, computes the output using input
@@ -87,6 +85,7 @@ def bilinear_grid_sample(im, grid, align_corners=False):
 
 
 def is_in_onnx_export_without_custom_ops():
+    from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     return torch.onnx.is_in_onnx_export(
     ) and not osp.exists(ort_custom_op_path)
