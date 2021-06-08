@@ -10,7 +10,7 @@ def drop_path(x, drop_prob=0., training=False):
     residual blocks).
 
     We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
     """
     if drop_prob == 0. or not training:
         return x
@@ -29,7 +29,7 @@ class DropPath(nn.Module):
     residual blocks).
 
     We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
 
     Args:
         drop_prob (float): Probability of an element to
