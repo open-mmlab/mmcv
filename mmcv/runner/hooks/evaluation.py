@@ -109,10 +109,6 @@ class EvalHook(Hook):
         self.eval_kwargs = eval_kwargs
         self.initial_flag = True
 
-        if self.save_best is not None:
-            self.best_ckpt_path = None
-            self._init_rule(rule, self.save_best)
-
         if test_fn is None:
             from mmcv.engine import single_gpu_test
             self.test_fn = single_gpu_test
@@ -130,6 +126,10 @@ class EvalHook(Hook):
         else:
             assert is_list_of(less_keys, str)
             self.less_keys = less_keys
+
+        if self.save_best is not None:
+            self.best_ckpt_path = None
+            self._init_rule(rule, self.save_best)
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -162,6 +162,9 @@ class EvalHook(Hook):
                 greater_keys = [key.lower() for key in self.greater_keys]
                 less_keys = [key.lower() for key in self.less_keys]
 
+                print(key_indicator)
+                print(greater_keys)
+                print(less_keys)
                 if key_indicator_lc in greater_keys:
                     rule = 'greater'
                 elif key_indicator_lc in less_keys:
@@ -371,10 +374,17 @@ class DistEvalHook(EvalHook):
                  save_best=None,
                  rule=None,
                  test_fn=None,
+                 greater_keys=None,
+                 less_keys=None,
                  broadcast_bn_buffer=True,
                  tmpdir=None,
                  gpu_collect=False,
                  **eval_kwargs):
+
+        if test_fn is None:
+            from mmcv.engine import multi_gpu_test
+            test_fn = multi_gpu_test
+
         super().__init__(
             dataloader,
             start=start,
@@ -383,7 +393,10 @@ class DistEvalHook(EvalHook):
             save_best=save_best,
             rule=rule,
             test_fn=test_fn,
+            greater_keys=greater_keys,
+            less_keys=less_keys,
             **eval_kwargs)
+
         self.broadcast_bn_buffer = broadcast_bn_buffer
         self.tmpdir = tmpdir
         self.gpu_collect = gpu_collect
@@ -410,13 +423,7 @@ class DistEvalHook(EvalHook):
         if tmpdir is None:
             tmpdir = osp.join(runner.work_dir, '.eval_hook')
 
-        if self.test_fn is None:
-            from mmcv.engine import multi_gpu_test
-            test_fn = multi_gpu_test
-        else:
-            test_fn = self.test_fn
-
-        results = test_fn(
+        results = self.test_fn(
             runner.model,
             self.dataloader,
             tmpdir=tmpdir,
