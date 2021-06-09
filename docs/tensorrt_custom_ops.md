@@ -372,7 +372,7 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the numbers of channels, inH and inW are the height and width of the data.</dd>
+<dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the number of channels, inH and inW are the height and width of the data.</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
 <dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
 <dt><tt>inputs[2]</tt>: T</dt>
