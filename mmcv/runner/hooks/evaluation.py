@@ -7,6 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
+from mmcv.utils import is_list_of
 from .hook import Hook
 
 
@@ -45,6 +46,12 @@ class EvalHook(Hook):
             dataloader, and return the test results. If ``None``, the default
             test function ``mmcv.engine.single_gpu_test`` will be used.
             (default: ``None``)
+        greater_keys (List[str] | None, optional): Metric keys that will be
+            inferred by 'greater' comparison rule rule. If ``None``,
+            _default_greater_keys will be used. (default: ``None``)
+        less_keys (List[str] | None, optional): Metric keys that will be
+            inferred by 'less' comparison rule. If ``None``, _default_less_keys
+            will be used. (default: ``None``)
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
@@ -59,11 +66,11 @@ class EvalHook(Hook):
 
     rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
     init_value_map = {'greater': -inf, 'less': inf}
-    greater_keys = [
+    _default_greater_keys = [
         'acc', 'top', 'AR@', 'auc', 'precision', 'mAP', 'mDice', 'mIoU',
         'mAcc', 'aAcc'
     ]
-    less_keys = ['loss']
+    _default_less_keys = ['loss']
 
     def __init__(self,
                  dataloader,
@@ -73,6 +80,8 @@ class EvalHook(Hook):
                  save_best=None,
                  rule=None,
                  test_fn=None,
+                 greater_keys=None,
+                 less_keys=None,
                  **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError(f'dataloader must be a pytorch DataLoader, '
@@ -104,7 +113,23 @@ class EvalHook(Hook):
             self.best_ckpt_path = None
             self._init_rule(rule, self.save_best)
 
-        self.test_fn = test_fn
+        if test_fn is None:
+            from mmcv.engine import single_gpu_test
+            self.test_fn = single_gpu_test
+        else:
+            self.test_fn = test_fn
+
+        if greater_keys is None:
+            self.greater_keys = self._default_greater_keys
+        else:
+            assert is_list_of(greater_keys, str)
+            self.greater_keys = greater_keys
+
+        if less_keys is None:
+            self.less_keys = self._default_less_keys
+        else:
+            assert is_list_of(less_keys, str)
+            self.less_keys = less_keys
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -194,13 +219,7 @@ class EvalHook(Hook):
         if not self._should_evaluate(runner):
             return
 
-        if self.test_fn is None:
-            from mmcv.engine import single_gpu_test
-            test_fn = single_gpu_test
-        else:
-            test_fn = self.test_fn
-
-        results = test_fn(runner.model, self.dataloader)
+        results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
         if self.save_best:
