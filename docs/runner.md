@@ -4,7 +4,7 @@ The runner class is designed to manage the training. It eases the training proce
 
 - Support `EpochBasedRunner` and `IterBasedRunner` for different scenarios. Implementing customized runners is also allowed to meet customized needs.
 - Support customized workflow to allow switching between different modes while training. Currently, supported modes are train and val.
-- Enable extensibility through various Hooks, including hooks defined in MMCV and customized ones.
+- Enable extensibility through various hooks, including hooks defined in MMCV and customized ones.
 
 ## EpochBasedRunner
 
@@ -20,19 +20,21 @@ while curr_epoch < max_epochs:
     for i, flow in enumerate(workflow):
         # mode(e.g. train) determines which function to run
         mode, epochs = flow
+        # epoch_runner will be either self.train() or self.val()
         epoch_runner = getattr(self, mode)
         # execute the corresponding function
         for _ in range(epochs):
             epoch_runner(data_loaders[i], **kwargs)
 ```
 
-Currently, we support 2 modes: train and val. Let's take train function for example and have a look at its core logic:
+Currently, we support 2 modes: train and val. Let's take a train function for example and have a look at its core logic:
 
 ```python
 # Currently, epoch_runner could be either train or val
 def train(self, data_loader, **kwargs):
     # traverse the dataset and get batch data for 1 epoch
     for i, data_batch in enumerate(data_loader):
+        # it will execute all before_train_iter function in the hooks registered. You may want to watch out for the order.
         self.call_hook('before_train_iter')
         # set train_mode as False in val function
         self.run_iter(data_batch, train_mode=True, **kwargs)
@@ -56,19 +58,21 @@ while curr_iter < max_iters:
     for i, flow in enumerate(workflow):
         # mode(e.g. train) determines which function to run
         mode, iters = flow
+        # epoch_runner will be either self.train() or self.val()
         iter_runner = getattr(self, mode)
         # execute the corresponding function
         for _ in range(iters):
             iter_runner(iter_loaders[i], **kwargs)
 ```
 
-Currently, we support 2 modes: train and val. Let's take val function for example and have a look at its core logic:
+Currently, we support 2 modes: train and val. Let's take a val function for example and have a look at its core logic:
 
 ```python
 # Currently, iter_runner could be either train or val
 def val(self, data_loader, **kwargs):
     # get batch data for 1 iter
     data_batch = next(data_loader)
+    # it will execute all before_val_iter function in the hooks registered. You may want to watch out for the order.
     self.call_hook('before_val_iter')
     outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
     self.outputs = outputs
