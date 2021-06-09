@@ -1,5 +1,4 @@
-_base_ = ['./u.py']
-base = 'base.item8'
+_base_ = base = ['./u.py']
 item21 = {{ base.item11 }}
 item22 = item21
 item23 = {{ base.item10 }}
