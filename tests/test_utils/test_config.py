@@ -277,6 +277,27 @@ def test_base_variables():
             }]],
             e=[1, 2])
 
+    # test reference assignment for py
+    cfg_file = osp.join(data_path, 'config/v.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.item21 == 't.py'
+    assert cfg.item22 == 't.py'
+    assert cfg.item23 == [3.1, 4.2, 5.3]
+    assert cfg.item24 == [3.1, 4.2, 5.3]
+    assert cfg.item25 == dict(
+        a=dict(b=[3.1, 4.2, 5.3]),
+        b=[[3.1, 4.2, 5.3]],
+        c=[[{
+            'e': 't.py'
+        }], [{
+            'a': 0
+        }, {
+            'b': 1
+        }]],
+        e='t.py')
+
 
 def test_merge_recursive_bases():
     cfg_file = osp.join(data_path, 'config/f.py')
