@@ -157,14 +157,12 @@ class EvalHook(Hook):
 
         if rule is None:
             if key_indicator != 'auto':
-                # use case-insensitive key indicator to infer the rule
+                # `_lc` here means we use the lower case of keys for
+                # case-insensitive matching
                 key_indicator_lc = key_indicator.lower()
                 greater_keys = [key.lower() for key in self.greater_keys]
                 less_keys = [key.lower() for key in self.less_keys]
 
-                print(key_indicator)
-                print(greater_keys)
-                print(less_keys)
                 if key_indicator_lc in greater_keys:
                     rule = 'greater'
                 elif key_indicator_lc in less_keys:
