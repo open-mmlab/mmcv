@@ -40,7 +40,7 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 
 @ATTENTION.register_module()
 class MultiheadAttention(BaseModule):
-    """A wrapper for Attention.
+    """A wrapper for ``torch.nn.MultiheadAttention``.
 
     This module implements MultiheadAttention with residual connection,
     and positional encoding  is also passed as input.
@@ -66,7 +66,7 @@ class MultiheadAttention(BaseModule):
                  num_heads,
                  attn_drop=0.,
                  proj_drop=0.,
-                 dropout_layer=dict(type='DropOut', drop_prob=0.),
+                 dropout_layer=dict(type='Dropout', drop_prob=0.),
                  init_cfg=None,
                  batch_first=False,
                  **kwargs):

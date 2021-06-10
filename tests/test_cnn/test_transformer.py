@@ -8,6 +8,13 @@ from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
 
 
 def test_multiheadattention():
+    MultiheadAttention(
+        embed_dims=5,
+        num_heads=5,
+        attn_drop=0,
+        proj_drop=0,
+        dropout_layer=dict(type='Dropout', drop_prob=0.),
+        batch_first=True)
     batch_dim = 2
     embed_dim = 5
     num_query = 100

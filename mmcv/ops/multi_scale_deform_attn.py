@@ -167,10 +167,12 @@ class MultiScaleDeformableAttention(BaseModule):
         im2col_step (int): The step used in image_to_column.
             Default: 64.
         dropout (float): A Dropout layer on `inp_residual`.
-            Default: 0..
+            Default: 0.1.
         batch_first (bool): Key, Query and Value are shape of
             (batch, n, embed_dim)
             or (n, batch, embed_dim). Default to False.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: None.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -221,9 +223,9 @@ class MultiScaleDeformableAttention(BaseModule):
                                            num_heads * num_levels * num_points)
         self.value_proj = nn.Linear(embed_dims, embed_dims)
         self.output_proj = nn.Linear(embed_dims, embed_dims)
-        self.init_weight()
+        self.init_weights()
 
-    def init_weight(self):
+    def init_weights(self):
         """Default initialization for Parameters of Module."""
         constant_init(self.sampling_offsets, 0.)
         thetas = torch.arange(
@@ -279,10 +281,10 @@ class MultiScaleDeformableAttention(BaseModule):
             key_padding_mask (Tensor): ByteTensor for `query`, with
                 shape [bs, num_key].
             spatial_shapes (Tensor): Spatial shape of features in
-                different level. With shape  (num_levels, 2),
-                last dimension represent (h, w).
+                different levels. With shape (num_levels, 2),
+                last dimension represents (h, w).
             level_start_index (Tensor): The start index of each level.
-                A tensor has shape (num_levels) and can be represented
+                A tensor has shape ``(num_levels, )`` and can be represented
                 as [0, h_0*w_0, h_0*w_0+h_1*w_1, ...].
 
         Returns:
@@ -304,13 +306,13 @@ class MultiScaleDeformableAttention(BaseModule):
             value = value.permute(1, 0, 2)
 
         bs, num_query, _ = query.shape
-        bs, num_key, _ = value.shape
-        assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_key
+        bs, num_value, _ = value.shape
+        assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
 
         value = self.value_proj(value)
         if key_padding_mask is not None:
             value = value.masked_fill(key_padding_mask[..., None], 0.0)
-        value = value.view(bs, num_key, self.num_heads, -1)
+        value = value.view(bs, num_value, self.num_heads, -1)
         sampling_offsets = self.sampling_offsets(query).view(
             bs, num_query, self.num_heads, self.num_levels, self.num_points, 2)
         attention_weights = self.attention_weights(query).view(
