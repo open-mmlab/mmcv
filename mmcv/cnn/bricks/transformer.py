@@ -104,6 +104,7 @@ class MultiheadAttention(BaseModule):
                 return forward_wrapper
 
             self.attn.forward = _bnc_to_nbc(self.attn.forward)
+
         self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
