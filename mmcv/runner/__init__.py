@@ -10,11 +10,11 @@ from .dist_utils import (allreduce_grads, allreduce_params, get_dist_info,
 from .epoch_based_runner import EpochBasedRunner, Runner
 from .fp16_utils import LossScaler, auto_fp16, force_fp32, wrap_fp16_model
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
-                    DistSamplerSeedHook, EMAHook, EvalHook, Fp16OptimizerHook,
-                    Hook, IterTimerHook, LoggerHook, LrUpdaterHook,
-                    MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                    PaviLoggerHook, SyncBuffersHook, TensorboardLoggerHook,
-                    TextLoggerHook, WandbLoggerHook)
+                    DistSamplerSeedHook, DvcliveLoggerHook, EMAHook, EvalHook,
+                    Fp16OptimizerHook, Hook, IterTimerHook, LoggerHook,
+                    LrUpdaterHook, MlflowLoggerHook, NeptuneLoggerHook,
+                    OptimizerHook, PaviLoggerHook, SyncBuffersHook,
+                    TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
 from .iter_based_runner import IterBasedRunner, IterLoader
 from .log_buffer import LogBuffer
 from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
@@ -29,11 +29,11 @@ __all__ = [
     'OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook', 'LoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
     'NeptuneLoggerHook', 'WandbLoggerHook', 'MlflowLoggerHook',
-    '_load_checkpoint', 'load_state_dict', 'load_checkpoint', 'weights_to_cpu',
-    'save_checkpoint', 'Priority', 'get_priority', 'get_host_info',
-    'get_time_str', 'obj_from_dict', 'init_dist', 'get_dist_info',
-    'master_only', 'OPTIMIZER_BUILDERS', 'OPTIMIZERS',
-    'DefaultOptimizerConstructor', 'build_optimizer',
+    'DvcliveLoggerHook', '_load_checkpoint', 'load_state_dict',
+    'load_checkpoint', 'weights_to_cpu', 'save_checkpoint', 'Priority',
+    'get_priority', 'get_host_info', 'get_time_str', 'obj_from_dict',
+    'init_dist', 'get_dist_info', 'master_only', 'OPTIMIZER_BUILDERS',
+    'OPTIMIZERS', 'DefaultOptimizerConstructor', 'build_optimizer',
     'build_optimizer_constructor', 'IterLoader', 'set_random_seed',
     'auto_fp16', 'force_fp32', 'wrap_fp16_model', 'Fp16OptimizerHook',
     'SyncBuffersHook', 'EMAHook', 'build_runner', 'RUNNERS', 'allreduce_grads',

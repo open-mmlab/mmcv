@@ -18,9 +18,9 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
-                         MlflowLoggerHook, NeptuneLoggerHook, PaviLoggerHook,
-                         WandbLoggerHook, build_runner)
+from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
+                         IterTimerHook, MlflowLoggerHook, NeptuneLoggerHook,
+                         PaviLoggerHook, WandbLoggerHook, build_runner)
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
@@ -920,6 +920,7 @@ def test_neptune_hook():
     sys.modules['neptune.new'] = MagicMock()
     runner = _build_demo_runner()
     hook = NeptuneLoggerHook()
+
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
@@ -929,6 +930,23 @@ def test_neptune_hook():
     hook.neptune.init.assert_called_with()
     hook.run['momentum'].log.assert_called_with(0.95, step=6)
     hook.run.stop.assert_called_with()
+
+
+def test_dvclive_hook(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    runner = _build_demo_runner()
+
+    (tmp_path / 'dvclive').mkdir()
+    hook = DvcliveLoggerHook(str(tmp_path / 'dvclive'))
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.dvclive.init.assert_called_with(str(tmp_path / 'dvclive'))
+    hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
+    hook.dvclive.log.assert_any_call('learning_rate', 0.02, step=6)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
