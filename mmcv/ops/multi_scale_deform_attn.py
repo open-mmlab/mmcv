@@ -247,8 +247,8 @@ class MultiScaleDeformableAttention(BaseModule):
 
     def forward(self,
                 query,
-                key,
-                value,
+                key=None,
+                value=None,
                 residual=None,
                 query_pos=None,
                 key_padding_mask=None,
