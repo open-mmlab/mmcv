@@ -4,7 +4,7 @@ import warnings
 import torch
 import torch.nn as nn
 
-from mmcv import ConfigDict
+from mmcv import ConfigDict, deprecated_api_warning
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
@@ -211,6 +211,7 @@ class FFN(BaseModule):
             Default: None.
     """
 
+    @deprecated_api_warning({'dropout': 'ffn_drop'}, cls_name='FFN')
     def __init__(self,
                  embed_dims=256,
                  feedforward_channels=1024,
@@ -224,13 +225,6 @@ class FFN(BaseModule):
         super(FFN, self).__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
-        if 'dropout' in kwargs:
-            warnings.warn('The arguments `dropout` in FFN '
-                          'has been deprecated, now you can independently '
-                          'set `ffn_drop`(float) '
-                          'and `dropout_layer`(dict) ')
-            ffn_drop = kwargs.pop('dropout')
-
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
