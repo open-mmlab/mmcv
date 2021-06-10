@@ -38,22 +38,6 @@ def build_transformer_layer_sequence(cfg, default_args=None):
     return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
 
 
-def bnc_to_nbc(forward):
-    """This function can adjust the shape of dataflow('key', 'query', 'value')
-    from batch_first (batch, num_query, embed_dims) to num_query_first
-    (num_query ,batch, embed_dims)"""
-
-    def forward_wrapper(**kwargs):
-        convert_keys = ('key', 'query', 'value')
-        for key in kwargs.keys():
-            if key in convert_keys:
-                kwargs[key] = kwargs[key].transpose(0, 1)
-        attn_output, attn_output_weights = forward(**kwargs)
-        return attn_output.transpose(0, 1), attn_output_weights
-
-    return forward_wrapper
-
-
 @ATTENTION.register_module()
 class MultiheadAttention(BaseModule):
     """A wrapper for Attention.
@@ -102,7 +86,24 @@ class MultiheadAttention(BaseModule):
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
         if self.batch_first:
-            self.attn.forward = bnc_to_nbc(self.attn.forward)
+
+            def _bnc_to_nbc(forward):
+                """This function can adjust the shape of dataflow('key',
+                'query', 'value') from batch_first (batch, num_query,
+                embed_dims) to num_query_first (num_query ,batch,
+                embed_dims)."""
+
+                def forward_wrapper(**kwargs):
+                    convert_keys = ('key', 'query', 'value')
+                    for key in kwargs.keys():
+                        if key in convert_keys:
+                            kwargs[key] = kwargs[key].transpose(0, 1)
+                    attn_output, attn_output_weights = forward(**kwargs)
+                    return attn_output.transpose(0, 1), attn_output_weights
+
+                return forward_wrapper
+
+            self.attn.forward = _bnc_to_nbc(self.attn.forward)
         self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()

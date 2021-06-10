@@ -32,8 +32,7 @@ class DropPath(nn.Module):
     https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
 
     Args:
-        drop_prob (float): Probability of an element to
-            be zeroed. Default: 0.1
+        drop_prob (float): Probability of the path to be zeroed. Default: 0.1
     """
 
     def __init__(self, drop_prob=0.1):
