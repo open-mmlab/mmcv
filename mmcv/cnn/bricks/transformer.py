@@ -42,7 +42,7 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 class MultiheadAttention(BaseModule):
     """A wrapper for ``torch.nn.MultiheadAttention``.
 
-    This module implements MultiheadAttention with residual connection,
+    This module implements MultiheadAttention with identity connection,
     and positional encoding  is also passed as input.
 
     Args:
@@ -109,11 +109,13 @@ class MultiheadAttention(BaseModule):
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
 
+    @deprecated_api_warning({'residual': 'identity'},
+                            cls_name='MultiheadAttention')
     def forward(self,
                 query,
                 key=None,
                 value=None,
-                residual=None,
+                identity=None,
                 query_pos=None,
                 key_pos=None,
                 attn_mask=None,
@@ -135,8 +137,8 @@ class MultiheadAttention(BaseModule):
             value (Tensor): The value tensor with same shape as `key`.
                 Same in `nn.MultiheadAttention.forward`. Defaults to None.
                 If None, the `key` will be used.
-            residual (Tensor): This tensor, with the same shape as x,
-                will be used for the residual link.
+            identity (Tensor): This tensor, with the same shape as x,
+                will be used for the identity link.
                 If None, `x` will be used. Defaults to None.
             query_pos (Tensor): The positional encoding for query, with
                 the same shape as `x`. If not None, it will
@@ -163,8 +165,8 @@ class MultiheadAttention(BaseModule):
             key = query
         if value is None:
             value = key
-        if residual is None:
-            residual = query
+        if identity is None:
+            identity = query
         if key_pos is None:
             if query_pos is not None:
                 # use query_pos if key_pos is not available
@@ -185,12 +187,12 @@ class MultiheadAttention(BaseModule):
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask)[0]
 
-        return residual + self.dropout_layer(self.proj_drop(out))
+        return identity + self.dropout_layer(self.proj_drop(out))
 
 
 @FEEDFORWARD_NETWORK.register_module()
 class FFN(BaseModule):
-    """Implements feed-forward networks (FFNs) with residual connection.
+    """Implements feed-forward networks (FFNs) with identity connection.
 
     Args:
         embed_dims (int): The feature dimension. Same as
@@ -203,15 +205,20 @@ class FFN(BaseModule):
             Default: dict(type='ReLU')
         ffn_drop (float, optional): Probability of an element to be
             zeroed in FFN. Default 0.0.
-        add_residual (bool, optional): Whether to add the
-            residual connection. Default: `True`.
+        add_identity (bool, optional): Whether to add the
+            identity connection. Default: `True`.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
 
-    @deprecated_api_warning({'dropout': 'ffn_drop'}, cls_name='FFN')
+    @deprecated_api_warning(
+        {
+            'dropout': 'ffn_drop',
+            'add_residual': 'add_identity'
+        },
+        cls_name='FFN')
     def __init__(self,
                  embed_dims=256,
                  feedforward_channels=1024,
@@ -219,7 +226,7 @@ class FFN(BaseModule):
                  act_cfg=dict(type='ReLU', inplace=True),
                  ffn_drop=0.,
                  dropout_layer=None,
-                 add_residual=True,
+                 add_identity=True,
                  init_cfg=None,
                  **kwargs):
         super(FFN, self).__init__(init_cfg)
@@ -244,19 +251,20 @@ class FFN(BaseModule):
         self.layers = Sequential(*layers)
         self.dropout_layer = build_dropout(
             dropout_layer) if dropout_layer else torch.nn.Identity()
-        self.add_residual = add_residual
+        self.add_identity = add_identity
 
-    def forward(self, x, residual=None):
+    @deprecated_api_warning({'residual': 'identity'}, cls_name='FFN')
+    def forward(self, x, identity=None):
         """Forward function for `FFN`.
 
         The function would add x to the output tensor if residue is None.
         """
         out = self.layers(x)
-        if not self.add_residual:
+        if not self.add_identity:
             return self.dropout_layer(out)
-        if residual is None:
-            residual = x
-        return residual + self.dropout_layer(out)
+        if identity is None:
+            identity = x
+        return identity + self.dropout_layer(out)
 
 
 @TRANSFORMER_LAYER.register_module()
@@ -433,7 +441,7 @@ class BaseTransformerLayer(BaseModule):
         norm_index = 0
         attn_index = 0
         ffn_index = 0
-        inp_residual = query
+        inp_identity = query
         if attn_masks is None:
             attn_masks = [None for _ in range(self.num_attn)]
         elif isinstance(attn_masks, torch.Tensor):
@@ -455,14 +463,14 @@ class BaseTransformerLayer(BaseModule):
                     query,
                     temp_key,
                     temp_value,
-                    inp_residual if self.pre_norm else None,
+                    inp_identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=query_pos,
                     attn_mask=attn_masks[attn_index],
                     key_padding_mask=query_key_padding_mask,
                     **kwargs)
                 attn_index += 1
-                inp_residual = query
+                inp_identity = query
 
             elif layer == 'norm':
                 query = self.norms[norm_index](query)
@@ -473,18 +481,18 @@ class BaseTransformerLayer(BaseModule):
                     query,
                     key,
                     value,
-                    inp_residual if self.pre_norm else None,
+                    inp_identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=key_pos,
                     attn_mask=attn_masks[attn_index],
                     key_padding_mask=key_padding_mask,
                     **kwargs)
                 attn_index += 1
-                inp_residual = query
+                inp_identity = query
 
             elif layer == 'ffn':
                 query = self.ffns[ffn_index](
-                    query, inp_residual if self.pre_norm else None)
+                    query, inp_identity if self.pre_norm else None)
                 ffn_index += 1
 
         return query
