@@ -31,7 +31,9 @@ def cast_tensor_type(inputs, src_type, dst_type):
     Returns:
         The same type with inputs, but all contained Tensors have been cast.
     """
-    if isinstance(inputs, torch.Tensor):
+    if isinstance(inputs, nn.Module):
+        return inputs
+    elif isinstance(inputs, torch.Tensor):
         return inputs.to(dst_type)
     elif isinstance(inputs, str):
         return inputs
@@ -375,6 +377,29 @@ class LossScaler:
                     self.scale_window == 0:
                 self.cur_scale *= self.scale_factor
         self.cur_iter += 1
+
+    def state_dict(self):
+        """Returns the state of the scaler as a :class:`dict`."""
+        return dict(
+            cur_scale=self.cur_scale,
+            cur_iter=self.cur_iter,
+            mode=self.mode,
+            last_overflow_iter=self.last_overflow_iter,
+            scale_factor=self.scale_factor,
+            scale_window=self.scale_window)
+
+    def load_state_dict(self, state_dict):
+        """Loads the loss_scaler state dict.
+
+        Args:
+           state_dict (dict): scaler state.
+        """
+        self.cur_scale = state_dict['cur_scale']
+        self.cur_iter = state_dict['cur_iter']
+        self.mode = state_dict['mode']
+        self.last_overflow_iter = state_dict['last_overflow_iter']
+        self.scale_factor = state_dict['scale_factor']
+        self.scale_window = state_dict['scale_window']
 
     @property
     def loss_scale(self):
