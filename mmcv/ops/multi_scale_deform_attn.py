@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd.function import Function, once_differentiable
 
+from mmcv import deprecated_api_warning
 from mmcv.cnn import constant_init, xavier_init
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.runner import BaseModule
@@ -166,7 +167,7 @@ class MultiScaleDeformableAttention(BaseModule):
             each query in each head. Default: 4.
         im2col_step (int): The step used in image_to_column.
             Default: 64.
-        dropout (float): A Dropout layer on `inp_residual`.
+        dropout (float): A Dropout layer on `inp_identity`.
             Default: 0.1.
         batch_first (bool): Key, Query and Value are shape of
             (batch, n, embed_dim)
@@ -245,11 +246,13 @@ class MultiScaleDeformableAttention(BaseModule):
         xavier_init(self.output_proj, distribution='uniform', bias=0.)
         self._is_init = True
 
+    @deprecated_api_warning({'residual': 'identity'},
+                            cls_name='MultiScaleDeformableAttention')
     def forward(self,
                 query,
                 key=None,
                 value=None,
-                residual=None,
+                identity=None,
                 query_pos=None,
                 key_padding_mask=None,
                 reference_points=None,
@@ -265,8 +268,9 @@ class MultiScaleDeformableAttention(BaseModule):
                 `(num_key, bs, embed_dims)`.
             value (Tensor): The value tensor with shape
                 `(num_key, bs, embed_dims)`.
-            residual (Tensor): The tensor used for addition, with the
-                same shape as `x`. Default None. If None, `x` will be used.
+            identity (Tensor): The tensor used for addition, with the
+                same shape as `query`. Default None. If None,
+                `query` will be used.
             query_pos (Tensor): The positional encoding for `query`.
                 Default: None.
             key_pos (Tensor): The positional encoding for `key`. Default
@@ -296,8 +300,8 @@ class MultiScaleDeformableAttention(BaseModule):
         if value is None:
             value = key
 
-        if residual is None:
-            inp_residual = query
+        if identity is None:
+            inp_identity = query
         if query_pos is not None:
             query = query + query_pos
         if not self.batch_first:
@@ -353,4 +357,4 @@ class MultiScaleDeformableAttention(BaseModule):
             # (num_query, bs ,embed_dims)
             output = output.permute(1, 0, 2)
 
-        return self.dropout(output) + inp_residual
+        return self.dropout(output) + inp_identity
