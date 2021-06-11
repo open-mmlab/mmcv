@@ -295,10 +295,10 @@ class MultiScaleDeformableAttention(BaseModule):
              Tensor: forwarded results with shape [num_query, bs, embed_dims].
         """
 
-        if key is None:
-            key = query
+        assert key is None, 'Key should be None in ' \
+                            '``MultiScaleDeformableAttention``'
         if value is None:
-            value = key
+            value = query
 
         if identity is None:
             identity = query
