@@ -50,8 +50,6 @@ class EpochBasedRunner(BaseRunner):
             self.run_iter(data_batch, train_mode=True, **kwargs)
             self.call_hook('after_train_iter')
             self._iter += 1
-            if i > 5:
-                break
 
         self.call_hook('after_train_epoch')
         self._epoch += 1
