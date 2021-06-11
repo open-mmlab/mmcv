@@ -54,9 +54,17 @@ def test_multiheadattention():
 
     identity = torch.ones_like(input_query_first)
 
+    # check deprecated arguments can be used normally
+
     assert torch.allclose(
         attn_query_first(
             input_query_first, key_query_first, residual=identity).sum(),
+        attn_batch_first(input_batch_first, key_batch_first).sum() +
+        identity.sum() - input_batch_first.sum())
+
+    assert torch.allclose(
+        attn_query_first(
+            input_query_first, key_query_first, identity=identity).sum(),
         attn_batch_first(input_batch_first, key_batch_first).sum() +
         identity.sum() - input_batch_first.sum())
 
