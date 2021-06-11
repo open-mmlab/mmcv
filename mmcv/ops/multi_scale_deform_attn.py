@@ -301,7 +301,7 @@ class MultiScaleDeformableAttention(BaseModule):
             value = key
 
         if identity is None:
-            inp_identity = query
+            identity = query
         if query_pos is not None:
             query = query + query_pos
         if not self.batch_first:
@@ -357,4 +357,4 @@ class MultiScaleDeformableAttention(BaseModule):
             # (num_query, bs ,embed_dims)
             output = output.permute(1, 0, 2)
 
-        return self.dropout(output) + inp_identity
+        return self.dropout(output) + identity
