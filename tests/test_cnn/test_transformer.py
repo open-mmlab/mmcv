@@ -52,30 +52,35 @@ def test_multiheadattention():
         attn_query_first(input_query_first, key_query_first).sum(),
         attn_batch_first(input_batch_first, key_batch_first).sum())
 
-    residue = torch.ones_like(input_query_first)
+    identity = torch.ones_like(input_query_first)
 
     assert torch.allclose(
-        attn_query_first(input_query_first, key_query_first,
-                         residual=residue).sum(),
+        attn_query_first(
+            input_query_first, key_query_first, residual=identity).sum(),
         attn_batch_first(input_batch_first, key_batch_first).sum() +
-        residue.sum() - input_batch_first.sum())
+        identity.sum() - input_batch_first.sum())
 
     attn_query_first(
-        input_query_first, key_query_first, identity=residue).sum(),
+        input_query_first, key_query_first, identity=identity).sum(),
 
 
 def test_ffn():
     with pytest.raises(AssertionError):
         # num_fcs should be no less than 2
         FFN(num_fcs=1)
-    FFN(dropout=0, add_identity=True)
-    ffn = FFN(dropout=0, add_residual=True)
+    FFN(dropout=0, add_residual=True)
+    ffn = FFN(dropout=0, add_identity=True)
+
     input_tensor = torch.rand(2, 20, 256)
     input_tensor_nbc = input_tensor.transpose(0, 1)
     assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
     residual = torch.rand_like(input_tensor)
     torch.allclose(
         ffn(input_tensor, residual=residual).sum(),
+        ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
+
+    torch.allclose(
+        ffn(input_tensor, identity=residual).sum(),
         ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
 
 
@@ -105,6 +110,8 @@ def test_basetransformerlayer():
         operation_order=operation_order,
         batch_first=True)
     assert baselayer.attentions[0].batch_first
+    in_tensor = torch.rand(2, 10, 256)
+    baselayer(in_tensor)
 
 
 def test_transformerlayersequence():

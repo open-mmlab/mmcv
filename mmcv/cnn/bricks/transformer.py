@@ -441,7 +441,7 @@ class BaseTransformerLayer(BaseModule):
         norm_index = 0
         attn_index = 0
         ffn_index = 0
-        inp_identity = query
+        identity = query
         if attn_masks is None:
             attn_masks = [None for _ in range(self.num_attn)]
         elif isinstance(attn_masks, torch.Tensor):
@@ -463,14 +463,14 @@ class BaseTransformerLayer(BaseModule):
                     query,
                     temp_key,
                     temp_value,
-                    inp_identity if self.pre_norm else None,
+                    identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=query_pos,
                     attn_mask=attn_masks[attn_index],
                     key_padding_mask=query_key_padding_mask,
                     **kwargs)
                 attn_index += 1
-                inp_identity = query
+                identity = query
 
             elif layer == 'norm':
                 query = self.norms[norm_index](query)
@@ -481,18 +481,18 @@ class BaseTransformerLayer(BaseModule):
                     query,
                     key,
                     value,
-                    inp_identity if self.pre_norm else None,
+                    identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=key_pos,
                     attn_mask=attn_masks[attn_index],
                     key_padding_mask=key_padding_mask,
                     **kwargs)
                 attn_index += 1
-                inp_identity = query
+                identity = query
 
             elif layer == 'ffn':
                 query = self.ffns[ffn_index](
-                    query, inp_identity if self.pre_norm else None)
+                    query, identity if self.pre_norm else None)
                 ffn_index += 1
 
         return query
