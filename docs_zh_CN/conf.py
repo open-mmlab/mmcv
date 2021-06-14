@@ -27,8 +27,8 @@ __version__ = locals()['__version__']
 # -- Project information -----------------------------------------------------
 
 project = 'mmcv'
-copyright = '2018-2019, Kai Chen'
-author = 'Kai Chen'
+copyright = '2018-2021, OpenMMLab'
+author = 'MMCV Authors'
 
 # The short X.Y version
 version = __version__
