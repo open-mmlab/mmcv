@@ -14,17 +14,14 @@ from .registry import (ATTENTION, FEEDFORWARD_NETWORK, POSITIONAL_ENCODING,
 
 
 # Avoid bc-breaking of import MultiScaleDeformableAttention
-class DummyMultiScaleDeformableAttention:
+class MultiScaleDeformableAttention:
 
     def __init__(self, *args, **kwargs):
         raise ImportError(
             'MultiScaleDeformableAttention has been moved to'
-            '``mmcv.ops.multi_scale_deform_attn``, Please change to '
+            '``mmcv.ops.multi_scale_deform_attn``, Please use '
             ' ``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` '  # noqa  E501
         )
-
-
-MultiScaleDeformableAttention = DummyMultiScaleDeformableAttention
 
 
 def build_positional_encoding(cfg, default_args=None):
