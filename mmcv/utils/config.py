@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
+import os
 import os.path as osp
 import platform
 import shutil
@@ -9,7 +10,6 @@ import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
-from os import unlink
 
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
@@ -280,7 +280,7 @@ class Config:
                 'w', suffix=file_format, delete=False) as temp_file:
             temp_file.write(cfg_str)
         cfg = Config.fromfile(temp_file.name)
-        unlink(temp_file.name)
+        os.unlink(temp_file.name)
         return cfg
 
     @staticmethod
