@@ -7,7 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
-from mmcv.utils import is_list_of
+from mmcv.utils import is_seq_of
 from .hook import Hook
 
 
@@ -118,13 +118,17 @@ class EvalHook(Hook):
         if greater_keys is None:
             self.greater_keys = self._default_greater_keys
         else:
-            assert is_list_of(greater_keys, str)
+            if not isinstance(greater_keys, (list, tuple)):
+                greater_keys = (greater_keys, )
+            assert is_seq_of(greater_keys, str)
             self.greater_keys = greater_keys
 
         if less_keys is None:
             self.less_keys = self._default_less_keys
         else:
-            assert is_list_of(less_keys, str)
+            if not isinstance(less_keys, (list, tuple)):
+                less_keys = (less_keys, )
+            assert is_seq_of(less_keys, str)
             self.less_keys = less_keys
 
         if self.save_best is not None:
