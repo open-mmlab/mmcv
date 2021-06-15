@@ -280,7 +280,7 @@ class Config:
                 'w', suffix=file_format, delete=False) as temp_file:
             temp_file.write(cfg_str)
         cfg = Config.fromfile(temp_file.name)
-        os.unlink(temp_file.name)
+        os.remove(temp_file.name)
         return cfg
 
     @staticmethod
