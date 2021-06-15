@@ -16,11 +16,12 @@ from .registry import (ATTENTION, FEEDFORWARD_NETWORK, POSITIONAL_ENCODING,
 try:
     from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention  # noqa F401
     warnings.warn(
-        '``MultiScaleDeformableAttention`` has been moved to '
-        '``mmcv.ops.multi_scale_deform_attn``, please change original path '  # noqa E501
-        '``from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention`` '  # noqa E501
-        'to ``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` '  # noqa E501
-    )
+        ImportWarning(
+            '``MultiScaleDeformableAttention`` has been moved to '
+            '``mmcv.ops.multi_scale_deform_attn``, please change original path '  # noqa E501
+            '``from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention`` '  # noqa E501
+            'to ``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` '  # noqa E501
+        ))
 
 except ImportError:
     warnings.warn('Fail to import ``MultiScaleDeformableAttention`` from '
