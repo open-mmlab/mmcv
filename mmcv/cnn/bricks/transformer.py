@@ -12,9 +12,24 @@ from .drop import build_dropout
 from .registry import (ATTENTION, FEEDFORWARD_NETWORK, POSITIONAL_ENCODING,
                        TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE)
 
-# Avoid BC-breaking of importing MultiScaleDeformableAttention
+# Avoid BC-breaking of importing MultiScaleDeformableAttention from this file
 try:
     from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention  # noqa F401
+
+    class DummyMultiScaleDeformableAttention(MultiScaleDeformableAttention):
+
+        def __init__(self, *args, **kwargs):
+            warnings.warn(
+                ImportWarning(
+                    '``MultiScaleDeformableAttention`` has been moved to '
+                    '``mmcv.ops.multi_scale_deform_attn`` '
+                    'from ``mmcv.cnn.bricks.transformer``, you should use '
+                    '``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` now. '  # noqa E501
+                ))
+            super().__init__(*args, **kwargs)
+
+    MultiScaleDeformableAttention = DummyMultiScaleDeformableAttention
+
 except ImportError:
     warnings.warn('Fail to import ``MultiScaleDeformableAttention`` from '
                   '``mmcv.ops.multi_scale_deform_attn``, '

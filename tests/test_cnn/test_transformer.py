@@ -4,7 +4,13 @@ import torch
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
                                          MultiheadAttention,
+                                         MultiScaleDeformableAttention,
                                          TransformerLayerSequence)
+
+
+def test_multiscaledeformableattention_import_dep_waring():
+    with pytest.warns(ImportWarning):
+        MultiScaleDeformableAttention()
 
 
 def test_multiheadattention():
