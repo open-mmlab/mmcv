@@ -9,7 +9,7 @@ from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
 
 
 def test_import_multiscaledeformableattention():
-    # Avoid bc-breaking of import MultiScaleDeformableAttention
+    # Avoid bc-breaking of importing MultiScaleDeformableAttention
     with pytest.raises(ImportError):
         MultiScaleDeformableAttention()
 
