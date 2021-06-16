@@ -130,12 +130,12 @@ class Config:
             # Setting encoding explicitly to resolve coding issue on windows
             config_file = f.read()
         base_var_dict = {}
-        regexp = r'\{\{\s*base\.([\w\.]+)\s*\}\}'
+        regexp = r'\{\{\s*' + BASE_KEY + r'\.([\w\.]+)\s*\}\}'
         base_vars = set(re.findall(regexp, config_file))
         for base_var in base_vars:
             randstr = f'_{base_var}_{uuid.uuid4().hex.lower()[:6]}'
             base_var_dict[randstr] = base_var
-            regexp = r'\{\{\s*base\.' + base_var + r'\s*\}\}'
+            regexp = r'\{\{\s*' + BASE_KEY + r'\.' + base_var + r'\s*\}\}'
             config_file = re.sub(regexp, f'"{randstr}"', config_file)
         with open(temp_config_name, 'w') as tmp_config_file:
             tmp_config_file.write(config_file)

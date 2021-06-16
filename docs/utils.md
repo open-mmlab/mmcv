@@ -169,7 +169,7 @@ item2 = dict(item3 = 'b')
 
 ```python
 _base_ = ['./base.py']
-item = dict(a = {{ base.item1 }}, b = {{ base.item2.item3 }})
+item = dict(a = {{ _base_.item1 }}, b = {{ _base_.item2.item3 }})
 ```
 
 ```python
