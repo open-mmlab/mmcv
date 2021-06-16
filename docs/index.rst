@@ -1,5 +1,5 @@
-Contents
-========
+Welcome to MMCV's documentation!
+================================
 
 .. toctree::
    :maxdepth: 2
@@ -11,23 +11,29 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Learning MMCV
+   :caption: Deployment
 
+   deployment.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Understand the MMCV
+
+   config.md
+   registry.md
+   runner.md
    io.md
    image.md
    video.md
    visualization.md
-   utils.md
-   runner.md
-   registry.md
    cnn.md
    ops.md
+   utils.md
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Deployment
+   :caption: API Reference
 
-   deployment.rst
+   api.rst
 
 .. toctree::
    :caption: FAQ
@@ -35,10 +41,9 @@ Contents
    trouble_shooting.md
 
 .. toctree::
-   :caption: API Reference
+   :caption: Community
 
-   api.rst
-
+   contributing.md
 
 
 Indices and tables
