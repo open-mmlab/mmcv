@@ -2,7 +2,8 @@ import pytest
 import torch
 
 from mmcv.ops.multi_scale_deform_attn import (
-    MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch)
+    MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
+    multi_scale_deformable_attn_pytorch)
 
 _USING_PARROTS = True
 try:
@@ -98,7 +99,14 @@ def test_forward_equal_with_pytorch_float():
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-@pytest.mark.parametrize('channels', [4, 30, 32, 64, 71, 1025, 2048, 3096])
+@pytest.mark.parametrize('channels', [
+    4,
+    30,
+    32,
+    64,
+    71,
+    1025,
+])
 def test_gradient_numerical(channels,
                             grad_value=True,
                             grad_sampling_loc=True,
@@ -134,3 +142,20 @@ def test_gradient_numerical(channels,
         assert gradcheck(func, (value.double(), shapes, level_start_index,
                                 sampling_locations.double(),
                                 attention_weights.double(), im2col_step))
+
+
+def test_multiscale_deformable_attention():
+    with pytest.raises(ValueError):
+        # embed_dims must be divisible by num_heads,
+        MultiScaleDeformableAttention(
+            embed_dims=256,
+            num_heads=7,
+        )
+    with pytest.raises(ValueError):
+        # embed_dims must be divisible by num_heads,
+        MultiScaleDeformableAttention(
+            embed_dims=256,
+            num_heads=7,
+        )
+
+    MultiScaleDeformableAttention(embed_dims=256, num_heads=8)
