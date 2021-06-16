@@ -219,8 +219,8 @@ def get_extensions():
         try:
             import psutil
             num_cpu = len(psutil.Process().cpu_affinity())
-            cpu_use = max(1, num_cpu - 1)
-        except ModuleNotFoundError:
+            cpu_use = max(4, num_cpu - 1)
+        except (ModuleNotFoundError, AttributeError):
             cpu_use = 4
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
