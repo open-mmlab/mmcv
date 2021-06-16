@@ -279,6 +279,8 @@ class Config:
         with tempfile.NamedTemporaryFile(
                 'w', suffix=file_format, delete=False) as temp_file:
             temp_file.write(cfg_str)
+            # on windows, previous implementation cause error
+            # see PR 1077 for detailed considerarion
         cfg = Config.fromfile(temp_file.name)
         os.remove(temp_file.name)
         return cfg
