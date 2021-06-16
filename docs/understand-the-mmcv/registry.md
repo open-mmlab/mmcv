@@ -62,7 +62,7 @@ converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
 converter = CONVERTERS.build(converter_cfg)
 ```
 
-## Customize Build Function
+### Customize Build Function
 
 Suppose we would like to customize how `converters` are built, we could implement a customized `build_func` and pass it into the registry.
 
@@ -89,7 +89,7 @@ Note: in this example, we demonstrate how to use the `build_func` argument to cu
 The functionality is similar to the default `build_from_cfg`. In most cases, default one would be sufficient.
 `build_model_from_cfg` is also implemented to build PyTorch module in `nn.Sequentail`, you may directly use them instead of implementing by yourself.
 
-## Hierarchy Registry
+### Hierarchy Registry
 
 You could also build modules from more than one OpenMMLab frameworks, e.g. you could use all backbones in [MMClassification](https://github.com/open-mmlab/mmclassification) for object detectors in [MMDetection](https://github.com/open-mmlab/mmdetection), you may also combine an object detection model in [MMDetection](https://github.com/open-mmlab/mmdetection) and semantic segmentation model in [MMSegmentation](https://github.com/open-mmlab/mmsegmentation).
 

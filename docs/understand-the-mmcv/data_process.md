@@ -263,7 +263,7 @@ It is possible to visualize optical flows with `mmcv.flowshow()`.
 mmcv.flowshow(flow)
 ```
 
-![progress](_static/flow_visualization.png)
+![progress](../_static/flow_visualization.png)
 
 3. Flow warpping
 
@@ -275,12 +275,12 @@ warpped_img2 = mmcv.flow_warp(img1, flow)
 
 img1 (left) and img2 (right)
 
-![raw images](_static/flow_raw_images.png)
+![raw images](../_static/flow_raw_images.png)
 
 optical flow (img2 -> img1)
 
-![optical flow](_static/flow_img2toimg1.png)
+![optical flow](../_static/flow_img2toimg1.png)
 
 warpped image and difference with ground truth
 
-![warpped image](_static/flow_warp_diff.png)
+![warpped image](../_static/flow_warp_diff.png)
