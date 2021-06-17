@@ -147,8 +147,11 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
         flag (str): Flags specifying the color type of a loaded image,
             candidates are `color`, `grayscale`, `unchanged`,
             `color_ignore_orientation` and `grayscale_ignore_orientation`.
-            Note that the `turbojpeg` backend only supports `color` and
-            `grayscale`.
+            By default, `cv2` and `pillow` backend would rotate the image
+            according to its EXIF info unless called with `unchanged` or
+            `*_ignore_orientation` flags. `turbojpeg` and `tifffile` backend
+            always ignore image's EXIF info regardless of the flag.
+            The `turbojpeg` backend only supports `color` and `grayscale`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
         backend (str | None): The image decoding backend type. Options are
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
