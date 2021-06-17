@@ -358,9 +358,6 @@ class BaseRunner(metaclass=ABCMeta):
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
 
-        # resume meta information meta
-        self.meta = checkpoint['meta']
-
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
