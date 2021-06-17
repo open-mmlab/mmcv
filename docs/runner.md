@@ -74,7 +74,7 @@ def val(self, data_loader, **kwargs):
     data_batch = next(data_loader)
     # it will execute all before_val_iter function in the hooks registered. You may want to watch out for the order.
     self.call_hook('before_val_iter')
-    outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
+    outputs = self.model.val_step(data_batch, **kwargs)
     self.outputs = outputs
     self.call_hook('after_val_iter')
 ```
