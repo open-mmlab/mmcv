@@ -31,9 +31,10 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 |     NonMaxSuppression     |         [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)         |     1.3.0     |
 |     MMCVDeformConv2d      |          [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)          |     1.3.0     |
 |       grid_sampler        |              [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)              |     1.3.1     |
-|          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    |    master     |
-|          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    |    master     |
-| MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) |    master     |
+|          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    |     1.3.5     |
+|          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    |     1.3.5     |
+| MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) |     1.3.5     |
+| MMCVModulatedDeformConv2d | [MMCVModulatedDeformConv2d](./tensorrt_custom_ops.md#mmcvmodulateddeformconv2d) |    master     |
 
 Notes
 

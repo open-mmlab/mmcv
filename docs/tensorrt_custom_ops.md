@@ -51,6 +51,12 @@
     - [Inputs](#inputs-7)
     - [Outputs](#outputs-7)
     - [Type Constraints](#type-constraints-7)
+  - [MMCVModulatedDeformConv2d](#mmcvmodulateddeformconv2d)
+    - [Description](#description-8)
+    - [Parameters](#parameters-8)
+    - [Inputs](#inputs-8)
+    - [Outputs](#outputs-8)
+    - [Type Constraints](#type-constraints-8)
 
 <!-- TOC -->
 
@@ -340,6 +346,48 @@ y = scale * (x - mean) / sqrt(variance + epsilon) + B, where mean and variance a
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>The output tensor of the same shape as input.</dd>
+</dl>
+
+### Type Constraints
+
+- T:tensor(float32, Linear)
+
+## MMCVModulatedDeformConv2d
+
+### Description
+
+Perform Modulated Deformable Convolution on input feature, read [Deformable ConvNets v2: More Deformable, Better Results](https://arxiv.org/abs/1811.11168?from=timeline) for detail.
+
+### Parameters
+
+| Type           | Parameter          | Description                                                                           |
+| -------------- | ------------------ | ------------------------------------------------------------------------------------- |
+| `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW)                                         |
+| `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW)                                     |
+| `list of ints` | `dilation`         | The spacing between kernel elements. (dH, dW)                                         |
+| `int`          | `deformable_group` | Groups of deformable offset.                                                          |
+| `int`          | `group`            | Split input into groups. `input_channel` should be divisible by the number of groups. |
+
+### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the number of channels, inH and inW are the height and width of the data.</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>Input mask; 4-D tensor of shape (N, deformable_group* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
+<dt><tt>inputs[3]</tt>: T</dt>
+<dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
+<dt><tt>inputs[4]</tt>: T, optional</dt>
+<dd>Input weight; 1-D tensor of shape (output_channel).</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
 ### Type Constraints

@@ -6,7 +6,7 @@ The runner class is designed to manage the training. It eases the training proce
 - Support customized workflow to allow switching between different modes while training. Currently, supported modes are train and val.
 - Enable extensibility through various hooks, including hooks defined in MMCV and customized ones.
 
-## EpochBasedRunner
+### EpochBasedRunner
 
 As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, [('train', 2), ('val', 1)] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iterations. Currently, MMDetection uses `EpochBasedRunner` by default.
 
@@ -42,7 +42,7 @@ def train(self, data_loader, **kwargs):
    self.call_hook('after_train_epoch')
 ```
 
-## IterBasedRunner
+### IterBasedRunner
 
 Different from `EpochBasedRunner`, workflow in `IterBasedRunner` should be set based on iterations. For example, [('train', 2), ('val', 1)] means running 2 iters for training and 1 iter for validation, iteratively. Currently, MMSegmentation uses `IterBasedRunner` by default.
 
@@ -81,7 +81,7 @@ def val(self, data_loader, **kwargs):
 
 Other than the basic functionalities explained above, `EpochBasedRunner` and `IterBasedRunner` provide methods such as `resume`, `save_checkpoint` and `register_hook`. In case you are not familiar with the term Hook mentioned earlier, we will also provide a tutorial about it.(coming soon...) Essentially, a hook is functionality to alter or augment the code behaviors through predefined api. It allows users to have their own code called under certain circumstances. It makes code extensible in a non-intrusive manner.
 
-## A Simple Example
+### A Simple Example
 
 We will walk you through the usage of runner with a classification task. The following code only contains essential steps for demonstration purposes. The following steps are necessary for any training tasks.
 
