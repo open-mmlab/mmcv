@@ -79,7 +79,7 @@ def test_ema_hook():
         def train_step(self, x, optimizer, **kwargs):
             return dict(loss=self(x))
 
-        def val_step(self, x, optimizer, **kwargs):
+        def val_step(self, x, **kwargs):
             return dict(loss=self(x))
 
     loader = DataLoader(torch.ones((1, 1, 1, 1)))
