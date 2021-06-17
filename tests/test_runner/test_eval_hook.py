@@ -58,7 +58,7 @@ class Model(nn.Module):
             data_batch = dict(x=data_batch)
         return data_batch
 
-    def val_step(self, x, optimizer, **kwargs):
+    def val_step(self, x, **kwargs):
         return dict(loss=self(x))
 
 
