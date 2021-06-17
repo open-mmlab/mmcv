@@ -29,7 +29,7 @@ class EpochBasedRunner(BaseRunner):
             outputs = self.model.train_step(data_batch, self.optimizer,
                                             **kwargs)
         else:
-            outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
+            outputs = self.model.val_step(data_batch, **kwargs)
         if not isinstance(outputs, dict):
             raise TypeError('"batch_processor()" or "model.train_step()"'
                             'and "model.val_step()" must return a dict')
