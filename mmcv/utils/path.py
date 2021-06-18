@@ -69,8 +69,10 @@ def scandir(dir_path, suffix=None, recursive=False):
                     yield rel_path
             else:
                 if recursive:
-                    yield from _scandir(
-                        entry.path, suffix=suffix, recursive=recursive)
+                    if os.path.isdir(entry.path):
+                        yield from _scandir(entry.path, suffix=suffix, recursive=recursive)
+                    else:
+                        continue
                 else:
                     continue
 
