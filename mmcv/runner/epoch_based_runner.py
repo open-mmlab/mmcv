@@ -42,10 +42,13 @@ class EpochBasedRunner(BaseRunner):
         self.mode = 'train'
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
+        setattr(self.model, '_epoch', self._epoch)
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
+            setattr(self.model, '_iter', self._iter)
+            setattr(self.model, '_inner_iter', self._inner_iter)
             self.call_hook('before_train_iter')
             self.run_iter(data_batch, train_mode=True, **kwargs)
             self.call_hook('after_train_iter')
@@ -63,6 +66,7 @@ class EpochBasedRunner(BaseRunner):
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
+            setattr(self.model, '_inner_iter', self._inner_iter)
             self.call_hook('before_val_iter')
             self.run_iter(data_batch, train_mode=False)
             self.call_hook('after_val_iter')
@@ -105,6 +109,7 @@ class EpochBasedRunner(BaseRunner):
                          self._max_epochs)
         self.call_hook('before_run')
 
+        setattr(self.model, '_max_epochs', self._max_epochs)
         while self.epoch < self._max_epochs:
             for i, flow in enumerate(workflow):
                 mode, epochs = flow

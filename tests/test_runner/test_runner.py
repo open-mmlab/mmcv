@@ -9,6 +9,7 @@ import tempfile
 import pytest
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
@@ -30,6 +31,46 @@ class Model(OldStyleModel):
 
     def val_step(self):
         pass
+
+
+class ExampleModel(Model):
+
+    def __init__(self, by_epoch=True, max_time=None):
+        super().__init__()
+        self.by_epoch = by_epoch
+        self.max_time = max_time
+        if by_epoch:
+            self.record = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9],
+                           [10, 11, 12, 13, 14]]
+        else:
+            self.record = [0, 1, 2, 3, 4]
+            self.val_iter_step = 0
+
+    def train_step(self, x, optimizer=None, **kwargs):
+        if self.by_epoch:
+            assert self._max_epochs == self.max_time
+            assert self._inner_iter == self._iter % len(self.record[0])
+            value = self.record[self._epoch][self._inner_iter]
+            assert x + self._epoch * 5 == value
+        else:
+            assert not hasattr(self, '_epoch')
+            assert self._max_iters == self.max_time
+            value = self.record[self._iter]
+            assert x == value
+        return {}
+
+    def val_step(self, x, optimizer=None, **kwargs):
+        if self.by_epoch:
+            assert self._max_epochs == self.max_time
+            value = self.record[self._epoch][self._inner_iter]
+            assert x + self._epoch * 5 == value
+        else:
+            assert not hasattr(self, '_epoch')
+            assert self._max_iters == self.max_time
+            value = self.record[self.val_iter_step]
+            self.val_iter_step += 1
+            assert x == value
+        return {}
 
 
 def test_build_runner():
@@ -281,3 +322,17 @@ def test_register_timer_hook(runner_class):
     runner.register_timer_hook(timer_config)
     assert len(runner.hooks) == 2
     assert isinstance(runner.hooks[1], IterTimerHook)
+
+
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_check_epoch(runner_class):
+    loader = DataLoader([0, 1, 2, 3, 4])
+    if runner_class == IterBasedRunner:
+        model = ExampleModel(by_epoch=False, max_time=5)
+        runner = runner_class(
+            model=model, logger=logging.getLogger(), max_iters=5)
+    else:
+        model = ExampleModel(max_time=3)
+        runner = runner_class(
+            model=model, logger=logging.getLogger(), max_epochs=3)
+    runner.run([loader, loader], [('train', 2), ('val', 1)])
