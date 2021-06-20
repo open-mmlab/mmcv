@@ -10,10 +10,10 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
 
 
-class Net(nn.Module):
+class Model(nn.Module):
 
     def __init__(self):
-        super(Net, self).__init__()
+        super(Model, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -39,8 +39,8 @@ class Net(nn.Module):
 
 
 if __name__ == '__main__':
-    net = Net()
-    model = MMDataParallel(net.cuda())
+    model = Model()
+    model = MMDataParallel(model.cuda())
 
     # dataset and dataloader
     transform = transforms.Compose([
