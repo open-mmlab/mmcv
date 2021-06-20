@@ -6,7 +6,7 @@ Welcome to MMCV's documentation!
 
    getting-started.rst
    deployment.rst
-   understand-the-mmcv.rst
+   understand-mmcv.rst
    api.rst
    faq.rst
    community.rst
