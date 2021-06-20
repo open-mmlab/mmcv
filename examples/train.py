@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -40,7 +41,8 @@ class Model(nn.Module):
 
 if __name__ == '__main__':
     model = Model()
-    model = MMDataParallel(model.cuda())
+    if torch.cuda.is_available():
+        model = MMDataParallel(model.cuda())
 
     # dataset and dataloader
     transform = transforms.Compose([
