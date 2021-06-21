@@ -47,6 +47,16 @@ class TestGeometric:
         with pytest.raises(ValueError):
             mmcv.imresize(self.img, (1000, 600), backend='not support')
 
+        # test divisor
+        resized_img = mmcv.imresize(self.img, (511, 513), divisor=None)
+        assert resized_img.shape == (513, 511, 3)
+
+        resized_img = mmcv.imresize(self.img, (511, 513), divisor=16)
+        assert resized_img.shape == (528, 512, 3)
+
+        resized_img = mmcv.imresize(self.img, (511, 513), divisor=(16, 32))
+        assert resized_img.shape == (544, 512, 3)
+
     def test_imresize_like(self):
         a = np.zeros((100, 200, 3))
         resized_img = mmcv.imresize_like(self.img, a)
@@ -100,6 +110,27 @@ class TestGeometric:
         resized_img, scale = mmcv.imrescale(
             self.img, (180, 200), return_scale=True)
         assert resized_img.shape == (150, 200, 3) and scale == 0.5
+
+        # test divisor
+        resized_img = mmcv.imrescale(self.img, (1000, 600), divisor=None)
+        assert resized_img.shape == (600, 800, 3)
+        resized_img, scale = mmcv.imrescale(
+            self.img, (1000, 600), return_scale=True, divisor=None)
+        assert resized_img.shape == (600, 800, 3) and scale == 2.0
+
+        resized_img = mmcv.imrescale(self.img, (1000, 600), divisor=16)
+        assert resized_img.shape == (608, 800, 3)
+        resized_img, w_scale, h_scale = mmcv.imrescale(
+            self.img, (1000, 600), return_scale=True, divisor=16)
+        assert resized_img.shape == (
+            608, 800, 3) and h_scale == 608 / 300 and w_scale == 800 / 400
+
+        resized_img = mmcv.imrescale(self.img, (1000, 600), divisor=(18, 16))
+        assert resized_img.shape == (608, 810, 3)
+        resized_img, w_scale, h_scale = mmcv.imrescale(
+            self.img, (1000, 600), return_scale=True, divisor=(18, 16))
+        assert resized_img.shape == (
+            608, 810, 3) and h_scale == 608 / 300 and w_scale == 810 / 400
 
         # test exceptions
         with pytest.raises(ValueError):

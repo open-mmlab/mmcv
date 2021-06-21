@@ -3,6 +3,7 @@ import numbers
 
 import cv2
 import numpy as np
+from torch.nn.modules.utils import _pair as to_2tuple
 
 from .io import imread_backend
 
@@ -50,7 +51,8 @@ def imresize(img,
              return_scale=False,
              interpolation='bilinear',
              out=None,
-             backend=None):
+             backend=None,
+             divisor=None):
     """Resize image to a given size.
 
     Args:
@@ -64,12 +66,18 @@ def imresize(img,
         backend (str | None): The image resize backend type. Options are `cv2`,
             `pillow`, `None`. If backend is None, the global imread_backend
             specified by ``mmcv.use_backend()`` will be used. Default: None.
+        divisor (None | tuple | int): Resized image size will be multiple to
+            divisor. If divisor is tuple, divisor is (w_divisor, h_divisor).
+            Default: None.
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = img.shape[:2]
+    if divisor is not None:
+        divisor = to_2tuple(divisor)
+        size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
     if backend is None:
         backend = imread_backend
     if backend not in ['cv2', 'pillow']:
@@ -155,7 +163,8 @@ def imrescale(img,
               scale,
               return_scale=False,
               interpolation='bilinear',
-              backend=None):
+              backend=None,
+              divisor=None):
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -168,16 +177,31 @@ def imrescale(img,
             rescaled image.
         interpolation (str): Same as :func:`resize`.
         backend (str | None): Same as :func:`resize`.
+        divisor (None | tuple | int): Resized image size will be multiple to
+            divisor. If divisor is tuple, divisor is (w_divisor, h_divisor).
+            Default: None.
 
     Returns:
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
     new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
-    rescaled_img = imresize(
-        img, new_size, interpolation=interpolation, backend=backend)
+    if divisor is None:
+        rescaled_img = imresize(
+            img, new_size, interpolation=interpolation, backend=backend)
+    else:
+        rescaled_img, w_scale, h_scale = imresize(
+            img,
+            new_size,
+            return_scale=True,
+            interpolation=interpolation,
+            backend=backend,
+            divisor=divisor)
     if return_scale:
-        return rescaled_img, scale_factor
+        if divisor is None:
+            return rescaled_img, scale_factor
+        else:
+            return rescaled_img, w_scale, h_scale
     else:
         return rescaled_img
 
