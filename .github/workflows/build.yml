@@ -222,7 +222,7 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
         run: |
-          rm -rf .eggs
+          rmdir .eggs
           pip install -e .
       - name: Validate the installation
         run: python -c "import mmcv"
