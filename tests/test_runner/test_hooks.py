@@ -6,6 +6,7 @@ CommandLine:
 """
 import logging
 import os.path as osp
+import random
 import re
 import shutil
 import sys
@@ -147,6 +148,22 @@ def test_custom_hook():
     # test if custom_hooks is object and without priority
     runner.register_custom_hooks(ToyHook(info='default'))
     assert len(runner.hooks) == 3 and runner.hooks[1].info == 'default'
+    shutil.rmtree(runner.work_dir)
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test custom_hooks with string priority setting
+    priority_ranks = [
+        'HIGHEST', 'VERY_HIGH', 'HIGHER', 'HIGH', 'NORMAL', 'LOW', 'LOWER',
+        'VERY_LOW', 'LOWEST'
+    ]
+    random_priority_ranks = priority_ranks.copy()
+    random.shuffle(random_priority_ranks)
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=rank, info=rank)
+        for rank in random_priority_ranks
+    ]
+    runner.register_custom_hooks(custom_hooks_cfg)
+    assert [hook.info for hook in runner.hooks] == priority_ranks
     shutil.rmtree(runner.work_dir)
 
     runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
