@@ -65,7 +65,7 @@ nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
   nvinfer1::DimsExprs ret;
   ret.nbDims = 4;
   ret.d[0] = inputs[0].d[0];
-  ret.d[1] = inputs[2].d[0];
+  ret.d[1] = inputs[3].d[0];
 
   ret.d[2] = inputs[1].d[2];
   ret.d[3] = inputs[1].d[3];
