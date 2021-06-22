@@ -3,7 +3,6 @@ import numbers
 
 import cv2
 import numpy as np
-from torch.nn.modules.utils import _pair as to_2tuple
 
 from .io import imread_backend
 
@@ -18,13 +17,15 @@ def _scale_size(size, scale):
 
     Args:
         size (tuple[int]): (w, h).
-        scale (float): Scaling factor.
+        scale (float | tuple(float)): Scaling factor.
 
     Returns:
         tuple[int]: scaled size.
     """
+    if isinstance(scale, (float, int)):
+        scale = (scale, scale)
     w, h = size
-    return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
+    return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
 
 
 cv2_interp_codes = {
@@ -51,8 +52,7 @@ def imresize(img,
              return_scale=False,
              interpolation='bilinear',
              out=None,
-             backend=None,
-             divisor=None):
+             backend=None):
     """Resize image to a given size.
 
     Args:
@@ -66,18 +66,12 @@ def imresize(img,
         backend (str | None): The image resize backend type. Options are `cv2`,
             `pillow`, `None`. If backend is None, the global imread_backend
             specified by ``mmcv.use_backend()`` will be used. Default: None.
-        divisor (None | tuple | int): Resized image size will be multiple to
-            divisor. If divisor is tuple, divisor is (w_divisor, h_divisor).
-            Default: None.
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
             `resized_img`.
     """
     h, w = img.shape[:2]
-    if divisor is not None:
-        divisor = to_2tuple(divisor)
-        size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
     if backend is None:
         backend = imread_backend
     if backend not in ['cv2', 'pillow']:
@@ -98,6 +92,71 @@ def imresize(img,
         w_scale = size[0] / w
         h_scale = size[1] / h
         return resized_img, w_scale, h_scale
+
+
+def imresize_to_multiple(img,
+                         divisor,
+                         size=None,
+                         scale_factor=None,
+                         keep_ratio=False,
+                         return_scale=False,
+                         interpolation='bilinear',
+                         out=None,
+                         backend=None):
+    """Resize image according to a given size or scale factor and then rounds
+    up the the resized or rescaled image size to the nearest value that can be
+    divisible by the divisor.
+
+    Args:
+        img (ndarray): The input image.
+        divisor (int | tuple): Resized image size will be multiple to divisor.
+            If divisor is tuple, divisor is (w_divisor, h_divisor).
+        size (None | int | tuple[int]): Target size (w, h). Default: None.
+        scale_factor (None | float | tuple[float]): Multiplier for spatial
+            size. Has to match input size if it is a tuple and the 2D style is
+            (w_scale_factor, h_scale_factor). Default: None.
+        keep_ratio (bool): Whether to keep the aspect ratio when resizing the
+            image. Default: False.
+        return_scale (bool): Whether to return `w_scale` and `h_scale`.
+        interpolation (str): Interpolation method, accepted values are
+            "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
+            backend, "nearest", "bilinear" for 'pillow' backend.
+        out (ndarray): The output destination.
+        backend (str | None): The image resize backend type. Options are `cv2`,
+            `pillow`, `None`. If backend is None, the global imread_backend
+            specified by ``mmcv.use_backend()`` will be used. Default: None.
+
+    Returns:
+        tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
+            `resized_img`.
+    """
+    h, w = img.shape[:2]
+    if size is not None and scale_factor is not None:
+        raise ValueError('only one of size or scale_factor should be defined')
+    elif size is None and scale_factor is None:
+        raise ValueError('one of size or scale_factor should be defined')
+    elif size is not None:
+        if isinstance(size, int):
+            size = (size, size)
+        if keep_ratio:
+            size = rescale_size((w, h), size, return_scale=False)
+    else:
+        size = _scale_size((w, h), scale_factor)
+
+    if isinstance(divisor, int):
+        divisor = (divisor, divisor)
+    size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
+    resized_img, w_scale, h_scale = imresize(
+        img,
+        size,
+        return_scale=True,
+        interpolation=interpolation,
+        out=out,
+        backend=backend)
+    if return_scale:
+        return resized_img, w_scale, h_scale
+    else:
+        return resized_img
 
 
 def imresize_like(img,
@@ -163,8 +222,7 @@ def imrescale(img,
               scale,
               return_scale=False,
               interpolation='bilinear',
-              backend=None,
-              divisor=None):
+              backend=None):
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -177,31 +235,16 @@ def imrescale(img,
             rescaled image.
         interpolation (str): Same as :func:`resize`.
         backend (str | None): Same as :func:`resize`.
-        divisor (None | tuple | int): Resized image size will be multiple to
-            divisor. If divisor is tuple, divisor is (w_divisor, h_divisor).
-            Default: None.
 
     Returns:
         ndarray: The rescaled image.
     """
     h, w = img.shape[:2]
     new_size, scale_factor = rescale_size((w, h), scale, return_scale=True)
-    if divisor is None:
-        rescaled_img = imresize(
-            img, new_size, interpolation=interpolation, backend=backend)
-    else:
-        rescaled_img, w_scale, h_scale = imresize(
-            img,
-            new_size,
-            return_scale=True,
-            interpolation=interpolation,
-            backend=backend,
-            divisor=divisor)
+    rescaled_img = imresize(
+        img, new_size, interpolation=interpolation, backend=backend)
     if return_scale:
-        if divisor is None:
-            return rescaled_img, scale_factor
-        else:
-            return rescaled_img, w_scale, h_scale
+        return rescaled_img, scale_factor
     else:
         return rescaled_img
 
