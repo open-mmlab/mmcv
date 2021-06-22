@@ -115,9 +115,7 @@ class BaseInit(object):
                     but got a {type(layer)}')
         else:
             layer = []
-            warnings.warn(
-                'init_cfg without layer key, if you do not define override'
-                ' key either, this init_cfg will do nothing')
+
         if bias_prob is not None:
             self.bias = bias_init_with_prob(bias_prob)
         else:
