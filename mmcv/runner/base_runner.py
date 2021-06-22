@@ -14,7 +14,7 @@ from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
-from .priority import get_priority
+from .priority import Priority, get_priority
 from .utils import get_time_str
 
 
@@ -305,6 +305,17 @@ class BaseRunner(metaclass=ABCMeta):
         """
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
+
+    def get_hook_info(self):
+        hook_infos = []
+        for hook in self.hooks:
+            try:
+                priority = Priority(hook.priority).name
+            except ValueError:
+                priority = hook.priority
+            classname = hook.__class__.__name__
+            hook_infos.append(f'({priority})\t {classname}'.expandtabs(12))
+        return '\n'.join(hook_infos)
 
     def load_checkpoint(self,
                         filename,
