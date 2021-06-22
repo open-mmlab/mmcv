@@ -105,15 +105,16 @@ def imresize_to_multiple(img,
                          backend=None):
     """Resize image according to a given size or scale factor and then rounds
     up the the resized or rescaled image size to the nearest value that can be
-    divisible by the divisor.
+    divided by the divisor.
 
     Args:
         img (ndarray): The input image.
-        divisor (int | tuple): Resized image size will be multiple to divisor.
-            If divisor is tuple, divisor is (w_divisor, h_divisor).
+        divisor (int | tuple): Resized image size will be a multiple of
+            divisor. If divisor is a tuple, divisor should be
+            (w_divisor, h_divisor).
         size (None | int | tuple[int]): Target size (w, h). Default: None.
         scale_factor (None | float | tuple[float]): Multiplier for spatial
-            size. Has to match input size if it is a tuple and the 2D style is
+            size. Should match input size if it is a tuple and the 2D style is
             (w_scale_factor, h_scale_factor). Default: None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Default: False.
