@@ -4,8 +4,8 @@ from .config import Config, ConfigDict, DictAction
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
                    import_modules_from_strings, is_list_of, is_seq_of, is_str,
                    is_tuple_of, iter_cast, list_cast, requires_executable,
-                   requires_package, slice_list, to_2tuple, to_3tuple,
-                   to_4tuple, to_ntuple, tuple_cast)
+                   requires_package, slice_list, to_1tuple, to_2tuple,
+                   to_3tuple, to_4tuple, to_ntuple, tuple_cast)
 from .path import (check_file_exist, fopen, is_filepath, mkdir_or_exist,
                    scandir, symlink)
 from .progressbar import (ProgressBar, track_iter_progress,
@@ -31,7 +31,7 @@ except ImportError:
         'digit_version', 'get_git_hash', 'import_modules_from_strings',
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
-        'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple'
+        'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple'
     ]
 else:
     from .env import collect_env

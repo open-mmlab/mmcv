@@ -4,6 +4,31 @@ import pytest
 import mmcv
 
 
+def test_to_ntuple():
+    single_number = 2
+    assert mmcv.utils.to_1tuple(single_number) == (single_number, )
+    assert mmcv.utils.to_2tuple(single_number) == (single_number,
+                                                   single_number)
+    assert mmcv.utils.to_3tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_4tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_ntuple(5)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
+    assert mmcv.utils.to_ntuple(6)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
+
+
 def test_iter_cast():
     assert mmcv.list_cast([1, 2, 3], int) == [1, 2, 3]
     assert mmcv.list_cast(['1.1', 2, '3'], float) == [1.1, 2.0, 3.0]
@@ -105,6 +130,7 @@ def test_requires_executable(capsys):
 def test_import_modules_from_strings():
     # multiple imports
     import os.path as osp_
+
     import sys as sys_
     osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
     assert osp == osp_
