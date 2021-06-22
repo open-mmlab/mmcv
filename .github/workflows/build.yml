@@ -221,15 +221,12 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
-        run: |
-          rmdir .eggs
-          pip install -e .
+        run: pip install -e .
       - name: Validate the installation
         run: python -c "import mmcv"
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
-          # The timing on macos VMs is not precise, so we skip the progressbar tests
           pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
 
   build_macos:
