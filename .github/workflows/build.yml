@@ -227,7 +227,7 @@ jobs:
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
-          pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
+          pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py --ignore tests/test_image/test_io.py
 
   build_macos:
     runs-on: macos-latest
