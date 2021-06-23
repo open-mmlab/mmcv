@@ -95,15 +95,14 @@ def bias_init_with_prob(prior_prob):
 
 def init_log(init_name, layer_name, module_name, weight_shape, bias_shape,
              bias_value):
-    logger = get_logger('mmcv')
     print_log(
         f'    initialize weights ({weight_shape}) of {layer_name} '
         f'in {module_name} in with {init_name}',
-        logger=logger)
+        logger='mmcv')
     print_log(
         f'    fill bias ({bias_shape}) of {layer_name} '
         f'in {module_name} with {bias_value}',
-        logger=logger)
+        logger='mmcv')
 
 
 def _get_bases_name(m):
@@ -495,10 +494,9 @@ def _initialize_override(module, override, cfg):
                 f'`override` need "type" key, but got {cp_override}')
 
         if hasattr(module, name):
-            logger = get_logger('mmcv')
             print_log(
                 f'    initialize weight and bias in {name} with {cp_override}',
-                logger=logger)
+                logger='mmcv')
             _initialize(getattr(module, name), cp_override, wholemodule=True)
         else:
             raise RuntimeError(f'module did not have attribute {name}, '
