@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import collections.abc
 import functools
 import itertools
 import subprocess
@@ -6,6 +7,25 @@ import warnings
 from collections import abc
 from importlib import import_module
 from inspect import getfullargspec
+from itertools import repeat
+
+
+# From PyTorch internals
+def _ntuple(n):
+
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return x
+        return tuple(repeat(x, n))
+
+    return parse
+
+
+to_1tuple = _ntuple(1)
+to_2tuple = _ntuple(2)
+to_3tuple = _ntuple(3)
+to_4tuple = _ntuple(4)
+to_ntuple = _ntuple
 
 
 def is_str(x):
