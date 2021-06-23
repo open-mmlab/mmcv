@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*void ca_forward_cuda(const Tensor t, const Tensor f, Tensor weight);*/
 void ca_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
                              const OperatorBase::in_list_t &ins,
@@ -77,3 +78,4 @@ PARROTS_EXTENSION_REGISTER(ca_map_backward)
     .output(2)
     .apply(ca_map_backward_cuda_parrots)
     .done();
+#endif
