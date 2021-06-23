@@ -93,6 +93,19 @@ def bias_init_with_prob(prior_prob):
     return bias_init
 
 
+def init_log(init_name, layer_name, module_name, weight_shape, bias_shape,
+             bias_value):
+    logger = get_logger('mmcv')
+    print_log(
+        f'    initialize weights ({weight_shape}) of {layer_name} '
+        f'in {module_name} in with {init_name}',
+        logger=logger)
+    print_log(
+        f'    fill bias ({bias_shape}) of {layer_name} '
+        f'in {module_name} with {bias_value}',
+        logger=logger)
+
+
 def _get_bases_name(m):
     return [b.__name__ for b in m.__class__.__bases__]
 
@@ -142,6 +155,9 @@ class ConstantInit(BaseInit):
 
     def __call__(self, module):
 
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
+
         def init(m):
             if self.wholemodule:
                 constant_init(m, self.val, self.bias)
@@ -149,6 +165,8 @@ class ConstantInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     constant_init(m, self.val, self.bias)
 
         module.apply(init)
@@ -178,6 +196,8 @@ class XavierInit(BaseInit):
         self.distribution = distribution
 
     def __call__(self, module):
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
 
         def init(m):
             if self.wholemodule:
@@ -186,6 +206,8 @@ class XavierInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
@@ -214,6 +236,8 @@ class NormalInit(BaseInit):
         self.std = std
 
     def __call__(self, module):
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
 
         def init(m):
             if self.wholemodule:
@@ -222,6 +246,8 @@ class NormalInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     normal_init(m, self.mean, self.std, self.bias)
 
         module.apply(init)
@@ -260,6 +286,8 @@ class TruncNormalInit(BaseInit):
         self.b = b
 
     def __call__(self, module: nn.Module) -> None:
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
 
         def init(m):
             if self.wholemodule:
@@ -269,6 +297,8 @@ class TruncNormalInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     trunc_normal_init(m, self.mean, self.std, self.a, self.b,
                                       self.bias)
 
@@ -298,6 +328,8 @@ class UniformInit(BaseInit):
         self.b = b
 
     def __call__(self, module):
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
 
         def init(m):
             if self.wholemodule:
@@ -306,6 +338,8 @@ class UniformInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
@@ -352,6 +386,9 @@ class KaimingInit(BaseInit):
 
     def __call__(self, module):
 
+        modulename = module.__class__.__name__
+        initname = self.__class__.__name__
+
         def init(m):
             if self.wholemodule:
                 kaiming_init(m, self.a, self.mode, self.nonlinearity,
@@ -360,6 +397,8 @@ class KaimingInit(BaseInit):
                 layername = m.__class__.__name__
                 basesname = _get_bases_name(m)
                 if len(set(self.layer) & set([layername] + basesname)):
+                    init_log(initname, layername, modulename, m.weight.shape,
+                             m.bias.shape, self.bias)
                     kaiming_init(m, self.a, self.mode, self.nonlinearity,
                                  self.bias, self.distribution)
 
@@ -456,6 +495,10 @@ def _initialize_override(module, override, cfg):
                 f'`override` need "type" key, but got {cp_override}')
 
         if hasattr(module, name):
+            logger = get_logger('mmcv')
+            print_log(
+                f'    initialize weight and bias in {name} with {cp_override}',
+                logger=logger)
             _initialize(getattr(module, name), cp_override, wholemodule=True)
         else:
             raise RuntimeError(f'module did not have attribute {name}, '

@@ -5,6 +5,7 @@ from abc import ABCMeta
 import torch.nn as nn
 
 from mmcv import ConfigDict
+from mmcv.utils import get_logger, print_log
 
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
@@ -39,9 +40,13 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     def init_weights(self):
         """Initialize the weights."""
         from ..cnn import initialize
-
+        modulename = self.__class__.__name__
         if not self._is_init:
             if self.init_cfg:
+                logger = get_logger('mmcv')
+                print_log(
+                    f'initialize {modulename} with init_cfg {self.init_cfg}',
+                    logger=logger)
                 initialize(self, self.init_cfg)
                 if isinstance(self.init_cfg, (dict, ConfigDict)):
                     # Avoid the parameters of the pre-training model
