@@ -4,6 +4,7 @@ import numbers
 import cv2
 import numpy as np
 
+from ..utils import to_2tuple
 from .io import imread_backend
 
 try:
@@ -137,15 +138,13 @@ def imresize_to_multiple(img,
     elif size is None and scale_factor is None:
         raise ValueError('one of size or scale_factor should be defined')
     elif size is not None:
-        if isinstance(size, int):
-            size = (size, size)
+        size = to_2tuple(size)
         if keep_ratio:
             size = rescale_size((w, h), size, return_scale=False)
     else:
         size = _scale_size((w, h), scale_factor)
 
-    if isinstance(divisor, int):
-        divisor = (divisor, divisor)
+    divisor = to_2tuple(divisor)
     size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
     resized_img, w_scale, h_scale = imresize(
         img,
