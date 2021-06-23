@@ -65,3 +65,34 @@ class Hook:
 
     def is_last_iter(self, runner):
         return runner.iter + 1 == runner._max_iters
+
+    def get_trigger_stages(self):
+        stages = [
+            'before_run', 'before_train_epoch', 'before_train_iter',
+            'after_train_iter', 'after_train_epoch', 'before_val_epoch',
+            'before_val_iter', 'after_val_iter', 'after_val_epoch', 'after_run'
+        ]
+
+        trigger_stages = set()
+        for stage in stages:
+            base_method = getattr(Hook, stage)
+            sub_method = getattr(self.__class__, stage)
+            if sub_method != base_method:
+                trigger_stages.add(stage)
+
+        # some methods will be triggered in multi stages
+        # use this dict to map method to stages.
+        method_stages_map = {
+            'before_epoch': ['before_train_epoch', 'before_val_epoch'],
+            'after_epoch': ['after_train_epoch', 'after_val_epoch'],
+            'before_iter': ['before_train_iter', 'before_val_iter'],
+            'after_iter': ['after_train_iter', 'after_val_iter'],
+        }
+
+        for method, map_stages in method_stages_map.items():
+            base_method = getattr(Hook, method)
+            sub_method = getattr(self.__class__, method)
+            if sub_method != base_method:
+                trigger_stages.update(map_stages)
+
+        return [stage for stage in stages if stage in trigger_stages]

@@ -314,7 +314,9 @@ class BaseRunner(metaclass=ABCMeta):
             except ValueError:
                 priority = hook.priority
             classname = hook.__class__.__name__
-            hook_infos.append(f'({priority})\t {classname}'.expandtabs(12))
+            trigger_stages = ', '.join(hook.get_trigger_stages())
+            hook_info = f'({priority:<9}) {classname:<35} {trigger_stages}'
+            hook_infos.append(hook_info)
         return '\n'.join(hook_infos)
 
     def load_checkpoint(self,
