@@ -5,6 +5,10 @@ HOOKS = Registry('hook')
 
 
 class Hook:
+    stages = ('before_run', 'before_train_epoch', 'before_train_iter',
+              'after_train_iter', 'after_train_epoch', 'before_val_epoch',
+              'before_val_iter', 'after_val_iter', 'after_val_epoch',
+              'after_run')
 
     def before_run(self, runner):
         pass
@@ -67,14 +71,8 @@ class Hook:
         return runner.iter + 1 == runner._max_iters
 
     def get_trigger_stages(self):
-        stages = [
-            'before_run', 'before_train_epoch', 'before_train_iter',
-            'after_train_iter', 'after_train_epoch', 'before_val_epoch',
-            'before_val_iter', 'after_val_iter', 'after_val_epoch', 'after_run'
-        ]
-
         trigger_stages = set()
-        for stage in stages:
+        for stage in Hook.stages:
             base_method = getattr(Hook, stage)
             sub_method = getattr(self.__class__, stage)
             if sub_method != base_method:
@@ -95,4 +93,4 @@ class Hook:
             if sub_method != base_method:
                 trigger_stages.update(map_stages)
 
-        return [stage for stage in stages if stage in trigger_stages]
+        return [stage for stage in Hook.stages if stage in trigger_stages]

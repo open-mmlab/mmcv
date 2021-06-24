@@ -307,17 +307,26 @@ class BaseRunner(metaclass=ABCMeta):
             getattr(hook, fn_name)(self)
 
     def get_hook_info(self):
-        hook_infos = []
+        # Get hooks info in each stage
+        stage_hook_map = {stage: [] for stage in Hook.stages}
         for hook in self.hooks:
             try:
                 priority = Priority(hook.priority).name
             except ValueError:
                 priority = hook.priority
             classname = hook.__class__.__name__
-            trigger_stages = ', '.join(hook.get_trigger_stages())
-            hook_info = f'({priority:<9}) {classname:<35} {trigger_stages}'
-            hook_infos.append(hook_info)
-        return '\n'.join(hook_infos)
+            hook_info = f'({priority:<12}) {classname:<35}'
+            for trigger_stage in hook.get_trigger_stages():
+                stage_hook_map[trigger_stage].append(hook_info)
+
+        stage_hook_infos = []
+        for stage in Hook.stages:
+            hook_infos = stage_hook_map[stage]
+            if len(hook_infos) > 0:
+                info = '{}:\n{}\n'.format(stage, '\n'.join(hook_infos))
+                info += ' -------------------- '
+                stage_hook_infos.append(info)
+        return '\n'.join(stage_hook_infos)
 
     def load_checkpoint(self,
                         filename,
