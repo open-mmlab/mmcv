@@ -415,7 +415,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
             hook = momentum_config
-        self.register_hook(hook, priority='HIGHER')
+        self.register_hook(hook, priority='HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
         if optimizer_config is None:
@@ -425,7 +425,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
         else:
             hook = optimizer_config
-        self.register_hook(hook, priority='HIGH')
+        self.register_hook(hook, priority='ABOVE_NORMAL')
 
     def register_checkpoint_hook(self, checkpoint_config):
         if checkpoint_config is None:
@@ -496,9 +496,9 @@ class BaseRunner(metaclass=ABCMeta):
         +======================+=========================+
         | LrUpdaterHook        | VERY_HIGH (10)          |
         +----------------------+-------------------------+
-        | MomentumUpdaterHook  | HIGHER (20)             |
+        | MomentumUpdaterHook  | HIGH (30)               |
         +----------------------+-------------------------+
-        | OptimizerStepperHook | HIGH (30)               |
+        | OptimizerStepperHook | ABOVE_NORMAL (40)       |
         +----------------------+-------------------------+
         | CheckpointSaverHook  | NORMAL (50)             |
         +----------------------+-------------------------+
