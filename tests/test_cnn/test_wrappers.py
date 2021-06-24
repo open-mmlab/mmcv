@@ -330,7 +330,7 @@ def test_linear(in_w, in_h, in_feature, out_feature):
     wrapper(x_empty)
 
 
-@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 8))
+@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 9))
 def test_nn_op_forward_called():
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
