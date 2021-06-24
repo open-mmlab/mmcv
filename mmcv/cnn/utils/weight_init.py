@@ -8,7 +8,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
+from mmcv.utils import Registry, build_from_cfg
+from mmcv.utils.logging import get_logger, logger_initialized, print_log
 
 INITIALIZERS = Registry('initializer')
 
@@ -95,14 +96,15 @@ def bias_init_with_prob(prior_prob):
 
 def init_log(init_name, layer_name, module_name, weight_shape, bias_shape,
              bias_value):
+    loggername = list(logger_initialized.keys())[0]
     print_log(
         f'    initialize weights ({weight_shape}) of {layer_name} '
         f'in {module_name} in with {init_name}',
-        logger='mmcv')
+        logger=loggername)
     print_log(
         f'    fill bias ({bias_shape}) of {layer_name} '
         f'in {module_name} with {bias_value}',
-        logger='mmcv')
+        logger=loggername)
 
 
 def _get_bases_name(m):
