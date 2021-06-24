@@ -106,7 +106,7 @@ def build_norm_layer(cfg, num_features, postfix=''):
     cfg_.setdefault('eps', 1e-5)
     if layer_type != 'GN':
         layer = norm_layer(num_features, **cfg_)
-        if layer_type == 'SyncBN':
+        if layer_type == 'SyncBN' and hasattr(layer, '_specify_ddp_gpu_num'):
             layer._specify_ddp_gpu_num(1)
     else:
         assert 'num_groups' in cfg_
