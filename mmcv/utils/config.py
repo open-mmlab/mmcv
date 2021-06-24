@@ -280,7 +280,7 @@ class Config:
                 'w', suffix=file_format, delete=False) as temp_file:
             temp_file.write(cfg_str)
             # on windows, previous implementation cause error
-            # see PR 1077 for detailed considerarion
+            # see PR 1077 for details
         cfg = Config.fromfile(temp_file.name)
         os.remove(temp_file.name)
         return cfg
