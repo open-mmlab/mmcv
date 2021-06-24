@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*void deform_roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor offset,
  *                                  Tensor output, int pooled_height,
  *                                  int pooled_width, float spatial_scale,
@@ -97,3 +98,4 @@ PARROTS_EXTENSION_REGISTER(deform_roi_pool_backward)
     .output(2)
     .apply(deform_roi_pool_backward_cuda_parrots)
     .done();
+#endif
