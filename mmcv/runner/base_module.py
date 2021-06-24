@@ -43,7 +43,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         modulename = self.__class__.__name__
         if not self._is_init:
             if self.init_cfg:
-                loggername = list(logger_initialized.keys())[0]
+                loggernames = list(logger_initialized.keys())
+                loggername = loggernames[0] if len(loggernames) > 0 else 'mmcv'
                 print_log(
                     f'initialize {modulename} with init_cfg {self.init_cfg}',
                     logger=loggername)

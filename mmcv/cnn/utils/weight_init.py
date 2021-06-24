@@ -96,7 +96,8 @@ def bias_init_with_prob(prior_prob):
 
 def init_log(init_name, layer_name, module_name, weight_shape, bias_shape,
              bias_value):
-    loggername = list(logger_initialized.keys())[0]
+    loggernames = list(logger_initialized.keys())
+    loggername = loggernames[0] if len(loggernames) > 0 else 'mmcv'
     print_log(
         f'    initialize weights ({weight_shape}) of {layer_name} '
         f'in {module_name} in with {init_name}',
