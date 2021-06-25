@@ -323,8 +323,9 @@ class BaseRunner(metaclass=ABCMeta):
         for stage in Hook.stages:
             hook_infos = stage_hook_map[stage]
             if len(hook_infos) > 0:
-                info = '{}:\n{}\n'.format(stage, '\n'.join(hook_infos))
-                info += ' -------------------- '
+                info = f'{stage}:\n'
+                info += '\n'.join(hook_infos)
+                info += '\n -------------------- '
                 stage_hook_infos.append(info)
         return '\n'.join(stage_hook_infos)
 
