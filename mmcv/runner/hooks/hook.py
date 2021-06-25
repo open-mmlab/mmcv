@@ -70,7 +70,7 @@ class Hook:
     def is_last_iter(self, runner):
         return runner.iter + 1 == runner._max_iters
 
-    def get_trigger_stages(self):
+    def get_triggered_stages(self):
         trigger_stages = set()
         for stage in Hook.stages:
             if is_method_overridden(stage, Hook, self):

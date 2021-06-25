@@ -1052,7 +1052,7 @@ def test_runner_with_revise_keys():
     os.remove(checkpoint_path)
 
 
-def test_get_trigger_stages():
+def test_get_triggered_stages():
 
     class ToyHook(Hook):
         # test normal stage
@@ -1066,4 +1066,4 @@ def test_get_trigger_stages():
     hook = ToyHook()
     # stages output have order, so here is list instead of set.
     expected_stages = ['before_run', 'after_train_epoch', 'after_val_epoch']
-    assert hook.get_trigger_stages() == expected_stages
+    assert hook.get_triggered_stages() == expected_stages
