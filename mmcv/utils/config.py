@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import ast
 import copy
+import os
 import os.path as osp
 import platform
 import shutil
@@ -335,11 +336,13 @@ class Config:
             # check if users specify a wrong suffix for python
             warnings.warn(
                 'Please check "file_format", the file format may be .py')
-
-        with tempfile.NamedTemporaryFile('w', suffix=file_format) as temp_file:
+        with tempfile.NamedTemporaryFile(
+                'w', suffix=file_format, delete=False) as temp_file:
             temp_file.write(cfg_str)
-            temp_file.flush()
-            cfg = Config.fromfile(temp_file.name)
+            # on windows, previous implementation cause error
+            # see PR 1077 for details
+        cfg = Config.fromfile(temp_file.name)
+        os.remove(temp_file.name)
         return cfg
 
     @staticmethod
