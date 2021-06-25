@@ -57,10 +57,14 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.7.0]
+        torch: [1.7.0, 1.8.0, 1.9.0]
         include:
           - torch: 1.7.0
             torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -85,7 +89,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.3.1, 1.4.0, 1.5.1, 1.6.0, 1.7.0]
+        torch: [1.3.1, 1.4.0, 1.5.1, 1.6.0, 1.7.0, 1.8.0, 1.9.0]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
@@ -97,6 +101,10 @@ jobs:
             torchvision: 0.7.0
           - torch: 1.7.0
             torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -124,30 +132,34 @@ jobs:
   build_cuda:
     runs-on: ubuntu-18.04
     env:
-      CUDA: 10.1.105-1
-      CUDA_SHORT: 10.1
+      CUDA: 10.2.89-1
+      CUDA_SHORT: 10.2
       UBUNTU_VERSION: ubuntu1804
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.3.1, 1.5.1+cu101, 1.6.0+cu101, 1.7.0+cu101]
+        torch: [1.3.1, 1.5.1+cu102, 1.6.0+cu102, 1.7.0+cu102, 1.8.0+cu102, 1.9.0+cu102]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
-          - torch: 1.5.1+cu101
-            torchvision: 0.6.1+cu101
-          - torch: 1.6.0+cu101
-            torchvision: 0.7.0+cu101
-          - torch: 1.7.0+cu101
-            torchvision: 0.8.1+cu101
+          - torch: 1.5.1+cu102
+            torchvision: 0.6.1+cu102
+          - torch: 1.6.0+cu102
+            torchvision: 0.7.0+cu102
+          - torch: 1.7.0+cu102
+            torchvision: 0.8.1+cu102
+          - torch: 1.8.0+cu102
+            torchvision: 0.9.0+cu102
+          - torch: 1.9.0+cu102
+            torchvision: 0.10.0+cu102
           - python-version: 3.6
-            torch: 1.7.0+cu101
-            torchvision: 0.8.1+cu101
+            torch: 1.7.0+cu102
+            torchvision: 0.8.1+cu102
           - python-version: 3.8
-            torch: 1.7.0+cu101
-            torchvision: 0.8.1+cu101
+            torch: 1.7.0+cu102
+            torchvision: 0.8.1+cu102
 
     steps:
       - uses: actions/checkout@v2
@@ -190,7 +202,7 @@ jobs:
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.6
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.6.0+cu101' && matrix.python-version == '3.7'}}
+        if: ${{matrix.torch == '1.6.0+cu102' && matrix.python-version == '3.7'}}
         uses: codecov/codecov-action@v1.0.14
         with:
           file: ./coverage.xml
@@ -203,7 +215,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        torch: [1.3.1, 1.5.1, 1.6.0, 1.7.0]
+        torch: [1.3.1, 1.5.1, 1.6.0, 1.7.0, 1.8.0, 1.9.0]
         include:
           - torch: 1.3.1
             torchvision: 0.4.2
@@ -213,6 +225,10 @@ jobs:
             torchvision: 0.7.0
           - torch: 1.7.0
             torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
