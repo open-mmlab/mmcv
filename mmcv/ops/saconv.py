@@ -98,7 +98,8 @@ class SAConv2d(ConvAWS2d):
         switch = self.switch(avg_x)
         # sac
         weight = self._get_weight(self.weight)
-        zero_bias = torch.zeros(self.out_channels, device=weight.device)
+        zero_bias = torch.zeros(
+            self.out_channels, device=weight.device, dtype=weight.dtype)
 
         if self.use_deform:
             offset = self.offset_s(avg_x)
