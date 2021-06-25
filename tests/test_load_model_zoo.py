@@ -4,7 +4,6 @@ import os.path as osp
 from unittest.mock import patch
 
 import pytest
-import torch
 
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
@@ -12,6 +11,7 @@ from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
+from mmcv.utils import TORCH_VERSION
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -78,19 +78,21 @@ def load(filepath, map_location=None):
 def test_load_external_url():
     # test modelzoo://
     url = _load_checkpoint('modelzoo://resnet50')
-    if torch.version < '1.9.0':
+    if TORCH_VERSION < '1.9.0':
         assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
                        '357.pth')
     else:
+        # filename of checkpoint is renamed in torch1.9.0
         assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
                        'a61.pth')
 
     # test torchvision://
     url = _load_checkpoint('torchvision://resnet50')
-    if torch.version < '1.9.0':
+    if TORCH_VERSION < '1.9.0':
         assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
                        '357.pth')
     else:
+        # filename of checkpoint is renamed in torch1.9.0
         assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
                        'a61.pth')
 
