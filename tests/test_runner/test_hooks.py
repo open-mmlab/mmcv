@@ -1070,3 +1070,20 @@ def test_runner_with_revise_keys():
         key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
+
+
+def test_get_triggered_stages():
+
+    class ToyHook(Hook):
+        # test normal stage
+        def before_run():
+            pass
+
+        # test the method mapped to multi stages.
+        def after_epoch():
+            pass
+
+    hook = ToyHook()
+    # stages output have order, so here is list instead of set.
+    expected_stages = ['before_run', 'after_train_epoch', 'after_val_epoch']
+    assert hook.get_triggered_stages() == expected_stages
