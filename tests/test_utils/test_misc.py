@@ -162,9 +162,9 @@ def test_import_modules_from_strings():
         assert imported[1] is None
 
 
-def test_is_method_overriden():
+def test_is_method_overridden():
 
-    class Base(object):
+    class Base:
 
         def foo1():
             pass
@@ -178,10 +178,15 @@ def test_is_method_overriden():
             pass
 
     # test passing sub class directly
-    assert mmcv.is_method_overriden('foo1', Base, Sub)
-    assert not mmcv.is_method_overriden('foo2', Base, Sub)
+    assert mmcv.is_method_overridden('foo1', Base, Sub)
+    assert not mmcv.is_method_overridden('foo2', Base, Sub)
 
     # test passing instance of sub class
     sub_instance = Sub()
-    assert mmcv.is_method_overriden('foo1', Base, sub_instance)
-    assert not mmcv.is_method_overriden('foo2', Base, sub_instance)
+    assert mmcv.is_method_overridden('foo1', Base, sub_instance)
+    assert not mmcv.is_method_overridden('foo2', Base, sub_instance)
+
+    # base_class should be a class, not instance
+    base_instance = Base()
+    with pytest.raises(AssertionError):
+        mmcv.is_method_overridden('foo1', base_instance, sub_instance)

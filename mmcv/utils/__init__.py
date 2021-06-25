@@ -3,7 +3,7 @@
 from .config import Config, ConfigDict, DictAction
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
                    import_modules_from_strings, is_list_of,
-                   is_method_overriden, is_seq_of, is_str, is_tuple_of,
+                   is_method_overridden, is_seq_of, is_str, is_tuple_of,
                    iter_cast, list_cast, requires_executable, requires_package,
                    slice_list, to_1tuple, to_2tuple, to_3tuple, to_4tuple,
                    to_ntuple, tuple_cast)
@@ -33,7 +33,7 @@ except ImportError:
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
         'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple',
-        'is_method_overriden'
+        'is_method_overridden'
     ]
 else:
     from .env import collect_env
@@ -62,5 +62,6 @@ else:
         'get_git_hash', 'import_modules_from_strings', 'jit', 'skip_no_elena',
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
-        'assert_params_all_zeros', 'check_python_script', 'is_method_overriden'
+        'assert_params_all_zeros', 'check_python_script',
+        'is_method_overridden'
     ]
