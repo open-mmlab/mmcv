@@ -109,6 +109,7 @@ class SAConv2d(ConvAWS2d):
             if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
                 out_s = super().conv2d_forward(x, weight)
             else:
+                # bias is a required argument of _conv_forward in torch 1.9.0
                 out_s = super()._conv_forward(x, weight, zero_bias)
         ori_p = self.padding
         ori_d = self.dilation
@@ -123,6 +124,7 @@ class SAConv2d(ConvAWS2d):
             if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
                 out_l = super().conv2d_forward(x, weight)
             else:
+                # bias is a required argument of _conv_forward in torch 1.9.0
                 out_l = super()._conv_forward(x, weight, zero_bias)
         out = switch * out_s + (1 - switch) * out_l
         self.padding = ori_p
