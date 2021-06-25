@@ -79,3 +79,19 @@ def set_random_seed(seed, deterministic=False, use_rank_shift=False):
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+
+def is_method_overriden(method, base_class, sub_class):
+    """Check if a method of base class is overriden in sub class.
+
+    Args:
+        method (str): the method name to check.
+        base_class (type): the class of the base class.
+        sub_class (type | Any): the class or instance of the sub class.
+    """
+    if not isinstance(sub_class, type):
+        sub_class = sub_class.__class__
+
+    base_method = getattr(base_class, method)
+    sub_method = getattr(sub_class, method)
+    return sub_method != base_method

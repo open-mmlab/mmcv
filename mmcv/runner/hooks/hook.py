@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+from mmcv.runner.utils import is_method_overriden
 from mmcv.utils import Registry
 
 HOOKS = Registry('hook')
@@ -73,9 +74,7 @@ class Hook:
     def get_trigger_stages(self):
         trigger_stages = set()
         for stage in Hook.stages:
-            base_method = getattr(Hook, stage)
-            sub_method = getattr(self.__class__, stage)
-            if sub_method != base_method:
+            if is_method_overriden(stage, Hook, self):
                 trigger_stages.add(stage)
 
         # some methods will be triggered in multi stages
@@ -88,9 +87,7 @@ class Hook:
         }
 
         for method, map_stages in method_stages_map.items():
-            base_method = getattr(Hook, method)
-            sub_method = getattr(self.__class__, method)
-            if sub_method != base_method:
+            if is_method_overriden(method, Hook, self):
                 trigger_stages.update(map_stages)
 
         return [stage for stage in Hook.stages if stage in trigger_stages]
