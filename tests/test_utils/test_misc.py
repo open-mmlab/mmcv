@@ -160,3 +160,28 @@ def test_import_modules_from_strings():
             ['os.path', '_not_implemented'], allow_failed_imports=True)
         assert imported[0] == osp
         assert imported[1] is None
+
+
+def test_is_method_overriden():
+
+    class Base(object):
+
+        def foo1():
+            pass
+
+        def foo2():
+            pass
+
+    class Sub(Base):
+
+        def foo1():
+            pass
+
+    # test passing sub class directly
+    assert mmcv.is_method_overriden('foo1', Base, Sub)
+    assert not mmcv.is_method_overriden('foo2', Base, Sub)
+
+    # test passing instance of sub class
+    sub_instance = Sub()
+    assert mmcv.is_method_overriden('foo1', Base, sub_instance)
+    assert not mmcv.is_method_overriden('foo2', Base, sub_instance)

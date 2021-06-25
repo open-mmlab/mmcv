@@ -4,7 +4,7 @@ import random
 import numpy as np
 import torch
 
-from mmcv.runner import is_method_overriden, set_random_seed
+from mmcv.runner import set_random_seed
 
 
 def test_set_random_seed():
@@ -26,28 +26,3 @@ def test_set_random_seed():
     assert a_random == b_random
     assert np.equal(a_np_random, b_np_random).all()
     assert torch.equal(a_torch_random, b_torch_random)
-
-
-def test_is_method_overriden():
-
-    class Base(object):
-
-        def foo1():
-            pass
-
-        def foo2():
-            pass
-
-    class Sub(Base):
-
-        def foo1():
-            pass
-
-    # test passing sub class directly
-    assert is_method_overriden('foo1', Base, Sub)
-    assert not is_method_overriden('foo2', Base, Sub)
-
-    # test passing instance of sub class
-    sub_instance = Sub()
-    assert is_method_overriden('foo1', Base, sub_instance)
-    assert not is_method_overriden('foo2', Base, sub_instance)

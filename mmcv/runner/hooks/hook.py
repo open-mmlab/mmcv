@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from mmcv.runner.utils import is_method_overriden
-from mmcv.utils import Registry
+from mmcv.utils import Registry, is_method_overriden
 
 HOOKS = Registry('hook')
 
