@@ -98,6 +98,8 @@ class SAConv2d(ConvAWS2d):
         switch = self.switch(avg_x)
         # sac
         weight = self._get_weight(self.weight)
+        zero_bias = torch.zeros(self.out_channels, device=weight.device)
+
         if self.use_deform:
             offset = self.offset_s(avg_x)
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
@@ -106,7 +108,7 @@ class SAConv2d(ConvAWS2d):
             if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
                 out_s = super().conv2d_forward(x, weight)
             else:
-                out_s = super()._conv_forward(x, weight)
+                out_s = super()._conv_forward(x, weight, zero_bias)
         ori_p = self.padding
         ori_d = self.dilation
         self.padding = tuple(3 * p for p in self.padding)
@@ -120,7 +122,7 @@ class SAConv2d(ConvAWS2d):
             if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
                 out_l = super().conv2d_forward(x, weight)
             else:
-                out_l = super()._conv_forward(x, weight)
+                out_l = super()._conv_forward(x, weight, zero_bias)
         out = switch * out_s + (1 - switch) * out_l
         self.padding = ori_p
         self.dilation = ori_d
