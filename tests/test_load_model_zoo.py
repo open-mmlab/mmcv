@@ -77,12 +77,12 @@ def load(filepath, map_location=None):
 def test_load_external_url():
     # test modelzoo://
     url = _load_checkpoint('modelzoo://resnet50')
-    assert url == 'url:https://download.pytorch.org/models/resnet50-19c8e357' \
+    assert url == 'url:https://download.pytorch.org/models/resnet50-0676ba61' \
                   '.pth'
 
     # test torchvision://
     url = _load_checkpoint('torchvision://resnet50')
-    assert url == 'url:https://download.pytorch.org/models/resnet50-19c8e357' \
+    assert url == 'url:https://download.pytorch.org/models/resnet50-0676ba61' \
                   '.pth'
 
     # test open-mmlab:// with default MMCV_HOME

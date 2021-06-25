@@ -15,7 +15,8 @@ def mock(*args, **kwargs):
 
 @patch('torch.distributed._broadcast_coalesced', mock)
 @patch('torch.distributed.broadcast', mock)
-@patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', MagicMock)
+@patch('torch.distributed._verify_model_across_ranks', mock)
+@patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', mock)
 def test_is_module_wrapper():
 
     class Model(nn.Module):
