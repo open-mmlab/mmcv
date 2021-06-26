@@ -39,6 +39,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # the key should be the obj:`nn.Parameter` of model and the value
         # should be a dict contains
         # `params_name`, `init_info` and `tmp_sum_value`.
+
         self.params_init_info = defaultdict(dict)
 
         # Backward compatibility in derived classes
@@ -92,8 +93,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     # user may overload the `init_weights`
                     update_init_infos(
                         m,
-                        init_info='Self-define init_weights: '
-                        'The user implements `init_weights` by himself ')
+                        init_info='Initialized by user-defined `init_weights`')
 
             self._is_init = True
         else:
@@ -105,6 +105,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 print_log(
                     f"{item['params_name']} - {item['init_info']}",
                     logger=loggername)
+            for sub_moduls in self.modules():
+                del sub_moduls.params_init_info
 
     def __repr__(self):
         s = super().__repr__()
