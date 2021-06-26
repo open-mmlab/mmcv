@@ -39,7 +39,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # the key should be the obj:`nn.Parameter` of model and the value
         # should be a dict contains
         # `params_name`, `init_info` and `tmp_sum_value`.
-
+        # this attribute would be deleted after all parameters is initialized.
         self.params_init_info = defaultdict(dict)
 
         # Backward compatibility in derived classes
