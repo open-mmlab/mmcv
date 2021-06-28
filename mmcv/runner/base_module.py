@@ -9,6 +9,15 @@ from mmcv.utils.logging import logger_initialized, print_log
 
 
 def update_init_infos(module, *, init_info):
+    """Update the `params_init_info` in the module if the value of parameters
+    are changed.
+
+    Args:
+        module (obj:`nn.Module`): The `module of PyTorch with a user-define
+            attributes `params_init_info` which recorde the initialization
+            information.
+        init_info (str): The string describes the initialization.
+    """
     for param in module.parameters():
         if module.params_init_info[param]['tmp_sum_value'] != param.data.sum():
             module.params_init_info[param]['init_info'] = init_info
@@ -66,6 +75,10 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 self.params_init_info[param]['tmp_sum_value'] = param.data.sum(
                 )
             # pass `params_init_info` to all submodules
+            # all submodules will modify the same `params_init_info` \
+            # during initialization thus params_init_info will
+            # keep the final initialization
+            # information of each module.
             for sub_moduls in self.modules():
                 sub_moduls.params_init_info = self.params_init_info
 
