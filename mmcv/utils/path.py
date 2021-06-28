@@ -65,8 +65,8 @@ def scandir(dir_path, suffix=None, recursive=False):
             rel_path = osp.relpath(entry.path, root)
             if suffix is None or rel_path.endswith(suffix):
                 yield rel_path
-         elif recursive and os.path.isdir(entry.path):
-             yield from _scandir(entry.path, suffix=suffix, recursive=recursive)
+        elif recursive and os.path.isdir(entry.path):
+            yield from _scandir(entry.path, suffix=suffix, recursive=recursive)
 
     return _scandir(dir_path, suffix=suffix, recursive=recursive)
 
