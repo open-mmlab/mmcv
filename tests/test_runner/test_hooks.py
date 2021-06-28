@@ -6,6 +6,7 @@ CommandLine:
 """
 import logging
 import os.path as osp
+import random
 import re
 import shutil
 import sys
@@ -150,9 +151,26 @@ def test_custom_hook():
     shutil.rmtree(runner.work_dir)
 
     runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test custom_hooks with string priority setting
+    priority_ranks = [
+        'HIGHEST', 'VERY_HIGH', 'HIGH', 'ABOVE_NORMAL', 'NORMAL',
+        'BELOW_NORMAL', 'LOW', 'VERY_LOW', 'LOWEST'
+    ]
+    random_priority_ranks = priority_ranks.copy()
+    random.shuffle(random_priority_ranks)
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=rank, info=rank)
+        for rank in random_priority_ranks
+    ]
+    runner.register_custom_hooks(custom_hooks_cfg)
+    assert [hook.info for hook in runner.hooks] == priority_ranks
+    shutil.rmtree(runner.work_dir)
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
     # test register_training_hooks order
     custom_hooks_cfg = [
         dict(type='ToyHook', priority=1, info='custom 1'),
+        dict(type='ToyHook', priority='NORMAL', info='custom normal'),
         dict(type='ToyHook', priority=89, info='custom 89')
     ]
     runner.register_training_hooks(
@@ -163,9 +181,11 @@ def test_custom_hook():
         momentum_config=ToyHook('momentum'),
         timer_config=ToyHook('timer'),
         custom_hooks_config=custom_hooks_cfg)
+    # If custom hooks have same priority with default hooks, custom hooks
+    # will be triggered after default hooks.
     hooks_order = [
-        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint', 'timer',
-        'custom 89', 'log'
+        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint',
+        'custom normal', 'timer', 'custom 89', 'log'
     ]
     assert [hook.info for hook in runner.hooks] == hooks_order
     shutil.rmtree(runner.work_dir)
@@ -1050,3 +1070,20 @@ def test_runner_with_revise_keys():
         key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
+
+
+def test_get_triggered_stages():
+
+    class ToyHook(Hook):
+        # test normal stage
+        def before_run():
+            pass
+
+        # test the method mapped to multi stages.
+        def after_epoch():
+            pass
+
+    hook = ToyHook()
+    # stages output have order, so here is list instead of set.
+    expected_stages = ['before_run', 'after_train_epoch', 'after_val_epoch']
+    assert hook.get_triggered_stages() == expected_stages

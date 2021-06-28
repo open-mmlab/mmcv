@@ -5,6 +5,7 @@
 #include "sync_bn_pytorch.h"
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void sync_bn_forward_mean_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                        const OperatorBase::in_list_t& ins,
                                        OperatorBase::out_list_t& outs) {
@@ -106,3 +107,4 @@ PARROTS_EXTENSION_REGISTER(sync_bn_backward_data)
     .output(1)
     .apply(sync_bn_backward_data_cuda_parrots)
     .done();
+#endif
