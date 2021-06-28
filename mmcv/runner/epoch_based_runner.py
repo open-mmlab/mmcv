@@ -155,8 +155,10 @@ class EpochBasedRunner(BaseRunner):
                 f'meta should be a dict or None, but got {type(meta)}')
         if self.meta is not None:
             meta.update(self.meta)
-            #Note: meta.update(self.meta) should be done before meta.update(epoch=self.epoch + 1, iter=self.iter) 
-            #otherwise there will be problems with resumed checkpoints. More details in https://github.com/open-mmlab/mmcv/pull/1108
+            # Note: meta.update(self.meta) should be done before
+            # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
+            # there will be problems with resumed checkpoints.
+            # More details in https://github.com/open-mmlab/mmcv/pull/1108
         meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.epoch + 1)
