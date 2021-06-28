@@ -152,7 +152,7 @@ _base_ = ['./config_a.py', './config_e.py']
 ...      d='string')
 ```
 
-#### Reference variables from base
+### Reference variables from base
 
 You can reference variables defined in base using the following grammar.
 
