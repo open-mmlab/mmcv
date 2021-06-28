@@ -70,8 +70,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             for name, param in self.named_parameters():
                 self.params_init_info[param]['params_name'] = name
                 self.params_init_info[param][
-                    'init_info'] = 'The value is the same as ' \
-                                   'the default initialization of PyTorch'
+                    'init_info'] = f'The value is the same before and ' \
+                                   f'after calling `init_weights` ' \
+                                   f'of {self.__class__.__name__} '
                 self.params_init_info[param]['tmp_sum_value'] = param.data.sum(
                 )
             # pass `params_init_info` to all submodules
