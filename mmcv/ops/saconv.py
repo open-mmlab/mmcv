@@ -1,3 +1,5 @@
+from distutils.version import LooseVersion
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -106,9 +108,10 @@ class SAConv2d(ConvAWS2d):
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+            if (LooseVersion(TORCH_VERSION) < LooseVersion('1.5.0')
+                    or TORCH_VERSION == 'parrots'):
                 out_s = super().conv2d_forward(x, weight)
-            elif TORCH_VERSION >= '1.8.0':
+            elif LooseVersion(TORCH_VERSION) >= LooseVersion('1.8.0'):
                 # bias is a required argument of _conv_forward in torch 1.8.0
                 out_s = super()._conv_forward(x, weight, zero_bias)
             else:
@@ -123,9 +126,10 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+            if (LooseVersion(TORCH_VERSION) < LooseVersion('1.5.0')
+                    or TORCH_VERSION == 'parrots'):
                 out_l = super().conv2d_forward(x, weight)
-            elif TORCH_VERSION >= '1.8.0':
+            elif LooseVersion(TORCH_VERSION) >= LooseVersion('1.8.0'):
                 # bias is a required argument of _conv_forward in torch 1.8.0
                 out_l = super()._conv_forward(x, weight, zero_bias)
             else:
