@@ -1,4 +1,5 @@
 import os
+from distutils.version import LooseVersion
 
 import numpy
 import torch
@@ -112,7 +113,8 @@ class TestMdconv(object):
 
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
-        if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+        if (TORCH_VERSION != 'parrots'
+                and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
             with autocast(enabled=True):
                 self._test_amp_mdconv(torch.float)
                 self._test_amp_mdconv(torch.half)

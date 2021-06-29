@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import copy
 from collections import defaultdict
+from distutils.version import LooseVersion
 from itertools import chain
 
 from torch.nn.utils import clip_grad
@@ -42,7 +43,8 @@ class OptimizerHook(Hook):
         runner.optimizer.step()
 
 
-if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+if (TORCH_VERSION != 'parrots'
+        and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
 
     @HOOKS.register_module()
     class Fp16OptimizerHook(OptimizerHook):
