@@ -3,6 +3,7 @@ import functools
 import os
 import subprocess
 from collections import OrderedDict
+from distutils.version import LooseVersion
 
 import torch
 import torch.multiprocessing as mp
@@ -78,7 +79,7 @@ def _init_dist_slurm(backend, port=None):
 
 
 def get_dist_info():
-    if TORCH_VERSION < '1.0':
+    if LooseVersion(TORCH_VERSION) < LooseVersion('1.0'):
         initialized = dist._initialized
     else:
         if dist.is_available():
