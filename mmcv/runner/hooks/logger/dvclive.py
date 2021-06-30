@@ -12,6 +12,7 @@ class DvcliveLoggerHook(LoggerHook):
 
     Args:
         path (str): Directory where dvclive will write TSV log files.
+            Default: 'dvclive'.
         interval (int): Logging interval (every k iterations).
             Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
@@ -27,7 +28,7 @@ class DvcliveLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 path,
+                 path='dvclive',
                  interval=10,
                  ignore_last=True,
                  reset_flag=True,
