@@ -179,6 +179,19 @@ If you would like to build MMCV from source, please refer to the [guide](https:/
 If you face some installation issues, CUDA related issues or RuntimeErrors,
 you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).
 
+## Citation
+
+If you find this project useful in your research, please consider cite:
+
+```latex
+@misc{mmcv,
+    title={{MMCV: OpenMMLab} Computer Vision Foundation},
+    author={MMCV Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmcv}},
+    year={2018}
+}
+```
+
 ## Contributing
 
 We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.
