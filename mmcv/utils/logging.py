@@ -28,6 +28,7 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)
+    logger.root.handlers.clear()
     if name in logger_initialized:
         return logger
     # handle hierarchical names
