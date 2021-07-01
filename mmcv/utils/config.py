@@ -618,7 +618,7 @@ class DictAction(Action):
             >>> DictAction._parse_iterable('[a, b, c]')
             ['a', 'b', 'c']
             >>> DictAction._parse_iterable('[(1, 2, 3), [a, b], c]')
-            [(1, 2, 3), ['a', 'b], 'c']
+            [(1, 2, 3), ['a', 'b'], 'c']
         """
 
         def find_next_comma(string):
