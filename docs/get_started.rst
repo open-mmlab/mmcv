@@ -1,9 +1,9 @@
-Getting started
+Get started
 ===================
 
 .. toctree::
     :maxdepth: 2
 
-    getting_started/introduction.md
-    getting_started/installation.md
-    getting_started/build.md
+    get_started/introduction.md
+    get_started/installation.md
+    get_started/build.md
