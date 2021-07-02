@@ -1,0 +1,4 @@
+m2r
+opencv-python
+sphinx_markdown_tables
+torch

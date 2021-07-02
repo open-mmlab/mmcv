@@ -1,0 +1,9 @@
+coverage
+lmdb
+onnx==1.7.0
+onnxoptimizer
+onnxruntime==1.4.0
+pytest
+PyTurboJPEG
+scipy
+tiffile

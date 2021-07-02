@@ -1,0 +1,5 @@
+include requirements/runtime.txt
+include mmcv/model_zoo/open_mmlab.json mmcv/model_zoo/deprecated.json mmcv/model_zoo/mmcls.json
+include mmcv/ops/csrc/*.cuh mmcv/ops/csrc/*.hpp
+include mmcv/ops/csrc/pytorch/*.cu mmcv/ops/csrc/pytorch/*.cpp
+include mmcv/ops/csrc/parrots/*.cu mmcv/ops/csrc/parrots/*.cpp
