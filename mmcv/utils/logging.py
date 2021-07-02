@@ -28,7 +28,12 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)
-    logger.root.handlers.clear()
+
+    # set the root logger's StreamHandler, if any, to log at the ERROR level
+    for handler in logger.root.handlers:
+        if type(handler) is logging.StreamHandler:
+            handler.setLevel(logging.ERROR)
+
     if name in logger_initialized:
         return logger
     # handle hierarchical names
@@ -93,6 +98,7 @@ def print_log(msg, logger=None, level=logging.INFO):
     elif isinstance(logger, str):
         _logger = get_logger(logger)
         _logger.log(level, msg)
+        return _logger
     else:
         raise TypeError(
             'logger should be either a logging.Logger object, str, '
