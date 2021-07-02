@@ -98,7 +98,6 @@ def print_log(msg, logger=None, level=logging.INFO):
     elif isinstance(logger, str):
         _logger = get_logger(logger)
         _logger.log(level, msg)
-        return _logger
     else:
         raise TypeError(
             'logger should be either a logging.Logger object, str, '
