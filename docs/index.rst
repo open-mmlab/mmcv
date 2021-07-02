@@ -8,7 +8,7 @@ Welcome to MMCV's documentation!
    deployment.rst
    understand-mmcv.rst
    api.rst
-   trouble_shooting.md
+   faq.md
    community.rst
 
 
