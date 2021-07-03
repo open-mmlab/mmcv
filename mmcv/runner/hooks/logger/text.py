@@ -176,3 +176,4 @@ class TextLoggerHook(LoggerHook):
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
+        return log_dict

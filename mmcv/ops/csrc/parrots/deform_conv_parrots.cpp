@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*void deform_conv_forward_cuda(Tensor input, Tensor weight, Tensor offset,
  *                              Tensor output, Tensor columns, Tensor ones,
  *                              int kW, int kH, int dW, int dH, int padW,
@@ -177,3 +178,4 @@ PARROTS_EXTENSION_REGISTER(deform_conv_backward_parameters)
     .output(3)
     .apply(deform_conv_backward_parameters_cuda_parrots)
     .done();
+#endif

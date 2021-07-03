@@ -1,11 +1,11 @@
 Deployment
-========
+================
 
 .. toctree::
     :maxdepth: 2
 
-    onnx.md
-    onnxruntime_op.md
-    onnxruntime_custom_ops.md
-    tensorrt_plugin.md
-    tensorrt_custom_ops.md
+    deployment/onnx.md
+    deployment/onnxruntime_op.md
+    deployment/onnxruntime_custom_ops.md
+    deployment/tensorrt_plugin.md
+    deployment/tensorrt_custom_ops.md

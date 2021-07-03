@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*
  * void carafe_forward_cuda(Tensor features, Tensor masks, Tensor rfeatures,
  *                          Tensor routput, Tensor rmasks, Tensor output,
@@ -83,3 +84,4 @@ PARROTS_EXTENSION_REGISTER(carafe_backward)
     .output(6)
     .apply(carafe_backward_cuda_parrots)
     .done();
+#endif
