@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void masked_im2col_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                         const OperatorBase::in_list_t& ins,
                                         OperatorBase::out_list_t& outs) {
@@ -67,3 +68,4 @@ PARROTS_EXTENSION_REGISTER(masked_col2im_forward)
     .output(1)
     .apply(masked_col2im_forward_cuda_parrots)
     .done();
+#endif

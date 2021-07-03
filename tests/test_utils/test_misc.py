@@ -4,6 +4,31 @@ import pytest
 import mmcv
 
 
+def test_to_ntuple():
+    single_number = 2
+    assert mmcv.utils.to_1tuple(single_number) == (single_number, )
+    assert mmcv.utils.to_2tuple(single_number) == (single_number,
+                                                   single_number)
+    assert mmcv.utils.to_3tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_4tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_ntuple(5)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
+    assert mmcv.utils.to_ntuple(6)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
+
+
 def test_iter_cast():
     assert mmcv.list_cast([1, 2, 3], int) == [1, 2, 3]
     assert mmcv.list_cast(['1.1', 2, '3'], float) == [1.1, 2.0, 3.0]
@@ -105,6 +130,7 @@ def test_requires_executable(capsys):
 def test_import_modules_from_strings():
     # multiple imports
     import os.path as osp_
+
     import sys as sys_
     osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
     assert osp == osp_
@@ -134,3 +160,33 @@ def test_import_modules_from_strings():
             ['os.path', '_not_implemented'], allow_failed_imports=True)
         assert imported[0] == osp
         assert imported[1] is None
+
+
+def test_is_method_overridden():
+
+    class Base:
+
+        def foo1():
+            pass
+
+        def foo2():
+            pass
+
+    class Sub(Base):
+
+        def foo1():
+            pass
+
+    # test passing sub class directly
+    assert mmcv.is_method_overridden('foo1', Base, Sub)
+    assert not mmcv.is_method_overridden('foo2', Base, Sub)
+
+    # test passing instance of sub class
+    sub_instance = Sub()
+    assert mmcv.is_method_overridden('foo1', Base, sub_instance)
+    assert not mmcv.is_method_overridden('foo2', Base, sub_instance)
+
+    # base_class should be a class, not instance
+    base_instance = Base()
+    with pytest.raises(AssertionError):
+        mmcv.is_method_overridden('foo1', base_instance, sub_instance)
