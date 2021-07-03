@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void sigmoid_focal_loss_forward_cuda_parrots(CudaContext& ctx,
                                              const SSElement& attr,
                                              const OperatorBase::in_list_t& ins,
@@ -108,3 +109,4 @@ PARROTS_EXTENSION_REGISTER(softmax_focal_loss_backward)
     .output(2)
     .apply(softmax_focal_loss_backward_cuda_parrots)
     .done();
+#endif

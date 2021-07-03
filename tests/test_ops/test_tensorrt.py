@@ -406,6 +406,77 @@ def test_deform_conv():
     assert torch.allclose(pytorch_results, trt_results)
 
 
+@pytest.mark.parametrize('with_bias', [True, False])
+def test_modulated_deform_conv(with_bias):
+    try:
+        from mmcv.ops import ModulatedDeformConv2dPack
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('test requires compilation')
+
+    input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
+
+    x = torch.Tensor(input).cuda()
+    model = ModulatedDeformConv2dPack(
+        1,
+        1,
+        kernel_size=(2, 2),
+        stride=1,
+        padding=1,
+        deform_groups=1,
+        bias=with_bias)
+    model.weight.data.fill_(1.)
+    model.type(torch.float32)
+    model = model.cuda().eval()
+
+    input_names = ['input']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            model, (x.clone(), ),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wraper
+    opt_shape_dict = {
+        'input': [list(x.shape), list(x.shape),
+                  list(x.shape)],
+    }
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': x.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = model(x.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    torch.testing.assert_allclose(pytorch_results, trt_results)
+
+
 @pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
