@@ -1,41 +1,3 @@
-<div align="center">
-    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
-</div>
-
-[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
-
-English | [简体中文](README_zh-CN.md)
-
-## Introduction
-
-MMCV is a foundational library for computer vision research and supports many
-research projects as below:
-
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
-- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
-- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
-- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
-- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
-- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
-- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
-- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
-- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition and understanding toolbox.
-- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
-
-It provides the following functionalities.
-
-- Universal IO APIs
-- Image/Video processing
-- Image and annotation visualization
-- Useful utilities (progress bar, timer, ...)
-- PyTorch runner with hooking mechanism
-- Various CNN architectures
-- High-quality implementation of common CUDA ops
-
-See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
-
-Note: MMCV requires Python 3.6+.
-
 ## Installation
 
 There are two versions of MMCV:
@@ -172,30 +134,4 @@ c. Install full version with custom operators for onnxruntime
 
 - Check [here](docs/onnxruntime_op.md) for detailed instruction.
 
-If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
-
-## FAQ
-
-If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).
-
-## Citation
-
-If you find this project useful in your research, please consider cite:
-
-```latex
-@misc{mmcv,
-    title={{MMCV: OpenMMLab} Computer Vision Foundation},
-    author={MMCV Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmcv}},
-    year={2018}
-}
-```
-
-## Contributing
-
-We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for the contributing guideline.
-
-## License
-
-MMCV is released under the Apache 2.0 license, while some specific operations in this library are with other licenses. Please refer to [LICENSES.md](LICENSES.md) for the careful check, if you are using our code for commercial matters.
+If you would like to build MMCV from source, please refer to the [guide](build.md).
