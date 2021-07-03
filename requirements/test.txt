@@ -2,7 +2,7 @@ coverage
 lmdb
 onnx==1.7.0
 onnxoptimizer
-onnxruntime==1.5.1
+onnxruntime==1.4.0
 pytest
 PyTurboJPEG
 scipy
