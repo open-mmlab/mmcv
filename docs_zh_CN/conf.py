@@ -54,9 +54,7 @@ extensions = [
     'sphinx_markdown_tables'
 ]  # yapf: disable
 
-autodoc_mock_imports = [
-    'cv2', 'mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision'
-]
+autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
