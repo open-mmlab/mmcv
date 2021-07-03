@@ -1,4 +1,4 @@
-Understand MMCV
+深入理解 MMCV
 =================
 
 .. toctree::
