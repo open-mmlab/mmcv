@@ -50,17 +50,16 @@ if __name__ == '__main__':
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     trainset = CIFAR10(
-        root='data', train=True, download=True, transform=transform)
+        root='/home/zhouzaida/datasets/cifar10',
+        train=True,
+        download=True,
+        transform=transform)
     trainloader = DataLoader(
         trainset, batch_size=128, shuffle=True, num_workers=2)
-    testset = CIFAR10(
-        root='data', train=False, download=True, transform=transform)
-    testloader = DataLoader(
-        testset, batch_size=128, shuffle=False, num_workers=2)
 
-    # runner
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     logger = get_logger('mmcv')
+    # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
         model,
         optimizer=optimizer,
@@ -68,14 +67,19 @@ if __name__ == '__main__':
         logger=logger,
         max_epochs=4)
 
+    # learning rate scheduler config
     lr_config = dict(policy='step', step=[2, 3])
+    # configuration of optimizer
     optimizer_config = dict(grad_clip=None)
+    # configuration of saving checkpoints periodically
     checkpoint_config = dict(interval=1)
+    # save log periodically and multiple hooks can be used simultaneously
     log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
+    # register hooks to runner and those hooks will be invoked automatically
     runner.register_training_hooks(
         lr_config=lr_config,
         optimizer_config=optimizer_config,
         checkpoint_config=checkpoint_config,
         log_config=log_config)
 
-    runner.run([trainloader], [('train', 2)])
+    runner.run([trainloader], [('train', 1)])
