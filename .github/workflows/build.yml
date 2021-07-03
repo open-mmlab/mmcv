@@ -207,7 +207,7 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-  build_cu111:
+  build_cu102:
     runs-on: ubuntu-18.04
     env:
       CUDA: 10.2.89-1
