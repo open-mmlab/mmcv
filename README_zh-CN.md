@@ -167,13 +167,13 @@ pip install mmcv
 
 c. 安装完整版并且编译 onnxruntime 的自定义算子
 
-- 详细的指南请查看 [这里](docs/onnxruntime_op.md)。
+- 详细的指南请查看 [这里](docs/deployment/onnxruntime_op.md)。
 
-如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/build.html)。
+如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/get_started/build.html)。
 
 ## FAQ
 
-如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html) 看是否已经有解决方案。
+如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/en/latest/faq.html) 看是否已经有解决方案。
 
 ## 贡献指南
 
