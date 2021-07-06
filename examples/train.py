@@ -50,10 +50,7 @@ if __name__ == '__main__':
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     trainset = CIFAR10(
-        root='/home/zhouzaida/datasets/cifar10',
-        train=True,
-        download=True,
-        transform=transform)
+        root='data', train=True, download=True, transform=transform)
     trainloader = DataLoader(
         trainset, batch_size=128, shuffle=True, num_workers=2)
 
