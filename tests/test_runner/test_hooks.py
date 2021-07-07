@@ -878,7 +878,8 @@ def test_reduce_lr_update_hook(multi_optimziers):
         # periods should be specified
         ReduceLrUpdateHook()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(AssertionError):
+        # periods should be list
         ReduceLrUpdateHook(periods=1)
 
     with pytest.raises(AssertionError):
