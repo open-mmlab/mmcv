@@ -4,6 +4,8 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
+from mmcv import ConfigDict
+
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab."""
@@ -20,7 +22,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         super(BaseModule, self).__init__()
         # define default value of init_cfg instead of hard code
-        # in init_weigt() function
+        # in init_weight() function
         self._is_init = False
         self.init_cfg = init_cfg
 
@@ -41,6 +43,13 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         if not self._is_init:
             if self.init_cfg:
                 initialize(self, self.init_cfg)
+                if isinstance(self.init_cfg, (dict, ConfigDict)):
+                    # Avoid the parameters of the pre-training model
+                    # being overwritten by the init_weights
+                    # of the children.
+                    if self.init_cfg['type'] == 'Pretrained':
+                        return
+
             for m in self.children():
                 if hasattr(m, 'init_weights'):
                     m.init_weights()

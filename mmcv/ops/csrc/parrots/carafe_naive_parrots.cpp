@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*void carafe_naive_forward_cuda(Tensor features, Tensor masks, Tensor output,
  *                                int kernel_size, int group_size,
  *                                int scale_factor)
@@ -69,3 +70,4 @@ PARROTS_EXTENSION_REGISTER(carafe_naive_backward)
     .output(2)
     .apply(carafe_naive_backward_cuda_parrots)
     .done();
+#endif

@@ -84,8 +84,8 @@ def _build_iter_runner():
 
 class EvalHook(BaseEvalHook):
 
-    greater_keys = ['acc', 'top']
-    less_keys = ['loss', 'loss_top']
+    _default_greater_keys = ['acc', 'top']
+    _default_less_keys = ['loss', 'loss_top']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -272,6 +272,31 @@ def test_eval_hook():
         assert osp.exists(ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == 7
         assert not osp.exists(old_ckpt_path)
+
+    # test EvalHook with customer test_fn and greater/less keys
+    loader = DataLoader(EvalDataset())
+    model = Model()
+    data_loader = DataLoader(EvalDataset())
+
+    eval_hook = EvalHook(
+        data_loader,
+        save_best='acc',
+        test_fn=mock.MagicMock(return_value={}),
+        greater_keys=[],
+        less_keys=['acc'])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        logger = get_logger('test_eval')
+        runner = EpochBasedRunner(model=model, work_dir=tmpdir, logger=logger)
+        runner.register_checkpoint_hook(dict(interval=1))
+        runner.register_hook(eval_hook)
+        runner.run([loader], [('train', 1)], 8)
+
+        ckpt_path = osp.join(tmpdir, 'best_acc_epoch_6.pth')
+
+        assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
+        assert osp.exists(ckpt_path)
+        assert runner.meta['hook_msgs']['best_score'] == -3
 
 
 @patch('mmcv.engine.single_gpu_test', MagicMock)

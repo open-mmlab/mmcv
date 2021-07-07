@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import onnx
@@ -8,7 +9,7 @@ import torch
 import torch.nn as nn
 
 try:
-    from mmcv.tensorrt import (TRTWraper, is_tensorrt_plugin_loaded, onnx2trt,
+    from mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
                                save_trt_engine)
 except ImportError:
     pytest.skip(
@@ -94,7 +95,7 @@ def test_roialign():
             fp16_mode=fp16_mode,
             max_workspace_size=max_workspace_size)
         save_trt_engine(trt_engine, trt_file)
-        trt_model = TRTWraper(trt_file, ['input', 'rois'], ['roi_feat'])
+        trt_model = TRTWrapper(trt_file, ['input', 'rois'], ['roi_feat'])
 
         with torch.no_grad():
             trt_outputs = trt_model({'input': input, 'rois': rois})
@@ -125,7 +126,8 @@ def test_nms():
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
-    nms = partial(nms, iou_threshold=0.7, offset=0)
+    nms = partial(
+        nms, iou_threshold=0.7, offset=0, score_threshold=0.1, max_num=100)
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
@@ -154,7 +156,7 @@ def test_nms():
         fp16_mode=fp16_mode,
         max_workspace_size=max_workspace_size)
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, ['boxes', 'scores'], ['dets', 'inds'])
+    trt_model = TRTWrapper(trt_file, ['boxes', 'scores'], ['dets', 'inds'])
 
     with torch.no_grad():
         trt_outputs = trt_model({'boxes': boxes, 'scores': scores})
@@ -194,7 +196,7 @@ def test_batched_nms():
     fp16_mode = False
     max_workspace_size = 1 << 30
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
-    nms_cfg = dict(type='nms', iou_threshold=0.7)
+    nms_cfg = dict(type='nms', iou_threshold=0.7, score_threshold=0.1)
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
     idxs = torch.from_numpy(data['idxs']).cuda()
@@ -236,7 +238,7 @@ def test_batched_nms():
         fp16_mode=fp16_mode,
         max_workspace_size=max_workspace_size)
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({
@@ -310,7 +312,7 @@ def test_scatternd():
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': data.clone()})
@@ -386,7 +388,7 @@ def test_deform_conv():
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': x.clone()})
@@ -402,6 +404,77 @@ def test_deform_conv():
     if os.path.exists(trt_file):
         os.remove(trt_file)
     assert torch.allclose(pytorch_results, trt_results)
+
+
+@pytest.mark.parametrize('with_bias', [True, False])
+def test_modulated_deform_conv(with_bias):
+    try:
+        from mmcv.ops import ModulatedDeformConv2dPack
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('test requires compilation')
+
+    input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
+
+    x = torch.Tensor(input).cuda()
+    model = ModulatedDeformConv2dPack(
+        1,
+        1,
+        kernel_size=(2, 2),
+        stride=1,
+        padding=1,
+        deform_groups=1,
+        bias=with_bias)
+    model.weight.data.fill_(1.)
+    model.type(torch.float32)
+    model = model.cuda().eval()
+
+    input_names = ['input']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            model, (x.clone(), ),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wraper
+    opt_shape_dict = {
+        'input': [list(x.shape), list(x.shape),
+                  list(x.shape)],
+    }
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': x.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = model(x.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    torch.testing.assert_allclose(pytorch_results, trt_results)
 
 
 @pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
@@ -462,7 +535,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
         max_workspace_size=max_workspace_size)
 
     save_trt_engine(trt_engine, trt_file)
-    trt_model = TRTWraper(trt_file, input_names, output_names)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
 
     with torch.no_grad():
         trt_outputs = trt_model({'input': input.clone(), 'grid': grid.clone()})
@@ -471,6 +544,182 @@ def test_grid_sample(mode, padding_mode, align_corners):
     # compute pytorch_output
     with torch.no_grad():
         pytorch_results = wrapped_model(input.clone(), grid.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    assert torch.allclose(pytorch_results, trt_results)
+
+
+@pytest.mark.parametrize('func', [torch.cummax, torch.cummin])
+def test_cummin_cummax(func: Callable):
+    # Note generally `cummax` or `cummin` is exportable to ONNX
+    # as long as the pytorch version >= 1.5.0, since `torch.cummax`
+    # is only supported with torch >= 1.5.0.
+    # But when `cummax` or `cummin` serves as an intermediate component
+    # whose outputs is used as inputs for another modules, it's expected
+    # that pytorch version must be >= 1.7.0. Otherwise error appears like:
+    # `RuntimeError: tuple  appears in op that does not forward tuples,
+    # unsupported 'kind: prim::PythonOp`.
+    from packaging import version
+    if version.parse(torch.__version__) < version.parse('1.7.0'):
+        pytest.skip('test_cummax_cummin should be ran with pytorch >= 1.7.0')
+
+    opset = 11
+    # register custom op `mmcv::cummax` and `mmcv::cummin`
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics(opset)
+
+    input_list = [
+        # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
+        torch.rand((2, 3, 4, 1, 5)).cuda(),
+        torch.rand((1)).cuda()
+    ]
+
+    input_names = ['input']
+    output_names = ['output', 'indices']
+
+    for input in input_list:
+        ndims = input.dim()
+        # valid dim range is [-ndims, ndims-1]
+        # test for all `dim` value which is valid
+        for dim in range(-ndims, ndims):
+            cummax_func = partial(func, dim=dim)
+            wrapped_model = WrapFunction(cummax_func).eval().cuda()
+
+            with torch.no_grad():
+                torch.onnx.export(
+                    wrapped_model,
+                    input,
+                    onnx_file,
+                    export_params=True,
+                    keep_initializers_as_inputs=False,
+                    input_names=input_names,
+                    output_names=output_names,
+                    opset_version=opset)
+
+            onnx_model = onnx.load(onnx_file)
+
+            # create trt engine and wraper
+            opt_shape_dict = {
+                'input':
+                [list(input.shape),
+                 list(input.shape),
+                 list(input.shape)]
+            }
+            # trt config
+            fp16_mode = False
+            max_workspace_size = 1 << 30
+
+            trt_engine = onnx2trt(
+                onnx_model,
+                opt_shape_dict,
+                fp16_mode=fp16_mode,
+                max_workspace_size=max_workspace_size)
+
+            # remove ONNX model after conversion
+            if os.path.exists(onnx_file):
+                os.remove(onnx_file)
+
+            # save TensorRT model
+            save_trt_engine(trt_engine, trt_file)
+
+            # load and wrap TensorRT model
+            trt_model = TRTWrapper(trt_file)
+
+            # remove trt model after loading
+            if os.path.exists(trt_file):
+                os.remove(trt_file)
+
+            # compute trt output
+            with torch.no_grad():
+                trt_results = trt_model({'input': input.contiguous().clone()})
+                trt_output = trt_results['output']
+                trt_indices = trt_results['indices']
+
+            # compute pytorch output
+            with torch.no_grad():
+                pytorch_results = wrapped_model(input.clone())
+                pytorch_output = pytorch_results[0]
+                pytorch_indices = pytorch_results[1]
+
+            torch.testing.assert_allclose(trt_output, pytorch_output)
+            torch.testing.assert_allclose(trt_indices, pytorch_indices)
+
+
+@pytest.mark.parametrize('dynamic_export', [True, False])
+@pytest.mark.parametrize('fp16_mode', [True, False])
+def test_instance_norm(dynamic_export, fp16_mode):
+
+    n, c, h, w = 2, 3, 10, 10
+    data = torch.randn(n, c, h, w).cuda()
+    norm = nn.InstanceNorm2d(c, affine=True)
+
+    wrapped_model = WrapFunction(norm).eval().cuda()
+
+    input_names = ['input']
+    output_names = ['output']
+    dynamic_axes = None
+    if dynamic_export:
+        dynamic_axes = {
+            'input': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+            'output': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+        }
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (data.clone(), ),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            dynamic_axes=dynamic_axes,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wraper
+    if dynamic_export:
+        opt_shape_dict = {
+            'input':
+            [list(data.shape),
+             list(data.shape), [2 * n, c, 2 * h, 2 * w]],
+        }
+    else:
+        opt_shape_dict = {
+            'input': [list(data.shape),
+                      list(data.shape),
+                      list(data.shape)],
+        }
+    # trt config
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': data.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = wrapped_model(data.clone())
 
     # allclose
     if os.path.exists(onnx_file):

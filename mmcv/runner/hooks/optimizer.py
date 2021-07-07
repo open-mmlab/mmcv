@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import copy
 from collections import defaultdict
+from distutils.version import LooseVersion
 from itertools import chain
 
 from torch.nn.utils import clip_grad
@@ -42,7 +43,8 @@ class OptimizerHook(Hook):
         runner.optimizer.step()
 
 
-if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+if (TORCH_VERSION != 'parrots'
+        and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
 
     @HOOKS.register_module()
     class Fp16OptimizerHook(OptimizerHook):
@@ -59,7 +61,7 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
                 It can also be a dict containing arguments of GradScalar.
                 Defaults to 512. For Pytorch >= 1.6, mmcv uses official
                 implementation of GradScaler. If you use a dict version of
-                loss_scale to create GradScaler, plese refer to:
+                loss_scale to create GradScaler, please refer to:
                 https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler
                 for the parameters.
 
@@ -70,7 +72,7 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             ...     backoff_factor=0.5,
             ...     growth_interval=2000
             ... )
-            >>> optimizer = Fp16OptimizerHook(loss_scale=loss_scale)
+            >>> optimizer_hook = Fp16OptimizerHook(loss_scale=loss_scale)
         """
 
         def __init__(self,
@@ -99,6 +101,10 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             """Preparing steps before Mixed Precision Training."""
             # wrap model mode to fp16
             wrap_fp16_model(runner.model)
+            # resume from state dict
+            if 'fp16' in runner.meta and 'loss_scaler' in runner.meta['fp16']:
+                scaler_state_dict = runner.meta['fp16']['loss_scaler']
+                self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
             """Copy gradients from fp16 model to fp32 weight copy."""
@@ -125,6 +131,7 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             2. Backward the loss to obtain the gradients.
             3. Unscale the optimizer’s gradient tensors.
             4. Call optimizer.step() and update scale factor.
+            5. Save loss_scaler state_dict for resume purpose.
             """
             # clear grads of last iteration
             runner.model.zero_grad()
@@ -142,6 +149,10 @@ if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
             # backward and update scaler
             self.loss_scaler.step(runner.optimizer)
             self.loss_scaler.update(self._scale_update_param)
+
+            # save state_dict of loss_scaler
+            runner.meta.setdefault(
+                'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()
 else:
 
     @HOOKS.register_module()
@@ -210,6 +221,10 @@ else:
             runner.optimizer.state = state
             # convert model to fp16
             wrap_fp16_model(runner.model)
+            # resume from state dict
+            if 'fp16' in runner.meta and 'loss_scaler' in runner.meta['fp16']:
+                scaler_state_dict = runner.meta['fp16']['loss_scaler']
+                self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net, fp32_weights):
             """Copy gradients from fp16 model to fp32 weight copy."""
@@ -236,6 +251,7 @@ else:
             3. Copy gradients from the model to the fp32 weight copy.
             4. Scale the gradients back and update the fp32 weight copy.
             5. Copy back the params from fp32 weight copy to the fp16 model.
+            6. Save loss_scaler state_dict for resume purpose.
             """
             # clear grads of last iteration
             runner.model.zero_grad()
@@ -276,3 +292,7 @@ else:
             if has_overflow:
                 runner.logger.warning('Check overflow, downscale loss scale '
                                       f'to {self.loss_scaler.cur_scale}')
+
+            # save state_dict of loss_scaler
+            runner.meta.setdefault(
+                'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()

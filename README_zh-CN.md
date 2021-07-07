@@ -167,18 +167,21 @@ pip install mmcv
 
 c. 安装完整版并且编译 onnxruntime 的自定义算子
 
-- 详细的指南请查看 [这里](docs/onnxruntime_op.md)。
+- 详细的指南请查看 [这里](docs/deployment/onnxruntime_op.md)。
 
-如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/build.html)。
+如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/get_started/build.html)。
 
 ## FAQ
 
-如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html) 看是否已经有解决方案。
+如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/en/latest/faq.html) 看是否已经有解决方案。
 
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
+## 许可证
+
+`MMCV` 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能并不是使用的 Apache2.0 许可证，我们在 [许可证](LICENSES.md) 中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
 ## 欢迎加入 OpenMMLab 社区
 
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)

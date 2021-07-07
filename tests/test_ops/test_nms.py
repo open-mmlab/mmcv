@@ -138,7 +138,12 @@ class Testnms(object):
         from mmcv.ops import batched_nms
         results = mmcv.load('./tests/data/batched_nms_data.pkl')
 
-        nms_cfg = dict(type='nms', iou_threshold=0.7)
+        nms_max_num = 100
+        nms_cfg = dict(
+            type='nms',
+            iou_threshold=0.7,
+            score_threshold=0.5,
+            max_num=nms_max_num)
         boxes, keep = batched_nms(
             torch.from_numpy(results['boxes']),
             torch.from_numpy(results['scores']),
@@ -156,4 +161,24 @@ class Testnms(object):
 
         assert torch.equal(keep, seq_keep)
         assert torch.equal(boxes, seq_boxes)
-        assert torch.equal(keep, torch.from_numpy(results['keep']))
+        assert torch.equal(keep,
+                           torch.from_numpy(results['keep'][:nms_max_num]))
+
+        nms_cfg = dict(type='soft_nms', iou_threshold=0.7)
+        boxes, keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            nms_cfg,
+            class_agnostic=False)
+
+        nms_cfg.update(split_thr=100)
+        seq_boxes, seq_keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            nms_cfg,
+            class_agnostic=False)
+
+        assert torch.equal(keep, seq_keep)
+        assert torch.equal(boxes, seq_boxes)
