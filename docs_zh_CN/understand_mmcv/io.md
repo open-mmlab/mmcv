@@ -1,44 +1,40 @@
-## File IO
+## 文件输入输出
 
-This module provides two universal API to load and dump files of different formats.
+文件输入输出模块提供了两个通用的 API 接口用于读取和保存不同格式的文件。
 
-### Load and dump data
+### 读取和保存数据
 
-`mmcv` provides a universal api for loading and dumping data, currently
-supported formats are json, yaml and pickle.
+`mmcv` 提供了一个通用的 api 用于读取和保存数据，目前支持的格式有 json、yaml 和 pickle。
 
 ```python
 import mmcv
 
-# load data from a file
+# 从文件中读取数据
 data = mmcv.load('test.json')
 data = mmcv.load('test.yaml')
 data = mmcv.load('test.pkl')
-# load data from a file-like object
+# 从文件对象中读取数据
 with open('test.json', 'r') as f:
     data = mmcv.load(f, file_format='json')
 
-# dump data to a string
+# 将数据序列化为字符串
 json_str = mmcv.dump(data, file_format='json')
 
-# dump data to a file with a filename (infer format from file extension)
+# 将数据保存至文件 (根据文件名后缀反推文件类型)
 mmcv.dump(data, 'out.pkl')
 
-# dump data to a file with a file-like object
+# 将数据保存至文件对象
 with open('test.yaml', 'w') as f:
     data = mmcv.dump(data, f, file_format='yaml')
 ```
 
-It is also very convenient to extend the api to support more file formats.
-All you need to do is to write a file handler inherited from `BaseFileHandler`
-and register it with one or several file formats.
-
-You need to implement at least 3 methods.
+我们提供了易于拓展的方式以支持更多的文件格式。我们只需要创建一个继承自 `BaseFileHandler` 的
+文件句柄类并将其注册到 `mmcv` 中即可。句柄类至少需要重写三个方法。
 
 ```python
 import mmcv
 
-# To register multiple file formats, a list can be used as the argument.
+# 支持为文件句柄类注册多个文件格式
 # @mmcv.register_handler(['txt', 'log'])
 @mmcv.register_handler('txt')
 class TxtHandler1(mmcv.BaseFileHandler):
@@ -53,7 +49,7 @@ class TxtHandler1(mmcv.BaseFileHandler):
         return str(obj)
 ```
 
-Here is an example of `PickleHandler`.
+举 `PickleHandler` 为例。
 
 ```python
 import pickle
@@ -80,9 +76,9 @@ class PickleHandler(mmcv.BaseFileHandler):
             obj, filepath, mode='wb', **kwargs)
 ```
 
-### Load a text file as a list or dict
+### 读取文件并返回列表或字典
 
-For example `a.txt` is a text file with 5 lines.
+例如， `a.txt` 是文本文件，一共有5行内容。
 
 ```
 a
@@ -92,7 +88,7 @@ d
 e
 ```
 
-Then use `list_from_file` to load the list from a.txt.
+使用 `list_from_file` 读取 `a.txt` 。
 
 ```python
 >>> mmcv.list_from_file('a.txt')
@@ -105,7 +101,7 @@ Then use `list_from_file` to load the list from a.txt.
 ['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
 ```
 
-For example `b.txt` is a text file with 3 lines.
+同样， `b.txt` 也是文本文件，一共有3行内容。
 
 ```
 1 cat
@@ -113,7 +109,7 @@ For example `b.txt` is a text file with 3 lines.
 3 panda
 ```
 
-Then use `dict_from_file` to load the dict from `b.txt` .
+使用 `dict_from_file` 读取 `b.txt` 。
 
 ```python
 >>> mmcv.dict_from_file('b.txt')

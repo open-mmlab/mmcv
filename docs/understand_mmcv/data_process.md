@@ -13,7 +13,7 @@ import mmcv
 
 img = mmcv.imread('test.jpg')
 img = mmcv.imread('test.jpg', flag='grayscale')
-img_ = mmcv.imread(img) # nothing will happen, img_ = img
+img_ = mmcv.imread(img)  # nothing will happen, img_ = img
 mmcv.imwrite(img, 'out.jpg')
 ```
 
