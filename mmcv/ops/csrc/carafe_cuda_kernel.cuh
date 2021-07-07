@@ -42,9 +42,9 @@ __device__ inline scalar_t max(scalar_t a, scalar_t b) {
 #endif
 template <typename scalar_t>
 __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
-  for (int offset = 16; offset > 0; offset /= 2)
+  for (int offset = WARP_SIZE/2; offset > 0; offset /= 2)
 #ifdef HIP_DIFF
-    val += __shfl_down(FULL_MASK, val, offset);
+    val += __shfl_down(val, offset);
 #else
     val += __shfl_down_sync(FULL_MASK, val, offset);
 #endif
@@ -53,7 +53,7 @@ __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
 
 template <>
 __device__ __forceinline__ phalf warpReduceSum(phalf val) {
-  for (int offset = 16; offset > 0; offset /= 2)
+  for (int offset = WARP_SIZE/2; offset > 0; offset /= 2)
 #ifdef HIP_DIFF
     __PHALF(val) += __shfl_down(FULL_MASK, val, offset);
 #else
