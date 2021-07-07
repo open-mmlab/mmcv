@@ -6,7 +6,7 @@ import torch
 TORCH_VERSION = torch.__version__
 
 is_rocm_pytorch = False
-if (LooseVersion(TORCH_VERSION) >= LooseVersion('1.5')):
+if LooseVersion(TORCH_VERSION) >= LooseVersion('1.5'):
     from torch.utils.cpp_extension import ROCM_HOME
     is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                (ROCM_HOME is not None)) else False
