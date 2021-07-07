@@ -6,6 +6,12 @@ import torch
 
 from mmcv.runner import set_random_seed
 
+is_rocm_pytorch = False
+if torch.__version__ >= '1.5':
+    from torch.utils.cpp_extension import ROCM_HOME
+    is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                               (ROCM_HOME is not None)) else False
+
 
 def test_set_random_seed():
     set_random_seed(0)
@@ -21,7 +27,10 @@ def test_set_random_seed():
     b_np_random = np.random.rand(2, 2)
     b_torch_random = torch.rand(2, 2)
     assert torch.backends.cudnn.deterministic is True
-    assert torch.backends.cudnn.benchmark is False
+    if is_rocm_pytorch:
+        assert torch.backends.cudnn.benchmark is True
+    else:
+        assert torch.backends.cudnn.benchmark is False
 
     assert a_random == b_random
     assert np.equal(a_np_random, b_np_random).all()
