@@ -915,7 +915,8 @@ def test_reduce_lr_update_hook(multi_optimziers):
         factor=0.1,
         patience=2,
         threshold=0,
-        by_epoch=False)
+        by_epoch=False,
+        eps=1e-4)
     runner.register_hook(hook)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
@@ -948,7 +949,14 @@ def test_reduce_lr_update_hook(multi_optimziers):
                     'learning_rate/model2': 0.01,
                     'momentum/model1': 0.9,
                     'momentum/model2': 0.95,
-                }, 22)
+                }, 22),
+            call(
+                'train', {
+                    'learning_rate/model1': 5.0000000000000016e-05,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.9,
+                    'momentum/model2': 0.95,
+                }, 28)
         ]
     else:
         calls = [
@@ -963,7 +971,11 @@ def test_reduce_lr_update_hook(multi_optimziers):
             call('train', {
                 'learning_rate': 0.005000000000000001,
                 'momentum': 0.9
-            }, 22)
+            }, 22),
+            call('train', {
+                'learning_rate': 5.0000000000000016e-05,
+                'momentum': 0.9
+            }, 28)
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
