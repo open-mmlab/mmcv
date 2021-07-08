@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import os
 
 from .parrots_wrapper import TORCH_VERSION

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from ..utils import Registry, build_from_cfg
 
 RUNNERS = Registry('runner')

@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import torch
 from torch import nn
 

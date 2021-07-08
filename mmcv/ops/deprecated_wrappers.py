@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 # This file is for backward compatibility.
 # Module wrappers for empty tensor have been moved to mmcv.cnn.bricks.
 import warnings

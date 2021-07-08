@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 # flake8: noqa
 from .init_plugins import is_tensorrt_plugin_loaded, load_tensorrt_plugin
 from .preprocess import preprocess_onnx

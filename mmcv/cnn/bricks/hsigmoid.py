@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import torch.nn as nn
 
 from .registry import ACTIVATION_LAYERS

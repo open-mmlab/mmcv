@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 import torch.nn as nn
 
 from .conv_module import ConvModule

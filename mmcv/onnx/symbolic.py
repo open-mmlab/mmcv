@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 """Modified from https://github.com/pytorch/pytorch."""
 import os
 

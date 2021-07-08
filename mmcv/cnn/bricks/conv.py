@@ -1,3 +1,4 @@
+# Copyright (c) Open-MMLab. All rights reserved.
 from torch import nn
 
 from .registry import CONV_LAYERS
