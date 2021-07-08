@@ -1,15 +1,26 @@
+from distutils.version import StrictVersion
 from functools import partial
 
 import torch
 
 TORCH_VERSION = torch.__version__
 
+is_rocm_pytorch = False
+if StrictVersion(TORCH_VERSION) >= StrictVersion('1.5'):
+    from torch.utils.cpp_extension import ROCM_HOME
+    is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                               (ROCM_HOME is not None)) else False
+
 
 def _get_cuda_home():
     if TORCH_VERSION == 'parrots':
         from parrots.utils.build_extension import CUDA_HOME
     else:
-        from torch.utils.cpp_extension import CUDA_HOME
+        if is_rocm_pytorch:
+            from torch.utils.cpp_extension import ROCM_HOME
+            CUDA_HOME = ROCM_HOME
+        else:
+            from torch.utils.cpp_extension import CUDA_HOME
     return CUDA_HOME
 
 
