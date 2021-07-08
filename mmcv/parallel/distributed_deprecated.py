@@ -1,6 +1,4 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from distutils.version import LooseVersion
-
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -42,7 +40,7 @@ class MMDistributedDataParallel(nn.Module):
             self._dist_broadcast_coalesced(module_states,
                                            self.broadcast_bucket_size)
         if self.broadcast_buffers:
-            if LooseVersion(TORCH_VERSION) < LooseVersion('1.0'):
+            if (TORCH_VERSION) < ('1.0'):
                 buffers = [b.data for b in self.module._all_buffers()]
             else:
                 buffers = [b.data for b in self.module.buffers()]

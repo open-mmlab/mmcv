@@ -1,7 +1,6 @@
 import functools
 import warnings
 from collections import abc
-from distutils.version import LooseVersion
 from inspect import getfullargspec
 
 import numpy as np
@@ -122,8 +121,7 @@ def auto_fp16(apply_to=None, out_fp32=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            if (TORCH_VERSION != 'parrots'
-                    and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
+            if (TORCH_VERSION != 'parrots' and (TORCH_VERSION) >= ('1.6.0')):
                 with autocast(enabled=True):
                     output = old_func(*new_args, **new_kwargs)
             else:
@@ -208,8 +206,7 @@ def force_fp32(apply_to=None, out_fp16=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            if (TORCH_VERSION != 'parrots'
-                    and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
+            if (TORCH_VERSION != 'parrots' and (TORCH_VERSION) >= ('1.6.0')):
                 with autocast(enabled=False):
                     output = old_func(*new_args, **new_kwargs)
             else:
@@ -248,8 +245,7 @@ def wrap_fp16_model(model):
     Args:
         model (nn.Module): Model in FP32.
     """
-    if (TORCH_VERSION == 'parrots'
-            or LooseVersion(TORCH_VERSION) < LooseVersion('1.6.0')):
+    if (TORCH_VERSION == 'parrots' or (TORCH_VERSION) < ('1.6.0')):
         # convert model to fp16
         model.half()
         # patch the normalization layers to make it work in fp32 mode
