@@ -897,7 +897,7 @@ def test_reduce_lr_update_hook(multi_optimziers):
     with pytest.raises(ValueError):
         # threshold_mode should be 'rel' or 'abs'
         ReduceLrUpdateHook(
-            periods=[0, 1], mode='min', factor=1.0, threshold_mode='sum')
+            periods=[0, 1], mode='min', factor=0.1, threshold_mode='sum')
 
     sys.modules['pavi'] = MagicMock()
     x = torch.ones((30, 1))
@@ -914,7 +914,8 @@ def test_reduce_lr_update_hook(multi_optimziers):
         mode='min',
         factor=0.1,
         patience=2,
-        threshold=0,
+        threshold=1e-4,
+        threshold_mode='rel',
         by_epoch=False,
         eps=1e-4)
     runner.register_hook(hook)
