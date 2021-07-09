@@ -1,10 +1,8 @@
-from distutils.version import LooseVersion
-
 import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -144,7 +142,7 @@ class TestDeformconv(object):
         # test amp when torch version >= '1.6.0', the type of
         # input data for deformconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
-                and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
+                and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
             with autocast(enabled=True):
                 self._test_amp_deformconv(torch.float, 1e-1)
                 self._test_amp_deformconv(torch.half, 1e-1)

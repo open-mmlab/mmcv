@@ -1,27 +1,33 @@
 import os
 import subprocess
+from pkg_resources import parse_version
 
 
-def digit_version(version_str):
+def digit_version(version_str: str, length: int = 4):
     """Convert a version string into a tuple of integers.
 
     This method is usually used for comparing two versions.
 
     Args:
         version_str (str): The version string.
+        length (int): The maximum number of version levels. Default: 4.
 
     Returns:
         tuple[int]: The version info in digits (integers).
     """
-    digit_version = []
-    for x in version_str.split('.'):
-        if x.isdigit():
-            digit_version.append(int(x))
-        elif x.find('rc') != -1:
-            patch_version = x.split('rc')
-            digit_version.append(int(patch_version[0]) - 1)
-            digit_version.append(int(patch_version[1]))
-    return tuple(digit_version)
+    version = parse_version(version_str)
+    assert version.release, f'failed to parse version {version_str}'
+    release = list(version.release)
+    release = release[:length]
+    if len(release) < length:
+        release = release + [0] * (length - len(release))
+    if version.is_prerelease:
+        release.extend([-1, version.pre[-1]])
+    elif version.is_postrelease:
+        release.extend([1, version.post[-1]])
+    else:
+        release.extend([0, 0])
+    return tuple(release)
 
 
 def _minimal_ext_cmd(cmd):
