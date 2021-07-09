@@ -41,7 +41,6 @@ def test_get_logger_rank0():
         logger_pkg3 = get_logger('rank0.pkg3')
         assert id(logger_pkg3) == id(logger)
         del logger
-    f.close()
     os.remove(f.name)
 
     logger_pkg3 = get_logger('rank0.pkg3.subpkg')
@@ -63,10 +62,10 @@ def test_get_logger_rank1():
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('rank1.pkg2', log_file=f.name)
-    assert isinstance(logger, logging.Logger)
-    assert len(logger.handlers) == 1
-    assert logger.handlers[0].level == logging.INFO
-    f.close()
+        assert isinstance(logger, logging.Logger)
+        assert len(logger.handlers) == 1
+        assert logger.handlers[0].level == logging.INFO
+        del logger
     os.remove(f.name)
 
 
@@ -104,7 +103,6 @@ def test_print_log_logger(caplog):
                                  log_text)
             assert match is not None
         del logger
-    f.close()
     os.remove(f.name)
 
 
