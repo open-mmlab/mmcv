@@ -45,6 +45,7 @@ def test_get_logger_rank0():
     logger_pkg3 = get_logger('rank0.pkg3.subpkg')
     assert logger_pkg3.handlers == logger_pkg3.handlers
 
+    f.close()
     os.remove(f.name)
 
 
@@ -98,6 +99,7 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
+    f.close()
     os.remove(f.name)
 
 
