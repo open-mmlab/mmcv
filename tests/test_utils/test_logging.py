@@ -40,6 +40,7 @@ def test_get_logger_rank0():
         assert isinstance(logger.handlers[1], logging.FileHandler)
         logger_pkg3 = get_logger('rank0.pkg3')
         assert id(logger_pkg3) == id(logger)
+        del logger
     f.close()
     os.remove(f.name)
 
@@ -102,6 +103,7 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
+        del logger
     f.close()
     os.remove(f.name)
 
