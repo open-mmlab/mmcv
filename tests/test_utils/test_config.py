@@ -66,9 +66,11 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
+    # path of sep is `\\` in windows but `/` in linux, so osp.join should be
+    # used to join string for compatibility
     cfg_dict = dict(
         item1='h.py',
-        item2=f'{osp.dirname(__file__)}/data/config',
+        item2=osp.join(osp.dirname(__file__), 'data', 'config'),
         item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
@@ -96,7 +98,7 @@ def test_construct():
 
     # test p.yaml
     cfg_file = osp.join(data_path, 'config/p.yaml')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -115,7 +117,7 @@ def test_construct():
 
     # test o.json
     cfg_file = osp.join(data_path, 'config/o.json')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -415,7 +417,10 @@ def test_reserved_key():
 
 
 def test_syntax_error():
-    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py')
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need manually remove the file
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
     # write a file with syntax error
     with open(temp_cfg_path, 'w') as f:
@@ -426,6 +431,7 @@ def test_syntax_error():
             f'file {temp_cfg_path}'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
+    os.remove(temp_cfg_path)
 
 
 def test_pickle_support():
