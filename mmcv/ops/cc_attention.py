@@ -14,6 +14,7 @@ def NEG_INF_DIAG(n, device):
 
 
 class CrissCrossAttention(nn.Module):
+    """Criss-Cross Attention Module."""
 
     def __init__(self, in_channels):
         super().__init__()
