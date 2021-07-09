@@ -2,6 +2,7 @@
 import logging
 import os
 import os.path as osp
+import platform
 import random
 import string
 import tempfile
@@ -169,7 +170,12 @@ def test_save_checkpoint(runner_class):
             first_ckp_path = osp.join(root, 'iter_1.pth')
 
         assert osp.exists(first_ckp_path)
-        assert osp.realpath(latest_path) == osp.realpath(first_ckp_path)
+
+        if platform.system() != 'Windows':
+            assert osp.realpath(latest_path) == osp.realpath(first_ckp_path)
+        else:
+            # use copy instead of symlink on windows
+            pass
 
         torch.load(latest_path)
 
