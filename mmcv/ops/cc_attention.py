@@ -1,95 +1,57 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd.function import once_differentiable
-
-from mmcv.cnn import Scale
-from ..utils import ext_loader
-
-ext_module = ext_loader.load_ext(
-    '_ext', ['ca_forward', 'ca_backward', 'ca_map_forward', 'ca_map_backward'])
+from einops import rearrange
 
 
-class CAWeightFunction(torch.autograd.Function):
+def NEG_INF_DIAG(n, device):
+    """Returns a diagonal matrix of size [n, n].
 
-    @staticmethod
-    def symbolic(g, t, f):
-        return g.op('MMCVCAWeight', t, f)
-
-    @staticmethod
-    def forward(ctx, t, f):
-        n, c, h, w = t.size()
-        weight = torch.zeros(n, h + w - 1, h, w).to(t.device)
-        ext_module.ca_forward(t, f, weight)
-
-        ctx.save_for_backward(t, f)
-
-        return weight
-
-    @staticmethod
-    @once_differentiable
-    def backward(ctx, dw):
-        t, f = ctx.saved_tensors
-        dt = torch.zeros_like(t)
-        df = torch.zeros_like(f)
-        ext_module.ca_backward(dw, t, f, dt, df)
-        return dt, df
-
-
-class CAMapFunction(torch.autograd.Function):
-
-    @staticmethod
-    def symbolic(g, weight, v):
-        return g.op('MMCVCAMap', weight, v)
-
-    @staticmethod
-    def forward(ctx, weight, v):
-        out = torch.zeros_like(v)
-        ext_module.ca_map_forward(weight, v, out)
-
-        ctx.save_for_backward(weight, v)
-
-        return out
-
-    @staticmethod
-    @once_differentiable
-    def backward(ctx, dout):
-        weight, v = ctx.saved_tensors
-        dw = torch.zeros_like(weight)
-        dv = torch.zeros_like(v)
-        ext_module.ca_map_backward(dout, weight, v, dw, dv)
-
-        return dw, dv
-
-
-ca_weight = CAWeightFunction.apply
-ca_map = CAMapFunction.apply
+    The diagonal are all "-inf". This is for avoiding calculating the
+    overlapped element in the Criss-Cross twice.
+    """
+    return torch.diag(torch.tensor(float('-inf')).to(device).repeat(n), 0)
 
 
 class CrissCrossAttention(nn.Module):
-    """Criss-Cross Attention Module."""
 
-    def __init__(self, in_channels):
-        super(CrissCrossAttention, self).__init__()
-        self.query_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
-        self.key_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
-        self.value_conv = nn.Conv2d(in_channels, in_channels, 1)
-        self.gamma = Scale(0.)
-        self.in_channels = in_channels
+    def __init__(self, in_dim):
+        super().__init__()
+        self.query_conv = nn.Conv2d(
+            in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.key_conv = nn.Conv2d(
+            in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.value_conv = nn.Conv2d(
+            in_channels=in_dim, out_channels=in_dim, kernel_size=1)
+        self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
-        proj_query = self.query_conv(x)
-        proj_key = self.key_conv(x)
-        proj_value = self.value_conv(x)
+        B, C, H, W = x.shape
 
-        energy = ca_weight(proj_query, proj_key)
-        attention = F.softmax(energy, 1)
-        out = ca_map(attention, proj_value)
-        out = self.gamma(out) + x
+        query = self.query_conv(x)
+        query_H = rearrange(query, 'B C H W -> (B W) H C')
+        query_W = rearrange(query, 'B C H W -> (B H) W C')
+        key = self.key_conv(x)
+        key_H = rearrange(key, 'B C H W -> (B W) C H')
+        key_W = rearrange(key, 'B C H W -> (B H) C W')
+        value = self.value_conv(x)
+        value_H = rearrange(value, 'B C H W -> (B W) C H')
+        value_W = rearrange(value, 'B C H W -> (B H) C W')
+
+        energy_H = torch.bmm(query_H, key_H) + NEG_INF_DIAG(H, query_H.device)
+        energy_H = rearrange(energy_H, '(B W) H H2 -> B H W H2', B=B)
+        energy_W = torch.bmm(query_W, key_W)
+        energy_W = rearrange(energy_W, '(B H) W W2 -> B H W W2', B=B)
+        attn = F.softmax(
+            torch.cat([energy_H, energy_W], dim=-1), dim=-1)  # [B,H,W,(H+W)]
+
+        att_H = rearrange(attn[..., :H], 'B H W H2 -> (B W) H2 H')
+        att_W = rearrange(attn[..., H:], 'B H W W2 -> (B H) W2 W')
+
+        out = rearrange(torch.bmm(value_H, att_H), '(B W) C H -> B C H W', B=B)
+        out += rearrange(
+            torch.bmm(value_W, att_W), '(B H) C W -> B C H W', B=B)
+        out *= self.gamma
+        out += x
 
         return out
-
-    def __repr__(self):
-        s = self.__class__.__name__
-        s += f'(in_channels={self.in_channels})'
-        return s

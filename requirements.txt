@@ -1,4 +1,5 @@
 addict
+einops
 numpy
 pyyaml
 regex;sys_platform=='win32'
