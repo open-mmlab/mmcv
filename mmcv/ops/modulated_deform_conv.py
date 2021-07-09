@@ -20,13 +20,12 @@ class ModulatedDeformConv2dFunction(Function):
     @staticmethod
     def symbolic(g, input, offset, mask, weight, bias, stride, padding,
                  dilation, groups, deform_groups):
+        input_tensors = [input, offset, mask, weight]
+        if bias is not None:
+            input_tensors.append(bias)
         return g.op(
-            'MMCVModulatedDeformConv2d',
-            input,
-            offset,
-            mask,
-            weight,
-            bias,
+            'mmcv::MMCVModulatedDeformConv2d',
+            *input_tensors,
             stride_i=stride,
             padding_i=padding,
             dilation_i=dilation,
@@ -57,6 +56,15 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.with_bias = bias is not None
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
+        # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
+        # amp won't cast the type of model (float32), but "offset" is cast
+        # to float16 by nn.Conv2d automatically, leading to the type
+        # mismatch with input (when it is float32) or weight.
+        # The flag for whether to use fp16 or amp is the type of "offset",
+        # we cast weight and input to temporarily support fp16 and amp
+        # whatever the pytorch version is.
+        input = input.type_as(offset)
+        weight = weight.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))

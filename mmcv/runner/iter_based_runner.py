@@ -108,6 +108,8 @@ class IterBasedRunner(BaseRunner):
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
+        self.logger.info('Hooks will be executed in the following order:\n%s',
+                         self.get_hook_info())
         self.logger.info('workflow: %s, max: %d iters', workflow,
                          self._max_iters)
         self.call_hook('before_run')
@@ -193,14 +195,17 @@ class IterBasedRunner(BaseRunner):
                 latest checkpoint file. Defaults to True.
         """
         if meta is None:
-            meta = dict(iter=self.iter + 1, epoch=self.epoch + 1)
-        elif isinstance(meta, dict):
-            meta.update(iter=self.iter + 1, epoch=self.epoch + 1)
-        else:
+            meta = {}
+        elif not isinstance(meta, dict):
             raise TypeError(
                 f'meta should be a dict or None, but got {type(meta)}')
         if self.meta is not None:
             meta.update(self.meta)
+            # Note: meta.update(self.meta) should be done before
+            # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
+            # there will be problems with resumed checkpoints.
+            # More details in https://github.com/open-mmlab/mmcv/pull/1108
+        meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)

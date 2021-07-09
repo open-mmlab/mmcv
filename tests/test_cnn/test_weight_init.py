@@ -1,16 +1,18 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import random
 from tempfile import TemporaryDirectory
 
 import numpy as np
 import pytest
 import torch
+from scipy import stats
 from torch import nn
 
 from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
-                      PretrainedInit, UniformInit, XavierInit,
+                      PretrainedInit, TruncNormalInit, UniformInit, XavierInit,
                       bias_init_with_prob, caffe2_xavier_init, constant_init,
-                      initialize, kaiming_init, normal_init, uniform_init,
-                      xavier_init)
+                      initialize, kaiming_init, normal_init, trunc_normal_init,
+                      uniform_init, xavier_init)
 
 
 def test_constant_init():
@@ -44,6 +46,35 @@ def test_normal_init():
     assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
     conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
     normal_init(conv_module_no_bias)
+    # TODO: sanity check distribution, e.g. mean, std
+
+
+def test_trunc_normal_init():
+
+    def _random_float(a, b):
+        return (b - a) * random.random() + a
+
+    def _is_trunc_normal(tensor, mean, std, a, b):
+        # scipy's trunc norm is suited for data drawn from N(0, 1),
+        # so we need to transform our data to test it using scipy.
+        z_samples = (tensor.view(-1) - mean) / std
+        z_samples = z_samples.tolist()
+        a0 = (a - mean) / std
+        b0 = (b - mean) / std
+        p_value = stats.kstest(z_samples, 'truncnorm', args=(a0, b0))[1]
+        return p_value > 0.0001
+
+    conv_module = nn.Conv2d(3, 16, 3)
+    mean = _random_float(-3, 3)
+    std = _random_float(.01, 1)
+    a = _random_float(mean - 2 * std, mean)
+    b = _random_float(mean, mean + 2 * std)
+    trunc_normal_init(conv_module, mean, std, a, b, bias=0.1)
+    assert _is_trunc_normal(conv_module.weight, mean, std, a, b)
+    assert conv_module.bias.allclose(torch.full_like(conv_module.bias, 0.1))
+
+    conv_module_no_bias = nn.Conv2d(3, 16, 3, bias=False)
+    trunc_normal_init(conv_module_no_bias)
     # TODO: sanity check distribution, e.g. mean, std
 
 
@@ -103,6 +134,15 @@ def test_constaninit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = ConstantInit(val=4., bias=5., layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].weight == 4.)
+    assert torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == 5.)
+    assert torch.all(model[2].bias == 5.)
+
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
@@ -139,6 +179,22 @@ def test_xavierinit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, res))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = ConstantInit(val=4., bias=5., layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].weight == 4.)
+    assert torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == 5.)
+    assert torch.all(model[2].bias == 5.)
+
+    func = XavierInit(gain=100, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert not torch.all(model[0].weight == 4.)
+    assert not torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
     # test bias input type
     with pytest.raises(TypeError):
         func = XavierInit(bias='0.1', layer='Conv2d')
@@ -167,6 +223,54 @@ def test_normalinit():
     assert model[0].bias.allclose(torch.tensor(res))
     assert model[2].bias.allclose(torch.tensor(res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = NormalInit(mean=300, std=1e-5, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
+
+def test_truncnormalinit():
+    """test TruncNormalInit class."""
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Linear(1, 2))
+
+    func = TruncNormalInit(
+        mean=100, std=1e-5, bias=200, a=0, b=200, layer=['Conv2d', 'Linear'])
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(100.))
+    assert model[2].weight.allclose(torch.tensor(100.))
+    assert model[0].bias.allclose(torch.tensor(200.))
+    assert model[2].bias.allclose(torch.tensor(200.))
+
+    func = TruncNormalInit(
+        mean=300,
+        std=1e-5,
+        a=100,
+        b=400,
+        bias_prob=0.01,
+        layer=['Conv2d', 'Linear'])
+    res = bias_init_with_prob(0.01)
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert model[0].bias.allclose(torch.tensor(res))
+    assert model[2].bias.allclose(torch.tensor(res))
+
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = TruncNormalInit(
+        mean=300, std=1e-5, a=100, b=400, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
 
 def test_uniforminit():
     """"test UniformInit class."""
@@ -187,6 +291,17 @@ def test_uniforminit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = UniformInit(a=100, b=100, bias_prob=0.01, layer='_ConvNd')
+    res = bias_init_with_prob(0.01)
+    func(model)
+    assert torch.all(model[0].weight == 100.)
+    assert torch.all(model[2].weight == 100.)
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
 
 def test_kaiminginit():
     """test KaimingInit class."""
@@ -198,6 +313,29 @@ def test_kaiminginit():
 
     func = KaimingInit(a=100, bias=10, layer=['Conv2d', 'Linear'])
     constant_func = ConstantInit(val=0, bias=0, layer=['Conv2d', 'Linear'])
+    model.apply(constant_func)
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.))
+
+    func(model)
+    assert not torch.equal(model[0].weight,
+                           torch.full(model[0].weight.shape, 0.))
+    assert not torch.equal(model[2].weight,
+                           torch.full(model[2].weight.shape, 0.))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
+
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = KaimingInit(bias=0.1, layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].bias == 0.1)
+    assert torch.all(model[2].bias == 0.1)
+
+    func = KaimingInit(a=100, bias=10, layer='_ConvNd')
+    constant_func = ConstantInit(val=0, bias=0, layer='_ConvNd')
     model.apply(constant_func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))

@@ -43,12 +43,13 @@ def test_scandir():
     filenames_recursive = [
         'a.bin', '1.txt', '2.txt', '1.json', '2.json',
         osp.join('sub', '1.json'),
-        osp.join('sub', '1.txt')
+        osp.join('sub', '1.txt'), '.file'
     ]
-    assert set(mmcv.scandir(folder,
-                            recursive=True)) == set(filenames_recursive)
-    assert set(mmcv.scandir(Path(folder),
-                            recursive=True)) == set(filenames_recursive)
+    # .file starts with '.' and is a file so it will not be scanned
+    assert set(mmcv.scandir(folder, recursive=True)) == set(
+        [filename for filename in filenames_recursive if filename != '.file'])
+    assert set(mmcv.scandir(Path(folder), recursive=True)) == set(
+        [filename for filename in filenames_recursive if filename != '.file'])
     assert set(mmcv.scandir(folder, '.txt', recursive=True)) == set([
         filename for filename in filenames_recursive
         if filename.endswith('.txt')
