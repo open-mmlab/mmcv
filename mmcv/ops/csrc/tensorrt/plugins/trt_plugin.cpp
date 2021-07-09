@@ -1,5 +1,6 @@
 #include "trt_plugin.hpp"
 
+#include "trt_corner_pool.hpp"
 #include "trt_cummaxmin.hpp"
 #include "trt_deform_conv.hpp"
 #include "trt_grid_sampler.hpp"
@@ -18,6 +19,7 @@ REGISTER_TENSORRT_PLUGIN(NonMaxSuppressionDynamicCreator);
 REGISTER_TENSORRT_PLUGIN(RoIAlignPluginDynamicCreator);
 REGISTER_TENSORRT_PLUGIN(ONNXScatterNDDynamicCreator);
 REGISTER_TENSORRT_PLUGIN(InstanceNormalizationDynamicCreator);
+REGISTER_TENSORRT_PLUGIN(CornerPoolPluginDynamicCreator);
 
 extern "C" {
 bool initLibMMCVInferPlugins() { return true; }
