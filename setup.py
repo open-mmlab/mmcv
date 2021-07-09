@@ -5,11 +5,10 @@ from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
-from mmcv.utils import TORCH_VERSION
+import torch
 
 EXT_TYPE = ''
 try:
-    import torch
     if torch.__version__ == 'parrots':
         from parrots.utils.build_extension import BuildExtension
         EXT_TYPE = 'parrots'
@@ -224,7 +223,7 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         is_rocm_pytorch = False
-        if StrictVersion(TORCH_VERSION) >= StrictVersion('1.5'):
+        if StrictVersion(torch.__version__) >= StrictVersion('1.5'):
             from torch.utils.cpp_extension import ROCM_HOME
             is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                        (ROCM_HOME is not None)) else False
