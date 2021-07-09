@@ -1,6 +1,6 @@
 import os
 import random
-from distutils.version import StrictVersion
+from pkg_resources import parse_version
 
 import numpy as np
 import torch
@@ -9,7 +9,7 @@ from mmcv.runner import set_random_seed
 from mmcv.utils import TORCH_VERSION
 
 is_rocm_pytorch = False
-if StrictVersion(TORCH_VERSION) >= StrictVersion('1.5'):
+if parse_version(TORCH_VERSION) >= parse_version('1.5'):
     from torch.utils.cpp_extension import ROCM_HOME
     is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                (ROCM_HOME is not None)) else False
