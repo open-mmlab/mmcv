@@ -207,6 +207,4 @@ class TestVideoReader:
             filename = f'{frame_dir}/{i:06d}.jpg'
             os.remove(filename)
         shutil.rmtree(frame_dir)
-        # before removing the file, it should be closed
-        out_filename.close()
         os.remove(out_filename)
