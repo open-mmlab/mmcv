@@ -6,7 +6,6 @@ CommandLine:
 """
 import logging
 import os.path as osp
-import platform
 import random
 import re
 import shutil
@@ -209,15 +208,9 @@ def test_pavi_hook():
         'momentum': 0.95
     }, 1)
 
-    if platform.system() != 'Windows':
-        snapshot_file_path = osp.join(runner.work_dir, 'latest.pth')
-    else:
-        # use copy instead of symlink on windows
-        snapshot_file_path = osp.join(runner.work_dir, 'epoch_1.pth')
-
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=snapshot_file_path,
+        snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
         iteration=1)
 
 
