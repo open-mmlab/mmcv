@@ -285,7 +285,7 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
     Modified from https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128 # noqa: E501
 
     Args:
-        start_pct (float): When to start annealing the learning rate
+        start_percent (float): When to start annealing the learning rate
             after the percentage of the total training steps.
             The value should be in range [0, 1).
             Default: 0.75
@@ -296,26 +296,28 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
     """
 
     def __init__(self,
-                 start_pct=0.75,
+                 start_percent=0.75,
                  min_lr=None,
                  min_lr_ratio=None,
                  **kwargs):
         assert (min_lr is None) ^ (min_lr_ratio is None)
-        if start_pct < 0 or start_pct > 1 or not isinstance(start_pct, float):
-            raise ValueError('expected float between 0 and 1 start_pct, but '
-                             f'got {start_pct}')
-        self.start_pct = start_pct
+        if start_percent < 0 or start_percent > 1 or not isinstance(
+                start_percent, float):
+            raise ValueError(
+                'expected float between 0 and 1 start_percent, but '
+                f'got {start_percent}')
+        self.start_percent = start_percent
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
         super(FlatCosineAnnealingLrUpdaterHook, self).__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
-            start = round(runner.max_epochs * self.start_pct)
+            start = round(runner.max_epochs * self.start_percent)
             progress = runner.epoch - start
             max_progress = runner.max_epochs - start
         else:
-            start = round(runner.max_iters * self.start_pct)
+            start = round(runner.max_iters * self.start_percent)
             progress = runner.iter - start
             max_progress = runner.max_iters - start
 
