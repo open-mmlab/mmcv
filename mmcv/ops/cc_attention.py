@@ -14,7 +14,22 @@ def NEG_INF_DIAG(n, device):
 
 
 class CrissCrossAttention(nn.Module):
-    """Criss-Cross Attention Module."""
+    """Criss-Cross Attention Module.
+
+    Time consuming for one forward pass:
+        Settings:
+            Input size: [2,512,97,97]
+            Device: 1 NVIDIA GeForce RTX 2080 Ti
+        Results:
+            (with torch.no_grad())
+                The CUDA version: 0.0299619 s
+                This implementation: 0.00544943 s
+                Relative speed: 5.5x
+            (not with torch.no_grad())
+                The CUDA version: 0.0301349 s
+                This implementation: 0.00565981 s
+                Relative speed: 5.3x
+    """
 
     def __init__(self, in_channels):
         super().__init__()
