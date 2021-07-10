@@ -369,8 +369,8 @@ def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
         multi_optimziers=multi_optimziers, max_epochs=max_epochs)
 
     with pytest.raises(ValueError):
-        # start_pct: expected float between 0 and 1
-        FlatCosineAnnealingLrUpdaterHook(start_pct=-0.1, min_lr_ratio=0)
+        # start_percent: expected float between 0 and 1
+        FlatCosineAnnealingLrUpdaterHook(start_percent=-0.1, min_lr_ratio=0)
 
     # add LR scheduler
     hook_cfg = dict(
@@ -380,7 +380,7 @@ def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
         warmup='linear',
         warmup_iters=10 if by_epoch else 2,
         warmup_ratio=0.9,
-        start_pct=0.5)
+        start_percent=0.5)
     runner.register_hook_from_cfg(hook_cfg)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
