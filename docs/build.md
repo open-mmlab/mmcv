@@ -129,32 +129,6 @@ MMCV can be built in three ways:
 
     You may want to change the system language to English because pytorch will parse text output from `cl.exe` to check its version. However only utf-8 is recognized. Navigate to Control Panel -> Region -> Administrative -> Language for Non-Unicode programs and change it to English.
 
-1. Set up Windows SDK
-
-    Set Environment variable, add `C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared;C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt;C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\winrt` to `INCLUDE`.
-    Set Environment variable, add `C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64` to `LIB`.
-    Set Environment variable, add `C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64` to `PATH`.
-
-    ```
-    PS E:\work\git\mmcv> ls env:
-
-    Name                           Value
-    ----                           -----
-    CUDA_PATH                      D:\CUDA\v11.2
-    CUDA_PATH_V11_2                D:\CUDA\v11.2
-    INCLUDE                        C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared;C:\Program Files (x86)\Windows Kits\10\Include\10...
-    LIB                            C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.190...
-    Path                           C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64;D:\Program Files (x86)\Microsoft Visual Studio\2019\Comm...
-    <... omit some lines ...>
-    PS E:\work\git\mmcv> rc /?
-
-    Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
-    Copyright (C) Microsoft Corporation.  All rights reserved.
-
-    Usage:  rc [options] .RC input file
-    Switches:
-    ```
-
 ##### Option 1: Build MMCV (lite version)
 
 After finishing above common steps, launch Anaconda shell from Start menu and issue the following commands:
