@@ -224,6 +224,81 @@ def test_merge_from_multiple_bases():
         Config.fromfile(osp.join(data_path, 'config/m.py'))
 
 
+def test_base_variables():
+    for file in ['t.py', 't.json', 't.yaml']:
+        cfg_file = osp.join(data_path, f'config/{file}')
+        cfg = Config.fromfile(cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        # cfg.field
+        assert cfg.item1 == [1, 2]
+        assert cfg.item2.a == 0
+        assert cfg.item3 is False
+        assert cfg.item4 == 'test'
+        assert cfg.item5 == dict(a=0, b=1)
+        assert cfg.item6 == [dict(a=0), dict(b=1)]
+        assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
+        assert cfg.item8 == file
+        assert cfg.item9 == dict(a=0)
+        assert cfg.item10 == [3.1, 4.2, 5.3]
+
+    # test nested base
+    for file in ['u.py', 'u.json', 'u.yaml']:
+        cfg_file = osp.join(data_path, f'config/{file}')
+        cfg = Config.fromfile(cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        # cfg.field
+        assert cfg.base == '_base_.item8'
+        assert cfg.item1 == [1, 2]
+        assert cfg.item2.a == 0
+        assert cfg.item3 is False
+        assert cfg.item4 == 'test'
+        assert cfg.item5 == dict(a=0, b=1)
+        assert cfg.item6 == [dict(a=0), dict(b=1)]
+        assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
+        assert cfg.item8 == 't.py'
+        assert cfg.item9 == dict(a=0)
+        assert cfg.item10 == [3.1, 4.2, 5.3]
+        assert cfg.item11 == 't.py'
+        assert cfg.item12 == dict(a=0)
+        assert cfg.item13 == [3.1, 4.2, 5.3]
+        assert cfg.item14 == [1, 2]
+        assert cfg.item15 == dict(
+            a=dict(b=dict(a=0)),
+            b=[False],
+            c=['test'],
+            d=[[{
+                'e': 0
+            }], [{
+                'a': 0
+            }, {
+                'b': 1
+            }]],
+            e=[1, 2])
+
+    # test reference assignment for py
+    cfg_file = osp.join(data_path, 'config/v.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.item21 == 't.py'
+    assert cfg.item22 == 't.py'
+    assert cfg.item23 == [3.1, 4.2, 5.3]
+    assert cfg.item24 == [3.1, 4.2, 5.3]
+    assert cfg.item25 == dict(
+        a=dict(b=[3.1, 4.2, 5.3]),
+        b=[[3.1, 4.2, 5.3]],
+        c=[[{
+            'e': 't.py'
+        }], [{
+            'a': 0
+        }, {
+            'b': 1
+        }]],
+        e='t.py')
+
+
 def test_merge_recursive_bases():
     cfg_file = osp.join(data_path, 'config/f.py')
     cfg = Config.fromfile(cfg_file)
