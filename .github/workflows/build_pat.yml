@@ -20,3 +20,15 @@ jobs:
         run: pip install -r requirements/test.txt
       - name: Build and install
         run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
+      - name: check metafiles
+        run: |
+          git clone git@gitlab.sz.sensetime.com:parrotsDL-sz/modelhub.git
+          cd modelhub
+          pip install -r requirements.txt
+          pip install -e .
+          cd -
+          git clone https://github.com/open-mmlab/mmclassification.git
+          cd mmclassification
+          pip install -e .
+          cd -
+          python modelhub/tests/mmcv_ci.py mmclassification/model-index.yml
