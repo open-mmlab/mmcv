@@ -4,7 +4,7 @@ from distutils.version import LooseVersion
 import torch
 
 
-def is_tracing() -> bool:
+def is_jit_tracing() -> bool:
     if LooseVersion(torch.__version__) >= LooseVersion('1.6.0'):
         on_trace = torch.jit.is_tracing()
         # In PyTorch 1.6, torch.jit.is_tracing has a bug.
