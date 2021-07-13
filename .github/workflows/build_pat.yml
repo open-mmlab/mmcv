@@ -22,7 +22,7 @@ jobs:
         run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
       - name: check metafiles
         run: |
-          git clone git@gitlab.sz.sensetime.com:parrotsDL-sz/modelhub.git
+          git clone git@github.com:FreakieHuang/modelhub.git
           cd modelhub
           pip install -r requirements.txt
           pip install -e .
