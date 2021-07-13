@@ -16,6 +16,9 @@ def NEG_INF_DIAG(n, device):
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module.
 
+    Args:
+        in_channels (int): Channels of the input feature map.
+
     Time consuming for one forward pass:
         Settings:
             Input size: [2,512,97,97]
@@ -47,6 +50,14 @@ class CrissCrossAttention(nn.Module):
         self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
+        """Forward pass of Criss-Cross Attention.
+
+        Args:
+            x (Tensor): Input feature map. \
+                shape (batch_size, in_channels, height, width)
+        Returns:
+            out (Tensor): shape (batch_size, in_channels, height, width)
+        """
         B, C, H, W = x.shape
 
         query = self.query_conv(x)
