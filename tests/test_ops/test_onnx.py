@@ -608,11 +608,6 @@ def test_roll(shifts_dims_pair):
     from mmcv.onnx.symbolic import register_extra_symbolics
     register_extra_symbolics(opset)
 
-    from mmcv.ops import get_onnxruntime_op_path
-    ort_custom_op_path = get_onnxruntime_op_path()
-    if not os.path.exists(ort_custom_op_path):
-        pytest.skip('custom ops for onnxruntime are not compiled.')
-
     input = torch.arange(0, 4 * 5 * 6, dtype=torch.float32).view(4, 5, 6)
 
     shifts, dims = shifts_dims_pair
