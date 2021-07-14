@@ -432,8 +432,9 @@ def roll(g, input, shifts, dims):
         slice_size = g.op('Sub', slice_size, g.op('Mul', end_size, div_size))
 
         if version.parse(torch.__version__) >= version.parse('1.7.0'):
-            end_size = squeeze(g, end_size)
-            slice_size = squeeze(g, slice_size)
+            # add dim=0 for pytorch 1.9.0
+            end_size = squeeze(g, end_size, 0)
+            slice_size = squeeze(g, slice_size, 0)
         else:
             end_size = g.op('Squeeze', end_size)
             slice_size = g.op('Squeeze', slice_size)
