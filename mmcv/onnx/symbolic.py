@@ -409,6 +409,7 @@ def cummin(g, input, dim):
 @parse_args('v', 'v', 'is')
 def roll(g, input, shifts, dims):
     from torch.onnx.symbolic_opset9 import squeeze
+    from packaging import version
     input_shape = g.op('Shape', input)
 
     need_flatten = len(dims) == 0
@@ -430,8 +431,14 @@ def roll(g, input, shifts, dims):
         div_size = g.op('Div', slice_size, end_size)
         slice_size = g.op('Sub', slice_size, g.op('Mul', end_size, div_size))
 
-        end_size = squeeze(g, end_size)
-        slice_size = squeeze(g, slice_size)
+        if version.parse(torch.__version__) >= version.parse('1.7.0'):
+            end_size = squeeze(g, end_size)
+            slice_size = squeeze(g, slice_size)
+        else:
+            end_size = g.op('Squeeze', end_size)
+            slice_size = g.op('Squeeze', slice_size)
+            dim = torch.LongTensor([dim])
+
         input_slice0 = sym_help._slice_helper(
             g,
             input,
