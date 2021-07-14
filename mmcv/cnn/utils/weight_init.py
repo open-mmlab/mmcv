@@ -446,7 +446,7 @@ def _initialize_override(module, override, cfg):
         if name is None:
             raise ValueError('`override` must contain the key "name",'
                              f'but got {cp_override}')
-        # if override only has name kay, it means use args in init_cfg
+        # if override only has name key, it means use args in init_cfg
         if not cp_override:
             cp_override.update(cfg)
         # if override has name key and other args except type key, it will

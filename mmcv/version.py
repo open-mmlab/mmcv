@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 
-__version__ = '1.3.8'
 from pkg_resources import parse_version
+__version__ = '1.3.9'
 
 
 def parse_version_info(version_str: str, length: int = 4) -> tuple:
