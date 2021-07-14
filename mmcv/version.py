@@ -1,6 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 
 from pkg_resources import parse_version
+
 __version__ = '1.3.9'
 
 
