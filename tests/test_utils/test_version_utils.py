@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from mmcv import digit_version, get_git_hash, parse_version_info
 
 
@@ -18,6 +20,12 @@ def test_digit_version():
     assert digit_version('1.0.0rc1') < digit_version('1.0.0')
     assert digit_version('1.0.0') < digit_version('1.0.0post')
     assert digit_version('1.0.0post') < digit_version('1.0.0post1')
+    with pytest.raises(AssertionError):
+        digit_version('a')
+    with pytest.raises(AssertionError):
+        digit_version('1x')
+    with pytest.raises(AssertionError):
+        digit_version('1.x')
 
 
 def test_parse_version_info():
