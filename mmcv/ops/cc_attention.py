@@ -1,91 +1,77 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd.function import once_differentiable
-
-from mmcv.cnn import Scale
-from ..utils import ext_loader
-
-ext_module = ext_loader.load_ext(
-    '_ext', ['ca_forward', 'ca_backward', 'ca_map_forward', 'ca_map_backward'])
 
 
-class CAWeightFunction(torch.autograd.Function):
+def NEG_INF_DIAG(n, device):
+    """Returns a diagonal matrix of size [n, n].
 
-    @staticmethod
-    def symbolic(g, t, f):
-        return g.op('MMCVCAWeight', t, f)
-
-    @staticmethod
-    def forward(ctx, t, f):
-        n, c, h, w = t.size()
-        weight = torch.zeros(n, h + w - 1, h, w).to(t.device)
-        ext_module.ca_forward(t, f, weight)
-
-        ctx.save_for_backward(t, f)
-
-        return weight
-
-    @staticmethod
-    @once_differentiable
-    def backward(ctx, dw):
-        t, f = ctx.saved_tensors
-        dt = torch.zeros_like(t)
-        df = torch.zeros_like(f)
-        ext_module.ca_backward(dw, t, f, dt, df)
-        return dt, df
-
-
-class CAMapFunction(torch.autograd.Function):
-
-    @staticmethod
-    def symbolic(g, weight, v):
-        return g.op('MMCVCAMap', weight, v)
-
-    @staticmethod
-    def forward(ctx, weight, v):
-        out = torch.zeros_like(v)
-        ext_module.ca_map_forward(weight, v, out)
-
-        ctx.save_for_backward(weight, v)
-
-        return out
-
-    @staticmethod
-    @once_differentiable
-    def backward(ctx, dout):
-        weight, v = ctx.saved_tensors
-        dw = torch.zeros_like(weight)
-        dv = torch.zeros_like(v)
-        ext_module.ca_map_backward(dout, weight, v, dw, dv)
-
-        return dw, dv
-
-
-ca_weight = CAWeightFunction.apply
-ca_map = CAMapFunction.apply
+    The diagonal are all "-inf". This is for avoiding calculating the
+    overlapped element in the Criss-Cross twice.
+    """
+    return torch.diag(torch.tensor(float('-inf')).to(device).repeat(n), 0)
 
 
 class CrissCrossAttention(nn.Module):
-    """Criss-Cross Attention Module."""
+    """Criss-Cross Attention Module.
+
+    Args:
+        in_channels (int): Channels of the input feature map.
+
+    Time consuming for one forward pass:
+        Settings:
+            Input size: [2,512,97,97]
+            Device: 1 NVIDIA GeForce RTX 2080 Ti
+        Results:
+            (with torch.no_grad())
+                The CUDA version: 0.0299619 s
+                This implementation: 0.00554402 s
+                Relative speed: 5.4x
+            (not with torch.no_grad())
+                The CUDA version: 0.0301349 s
+                This implementation: 0.00562803 s
+                Relative speed: 5.4x
+    """
 
     def __init__(self, in_channels):
-        super(CrissCrossAttention, self).__init__()
-        self.query_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
-        self.key_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
-        self.value_conv = nn.Conv2d(in_channels, in_channels, 1)
-        self.gamma = Scale(0.)
+        super().__init__()
         self.in_channels = in_channels
+        self.query_conv = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=in_channels // 8,
+            kernel_size=1)
+        self.key_conv = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=in_channels // 8,
+            kernel_size=1)
+        self.value_conv = nn.Conv2d(
+            in_channels=in_channels, out_channels=in_channels, kernel_size=1)
+        self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
-        proj_query = self.query_conv(x)
-        proj_key = self.key_conv(x)
-        proj_value = self.value_conv(x)
+        """Forward pass of Criss-Cross Attention.
 
-        energy = ca_weight(proj_query, proj_key)
-        attention = F.softmax(energy, 1)
-        out = ca_map(attention, proj_value)
-        out = self.gamma(out) + x
+        Args:
+            x (Tensor): Input feature map. \
+                shape (batch_size, in_channels, height, width)
+        Returns:
+            out (Tensor): shape (batch_size, in_channels, height, width)
+        """
+        B, C, H, W = x.size()
+        query = self.query_conv(x)
+        key = self.key_conv(x)
+        value = self.value_conv(x)
+        energy_H = torch.einsum('bchw,bciw->bwhi', query, key) + NEG_INF_DIAG(
+            H, query.device)
+        energy_H = energy_H.transpose(1, 2)
+        energy_W = torch.einsum('bchw,bchj->bhwj', query, key)
+        attn = F.softmax(
+            torch.cat([energy_H, energy_W], dim=-1), dim=-1)  # [B,H,W,(H+W)]
+        out = torch.einsum('bciw,bhwi->bchw', value, attn[..., :H])
+        out += torch.einsum('bchj,bhwj->bchw', value, attn[..., H:])
+
+        out *= self.gamma
+        out += x
 
         return out
 
