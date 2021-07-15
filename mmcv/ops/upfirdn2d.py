@@ -99,6 +99,7 @@ import torch
 from torch.autograd import Function
 from torch.nn import functional as F
 
+from mmcv.utils import to_2tuple
 from ..utils import ext_loader
 
 upfirdn2d_ext = ext_loader.load_ext('_ext', ['upfirdn2d'])
@@ -265,24 +266,16 @@ def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
         if len(pad) == 2:
             pad = (pad[0], pad[1], pad[0], pad[1])
 
-        if not isinstance(up, tuple):
-            up = (up, up)
+        up = to_2tuple(up)
 
-        if not isinstance(down, tuple):
-            down = (down, down)
+        down = to_2tuple(down)
 
         out = upfirdn2d_native(input, kernel, up[0], up[1], down[0], down[1],
                                pad[0], pad[1], pad[2], pad[3])
     else:
-        if isinstance(up, tuple):
-            _up = up
-        else:
-            _up = (up, up)
+        _up = to_2tuple(up)
 
-        if isinstance(down, tuple):
-            _down = down
-        else:
-            _down = (down, down)
+        _down = to_2tuple(down)
 
         if len(pad) == 4:
             _pad = pad
