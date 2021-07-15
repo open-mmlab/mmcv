@@ -105,7 +105,7 @@ Then use `list_from_file` to load the list from a.txt.
 ['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
 ```
 
-For example `b.txt` is a text file with 5 lines.
+For example `b.txt` is a text file with 3 lines.
 
 ```
 1 cat
@@ -113,7 +113,7 @@ For example `b.txt` is a text file with 5 lines.
 3 panda
 ```
 
-Then use `dict_from_file` to load the list from a.txt.
+Then use `dict_from_file` to load the dict from `b.txt` .
 
 ```python
 >>> mmcv.dict_from_file('b.txt')

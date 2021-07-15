@@ -115,9 +115,7 @@ class BaseInit(object):
                     but got a {type(layer)}')
         else:
             layer = []
-            warnings.warn(
-                'init_cfg without layer key, if you do not define override'
-                ' key either, this init_cfg will do nothing')
+
         if bias_prob is not None:
             self.bias = bias_init_with_prob(bias_prob)
         else:
@@ -448,7 +446,7 @@ def _initialize_override(module, override, cfg):
         if name is None:
             raise ValueError('`override` must contain the key "name",'
                              f'but got {cp_override}')
-        # if override only has name kay, it means use args in init_cfg
+        # if override only has name key, it means use args in init_cfg
         if not cp_override:
             cp_override.update(cfg)
         # if override has name key and other args except type key, it will

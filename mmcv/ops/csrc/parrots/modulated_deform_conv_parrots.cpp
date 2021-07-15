@@ -6,6 +6,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void modulated_deform_conv_forward_cuda_parrots(
     CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
     OperatorBase::out_list_t& outs) {
@@ -114,3 +115,4 @@ PARROTS_EXTENSION_REGISTER(modulated_deform_conv_backward)
     .output(7)
     .apply(modulated_deform_conv_backward_cuda_parrots)
     .done();
+#endif

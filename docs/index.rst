@@ -1,26 +1,17 @@
+Welcome to MMCV's documentation!
+================================
 
-.. mdinclude:: readme.md
-
-Contents
-========
+You can switch between Chinese and English documents in the lower-left corner of the layout.
 
 .. toctree::
    :maxdepth: 2
 
-   io.md
-   image.md
-   video.md
-   visualization.md
-   utils.md
-   runner.md
-   registry.md
-   cnn.md
-   ops.md
-   build.md
+   get_started.rst
    deployment.rst
-   trouble_shooting.md
+   understand_mmcv.rst
    api.rst
-
+   faq.md
+   community.rst
 
 
 Indices and tables

@@ -170,14 +170,27 @@ pip install mmcv
 
 c. Install full version with custom operators for onnxruntime
 
-- Check [here](docs/onnxruntime_op.md) for detailed instruction.
+- Check [here](docs/deployment/onnxruntime_op.md) for detailed instruction.
 
-If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/build.html).
+If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
 
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Trouble Shooting Page](https://mmcv.readthedocs.io/en/latest/trouble_shooting.html).
+you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html).
+
+## Citation
+
+If you find this project useful in your research, please consider cite:
+
+```latex
+@misc{mmcv,
+    title={{MMCV: OpenMMLab} Computer Vision Foundation},
+    author={MMCV Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmcv}},
+    year={2018}
+}
+```
 
 ## Contributing
 
