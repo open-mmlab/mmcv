@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 
+from mmcv.cnn import PLUGIN_LAYERS
+
 
 def NEG_INF_DIAG(n, device):
     """Returns a diagonal matrix of size [n, n].
@@ -13,6 +15,7 @@ def NEG_INF_DIAG(n, device):
     return torch.diag(torch.tensor(float('-inf')).to(device).repeat(n), 0)
 
 
+@PLUGIN_LAYERS.register_module()
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module.
 
