@@ -39,7 +39,7 @@ def train(self, data_loader, **kwargs):
    self.call_hook('after_train_epoch')
 ```
 
-## IterBasedRunner
+### IterBasedRunner
 不同于 `EpochBasedRunner`，`IterBasedRunner` 是指工作流中是以 iter 为设置单位的，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
@@ -74,7 +74,7 @@ def val(self, data_loader, **kwargs):
 
 除了上述基础功能外，`EpochBasedRunner` 和 `IterBasedRunner` 还提供了 resume 、 save_checkpoint 和注册 hook 功能。
 
-## 一个简单例子
+### 一个简单例子
 以最常用的分类任务为例详细说明下 runner 的使用方法。 开启任何一个训练任务，都需要包括如下步骤：
 
 **(1) dataloader、model 和优化器等类初始化**
