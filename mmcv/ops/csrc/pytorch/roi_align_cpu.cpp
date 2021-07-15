@@ -337,9 +337,10 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
     } else if (pool_mode == 1) {
       // We do average (integral) pooling inside a bin
       // We use roi_bin_grid to sample the grid and mimic integral
-      int roi_bin_grid_h = (sampling_ratio > 0)
-                               ? sampling_ratio
-                               : ceilf(roi_height / pooled_height);  // e.g., = 2
+      int roi_bin_grid_h =
+          (sampling_ratio > 0)
+              ? sampling_ratio
+              : ceilf(roi_height / pooled_height);  // e.g., = 2
       int roi_bin_grid_w = (sampling_ratio > 0)
                                ? sampling_ratio
                                : ceilf(roi_width / pooled_width);
