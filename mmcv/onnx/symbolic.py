@@ -413,6 +413,8 @@ def roll(g, input, shifts, dims):
     input_shape = g.op('Shape', input)
 
     need_flatten = len(dims) == 0
+    # If dims is not specified, the tensor will be flattened before
+    # rolling and then restored to the original shape.
     if need_flatten:
         resize_shape = input_shape
         input = g.op('Reshape', input,

@@ -14,7 +14,7 @@ onnx_file = 'tmp.onnx'
 
 
 @pytest.fixture(autouse=True)
-def clear_tmpfile_after_test():
+def run_before_and_after_test():
     # clear onnx_file before test
     if os.path.exists(onnx_file):
         os.remove(onnx_file)
