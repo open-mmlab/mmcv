@@ -2,7 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from mmcv import digit_version, get_git_hash, parse_version_info
+from mmcv import get_git_hash, parse_version_info
+from mmcv.utils import digit_version
 
 
 def test_digit_version():

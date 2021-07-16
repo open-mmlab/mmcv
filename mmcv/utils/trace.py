@@ -2,7 +2,7 @@ import warnings
 
 import torch
 
-from mmcv import digit_version
+from mmcv.utils import digit_version
 
 
 def is_jit_tracing() -> bool:
