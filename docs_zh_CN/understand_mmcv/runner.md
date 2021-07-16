@@ -49,11 +49,11 @@ def train(self, data_loader, **kwargs):
 iter_loaders = [IterLoader(x) for x in data_loaders]
 # 训练终止条件
 while curr_iter < max_iters:
-    # 遍历用户设置工作流，例如 workflow = [('train', 2)， ('val', 1)] 
+    # 遍历用户设置工作流，例如 workflow = [('train', 2)， ('val', 1)]
     for i, flow in enumerate(workflow):
         # mode 是工作流函数，例如 train, iters 是迭代次数
         mode, iters = flow
-        # 要么调用 self.train()，要么调用 self.val() 
+        # 要么调用 self.train()，要么调用 self.val()
         iter_runner = getattr(self, mode)
         # 运行对应工作流函数
         for _ in range(iters):
@@ -98,7 +98,7 @@ data_loaders = [
 
 ```python
 runner = build_runner(
-    # cfg.runner 典型配置为 
+    # cfg.runner 典型配置为
     # runner = dict(type='EpochBasedRunner', max_epochs=200)
     cfg.runner,
     default_args=dict(
@@ -113,14 +113,14 @@ runner = build_runner(
 ```python
 # 注册定制必需的 hook
 runner.register_training_hooks(
-    # lr相关配置，典型为 
+    # lr相关配置，典型为
     # lr_config = dict(policy='step', step=[100, 150])
-    cfg.lr_config, 
+    cfg.lr_config,
     # 优化相关配置，例如 grad_clip 等
     optimizer_config,
     # 权重保存相关配置，典型为
     # checkpoint_config = dict(interval=1)，每个单位都保存权重
-    cfg.checkpoint_config, 
+    cfg.checkpoint_config,
     # 日志相关配置
     cfg.log_config,
     ...)
