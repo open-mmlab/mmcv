@@ -1,3 +1,161 @@
 ## 注册器
+MMCV 实施注册表来管理具有相似功能的不同模块
+MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) 来管理具有相似功能的不同模块, 例如, 监测器中的骨干网络、前置网络头、和颈部网络。
+在 OpenMMLab 旗下的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting)，等。
 
-欢迎有兴趣的朋友一起翻译 MMCV 文档。如有兴趣，请在 [MMCV issue](https://github.com/open-mmlab/mmcv/issues) 提 issue 确定翻译的文档。
+### 什么是注册器
+在MMCV中，注册器可以看作是一个将类映射到字符串的映射。
+这些被一个单一注册器包含的类同长有相似的API，但是可以实现不同的算法或支持不同的数据集。
+借助注册器，用户可以通过使用相应的字符串查找并实例化该类，并根据他们的需要实例化对应模块。
+一个典型的案例是在大部分OpenMMLab开源项目中的配置系统，这些系统通过配置文件来使用注册器创建钩子、运行器、模型和数据集。
+可以在[这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry)找到API参考。
+
+为了使用 `registry`（注册器）管理你存放在代码库中的模型，需要以下三个步骤。
+
+1. 创建一个构建方法（可选，在大多数情况下您可以只使用默认方法）。
+2. 创建注册器。
+3. 使用此注册器来管理模块。
+`Registry`（注册器）的参数 `build_func`（构建函数） 用来自定以如何实例化类的实例，默认的是在[这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg)实现的`build_from_cfg`。
+
+### 一个简单的例子
+
+这里我们展示了一个使用注册器管理包中模块的简单示例。您可以在 OpenMMLab 开源项目中找到更多实例。
+
+假设我们要实现一系列数据集转换器（Dataset Converter），用于将不同格式的数据转换为标准数据格式。我们先创建一个名为converters的目录作为包，在包中我们先创建一个文件来实现构建器（builder），命名为converters/builder.py，如下
+
+```python
+from mmcv.utils import Registry
+# 创建一个用于转换器（converter）的注册器（registry）
+CONVERTERS = Registry('converter')
+```
+
+然后我们在包中可以实现不同的转换器（converter）。例如，在 `converters/converter1.py` 中实现 `Converter1`。 
+
+```python
+
+from .builder import CONVERTERS
+
+# 使用注册器管理模块
+@CONVERTERS.register_module()
+class Converter1(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+```
+要使用注册器中的关键步骤管理模块是注册实施的模块到注册表中CONVERTERS通过 @CONVERTERS.register_module()时所创建的模块。通过这种方式，字符串和类之间的映射由CONVERTERS如下构建和维护
+
+使用注册器管理模块的关键步骤是：当你创建模块时，通过`@CONVERTERS.register_module()`在注册器`CONVERTERS`里注册实现模块。
+通过这种方式，就可以通过 `CONVERTERS` 建立字符串与类之间的映射，如下所示：
+
+```python
+'Converter1' -> <class 'Converter1'>
+```
+
+如果模块被成功注册了，你可以通过配置文件使用这个转换器（converter），如下所示：
+
+```python
+converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
+converter = CONVERTERS.build(converter_cfg)
+```
+
+### 自定义构建函数
+
+假设我们想自定义 `converters` 的构建流程，我们可以实现一个自定义的 `build_func` （构建函数）并将其传递到注册器中。
+
+```python
+from mmcv.utils import Registry
+
+# 创建一个构建函数
+def build_converter(cfg, registry, *args, **kwargs):
+    cfg_ = cfg.copy()
+    converter_type = cfg_.pop('type')
+    if converter_type not in registry:
+        raise KeyError(f'Unrecognized converter type {converter_type}')
+    else:
+        converter_cls = registry.get(converter_type)
+
+    converter = converter_cls(*args, **kwargs, **cfg_)
+    return converter
+
+# 创建一个用于转换器（converters）的注册器，并传递（registry）``build_converter`` 函数
+CONVERTERS = Registry('converter', build_func=build_converter)
+```
+
+注：在这个例子中，我们演示了如何使用参数：`build_func` 自定义构建类的实例的方法。
+该功能类似于默认的`build_from_cfg`。在大多数情况下，默认就足够了。
+
+`build_model_from_cfg`也实现了在`nn.Sequentail`中构建PyTorch模块，你可以直接使用它们没必要自己实现。
+
+### 注册器层结构
+
+你也可以从不止一个 OpenMMLab开源框架中构建模块，例如，你可以把所有 [MMClassification](https://github.com/open-mmlab/mmclassification) 中的骨干网络（backbone）用到 [MMDetection](https://github.com/open-mmlab/mmdetection) 的目标检测中，你也可以融合 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的目标检测模型 和 [MMSegmentation](https://github.com/open-mmlab/mmsegmentation) 语义分割模型。
+
+下游代码库中所有 `MODELS`注册器 都是 MMCV `MODELS`注册器 的子注册器。基本上，使用以下两种方法从子注册器或相邻兄弟注册器构建模块。
+
+1. 从子注册器中构建。
+
+   例如：
+
+   我们在 MMDetection 中定义：
+
+   ```python
+   from mmcv.utils import Registry
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   MODELS = Registry('model', parent=MMCV_MODELS)
+
+   @MODELS.register_module()
+   class NetA(nn.Module):
+       def forward(self, x):
+           return x
+   ```
+
+   我们在 MMClassification 中定义：
+
+   ```python
+   from mmcv.utils import Registry
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   MODELS = Registry('model', parent=MMCV_MODELS)
+
+   @MODELS.register_module()
+   class NetB(nn.Module):
+       def forward(self, x):
+           return x + 1
+   ```
+
+   我们可以通过以下代码在 MMDetection 或 MMClassification 中构建两个网络：
+
+   ```python
+   from mmdet.models import MODELS
+   net_a = MODELS.build(cfg=dict(type='NetA'))
+   net_b = MODELS.build(cfg=dict(type='mmcls.NetB'))
+   ```
+
+   或
+
+   ```python
+   from mmcls.models import MODELS
+   net_a = MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MODELS.build(cfg=dict(type='NetB'))
+   ```
+
+2. 从父注册器中构建。
+
+   MMCV中的 共享`MODELS`注册器 是所有下游代码库的父注册器（根注册器）：
+
+   ```python
+   from mmcv.cnn import MODELS as MMCV_MODELS
+   net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
+   ```
+
+
+
+
+
+
+
+
+
+
+
+
