@@ -147,15 +147,3 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
    net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
    ```
-
-
-
-
-
-
-
-
-
-
-
-
