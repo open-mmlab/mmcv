@@ -76,7 +76,7 @@ class SyncBatchNormFunction(Function):
             dist.all_reduce(vec, group=self.group)
             mean = vec[:num_channels] / self.group_size
         # need total batch to decide whether to update the momentum
-        total_batch = vec[-1].detach().clamp(max=1)
+        total_batch_flag = vec[-1].detach().clamp(max=1)
 
         if batch_size > 0:
             ext_module.sync_bn_forward_var(input3d, mean, var)
@@ -86,7 +86,7 @@ class SyncBatchNormFunction(Function):
             dist.all_reduce(var, group=self.group)
             var /= self.group_size
 
-        momentum = total_batch * self.momentum
+        momentum = total_batch_flag * self.momentum
         ext_module.sync_bn_forward_output(
             input3d,
             mean,
