@@ -67,7 +67,6 @@ class SyncBatchNormFunction(Function):
             batch_flag = torch.ones([1], device=mean.device, dtype=mean.dtype)
         else:
             # skip updating mean and leave it as zeros when the input is empty
-            # make sure there is gradient w.r.t input tensor
             batch_flag = torch.zeros([1], device=mean.device, dtype=mean.dtype)
 
         # sync mean and the batch flag
