@@ -45,27 +45,49 @@ class SyncBatchNormFunction(Function):
                    input, (torch.HalfTensor, torch.FloatTensor,
                            torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
                f'only support Half or Float Tensor, but {input.type()}'
-        output = torch.empty_like(input)
-        input3d = input.view(input.size(0), input.size(1), -1)
+        output = torch.zeros_like(input)
+        input3d = input.flatten(start_dim=2)
         output3d = output.view_as(input3d)
+        channel = input3d.size(1)
 
-        mean = torch.empty(
+        mean = torch.zeros(
             input3d.size(1), dtype=torch.float, device=input3d.device)
-        var = torch.empty(
+        var = torch.zeros(
             input3d.size(1), dtype=torch.float, device=input3d.device)
-        norm = torch.empty_like(
+        norm = torch.zeros_like(
             input3d, dtype=torch.float, device=input3d.device)
-        std = torch.empty(
+        std = torch.zeros(
             input3d.size(1), dtype=torch.float, device=input3d.device)
 
-        ext_module.sync_bn_forward_mean(input3d, mean)
+        batch_size = input3d.size(0)
+        if batch_size > 0:
+            ext_module.sync_bn_forward_mean(input3d, mean)
+            batch_flag = torch.ones([1], device=mean.device, dtype=mean.dtype)
+        else:
+            mean = torch.zeros(
+                input3d.size(1), dtype=torch.float, device=input3d.device)
+            # make sure there is gradient w.r.t input tensor
+            mean = mean + input.sum()
+            batch_flag = torch.zeros([1], device=mean.device, dtype=mean.dtype)
+
+        # sync mean and the batch flag
+        vec = torch.cat([mean, batch_flag])
         if self.group_size > 1:
-            dist.all_reduce(mean, group=self.group)
-            mean /= self.group_size
-        ext_module.sync_bn_forward_var(input3d, mean, var)
+            dist.all_reduce(vec, group=self.group)
+            mean = vec[:channel] / self.group_size
+        total_batch = vec[-1].detach().clamp(max=1)
+
+        if batch_size > 0:
+            ext_module.sync_bn_forward_var(input3d, mean, var)
+        else:
+            var = torch.zeros(
+                input3d.size(1), dtype=torch.float, device=input3d.device)
+
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
             var /= self.group_size
+
+        momentum = total_batch * self.momentum
         ext_module.sync_bn_forward_output(
             input3d,
             mean,
@@ -78,7 +100,7 @@ class SyncBatchNormFunction(Function):
             std,
             output3d,
             eps=self.eps,
-            momentum=self.momentum,
+            momentum=momentum,
             group_size=self.group_size)
         self.save_for_backward(norm, std, weight)
         return output
@@ -87,22 +109,29 @@ class SyncBatchNormFunction(Function):
     @once_differentiable
     def backward(self, grad_output):
         norm, std, weight = self.saved_tensors
-        grad_weight = torch.empty_like(weight)
-        grad_bias = torch.empty_like(weight)
-        grad_input = torch.empty_like(grad_output)
-        grad_output3d = grad_output.view(
-            grad_output.size(0), grad_output.size(1), -1)
+        grad_weight = torch.zeros_like(weight)
+        grad_bias = torch.zeros_like(weight)
+        grad_input = torch.zeros_like(grad_output)
+        grad_output3d = grad_output.flatten(start_dim=2)
         grad_input3d = grad_input.view_as(grad_output3d)
-        ext_module.sync_bn_backward_param(grad_output3d, norm, grad_weight,
-                                          grad_bias)
+
+        batch_size = grad_input3d.size(0)
+        if batch_size > 0:
+            ext_module.sync_bn_backward_param(grad_output3d, norm, grad_weight,
+                                              grad_bias)
+
         # all reduce
         if self.group_size > 1:
             dist.all_reduce(grad_weight, group=self.group)
             dist.all_reduce(grad_bias, group=self.group)
             grad_weight /= self.group_size
             grad_bias /= self.group_size
-        ext_module.sync_bn_backward_data(grad_output3d, weight, grad_weight,
-                                         grad_bias, norm, std, grad_input3d)
+
+        if batch_size > 0:
+            ext_module.sync_bn_backward_data(grad_output3d, weight,
+                                             grad_weight, grad_bias, norm, std,
+                                             grad_input3d)
+
         return grad_input, None, None, grad_weight, grad_bias, \
             None, None, None, None
 
