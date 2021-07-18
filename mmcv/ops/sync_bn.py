@@ -48,40 +48,39 @@ class SyncBatchNormFunction(Function):
         output = torch.zeros_like(input)
         input3d = input.flatten(start_dim=2)
         output3d = output.view_as(input3d)
-        channel = input3d.size(1)
+        num_channels = input3d.size(1)
 
+        # make sure mean/var/norm/std are initialized as zeros
+        # torch.empty does not guarantee that
         mean = torch.zeros(
-            input3d.size(1), dtype=torch.float, device=input3d.device)
+            num_channels, dtype=torch.float, device=input3d.device)
         var = torch.zeros(
-            input3d.size(1), dtype=torch.float, device=input3d.device)
+            num_channels, dtype=torch.float, device=input3d.device)
         norm = torch.zeros_like(
             input3d, dtype=torch.float, device=input3d.device)
         std = torch.zeros(
-            input3d.size(1), dtype=torch.float, device=input3d.device)
+            num_channels, dtype=torch.float, device=input3d.device)
 
         batch_size = input3d.size(0)
         if batch_size > 0:
             ext_module.sync_bn_forward_mean(input3d, mean)
             batch_flag = torch.ones([1], device=mean.device, dtype=mean.dtype)
         else:
-            mean = torch.zeros(
-                input3d.size(1), dtype=torch.float, device=input3d.device)
+            # skip updating mean and leave it as zeros when the input is empty
             # make sure there is gradient w.r.t input tensor
-            mean = mean + input.sum()
             batch_flag = torch.zeros([1], device=mean.device, dtype=mean.dtype)
 
         # sync mean and the batch flag
         vec = torch.cat([mean, batch_flag])
         if self.group_size > 1:
             dist.all_reduce(vec, group=self.group)
-            mean = vec[:channel] / self.group_size
+            mean = vec[:num_channels] / self.group_size
+        # need total batch to decide whether to update the momentum
         total_batch = vec[-1].detach().clamp(max=1)
 
         if batch_size > 0:
             ext_module.sync_bn_forward_var(input3d, mean, var)
-        else:
-            var = torch.zeros(
-                input3d.size(1), dtype=torch.float, device=input3d.device)
+        # skip updating var and leave it as zeros when the input is empty
 
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
