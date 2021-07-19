@@ -242,7 +242,7 @@ def get_extensions():
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
             extension = CUDAExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/hip'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
         elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
