@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from mmcv.runner.base_module import update_init_infos
+from mmcv.runner.base_module import update_init_info
 from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 
 INITIALIZERS = Registry('initializer')
@@ -124,7 +124,7 @@ class BaseInit(object):
         self.layer = [layer] if isinstance(layer, str) else layer
 
     def _get_init_info(self):
-        info = f', bias={self.bias}'
+        info = f'{self.__class__.__name__}, bias={self.bias}'
         return info
 
 
@@ -158,11 +158,11 @@ class ConstantInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
-        info = f'{self.__class__.__name__}: val={self.val}'
-        return info + super()._get_init_info()
+        info = f'{self.__class__.__name__}: val={self.val}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Xavier')
@@ -201,12 +201,12 @@ class XavierInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: gain={self.gain}, ' \
-               f'distribution={self.distribution}'
-        return info + super()._get_init_info()
+               f'distribution={self.distribution}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Normal')
@@ -244,11 +244,12 @@ class NormalInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
-        info = f'{self.__class__.__name__}: mean={self.mean}, std={self.std}'
-        return info + super()._get_init_info()
+        info = f'{self.__class__.__name__}: mean={self.mean},' \
+               f' std={self.std}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='TruncNormal')
@@ -298,12 +299,12 @@ class TruncNormalInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: a={self.a}, b={self.b},' \
-               f' mean={self.mean}, std={self.std}'
-        return info + super()._get_init_info()
+               f' mean={self.mean}, std={self.std}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Uniform')
@@ -341,11 +342,12 @@ class UniformInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
-        info = f'{self.__class__.__name__}: a={self.a}, b={self.b}'
-        return info + super()._get_init_info()
+        info = f'{self.__class__.__name__}: a={self.a},' \
+               f' b={self.b}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Kaiming')
@@ -402,13 +404,13 @@ class KaimingInit(BaseInit):
 
         module.apply(init)
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: a={self.a}, mode={self.mode}, ' \
                f'nonlinearity={self.nonlinearity}, ' \
-               f'distribution ={self.distribution}'
-        return info + super()._get_init_info()
+               f'distribution ={self.distribution}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Caffe2Xavier')
@@ -468,7 +470,7 @@ class PretrainedInit(object):
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
         if hasattr(module, 'params_init_info'):
-            update_init_infos(module, init_info=self._get_init_info())
+            update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: load from {self.checkpoint}'
