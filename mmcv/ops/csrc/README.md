@@ -143,7 +143,7 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
     // src/pytorch/pybind.cpp
 
     ...
-    
+
     Tensor new_ops_forward(Tensor input, Tensor output, ...);
 
     ...
