@@ -30,6 +30,14 @@ def update_init_info(module, *, init_info):
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab.
 
+    ``BaseModule`` is a wrapper of ``torch.nn.Module`` with additional
+    functionality of parameters initialization. Compared with
+    ``torch.nn.Module``, ``BaseModule`` mainly added two attributes
+    ``init_cfg`` the config for initialization, ``_params_init_info`` to
+    track the parameters initialization information and one function
+    ``init_weigths`` to implement the functions of parameters
+    initialization and initialization information record.
+
     Args:
         init_cfg (dict, optional): Initialization config dict.
     """
@@ -54,8 +62,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # should be a dict containing
         # - param_name (str): The name of parameter
         # - init_info (str): The string that describes the initialization.
-        # - tmp_mean_value (FloatTensor): The mean value of the parameter,
-        #       used to perceive whether the parameter has been modified
+        # - tmp_mean_value (FloatTensor): The mean of the parameter,
+        #       which indicates whether the parameter has been modified.
         # this attribute would be deleted after all parameters is initialized.
         self._params_init_info = defaultdict(dict)
 
@@ -89,10 +97,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     'tmp_mean_value'] = param.data.mean()
 
             # pass `params_init_info` to all submodules
-            # all submodules will modify the same `params_init_info` \
-            # during initialization thus params_init_info will
-            # keep the final initialization
-            # information of each module.
+            # All submodules share the same `params_init_info`,
+            # so it will be updated when parameters are
+            # modified at any level of the model.
             for sub_module in self.modules():
                 sub_module._params_init_info = self._params_init_info
 

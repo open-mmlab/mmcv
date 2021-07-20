@@ -2,6 +2,7 @@ import torch
 from torch import nn
 
 from mmcv.runner import BaseModule, ModuleList, Sequential
+from mmcv.runner.base_module import update_init_info
 from mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
@@ -87,6 +88,7 @@ def test_initilization_info_logger():
     from mmcv.utils.logging import get_logger
     import os
     import mmcv
+    import time
 
     class OverloadInitConv(nn.Conv2d, BaseModule):
 
@@ -123,6 +125,8 @@ def test_initilization_info_logger():
     get_logger('init_logger', log_file=os.path.join(workdir, train_log))
     assert hasattr(model, '_params_init_info')
     model.init_weights()
+    # avoid the logger file is still in buffers in some OS
+    time.sleep(5)
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')
     # assert initialization information has been dumped
@@ -140,6 +144,35 @@ def test_initilization_info_logger():
             assert 'OverloadInitConv' in line
         if 'fc1' in line:
             assert 'ConstantInit' in line
+
+
+def test_update_init_info():
+
+    class DummyModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super().__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    model = DummyModel()
+    from collections import defaultdict
+    model._params_init_info = defaultdict(dict)
+    for name, param in model.named_parameters():
+        model._params_init_info[param]['param_name'] = name
+        model._params_init_info[param]['init_info'] = 'init'
+        model._params_init_info[param]['tmp_mean_value'] = param.data.mean()
+
+    with torch.no_grad():
+        for p in model.parameters():
+            p.fill_(1)
+
+    update_init_info(model, init_info='fill_1')
+
+    for item in model._params_init_info.values():
+        assert item['init_info'] == 'fill_1'
+        assert item['tmp_mean_value'] == 1
 
 
 def test_model_weight_init():
