@@ -1,9 +1,9 @@
 ## 配置
 
-`Config` 类用于配置操作和配置文件，它支持从多种文件格式中加载配置，包括 **python**, **json** 和 **yaml**。
+`Config` 类用于操作配置文件，它支持从多种文件格式中加载配置，包括 **python**, **json** 和 **yaml**。
 它提供了类似字典对象的接口来获取和设置值。
 
-这里根据控制文件`test.py`举例。
+举配置文件 `test.py` 为例。
 
 ```python
 a = 1
@@ -23,12 +23,12 @@ d = 'string'
 ...      d='string')
 ```
 
-对于所有格式的配置文件，都支持一些预定义变量。它会将在`{{ var }}`里的变量转换为实际值。
+对于所有格式的配置文件，都支持一些预定义变量。它会将 `{{ var }}` 替换为实际值。
 
 目前支持以下四个预定义变量：
 
 
-`{{ fileDirname }}` - 当前打开文件的文件目录名，例如 /home/your-username/your-project/folder
+`{{ fileDirname }}` - 当前打开文件的目录名，例如 /home/your-username/your-project/folder
 
 `{{ fileBasename }}` - 当前打开文件的文件名，例如 file.ext
 
@@ -38,7 +38,7 @@ d = 'string'
 
 这些变量名引用自 [VS Code](https://code.visualstudio.com/docs/editor/variables-reference)。
 
-这里根据一个带预定义变量的控制文件举例。
+这里举一个带有预定义变量的配置文件为例。
 
 `config_a.py`
 ```python
@@ -55,7 +55,7 @@ c = '{{ fileExtname }}'
 ...      c='.py')
 ```
 
-对于所有格式的配置文件, 都支持继承。为了重用其他控制文件，
+对于所有格式的配置文件, 都支持继承。为了重用其他配置文件的字段，
 需要指定 `_base_='./config_a.py'` 或者一个包含控制文件的列表 `_base_=['./config_a.py', './config_b.py']`。
 
 这里有 4 个配置继承关系的例子。
