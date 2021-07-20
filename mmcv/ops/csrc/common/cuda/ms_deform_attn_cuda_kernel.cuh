@@ -24,8 +24,8 @@ __device__ scalar_t ms_deform_attn_im2col_bilinear(
     const scalar_t *&bottom_data, const int &height, const int &width,
     const int &nheads, const int &channels, const scalar_t &h,
     const scalar_t &w, const int &m, const int &c) {
-  const int h_low = floor(h);
-  const int w_low = floor(w);
+  const int h_low = floorf(h);
+  const int w_low = floorf(w);
   const int h_high = h_low + 1;
   const int w_high = w_low + 1;
 
@@ -75,8 +75,8 @@ __device__ void ms_deform_attn_col2im_bilinear(
     const scalar_t &w, const int &m, const int &c, const scalar_t &top_grad,
     const scalar_t &attn_weight, scalar_t *&grad_value,
     scalar_t *grad_sampling_loc, scalar_t *grad_attn_weight) {
-  const int h_low = floor(h);
-  const int w_low = floor(w);
+  const int h_low = floorf(h);
+  const int w_low = floorf(w);
   const int h_high = h_low + 1;
   const int w_high = w_low + 1;
 
@@ -142,8 +142,8 @@ __device__ void ms_deform_attn_col2im_bilinear_gm(
     const scalar_t &w, const int &m, const int &c, const scalar_t &top_grad,
     const scalar_t &attn_weight, scalar_t *&grad_value,
     scalar_t *grad_sampling_loc, scalar_t *grad_attn_weight) {
-  const int h_low = floor(h);
-  const int w_low = floor(w);
+  const int h_low = floorf(h);
+  const int w_low = floorf(w);
   const int h_high = h_low + 1;
   const int w_high = w_low + 1;
 

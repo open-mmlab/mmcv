@@ -157,6 +157,8 @@ def imequalize(img):
             lut = (np.cumsum(histo) + (step // 2)) // step
             # Shift lut, prepending with 0.
             lut = np.concatenate([[0], lut[:-1]], 0)
+            # handle potential integer overflow
+            lut[lut > 255] = 255
         # If step is zero, return the original image.
         # Otherwise, index from lut.
         return np.where(np.equal(step, 0), im, lut[im])
