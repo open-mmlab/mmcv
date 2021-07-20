@@ -80,6 +80,68 @@ class FooModel(BaseModule):
         self.reg = nn.Linear(3, 4)
 
 
+def test_initilization_info_logger():
+    # 'override' has higher priority
+
+    import torch.nn as nn
+    from mmcv.utils.logging import get_logger
+    import os
+    import mmcv
+
+    class OverloadInitConv(nn.Conv2d, BaseModule):
+
+        def init_weights(self):
+            for p in self.parameters():
+                with torch.no_grad():
+                    p.fill_(1)
+
+    class CheckLoggerModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super(CheckLoggerModel, self).__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv2 = OverloadInitConv(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='conv3', std=0.01, bias_prob=0.01)),
+        dict(type='Constant', layer='Linear', val=0., bias=1.)
+    ]
+
+    model = CheckLoggerModel(init_cfg=init_cfg)
+    workdir = './workdir/init_logger/'
+    train_log = '20210720_132454.log'
+
+    mmcv.mkdir_or_exist(workdir)
+    # create a logger
+    get_logger('init_logger', log_file=os.path.join(workdir, train_log))
+    assert hasattr(model, '_params_init_info')
+    model.init_weights()
+    # assert `_params_init_info` would be deleted after `init_weights`
+    assert not hasattr(model, '_params_init_info')
+    # assert initialization information has been dumped
+    assert os.path.exists(
+        './workdir/init_logger/20210720_132454_initialization.log')
+
+    with open('./workdir/init_logger/20210720_132454_initialization.log') as f:
+        lines = f.readlines()
+
+    # check initialization information is right
+    for line in lines:
+        if 'Conv1' in line:
+            assert 'NormalInit' in line
+        if 'Conv2' in line:
+            assert 'OverloadInitConv' in line
+        if 'fc1' in line:
+            assert 'ConstantInit' in line
+
+
 def test_model_weight_init():
     """
     Config

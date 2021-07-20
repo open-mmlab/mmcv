@@ -155,10 +155,11 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         # if can get workdir from `file_handler`, write
         # initialization information to a file named
-        # `initialization.log` in workdir.
-        # else just print it
+        # {time_prefix}_initialization.log in workdir.
+        # otherwise just print it
         if logger_file:
             logger_file_name = logger_file.split('/')[-1]
+            # %Y%m%d_%H%M%S
             time_prefix = logger_file_name.split('.')[0]
 
             init_logger_file = logger_file.replace(
