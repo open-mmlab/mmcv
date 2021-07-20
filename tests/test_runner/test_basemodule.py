@@ -1,3 +1,5 @@
+import tempfile
+
 import torch
 from torch import nn
 
@@ -87,8 +89,6 @@ def test_initilization_info_logger():
     import torch.nn as nn
     from mmcv.utils.logging import get_logger
     import os
-    import mmcv
-    import time
 
     class OverloadInitConv(nn.Conv2d, BaseModule):
 
@@ -117,23 +117,20 @@ def test_initilization_info_logger():
     ]
 
     model = CheckLoggerModel(init_cfg=init_cfg)
-    workdir = './workdir/init_logger/'
-    train_log = '20210720_132454.log'
 
-    mmcv.mkdir_or_exist(workdir)
+    train_log = '20210720_132454.log'
+    workdir = tempfile.mkdtemp()
     # create a logger
     get_logger('init_logger', log_file=os.path.join(workdir, train_log))
     assert hasattr(model, '_params_init_info')
     model.init_weights()
-    # avoid the logger file is still in buffers in some OS
-    time.sleep(5)
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')
     # assert initialization information has been dumped
-    assert os.path.exists(
-        './workdir/init_logger/20210720_132454_initialization.log')
+    init_log_path = os.path.join(workdir, '20210720_132454_initialization.log')
+    assert os.path.exists(init_log_path)
 
-    with open('./workdir/init_logger/20210720_132454_initialization.log') as f:
+    with open(init_log_path) as f:
         lines = f.readlines()
 
     # check initialization information is right
