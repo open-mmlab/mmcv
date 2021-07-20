@@ -1098,17 +1098,16 @@ def test_dvclive_hook(tmp_path):
     sys.modules['dvclive'] = MagicMock()
     runner = _build_demo_runner()
 
-    (tmp_path / 'dvclive').mkdir()
-    hook = DvcliveLoggerHook(str(tmp_path / 'dvclive'))
+    hook = DvcliveLoggerHook()
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.dvclive.init.assert_called_with(str(tmp_path / 'dvclive'))
-    hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
-    hook.dvclive.log.assert_any_call('learning_rate', 0.02, step=6)
+    hook.dvclive.next_step.assert_any_call()
+    hook.dvclive.log.assert_called_with('momentum', 0.95, step=1)
+    hook.dvclive.log.assert_any_call('learning_rate', 0.02, step=1)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
