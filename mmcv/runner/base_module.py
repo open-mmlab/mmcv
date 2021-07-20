@@ -6,7 +6,8 @@ from collections import defaultdict
 
 import torch.nn as nn
 
-from mmcv.utils.logging import logger_initialized, print_log
+from mmcv.runner.dist_utils import master_only
+from mmcv.utils.logging import get_logger, logger_initialized, print_log
 
 
 def update_init_info(module, *, init_info):
@@ -86,6 +87,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                                    f'of {self.__class__.__name__} '
                 self._params_init_info[param][
                     'tmp_mean_value'] = param.data.mean()
+
             # pass `params_init_info` to all submodules
             # all submodules will modify the same `params_init_info` \
             # during initialization thus params_init_info will
@@ -120,9 +122,9 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     # users may overload the `init_weights`
                     update_init_info(
                         m,
-                        init_info=f'Initialized by \
-                        user-defined `init_weights` in {m.__class__.__name__} '
-                    )
+                        init_info=f'Initialized by '
+                        f'user-defined `init_weights`'
+                        f' in {m.__class__.__name__} ')
 
             self._is_init = True
         else:
@@ -130,12 +132,47 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                           f'been called more than once.')
 
         if is_top_level_module:
+            self._dump_init_info(logger_name)
+
+            for sub_module in self.modules():
+                del sub_module._params_init_info
+
+    @master_only
+    def _dump_init_info(self, logger_name):
+        """Dump the initialization information to a file named
+        `initialization.log.json` in workdir.
+
+        Args:
+            logger_name (str): The name of logger.
+        """
+        logger = get_logger(logger_name)
+        logger_file = None
+
+        # get workdir from file_handler
+        for handler in logger.handlers:
+            if hasattr(handler, 'baseFilename'):
+                logger_file = handler.baseFilename
+
+        # if can get workdir from `file_handler`, write
+        # initialization information to a file named
+        # `initialization.log` in workdir.
+        # else just print it
+        if logger_file:
+            logger_file_name = logger_file.split('/')[-1]
+            time_prefix = logger_file_name.split('.')[0]
+
+            init_logger_file = logger_file.replace(
+                logger_file_name, f'{time_prefix}_initialization.log')
+
+            with open(init_logger_file, 'w') as f:
+                f.write('Name of parameter - Initialization information\n')
+                for item in list(self._params_init_info.values()):
+                    f.write(f"{item['param_name']} - {item['init_info']} \n")
+        else:
             for item in list(self._params_init_info.values()):
                 print_log(
                     f"{item['param_name']} - {item['init_info']}",
                     logger=logger_name)
-            for sub_module in self.modules():
-                del sub_module._params_init_info
 
     def __repr__(self):
         s = super().__repr__()

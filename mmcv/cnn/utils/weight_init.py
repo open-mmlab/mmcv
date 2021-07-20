@@ -157,7 +157,7 @@ class ConstantInit(BaseInit):
                     constant_init(m, self.val, self.bias)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -200,7 +200,7 @@ class XavierInit(BaseInit):
                     xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -243,7 +243,7 @@ class NormalInit(BaseInit):
                     normal_init(m, self.mean, self.std, self.bias)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -298,7 +298,7 @@ class TruncNormalInit(BaseInit):
                                       self.bias)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -341,7 +341,7 @@ class UniformInit(BaseInit):
                     uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -403,7 +403,7 @@ class KaimingInit(BaseInit):
                                  self.bias, self.distribution)
 
         module.apply(init)
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
@@ -469,7 +469,7 @@ class PretrainedInit(object):
                 self.prefix, self.checkpoint, map_location=self.map_location)
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
-        if hasattr(module, 'params_init_info'):
+        if hasattr(module, '_params_init_info'):
             update_init_info(module, init_info=self._get_init_info())
 
     def _get_init_info(self):
