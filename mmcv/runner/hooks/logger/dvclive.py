@@ -11,7 +11,6 @@ class DvcliveLoggerHook(LoggerHook):
     It requires `dvclive`_ to be installed.
 
     Args:
-        path (str): Directory where dvclive will write TSV log files.
         interval (int): Logging interval (every k iterations).
             Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
@@ -27,15 +26,14 @@ class DvcliveLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 path,
                  interval=10,
                  ignore_last=True,
                  reset_flag=True,
                  by_epoch=True):
-
+        if by_epoch:
+            interval = 0
         super(DvcliveLoggerHook, self).__init__(interval, ignore_last,
                                                 reset_flag, by_epoch)
-        self.path = path
         self.import_dvclive()
 
     def import_dvclive(self):
@@ -47,12 +45,19 @@ class DvcliveLoggerHook(LoggerHook):
         self.dvclive = dvclive
 
     @master_only
-    def before_run(self, runner):
-        self.dvclive.init(self.path)
-
-    @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
+        if self.by_epoch:
+            step = self.get_epoch(runner)
+        else:
+            step = self.get_iter(runner)
         if tags:
             for k, v in tags.items():
-                self.dvclive.log(k, v, step=self.get_iter(runner))
+                self.dvclive.log(k, v, step=step)
+
+    @master_only
+    def after_train_epoch(self, runner):
+        super().after_train_epoch(runner)
+        runner.save_checkpoint(
+            runner.work_dir, filename_tmpl='model.pth', create_symlink=False)
+        self.dvclive.next_step()
