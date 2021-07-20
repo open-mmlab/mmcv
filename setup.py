@@ -183,7 +183,7 @@ def get_extensions():
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
-        include_dirs
+        include_dirs = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
