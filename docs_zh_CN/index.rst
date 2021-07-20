@@ -10,6 +10,7 @@
    deployment.rst
    understand_mmcv.rst
    api.rst
+   compatibility.md
    faq.md
    community.rst
 
