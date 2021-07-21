@@ -10,11 +10,11 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── box_iou_rotated_utils.hpp
 │   ├── parrots_cpp_helper.hpp
 │   ├── parrots_cuda_helper.hpp
-│   ├── parrots_cudawarpfunction.cuh
 │   ├── pytorch_cpp_helper.hpp
 │   ├── pytorch_cuda_helper.hpp
 │   └── cuda
 │       ├── common_cuda_helper.hpp
+│       ├── parrots_cudawarpfunction.cuh
 │       ├── ...
 │       └── ops_cuda_kernel.cuh
 ├── onnxruntime
@@ -62,10 +62,10 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 - `onnxruntime`: **ONNX Runtime** support for custom ops.
   - `cpu`: CPU implementation of supported ops.
 - `parrots`: **Parrots** is a deep learning frame for model training and inference. Parrots custom ops are placed in this directory.
-- `pytorch`: **PyTorch** custom ops is supported by binding C++ to Python with **pybind11**. The ops implementation and binding codes are placed in this directory.
-  - `cuda`: This directory contain cuda kernel launchers, which feeding memory pointers of tensor to the cuda kernel in `common/cuda`. The launchers provide c++ interface of cuda implementation of corresponding custom ops.
+- `pytorch`: **PyTorch** custom ops are supported by binding C++ to Python with **pybind11**. The ops implementation and binding codes are placed in this directory.
+  - `cuda`: This directory contains cuda kernel launchers, which feed memory pointers of tensor to the cuda kernel in `common/cuda`. The launchers provide c++ interface of cuda implementation of corresponding custom ops.
 - `tensorrt`: **TensorRT** support for custom ops.
-  - `plugins`: This directory contain the implementation of the supported custom ops. Some ops might also use shared cuda kernel in `common/cuda`.
+  - `plugins`: This directory contains the implementation of the supported custom ops. Some ops might also use shared cuda kernel in `common/cuda`.
 
 ## How to add new PyTorch ops?
 
@@ -102,7 +102,7 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
     }
     ```
 
-2. Add ops implementation in `pytorch` directory. Select different implementation according to device type.
+2. Add ops implementation in `pytorch` directory. Select different implementations according to device type.
 
     ```c++
     // src/pytorch/new_ops.cpp
