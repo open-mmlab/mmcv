@@ -6,20 +6,25 @@ This document is used as a reference for English-Chinese terminology translation
 
 | English | 中文 |
 | :-----: | :---:|
-| checkpoint | 模型权重文件 |
-| backbone | 主干网络 |
-| cls_head | 分类头 |
-| pipeline | 流水线 |
-| hook | 钩子 |
-| finetune | 微调 |
-| register | 注册器 |
-| tensor | 张量 |
-| benchmark | 基准测试 |
-| recognizer | 识别器 |
-| detector | 检测器 |
-| localizer | 定位器 |
 | annotation | 标注 |
-| training schedule | 训练策略 |
-| scheduler | 调度器 |
-| schedule | 调整 |
+| backbone | 主干网络 |
+| benchmark | 基准测试 |
+| checkpoint | 模型权重文件 |
+| classifier | 分类器 |
+| cls_head | 分类头 |
+| decoder | 解码器 |
+| detector | 检测器 |
+| encoder | 编码器 |
+| finetune | 微调 |
 | ground truth | 真实标签 |
+| hook | 钩子 |
+| localizer | 定位器 |
+| neck | 模型颈部 |
+| pipeline | 流水线 |
+| recognizer | 识别器 |
+| register | 注册器 |
+| schedule | 调整 |
+| scheduler | 调度器 |
+| segmentor | 分割器 |
+| tensor | 张量 |
+| training schedule | 训练策略 |
