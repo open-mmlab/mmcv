@@ -78,7 +78,8 @@ def _init_dist_slurm(backend, port=None):
 
 
 def get_dist_info():
-    if digit_version(TORCH_VERSION) < digit_version('1.0'):
+    if (TORCH_VERSION != 'parrots'
+            and digit_version(TORCH_VERSION) < digit_version('1.0')):
         initialized = dist._initialized
     else:
         if dist.is_available():

@@ -7,7 +7,8 @@ from mmcv.utils import digit_version
 TORCH_VERSION = torch.__version__
 
 is_rocm_pytorch = False
-if digit_version(TORCH_VERSION) >= digit_version('1.5'):
+if (TORCH_VERSION != 'parrots'
+        and digit_version(TORCH_VERSION) >= digit_version('1.5')):
     from torch.utils.cpp_extension import ROCM_HOME
     is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                (ROCM_HOME is not None)) else False
