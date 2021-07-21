@@ -21,6 +21,8 @@ def test_digit_version():
     assert digit_version('1.0.0rc1') < digit_version('1.0.0')
     assert digit_version('1.0.0') < digit_version('1.0.0post')
     assert digit_version('1.0.0post') < digit_version('1.0.0post1')
+    assert digit_version('v1') == (1, 0, 0, 0, 0, 0)
+    assert digit_version('v1.1.5') == (1, 1, 5, 0, 0, 0)
     with pytest.raises(AssertionError):
         digit_version('a')
     with pytest.raises(AssertionError):
