@@ -3,6 +3,7 @@ import copy
 import warnings
 from abc import ABCMeta
 from collections import defaultdict
+from logging import FileHandler
 
 import torch.nn as nn
 
@@ -152,31 +153,21 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         Args:
             logger_name (str): The name of logger.
         """
+
         logger = get_logger(logger_name)
-        logger_file = None
 
-        # get workdir from file_handler
+        with_file_handler = False
+        # dump the information to the logger file
         for handler in logger.handlers:
-            if hasattr(handler, 'baseFilename'):
-                logger_file = handler.baseFilename
-
-        # if can get workdir from `file_handler`, write
-        # initialization information to a file named
-        # {time_prefix}_initialization.log in workdir.
-        # otherwise just print it
-        if logger_file:
-            logger_file_name = logger_file.split('/')[-1]
-            # %Y%m%d_%H%M%S
-            time_prefix = logger_file_name.split('.')[0]
-
-            init_logger_file = logger_file.replace(
-                logger_file_name, f'{time_prefix}_initialization.log')
-
-            with open(init_logger_file, 'w') as f:
-                f.write('Name of parameter - Initialization information\n')
+            if isinstance(handler, FileHandler):
+                handler.stream.write(
+                    'Name of parameter - Initialization information\n')
                 for item in list(self._params_init_info.values()):
-                    f.write(f"{item['param_name']} - {item['init_info']} \n")
-        else:
+                    handler.stream.write(
+                        f"{item['param_name']} - {item['init_info']} \n")
+                handler.stream.flush()
+                with_file_handler = True
+        if not with_file_handler:
             for item in list(self._params_init_info.values()):
                 print_log(
                     f"{item['param_name']} - {item['init_info']}",

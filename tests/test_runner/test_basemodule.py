@@ -120,26 +120,27 @@ def test_initilization_info_logger():
 
     train_log = '20210720_132454.log'
     workdir = tempfile.mkdtemp()
+    log_file = os.path.join(workdir, train_log)
     # create a logger
-    get_logger('init_logger', log_file=os.path.join(workdir, train_log))
+    get_logger('init_logger', log_file=log_file)
     assert hasattr(model, '_params_init_info')
     model.init_weights()
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')
     # assert initialization information has been dumped
-    init_log_path = os.path.join(workdir, '20210720_132454_initialization.log')
-    assert os.path.exists(init_log_path)
+    assert os.path.exists(log_file)
 
-    with open(init_log_path) as f:
+    with open(log_file) as f:
         lines = f.readlines()
-
+    for line in lines:
+        print(line)
     # check initialization information is right
     for line in lines:
-        if 'Conv1' in line:
+        if 'conv1.weight' in line:
             assert 'NormalInit' in line
-        if 'Conv2' in line:
+        if 'conv2.weight' in line:
             assert 'OverloadInitConv' in line
-        if 'fc1' in line:
+        if 'fc1.weight' in line:
             assert 'ConstantInit' in line
 
 
