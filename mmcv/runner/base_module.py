@@ -32,12 +32,15 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab.
 
     ``BaseModule`` is a wrapper of ``torch.nn.Module`` with additional
-    functionality of parameters initialization. Compared with
-    ``torch.nn.Module``, ``BaseModule`` mainly added two attributes
-    ``init_cfg`` the config for initialization, ``_params_init_info`` to
-    track the parameters initialization information and one function
-    ``init_weigths`` to implement the functions of parameters
-    initialization and initialization information record.
+    functionality of parameter initialization. Compared with
+    ``torch.nn.Module``, ``BaseModule`` mainly adds three attributes.
+
+        - ``init_cfg``: the config to control the initialization.
+        - ``_params_init_info``: Used to track the parameter
+            initialization information.
+        - ``init_weights``: The function of parameter
+            initialization and recording initialization
+            information.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.
@@ -51,7 +54,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         super(BaseModule, self).__init__()
         # define default value of init_cfg instead of hard code
-        # in init_weight() function
+        # in init_weights() function
         self._is_init = False
         if init_cfg:
             init_cfg = copy.deepcopy(init_cfg)
@@ -61,7 +64,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # information of the parameters
         # the key should be the obj:`nn.Parameter` of model and the value
         # should be a dict containing
-        # - param_name (str): The name of parameter
+        # - param_name (str): The name of parameter.
         # - init_info (str): The string that describes the initialization.
         # - tmp_mean_value (FloatTensor): The mean of the parameter,
         #       which indicates whether the parameter has been modified.
@@ -119,7 +122,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 initialize(self, self.init_cfg)
                 if isinstance(self.init_cfg, dict):
                     # Avoid the parameters of the pretrained model
-                    # being overwritten by the `init_weights`
+                    # are overwritten by the `init_weights`
                     # of the children.
                     if self.init_cfg['type'] == 'Pretrained':
                         return
@@ -157,7 +160,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         logger = get_logger(logger_name)
 
         with_file_handler = False
-        # dump the information to the logger file
+        # dump the information to the logger file if there is a `FileHandler`
         for handler in logger.handlers:
             if isinstance(handler, FileHandler):
                 handler.stream.write(
