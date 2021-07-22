@@ -50,9 +50,9 @@ git push origin branchname
 9. After creating a pull request, you can ask a specific person to review the changes you've proposed
 ![avatar](../_static/community/3.png)
 
-9. Associate related issues and pull requests with a milestone
-10. Modify your codes according to reviewer's suggestions, and then push your changes
-11. Delete the branch after PR merged
+10. Associate related issues and pull requests with a milestone
+11. Modify your codes according to reviewer's suggestions, and then push your changes
+12. Delete the branch after PR merged
 ```bash
 git branch -d branchname # delete local branch
 git push origin --delete branchname # delete remote branch
