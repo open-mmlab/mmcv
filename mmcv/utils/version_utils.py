@@ -17,6 +17,7 @@ def digit_version(version_str: str, length: int = 4):
     Returns:
         tuple[int]: The version info in digits (integers).
     """
+    assert 'parrots' not in version_str
     version = parse_version(version_str)
     assert version.release, f'failed to parse version {version_str}'
     release = list(version.release)
