@@ -56,17 +56,17 @@ c = '{{ fileExtname }}'
 ```
 
 对于所有格式的配置文件, 都支持继承。为了重用其他配置文件的字段，
-需要指定 `_base_='./config_a.py'` 或者一个包含控制文件的列表 `_base_=['./config_a.py', './config_b.py']`。
+需要指定 `_base_='./config_a.py'` 或者一个包含配置文件的列表 `_base_=['./config_a.py', './config_b.py']`。
 
 这里有 4 个配置继承关系的例子。
 
-`config_a.py` 作为基类控制文件
+`config_a.py` 作为基类配置文件
 
 ```python
 a = 1
 b = dict(b1=[0, 1, 2], b2=None)
 ```
-### 不含重复键值对从基类控制文件继承
+### 不含重复键值对从基类配置文件继承
 
 `config_b.py`
 
@@ -86,7 +86,7 @@ d = 'string'
 ```
 在`config_b.py`里的新字段与在`config_a.py`里的旧字段拼接
 
-### 含重复键值对从基类控制文件继承
+### 含重复键值对从基类配置文件继承
 
 `config_c.py`
 
