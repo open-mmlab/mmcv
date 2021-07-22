@@ -1,6 +1,4 @@
-## Utils
-
-### Config
+## Config
 
 `Config` class is used for manipulating config and config files. It supports
 loading configs from multiple file formats including **python**, **json** and **yaml**.
@@ -69,7 +67,7 @@ a = 1
 b = dict(b1=[0, 1, 2], b2=None)
 ```
 
-#### Inherit from base config without overlapped keys
+### Inherit from base config without overlapped keys
 
 `config_b.py`
 
@@ -90,7 +88,7 @@ d = 'string'
 
 New fields in `config_b.py` are combined with old fields in `config_a.py`
 
-#### Inherit from base config with overlapped keys
+### Inherit from base config with overlapped keys
 
 `config_c.py`
 
@@ -110,7 +108,7 @@ c = (1, 2)
 
 `b.b2=None` in `config_a` is replaced with `b.b2=1` in `config_c.py`.
 
-#### Inherit from base config with ignored fields
+### Inherit from base config with ignored fields
 
 `config_d.py`
 
@@ -130,7 +128,7 @@ c = (1, 2)
 
 You may also set `_delete_=True` to ignore some fields in base configs. All old keys `b1, b2, b3` in `b` are replaced with new keys `b2, b3`.
 
-#### Inherit from multiple base configs (the base configs should not contain the same keys)
+### Inherit from multiple base configs (the base configs should not contain the same keys)
 
 `config_e.py`
 
@@ -154,7 +152,7 @@ _base_ = ['./config_a.py', './config_e.py']
 ...      d='string')
 ```
 
-#### Reference variables from base
+### Reference variables from base
 
 You can reference variables defined in base using the following grammar.
 
@@ -178,76 +176,4 @@ item = dict(a = {{ _base_.item1 }}, b = {{ _base_.item2.item3 }})
 item1 = 'a'
 item2 = dict(item3='b')
 item = dict(a='a', b='b')
-```
-
-### ProgressBar
-
-If you want to apply a method to a list of items and track the progress, `track_progress`
-is a good choice. It will display a progress bar to tell the progress and ETA.
-
-```python
-import mmcv
-
-def func(item):
-    # do something
-    pass
-
-tasks = [item_1, item_2, ..., item_n]
-
-mmcv.track_progress(func, tasks)
-```
-
-The output is like the following.
-![progress](_static/progress.gif)
-
-There is another method `track_parallel_progress`, which wraps multiprocessing and
-progress visualization.
-
-```python
-mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
-```
-
-![progress](_static/parallel_progress.gif)
-
-If you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
-is a good choice. It will display a progress bar to tell the progress and ETA.
-
-```python
-import mmcv
-
-tasks = [item_1, item_2, ..., item_n]
-
-for task in mmcv.track_iter_progress(tasks):
-    # do something like print
-    print(task)
-
-for i, task in enumerate(mmcv.track_iter_progress(tasks)):
-    # do something like print
-    print(i)
-    print(task)
-```
-
-### Timer
-
-It is convenient to compute the runtime of a code block with `Timer`.
-
-```python
-import time
-
-with mmcv.Timer():
-    # simulate some code block
-    time.sleep(1)
-```
-
-or try with `since_start()` and `since_last_check()`. This former can
-return the runtime since the timer starts and the latter will return the time
-since the last time checked.
-
-```python
-timer = mmcv.Timer()
-# code block 1 here
-print(timer.since_start())
-# code block 2 here
-print(timer.since_last_check())
-print(timer.since_start())
 ```

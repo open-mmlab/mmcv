@@ -1,3 +1,5 @@
+from distutils.version import LooseVersion
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -70,7 +72,8 @@ class GELU(nn.Module):
         return F.gelu(input)
 
 
-if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
+if (TORCH_VERSION == 'parrots'
+        or LooseVersion(TORCH_VERSION) < LooseVersion('1.4')):
     ACTIVATION_LAYERS.register_module(module=GELU)
 else:
     ACTIVATION_LAYERS.register_module(module=nn.GELU)

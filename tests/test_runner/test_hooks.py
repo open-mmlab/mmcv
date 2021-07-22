@@ -6,6 +6,7 @@ CommandLine:
 """
 import logging
 import os.path as osp
+import random
 import re
 import shutil
 import sys
@@ -24,6 +25,7 @@ from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
+                                          FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 
@@ -150,9 +152,26 @@ def test_custom_hook():
     shutil.rmtree(runner.work_dir)
 
     runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test custom_hooks with string priority setting
+    priority_ranks = [
+        'HIGHEST', 'VERY_HIGH', 'HIGH', 'ABOVE_NORMAL', 'NORMAL',
+        'BELOW_NORMAL', 'LOW', 'VERY_LOW', 'LOWEST'
+    ]
+    random_priority_ranks = priority_ranks.copy()
+    random.shuffle(random_priority_ranks)
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=rank, info=rank)
+        for rank in random_priority_ranks
+    ]
+    runner.register_custom_hooks(custom_hooks_cfg)
+    assert [hook.info for hook in runner.hooks] == priority_ranks
+    shutil.rmtree(runner.work_dir)
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
     # test register_training_hooks order
     custom_hooks_cfg = [
         dict(type='ToyHook', priority=1, info='custom 1'),
+        dict(type='ToyHook', priority='NORMAL', info='custom normal'),
         dict(type='ToyHook', priority=89, info='custom 89')
     ]
     runner.register_training_hooks(
@@ -163,9 +182,11 @@ def test_custom_hook():
         momentum_config=ToyHook('momentum'),
         timer_config=ToyHook('timer'),
         custom_hooks_config=custom_hooks_cfg)
+    # If custom hooks have same priority with default hooks, custom hooks
+    # will be triggered after default hooks.
     hooks_order = [
-        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint', 'timer',
-        'custom 89', 'log'
+        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint',
+        'custom normal', 'timer', 'custom 89', 'log'
     ]
     assert [hook.info for hook in runner.hooks] == hooks_order
     shutil.rmtree(runner.work_dir)
@@ -352,6 +373,147 @@ def test_cosine_runner_hook(multi_optimziers):
                     'momentum': 0.9890211303259032
                 }, 10)
         ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+@pytest.mark.parametrize('multi_optimziers, by_epoch', [(False, False),
+                                                        (True, False),
+                                                        (False, True),
+                                                        (True, True)])
+def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
+    """xdoctest -m tests/test_hooks.py test_flat_cosine_runner_hook."""
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    max_epochs = 10 if by_epoch else 1
+    runner = _build_demo_runner(
+        multi_optimziers=multi_optimziers, max_epochs=max_epochs)
+
+    with pytest.raises(ValueError):
+        # start_percent: expected float between 0 and 1
+        FlatCosineAnnealingLrUpdaterHook(start_percent=-0.1, min_lr_ratio=0)
+
+    # add LR scheduler
+    hook_cfg = dict(
+        type='FlatCosineAnnealingLrUpdaterHook',
+        by_epoch=by_epoch,
+        min_lr_ratio=0,
+        warmup='linear',
+        warmup_iters=10 if by_epoch else 2,
+        warmup_ratio=0.9,
+        start_percent=0.5)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        if by_epoch:
+            calls = [
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018000000000000002,
+                        'learning_rate/model2': 0.009000000000000001,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 1),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.02,
+                        'learning_rate/model2': 0.01,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 11),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018090169943749474,
+                        'learning_rate/model2': 0.009045084971874737,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 61),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.0019098300562505265,
+                        'learning_rate/model2': 0.0009549150281252633,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 100)
+            ]
+        else:
+            calls = [
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018000000000000002,
+                        'learning_rate/model2': 0.009000000000000001,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 1),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.02,
+                        'learning_rate/model2': 0.01,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 6),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018090169943749474,
+                        'learning_rate/model2': 0.009045084971874737,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 7),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.0019098300562505265,
+                        'learning_rate/model2': 0.0009549150281252633,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 10)
+            ]
+    else:
+        if by_epoch:
+            calls = [
+                call('train', {
+                    'learning_rate': 0.018000000000000002,
+                    'momentum': 0.95
+                }, 1),
+                call('train', {
+                    'learning_rate': 0.02,
+                    'momentum': 0.95
+                }, 11),
+                call('train', {
+                    'learning_rate': 0.018090169943749474,
+                    'momentum': 0.95
+                }, 61),
+                call('train', {
+                    'learning_rate': 0.0019098300562505265,
+                    'momentum': 0.95
+                }, 100)
+            ]
+        else:
+            calls = [
+                call('train', {
+                    'learning_rate': 0.018000000000000002,
+                    'momentum': 0.95
+                }, 1),
+                call('train', {
+                    'learning_rate': 0.02,
+                    'momentum': 0.95
+                }, 6),
+                call('train', {
+                    'learning_rate': 0.018090169943749474,
+                    'momentum': 0.95
+                }, 7),
+                call('train', {
+                    'learning_rate': 0.0019098300562505265,
+                    'momentum': 0.95
+                }, 10)
+            ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
@@ -1050,3 +1212,20 @@ def test_runner_with_revise_keys():
         key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
+
+
+def test_get_triggered_stages():
+
+    class ToyHook(Hook):
+        # test normal stage
+        def before_run():
+            pass
+
+        # test the method mapped to multi stages.
+        def after_epoch():
+            pass
+
+    hook = ToyHook()
+    # stages output have order, so here is list instead of set.
+    expected_stages = ['before_run', 'after_train_epoch', 'after_val_epoch']
+    assert hook.get_triggered_stages() == expected_stages

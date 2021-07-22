@@ -47,7 +47,7 @@ class EvalHook(Hook):
             test function ``mmcv.engine.single_gpu_test`` will be used.
             (default: ``None``)
         greater_keys (List[str] | None, optional): Metric keys that will be
-            inferred by 'greater' comparison rule rule. If ``None``,
+            inferred by 'greater' comparison rule. If ``None``,
             _default_greater_keys will be used. (default: ``None``)
         less_keys (List[str] | None, optional): Metric keys that will be
             inferred by 'less' comparison rule. If ``None``, _default_less_keys

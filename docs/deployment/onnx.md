@@ -1,4 +1,4 @@
-# Introduction of `onnx` module in MMCV (Experimental)
+# Introduction of onnx module in MMCV (Experimental)
 
 ## register_extra_symbolics
 
