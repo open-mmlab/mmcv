@@ -147,9 +147,9 @@ class TextLoggerHook(LoggerHook):
     def log(self, runner):
         if 'eval_iter_num' in runner.log_buffer.output:
             # this doesn't modify runner.iter and is regardless of by_epoch
-            cur_iter = runner.log_buffer.output.pop('eval_iter_num')
-        else:
-            cur_iter = self.get_iter(runner, inner_iter=True)
+            eval_iter_num = runner.log_buffer.output.pop('eval_iter_num')
+
+        cur_iter = self.get_iter(runner, inner_iter=True)
 
         log_dict = OrderedDict(
             mode=self.get_mode(runner),
@@ -172,7 +172,24 @@ class TextLoggerHook(LoggerHook):
             if torch.cuda.is_available():
                 log_dict['memory'] = self._get_max_memory(runner)
 
-        log_dict = dict(log_dict, **runner.log_buffer.output)
+        # Keep the basic log info
+        base_log_dict = log_dict
+
+        if 'eval_res' in runner.log_buffer.output:
+            eval_res = runner.log_buffer.output.pop('eval_res')
+            log_dict = dict(base_log_dict, **runner.log_buffer.output)
+            # Record iter train info when evaluation iter.
+            self._log_info(log_dict, runner)
+            self._dump_log(log_dict, runner)
+            runner.log_buffer.clear()
+            # Dump evaluation results.
+            for k, v in eval_res.items():
+                runner.log_buffer.output[k] = v
+            base_log_dict['mode'] = self.get_mode(runner)
+            base_log_dict['iter'] = eval_iter_num
+            log_dict = dict(base_log_dict, **runner.log_buffer.output)
+        else:
+            log_dict = dict(base_log_dict, **runner.log_buffer.output)
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
