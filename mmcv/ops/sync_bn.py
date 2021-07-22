@@ -20,7 +20,7 @@ class SyncBatchNormFunction(Function):
 
     @staticmethod
     def symbolic(g, input, running_mean, running_var, weight, bias, momentum,
-                 eps, group, group_size):
+                 eps, group, group_size, stats_mode):
         return g.op(
             'MMCVSyncBatchNorm',
             input,
@@ -31,15 +31,17 @@ class SyncBatchNormFunction(Function):
             momentum=momentum,
             eps=eps,
             group=group,
-            group_size=group_size)
+            group_size=group_size,
+            stats_mode=stats_mode)
 
     @staticmethod
     def forward(self, input, running_mean, running_var, weight, bias, momentum,
-                eps, group, group_size):
+                eps, group, group_size, stats_mode):
         self.momentum = momentum
         self.eps = eps
         self.group = group
         self.group_size = group_size
+        self.stats_mode = stats_mode
 
         assert isinstance(
                    input, (torch.HalfTensor, torch.FloatTensor,
@@ -71,20 +73,35 @@ class SyncBatchNormFunction(Function):
 
         # sync mean and the batch flag
         vec = torch.cat([mean, batch_flag])
+        if self.stats_mode == 'N':
+            vec *= batch_size
+
         if self.group_size > 1:
             dist.all_reduce(vec, group=self.group)
-            mean = vec[:num_channels] / self.group_size
         # need total batch to decide whether to update the momentum
-        total_batch_flag = vec[-1].detach().clamp(max=1)
+        total_batch = vec[-1].detach()
+        mean = vec[:num_channels]
+
+        if self.stats_mode == '':
+            mean = mean / self.group_size
+        else:
+            mean = mean / total_batch.clamp(min=1)
 
         if batch_size > 0:
             ext_module.sync_bn_forward_var(input3d, mean, var)
         # skip updating var and leave it as zeros when the input is empty
 
+        if self.stats_mode == 'N':
+            var *= batch_size
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
-            var /= self.group_size
 
+        if self.stats_mode == '':
+            var /= self.group_size
+        else:
+            var /= total_batch.clamp(min=1)
+
+        total_batch_flag = total_batch.clamp(max=1)
         momentum = total_batch_flag * self.momentum
         ext_module.sync_bn_forward_output(
             input3d,
@@ -131,11 +148,43 @@ class SyncBatchNormFunction(Function):
                                              grad_input3d)
 
         return grad_input, None, None, grad_weight, grad_bias, \
-            None, None, None, None
+            None, None, None, None, None
 
 
 @NORM_LAYERS.register_module(name='MMSyncBN')
 class SyncBatchNorm(Module):
+    """Synchronized Batch Normalization.
+
+    Args:
+        num_features (int): number of features/chennels in input tensor
+        eps (float, optional): a value added to the denominator for numerical
+            stability. Defaults to 1e-5.
+        momentum (float, optional): the value used for the running_mean and
+            running_var computation. Defaults to 0.1.
+        affine (bool, optional): whether to use learnable affine parameters.
+            Defaults to True.
+        track_running_stats (bool, optional): whether to track the running
+            mean and variance during training. When set to False, this
+            module does not track such statistics, and initializes statistics
+            buffers ``running_mean`` and ``running_var`` as ``None``. When
+            these buffers are ``None``, this module always uses batch
+            statistics in both training and eval modes. Defaults to True.
+        group (int, optional): synchronization of stats happen within
+            each process group individually. By default it is synchronization
+            across the whole world. Defaults to None.
+        stats_mode (str, optional): The statistical mode. Available options
+            includes ``''`` and ``'N'``. Defaults to ''.
+            When ``stats_mode==''``, it compute the overall statistics using
+            those from each worker with equal weight, i.e., the statistics are
+            synchronized and simply divied by ``group``. This mode will produce
+            inaccurate statistics when empty tensors occur.
+            When ``stats_mode=='N'``, it compute the overall statistics using
+            the total number of batches in each worker ignoring the number of
+            group, i.e., the statistics are synchronized and then divied by
+            the total batch ``N``. This mode is beneficial when empty tensors
+            occur during training, as it average the total mean by the real
+            number of batch.
+    """
 
     def __init__(self,
                  num_features,
@@ -143,7 +192,8 @@ class SyncBatchNorm(Module):
                  momentum=0.1,
                  affine=True,
                  track_running_stats=True,
-                 group=None):
+                 group=None,
+                 stats_mode=''):
         super(SyncBatchNorm, self).__init__()
         self.num_features = num_features
         self.eps = eps
@@ -153,6 +203,8 @@ class SyncBatchNorm(Module):
         group = dist.group.WORLD if group is None else group
         self.group = group
         self.group_size = dist.get_world_size(group)
+        assert stats_mode in ['', 'N']
+        self.stats_mode = stats_mode
         if self.affine:
             self.weight = Parameter(torch.Tensor(num_features))
             self.bias = Parameter(torch.Tensor(num_features))
@@ -201,12 +253,10 @@ class SyncBatchNorm(Module):
                     exponential_average_factor = self.momentum
 
         if self.training or not self.track_running_stats:
-            return SyncBatchNormFunction.apply(input, self.running_mean,
-                                               self.running_var, self.weight,
-                                               self.bias,
-                                               exponential_average_factor,
-                                               self.eps, self.group,
-                                               self.group_size)
+            return SyncBatchNormFunction.apply(
+                input, self.running_mean, self.running_var, self.weight,
+                self.bias, exponential_average_factor, self.eps, self.group,
+                self.group_size, self.stats_mode)
         else:
             return F.batch_norm(input, self.running_mean, self.running_var,
                                 self.weight, self.bias, False,
@@ -219,5 +269,6 @@ class SyncBatchNorm(Module):
         s += f'momentum={self.momentum}, '
         s += f'affine={self.affine}, '
         s += f'track_running_stats={self.track_running_stats}, '
-        s += f'group_size={self.group_size})'
+        s += f'group_size={self.group_size},'
+        s += f'stats_mode={self.stats_mode})'
         return s
