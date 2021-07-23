@@ -56,9 +56,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # define default value of init_cfg instead of hard code
         # in init_weights() function
         self._is_init = False
-        if init_cfg:
-            init_cfg = copy.deepcopy(init_cfg)
-        self.init_cfg = init_cfg
+
+        self.init_cfg = copy.deepcopy(init_cfg)
 
         # The `_params_init_info` is used to record the initialization
         # information of the parameters
@@ -121,9 +120,10 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     logger=logger_name)
                 initialize(self, self.init_cfg)
                 if isinstance(self.init_cfg, dict):
-                    # Avoid the parameters of the pretrained model
-                    # are overwritten by the `init_weights`
-                    # of the children.
+                    # prevent the parameters of
+                    # the pre-trained model
+                    # from being overwritten by
+                    # the `init_weights`
                     if self.init_cfg['type'] == 'Pretrained':
                         return
 
