@@ -1,11 +1,13 @@
 import warnings
-from distutils.version import LooseVersion
 
 import torch
 
+from mmcv.utils import digit_version
+
 
 def is_jit_tracing() -> bool:
-    if LooseVersion(torch.__version__) >= LooseVersion('1.6.0'):
+    if (torch.__version__ != 'parrots'
+            and digit_version(torch.__version__) >= digit_version('1.6.0')):
         on_trace = torch.jit.is_tracing()
         # In PyTorch 1.6, torch.jit.is_tracing has a bug.
         # Refers to https://github.com/pytorch/pytorch/issues/42448
