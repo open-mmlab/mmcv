@@ -105,6 +105,7 @@ def test_initilization_info_logger():
             self.conv2 = OverloadInitConv(1, 1, 1, 1)
             self.conv3 = nn.Conv2d(1, 1, 1, 1)
             self.fc1 = nn.Linear(1, 1)
+            self.init_weights()
 
     init_cfg = [
         dict(
@@ -123,7 +124,7 @@ def test_initilization_info_logger():
     log_file = os.path.join(workdir, train_log)
     # create a logger
     get_logger('init_logger', log_file=log_file)
-    assert hasattr(model, '_params_init_info')
+    assert not hasattr(model, '_params_init_info')
     model.init_weights()
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')

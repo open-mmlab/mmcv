@@ -59,17 +59,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         self.init_cfg = copy.deepcopy(init_cfg)
 
-        # The `_params_init_info` is used to record the initialization
-        # information of the parameters
-        # the key should be the obj:`nn.Parameter` of model and the value
-        # should be a dict containing
-        # - param_name (str): The name of parameter.
-        # - init_info (str): The string that describes the initialization.
-        # - tmp_mean_value (FloatTensor): The mean of the parameter,
-        #       which indicates whether the parameter has been modified.
-        # this attribute would be deleted after all parameters is initialized.
-        self._params_init_info = defaultdict(dict)
-
         # Backward compatibility in derived classes
         # if pretrained is not None:
         #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
@@ -83,8 +72,22 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     def init_weights(self):
         """Initialize the weights."""
 
+        is_top_level_module = False
         # check if it is top-level module
-        is_top_level_module = len(self._params_init_info) == 0
+        if not hasattr(self, '_params_init_info'):
+            # The `_params_init_info` is used to record the initialization
+            # information of the parameters
+            # the key should be the obj:`nn.Parameter` of model and the value
+            # should be a dict containing
+            # - param_name (str): The name of parameter.
+            # - init_info (str): The string that describes the initialization.
+            # - tmp_mean_value (FloatTensor): The mean of the parameter,
+            #       which indicates whether the parameter has been modified.
+            # this attribute would be deleted after all parameters
+            # is initialized.
+            self._params_init_info = defaultdict(dict)
+            is_top_level_module = True
+
         if is_top_level_module:
             # Initialize the `_params_init_info`,
             # When detecting the `tmp_mean_value` of
