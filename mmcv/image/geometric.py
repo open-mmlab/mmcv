@@ -4,6 +4,7 @@ import numbers
 import cv2
 import numpy as np
 
+from ..utils import to_2tuple
 from .io import imread_backend
 
 try:
@@ -17,13 +18,15 @@ def _scale_size(size, scale):
 
     Args:
         size (tuple[int]): (w, h).
-        scale (float): Scaling factor.
+        scale (float | tuple(float)): Scaling factor.
 
     Returns:
         tuple[int]: scaled size.
     """
+    if isinstance(scale, (float, int)):
+        scale = (scale, scale)
     w, h = size
-    return int(w * float(scale) + 0.5), int(h * float(scale) + 0.5)
+    return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
 
 
 cv2_interp_codes = {
@@ -90,6 +93,70 @@ def imresize(img,
         w_scale = size[0] / w
         h_scale = size[1] / h
         return resized_img, w_scale, h_scale
+
+
+def imresize_to_multiple(img,
+                         divisor,
+                         size=None,
+                         scale_factor=None,
+                         keep_ratio=False,
+                         return_scale=False,
+                         interpolation='bilinear',
+                         out=None,
+                         backend=None):
+    """Resize image according to a given size or scale factor and then rounds
+    up the the resized or rescaled image size to the nearest value that can be
+    divided by the divisor.
+
+    Args:
+        img (ndarray): The input image.
+        divisor (int | tuple): Resized image size will be a multiple of
+            divisor. If divisor is a tuple, divisor should be
+            (w_divisor, h_divisor).
+        size (None | int | tuple[int]): Target size (w, h). Default: None.
+        scale_factor (None | float | tuple[float]): Multiplier for spatial
+            size. Should match input size if it is a tuple and the 2D style is
+            (w_scale_factor, h_scale_factor). Default: None.
+        keep_ratio (bool): Whether to keep the aspect ratio when resizing the
+            image. Default: False.
+        return_scale (bool): Whether to return `w_scale` and `h_scale`.
+        interpolation (str): Interpolation method, accepted values are
+            "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
+            backend, "nearest", "bilinear" for 'pillow' backend.
+        out (ndarray): The output destination.
+        backend (str | None): The image resize backend type. Options are `cv2`,
+            `pillow`, `None`. If backend is None, the global imread_backend
+            specified by ``mmcv.use_backend()`` will be used. Default: None.
+
+    Returns:
+        tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
+            `resized_img`.
+    """
+    h, w = img.shape[:2]
+    if size is not None and scale_factor is not None:
+        raise ValueError('only one of size or scale_factor should be defined')
+    elif size is None and scale_factor is None:
+        raise ValueError('one of size or scale_factor should be defined')
+    elif size is not None:
+        size = to_2tuple(size)
+        if keep_ratio:
+            size = rescale_size((w, h), size, return_scale=False)
+    else:
+        size = _scale_size((w, h), scale_factor)
+
+    divisor = to_2tuple(divisor)
+    size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
+    resized_img, w_scale, h_scale = imresize(
+        img,
+        size,
+        return_scale=True,
+        interpolation=interpolation,
+        out=out,
+        backend=backend)
+    if return_scale:
+        return resized_img, w_scale, h_scale
+    else:
+        return resized_img
 
 
 def imresize_like(img,
@@ -468,12 +535,67 @@ def impad_to_multiple(img, divisor, pad_val=0):
     return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
+def cutout(img, shape, pad_val=0):
+    """Randomly cut out a rectangle from the original img.
+
+    Args:
+        img (ndarray): Image to be cutout.
+        shape (int | tuple[int]): Expected cutout shape (h, w). If given as a
+            int, the value will be used for both h and w.
+        pad_val (int | float | tuple[int | float]): Values to be filled in the
+            cut area. Defaults to 0.
+
+    Returns:
+        ndarray: The cutout image.
+    """
+
+    channels = 1 if img.ndim == 2 else img.shape[2]
+    if isinstance(shape, int):
+        cut_h, cut_w = shape, shape
+    else:
+        assert isinstance(shape, tuple) and len(shape) == 2, \
+            f'shape must be a int or a tuple with length 2, but got type ' \
+            f'{type(shape)} instead.'
+        cut_h, cut_w = shape
+    if isinstance(pad_val, (int, float)):
+        pad_val = tuple([pad_val] * channels)
+    elif isinstance(pad_val, tuple):
+        assert len(pad_val) == channels, \
+            'Expected the num of elements in tuple equals the channels' \
+            'of input image. Found {} vs {}'.format(
+                len(pad_val), channels)
+    else:
+        raise TypeError(f'Invalid type {type(pad_val)} for `pad_val`')
+
+    img_h, img_w = img.shape[:2]
+    y0 = np.random.uniform(img_h)
+    x0 = np.random.uniform(img_w)
+
+    y1 = int(max(0, y0 - cut_h / 2.))
+    x1 = int(max(0, x0 - cut_w / 2.))
+    y2 = min(img_h, y1 + cut_h)
+    x2 = min(img_w, x1 + cut_w)
+
+    if img.ndim == 2:
+        patch_shape = (y2 - y1, x2 - x1)
+    else:
+        patch_shape = (y2 - y1, x2 - x1, channels)
+
+    img_cutout = img.copy()
+    patch = np.array(
+        pad_val, dtype=img.dtype) * np.ones(
+            patch_shape, dtype=img.dtype)
+    img_cutout[y1:y2, x1:x2, ...] = patch
+
+    return img_cutout
+
+
 def _get_shear_matrix(magnitude, direction='horizontal'):
     """Generate the shear matrix for transformation.
 
     Args:
         magnitude (int | float): The magnitude used for shear.
-        direction (str): Thie flip direction, either "horizontal"
+        direction (str): The flip direction, either "horizontal"
             or "vertical".
 
     Returns:
@@ -497,7 +619,7 @@ def imshear(img,
         img (ndarray): Image to be sheared with format (h, w)
             or (h, w, c).
         magnitude (int | float): The magnitude used for shear.
-        direction (str): Thie flip direction, either "horizontal"
+        direction (str): The flip direction, either "horizontal"
             or "vertical".
         border_value (int | tuple[int]): Value used in case of a
             constant border.

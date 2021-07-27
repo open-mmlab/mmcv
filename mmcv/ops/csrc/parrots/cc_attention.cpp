@@ -1,88 +1,98 @@
-#include "parrots_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
-void CAForwardCUDAKernelLauncher(const DArrayLite t, const DArrayLite f,
-                                 DArrayLite weight, CudaContext &ctx,
-                                 cudaStream_t stream);
+#ifdef MMCV_WITH_CUDA
+void CAForwardCUDAKernelLauncher(const Tensor t, const Tensor f, Tensor weight);
 
-void CABackwardCUDAKernelLauncher(const DArrayLite dw, const DArrayLite t,
-                                  const DArrayLite f, DArrayLite dt,
-                                  DArrayLite df, CudaContext &ctx,
-                                  cudaStream_t stream);
+void CABackwardCUDAKernelLauncher(const Tensor dw, const Tensor t,
+                                  const Tensor f, Tensor dt, Tensor df);
 
-void CAMapForwardCUDAKernelLauncher(const DArrayLite weight, const DArrayLite g,
-                                    DArrayLite out, CudaContext &ctx,
-                                    cudaStream_t stream);
+void CAMapForwardCUDAKernelLauncher(const Tensor weight, const Tensor g,
+                                    Tensor out);
 
-void CAMapBackwardCUDAKernelLauncher(const DArrayLite dout,
-                                     const DArrayLite weight,
-                                     const DArrayLite g, DArrayLite dw,
-                                     DArrayLite dg, CudaContext &ctx,
-                                     cudaStream_t stream);
+void CAMapBackwardCUDAKernelLauncher(const Tensor dout, const Tensor weight,
+                                     const Tensor g, Tensor dw, Tensor dg);
 
-void ca_forward_cuda(CudaContext &ctx, const SSElement &attr,
-                     const OperatorBase::in_list_t &ins,
-                     OperatorBase::out_list_t &outs) {
-  const auto &t = ins[0];
-  const auto &f = ins[1];
-  auto &weight = outs[0];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  CAForwardCUDAKernelLauncher(t, f, weight, ctx, stream);
+void ca_forward_cuda(const Tensor t, const Tensor f, Tensor weight) {
+  CAForwardCUDAKernelLauncher(t, f, weight);
 }
 
-void ca_backward_cuda(CudaContext &ctx, const SSElement &attr,
-                      const OperatorBase::in_list_t &ins,
-                      OperatorBase::out_list_t &outs) {
-  const auto &dw = ins[0];
-  const auto &t = ins[1];
-  const auto &f = ins[2];
-  auto &dt = outs[0];
-  auto &df = outs[1];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  CABackwardCUDAKernelLauncher(dw, t, f, dt, df, ctx, stream);
+void ca_backward_cuda(const Tensor dw, const Tensor t, const Tensor f,
+                      Tensor dt, Tensor df) {
+  CABackwardCUDAKernelLauncher(dw, t, f, dt, df);
 }
 
-void ca_map_forward_cuda(CudaContext &ctx, const SSElement &attr,
-                         const OperatorBase::in_list_t &ins,
-                         OperatorBase::out_list_t &outs) {
-  const auto &weight = ins[0];
-  const auto &g = ins[1];
-  auto &out = outs[0];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  CAMapForwardCUDAKernelLauncher(weight, g, out, ctx, stream);
+void ca_map_forward_cuda(const Tensor weight, const Tensor g, Tensor out) {
+  CAMapForwardCUDAKernelLauncher(weight, g, out);
 }
 
-void ca_map_backward_cuda(CudaContext &ctx, const SSElement &attr,
-                          const OperatorBase::in_list_t &ins,
-                          OperatorBase::out_list_t &outs) {
-  const auto &dout = ins[0];
-  const auto &weight = ins[1];
-  const auto &g = ins[2];
-  auto &dw = outs[0];
-  auto &dg = outs[1];
-  cudaStream_t stream = getStreamNative<CudaDevice>(ctx.getStream());
-  CAMapBackwardCUDAKernelLauncher(dout, weight, g, dw, dg, ctx, stream);
+void ca_map_backward_cuda(const Tensor dout, const Tensor weight,
+                          const Tensor g, Tensor dw, Tensor dg) {
+  CAMapBackwardCUDAKernelLauncher(dout, weight, g, dw, dg);
+}
+#endif
+
+void ca_forward(const Tensor t, const Tensor f, Tensor weight) {
+  if (t.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(t);
+    CHECK_CUDA_INPUT(f);
+    CHECK_CUDA_INPUT(weight);
+    ca_forward_cuda(t, f, weight);
+#else
+    AT_ERROR("ca is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("ca is not implemented on the CPU");
+  }
 }
 
-PARROTS_EXTENSION_REGISTER(ca_forward)
-    .input(2)
-    .output(1)
-    .apply(ca_forward_cuda)
-    .done();
+void ca_backward(const Tensor dw, const Tensor t, const Tensor f, Tensor dt,
+                 Tensor df) {
+  if (dw.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(dw);
+    CHECK_CUDA_INPUT(t);
+    CHECK_CUDA_INPUT(f);
+    CHECK_CUDA_INPUT(dt);
+    CHECK_CUDA_INPUT(df);
+    ca_backward_cuda(dw, t, f, dt, df);
+#else
+    AT_ERROR("ca is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("ca is not implemented on the CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(ca_backward)
-    .input(3)
-    .output(2)
-    .apply(ca_backward_cuda)
-    .done();
+void ca_map_forward(const Tensor weight, const Tensor g, Tensor out) {
+  if (weight.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(g);
+    CHECK_CUDA_INPUT(out);
+    ca_map_forward_cuda(weight, g, out);
+#else
+    AT_ERROR("ca_map is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("ca is not implemented on the CPU");
+  }
+}
 
-PARROTS_EXTENSION_REGISTER(ca_map_forward)
-    .input(2)
-    .output(1)
-    .apply(ca_map_forward_cuda)
-    .done();
-
-PARROTS_EXTENSION_REGISTER(ca_map_backward)
-    .input(3)
-    .output(2)
-    .apply(ca_map_backward_cuda)
-    .done();
+void ca_map_backward(const Tensor dout, const Tensor weight, const Tensor g,
+                     Tensor dw, Tensor dg) {
+  if (dout.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(dout);
+    CHECK_CUDA_INPUT(weight);
+    CHECK_CUDA_INPUT(g);
+    CHECK_CUDA_INPUT(dw);
+    CHECK_CUDA_INPUT(dg);
+    ca_map_backward_cuda(dout, weight, g, dw, dg);
+#else
+    AT_ERROR("ca_map is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("ca is not implemented on the CPU");
+  }
+}

@@ -11,6 +11,7 @@ from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
+from mmcv.utils import TORCH_VERSION
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -58,8 +59,12 @@ def test_get_deprecated_models():
     }
 
 
-def load_url_dist(url):
+def load_from_http(url, map_location=None):
     return 'url:' + url
+
+
+def load_url(url, map_location=None, model_dir=None):
+    return load_from_http(url)
 
 
 def load(filepath, map_location=None):
@@ -67,18 +72,29 @@ def load(filepath, map_location=None):
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
-@patch('mmcv.runner.checkpoint.load_url_dist', load_url_dist)
+@patch('mmcv.runner.checkpoint.load_from_http', load_from_http)
 @patch('torch.load', load)
+@patch('torch.utils.model_zoo.load_url', load_url)
 def test_load_external_url():
     # test modelzoo://
     url = _load_checkpoint('modelzoo://resnet50')
-    assert url == 'url:https://download.pytorch.org/models/resnet50-19c8e357' \
-                  '.pth'
+    if TORCH_VERSION < '1.9.0':
+        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
+                       '357.pth')
+    else:
+        # filename of checkpoint is renamed in torch1.9.0
+        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
+                       'a61.pth')
 
     # test torchvision://
     url = _load_checkpoint('torchvision://resnet50')
-    assert url == 'url:https://download.pytorch.org/models/resnet50-19c8e357' \
-                  '.pth'
+    if TORCH_VERSION < '1.9.0':
+        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
+                       '357.pth')
+    else:
+        # filename of checkpoint is renamed in torch1.9.0
+        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
+                       'a61.pth')
 
     # test open-mmlab:// with default MMCV_HOME
     os.environ.pop(ENV_MMCV_HOME, None)
@@ -94,6 +110,16 @@ def test_load_external_url():
             match='open-mmlab://train_old is deprecated in favor of '
             'open-mmlab://train'):
         url = _load_checkpoint('open-mmlab://train_old')
+        assert url == 'url:https://localhost/train.pth'
+
+    # test openmmlab:// with deprecated model name
+    os.environ.pop(ENV_MMCV_HOME, None)
+    os.environ.pop(ENV_XDG_CACHE_HOME, None)
+    with pytest.warns(
+            Warning,
+            match='openmmlab://train_old is deprecated in favor of '
+            'openmmlab://train'):
+        url = _load_checkpoint('openmmlab://train_old')
         assert url == 'url:https://localhost/train.pth'
 
     # test open-mmlab:// with user-defined MMCV_HOME

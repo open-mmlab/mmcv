@@ -26,7 +26,9 @@ class TestIO:
         cls.gray_img_dim3_path = osp.join(cls.data_dir, 'grayscale_dim3.jpg')
         cls.gray_alpha_img_path = osp.join(cls.data_dir, 'gray_alpha.png')
         cls.palette_img_path = osp.join(cls.data_dir, 'palette.gif')
+        cls.exif_img_path = osp.join(cls.data_dir, 'color_exif.jpg')
         cls.img = cv2.imread(cls.img_path)
+        cls.tiff_path = osp.join(cls.data_dir, 'uint16-5channel.tif')
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape
@@ -172,7 +174,40 @@ class TestIO:
         with pytest.raises(ValueError):
             mmcv.imread(self.img_path, 'unsupported_backend')
 
+        # backend tifffile, multi channel tiff file(> 4 channels).
+        mmcv.use_backend('tifffile')
+        img_tifffile = mmcv.imread(self.tiff_path)
+        assert img_tifffile.shape == (200, 150, 5)
+
         mmcv.use_backend('cv2')
+
+        # consistent exif behaviour
+        img_cv2_exif = mmcv.imread(self.exif_img_path)
+        img_pil_exif = mmcv.imread(self.exif_img_path, backend='pillow')
+        assert img_cv2_exif.shape == (400, 300, 3)
+        assert img_pil_exif.shape == (400, 300, 3)
+        img_cv2_exif_unchanged = mmcv.imread(
+            self.exif_img_path, flag='unchanged')
+        img_pil_exif_unchanged = mmcv.imread(
+            self.exif_img_path, backend='pillow', flag='unchanged')
+        assert img_cv2_exif_unchanged.shape == (300, 400, 3)
+        assert img_pil_exif_unchanged.shape == (300, 400, 3)
+        img_cv2_color_ignore_exif = mmcv.imread(
+            self.exif_img_path, flag='color_ignore_orientation')
+        img_pil_color_ignore_exif = mmcv.imread(
+            self.exif_img_path,
+            backend='pillow',
+            flag='color_ignore_orientation')
+        assert img_cv2_color_ignore_exif.shape == (300, 400, 3)
+        assert img_pil_color_ignore_exif.shape == (300, 400, 3)
+        img_cv2_grayscale_ignore_exif = mmcv.imread(
+            self.exif_img_path, flag='grayscale_ignore_orientation')
+        img_pil_grayscale_ignore_exif = mmcv.imread(
+            self.exif_img_path,
+            backend='pillow',
+            flag='grayscale_ignore_orientation')
+        assert img_cv2_grayscale_ignore_exif.shape == (300, 400)
+        assert img_pil_grayscale_ignore_exif.shape == (300, 400)
 
     def test_imfrombytes(self):
         # backend cv2, channel order: bgr

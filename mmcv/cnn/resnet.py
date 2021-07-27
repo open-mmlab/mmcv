@@ -4,7 +4,6 @@ import logging
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 
-from ..runner import load_checkpoint
 from .utils import constant_init, kaiming_init
 
 
@@ -266,6 +265,7 @@ class ResNet(nn.Module):
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
+            from ..runner import load_checkpoint
             load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             for m in self.modules():

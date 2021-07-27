@@ -90,7 +90,7 @@ def topk(g, self, k, dim, largest, sorted, out=None):
 
 
 def masked_select(g, self, mask):
-    from torch.onnx.symbolic_opset9 import nonzero, expand_as
+    from torch.onnx.symbolic_opset9 import expand_as, nonzero
     index = nonzero(g, expand_as(g, mask, self))
     return g.op('GatherND', self, index)
 
@@ -380,6 +380,91 @@ def new_full(g,
     return full(g, size, fill_value, dtype, layout, device, pin_memory)
 
 
+@parse_args('v', 'v', 'i', 'i', 'i')
+def grid_sampler(g,
+                 input,
+                 grid,
+                 interpolation_mode,
+                 padding_mode,
+                 align_corners=False):
+    return g.op(
+        'mmcv::grid_sampler',
+        input,
+        grid,
+        interpolation_mode_i=interpolation_mode,
+        padding_mode_i=padding_mode,
+        align_corners_i=align_corners)
+
+
+@parse_args('v', 'i')
+def cummax(g, input, dim):
+    return g.op('mmcv::cummax', input, dim_i=dim, outputs=2)
+
+
+@parse_args('v', 'i')
+def cummin(g, input, dim):
+    return g.op('mmcv::cummin', input, dim_i=dim, outputs=2)
+
+
+@parse_args('v', 'v', 'is')
+def roll(g, input, shifts, dims):
+    from torch.onnx.symbolic_opset9 import squeeze
+    from packaging import version
+    input_shape = g.op('Shape', input)
+
+    need_flatten = len(dims) == 0
+    # If dims is not specified, the tensor will be flattened before
+    # rolling and then restored to the original shape.
+    if need_flatten:
+        resize_shape = input_shape
+        input = g.op('Reshape', input,
+                     g.op('Constant', value_t=torch.LongTensor([1, -1])))
+        input_shape = g.op('Shape', input)
+        dims = [1]
+
+    for index, dim in enumerate(dims):
+        end_size = sym_help._slice_helper(
+            g, input_shape, axes=[0], ends=[dim + 1], starts=[dim])
+        shift_size = sym_help._slice_helper(
+            g, shifts, axes=[0], ends=[index + 1], starts=[index])
+        slice_size = g.op('Sub', end_size, shift_size)
+
+        # Can not use Mod because tensorrt does not support
+        div_size = g.op('Div', slice_size, end_size)
+        slice_size = g.op('Sub', slice_size, g.op('Mul', end_size, div_size))
+
+        if version.parse(torch.__version__) >= version.parse('1.7.0'):
+            # add dim=0 for pytorch 1.9.0
+            end_size = squeeze(g, end_size, 0)
+            slice_size = squeeze(g, slice_size, 0)
+        else:
+            end_size = g.op('Squeeze', end_size)
+            slice_size = g.op('Squeeze', slice_size)
+            dim = torch.LongTensor([dim])
+
+        input_slice0 = sym_help._slice_helper(
+            g,
+            input,
+            axes=dim,
+            starts=torch.LongTensor([0]),
+            ends=slice_size,
+            dynamic_slice=True)
+        input_slice1 = sym_help._slice_helper(
+            g,
+            input,
+            axes=dim,
+            ends=end_size,
+            starts=slice_size,
+            dynamic_slice=True)
+
+        input = g.op('Concat', input_slice1, input_slice0, axis_i=dim)
+
+    if need_flatten:
+        input = g.op('Reshape', input, resize_shape)
+
+    return input
+
+
 def register_extra_symbolics(opset=11):
     register_op('one_hot', one_hot, '', opset)
     register_op('im2col', im2col, '', opset)
@@ -404,3 +489,7 @@ def register_extra_symbolics(opset=11):
     register_op('upsample_trilinear3d', upsample_trilinear3d, '', opset)
     register_op('upsample_bicubic2d', upsample_bicubic2d, '', opset)
     register_op('new_full', new_full, '', opset)
+    register_op('grid_sampler', grid_sampler, '', opset)
+    register_op('cummax', cummax, '', opset)
+    register_op('cummin', cummin, '', opset)
+    register_op('roll', roll, '', opset)

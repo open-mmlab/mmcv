@@ -99,6 +99,10 @@ class TextLoggerHook(LoggerHook):
                 if torch.cuda.is_available():
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
+            # val/test time
+            # here 1000 is the length of the val dataloader
+            # by epoch: Epoch[val] [4][1000]
+            # by iter: Iter[val] [1000]
             if self.by_epoch:
                 log_str = f'Epoch({log_dict["mode"]}) ' \
                     f'[{log_dict["epoch"]}][{log_dict["iter"]}]\t'
@@ -141,10 +145,16 @@ class TextLoggerHook(LoggerHook):
             return items
 
     def log(self, runner):
+        if 'eval_iter_num' in runner.log_buffer.output:
+            # this doesn't modify runner.iter and is regardless of by_epoch
+            cur_iter = runner.log_buffer.output.pop('eval_iter_num')
+        else:
+            cur_iter = self.get_iter(runner, inner_iter=True)
+
         log_dict = OrderedDict(
             mode=self.get_mode(runner),
             epoch=self.get_epoch(runner),
-            iter=self.get_iter(runner, inner_iter=True))
+            iter=cur_iter)
 
         # only record lr of the first param group
         cur_lr = runner.current_lr()
@@ -166,3 +176,4 @@ class TextLoggerHook(LoggerHook):
 
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
+        return log_dict

@@ -1,4 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
+import copy
 import logging
 import os.path as osp
 import warnings
@@ -11,9 +12,9 @@ import mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
-from .hooks import HOOKS, Hook, IterTimerHook
+from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
-from .priority import get_priority
+from .priority import Priority, get_priority
 from .utils import get_time_str
 
 
@@ -102,7 +103,6 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
-
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)
@@ -306,10 +306,43 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
-    def load_checkpoint(self, filename, map_location='cpu', strict=False):
+    def get_hook_info(self):
+        # Get hooks info in each stage
+        stage_hook_map = {stage: [] for stage in Hook.stages}
+        for hook in self.hooks:
+            try:
+                priority = Priority(hook.priority).name
+            except ValueError:
+                priority = hook.priority
+            classname = hook.__class__.__name__
+            hook_info = f'({priority:<12}) {classname:<35}'
+            for trigger_stage in hook.get_triggered_stages():
+                stage_hook_map[trigger_stage].append(hook_info)
+
+        stage_hook_infos = []
+        for stage in Hook.stages:
+            hook_infos = stage_hook_map[stage]
+            if len(hook_infos) > 0:
+                info = f'{stage}:\n'
+                info += '\n'.join(hook_infos)
+                info += '\n -------------------- '
+                stage_hook_infos.append(info)
+        return '\n'.join(stage_hook_infos)
+
+    def load_checkpoint(self,
+                        filename,
+                        map_location='cpu',
+                        strict=False,
+                        revise_keys=[(r'^module.', '')]):
+
         self.logger.info('load checkpoint from %s', filename)
-        return load_checkpoint(self.model, filename, map_location, strict,
-                               self.logger)
+        return load_checkpoint(
+            self.model,
+            filename,
+            map_location,
+            strict,
+            self.logger,
+            revise_keys=revise_keys)
 
     def resume(self,
                checkpoint,
@@ -329,6 +362,28 @@ class BaseRunner(metaclass=ABCMeta):
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
+        if self.meta is None:
+            self.meta = {}
+        self.meta.setdefault('hook_msgs', {})
+        # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
+        self.meta['hook_msgs'].update(checkpoint['meta'].get('hook_msgs', {}))
+
+        # Re-calculate the number of iterations when resuming
+        # models with different number of GPUs
+        if 'config' in checkpoint['meta']:
+            config = mmcv.Config.fromstring(
+                checkpoint['meta']['config'], file_format='.py')
+            previous_gpu_ids = config.get('gpu_ids', None)
+            if previous_gpu_ids and len(previous_gpu_ids) > 0 and len(
+                    previous_gpu_ids) != self.world_size:
+                self._iter = int(self._iter * len(previous_gpu_ids) /
+                                 self.world_size)
+                self.logger.info('the iteration number is changed due to '
+                                 'change of GPU number')
+
+        # resume meta information meta
+        self.meta = checkpoint['meta']
+
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -362,7 +417,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
             hook = lr_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority='VERY_HIGH')
 
     def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
@@ -383,7 +438,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
             hook = momentum_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority='HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
         if optimizer_config is None:
@@ -393,7 +448,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
         else:
             hook = optimizer_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority='ABOVE_NORMAL')
 
     def register_checkpoint_hook(self, checkpoint_config):
         if checkpoint_config is None:
@@ -403,7 +458,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
         else:
             hook = checkpoint_config
-        self.register_hook(hook)
+        self.register_hook(hook, priority='NORMAL')
 
     def register_logger_hooks(self, log_config):
         if log_config is None:
@@ -414,26 +469,76 @@ class BaseRunner(metaclass=ABCMeta):
                 info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
+    def register_timer_hook(self, timer_config):
+        if timer_config is None:
+            return
+        if isinstance(timer_config, dict):
+            timer_config_ = copy.deepcopy(timer_config)
+            hook = mmcv.build_from_cfg(timer_config_, HOOKS)
+        else:
+            hook = timer_config
+        self.register_hook(hook, priority='LOW')
+
+    def register_custom_hooks(self, custom_config):
+        if custom_config is None:
+            return
+
+        if not isinstance(custom_config, list):
+            custom_config = [custom_config]
+
+        for item in custom_config:
+            if isinstance(item, dict):
+                self.register_hook_from_cfg(item)
+            else:
+                self.register_hook(item, priority='NORMAL')
+
+    def register_profiler_hook(self, profiler_config):
+        if profiler_config is None:
+            return
+        if isinstance(profiler_config, dict):
+            profiler_config.setdefault('type', 'ProfilerHook')
+            hook = mmcv.build_from_cfg(profiler_config, HOOKS)
+        else:
+            hook = profiler_config
+        self.register_hook(hook)
+
     def register_training_hooks(self,
                                 lr_config,
                                 optimizer_config=None,
                                 checkpoint_config=None,
                                 log_config=None,
-                                momentum_config=None):
-        """Register default hooks for training.
+                                momentum_config=None,
+                                timer_config=dict(type='IterTimerHook'),
+                                custom_hooks_config=None):
+        """Register default and custom hooks for training.
 
-        Default hooks include:
+        Default and custom hooks include:
 
-        - LrUpdaterHook
-        - MomentumUpdaterHook
-        - OptimizerStepperHook
-        - CheckpointSaverHook
-        - IterTimerHook
-        - LoggerHook(s)
+        +----------------------+-------------------------+
+        | Hooks                | Priority                |
+        +======================+=========================+
+        | LrUpdaterHook        | VERY_HIGH (10)          |
+        +----------------------+-------------------------+
+        | MomentumUpdaterHook  | HIGH (30)               |
+        +----------------------+-------------------------+
+        | OptimizerStepperHook | ABOVE_NORMAL (40)       |
+        +----------------------+-------------------------+
+        | CheckpointSaverHook  | NORMAL (50)             |
+        +----------------------+-------------------------+
+        | IterTimerHook        | LOW (70)                |
+        +----------------------+-------------------------+
+        | LoggerHook(s)        | VERY_LOW (90)           |
+        +----------------------+-------------------------+
+        | CustomHook(s)        | defaults to NORMAL (50) |
+        +----------------------+-------------------------+
+
+        If custom hooks have same priority with default hooks, custom hooks
+        will be triggered after default hooks.
         """
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)
         self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
-        self.register_hook(IterTimerHook())
+        self.register_timer_hook(timer_config)
         self.register_logger_hooks(log_config)
+        self.register_custom_hooks(custom_hooks_config)

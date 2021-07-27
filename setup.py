@@ -1,7 +1,7 @@
 import glob
 import os
 import re
-from pkg_resources import DistributionNotFound, get_distribution
+from pkg_resources import DistributionNotFound, get_distribution, parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -184,20 +184,32 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
-        define_macros = [('MMCV_USE_PARROTS', None)]
-        op_files = glob.glob('./mmcv/ops/csrc/parrots/*')
-        include_path = os.path.abspath('./mmcv/ops/csrc')
+        # new parrots op impl do not use MMCV_USE_PARROTS
+        # define_macros = [('MMCV_USE_PARROTS', None)]
+        define_macros = []
+        op_files = glob.glob('./mmcv/ops/csrc/parrots/*.cu') +\
+            glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+        include_dirs = [os.path.abspath('./mmcv/ops/csrc')]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
+        extra_compile_args = {
+            'nvcc': [cuda_args] if cuda_args else [],
+            'cxx': [],
+        }
+        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            extra_compile_args['nvcc'] += [
+                '-D__CUDA_NO_HALF_OPERATORS__',
+                '-D__CUDA_NO_HALF_CONVERSIONS__',
+                '-D__CUDA_NO_HALF2_OPERATORS__',
+            ]
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
-            include_dirs=[include_path],
+            include_dirs=include_dirs,
             define_macros=define_macros,
-            extra_compile_args={
-                'nvcc': [cuda_args] if cuda_args else [],
-                'cxx': [],
-            },
-            cuda=True)
+            extra_compile_args=extra_compile_args,
+            cuda=True,
+            pytorch=True)
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
@@ -208,18 +220,44 @@ def get_extensions():
         define_macros = []
         extra_compile_args = {'cxx': []}
 
-        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+        is_rocm_pytorch = False
+        if parse_version(torch.__version__) >= parse_version('1.5'):
+            from torch.utils.cpp_extension import ROCM_HOME
+            is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                                       (ROCM_HOME is not None)) else False
+
+        this_dir = 'mmcv/ops/csrc/'
+        if is_rocm_pytorch:
+            from torch.utils.hipify import hipify_python
+
+            hipify_python.hipify(
+                project_directory=this_dir,
+                output_directory=this_dir,
+                includes='mmcv/ops/csrc/*',
+                show_detailed=True,
+                is_pytorch_extension=True,
+            )
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            define_macros += [('HIP_DIFF', None)]
+            cuda_args = os.getenv('MMCV_CUDA_ARGS')
+            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
+            extension = CUDAExtension
+            include_path = os.path.abspath('./mmcv/ops/csrc/hip')
+
+        elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*')
             extension = CUDAExtension
+            include_path = os.path.abspath('./mmcv/ops/csrc')
         else:
             print(f'Compiling {ext_name} without CUDA')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
             extension = CppExtension
+            include_path = os.path.abspath('./mmcv/ops/csrc')
 
-        include_path = os.path.abspath('./mmcv/ops/csrc')
         ext_ops = extension(
             name=ext_name,
             sources=op_files,
@@ -245,7 +283,6 @@ def get_extensions():
         include_path = os.path.abspath('./mmcv/ops/csrc/onnxruntime')
         include_dirs.append(include_path)
         include_dirs.append(os.path.join(ort_path, 'include'))
-        include_dirs += include_paths(cuda=True)
 
         op_files = glob.glob('./mmcv/ops/csrc/onnxruntime/cpu/*')
         if onnxruntime.get_device() == 'GPU' or os.getenv('FORCE_CUDA',
@@ -254,8 +291,10 @@ def get_extensions():
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files += glob.glob('./mmcv/ops/csrc/onnxruntime/gpu/*')
+            include_dirs += include_paths(cuda=True)
             library_dirs += library_paths(cuda=True)
         else:
+            include_dirs += include_paths(cuda=False)
             library_dirs += library_paths(cuda=False)
 
         kwargs['library_dirs'] = library_dirs

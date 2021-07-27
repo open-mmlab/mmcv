@@ -10,7 +10,7 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 
 
 def init_dist(launcher, backend='nccl', **kwargs):
@@ -78,7 +78,8 @@ def _init_dist_slurm(backend, port=None):
 
 
 def get_dist_info():
-    if TORCH_VERSION < '1.0':
+    if (TORCH_VERSION != 'parrots'
+            and digit_version(TORCH_VERSION) < digit_version('1.0')):
         initialized = dist._initialized
     else:
         if dist.is_available():

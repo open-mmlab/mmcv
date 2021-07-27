@@ -13,6 +13,7 @@ import torch.nn as nn
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
+from mmcv.runner.hooks import IterTimerHook
 
 
 class OldStyleModel(nn.Module):
@@ -257,3 +258,26 @@ def test_build_lr_momentum_hook(runner_class):
         step_ratio_up=0.4)
     runner.register_momentum_hook(mom_config)
     assert len(runner.hooks) == 8
+
+
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_register_timer_hook(runner_class):
+    model = Model()
+    runner = runner_class(model=model, logger=logging.getLogger())
+
+    # test register None
+    timer_config = None
+    runner.register_timer_hook(timer_config)
+    assert len(runner.hooks) == 0
+
+    # test register IterTimerHook with config
+    timer_config = dict(type='IterTimerHook')
+    runner.register_timer_hook(timer_config)
+    assert len(runner.hooks) == 1
+    assert isinstance(runner.hooks[0], IterTimerHook)
+
+    # test register IterTimerHook
+    timer_config = IterTimerHook()
+    runner.register_timer_hook(timer_config)
+    assert len(runner.hooks) == 2
+    assert isinstance(runner.hooks[1], IterTimerHook)

@@ -5,7 +5,7 @@ import torch.distributed as dist
 logger_initialized = {}
 
 
-def get_logger(name, log_file=None, log_level=logging.INFO):
+def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
     """Initialize and get a logger by name.
 
     If the logger has not been initialized, this method will initialize the
@@ -21,6 +21,8 @@ def get_logger(name, log_file=None, log_level=logging.INFO):
         log_level (int): The logger level. Note that only the process of
             rank 0 is affected, and other processes will set the level to
             "Error" thus be silent most of the time.
+        file_mode (str): The file mode used in opening log file.
+            Defaults to 'w'.
 
     Returns:
         logging.Logger: The expected logger.
@@ -35,6 +37,17 @@ def get_logger(name, log_file=None, log_level=logging.INFO):
         if name.startswith(logger_name):
             return logger
 
+    # handle duplicate logs to the console
+    # Starting in 1.8.0, PyTorch DDP attaches a StreamHandler <stderr> (NOTSET)
+    # to the root logger. As logger.propagate is True by default, this root
+    # level handler causes logging messages from rank>0 processes to
+    # unexpectedly show up on the console, creating much unwanted clutter.
+    # To fix this issue, we set the root logger's StreamHandler, if any, to log
+    # at the ERROR level.
+    for handler in logger.root.handlers:
+        if type(handler) is logging.StreamHandler:
+            handler.setLevel(logging.ERROR)
+
     stream_handler = logging.StreamHandler()
     handlers = [stream_handler]
 
@@ -45,7 +58,10 @@ def get_logger(name, log_file=None, log_level=logging.INFO):
 
     # only rank 0 will add a FileHandler
     if rank == 0 and log_file is not None:
-        file_handler = logging.FileHandler(log_file, 'w')
+        # Here, the default behaviour of the official logger is 'a'. Thus, we
+        # provide an interface to change the file mode to the default
+        # behaviour.
+        file_handler = logging.FileHandler(log_file, file_mode)
         handlers.append(file_handler)
 
     formatter = logging.Formatter(

@@ -5,7 +5,8 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
+from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
+                 IMREAD_UNCHANGED)
 
 from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
 
@@ -15,17 +16,25 @@ except ImportError:
     TJCS_RGB = TJPF_GRAY = TJPF_BGR = TurboJPEG = None
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageOps
 except ImportError:
     Image = None
 
+try:
+    import tifffile
+except ImportError:
+    tifffile = None
+
 jpeg = None
-supported_backends = ['cv2', 'turbojpeg', 'pillow']
+supported_backends = ['cv2', 'turbojpeg', 'pillow', 'tifffile']
 
 imread_flags = {
     'color': IMREAD_COLOR,
     'grayscale': IMREAD_GRAYSCALE,
-    'unchanged': IMREAD_UNCHANGED
+    'unchanged': IMREAD_UNCHANGED,
+    'color_ignore_orientation': IMREAD_IGNORE_ORIENTATION | IMREAD_COLOR,
+    'grayscale_ignore_orientation':
+    IMREAD_IGNORE_ORIENTATION | IMREAD_GRAYSCALE
 }
 
 imread_backend = 'cv2'
@@ -36,8 +45,9 @@ def use_backend(backend):
 
     Args:
         backend (str): The image decoding backend type. Options are `cv2`,
-        `pillow`, `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG).
-        `turbojpeg` is faster but it only supports `.jpeg` file format.
+        `pillow`, `turbojpeg` (see https://github.com/lilohuang/PyTurboJPEG)
+        and `tifffile`. `turbojpeg` is faster but it only supports `.jpeg`
+        file format.
     """
     assert backend in supported_backends
     global imread_backend
@@ -51,6 +61,9 @@ def use_backend(backend):
     elif imread_backend == 'pillow':
         if Image is None:
             raise ImportError('`Pillow` is not installed')
+    elif imread_backend == 'tifffile':
+        if tifffile is None:
+            raise ImportError('`tifffile` is not installed')
 
 
 def _jpegflag(flag='color', channel_order='bgr'):
@@ -92,6 +105,9 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
         if array.ndim >= 3 and array.shape[2] >= 3:  # color image
             array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
     else:
+        # Handle exif orientation tag
+        if flag in ['color', 'grayscale']:
+            img = ImageOps.exif_transpose(img)
         # If the image mode is not 'RGB', convert it to 'RGB' first.
         if img.mode != 'RGB':
             if img.mode != 'LA':
@@ -106,17 +122,18 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
                 img_rgba = img.convert('RGBA')
                 img = Image.new('RGB', img_rgba.size, (124, 117, 104))
                 img.paste(img_rgba, mask=img_rgba.split()[3])  # 3 is alpha
-        if flag == 'color':
+        if flag in ['color', 'color_ignore_orientation']:
             array = np.array(img)
             if channel_order != 'rgb':
                 array = array[:, :, ::-1]  # RGB to BGR
-        elif flag == 'grayscale':
+        elif flag in ['grayscale', 'grayscale_ignore_orientation']:
             img = img.convert('L')
             array = np.array(img)
         else:
             raise ValueError(
-                'flag must be "color", "grayscale" or "unchanged", '
-                f'but got {flag}')
+                'flag must be "color", "grayscale", "unchanged", '
+                f'"color_ignore_orientation" or "grayscale_ignore_orientation"'
+                f' but got {flag}')
     return array
 
 
@@ -128,13 +145,18 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
             pathlib.Path. If it is a numpy array (loaded image), then
             it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
-            candidates are `color`, `grayscale` and `unchanged`.
-            Note that the `turbojpeg` backened does not support `unchanged`.
+            candidates are `color`, `grayscale`, `unchanged`,
+            `color_ignore_orientation` and `grayscale_ignore_orientation`.
+            By default, `cv2` and `pillow` backend would rotate the image
+            according to its EXIF info unless called with `unchanged` or
+            `*_ignore_orientation` flags. `turbojpeg` and `tifffile` backend
+            always ignore image's EXIF info regardless of the flag.
+            The `turbojpeg` backend only supports `color` and `grayscale`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
         backend (str | None): The image decoding backend type. Options are
-            `cv2`, `pillow`, `turbojpeg`, `None`. If backend is None, the
-            global imread_backend specified by ``mmcv.use_backend()`` will be
-            used. Default: None.
+            `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
+            If backend is None, the global imread_backend specified by
+            ``mmcv.use_backend()`` will be used. Default: None.
 
     Returns:
         ndarray: Loaded image array.
@@ -163,6 +185,9 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
         elif backend == 'pillow':
             img = Image.open(img_or_path)
             img = _pillow2array(img, flag, channel_order)
+            return img
+        elif backend == 'tifffile':
+            img = tifffile.imread(img_or_path)
             return img
         else:
             flag = imread_flags[flag] if is_str(flag) else flag
@@ -220,7 +245,7 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
     Args:
         img (ndarray): Image array to be written.
         file_path (str): Image file path.
-        params (None or list): Same as opencv's :func:`imwrite` interface.
+        params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
 

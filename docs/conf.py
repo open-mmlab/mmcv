@@ -27,8 +27,8 @@ __version__ = locals()['__version__']
 # -- Project information -----------------------------------------------------
 
 project = 'mmcv'
-copyright = '2018-2019, Kai Chen'
-author = 'Kai Chen'
+copyright = '2018-2021, OpenMMLab'
+author = 'MMCV Authors'
 
 # The short X.Y version
 version = __version__
@@ -44,17 +44,17 @@ release = __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'recommonmark',
     'sphinx.ext.autosectionlabel',
-]
+    'sphinx_markdown_tables'
+]  # yapf: disable
 
-autodoc_mock_imports = [
-    'cv2', 'mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision'
-]
+autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.

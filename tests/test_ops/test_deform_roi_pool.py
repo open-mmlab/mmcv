@@ -60,8 +60,7 @@ class TestDeformRoIPool(object):
                                          sampling_ratio=sampling_ratio).cuda()
 
             if _USING_PARROTS:
-                pass
-                # gradcheck(droipool, (x, rois), no_grads=[rois])
+                gradcheck(droipool, (x, rois), no_grads=[rois])
             else:
                 gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
 
@@ -90,7 +89,6 @@ class TestDeformRoIPool(object):
                 sampling_ratio=sampling_ratio).cuda()
 
             if _USING_PARROTS:
-                pass
-                # gradcheck(droipool, (x, rois), no_grads=[rois])
+                gradcheck(droipool, (x, rois), no_grads=[rois])
             else:
                 gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
