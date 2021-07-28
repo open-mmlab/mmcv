@@ -58,10 +58,10 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         >>> # Use cumulative_iters to simulate a large batch size
         >>> # It is helpful when the hardware cannot handle a large batch size.
         >>> loader = DataLoader(data, batch_size=64)
-        >>> optimizer_hook = OptimizerHook(cumulative_iters=4)
+        >>> optim_hook = GradientCumulativeOptimizerHook(cumulative_iters=4)
         >>> # almost equals to
         >>> loader = DataLoader(data, batch_size=256)
-        >>> optimizer_hook = OptimizerHook(cumulative_iters=1)
+        >>> optim_hook = OptimizerHook()
     """
 
     def __init__(self, grad_clip=None, cumulative_iters=1):
