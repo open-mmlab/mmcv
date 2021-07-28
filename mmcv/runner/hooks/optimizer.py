@@ -44,6 +44,25 @@ class OptimizerHook(Hook):
 
 @HOOKS.register_module()
 class GradientCumulativeOptimizerHook(OptimizerHook):
+    """Optimizer Hook implements multi-iters gradient cumulating.
+
+    Args:
+        grad_clip (dict, optional): Parameters passed to
+            `torch.nn.utils.clip_grad_norm_`, and if None, disable grad clip.
+            Defaults to None.
+        cumulative_iters (int, optional): Num of gradient cumulative iters.
+            The optimizer will step every `cumulative_iters` iters.
+            Defaults to 1.
+
+    Examples:
+        >>> # Use cumulative_iters to simulate a large batch size
+        >>> # It is helpful when the hardware cannot handle a large batch size.
+        >>> loader = DataLoader(data, batch_size=64)
+        >>> optimizer_hook = OptimizerHook(cumulative_iters=4)
+        >>> # almost equals to
+        >>> loader = DataLoader(data, batch_size=256)
+        >>> optimizer_hook = OptimizerHook(cumulative_iters=1)
+    """
 
     def __init__(self, grad_clip=None, cumulative_iters=1):
         super(GradientCumulativeOptimizerHook, self).__init__(grad_clip)
