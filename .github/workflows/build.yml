@@ -42,7 +42,7 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -78,7 +78,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -123,7 +123,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -195,7 +195,7 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -267,7 +267,7 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -321,7 +321,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
       - name: Upgrade Setuptools
-        run: pip install setuptools==52
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: |
           rm -rf .eggs
