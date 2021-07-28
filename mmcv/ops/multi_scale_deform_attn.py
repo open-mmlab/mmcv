@@ -346,8 +346,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 attention_weights, self.im2col_step)
         else:
             output = multi_scale_deformable_attn_pytorch(
-                value, spatial_shapes, level_start_index, sampling_locations,
-                attention_weights, self.im2col_step)
+                value, spatial_shapes, sampling_locations,attention_weights)
 
         output = self.output_proj(output)
 
