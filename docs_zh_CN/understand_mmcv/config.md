@@ -3,7 +3,7 @@
 `Config` 类用于操作配置文件，它支持从多种文件格式中加载配置，包括 **python**, **json** 和 **yaml**。
 它提供了类似字典对象的接口来获取和设置值。
 
-举配置文件 `test.py` 为例。
+以配置文件 `test.py` 为例。
 
 ```python
 a = 1
@@ -38,7 +38,7 @@ d = 'string'
 
 这些变量名引用自 [VS Code](https://code.visualstudio.com/docs/editor/variables-reference)。
 
-这里举一个带有预定义变量的配置文件为例。
+这里是一个带有预定义变量的配置文件的例子。
 
 `config_a.py`
 ```python
