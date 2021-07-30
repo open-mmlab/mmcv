@@ -10,7 +10,7 @@ Please briefly describe what modification is made in this PR.
 
 ## BC-breaking (Optional)
 
-Does the modification introduce changes that break the backward-compatibility of the downstream repos?
+Does the modification introduce changes that break the backward-compatibility of the downstream repositories?
 If so, please describe how it breaks the compatibility and how the downstream projects should modify their code to keep compatibility with this PR.
 
 ## Use cases (Optional)
@@ -19,7 +19,9 @@ If this PR introduces a new feature, it is better to list some use cases here, a
 
 ## Checklist
 
-1. Pre-commit or other linting tools are used to fix the potential lint issues.
-2. The modification is covered by complete unit tests. If not, please add more unit test to ensure the correctness.
-3. If the modification has potential influence on downstream projects, this PR should be tested with downstream projects, like MMDet or MMCls.
-4. The documentation has been modified accordingly, like docstring or example tutorials.
+- [] Pre-commit or other linting tools are used to fix the potential lint issues.
+- [] CLA has been signed and all committers have signed the CLA in this PR.
+- [] Bug fixes are fully covered by unit tests, the case that causes the bug should be added in the unit tests.
+- [] The modification is covered by complete unit tests. If not, please add more unit test to ensure the correctness.
+- [] If the modification has potential influence on downstream projects, this PR should be tested with downstream projects, like MMDet or MMCls.
+- [] The documentation has been modified accordingly, like docstring or example tutorials.
