@@ -27,7 +27,7 @@ mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 
 ![progress](../_static/parallel_progress.gif)
 
-如果你仅仅只需要迭代或枚举每一个数据项并可视化进度,你可以尝试 `track_iter_progress` 。
+如果你仅仅需要迭代或枚举每一个数据项并可视化进度,你可以尝试 `track_iter_progress` 。
 
 ```python
 import mmcv
