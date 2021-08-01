@@ -1,15 +1,14 @@
-## Utils
+## 辅助函数
 
-### ProgressBar
+### 进度条
 
-If you want to apply a method to a list of items and track the progress, `track_progress`
-is a good choice. It will display a progress bar to tell the progress and ETA.
+如果你想用一个函数来批处理一组数据并跟踪进度， `track_progress` 可能可以满足你的需求。它能以进度条的形式展示进度，以及显示剩余时间。（内部实现为for循环）
 
 ```python
 import mmcv
 
 def func(item):
-    # do something
+    # 处理单项数据的操作
     pass
 
 tasks = [item_1, item_2, ..., item_n]
@@ -17,11 +16,10 @@ tasks = [item_1, item_2, ..., item_n]
 mmcv.track_progress(func, tasks)
 ```
 
-The output is like the following.
+输出如下动图所示。
 ![progress](../_static/progress.gif)
 
-There is another method `track_parallel_progress`, which wraps multiprocessing and
-progress visualization.
+如果你需要多线程来处理数据，你可以尝试 `track_parallel_progress` 。
 
 ```python
 mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
@@ -29,8 +27,7 @@ mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 
 ![progress](../_static/parallel_progress.gif)
 
-If you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
-is a good choice. It will display a progress bar to tell the progress and ETA.
+如果你仅仅只需要迭代或枚举每一个数据项并可视化进度,你可以尝试 `track_iter_progress` 。
 
 ```python
 import mmcv
@@ -47,9 +44,9 @@ for i, task in enumerate(mmcv.track_iter_progress(tasks)):
     print(task)
 ```
 
-### Timer
+### 计时器
 
-It is convenient to compute the runtime of a code block with `Timer`.
+`Timer` 能很方便地计算代码块的执行时间。
 
 ```python
 import time
@@ -59,9 +56,8 @@ with mmcv.Timer():
     time.sleep(1)
 ```
 
-or try with `since_start()` and `since_last_check()`. This former can
-return the runtime since the timer starts and the latter will return the time
-since the last time checked.
+或者尝试 `since_start()` 和 `since_last_check()`. 前者返回计时器启动后运行时长，后者返回最近一次查看计时器后运行时长。
+
 
 ```python
 timer = mmcv.Timer()
