@@ -47,9 +47,6 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
     """Optimizer Hook implements multi-iters gradient cumulating.
 
     Args:
-        grad_clip (dict, optional): Parameters passed to
-            `torch.nn.utils.clip_grad_norm_`, and if None, disable grad clip.
-            Defaults to None.
         cumulative_iters (int, optional): Num of gradient cumulative iters.
             The optimizer will step every `cumulative_iters` iters.
             Defaults to 1.
@@ -64,8 +61,8 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         >>> optim_hook = OptimizerHook()
     """
 
-    def __init__(self, grad_clip=None, cumulative_iters=1):
-        super(GradientCumulativeOptimizerHook, self).__init__(grad_clip)
+    def __init__(self, cumulative_iters=1, **kwargs):
+        super(GradientCumulativeOptimizerHook, self).__init__(**kwargs)
 
         assert isinstance(cumulative_iters, int) and cumulative_iters > 0, \
             f'cumulative_iters only accepts positive int, but got ' \
