@@ -4,8 +4,6 @@ import re
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
-from packaging.version import parse
-
 EXT_TYPE = ''
 try:
     import torch
@@ -223,6 +221,7 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         is_rocm_pytorch = False
+        from packaging.version import parse
         if parse(torch.__version__) >= parse('1.5'):
             from torch.utils.cpp_extension import ROCM_HOME
             is_rocm_pytorch = True if ((torch.version.hip is not None) and
