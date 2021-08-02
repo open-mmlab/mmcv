@@ -11,8 +11,9 @@ from .epoch_based_runner import EpochBasedRunner, Runner
 from .fp16_utils import LossScaler, auto_fp16, force_fp32, wrap_fp16_model
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
                     DistSamplerSeedHook, DvcliveLoggerHook, EMAHook, EvalHook,
-                    Fp16OptimizerHook, GradientCumulativeOptimizerHook, Hook,
-                    IterTimerHook, LoggerHook, LrUpdaterHook, MlflowLoggerHook,
+                    Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
+                    GradientCumulativeOptimizerHook, Hook, IterTimerHook,
+                    LoggerHook, LrUpdaterHook, MlflowLoggerHook,
                     NeptuneLoggerHook, OptimizerHook, PaviLoggerHook,
                     SyncBuffersHook, TensorboardLoggerHook, TextLoggerHook,
                     WandbLoggerHook)
@@ -40,5 +41,6 @@ __all__ = [
     'SyncBuffersHook', 'EMAHook', 'build_runner', 'RUNNERS', 'allreduce_grads',
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
-    'ModuleList', 'GradientCumulativeOptimizerHook'
+    'ModuleList', 'GradientCumulativeOptimizerHook',
+    'GradientCumulativeFp16OptimizerHook'
 ]
