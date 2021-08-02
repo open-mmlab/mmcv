@@ -3,5 +3,4 @@ numpy
 Pillow
 pyyaml
 regex;sys_platform=='win32'
-setuptools>=52
 yapf

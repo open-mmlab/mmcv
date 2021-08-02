@@ -1,7 +1,8 @@
 import os
 import subprocess
 import warnings
-from pkg_resources import parse_version
+
+from packaging.version import parse
 
 
 def digit_version(version_str: str, length: int = 4):
@@ -18,7 +19,7 @@ def digit_version(version_str: str, length: int = 4):
         tuple[int]: The version info in digits (integers).
     """
     assert 'parrots' not in version_str
-    version = parse_version(version_str)
+    version = parse(version_str)
     assert version.release, f'failed to parse version {version_str}'
     release = list(version.release)
     release = release[:length]
