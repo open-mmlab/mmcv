@@ -82,7 +82,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         return False
 
     def _init(self, runner):
-        if runner.iter % self.cumulative_iters > 0:
+        if runner.iter % self.cumulative_iters != 0:
             runner.logger.warning(
                 'Resume iter number is not divisible by cumulative_iters in '
                 'GradientCumulativeOptimizerHook, which means the gradient of '
