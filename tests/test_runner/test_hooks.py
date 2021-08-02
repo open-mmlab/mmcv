@@ -1281,6 +1281,7 @@ def test_gradient_cumulative_optimizer_hook():
         # cumulative_iters only accepts positive number
         GradientCumulativeOptimizerHook(cumulative_iters=-1)
 
+    # test epoch based runner
     data = torch.rand((6, 3))
     # optimize with cumulative_iters
     loader_1 = DataLoader(data, batch_size=1)
@@ -1296,6 +1297,34 @@ def test_gradient_cumulative_optimizer_hook():
     optimizer_hook = OptimizerHook(grad_clip=dict(max_norm=0.2))
     runner_2.register_hook(optimizer_hook)
     runner_2.run([loader_2], [('train', 1)])
+
+    # test optimizer works well
+    assert (runner_1.model.fc.weight < 1).all()
+    assert (runner_1.model.fc.bias < 1).all()
+    # test optimizer with cumulative_iters gets the same results
+    assert torch.allclose(runner_1.model.fc.weight, runner_2.model.fc.weight)
+    assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
+    shutil.rmtree(runner_1.work_dir)
+    shutil.rmtree(runner_2.work_dir)
+
+    # test iter based runner
+    data = torch.rand((8, 3))
+    # optimize with cumulative_iters
+    loader_1 = DataLoader(data, batch_size=1)
+    runner_1 = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    optimizer_hook = GradientCumulativeOptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    runner_1.register_hook(optimizer_hook)
+    runner_1.run([loader_1], [('train', 1)])
+
+    # optimize without cumulative_iters
+    loader_2_divisible = DataLoader(data[:6], batch_size=3)
+    loader_2_remainder = DataLoader(data[6:], batch_size=2)
+    runner_2 = build_toy_runner(dict(type='IterBasedRunner', max_iters=3))
+    optimizer_hook = OptimizerHook(grad_clip=dict(max_norm=0.2))
+    runner_2.register_hook(optimizer_hook)
+    runner_2.run([loader_2_divisible, loader_2_remainder], [('train', 2),
+                                                            ('train', 1)])
 
     # test optimizer works well
     assert (runner_1.model.fc.weight < 1).all()
