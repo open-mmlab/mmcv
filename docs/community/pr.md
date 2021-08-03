@@ -1,63 +1,80 @@
-## PR
-
+## Pull Request (PR)
+&nbsp;
 ### What is PR
 `PR` is the abbreviation of `Pull Request`. Here's the definition of `PR` in the [official document](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) of Github.
 
 > Pull requests let you tell others about changes you've pushed to a branch in a repository on GitHub. Once a pull request is opened, you can discuss and review the potential changes with collaborators and add follow-up commits before your changes are merged into the base branch.
 
+&nbsp;
 ### Basic Workflow
-1. Fork and pull the latest OpenMMLab repository
-2. Checkout a new branch for PR
+1. Get the most recent codebase
+2. Checkout a new branch from master branch
 3. Commit your changes
-4. Create a PR
+4. Push your changes and create a PR
+5. Discuss and review your code
+6. Merge your branch to the master branch
 
+&nbsp;
 ### Procedures in detail
-1. Fork the source OpenMMLab repository. Just click the **fork** button at the top right corner of Github page \
-![avatar](../_static/community/1.png)
+1. Get the most recent codebase
+    + When you work on your first PR
+        - Fork the source OpenMMLab repository. Just click the **fork** button at the top right corner of Github page
+        ![avatar](../_static/community/1.png)
 
-2. Clone forked repository to local
-```bash
-git clone git@github.com:XXX/mmcv.git
-```
+        - Clone forked repository to local
+            ```bash
+            git clone git@github.com:XXX/mmcv.git
+            ```
+        
+        - Add source repository to upstream
+            ```bash
+            git remote add upstream git@github.com:open-mmlab/mmcv
+            ```
+    
+    + After your first PR
+       - Pull latest master branch of source repository
+            ```bash
+            git pull upstream master
+            ```
 
-3. Add source repository to upstream
-```bash
-git remote add upstream git@github.com:open-mmlab/mmcv
-```
+2. Checkout a new branch from master branch
+    ```bash
+    git checkout -b branchname
+    ```
 
-4. Pull latest master branch of source repository
-```bash
-git pull upstream master
-```
+    NOTE: To make commit history clear, we strongly recommend you checkout master branch befor create a new branch.
 
-5. Checkout a new branch for PR
-```bash
-git checkout -b branchname
-# coding
-git add [files]
-git commit -m 'messages'
-```
+3. Commit your changes
+    ```bash
+    # coding
+    git add [files]
+    git commit -m 'messages'
+    ```
 
-6. Push your changes to forked repository
-```bash
-git push origin branchname
-```
+4. Push your changes to forked repository and create a PR
+    + Push the branch to your forked remote repository 
+        ```bash
+        git push origin branchname
+        ```
 
-7. Create a PR
-![avatar](../_static/community/2.png)
+    + Create a PR
+    ![avatar](../_static/community/2.png)
 
-8. Revise PR message template to describe the your motivation and modifications made in this PR
-9. After creating a pull request, you can ask a specific person to review the changes you've proposed
-![avatar](../_static/community/3.png)
+    + Revise PR message template to describe your motivation and modifications made in this PR. You also can link the related issue to the PR manually in the PR message (For more information checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
+    
+5. Discuss and review your code
+   + After creating a pull request, you can ask a specific person to review the changes you've proposed
+    ![avatar](../_static/community/3.png)
+    
+    + Modify your codes according to reviewers' suggestions, and then push your changes
+    
+6.  Merge your branch to the master branch and delete the branch 
+    ```bash
+    git branch -d branchname # delete local branch
+    git push origin --delete branchname # delete remote branch
+    ```
 
-10. Associate related issues and pull requests with a milestone
-11. Modify your codes according to reviewer's suggestions, and then push your changes
-12. Delete the branch after PR merged
-```bash
-git branch -d branchname # delete local branch
-git push origin --delete branchname # delete remote branch
-```
-
+&nbsp;
 ### PR Specs
 1. Use [pre-commit](https://pre-commit.com) hook to avoid issues of code style
 2. One short-time branch should be matched with only one PR

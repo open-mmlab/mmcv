@@ -1,54 +1,80 @@
 ## 拉取请求
 
+&nbsp;
 ### 什么是拉取请求？
 `拉取请求` (Pull Request), [GitHub 官方文档](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)定义如下。
 
 >拉取请求是一种通知机制。你修改了他人的代码，将你的修改通知原来作者，希望他合并你的修改。
 
-### 基本的工作流，如下：
-1. 复刻并拉取最新的 OpenMMLab 代码库
-2. 新建并检出（checkout）一个新的分支进行开发
+&nbsp;
+### 基本的工作流：
+1. 获取最新的代码库
+2. 从主分支创建最新的分支进行开发
 3. 提交修改
-4. 创建一个`拉取请求`
+4. 推送你的修改并创建一个`拉取请求`
+5. 讨论、审核代码
+6. 将开发分支合并道主分支
 
+&nbsp;
 ### 具体步骤
-1. 复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可。 \
-![avatar](../_static/community/1.png)
-2. 克隆复刻的代码库到本地
-```bash
-git clone git@github.com:XXX/mmcv.git
-```
-3. 添加原代码库为上游代码库
-```bash
-git remote add upstream git@github.com:open-mmlab/mmcv
-```
-4. 拉取最新的原代码库的主分支
-```bash
-git pull upstream master
-```
-5. 新建并检出一个新的分支，进行开发
-```bash
-git checkout -b branchname
-# coding
-git add [files]
-git commit -m 'messages'
-```
-6. 推送到复刻的代码库
-```bash
-git push origin branchname
-```
-7. 创建一个`拉取请求`
-![avatar](../_static/community/2.png)
-8. 修改`拉取请求`信息模板，描述修改原因和修改内容。
-9. 创建`拉取请求`时，可以关联给相关人员进行 review
-![avatar](../_static/community/3.png)
-10. 关联相关的`议题` (issue) 和`拉取请求`
-11. 根据 reviewer 的意见修改代码，并推送修改
-12. `拉取请求`合并之后删除该分支
+1. 获取最新的代码库
+    + 当你第一次提 PR 时
+        - 复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
+        ![avatar](../_static/community/1.png)
+       
+        - 克隆复刻的代码库到本地
+            ```bash
+            git clone git@github.com:XXX/mmcv.git
+            ```
+       
+        - 添加原代码库为上游代码库
+            ```bash
+            git remote add upstream git@github.com:open-mmlab/mmcv
+            ```
+    + 从第二个 PR 起
+       - 拉取最新的原代码库的主分支
+            ```bash
+            git pull upstream master
+            ```
+
+2. 从主分支创建一个新的开发分支
+    ```bash
+    git checkout -b branchname
+    ```
+    注意：为了保证提交历史清晰可读，我们强烈推荐您先检出主分支 (master)，再创建新的分支。
+
+3. 提交你的修改
+    ```
+    # coding
+
+    git add [files]
+    git commit -m 'messages'
+    ```
+
+4. 推送你的修改到复刻的代码库，并创建一个`拉取请求`
+    + 推送当前分支到远端复刻的代码库
+        ```bash
+        git push origin branchname
+        ```
+
+    + 创建一个`拉取请求`
+    ![avatar](../_static/community/2.png)
+
+    + 修改`拉取请求`信息模板，描述修改原因和修改内容。还可以在 PR 描述中，手动关联到相关的`议题` (issue),（更多细节，请参考[官方文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)）。
+
+5. 讨论并评审你的代码
+    + 创建`拉取请求`时，可以关联给相关人员进行评审
+    ![avatar](../_static/community/3.png)
+    
+    + 根据评审人员的意见修改代码，并推送修改
+
+6.  `拉取请求`合并之后删除该分支
 ```bash
 git branch -d branchname # delete local branch
 git push origin --delete branchname # delete remote branch
 ```
+
+&nbsp;
 ### PR 规范
 1. 使用 [pre-commit hook](https://pre-commit.com)，尽量减少代码风格相关问题
 2. 一个PR对应一个短期分支
