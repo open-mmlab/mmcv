@@ -51,7 +51,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'recommonmark',
     'sphinx.ext.autosectionlabel',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'sphinx.ext.imgconverter'
 ]  # yapf: disable
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
