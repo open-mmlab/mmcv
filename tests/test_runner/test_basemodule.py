@@ -125,6 +125,7 @@ def test_initilization_info_logger():
     # create a logger
     get_logger('init_logger', log_file=log_file)
     assert not hasattr(model, '_params_init_info')
+    assert not hasattr(model, 'update_init_info')
     model.init_weights()
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')

@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from mmcv.runner.base_module import update_init_info
 from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 
 INITIALIZERS = Registry('initializer')
@@ -157,8 +156,8 @@ class ConstantInit(BaseInit):
                     constant_init(m, self.val, self.bias)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: val={self.val}, bias={self.bias}'
@@ -200,8 +199,8 @@ class XavierInit(BaseInit):
                     xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: gain={self.gain}, ' \
@@ -243,8 +242,8 @@ class NormalInit(BaseInit):
                     normal_init(m, self.mean, self.std, self.bias)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: mean={self.mean},' \
@@ -298,8 +297,8 @@ class TruncNormalInit(BaseInit):
                                       self.bias)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: a={self.a}, b={self.b},' \
@@ -341,8 +340,8 @@ class UniformInit(BaseInit):
                     uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: a={self.a},' \
@@ -403,8 +402,8 @@ class KaimingInit(BaseInit):
                                  self.bias, self.distribution)
 
         module.apply(init)
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: a={self.a}, mode={self.mode}, ' \
@@ -469,8 +468,8 @@ class PretrainedInit(object):
                 self.prefix, self.checkpoint, map_location=self.map_location)
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
-        if hasattr(module, '_params_init_info'):
-            update_init_info(module, init_info=self._get_init_info())
+        if hasattr(module, '_update_init_info'):
+            module._update_init_info(init_info=self._get_init_info())
 
     def _get_init_info(self):
         info = f'{self.__class__.__name__}: load from {self.checkpoint}'
