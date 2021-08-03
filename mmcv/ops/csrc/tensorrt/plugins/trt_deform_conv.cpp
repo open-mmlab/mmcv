@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_deform_conv.hpp"
 
 #include <assert.h>

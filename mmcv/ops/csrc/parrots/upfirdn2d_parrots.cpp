@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #include <torch/extension.h>
 
 #include <parrots/compute/aten.hpp>

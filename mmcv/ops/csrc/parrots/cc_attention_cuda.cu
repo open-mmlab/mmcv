@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 // Modified from
 // https://github.com/LikeLy-Journey/SegmenTron/blob/master/segmentron/modules/csrc/criss_cross_attention/ca_cuda.cu
 

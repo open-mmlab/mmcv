@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef SOFTMAX_FOCAL_LOSS_CUDA_KERNEL_CUH
 #define SOFTMAX_FOCAL_LOSS_CUDA_KERNEL_CUH
 

@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef SYNCBN_CUDA_KERNEL_CUH
 #define SYNCBN_CUDA_KERNEL_CUH
 

@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ORT_MMCV_UTILS_H
 #define ORT_MMCV_UTILS_H
 #include <onnxruntime_cxx_api.h>

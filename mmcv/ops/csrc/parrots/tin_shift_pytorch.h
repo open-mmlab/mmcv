@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef TIN_SHIFT_PYTORCH_H
 #define TIN_SHIFT_PYTORCH_H
 #include <torch/extension.h>

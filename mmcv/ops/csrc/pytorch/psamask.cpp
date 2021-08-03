@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 // Modified from
 // https://github.com/hszhao/semseg/blob/master/lib/psa/src
 #include "pytorch_cpp_helper.hpp"

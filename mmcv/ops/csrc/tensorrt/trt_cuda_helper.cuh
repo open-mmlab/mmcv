@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef TRT_CUDA_HELPER_HPP
 #define TRT_CUDA_HELPER_HPP
 #include <cublas_v2.h>

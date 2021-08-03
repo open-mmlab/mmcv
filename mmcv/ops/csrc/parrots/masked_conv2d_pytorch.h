@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef MASKED_CONV2D_PYTORCH_H
 #define MASKED_CONV2D_PYTORCH_H
 #include <torch/extension.h>

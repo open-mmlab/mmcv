@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ONNXRUNTIME_ROI_ALIGN_ROTATED_H
 #define ONNXRUNTIME_ROI_ALIGN_ROTATED_H
 

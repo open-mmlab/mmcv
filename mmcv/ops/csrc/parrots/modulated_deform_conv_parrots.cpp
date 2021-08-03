@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>

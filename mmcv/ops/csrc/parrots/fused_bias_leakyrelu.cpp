@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 // Modified from
 // from
 // https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_bias_act.cpp

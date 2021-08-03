@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #include "carafe_naive_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 

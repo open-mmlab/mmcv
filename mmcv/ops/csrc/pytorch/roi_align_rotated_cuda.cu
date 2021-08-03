@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cuda_helper.hpp"
 #include "roi_align_rotated_cuda_kernel.cuh"
 

@@ -1,4 +1,4 @@
-// Copyright (c) Open-MMLab. All rights reserved.
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef MODULATED_DEFORM_CONV_PYTORCH_H
 #define MODULATED_DEFORM_CONV_PYTORCH_H
 #include <torch/extension.h>
