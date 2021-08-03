@@ -1,4 +1,5 @@
 ## Pull Request (PR)
+
 &nbsp;
 ### What is PR
 `PR` is the abbreviation of `Pull Request`. Here's the definition of `PR` in the [official document](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) of Github.
