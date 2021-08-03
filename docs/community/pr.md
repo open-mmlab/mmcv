@@ -61,7 +61,7 @@
     + Create a PR
     ![avatar](../_static/community/2.png)
 
-    + Revise PR message template to describe your motivation and modifications made in this PR. You also can link the related issue to the PR manually in the PR message (For more information checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
+    + Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
     
 5. Discuss and review your code
    + After creating a pull request, you can ask a specific person to review the changes you've proposed
