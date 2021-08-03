@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 from collections import defaultdict
-from distutils.version import LooseVersion
 from itertools import chain
 
 from torch.nn.utils import clip_grad
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 from ..dist_utils import allreduce_grads
 from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
@@ -44,7 +43,7 @@ class OptimizerHook(Hook):
 
 
 if (TORCH_VERSION != 'parrots'
-        and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
+        and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
 
     @HOOKS.register_module()
     class Fp16OptimizerHook(OptimizerHook):

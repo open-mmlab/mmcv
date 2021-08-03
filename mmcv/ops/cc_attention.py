@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd.function import once_differentiable
 
-from mmcv.cnn import Scale
+from mmcv.cnn import PLUGIN_LAYERS, Scale
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -67,6 +67,7 @@ ca_weight = CAWeightFunction.apply
 ca_map = CAMapFunction.apply
 
 
+@PLUGIN_LAYERS.register_module()
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module."""
 

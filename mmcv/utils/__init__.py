@@ -45,6 +45,7 @@ else:
         _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm, _ConvNd,
         _ConvTransposeMixin, _InstanceNorm, _MaxPoolNd, get_build_config)
     from .registry import Registry, build_from_cfg
+    from .trace import is_jit_tracing
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
         'print_log', 'is_str', 'iter_cast', 'list_cast', 'tuple_cast',
@@ -63,5 +64,5 @@ else:
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
-        'is_method_overridden'
+        'is_method_overridden', 'is_jit_tracing'
     ]

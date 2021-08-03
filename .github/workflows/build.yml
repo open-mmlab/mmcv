@@ -41,6 +41,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -48,7 +50,7 @@ jobs:
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
-          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py
+          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py --ignore=tests/test_utils/test_trace.py
 
   build_without_ops:
     runs-on: ubuntu-18.04
@@ -75,6 +77,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -118,6 +122,8 @@ jobs:
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -188,6 +194,8 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -258,6 +266,8 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -310,6 +320,8 @@ jobs:
         if: ${{matrix.torchvision == '0.4.2'}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build and install
         run: |
           rm -rf .eggs

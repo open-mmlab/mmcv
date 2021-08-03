@@ -60,9 +60,9 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sample_num > 0)
                              ? sample_num
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceil(roi_width / pooled_width);
+        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
@@ -148,9 +148,9 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sample_num > 0)
                              ? sample_num
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceil(roi_width / pooled_width);
+        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
