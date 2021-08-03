@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 #define SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 

@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef ONNXRUNTIME_GRIDSAMPLE_H
 #define ONNXRUNTIME_GRIDSAMPLE_H
 

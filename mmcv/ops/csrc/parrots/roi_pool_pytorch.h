@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef ROI_POOL_PYTORCH_H
 #define ROI_POOL_PYTORCH_H
 #include <torch/extension.h>

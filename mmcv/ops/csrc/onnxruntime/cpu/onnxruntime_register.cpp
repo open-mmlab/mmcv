@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include "onnxruntime_register.h"
 
 #include "corner_pool.h"

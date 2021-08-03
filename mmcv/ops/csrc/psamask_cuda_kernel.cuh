@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef PSAMASK_CUDA_KERNEL_CUH
 #define PSAMASK_CUDA_KERNEL_CUH
 

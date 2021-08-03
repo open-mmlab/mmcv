@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include "soft_nms.h"
 
 #include <assert.h>

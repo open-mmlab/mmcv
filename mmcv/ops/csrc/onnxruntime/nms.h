@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef ONNXRUNTIME_NMS_H
 #define ONNXRUNTIME_NMS_H
 

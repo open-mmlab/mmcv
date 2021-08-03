@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef DEFORM_ROI_POOL_CUDA_KERNEL_CUH
 #define DEFORM_ROI_POOL_CUDA_KERNEL_CUH
 

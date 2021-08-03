@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 // It is modified from https://github.com/whai362/PSENet
 #include <iostream>
 #include <queue>

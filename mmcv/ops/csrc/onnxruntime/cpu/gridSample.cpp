@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include <cmath>
 
 #include "../ort_mmcv_utils.h"

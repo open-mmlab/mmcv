@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include "corner_pool.h"
 
 #include "../ort_mmcv_utils.h"

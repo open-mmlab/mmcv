@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef CARAFE_NAIVE_CUDA_KERNEL_CUH
 #define CARAFE_NAIVE_CUDA_KERNEL_CUH
 

@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include <cublas_v2.h>
 
 #include "common_cuda_helper.hpp"

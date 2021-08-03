@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef TIN_SHIFT_CUDA_KERNEL_CUH
 #define TIN_SHIFT_CUDA_KERNEL_CUH
 

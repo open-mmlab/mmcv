@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef NMS_CUDA_KERNEL_CUH
 #define NMS_CUDA_KERNEL_CUH
 

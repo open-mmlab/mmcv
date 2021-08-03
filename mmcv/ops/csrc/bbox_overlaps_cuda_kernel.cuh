@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef BBOX_OVERLAPS_CUDA_KERNEL_CUH
 #define BBOX_OVERLAPS_CUDA_KERNEL_CUH
 

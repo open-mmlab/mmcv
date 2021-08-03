@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include "pytorch_cuda_helper.hpp"
 #include "tin_shift_cuda_kernel.cuh"
 

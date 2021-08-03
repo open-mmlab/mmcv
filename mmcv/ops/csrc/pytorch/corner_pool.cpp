@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 // Modified from
 // https://github.com/princeton-vl/CornerNet-Lite/tree/master/core/models/py_utils/_cpools/src
 #include "pytorch_cpp_helper.hpp"

@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef PSAMASK_PYTORCH_H
 #define PSAMASK_PYTORCH_H
 #include <torch/extension.h>

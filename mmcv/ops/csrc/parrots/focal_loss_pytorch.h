@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef FOCAL_LOSS_PYTORCH_H
 #define FOCAL_LOSS_PYTORCH_H
 #include <torch/extension.h>

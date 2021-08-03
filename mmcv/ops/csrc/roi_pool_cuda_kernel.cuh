@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #ifndef ROI_POOL_CUDA_KERNEL_CUH
 #define ROI_POOL_CUDA_KERNEL_CUH
 

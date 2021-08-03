@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 #include <assert.h>
 #include <cuda_fp16.h>
 

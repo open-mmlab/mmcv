@@ -1,3 +1,4 @@
+// Copyright (c) Open-MMLab. All rights reserved.
 // It is modified from https://github.com/WenmuZhou/PAN.pytorch
 
 #include "pytorch_cpp_helper.hpp"
