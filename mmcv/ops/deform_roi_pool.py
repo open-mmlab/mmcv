@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable

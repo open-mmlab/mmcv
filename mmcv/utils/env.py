@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 """This file holding some environment constant for sharing by other files."""
 
 import os.path as osp
