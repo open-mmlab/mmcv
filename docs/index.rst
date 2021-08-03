@@ -7,11 +7,11 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 2
 
    get_started.rst
-   deployment.rst
    understand_mmcv.rst
-   api.rst
+   deployment.rst
    faq.md
    community.rst
+   api.rst
 
 
 Indices and tables
