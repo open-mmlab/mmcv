@@ -35,6 +35,7 @@
     + After your first PR
        - Pull latest master branch of source repository
             ```bash
+            git checkout master
             git pull upstream master
             ```
 
@@ -80,12 +81,12 @@
 1. Use [pre-commit](https://pre-commit.com) hook to avoid issues of code style
 2. One short-time branch should be matched with only one PR
 3. Accomplish a detailed change in one PR. Avoid large PR
->- Bad: Support Faster R-CNN
->- Acceptable: Add a box head to Faster R-CNN
->- Good: Add a parameter to box head to support custom conv-layer number
+   >- Bad: Support Faster R-CNN
+   >- Acceptable: Add a box head to Faster R-CNN
+   >- Good: Add a parameter to box head to support custom conv-layer number
 4. Provide clear and significant commit message
 5. Provide clear and meaningful PR description
->- Task name should be clarified in title. The general format is: [Prefix] Short description of the PR (Suffix)
->- Prefix: add new feature [Feature], fix bug [Fix], related to documents [Docs], in developing [WIP] (which will not be reviewed temporarily)
->- Introduce main changes, results and influences on other modules in short description
->- Associate related issues and pull requests with a milestone
+   >- Task name should be clarified in title. The general format is: [Prefix] Short description of the PR (Suffix)
+   >- Prefix: add new feature [Feature], fix bug [Fix], related to documents [Docs], in developing [WIP] (which will not be reviewed temporarily)
+   >- Introduce main changes, results and influences on other modules in short description
+   >- Associate related issues and pull requests with a milestone

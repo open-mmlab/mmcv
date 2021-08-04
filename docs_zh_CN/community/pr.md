@@ -32,8 +32,9 @@
             git remote add upstream git@github.com:open-mmlab/mmcv
             ```
     + 从第二个 PR 起
-       - 拉取最新的原代码库的主分支
+       - 从最新的原代码库的主分支拉取更新
             ```bash
+            git checkout master
             git pull upstream master
             ```
 
@@ -44,9 +45,8 @@
     注意：为了保证提交历史清晰可读，我们强烈推荐您先检出主分支 (master)，再创建新的分支。
 
 3. 提交你的修改
-    ```
+    ```bash
     # coding
-
     git add [files]
     git commit -m 'messages'
     ```
@@ -79,12 +79,12 @@ git push origin --delete branchname # delete remote branch
 1. 使用 [pre-commit hook](https://pre-commit.com)，尽量减少代码风格相关问题
 2. 一个PR对应一个短期分支
 3. 粒度要细，一个PR只做一件事情，避免超大的PR
->- Bad:实现Faster R-CNN
->- Acceptable:给 Faster R-CNN 添加一个 box head
->- Good:给 box head 增加一个参数来支持自定义的 conv 层数
+    >- Bad:实现Faster R-CNN
+    >- Acceptable:给 Faster R-CNN 添加一个 box head
+    >- Good:给 box head 增加一个参数来支持自定义的 conv 层数
 4. 每次 Commit 时需要提供清晰且有意义 commit 信息
 5. 提供清晰且有意义的`拉取请求`描述
->- 标题写明白任务名称，一般格式:[Prefix] Short description of the pull request (Suffix)
->- prefix: 新增功能 [Feature], 修 bug [Fix], 文档相关 [Docs], 开发中 [WIP] (暂时不会被review)
->- 描述里介绍`拉取请求`的主要修改内容，结果，以及对其他部分的影响, 参考`拉取请求`模板
->- 关联相关的`议题` (issue) 和其他`拉取请求`
+    >- 标题写明白任务名称，一般格式:[Prefix] Short description of the pull request (Suffix)
+    >- prefix: 新增功能 [Feature], 修 bug [Fix], 文档相关 [Docs], 开发中 [WIP] (暂时不会被review)
+    >- 描述里介绍`拉取请求`的主要修改内容，结果，以及对其他部分的影响, 参考`拉取请求`模板
+    >- 关联相关的`议题` (issue) 和其他`拉取请求`
