@@ -1,13 +1,13 @@
 ## 拉取请求
 
-&nbsp;
 ### 什么是拉取请求？
+
 `拉取请求` (Pull Request), [GitHub 官方文档](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)定义如下。
 
 >拉取请求是一种通知机制。你修改了他人的代码，将你的修改通知原来作者，希望他合并你的修改。
 
-&nbsp;
 ### 基本的工作流：
+
 1. 获取最新的代码库
 2. 从主分支创建最新的分支进行开发
 3. 提交修改
@@ -15,8 +15,8 @@
 5. 讨论、审核代码
 6. 将开发分支合并道主分支
 
-&nbsp;
 ### 具体步骤
+
 1. 获取最新的代码库
     + 当你第一次提 PR 时
         - 复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
@@ -74,8 +74,8 @@ git branch -d branchname # delete local branch
 git push origin --delete branchname # delete remote branch
 ```
 
-&nbsp;
 ### PR 规范
+
 1. 使用 [pre-commit hook](https://pre-commit.com)，尽量减少代码风格相关问题
 2. 一个PR对应一个短期分支
 3. 粒度要细，一个PR只做一件事情，避免超大的PR

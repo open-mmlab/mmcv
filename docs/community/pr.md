@@ -1,13 +1,13 @@
 ## Pull Request (PR)
 
-&nbsp;
 ### What is PR
+
 `PR` is the abbreviation of `Pull Request`. Here's the definition of `PR` in the [official document](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) of Github.
 
 > Pull requests let you tell others about changes you've pushed to a branch in a repository on GitHub. Once a pull request is opened, you can discuss and review the potential changes with collaborators and add follow-up commits before your changes are merged into the base branch.
 
-&nbsp;
-### Basic Workflow
+## Basic Workflow
+
 1. Get the most recent codebase
 2. Checkout a new branch from master branch
 3. Commit your changes
@@ -15,11 +15,11 @@
 5. Discuss and review your code
 6. Merge your branch to the master branch
 
-&nbsp;
 ### Procedures in detail
+
 1. Get the most recent codebase
     + When you work on your first PR
-        - Fork the source OpenMMLab repository. Just click the **fork** button at the top right corner of Github page
+        - Fork the OpenMMLab repository: click the **fork** button at the top right corner of Github page
         ![avatar](../_static/community/1.png)
 
         - Clone forked repository to local
@@ -75,8 +75,8 @@
     git push origin --delete branchname # delete remote branch
     ```
 
-&nbsp;
 ### PR Specs
+
 1. Use [pre-commit](https://pre-commit.com) hook to avoid issues of code style
 2. One short-time branch should be matched with only one PR
 3. Accomplish a detailed change in one PR. Avoid large PR
