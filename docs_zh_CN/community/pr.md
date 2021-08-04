@@ -32,7 +32,7 @@
             git remote add upstream git@github.com:open-mmlab/mmcv
             ```
     + 从第二个 PR 起
-       - 从最新的原代码库的主分支拉取更新
+       - 检出本地代码库的主分支，然后从最新的原代码库的主分支拉取更新
             ```bash
             git checkout master
             git pull upstream master

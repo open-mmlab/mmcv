@@ -9,7 +9,7 @@
 ## Basic Workflow
 
 1. Get the most recent codebase
-2. Checkout a new branch from master branch
+2. Checkout a new branch from the master branch
 3. Commit your changes
 4. Push your changes and create a PR
 5. Discuss and review your code
@@ -33,18 +33,18 @@
             ```
     
     + After your first PR
-       - Pull latest master branch of source repository
+       - Checkout master branch of the local repository and pull the latest master branch of the source repository
             ```bash
             git checkout master
             git pull upstream master
             ```
 
-2. Checkout a new branch from master branch
+2. Checkout a new branch from the master branch
     ```bash
     git checkout -b branchname
     ```
 
-    NOTE: To make commit history clear, we strongly recommend you checkout master branch befor create a new branch.
+    NOTE: To make commit history clear, we strongly recommend you checkout the master branch before create a new branch.
 
 3. Commit your changes
     ```bash
@@ -53,7 +53,7 @@
     git commit -m 'messages'
     ```
 
-4. Push your changes to forked repository and create a PR
+4. Push your changes to the forked repository and create a PR
     + Push the branch to your forked remote repository 
         ```bash
         git push origin branchname
@@ -62,13 +62,13 @@
     + Create a PR
     ![avatar](../_static/community/2.png)
 
-    + Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
+    + Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information, checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
     
 5. Discuss and review your code
    + After creating a pull request, you can ask a specific person to review the changes you've proposed
     ![avatar](../_static/community/3.png)
     
-    + Modify your codes according to reviewers' suggestions, and then push your changes
+    + Modify your codes according to reviewers' suggestions and then push your changes
     
 6.  Merge your branch to the master branch and delete the branch 
     ```bash
