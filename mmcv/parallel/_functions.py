@@ -1,5 +1,6 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import torch
+from torch.cuda import comm
 from torch.nn.parallel._functions import _get_stream
 
 
@@ -16,16 +17,7 @@ def scatter(input, devices, streams=None):
         ]
         return outputs
     elif isinstance(input, torch.Tensor):
-        output = input.contiguous()
-        # TODO: copy to a pinned buffer first (if copying from CPU)
-        stream = streams[0] if output.numel() > 0 else None
-        if devices != [-1]:
-            with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
-                output = output.cuda(devices[0], non_blocking=True)
-        else:
-            # unsqueeze the first dimension thus the tensor's shape is the
-            # same as those scattered with GPU.
-            output = output.unsqueeze(0)
+        output = comm.scatter(input, devices, None, 0, streams)[0]
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')

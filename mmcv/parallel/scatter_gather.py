@@ -24,14 +24,7 @@ def scatter(inputs, target_gpus, dim=0):
             if obj.cpu_only:
                 return obj.data
             else:
-                data = obj.data
-                if isinstance(data, torch.Tensor):
-                    return OrigScatter.apply(target_gpus, None, dim, data)
-                elif isinstance(data, list):
-                    out = list(map(list, zip(*map(scatter_map, data))))[0]
-                    return out
-                else:
-                    raise Exception(f'Unknown type {type(data)}.')
+                return Scatter.forward(target_gpus, obj.data)
         if isinstance(obj, tuple) and len(obj) > 0:
             return list(zip(*map(scatter_map, obj)))
         if isinstance(obj, list) and len(obj) > 0:
