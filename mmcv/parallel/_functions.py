@@ -17,7 +17,12 @@ def scatter(input, devices, streams=None):
         ]
         return outputs
     elif isinstance(input, torch.Tensor):
-        output = comm.scatter(input, devices, None, 0, streams)[0]
+        if devices != [-1]:
+            output = comm.scatter(input, devices, None, 0, streams)[0]
+        else:
+            # unsqueeze the first dimension thus the tensor's shape is the
+            # same as those scattered with GPU.
+            output = input.contiguous().unsqueeze(0)
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')
