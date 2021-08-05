@@ -1,4 +1,4 @@
-# Csrc Structure
+# Code Structure of CUDA operators
 
 This folder contains all non-python code for MMCV custom ops. Please follow the same architecture if you want to add new ops.
 
