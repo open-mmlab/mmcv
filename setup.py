@@ -226,7 +226,7 @@ def get_extensions():
                                        (ROCM_HOME is not None)) else False
 
         project_dir = 'mmcv/ops/csrc/'
-        if is_rocm_pytorch:  # TODO
+        if is_rocm_pytorch:
             from torch.utils.hipify import hipify_python
 
             hipify_python.hipify(
