@@ -26,12 +26,12 @@
             ```bash
             git clone git@github.com:XXX/mmcv.git
             ```
-        
+
         - Add source repository to upstream
             ```bash
             git remote add upstream git@github.com:open-mmlab/mmcv
             ```
-    
+
     + After your first PR
        - Checkout master branch of the local repository and pull the latest master branch of the source repository
             ```bash
@@ -54,7 +54,7 @@
     ```
 
 4. Push your changes to the forked repository and create a PR
-    + Push the branch to your forked remote repository 
+    + Push the branch to your forked remote repository
         ```bash
         git push origin branchname
         ```
@@ -62,15 +62,15 @@
     + Create a PR
     ![avatar](../_static/community/2.png)
 
-    + Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information, checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)). 
-    
+    + Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information, checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
+
 5. Discuss and review your code
    + After creating a pull request, you can ask a specific person to review the changes you've proposed
     ![avatar](../_static/community/3.png)
-    
+
     + Modify your codes according to reviewers' suggestions and then push your changes
-    
-6.  Merge your branch to the master branch and delete the branch 
+
+6.  Merge your branch to the master branch and delete the branch
     ```bash
     git branch -d branchname # delete local branch
     git push origin --delete branchname # delete remote branch

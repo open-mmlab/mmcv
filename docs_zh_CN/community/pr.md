@@ -21,12 +21,12 @@
     + 当你第一次提 PR 时
         - 复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
         ![avatar](../_static/community/1.png)
-       
+
         - 克隆复刻的代码库到本地
             ```bash
             git clone git@github.com:XXX/mmcv.git
             ```
-       
+
         - 添加原代码库为上游代码库
             ```bash
             git remote add upstream git@github.com:open-mmlab/mmcv
@@ -65,7 +65,7 @@
 5. 讨论并评审你的代码
     + 创建`拉取请求`时，可以关联给相关人员进行评审
     ![avatar](../_static/community/3.png)
-    
+
     + 根据评审人员的意见修改代码，并推送修改
 
 6.  `拉取请求`合并之后删除该分支
