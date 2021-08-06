@@ -53,7 +53,7 @@
 
 重构之后，它的结构如下所示
 
-```folder
+```
 .
 ├── common
 │   ├── box_iou_rotated_utils.hpp

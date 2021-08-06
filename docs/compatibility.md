@@ -53,7 +53,7 @@ The original directory was organized as follows.
 
 After refactored, it is organized as follows.
 
-```folder
+```
 .
 ├── common
 │   ├── box_iou_rotated_utils.hpp
