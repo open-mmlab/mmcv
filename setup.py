@@ -221,11 +221,12 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         is_rocm_pytorch = False
-        from packaging.version import parse
-        if parse(torch.__version__) >= parse('1.5'):
+        try:
             from torch.utils.cpp_extension import ROCM_HOME
             is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                        (ROCM_HOME is not None)) else False
+        except ImportError:
+            pass
 
         this_dir = 'mmcv/ops/csrc/'
         if is_rocm_pytorch:
