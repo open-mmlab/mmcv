@@ -16,7 +16,7 @@ tasks = [item_1, item_2, ..., item_n]
 mmcv.track_progress(func, tasks)
 ```
 
-输出如下动图所示
+效果如下
 ![progress](../_static/progress.gif)
 
 如果你想可视化多进程任务的进度，你可以使用 `track_parallel_progress` 。
