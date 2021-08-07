@@ -30,6 +30,6 @@ def parse_version_info(version_str: str, length: int = 4) -> tuple:
     return tuple(release)
 
 
-version_info = tuple([int(x) for x in __version__.split('.')])
+version_info = tuple(int(x) for x in __version__.split('.')[:3])
 
 __all__ = ['__version__', 'version_info', 'parse_version_info']
