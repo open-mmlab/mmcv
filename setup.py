@@ -1,7 +1,7 @@
 import glob
 import os
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -214,20 +214,15 @@ def get_extensions():
     elif EXT_TYPE == 'pytorch':
         ext_name = 'mmcv._ext'
         from torch.utils.cpp_extension import CppExtension, CUDAExtension
+        from mmcv.utils import exist_rocm_home
 
         # prevent ninja from using too many resources
         os.environ.setdefault('MAX_JOBS', '4')
         define_macros = []
         extra_compile_args = {'cxx': []}
 
-        is_rocm_pytorch = False
-        if parse_version(torch.__version__) >= parse_version('1.5'):
-            from torch.utils.cpp_extension import ROCM_HOME
-            is_rocm_pytorch = True if ((torch.version.hip is not None) and
-                                       (ROCM_HOME is not None)) else False
-
         this_dir = 'mmcv/ops/csrc/'
-        if is_rocm_pytorch:
+        if exist_rocm_home():
             from torch.utils.hipify import hipify_python
 
             hipify_python.hipify(
