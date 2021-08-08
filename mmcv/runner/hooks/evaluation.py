@@ -455,6 +455,11 @@ class DistEvalHook(EvalHook):
             # the log has been printed, so it will not cause any problem.
             # more details at
             # https://github.com/open-mmlab/mmsegmentation/issues/694
+            if not self.by_epoch:
+                for hook in runner._hooks:
+                    if isinstance(hook, LoggerHook):
+                        hook.after_train_iter(runner)
+
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
