@@ -7,6 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
+from mmcv.runner import LoggerHook
 from mmcv.utils import is_seq_of
 from .hook import Hook
 
@@ -224,6 +225,20 @@ class EvalHook(Hook):
         if not self._should_evaluate(runner):
             return
 
+        # Because the priority of EvalHook is higher than LoggerHook, the
+        # training log and the evaluating log are mixed. Therefore,
+        # we need to dump the training log and clear it before evaluating logs
+        # is generated. In addition, this problem will only appear in
+        # `IterBasedRunner`, because `EpochBasedRunner` call
+        # `_do_evaluate` in `after_train_epoch` stage, and at this stage the
+        # log has been printed, so it will not cause any problem.
+        # more details at
+        # https://github.com/open-mmlab/mmsegmentation/issues/694
+        if not self.by_epoch:
+            for hook in runner._hooks:
+                if isinstance(hook, LoggerHook):
+                    hook.after_train_iter(runner)
+
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
@@ -431,6 +446,15 @@ class DistEvalHook(EvalHook):
             tmpdir=tmpdir,
             gpu_collect=self.gpu_collect)
         if runner.rank == 0:
+            # Because the priority of EvalHook is higher than LoggerHook, the
+            # training log and the evaluating log are mixed. Therefore,
+            # we need to dump the training log and clear it before evaluating
+            # logs is generated. In addition, this problem will only appear in
+            # `IterBasedRunner`, because `EpochBasedRunner` call
+            # `_do_evaluate` in `after_train_epoch` stage, and at this stage
+            # the log has been printed, so it will not cause any problem.
+            # more details at
+            # https://github.com/open-mmlab/mmsegmentation/issues/694
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
