@@ -227,11 +227,12 @@ class EvalHook(Hook):
 
         # Because the priority of EvalHook is higher than LoggerHook, the
         # training log and the evaluating log are mixed. Therefore,
-        # we need to dump the training log and clear it before evaluating logs
+        # we need to dump the training log and clear it before evaluating log
         # is generated. In addition, this problem will only appear in
-        # `IterBasedRunner`, because `EpochBasedRunner` call
+        # `IterBasedRunner` whose `self.by_epoch` is False, because
+        # `EpochBasedRunner` whose `self.by_epoch` is True calls
         # `_do_evaluate` in `after_train_epoch` stage, and at this stage the
-        # log has been printed, so it will not cause any problem.
+        # training log has been printed, so it will not cause any problem.
         # more details at
         # https://github.com/open-mmlab/mmsegmentation/issues/694
         if not self.by_epoch:
@@ -449,11 +450,12 @@ class DistEvalHook(EvalHook):
             # Because the priority of EvalHook is higher than LoggerHook, the
             # training log and the evaluating log are mixed. Therefore,
             # we need to dump the training log and clear it before evaluating
-            # logs is generated. In addition, this problem will only appear in
-            # `IterBasedRunner`, because `EpochBasedRunner` call
+            # log is generated. In addition, this problem will only appear in
+            # `IterBasedRunner` whose `self.by_epoch` is False, because
+            # `EpochBasedRunner` whose `self.by_epoch` is True calls
             # `_do_evaluate` in `after_train_epoch` stage, and at this stage
-            # the log has been printed, so it will not cause any problem.
-            # more details at
+            # the training log has been printed, so it will not cause any
+            # problem. more details at
             # https://github.com/open-mmlab/mmsegmentation/issues/694
             if not self.by_epoch:
                 for hook in runner._hooks:
