@@ -5,23 +5,23 @@ import torch
 TORCH_VERSION = torch.__version__
 
 
-def exist_rocm_home():
-    is_rocm_pytorch = False
+def is_rocm_pytorch() -> bool:
+    is_rocm = False
     if TORCH_VERSION != 'parrots':
         try:
             from torch.utils.cpp_extension import ROCM_HOME
-            is_rocm_pytorch = True if ((torch.version.hip is not None) and
-                                       (ROCM_HOME is not None)) else False
+            is_rocm = True if ((torch.version.hip is not None) and
+                               (ROCM_HOME is not None)) else False
         except ImportError:
             pass
-    return is_rocm_pytorch
+    return is_rocm
 
 
 def _get_cuda_home():
     if TORCH_VERSION == 'parrots':
         from parrots.utils.build_extension import CUDA_HOME
     else:
-        if exist_rocm_home():
+        if is_rocm_pytorch():
             from torch.utils.cpp_extension import ROCM_HOME
             CUDA_HOME = ROCM_HOME
         else:
