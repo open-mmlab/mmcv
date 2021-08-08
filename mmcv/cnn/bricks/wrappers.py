@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 r"""Modified from https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/wrappers.py  # noqa: E501
 
 Wrap some nn modules to support empty tensor input. Currently, these wrappers

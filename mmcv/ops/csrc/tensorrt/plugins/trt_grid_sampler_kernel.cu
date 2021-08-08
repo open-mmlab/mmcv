@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 // modified from
 // https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cuh
 // and

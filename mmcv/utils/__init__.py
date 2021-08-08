@@ -1,5 +1,5 @@
 # flake8: noqa
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
                    import_modules_from_strings, is_list_of,
