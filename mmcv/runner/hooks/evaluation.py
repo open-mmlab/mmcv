@@ -226,7 +226,7 @@ class EvalHook(Hook):
             for hook in runner._hooks:
                 if isinstance(hook, LoggerHook):
                     hook.after_train_iter(runner)
-                    runner.log_buffer.clear()
+            runner.log_buffer.clear()
 
             self._do_evaluate(runner)
 
