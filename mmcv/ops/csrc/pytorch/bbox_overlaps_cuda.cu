@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "bbox_overlaps_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 

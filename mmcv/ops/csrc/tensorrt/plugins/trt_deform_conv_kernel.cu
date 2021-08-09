@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <cuda_fp16.h>
 
 #include "common_cuda_helper.hpp"

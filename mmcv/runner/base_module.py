@@ -1,6 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import copy
-import types
 import warnings
 from abc import ABCMeta
 from collections import defaultdict
@@ -10,26 +9,6 @@ import torch.nn as nn
 
 from mmcv.runner.dist_utils import master_only
 from mmcv.utils.logging import get_logger, logger_initialized, print_log
-
-
-def update_init_info(module, *, init_info):
-    """Update the `_params_init_info` in the module if the value of parameters
-    are changed.
-
-    Args:
-        module (obj:`nn.Module`): The module of PyTorch with a user-defined
-            attribute `_params_init_info` which records the initialization
-            information.
-        init_info (str): The string that describes the initialization.
-    """
-    assert hasattr(module, '_params_init_info'), f'Can not find ' \
-                                                 f'`_params_init_info` in' \
-                                                 f'{module} '
-    for param in module.parameters():
-        mean_value = param.data.mean()
-        if module._params_init_info[param]['tmp_mean_value'] != mean_value:
-            module._params_init_info[param]['init_info'] = init_info
-            module._params_init_info[param]['tmp_mean_value'] = mean_value
 
 
 class BaseModule(nn.Module, metaclass=ABCMeta):
@@ -111,9 +90,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             # modified at any level of the model.
             for sub_module in self.modules():
                 sub_module._params_init_info = self._params_init_info
-                # bind `update_init_info` to all `nn.Module`
-                sub_module._update_init_info = types.MethodType(
-                    update_init_info, sub_module)
 
         # Get the initialized logger, if not exist,
         # create a logger named `mmcv`
@@ -121,6 +97,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         logger_name = logger_names[0] if logger_names else 'mmcv'
 
         from ..cnn import initialize
+        from ..cnn.utils.weight_init import update_init_info
         module_name = self.__class__.__name__
         if not self._is_init:
             if self.init_cfg:
@@ -156,7 +133,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
             for sub_module in self.modules():
                 del sub_module._params_init_info
-                del sub_module._update_init_info
 
     @master_only
     def _dump_init_info(self, logger_name):

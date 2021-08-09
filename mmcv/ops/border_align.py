@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # modified from
 # https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
