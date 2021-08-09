@@ -212,7 +212,21 @@ class EvalHook(Hook):
 
     def after_train_iter(self, runner):
         """Called after every training iter to evaluate the results."""
-        if not self.by_epoch:
+        if not self.by_epoch and self._should_evaluate(runner):
+            # Because the priority of EvalHook is higher than LoggerHook, the
+            # training log and the evaluating log are mixed. Therefore,
+            # we need to dump the training log and clear it before evaluating
+            # log is generated. In addition, this problem will only appear in
+            # `IterBasedRunner` whose `self.by_epoch` is False, because
+            # `EpochBasedRunner` whose `self.by_epoch` is True calls
+            # `_do_evaluate` in `after_train_epoch` stage, and at this stage
+            # the training log has been printed, so it will not cause any
+            # problem. more details at
+            # https://github.com/open-mmlab/mmsegmentation/issues/694
+            for hook in runner._hooks:
+                if isinstance(hook, LoggerHook):
+                    hook.after_train_iter(runner)
+
             self._do_evaluate(runner)
 
     def after_train_epoch(self, runner):
@@ -224,21 +238,6 @@ class EvalHook(Hook):
         """perform evaluation and save ckpt."""
         if not self._should_evaluate(runner):
             return
-
-        # Because the priority of EvalHook is higher than LoggerHook, the
-        # training log and the evaluating log are mixed. Therefore,
-        # we need to dump the training log and clear it before evaluating log
-        # is generated. In addition, this problem will only appear in
-        # `IterBasedRunner` whose `self.by_epoch` is False, because
-        # `EpochBasedRunner` whose `self.by_epoch` is True calls
-        # `_do_evaluate` in `after_train_epoch` stage, and at this stage the
-        # training log has been printed, so it will not cause any problem.
-        # more details at
-        # https://github.com/open-mmlab/mmsegmentation/issues/694
-        if not self.by_epoch:
-            for hook in runner._hooks:
-                if isinstance(hook, LoggerHook):
-                    hook.after_train_iter(runner)
 
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
@@ -447,21 +446,6 @@ class DistEvalHook(EvalHook):
             tmpdir=tmpdir,
             gpu_collect=self.gpu_collect)
         if runner.rank == 0:
-            # Because the priority of EvalHook is higher than LoggerHook, the
-            # training log and the evaluating log are mixed. Therefore,
-            # we need to dump the training log and clear it before evaluating
-            # log is generated. In addition, this problem will only appear in
-            # `IterBasedRunner` whose `self.by_epoch` is False, because
-            # `EpochBasedRunner` whose `self.by_epoch` is True calls
-            # `_do_evaluate` in `after_train_epoch` stage, and at this stage
-            # the training log has been printed, so it will not cause any
-            # problem. more details at
-            # https://github.com/open-mmlab/mmsegmentation/issues/694
-            if not self.by_epoch:
-                for hook in runner._hooks:
-                    if isinstance(hook, LoggerHook):
-                        hook.after_train_iter(runner)
-
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
