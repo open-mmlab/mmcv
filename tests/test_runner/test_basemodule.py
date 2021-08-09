@@ -3,8 +3,8 @@ import tempfile
 import torch
 from torch import nn
 
+from mmcv.cnn.utils.weight_init import update_init_info
 from mmcv.runner import BaseModule, ModuleList, Sequential
-from mmcv.runner.base_module import update_init_info
 from mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
@@ -123,7 +123,7 @@ def test_initilization_info_logger():
     log_file = os.path.join(workdir, train_log)
     # create a logger
     get_logger('init_logger', log_file=log_file)
-    assert hasattr(model, '_params_init_info')
+    assert not hasattr(model, '_params_init_info')
     model.init_weights()
     # assert `_params_init_info` would be deleted after `init_weights`
     assert not hasattr(model, '_params_init_info')
