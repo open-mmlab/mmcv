@@ -231,7 +231,7 @@ class EvalHook(Hook):
 
     def after_train_epoch(self, runner):
         """Called after every training epoch to evaluate the results."""
-        if self.by_epoch:
+        if self.by_epoch and self._should_evaluate(runner):
             self._do_evaluate(runner)
 
     def _do_evaluate(self, runner):
