@@ -236,9 +236,6 @@ class EvalHook(Hook):
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
-        if not self._should_evaluate(runner):
-            return
-
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
@@ -432,9 +429,6 @@ class DistEvalHook(EvalHook):
                               _BatchNorm) and module.track_running_stats:
                     dist.broadcast(module.running_var, 0)
                     dist.broadcast(module.running_mean, 0)
-
-        if not self._should_evaluate(runner):
-            return
 
         tmpdir = self.tmpdir
         if tmpdir is None:
