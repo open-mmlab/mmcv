@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .base_module import BaseModule, ModuleList, Sequential
 from .base_runner import BaseRunner
 from .builder import RUNNERS, build_runner

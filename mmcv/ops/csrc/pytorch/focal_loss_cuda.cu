@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cuda_helper.hpp"
 #include "sigmoid_focal_loss_cuda_kernel.cuh"
 #include "softmax_focal_loss_cuda_kernel.cuh"
