@@ -15,8 +15,9 @@
 #include <cuda_runtime.h>
 
 #include <THC/THCAtomics.cuh>
-#include <ms_deform_attn_cuda_kernel.cuh>
 #include <vector>
+
+#include "ms_deform_attn_cuda_kernel.cuh"
 
 template <typename scalar_t>
 void ms_deformable_im2col_cuda(cudaStream_t stream, const scalar_t *data_value,

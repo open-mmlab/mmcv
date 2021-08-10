@@ -4,7 +4,7 @@
 #include <ATen/ATen.h>
 #include <ATen/TensorUtils.h>
 
-#include "../pytorch_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
