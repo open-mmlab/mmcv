@@ -1,7 +1,7 @@
 import glob
 import os
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -220,10 +220,12 @@ def get_extensions():
         include_dirs = []
 
         is_rocm_pytorch = False
-        if parse_version(torch.__version__) >= parse_version('1.5'):
+        try:
             from torch.utils.cpp_extension import ROCM_HOME
             is_rocm_pytorch = True if ((torch.version.hip is not None) and
                                        (ROCM_HOME is not None)) else False
+        except ImportError:
+            pass
 
         project_dir = 'mmcv/ops/csrc/'
         if is_rocm_pytorch:

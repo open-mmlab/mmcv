@@ -6,5 +6,4 @@ onnxruntime==1.4.0
 pytest
 PyTurboJPEG
 scipy
-setuptools>=52
 tiffile
