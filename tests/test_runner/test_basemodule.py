@@ -143,6 +143,80 @@ def test_initilization_info_logger():
         if 'fc1.weight' in line:
             assert 'ConstantInit' in line
 
+    # test corner case
+
+    class OverloadInitConvFc(nn.Conv2d, BaseModule):
+
+        def __init__(self, *args, **kwargs):
+            super(OverloadInitConvFc, self).__init__(*args, **kwargs)
+            self.conv1 = nn.Linear(1, 1)
+
+        def init_weights(self):
+            for p in self.parameters():
+                with torch.no_grad():
+                    p.fill_(1)
+
+    class CheckLoggerModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super(CheckLoggerModel, self).__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv2 = OverloadInitConvFc(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    class TopLevelModule(BaseModule):
+
+        def __init__(self, init_cfg=None, checklog_init_cfg=None):
+            super(TopLevelModule, self).__init__(init_cfg)
+            self.module1 = CheckLoggerModel(checklog_init_cfg)
+            self.module2 = OverloadInitConvFc(1, 1, 1, 1)
+
+    checklog_init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='conv3', std=0.01, bias_prob=0.01)),
+        dict(type='Constant', layer='Linear', val=0., bias=1.)
+    ]
+
+    top_level_init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='module2', std=0.01, bias_prob=0.01))
+    ]
+
+    model = TopLevelModule(
+        init_cfg=top_level_init_cfg, checklog_init_cfg=checklog_init_cfg)
+
+    model.module1.init_weights()
+    model.module2.init_weights()
+    model.init_weights()
+    model.module1.init_weights()
+    model.module2.init_weights()
+
+    assert not hasattr(model, '_params_init_info')
+    model.init_weights()
+    # assert `_params_init_info` would be deleted after `init_weights`
+    assert not hasattr(model, '_params_init_info')
+    # assert initialization information has been dumped
+    assert os.path.exists(log_file)
+
+    with open(log_file) as f:
+        lines = f.readlines()
+    for line in lines:
+        print(line)
+    # check initialization information is right
+    for line in lines:
+        if 'TopLevelModule' in line and 'init_cfg' not in line:
+            # have been set init_flag
+            assert 'the same' in line
+
 
 def test_update_init_info():
 
