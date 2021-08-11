@@ -11,23 +11,6 @@ from mmcv.runner.dist_utils import master_only
 from mmcv.utils.logging import get_logger, logger_initialized, print_log
 
 
-def update_init_info(module, *, init_info):
-    """Update the `_params_init_info` in the module if the value of parameters
-    are changed.
-
-    Args:
-        module (obj:`nn.Module`): The module of PyTorch with a user-defined
-            attribute `_params_init_info` which records the initialization
-            information.
-        init_info (str): The string that describes the initialization.
-    """
-    for param in module.parameters():
-        mean_value = param.data.mean()
-        if module._params_init_info[param]['tmp_mean_value'] != mean_value:
-            module._params_init_info[param]['init_info'] = init_info
-            module._params_init_info[param]['tmp_mean_value'] = mean_value
-
-
 class BaseModule(nn.Module, metaclass=ABCMeta):
     """Base module for all modules in openmmlab.
 
@@ -36,11 +19,12 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     ``torch.nn.Module``, ``BaseModule`` mainly adds three attributes.
 
         - ``init_cfg``: the config to control the initialization.
-        - ``_params_init_info``: Used to track the parameter
-            initialization information.
         - ``init_weights``: The function of parameter
             initialization and recording initialization
             information.
+        - ``_params_init_info``: Used to track the parameter
+            initialization information. This attribute only
+            exists during executing the ``init_weights``.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.
@@ -59,17 +43,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         self.init_cfg = copy.deepcopy(init_cfg)
 
-        # The `_params_init_info` is used to record the initialization
-        # information of the parameters
-        # the key should be the obj:`nn.Parameter` of model and the value
-        # should be a dict containing
-        # - param_name (str): The name of parameter.
-        # - init_info (str): The string that describes the initialization.
-        # - tmp_mean_value (FloatTensor): The mean of the parameter,
-        #       which indicates whether the parameter has been modified.
-        # this attribute would be deleted after all parameters is initialized.
-        self._params_init_info = defaultdict(dict)
-
         # Backward compatibility in derived classes
         # if pretrained is not None:
         #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
@@ -83,15 +56,26 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     def init_weights(self):
         """Initialize the weights."""
 
+        is_top_level_module = False
         # check if it is top-level module
-        is_top_level_module = len(self._params_init_info) == 0
-        if is_top_level_module:
+        if not hasattr(self, '_params_init_info'):
+            # The `_params_init_info` is used to record the initialization
+            # information of the parameters
+            # the key should be the obj:`nn.Parameter` of model and the value
+            # should be a dict containing
+            # - init_info (str): The string that describes the initialization.
+            # - tmp_mean_value (FloatTensor): The mean of the parameter,
+            #       which indicates whether the parameter has been modified.
+            # this attribute would be deleted after all parameters
+            # is initialized.
+            self._params_init_info = defaultdict(dict)
+            is_top_level_module = True
+
             # Initialize the `_params_init_info`,
             # When detecting the `tmp_mean_value` of
             # the corresponding parameter is changed, update related
             # initialization information
             for name, param in self.named_parameters():
-                self._params_init_info[param]['param_name'] = name
                 self._params_init_info[param][
                     'init_info'] = f'The value is the same before and ' \
                                    f'after calling `init_weights` ' \
@@ -112,6 +96,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         logger_name = logger_names[0] if logger_names else 'mmcv'
 
         from ..cnn import initialize
+        from ..cnn.utils.weight_init import update_init_info
         module_name = self.__class__.__name__
         if not self._is_init:
             if self.init_cfg:
@@ -165,15 +150,17 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             if isinstance(handler, FileHandler):
                 handler.stream.write(
                     'Name of parameter - Initialization information\n')
-                for item in list(self._params_init_info.values()):
+                for name, param in self.named_parameters():
                     handler.stream.write(
-                        f"{item['param_name']} - {item['init_info']} \n")
+                        f'\n{name} - {param.shape}: '
+                        f"\n{self._params_init_info[param]['init_info']} \n")
                 handler.stream.flush()
                 with_file_handler = True
         if not with_file_handler:
-            for item in list(self._params_init_info.values()):
+            for name, param in self.named_parameters():
                 print_log(
-                    f"{item['param_name']} - {item['init_info']}",
+                    f'\n{name} - {param.shape}: '
+                    f"\n{self._params_init_info[param]['init_info']} \n ",
                     logger=logger_name)
 
     def __repr__(self):
