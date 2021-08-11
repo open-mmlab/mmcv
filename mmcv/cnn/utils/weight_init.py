@@ -30,7 +30,7 @@ def update_init_info(module, init_info):
 
         assert param in module._params_init_info, (
             f'Find a new :obj:`Parameter` '
-            f'named {name} during executing the '
+            f'named `{name}` during executing the '
             f'`init_weights` of '
             f'`{module.__class__.__name__}`. '
             f'Please do not add or '
