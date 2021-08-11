@@ -13,7 +13,7 @@ from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 INITIALIZERS = Registry('initializer')
 
 
-def update_init_info(module, *, init_info):
+def update_init_info(module, init_info):
     """Update the `_params_init_info` in the module if the value of parameters
     are changed.
 
@@ -27,18 +27,19 @@ def update_init_info(module, *, init_info):
         module,
         '_params_init_info'), f'Can not find `_params_init_info` in {module}'
     for name, param in module.named_parameters():
-        mean_value = param.data.mean()
 
-        # user add new parameter to the module during executing the
-        # `init_weights` of module
-        if param not in module._params_init_info:
-            new_param_info = f'Initialized by user-defined ' \
-                             f'`init_weights` in {module.__class__.__name__} '
-            module._params_init_info[param]['tmp_mean_value'] = mean_value
-            module._params_init_info[param]['init_info'] = new_param_info
+        assert param in module._params_init_info, (
+            f'Find a new :obj:`Parameter` '
+            f'named {name} during executing the '
+            f'`init_weights` of '
+            f'`{module.__class__.__name__}`. '
+            f'Please do not add or '
+            f'replace parameters during executing '
+            f'the `init_weights`. ')
 
         # The parameter has been changed during executing the
         # `init_weights` of module
+        mean_value = param.data.mean()
         if module._params_init_info[param]['tmp_mean_value'] != mean_value:
             module._params_init_info[param]['init_info'] = init_info
             module._params_init_info[param]['tmp_mean_value'] = mean_value

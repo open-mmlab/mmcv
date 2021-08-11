@@ -1,5 +1,6 @@
 import tempfile
 
+import pytest
 import torch
 from torch import nn
 
@@ -243,11 +244,8 @@ def test_update_init_info():
 
     # test assert for new parameters
     model.conv1.bias = nn.Parameter(torch.ones_like(model.conv1.bias))
-    update_init_info(model, init_info='fill_1')
-    for name, param in model.named_parameters():
-        if param is model.conv1.bias:
-            assert 'user-defined' in model._params_init_info[param][
-                'init_info']
+    with pytest.raises(AssertionError):
+        update_init_info(model, init_info=' ')
 
 
 def test_model_weight_init():
