@@ -108,7 +108,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     # prevent the parameters of
                     # the pre-trained model
                     # from being overwritten by
-                    # the `init_weights`module._params_init_info[param]
+                    # the `init_weights`
                     if self.init_cfg['type'] == 'Pretrained':
                         return
 
