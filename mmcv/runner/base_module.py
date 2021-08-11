@@ -19,11 +19,12 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     ``torch.nn.Module``, ``BaseModule`` mainly adds three attributes.
 
         - ``init_cfg``: the config to control the initialization.
-        - ``_params_init_info``: Used to track the parameter
-            initialization information.
         - ``init_weights``: The function of parameter
             initialization and recording initialization
             information.
+        - ``_params_init_info``: Used to track the parameter
+            initialization information. This attribute only
+            exists during executing the ``init_weights``.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.
@@ -62,7 +63,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             # information of the parameters
             # the key should be the obj:`nn.Parameter` of model and the value
             # should be a dict containing
-            # - param_name (str): The name of parameter.
             # - init_info (str): The string that describes the initialization.
             # - tmp_mean_value (FloatTensor): The mean of the parameter,
             #       which indicates whether the parameter has been modified.
@@ -76,7 +76,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             # the corresponding parameter is changed, update related
             # initialization information
             for name, param in self.named_parameters():
-                self._params_init_info[param]['param_name'] = name
                 self._params_init_info[param][
                     'init_info'] = f'The value is the same before and ' \
                                    f'after calling `init_weights` ' \
@@ -109,7 +108,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                     # prevent the parameters of
                     # the pre-trained model
                     # from being overwritten by
-                    # the `init_weights`
+                    # the `init_weights`module._params_init_info[param]
                     if self.init_cfg['type'] == 'Pretrained':
                         return
 
@@ -151,15 +150,17 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             if isinstance(handler, FileHandler):
                 handler.stream.write(
                     'Name of parameter - Initialization information\n')
-                for item in list(self._params_init_info.values()):
+                for name, param in self.named_parameters():
                     handler.stream.write(
-                        f"{item['param_name']} - {item['init_info']} \n")
+                        f'\n{name} - {param.shape}: '
+                        f"\n{self._params_init_info[param]['init_info']} \n")
                 handler.stream.flush()
                 with_file_handler = True
         if not with_file_handler:
-            for item in list(self._params_init_info.values()):
+            for name, param in self.named_parameters():
                 print_log(
-                    f"{item['param_name']} - {item['init_info']}",
+                    f'\n{name} - {param.shape}: '
+                    f"\n{self._params_init_info[param]['init_info']} \n ",
                     logger=logger_name)
 
     def __repr__(self):

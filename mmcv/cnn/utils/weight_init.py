@@ -26,8 +26,15 @@ def update_init_info(module, *, init_info):
     assert hasattr(
         module,
         '_params_init_info'), f'Can not find `_params_init_info` in {module}'
-    for param in module.parameters():
+    for name, param in module.named_parameters():
         mean_value = param.data.mean()
+
+        if param not in module._params_init_info:
+            new_param_info = f'Initialized by user-defined ' \
+                             f'`init_weights` in {module.__class__.__name__} '
+            module._params_init_info[param]['tmp_mean_value'] = mean_value
+            module._params_init_info[param]['init_info'] = new_param_info
+
         if module._params_init_info[param]['tmp_mean_value'] != mean_value:
             module._params_init_info[param]['init_info'] = init_info
             module._params_init_info[param]['tmp_mean_value'] = mean_value

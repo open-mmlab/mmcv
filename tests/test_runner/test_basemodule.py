@@ -3,6 +3,7 @@ import tempfile
 import torch
 from torch import nn
 
+import mmcv
 from mmcv.cnn.utils.weight_init import update_init_info
 from mmcv.runner import BaseModule, ModuleList, Sequential
 from mmcv.utils import Registry, build_from_cfg
@@ -130,18 +131,16 @@ def test_initilization_info_logger():
     # assert initialization information has been dumped
     assert os.path.exists(log_file)
 
-    with open(log_file) as f:
-        lines = f.readlines()
-    for line in lines:
-        print(line)
+    lines = mmcv.list_from_file(log_file)
+
     # check initialization information is right
-    for line in lines:
+    for i, line in enumerate(lines):
         if 'conv1.weight' in line:
-            assert 'NormalInit' in line
+            assert 'NormalInit' in lines[i + 1]
         if 'conv2.weight' in line:
-            assert 'OverloadInitConv' in line
+            assert 'OverloadInitConv' in lines[i + 1]
         if 'fc1.weight' in line:
-            assert 'ConstantInit' in line
+            assert 'ConstantInit' in lines[i + 1]
 
     # test corner case
 
@@ -207,12 +206,9 @@ def test_initilization_info_logger():
     # assert initialization information has been dumped
     assert os.path.exists(log_file)
 
-    with open(log_file) as f:
-        lines = f.readlines()
-    for line in lines:
-        print(line)
+    lines = mmcv.list_from_file(log_file)
     # check initialization information is right
-    for line in lines:
+    for i, line in enumerate(lines):
         if 'TopLevelModule' in line and 'init_cfg' not in line:
             # have been set init_flag
             assert 'the same' in line
@@ -232,7 +228,6 @@ def test_update_init_info():
     from collections import defaultdict
     model._params_init_info = defaultdict(dict)
     for name, param in model.named_parameters():
-        model._params_init_info[param]['param_name'] = name
         model._params_init_info[param]['init_info'] = 'init'
         model._params_init_info[param]['tmp_mean_value'] = param.data.mean()
 
@@ -245,6 +240,14 @@ def test_update_init_info():
     for item in model._params_init_info.values():
         assert item['init_info'] == 'fill_1'
         assert item['tmp_mean_value'] == 1
+
+    # test assert for new parameters
+    model.conv1.bias = nn.Parameter(torch.ones_like(model.conv1.bias))
+    update_init_info(model, init_info='fill_1')
+    for name, param in model.named_parameters():
+        if param is model.conv1.bias:
+            assert 'user-defined' in model._params_init_info[param][
+                'init_info']
 
 
 def test_model_weight_init():
