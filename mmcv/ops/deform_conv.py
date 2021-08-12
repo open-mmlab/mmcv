@@ -256,7 +256,7 @@ class DeformConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        n = self.in_channels
+        n = self.in_channels // self.groups # fu added
         for k in self.kernel_size:
             n *= k
         stdv = 1. / math.sqrt(n)
