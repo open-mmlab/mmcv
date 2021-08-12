@@ -29,7 +29,7 @@ class EvalHook(Hook):
         interval (int): Evaluation interval. Default: 1.
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
-            default: True.
+            Default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
             checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep

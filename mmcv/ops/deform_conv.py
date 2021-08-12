@@ -311,7 +311,7 @@ class DeformConv2d(nn.Module):
         s += f'groups={self.groups},\n'
         s += f'deform_groups={self.deform_groups},\n'
         # bias is not supported in DeformConv2d.
-        s += 'deform_groups=False)'
+        s += 'bias=False)'
         return s
 
 
