@@ -4,8 +4,8 @@ import os.path as osp
 import numpy as np
 import pytest
 
-import mmcv
 from mmcv.datasets.builder import PIPELINES
+from mmcv.image import imread
 from mmcv.utils import build_from_cfg
 
 
@@ -16,7 +16,7 @@ def test_normalize(to_rgb):
         std=[58.395, 57.12, 57.375],
         to_rgb=to_rgb)
     results = dict()
-    img = mmcv.imread(
+    img = imread(
         osp.join(osp.dirname(__file__), '../../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img

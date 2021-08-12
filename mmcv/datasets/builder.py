@@ -1,3 +1,3 @@
-from mmcv.utils import Registry
+from ..utils import Registry
 
 PIPELINES = Registry('pipeline')
