@@ -4,7 +4,7 @@ import os.path as osp
 import numpy as np
 import pytest
 
-from mmcv.datasets.builder import PIPELINES
+from mmcv.datasets import PIPELINES
 from mmcv.image import imread
 from mmcv.utils import build_from_cfg
 

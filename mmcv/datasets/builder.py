@@ -1,3 +1,3 @@
-from ..utils import Registry
+from ..utils.registry import Registry
 
 PIPELINES = Registry('pipeline')
