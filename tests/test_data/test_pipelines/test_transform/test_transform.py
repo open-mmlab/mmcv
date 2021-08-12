@@ -4,9 +4,9 @@ import os.path as osp
 import numpy as np
 import pytest
 
-from mmcv.datasets import PIPELINES
-from mmcv.image import imread
-from mmcv.utils import build_from_cfg
+from mmcv.datasets.builder import PIPELINES
+from mmcv.image.io import imread
+from mmcv.utils.registry import build_from_cfg
 
 
 @pytest.mark.parametrize('to_rgb', [True, False])
