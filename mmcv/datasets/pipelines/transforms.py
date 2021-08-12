@@ -28,13 +28,17 @@ class Normalize:
         """Call function to normalize images.
 
         Args:
-            results (dict): Result dict from loading pipeline.
+            results (dict): Result dict from loading pipeline. Required key of
+                results is 'img_fields'.
 
         Returns:
             dict: Normalized results, 'img_norm_cfg' key is added into
                 result dict.
         """
-        for key in results.get('img_fields', ['img']):
+        assert 'img_fields' in results, \
+            '"img_fields" is a required key of results'
+
+        for key in results['img_fields']:
             results[key] = mmcv.imnormalize(results[key], self.mean, self.std,
                                             self.to_rgb)
         results['img_norm_cfg'] = dict(
