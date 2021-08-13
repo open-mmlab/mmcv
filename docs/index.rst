@@ -9,6 +9,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    get_started.rst
    understand_mmcv.rst
    deployment.rst
+   compatibility.md
    faq.md
    community.rst
    api.rst

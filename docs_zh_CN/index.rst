@@ -7,9 +7,10 @@
    :maxdepth: 2
 
    get_started.rst
-   deployment.rst
    understand_mmcv.rst
+   deployment.rst
    api.rst
+   compatibility.md
    faq.md
    community.rst
 

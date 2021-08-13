@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 """This file holding some environment constant for sharing by other files."""
 
 import os.path as osp
@@ -48,7 +49,8 @@ def collect_env():
         for name, device_ids in devices.items():
             env_info['GPU ' + ','.join(device_ids)] = name
 
-        from mmcv.utils.parrots_wrapper import CUDA_HOME
+        from mmcv.utils.parrots_wrapper import _get_cuda_home
+        CUDA_HOME = _get_cuda_home()
         env_info['CUDA_HOME'] = CUDA_HOME
 
         if CUDA_HOME is not None and osp.isdir(CUDA_HOME):
