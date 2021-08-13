@@ -9,10 +9,10 @@
    get_started.rst
    understand_mmcv.rst
    deployment.rst
-   api.rst
    compatibility.md
    faq.md
    community.rst
+   api.rst
 
 
 Indices and tables
