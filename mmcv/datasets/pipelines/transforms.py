@@ -33,7 +33,7 @@ class Normalize:
         ...     'img': img,
         ...     'img_fields': ['img']
         ... }
-        >>> normalize = Normalize(*cfg)
+        >>> normalize = Normalize(**cfg)
         >>> results = normalize(results)
     """
 

@@ -21,11 +21,6 @@ def test_normalize(to_rgb):
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
-    results['img_shape'] = img.shape
-    results['ori_shape'] = img.shape
-    # Set initial values for default meta_keys
-    results['pad_shape'] = img.shape
-    results['scale_factor'] = 1.0
 
     transform_cfg = dict(type='Normalize', **img_norm_cfg)
     transform = build_from_cfg(transform_cfg, PIPELINES)
