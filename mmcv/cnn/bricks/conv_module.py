@@ -106,7 +106,8 @@ class ConvModule(nn.Module):
 
         if self.with_norm and self.with_bias:
             if self.conv_cfg.get('type').startswith('BN'):
-                warnings.warn('ConvModule has batch norm and bias at the same time')
+                warnings.warn(
+                    'ConvModule has batch norm and bias at the same time')
 
         if self.with_explicit_padding:
             pad_cfg = dict(type=padding_mode)
