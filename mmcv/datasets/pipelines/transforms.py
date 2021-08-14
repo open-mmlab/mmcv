@@ -4,10 +4,9 @@ import mmcv
 
 
 class RandomFlip:
-    """Random Flip.
-    If the input dict contains the key "flip", then the flag will be used,
-    otherwise it will be randomly decided by a ratio specified in the init
-    method.
+    """Random Flip. If the input dict contains the key "flip", then the flag
+    will be used, otherwise it will be randomly decided by a ratio specified in
+    the init method.
 
     When random flip is enabled, ``prob``/``direction`` can either be a
     float/string or tuple of float/string. There are 3 flip modes:
@@ -100,6 +99,7 @@ class RandomFlip:
 
     def bbox_flip(self, results, key, direction):
         """Flip bboxes.
+
         Args:
             results (dict): Result dict from loading pipeline.
             key (str): Key for the necessary data.
@@ -151,6 +151,7 @@ class RandomFlip:
     def __call__(self, results):
         """Call function to flip bounding boxes, masks, semantic segmentation
         maps.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
