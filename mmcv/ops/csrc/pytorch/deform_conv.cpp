@@ -57,6 +57,58 @@ void deform_conv_backward_parameters_cuda(
 }
 #endif
 
+void DeformConvForwardCPULauncher(Tensor input, Tensor weight,
+                                  Tensor offset, Tensor output,
+                                  Tensor columns, Tensor ones, int kW,
+                                  int kH, int dW, int dH, int padW,
+                                  int padH, int dilationW, int dilationH,
+                                  int group, int deformable_group, int im2col_step);
+
+void DeformConvBackwardInputCPULauncher(
+    Tensor input, Tensor offset, Tensor gradOutput, Tensor gradInput,
+    Tensor gradOffset, Tensor weight, Tensor columns, int kW, int kH, int dW,
+    int dH, int padW, int padH, int dilationW, int dilationH, int group,
+    int deformable_group, int im2col_step);
+
+void DeformConvBackwardParametersCPULauncher(
+    Tensor input, Tensor offset, Tensor gradOutput, Tensor gradWeight,
+    Tensor columns, Tensor ones, int kW, int kH, int dW, int dH, int padW,
+    int padH, int dilationW, int dilationH, int group, int deformable_group,
+    float scale, int im2col_step
+);
+
+void deform_conv_forward_cpu(Tensor input, Tensor weight, Tensor offset,
+                             Tensor output, Tensor columns, Tensor ones,
+                             int kW, int kH, int dW, int dH, int padW,
+                             int padH, int dilationW, int dilationH, int group,
+                             int deformable_group, int im2col_step){
+  DeformConvForwardCPULauncher(
+      input, weight, offset, output, columns, ones, kW, kH, dW, dH, padW, padH,
+      dilationW, dilationH, group, deformable_group, im2col_step);
+}
+
+void deform_conv_backward_input_cpu(Tensor input, Tensor offset,
+                                    Tensor gradOutput, Tensor gradInput,
+                                    Tensor gradOffset, Tensor weight,
+                                    Tensor columns, int kW, int kH, int dW,
+                                    int dH, int padW, int padH, int dilationW,
+                                    int dilationH, int group,
+                                    int deformable_group, int im2col_step){
+  DeformConvBackwardInputCPULauncher(
+      input, offset, gradOutput, gradInput, gradOffset, weight, columns, kW, kH,
+      dW, dH, padW, padH, dilationW, dilationH, group, deformable_group, im2col_step);
+}
+
+void deform_conv_backward_parameters_cpu(
+    Tensor input, Tensor offset, Tensor gradOutput, Tensor gradWeight,
+    Tensor columns, Tensor ones, int kW, int kH, int dW, int dH, int padW,
+    int padH, int dilationW, int dilationH, int group, int deformable_group,
+    float scale, int im2col_step){
+  DeformConvBackwardParametersCPULauncher(
+      input, offset, gradOutput, gradWeight, columns, ones, kW, kH, dW, dH,
+      padW, padH, dilationW, dilationH, group, deformable_group, scale, im2col_step);
+}
+
 void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
                          Tensor output, Tensor columns, Tensor ones, int kW,
                          int kH, int dW, int dH, int padW, int padH,
@@ -78,7 +130,15 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
   } else {
-    AT_ERROR("DeformConv is not implemented on CPU");
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(offset);
+    CHECK_CPU_INPUT(weight);
+    CHECK_CPU_INPUT(output);
+    CHECK_CPU_INPUT(columns);
+    CHECK_CPU_INPUT(ones);
+    deform_conv_forward_cpu(input, weight, offset, output, columns, ones, kW,
+                            kH, dW, dH, padW, padH, dilationW, dilationH,
+                            group, deformable_group, im2col_step);
   }
 }
 
@@ -106,7 +166,18 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
   } else {
-    AT_ERROR("DeformConv is not implemented on CPU");
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(offset);
+    CHECK_CPU_INPUT(gradOutput);
+    CHECK_CPU_INPUT(gradInput);
+    CHECK_CPU_INPUT(gradOffset);
+    CHECK_CPU_INPUT(weight);
+    CHECK_CPU_INPUT(columns);
+
+    deform_conv_backward_input_cpu(input, offset, gradOutput, gradInput,
+                                   gradOffset, weight, columns, kW, kH, dW, dH,
+                                   padW, padH, dilationW, dilationH, group,
+                                   deformable_group, im2col_step);
   }
 }
 
@@ -134,6 +205,16 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
   } else {
-    AT_ERROR("DeformConv is not implemented on CPU");
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(offset);
+    CHECK_CPU_INPUT(gradOutput);
+    CHECK_CPU_INPUT(gradWeight);
+    CHECK_CPU_INPUT(columns);
+    CHECK_CPU_INPUT(ones);
+
+    deform_conv_backward_parameters_cpu(input, offset, gradOutput, gradWeight,
+                                        columns, ones, kW, kH, dW, dH, padW,
+                                        padH, dilationW, dilationH, group,
+                                        deformable_group, scale, im2col_step);
   }
 }
