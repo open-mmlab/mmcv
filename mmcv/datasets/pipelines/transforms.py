@@ -90,7 +90,7 @@ class RandomFlip:
         if isinstance(self.prob, list):
             non_flip_prob = 1 - sum(self.prob)
             self.prob_list = self.prob + [non_flip_prob]
-        else:
+        elif self.prob is not None:
             non_flip_prob = 1 - self.prob
             # exclude non-flip
             single_ratio = self.prob / (len(self.direction_list) - 1)
@@ -122,15 +122,15 @@ class RandomFlip:
             h = img_shape[0]
             flipped[..., 1::4] = h - bboxes[..., 3::4]
             flipped[..., 3::4] = h - bboxes[..., 1::4]
-        elif direction == 'diagonal':
+        # direction == 'diagonal'
+        else:
             w = img_shape[1]
             h = img_shape[0]
             flipped[..., 0::4] = w - bboxes[..., 2::4]
             flipped[..., 1::4] = h - bboxes[..., 3::4]
             flipped[..., 2::4] = w - bboxes[..., 0::4]
             flipped[..., 3::4] = h - bboxes[..., 1::4]
-        else:
-            raise ValueError(f"Invalid flipping direction '{direction}'")
+
         return flipped
 
     def img_flip(self, results, key, direction):
@@ -181,9 +181,9 @@ class RandomFlip:
                                              results['flip_direction'])
 
                 # the field name may be the key of the data
-                if key in results and 'img_fields' not in results:
-                    results[key] = flip_func(results, key,
-                                             results['flip_direction'])
+                if field in results and f'{field}_fields' not in results:
+                    results[field] = flip_func(results, field,
+                                               results['flip_direction'])
 
         return results
 
