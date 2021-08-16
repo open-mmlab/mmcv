@@ -1,6 +1,6 @@
+import warnings
 from unittest.mock import patch
 
-import warnings
 import pytest
 import torch
 import torch.nn as nn
