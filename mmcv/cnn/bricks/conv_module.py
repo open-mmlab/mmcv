@@ -8,7 +8,7 @@ from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
-from .registry import PLUGIN_LAYERS
+from .registry import PLUGIN_LAYERS, NORM_LAYERS
 
 
 @PLUGIN_LAYERS.register_module()
@@ -105,7 +105,12 @@ class ConvModule(nn.Module):
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            if self.norm_cfg.get('type').startswith('BN'):
+            obj_type = self.norm_cfg.get('type')
+            obj_cls = NORM_LAYERS.get(obj_type)
+            if any(issubclass(obj_cls, norm_cls)
+                   for norm_cls in [
+                       nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d
+                   ]):
                 warnings.warn(
                     'ConvModule has batch norm and bias at the same time')
 
