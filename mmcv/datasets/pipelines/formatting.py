@@ -34,12 +34,13 @@ def to_tensor(data: Union[torch.Tensor, np.ndarray, Sequence, int, float]):
             '`Sequence`, `int` and `float`')
 
 
-def apply(container: dict, key: str, operator: Callable):
+def apply_operator(container: dict, key: str, operator: Callable):
     """Apply operator to key-value in a container dict.
 
     Args:
         container (dict): A nested dict.
-        key (str): A sequence of keys joined by `.`.
+        key (str): The key of value. It can be a concatenation of multiple
+            strings to get value from nested dict, and the separator is ``.``.
         operator (Callable): The operator that applied to the value of key.
     """
     nested_keys = key.split('.')
@@ -54,19 +55,35 @@ class ToTensor(object):
     """Convert some results to :obj:`torch.Tensor` by given keys.
 
     Args:
-        keys (Sequence[str]): Keys that need to be converted to Tensor.
+        keys (Sequence[str]): Keys of values that need to be converted to
+            Tensor. Each key in ``keys`` can be a concatenation of multiple
+            strings separated by by ``.``.
 
-    Notes:
-        Each key in keys can be a sequence of keys joined by `.`.
-        For example, 'ann.gt_label' means results['ann']['gt_label'].
+    Example:
+        >>> from mmcv.datasets.pipelines import ToTensor
+        >>> transform = ToTensor(keys=['img', 'ann.label'])
+        >>> input_dict = {'img': [1, 2], 'ann': {'label': 1}}
+        >>> output_dict = transform(input_dict)
+        >>> print(output_dict)
+        {'img': tensor([1, 2]), 'ann': {'label': tensor([1])}}
     """
 
     def __init__(self, keys: Sequence[str]):
         self.keys = keys
 
     def __call__(self, results: dict):
+        """Call function to convert to tensor.
+
+        Args:
+            results (dict): Required keys are all keys in ``self.keys``.
+
+        Returns:
+            dict: Output results.
+
+            - Updated keys are all keys in ``self.keys``.
+        """
         for key in self.keys:
-            apply(results, key, to_tensor)
+            apply_operator(results, key, to_tensor)
         return results
 
     def __repr__(self):
@@ -77,17 +94,32 @@ class ToTensor(object):
 class ImageToTensor:
     """Convert image to :obj:`torch.Tensor` by given keys.
 
-    Required keys is `img_fields`.
-
-    Updated keys are all keys in `img_fields`.
-
     Notes:
         The dimension order of input image is (H, W, C). The pipeline will
         convert it to (C, H, W). If only 2 dimension (H, W) is given, the
         output would be (1, H, W).
+
+    Example:
+        >>> import numpy as np
+        >>> from mmcv.datasets.pipelines import ImageToTensor
+        >>> transform = ImageToTensor()
+        >>> input_dict = {'img': np.zeros([16, 16, 3]), 'img_fields': ['img']}
+        >>> output_dict = transform(input_dict)
+        >>> print(output_dict['img'].shape)
+        torch.Size([3, 16, 16])
     """
 
     def __call__(self, results: dict):
+        """Call function to convert image to tensor.
+
+        Args:
+            results (dict): The required key is ``img_fields``.
+
+        Returns:
+            dict: Output results.
+
+            - Updated keys are all keys in ``img_fields``.
+        """
         assert 'img_fields' in results, 'ImageToTensor requires key '\
             '"img_fields", Please check your pipelines.'
 
