@@ -10,13 +10,6 @@ from ..builder import PIPELINES
 class LoadImageFromFile:
     """Load an image from file.
 
-    Required keys are "img_prefix" (optional) and "filename".
-
-    Added keys are "ori_filename", "img_fields", "img", "img_shape",
-    "ori_shape" (same as "img_shape"), "height" and "width".
-
-    Updated keys is "filename".
-
     Args:
         to_float32 (bool): Whether to convert the loaded image to a float32
             numpy array. If set to False, the loaded image is an uint8 array.
@@ -28,6 +21,26 @@ class LoadImageFromFile:
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details.
             Defaults to ``dict(backend='disk')``.
+
+    Example:
+        >>> from mmcv.datasets.pipelines import LoadImageFromFile
+        >>> transform = LoadImageFromFile()
+        >>> input_dict = {
+        ...     'img_prefix': '/home/xxx/datasets/train',
+        ...     'filename': 'first.png'
+        ... }
+        >>> output_dict = transform(input_dict)
+        >>> for k, v in output_dict.items():
+        ...     print(k, type(v))
+        img_prefix <class 'str'>
+        filename <class 'str'>
+        img_fields <class 'list'>
+        ori_filename <class 'str'>
+        img <class 'numpy.ndarray'>
+        img_shape <class 'tuple'>
+        ori_shape <class 'tuple'>
+        height <class 'int'>
+        width <class 'int'>
     """
 
     def __init__(self,
@@ -42,6 +55,20 @@ class LoadImageFromFile:
         self.file_client = None
 
     def __call__(self, results: dict) -> dict:
+        """Call function to load image from file.
+
+        Args:
+            results (dict): Required keys are 'img_prefix' (optional) and
+                'filename'.
+
+        Returns:
+            dict: Image loading results.
+
+            - Added keys are "ori_filename", "img_fields", "img",
+              "img_shape", "ori_shape" (same as "img_shape"),
+              "height" and "width".
+            - Updated key is "filename".
+        """
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
 
