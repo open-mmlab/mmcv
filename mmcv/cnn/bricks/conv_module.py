@@ -107,7 +107,7 @@ class ConvModule(nn.Module):
         if self.with_norm and self.with_bias:
             if issubclass(
                     NORM_LAYERS.get(self.norm_cfg.get('type')),
-                (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+                    (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
                 warnings.warn(
                     'ConvModule has batch norm and bias at the same time')
 
