@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -47,6 +49,8 @@ class PixelShufflePack(nn.Module):
         return x
 
 
+# Avoid BC-breaking of importing build_upsample_layer.
+# It's backwards compatible with the old `build_upsample_layer`.
 def build_upsample_layer(cfg, *args, **kwargs):
     """Build upsample layer.
 
@@ -65,20 +69,12 @@ def build_upsample_layer(cfg, *args, **kwargs):
     Returns:
         nn.Module: Created upsample layer.
     """
-    if not isinstance(cfg, dict):
-        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
-    if 'type' not in cfg:
-        raise KeyError(
-            f'the cfg dict must contain the key "type", but got {cfg}')
-    cfg_ = cfg.copy()
+    from .registry import build_upsample_layer_from_cfg
+    warnings.warn(
+        ImportWarning(
+            '``build_upsample_layer(cfg, *args, **kwargs)`` will be '
+            'deprecated. Please use '
+            '``UPSAMPLE_LAYERS.build(cfg, *args, **kwargs)`` instead.'))
 
-    layer_type = cfg_.pop('type')
-    if layer_type not in UPSAMPLE_LAYERS:
-        raise KeyError(f'Unrecognized upsample type {layer_type}')
-    else:
-        upsample = UPSAMPLE_LAYERS.get(layer_type)
-
-    if upsample is nn.Upsample:
-        cfg_['mode'] = layer_type
-    layer = upsample(*args, **kwargs, **cfg_)
-    return layer
+    return build_upsample_layer_from_cfg(
+        cfg, *args, **kwargs, registry=UPSAMPLE_LAYERS)
