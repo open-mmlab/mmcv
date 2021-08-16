@@ -44,8 +44,8 @@ class RandomFlip:
 
     # `_flip_functions_map` contain the map between the field name (key) and
     # the name of flip function (value).
-    # If a flied name is not in this map, we will directly use `img_flip`
-    # flip function.
+    # If a field name is not in this map, we will directly use `img_flip`
+    # as the flip function.
     _flip_functions_map = dict(
         img='img_flip', bbox='bbox_flip', seg='img_flip', mask='img_flip')
 
