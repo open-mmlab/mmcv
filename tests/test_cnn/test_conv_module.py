@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import warnings
 import pytest
 import torch
 import torch.nn as nn
@@ -168,10 +169,12 @@ def test_bias():
     assert record[0].message.args[
         0] == 'ConvModule has batch norm and bias at the same time'
 
-    # bias: True, other norm
+    # bias: True, with other norm
     with pytest.warns(UserWarning) as record:
         ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='GN'))
-    assert len(record) == 0
+        warnings.warn('No warnings')
+    assert len(record) == 1
+    assert record[0].message.args[0] == 'No warnings'
 
 
 def conv_forward(self, x):
