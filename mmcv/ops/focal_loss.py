@@ -17,13 +17,13 @@ class SigmoidFocalLossFunction(Function):
     @staticmethod
     def symbolic(g, input, target, gamma, alpha, weight, reduction):
         return g.op(
-            'MMCVSigmoidFocalLoss',
+            'mmcv::MMCVSigmoidFocalLoss',
             input,
             target,
-            gamma=gamma,
-            alpha=alpha,
-            weight=weight,
-            reduction=reduction)
+            gamma_f=gamma,
+            alpha_f=alpha,
+            weight_f=weight,
+            reduction_s=reduction)
 
     @staticmethod
     def forward(ctx,
@@ -111,13 +111,13 @@ class SoftmaxFocalLossFunction(Function):
     @staticmethod
     def symbolic(g, input, target, gamma, alpha, weight, reduction):
         return g.op(
-            'MMCVSoftmaxFocalLoss',
+            'mmcv::MMCVSoftmaxFocalLoss',
             input,
             target,
-            gamma=gamma,
-            alpha=alpha,
-            weight=weight,
-            reduction=reduction)
+            gamma_f=gamma,
+            alpha_f=alpha,
+            weight_f=weight,
+            reduction_s=reduction)
 
     @staticmethod
     def forward(ctx,
