@@ -8,14 +8,14 @@
 
 ### EpochBasedRunner
 
-顾名思义，`EpochBasedRunner` 是指工作流中是以 epoch 为设置单位的，例如设置 workflow = [('train', 2), ('val', 1)] 表示循环迭代的训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
+顾名思义，`EpochBasedRunner` 是指工作流中是以 epoch 为设置单位的，例如设置 workflow = [('train', 2), ('val', 1)] 表示循环迭代地训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
 
 ```python
 # 训练终止条件
 while curr_epoch < max_epochs:
-    # 遍历用户设置工作流，例如 workflow = [('train', 2)，('val', 1)]
+    # 遍历用户设置的工作流，例如 workflow = [('train', 2)，('val', 1)]
     for i, flow in enumerate(workflow):
         # mode 是工作流函数，例如 train, epochs 是迭代次数
         mode, epochs = flow
@@ -40,7 +40,7 @@ def train(self, data_loader, **kwargs):
 ```
 
 ### IterBasedRunner
-不同于 `EpochBasedRunner`，`IterBasedRunner` 是指工作流中是以 iter 为设置单位的，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
+不同于 `EpochBasedRunner`，`IterBasedRunner` 是指工作流中以 iter 为设置单位，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
 
@@ -49,7 +49,7 @@ def train(self, data_loader, **kwargs):
 iter_loaders = [IterLoader(x) for x in data_loaders]
 # 训练终止条件
 while curr_iter < max_iters:
-    # 遍历用户设置工作流，例如 workflow = [('train', 2)， ('val', 1)]
+    # 遍历用户设置的工作流，例如 workflow = [('train', 2)， ('val', 1)]
     for i, flow in enumerate(workflow):
         # mode 是工作流函数，例如 train, iters 是迭代次数
         mode, iters = flow
@@ -75,7 +75,7 @@ def val(self, data_loader, **kwargs):
 除了上述基础功能外，`EpochBasedRunner` 和 `IterBasedRunner` 还提供了 resume 、 save_checkpoint 和注册 hook 功能。
 
 ### 一个简单例子
-以最常用的分类任务为例详细说明下 runner 的使用方法。 开启任何一个训练任务，都需要包括如下步骤：
+以最常用的分类任务为例详细说明 `runner` 的使用方法。 开启任何一个训练任务，都需要包括如下步骤：
 
 **(1) dataloader、model 和优化器等类初始化**
 
