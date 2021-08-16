@@ -76,5 +76,4 @@ def build_upsample_layer(cfg, *args, **kwargs):
             'deprecated. Please use '
             '``UPSAMPLE_LAYERS.build(cfg, *args, **kwargs)`` instead.'))
 
-    return build_upsample_layer_from_cfg(
-        cfg, *args, **kwargs, registry=UPSAMPLE_LAYERS)
+    return build_upsample_layer_from_cfg(cfg, UPSAMPLE_LAYERS, *args, **kwargs)
