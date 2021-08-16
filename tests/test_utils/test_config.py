@@ -513,3 +513,11 @@ def test_pickle_support():
         pkl_cfg = load(pkl_cfg_filename)
 
     assert pkl_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_deprecation():
+    deprecated_cfg_files = osp.join(data_path, 'config/deprecated.py')
+    with pytest.warns(UserWarning):
+        cfg = Config.fromfile(deprecated_cfg_files)
+
+    assert cfg.item1 == 'expected'
