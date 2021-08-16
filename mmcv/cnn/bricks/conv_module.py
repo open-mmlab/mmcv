@@ -105,7 +105,7 @@ class ConvModule(nn.Module):
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            if self.conv_cfg.get('type').startswith('BN'):
+            if self.norm_cfg.get('type').startswith('BN'):
                 warnings.warn(
                     'ConvModule has batch norm and bias at the same time')
 
