@@ -4,7 +4,7 @@
 #include <ATen/ATen.h>
 #include <ATen/TensorUtils.h>
 
-#include "../pytorch_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
@@ -146,9 +146,9 @@ void ROIAlignForward(const int nthreads, const T* input, const T* rois,
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
+        (sampling_ratio > 0) ? sampling_ratio : ceilf(roi_width / pooled_width);
 
     // When the grid is empty, output zeros == 0/1, instead of NaN.
     const T count = std::max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
@@ -337,12 +337,13 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
     } else if (pool_mode == 1) {
       // We do average (integral) pooling inside a bin
       // We use roi_bin_grid to sample the grid and mimic integral
-      int roi_bin_grid_h = (sampling_ratio > 0)
-                               ? sampling_ratio
-                               : ceil(roi_height / pooled_height);  // e.g., = 2
+      int roi_bin_grid_h =
+          (sampling_ratio > 0)
+              ? sampling_ratio
+              : ceilf(roi_height / pooled_height);  // e.g., = 2
       int roi_bin_grid_w = (sampling_ratio > 0)
                                ? sampling_ratio
-                               : ceil(roi_width / pooled_width);
+                               : ceilf(roi_width / pooled_width);
 
       const T count = roi_bin_grid_h * roi_bin_grid_w;  // e.g. = 4
       for (int iy = 0; iy < roi_bin_grid_h; iy++) {

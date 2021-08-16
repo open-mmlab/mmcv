@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ONNXRUNTIME_SOFT_NMS_H
 #define ONNXRUNTIME_SOFT_NMS_H
 #include <onnxruntime_cxx_api.h>

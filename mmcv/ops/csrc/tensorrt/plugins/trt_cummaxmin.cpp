@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_cummaxmin.hpp"
 
 #include <assert.h>

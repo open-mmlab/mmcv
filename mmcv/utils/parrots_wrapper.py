@@ -1,22 +1,28 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
-from pkg_resources import parse_version
 
 import torch
 
 TORCH_VERSION = torch.__version__
 
-is_rocm_pytorch = False
-if parse_version(TORCH_VERSION) >= parse_version('1.5'):
-    from torch.utils.cpp_extension import ROCM_HOME
-    is_rocm_pytorch = True if ((torch.version.hip is not None) and
+
+def is_rocm_pytorch() -> bool:
+    is_rocm = False
+    if TORCH_VERSION != 'parrots':
+        try:
+            from torch.utils.cpp_extension import ROCM_HOME
+            is_rocm = True if ((torch.version.hip is not None) and
                                (ROCM_HOME is not None)) else False
+        except ImportError:
+            pass
+    return is_rocm
 
 
 def _get_cuda_home():
     if TORCH_VERSION == 'parrots':
         from parrots.utils.build_extension import CUDA_HOME
     else:
-        if is_rocm_pytorch:
+        if is_rocm_pytorch():
             from torch.utils.cpp_extension import ROCM_HOME
             CUDA_HOME = ROCM_HOME
         else:
@@ -83,7 +89,6 @@ def _get_norm():
     return _BatchNorm, _InstanceNorm, SyncBatchNorm_
 
 
-CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
 DataLoader, PoolDataLoader = _get_dataloader()
 BuildExtension, CppExtension, CUDAExtension = _get_extension()
