@@ -13,6 +13,18 @@ class ToDataContainer:
             ``dict(key='xxx', **kwargs)``. The ``key`` in result will
             be converted to :obj:`mmcv.DataContainer` with ``**kwargs``.
             Default: ``(dict(key='img', stack=True),)``.
+
+    Example:
+        >>> from mmcv.image.io import imread
+        >>> from mmcv.datasets.pipelines import ToDataContainer
+        >>> img = imread('img_path')  # img_path is the path of image
+        >>> cfg = {'fields': ({'key': 'img', 'stack': True}, )}
+        >>> results = {
+        ...     'img': img,
+        ...     'img_fields': ['img']
+        ... }
+        >>> to_data_container = ToDataContainer(**cfg)
+        >>> results = to_data_container(results)
     """
 
     def __init__(self, fields: Sequence = (dict(key='img', stack=True), )):
