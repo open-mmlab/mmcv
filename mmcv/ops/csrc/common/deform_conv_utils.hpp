@@ -1,10 +1,21 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include "pytorch_cpp_helper.hpp"
+#pragma once
+#include <torch/extension.h>
 
-void deform_conv_shape_check(Tensor input, Tensor offset, Tensor *gradOutput,
-                             Tensor weight, int kH, int kW, int dH, int dW,
-                             int padH, int padW, int dilationH, int dilationW,
-                             int group, int deformable_group) {
+#ifdef __CUDACC__
+// Designates functions callable from the host (CPU) and the device (GPU)
+#define HOST_DEVICE __host__ __device__
+#define HOST_DEVICE_INLINE HOST_DEVICE __forceinline__
+#else
+#define HOST_DEVICE
+#define HOST_DEVICE_INLINE HOST_DEVICE inline
+#endif
+
+
+HOST_DEVICE_INLINE void deform_conv_shape_check(
+  at::Tensor input, at::Tensor offset, at::Tensor *gradOutput, at::Tensor weight, 
+  int kH, int kW, int dH, int dW, int padH, int padW, int dilationH, int dilationW, 
+  int group, int deformable_group) {
   TORCH_CHECK(
       weight.ndimension() == 4,
       "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, but got: %s",
