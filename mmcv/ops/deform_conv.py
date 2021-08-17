@@ -268,7 +268,7 @@ class DeformConv2d(nn.Module):
         Args:
             x (Tensor): Input feature, shape (B, C_in, H_in, W_in)
             offset (Tensor): Offset for deformable convolution, shape
-                (B, deform_groups*kernel_size[0]*kernel_size[1]*2，
+                (B, deform_groups*kernel_size[0]*kernel_size[1]*2,
                 H_out, W_out), H_out, W_out are equal to the output's.
 
                 An offset is like `[y0, x0, y1, x1, y2, x2, ..., y8, x8]`.
