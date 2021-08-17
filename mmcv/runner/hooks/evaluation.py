@@ -38,7 +38,7 @@ class EvalHook(Hook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -361,7 +361,7 @@ class DistEvalHook(EvalHook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will

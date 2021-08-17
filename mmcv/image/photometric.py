@@ -240,7 +240,7 @@ def auto_contrast(img, cutoff=0):
 
     This function maximize (normalize) image contrast by first removing cutoff
     percent of the lightest and darkest pixels from the histogram and remapping
-     the image so that the darkest pixel becomes black (0), and the lightest
+    the image so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
 
     Args:
