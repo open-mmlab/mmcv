@@ -21,12 +21,13 @@ If this PR introduces a new feature, it is better to list some use cases here, a
 
 **Before PR**:
 
-- [ ] Pre-commit or other linting tools are used to fix the potential lint issues.
-- [ ] Bug fixes are fully covered by unit tests, the case that causes the bug should be added in the unit tests.
-- [ ] The modification is covered by complete unit tests. If not, please add more unit test to ensure the correctness.
-- [ ] The documentation has been modified accordingly, like docstring or example tutorials.
+- [ ] I have read and followed the workflow indicated in the [CONTRIBUTING.md](https://github.com/open-mmlab/mmcv/blob/master/CONTRIBUTING.md) to create this PR.
+- [ ] Pre-commit or linting tools indicated in [CONTRIBUTING.md](https://github.com/open-mmlab/mmcv/blob/master/CONTRIBUTING.md) are used to fix the potential lint issues.
+- [ ] Bug fixes are covered by unit tests, the case that causes the bug should be added in the unit tests.
+- [ ] New functionalities are covered by complete unit tests. If not, please add more unit test to ensure the correctness.
+- [ ] The documentation has been modified accordingly, including docstring or example tutorials.
 
 **After PR**:
 
-- [ ] If the modification has potential influence on downstream or other related projects, this PR should be tested with those projects, like MMDet or MMCls.
+- [ ] If the modification has potential influence on downstream or other related projects, this PR should be tested with some of those projects, like MMDet or MMCls.
 - [ ] CLA has been signed and all committers have signed the CLA in this PR.
