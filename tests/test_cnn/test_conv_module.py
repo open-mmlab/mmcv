@@ -171,7 +171,8 @@ def test_bias():
 
     # bias: True, with other norm
     with pytest.warns(UserWarning) as record:
-        ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='GN'))
+        norm_cfg = dict(type='GN', num_groups=1)
+        ConvModule(3, 8, 2, bias=True, norm_cfg=norm_cfg)
         warnings.warn('No warnings')
     assert len(record) == 1
     assert record[0].message.args[0] == 'No warnings'
