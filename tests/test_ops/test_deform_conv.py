@@ -36,7 +36,10 @@ gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 
 class TestDeformconv(object):
 
-    def _test_deformconv(self, dtype=torch.float, threshold=1e-3, device='cuda'):
+    def _test_deformconv(self,
+                         dtype=torch.float,
+                         threshold=1e-3,
+                         device='cuda'):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
         from mmcv.ops import DeformConv2dPack
@@ -52,7 +55,7 @@ class TestDeformconv(object):
         model.weight.data = torch.nn.Parameter(
             torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
         if device == 'cuda':
-          model.cuda()
+            model.cuda()
         model.type(dtype)
 
         out = model(x)
@@ -69,6 +72,7 @@ class TestDeformconv(object):
                            gt_deform_weight_grad, threshold)
 
         from mmcv.ops import DeformConv2d
+
         # test bias
         model = DeformConv2d(1, 1, 2, stride=1, padding=0)
         assert not hasattr(model, 'bias')
@@ -123,6 +127,7 @@ class TestDeformconv(object):
                            gt_deform_weight_grad, threshold)
 
         from mmcv.ops import DeformConv2d
+
         # test bias
         model = DeformConv2d(1, 1, 2, stride=1, padding=0)
         assert not hasattr(model, 'bias')

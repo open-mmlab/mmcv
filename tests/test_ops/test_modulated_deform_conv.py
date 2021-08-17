@@ -1,8 +1,8 @@
 import os
 
 import numpy
-import torch
 import pytest
+import torch
 
 from mmcv.utils import TORCH_VERSION, digit_version
 
