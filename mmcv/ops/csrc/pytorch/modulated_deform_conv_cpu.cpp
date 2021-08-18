@@ -32,7 +32,7 @@ template <typename T> T dmcn_im2col_bilinear_cpu(
 }
 
 template <typename T> T dmcn_get_gradient_weight_cpu(
-  T argmax_h, T argmax_w, const int h, const int w, 
+  T argmax_h, T argmax_w, const int h, const int w,
   const int height, const int width) {
   if (argmax_h <= -1 || argmax_h >= height || argmax_w <= -1 ||
       argmax_w >= width) {
