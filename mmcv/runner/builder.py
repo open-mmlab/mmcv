@@ -1,5 +1,6 @@
-from ..utils import Registry, build_from_cfg
 import copy
+
+from ..utils import Registry, build_from_cfg
 
 RUNNERS = Registry('runner')
 RUNNER_BUILDERS = Registry('runner builder')
@@ -11,8 +12,8 @@ def build_runner_constructor(cfg):
 
 def build_runner(cfg, default_args=None):
     runner_cfg = copy.deepcopy(cfg)
-    constructor_type = runner_cfg.pop(
-        'constructor', 'DefaultRunnerConstructor')
+    constructor_type = runner_cfg.pop('constructor',
+                                      'DefaultRunnerConstructor')
     runner_constructor = build_runner_constructor(
         dict(
             type=constructor_type,
