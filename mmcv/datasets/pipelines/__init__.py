@@ -1,3 +1,3 @@
-from .transforms import Normalize
+from .transforms import Normalize, Pad
 
-__all__ = ['Normalize']
+__all__ = ['Normalize', 'Pad']

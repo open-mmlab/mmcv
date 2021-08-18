@@ -9,6 +9,54 @@ from mmcv.image.io import imread
 from mmcv.utils.registry import build_from_cfg
 
 
+def test_pad():
+    # test assertion if both size_divisor and size is None
+    with pytest.raises(AssertionError):
+        transform = dict(type='Pad')
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(type='Pad', size=(300, 400), size_divisor=32)
+        build_from_cfg(transform, PIPELINES)
+
+    # required key of results is 'img_fields'
+    with pytest.raises(AssertionError):
+        transform_cfg = dict(type='Pad')
+        transform = build_from_cfg(transform_cfg, PIPELINES)
+        results = dict()
+        results = transform(results)
+
+    # test size param
+    transform_cfg = dict(type='Pad', size=(320, 416))
+    transform = build_from_cfg(transform_cfg, PIPELINES)
+    results = dict()
+    img = imread(
+        osp.join(osp.dirname(__file__), '../../../data/color.jpg'), 'color')
+    original_img = copy.deepcopy(img)
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_fields'] = ['img', 'img2']
+
+    results = transform(results)
+    assert np.equal(results['img'], results['img2']).all()
+    img_shape = results['img'].shape
+    assert img_shape[0] == 320
+    assert img_shape[1] == 416
+
+    # test size_divisor param
+    transform_cfg = dict(type='Pad', size_divisor=32)
+    transform = build_from_cfg(transform_cfg, PIPELINES)
+    results = dict()
+    results['img'] = copy.deepcopy(original_img)
+    results['img2'] = copy.deepcopy(original_img)
+    results['img_fields'] = ['img', 'img2']
+
+    results = transform(results)
+    assert np.equal(results['img'], results['img2']).all()
+    img_shape = results['img'].shape
+    assert img_shape[0] % 32 == 0
+    assert img_shape[1] % 32 == 0
+
+
 @pytest.mark.parametrize('to_rgb', [True, False])
 def test_normalize(to_rgb):
     img_norm_cfg = dict(
