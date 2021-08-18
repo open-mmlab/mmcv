@@ -7,6 +7,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 2
 
    get_started.rst
+   tutorials.rst
    understand_mmcv.rst
    deployment.rst
    compatibility.md
