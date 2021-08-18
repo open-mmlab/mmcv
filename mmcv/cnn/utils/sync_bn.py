@@ -19,10 +19,11 @@ class _BatchNormXd(torch.nn.modules.batchnorm._BatchNorm):
 
 
 def revert_sync_batchnorm(module):
-    """Helper function to convert all `SyncBatchNorm` layers in the model to
+    """Helper function to convert all `SyncBatchNorm` (SyncBN) and
+    `mmcv.ops.sync_bn.SyncBatchNorm`(MMSyncBN) layers in the model to
     `BatchNormXd` layers.
 
-    Reproduced from @kapily's work:
+    Adapted from @kapily's work:
     (https://github.com/pytorch/pytorch/issues/41081#issuecomment-783961547)
 
     Args:
