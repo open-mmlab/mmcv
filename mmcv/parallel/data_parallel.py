@@ -18,13 +18,25 @@ class MMDataParallel(DataParallel):
     Args:
         module (:class:`nn.Module`): Module to be encapsulated.
         device_ids (list[int]): Device IDS of modules to be scattered to.
-            Defaults to None when GPU is not available.
+            Use None when GPU is not available. Note this is different
+            from pytorch's DataParallel where None means use all gpu devices.
         output_device (str | int): Device ID for output. Defaults to None.
         dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
     def __init__(self, *args, dim=0, **kwargs):
-        super(MMDataParallel, self).__init__(*args, dim=dim, **kwargs)
+        device_ids = kwargs.get('device_ids', None)
+        if device_ids is None:
+            device_ids = []
+        if device_ids == []:
+            # Handle cpu case. Bypass DataParallel because it cannot use cpu
+            # when cuda is available.
+            super(DataParallel, self).__init__()
+            self.module = args[0]
+            self.device_ids = []
+        else:
+            super().__init__(*args, dim=dim, **kwargs)
+
         self.dim = dim
 
     def forward(self, *inputs, **kwargs):
@@ -33,7 +45,7 @@ class MMDataParallel(DataParallel):
         The main difference lies in the CPU inference where the datas in
         :class:`DataContainers` will still be gathered.
         """
-        if not self.device_ids:
+        if self.device_ids == []:
             # We add the following line thus the module could gather and
             # convert data containers as those in GPU inference
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
@@ -45,7 +57,7 @@ class MMDataParallel(DataParallel):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):
-        if not self.device_ids:
+        if self.device_ids == []:
             # We add the following line thus the module could gather and
             # convert data containers as those in GPU inference
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
@@ -67,7 +79,7 @@ class MMDataParallel(DataParallel):
         return self.module.train_step(*inputs[0], **kwargs[0])
 
     def val_step(self, *inputs, **kwargs):
-        if not self.device_ids:
+        if self.device_ids == []:
             # We add the following line thus the module could gather and
             # convert data containers as those in GPU inference
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])

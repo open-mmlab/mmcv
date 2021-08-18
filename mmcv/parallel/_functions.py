@@ -22,10 +22,6 @@ def scatter(input, devices, streams=None):
         if devices != [-1]:
             with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
                 output = output.cuda(devices[0], non_blocking=True)
-        else:
-            # unsqueeze the first dimension thus the tensor's shape is the
-            # same as those scattered with GPU.
-            output = output.unsqueeze(0)
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')
