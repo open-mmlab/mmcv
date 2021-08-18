@@ -1,13 +1,13 @@
 import copy
 
-from ..utils import Registry, build_from_cfg
+from ..utils import Registry
 
 RUNNERS = Registry('runner')
 RUNNER_BUILDERS = Registry('runner builder')
 
 
 def build_runner_constructor(cfg):
-    return build_from_cfg(cfg, RUNNER_BUILDERS)
+    return RUNNER_BUILDERS.build(cfg)
 
 
 def build_runner(cfg, default_args=None):

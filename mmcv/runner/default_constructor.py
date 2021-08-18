@@ -1,5 +1,4 @@
 from .builder import RUNNER_BUILDERS, RUNNERS
-from mmcv.utils import build_from_cfg
 
 
 @RUNNER_BUILDERS.register_module()
@@ -15,5 +14,4 @@ class DefaultRunnerConstructor:
         self.default_args = default_args
 
     def __call__(self):
-        return build_from_cfg(
-            self.runner_cfg, RUNNERS, default_args=self.default_args)
+        return RUNNERS.build(self.runner_cfg, default_args=self.default_args)
