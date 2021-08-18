@@ -18,6 +18,7 @@ else:
 def test_revert_syncbn():
     conv = ConvModule(3, 8, 2, norm_cfg=dict(type='SyncBN'))
     x = torch.randn(1, 3, 10, 10)
+    # Expect a ValueError prompting that SyncBN is not supported on CPU
     with pytest.raises(ValueError):
         y = conv(x)
     conv = revert_sync_batchnorm(conv)
