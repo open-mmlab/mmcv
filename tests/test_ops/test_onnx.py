@@ -643,6 +643,8 @@ def test_roll(shifts_dims_pair):
 def test_modulated_deform_conv2d():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
+    if not torch.cuda.is_available():
+        pytest.skip('modulated_deform_conv2d only supports in GPU')
     try:
         from mmcv.ops import ModulatedDeformConv2d
         from mmcv.ops import get_onnxruntime_op_path
