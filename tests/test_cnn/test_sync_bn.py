@@ -4,6 +4,7 @@ import platform
 import pytest
 import torch
 import torch.distributed as dist
+import numpy as np
 
 from mmcv.cnn.bricks import ConvModule
 from mmcv.cnn.utils import revert_sync_batchnorm
@@ -44,11 +45,15 @@ def test_revert_mmsyncbn():
 
     dist.init_process_group('nccl')
     torch.cuda.set_device(local_rank)
+    x = torch.randn(1, 3, 10, 10).cuda()
+    dist.broadcast(x, src=0)
     conv = ConvModule(3, 8, 2, norm_cfg=dict(type='MMSyncBN')).cuda()
     conv.eval()
-    x = torch.randn(1, 3, 10, 10)
-    y_mmsyncbn = conv(x).detach().cpu()
+    y_mmsyncbn = conv(x).detach().cpu().numpy()
     conv = revert_sync_batchnorm(conv)
-    conv = conv.to('cpu')
-    y_bn = conv(x).detach()
-    assert y_bn == y_mmsyncbn
+    y_bn = conv(x).detach().cpu().numpy()
+    assert np.all(np.isclose(y_bn, y_mmsyncbn, 1e-3))
+    conv, x = conv.to('cpu'), x.to('cpu')
+    y_bn_cpu = conv(x).detach().numpy()
+    assert np.all(np.isclose(y_bn, y_bn_cpu, 1e-3))
+
