@@ -74,7 +74,7 @@ class LoadImageFromFile:
 
         assert 'filename' in results, 'LoadImageFromFile requires key '\
             '"filename". Please check your pipelines.'
-        if results.get('img_prefix', None) is not None:
+        if results.get('img_prefix') is not None:
             filename = osp.join(results['img_prefix'], results['filename'])
         else:
             filename = results['filename']
