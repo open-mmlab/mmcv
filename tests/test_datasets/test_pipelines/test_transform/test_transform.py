@@ -16,11 +16,10 @@ def test_normalize(to_rgb):
         std=[58.395, 57.12, 57.375],
         to_rgb=to_rgb)
     results = dict()
-    img = imread(
+    original_img = imread(
         osp.join(osp.dirname(__file__), '../../../data/color.jpg'), 'color')
-    original_img = copy.deepcopy(img)
-    results['img'] = img
-    results['img2'] = copy.deepcopy(img)
+    results['img'] = copy.deepcopy(original_img)
+    results['img2'] = copy.deepcopy(original_img)
 
     transform_cfg = dict(type='Normalize', **img_norm_cfg)
     transform = build_from_cfg(transform_cfg, PIPELINES)

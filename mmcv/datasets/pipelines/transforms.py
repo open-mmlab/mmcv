@@ -10,11 +10,6 @@ from ..builder import PIPELINES
 class Normalize:
     """Normalize the image.
 
-    `results` is the input of `__call__()`. The required key of `results` is
-    `img_fields`, which is a list of string. Every item of it is also the key
-    of `results`, whose value is an image. After invoking the `__call__()`, the
-    return results will add an another key `img_norm_cfg`.
-
     Args:
         mean (sequence): Mean values of 3 channels.
         std (sequence): Std values of 3 channels.
@@ -28,7 +23,7 @@ class Normalize:
         ...     'mean': [123.675, 116.28, 103.53],
         ...     'std': [58.395, 57.12, 57.375]
         ... }
-        >>> img = imread('img_path')  # img_path is the path of image
+        >>> img = imread('/path/of/your/img')
         >>> results = {
         ...     'img': img,
         ...     'img_fields': ['img']
@@ -45,9 +40,12 @@ class Normalize:
     def __call__(self, results: dict) -> dict:
         """Call function to normalize images.
 
+        The required key of `results` is `img_fields`, which is a list of
+        string. Every item of it is also the key of `results`, whose value is
+        an image.
+
         Args:
-            results (dict): Result dict from loading pipeline. Required key is
-                'img_fields'.
+            results (dict): Result dict from loading pipeline.
 
         Returns:
             dict: Normalized results, 'img_norm_cfg' key is added into
