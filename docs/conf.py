@@ -16,6 +16,7 @@ import sys
 
 from m2r import MdInclude
 from recommonmark.transform import AutoStructify
+from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -179,6 +180,10 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
+# set priority when building html
+StandaloneHTMLBuilder.supported_image_types = [
+    'image/svg+xml', 'image/gif', 'image/png', 'image/jpeg'
+]
 # -- Extension configuration -------------------------------------------------
 
 
