@@ -516,8 +516,12 @@ def test_pickle_support():
 
 
 def test_deprecation():
-    deprecated_cfg_files = osp.join(data_path, 'config/deprecated.py')
-    with pytest.warns(UserWarning):
-        cfg = Config.fromfile(deprecated_cfg_files)
+    deprecated_cfg_files = [
+        osp.join(data_path, 'config/deprecated.py'),
+        osp.join(data_path, 'config/deprecated_as_base.py')
+    ]
 
-    assert cfg.item1 == 'expected'
+    for cfg_file in deprecated_cfg_files:
+        with pytest.warns(UserWarning):
+            cfg = Config.fromfile(cfg_file)
+        assert cfg.item1 == 'expected'

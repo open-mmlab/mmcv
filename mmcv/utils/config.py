@@ -226,6 +226,9 @@ class Config:
             if 'expected' in deprecation_info:
                 warning_msg += f' Please use {deprecation_info["expected"]} ' \
                     'instead.'
+            if 'reference' in deprecation_info:
+                warning_msg += ' More information can be found at ' \
+                    f'{deprecation_info["reference"]}'
             warnings.warn(warning_msg)
 
         cfg_text = filename + '\n'
