@@ -12,10 +12,9 @@
 #endif
 
 HOST_DEVICE_INLINE void deform_conv_shape_check(
-    at::Tensor input, at::Tensor offset, at::Tensor *gradOutput, at::Tensor weight,
-    int kH, int kW, int dH, int dW, int padH, int padW, int dilationH, int dilationW,
-    int group, int deformable_group)
-{
+    at::Tensor input, at::Tensor offset, at::Tensor *gradOutput,
+    at::Tensor weight, int kH, int kW, int dH, int dW, int padH, int padW,
+    int dilationH, int dilationW, int group, int deformable_group) {
   TORCH_CHECK(
       weight.ndimension() == 4,
       "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, but got: %s",
@@ -46,8 +45,7 @@ HOST_DEVICE_INLINE void deform_conv_shape_check(
   int dimh = 1;
   int dimw = 2;
 
-  if (ndim == 4)
-  {
+  if (ndim == 4) {
     dimf++;
     dimh++;
     dimw++;
@@ -91,8 +89,7 @@ HOST_DEVICE_INLINE void deform_conv_shape_check(
   TORCH_CHECK((offset.size(1) == deformable_group * 2 * kH * kW),
               "invalid number of channels of offset");
 
-  if (gradOutput != NULL)
-  {
+  if (gradOutput != NULL) {
     TORCH_CHECK(
         gradOutput->size(dimf) == nOutputPlane,
         "invalid number of gradOutput planes, expected: %d, but got: %d",
