@@ -60,9 +60,6 @@ rvm install 2.7.1
 
 Or refer to [this repo](https://github.com/innerlee/setup) and take [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh) according its instruction.
 
-For Windows OS, find a proper [ruby installer](https://rubyinstaller.org/downloads/) and install,
-remember to tick 'add to the path' before you click 'finish' button.
-
 After this on every commit check code linters and formatter will be enforced.
 
 >Before you create a PR, make sure that your code lints and is formatted by yapf.
