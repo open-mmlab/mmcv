@@ -17,6 +17,12 @@ video
 .. automodule:: mmcv.video
     :members:
 
+datasets
+------
+.. automodule:: mmcv.datasets
+    :members:
+    :special-members: __call__
+
 arraymisc
 ---------
 .. automodule:: mmcv.arraymisc
