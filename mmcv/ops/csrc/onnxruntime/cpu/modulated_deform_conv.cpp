@@ -258,19 +258,19 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
   const int64_t group = group_;
 
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
-  const float *input_data = 
+  const float *input_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
 
   const OrtValue *offset = ort_.KernelContext_GetInput(context, 1);
-  const float *offset_data = 
+  const float *offset_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(offset));
 
   const OrtValue *mask = ort_.KernelContext_GetInput(context, 2);
-  const float *mask_data = 
+  const float *mask_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(mask));
 
   const OrtValue *filter = ort_.KernelContext_GetInput(context, 3);
-  const float *filter_data = 
+  const float *filter_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(filter));
 
   const OrtValue *bias = ort_.KernelContext_GetInput(context, 4);
@@ -288,7 +288,7 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
   int64_t num_output = filter_dims[0];
   int64_t kernel_height = filter_dims[2];
   int64_t kernel_width = filter_dims[3];
-      
+
   // get output memory
   int64_t out_height = floor(
       (in_height + 2 * padding_height - dilation_height * (kernel_height - 1) - 1) / stride_height + 1);
@@ -302,11 +302,10 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
 
   deformable_conv2d_ref_fp32(
     input_data, offset_data, mask_data, filter_data, bias_data,
-    batch, channels, in_height, in_width, 
+    batch, channels, in_height, in_width,
     num_output, out_height, out_width,
-    group, deformable_group, channels, num_output, 
+    group, deformable_group, channels, num_output,
     kernel_height, kernel_width, stride_height, stride_width,
     padding_height, padding_width, dilation_height, dilation_width,
     out_ptr);
 }
-

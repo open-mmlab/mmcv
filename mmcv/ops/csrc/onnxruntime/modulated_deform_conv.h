@@ -34,7 +34,7 @@ struct MMCVModulatedDeformConvOp : Ort::CustomOpBase<MMCVModulatedDeformConvOp, 
 
   size_t GetInputTypeCount() const { return 5; };
   ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
-    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;      
+    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
   };
 
   OrtCustomOpInputOutputCharacteristic GetInputCharacteristic(size_t index) const {
