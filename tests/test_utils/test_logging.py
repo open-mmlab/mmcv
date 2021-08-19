@@ -30,7 +30,7 @@ def test_get_logger_rank0():
     assert logger.handlers[0].level == logging.DEBUG
 
     # the name can not be used to open the file a second time in windows,
-    # so `delete` should be set as `False` and we need manually remove the file
+    # so `delete` should be set as `False` and we need to manually remove it
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('rank0.pkg3', log_file=f.name)
@@ -41,6 +41,7 @@ def test_get_logger_rank0():
         logger_pkg3 = get_logger('rank0.pkg3')
         assert id(logger_pkg3) == id(logger)
         del logger
+    os.close(f)
     os.remove(f.name)
 
     logger_pkg3 = get_logger('rank0.pkg3.subpkg')
@@ -58,7 +59,7 @@ def test_get_logger_rank1():
     assert logger.handlers[0].level == logging.INFO
 
     # the name can not be used to open the file a second time in windows,
-    # so `delete` should be set as `False` and we need manually remove the file
+    # so `delete` should be set as `False` and we need to manually remove it
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('rank1.pkg2', log_file=f.name)
@@ -66,6 +67,7 @@ def test_get_logger_rank1():
         assert len(logger.handlers) == 1
         assert logger.handlers[0].level == logging.INFO
         del logger
+    os.close(f)
     os.remove(f.name)
 
 
@@ -90,7 +92,7 @@ def test_print_log_logger(caplog):
     assert caplog.record_tuples[-1] == ('mmcv', logging.ERROR, 'welcome')
 
     # the name can not be used to open the file a second time in windows,
-    # so `delete` should be set as `False` and we need manually remove the file
+    # so `delete` should be set as `False` and we need to manually remove it
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('abc', log_file=f.name)
@@ -102,7 +104,7 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
-        del logger
+    os.close(f)
     os.remove(f.name)
 
 
