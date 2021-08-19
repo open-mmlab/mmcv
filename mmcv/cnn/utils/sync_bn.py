@@ -33,8 +33,10 @@ def revert_sync_batchnorm(module):
         module_output: The converted module with `BatchNormXd` layers.
     """
     module_output = module
-    if isinstance(module, (torch.nn.modules.batchnorm.SyncBatchNorm,
-                           mmcv.ops.sync_bn.SyncBatchNorm)):
+    module_checklist = [torch.nn.modules.batchnorm.SyncBatchNorm]
+    if hasattr(mmcv, 'ops'):
+        module_checklist.append(mmcv.ops.SyncBatchNorm)
+    if isinstance(module, tuple(module_checklist)):
         module_output = _BatchNormXd(module.num_features, module.eps,
                                      module.momentum, module.affine,
                                      module.track_running_stats)
