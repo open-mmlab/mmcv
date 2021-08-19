@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Sequence, Union
 
 import numpy as np
