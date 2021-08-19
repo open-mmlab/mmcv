@@ -40,8 +40,8 @@ class Normalize:
     def __call__(self, results: dict) -> dict:
         """Call function to normalize images.
 
-        The required key of `results` is `img_fields`, which is a list of
-        string. Every item of it is also the key of `results`, whose value is
+        The required key of ``results`` is ``img_fields``, which is a list of
+        string. Every item of it is also the key of ``results``, whose value is
         an image.
 
         Args:
