@@ -180,7 +180,7 @@ item = dict(a='a', b='b')
 
 ### Add deprecation information in configs
 
-Deprecation information can be added into a config file, which will trigger a `UserWarning` when this config file is loaded.
+Deprecation information can be added in a config file, which will trigger a `UserWarning` when this config file is loaded.
 
 `deprecated_cfg.py`
 
