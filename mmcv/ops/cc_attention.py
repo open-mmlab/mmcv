@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,7 +15,7 @@ class CAWeightFunction(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, t, f):
-        return g.op('MMCVCAWeight', t, f)
+        return g.op('mmcv::MMCVCAWeight', t, f)
 
     @staticmethod
     def forward(ctx, t, f):
@@ -40,7 +41,7 @@ class CAMapFunction(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, weight, v):
-        return g.op('MMCVCAMap', weight, v)
+        return g.op('mmcv::MMCVCAMap', weight, v)
 
     @staticmethod
     def forward(ctx, weight, v):
