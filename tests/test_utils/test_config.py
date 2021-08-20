@@ -5,6 +5,7 @@ import os
 import os.path as osp
 import shutil
 import tempfile
+from pathlib import Path
 
 import pytest
 import yaml
@@ -66,6 +67,10 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
+    # item2 should not contain osp.dirname(__file__) because in windows
+    # environment the output of osp.dirname(__file__) may be the `D:\a\xxx`.
+    # When dumping the cfg_dict to file, `D:\a\xxx` will be converted to
+    # `D:\x07\xxx` and it will cause exception
     cfg_dict = dict(item1='h.py', item2='/temp/data/config', item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
@@ -492,13 +497,14 @@ def test_syntax_error():
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
+    # convert a string representation of the path with forward slashes (/)
+    temp_cfg_path = Path(temp_cfg_path).as_posix()
     # write a file with syntax error
     with open(temp_cfg_path, 'w') as f:
         f.write('a=0b=dict(c=1)')
     with pytest.raises(
             SyntaxError,
-            match='There are syntax errors in config '
-            f'file {temp_cfg_path}'):
+            match=f'There are syntax errors in config file {temp_cfg_path}'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
     os.remove(temp_cfg_path)
