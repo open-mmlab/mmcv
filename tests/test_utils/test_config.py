@@ -66,12 +66,7 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
-    # path of sep is `\\` in windows but `/` in linux, so osp.join should be
-    # used to join string for compatibility
-    cfg_dict = dict(
-        item1='h.py',
-        item2=osp.join(osp.dirname(__file__), 'data', 'config'),
-        item3='abc_h')
+    cfg_dict = dict(item1='h.py', item2='/temp/data/config', item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -493,7 +488,7 @@ def test_reserved_key():
 
 def test_syntax_error():
     # the name can not be used to open the file a second time in windows,
-    # so `delete` should be set as `False` and we need manually remove the file
+    # so `delete` should be set as `False` and we need to manually remove it
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
