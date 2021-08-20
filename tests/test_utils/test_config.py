@@ -67,11 +67,14 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
-    # item2 should not contain osp.dirname(__file__) because in windows
-    # environment the output of osp.dirname(__file__) may be the `D:\a\xxx`.
-    # When dumping the cfg_dict to file, `D:\a\xxx` will be converted to
-    # `D:\x07\xxx` and it will cause exception
-    cfg_dict = dict(item1='h.py', item2='/temp/data/config', item3='abc_h')
+    path = osp.join(osp.dirname(__file__), 'data', 'config')
+    # the value of osp.dirname(__file__) may be `D:\a\xxx` in windows
+    # environment. When dumping the cfg_dict to file, `D:\a\xxx` will be
+    # converted to `D:\x07\xxx` and it will cause unexpected result when
+    # checking whether `D:\a\xxx` equals to `D:\x07\xxx`. Therefore, we forcely
+    # convert a string representation of the path with forward slashes (/)
+    path = Path(path).as_posix()
+    cfg_dict = dict(item1='h.py', item2=path, item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -503,8 +506,7 @@ def test_syntax_error():
     with open(temp_cfg_path, 'w') as f:
         f.write('a=0b=dict(c=1)')
     with pytest.raises(
-            SyntaxError,
-            match=f'There are syntax errors in config file {temp_cfg_path}'):
+            SyntaxError, match='There are syntax errors in config file'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
     os.remove(temp_cfg_path)
