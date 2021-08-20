@@ -41,7 +41,7 @@ def test_get_logger_rank0():
         logger_pkg3 = get_logger('rank0.pkg3')
         assert id(logger_pkg3) == id(logger)
         del logger
-    os.close(f)
+    f.close()
     os.remove(f.name)
 
     logger_pkg3 = get_logger('rank0.pkg3.subpkg')
@@ -67,7 +67,7 @@ def test_get_logger_rank1():
         assert len(logger.handlers) == 1
         assert logger.handlers[0].level == logging.INFO
         del logger
-    os.close(f)
+    f.close()
     os.remove(f.name)
 
 
@@ -104,7 +104,7 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
-    os.close(f)
+    f.close()
     os.remove(f.name)
 
 
