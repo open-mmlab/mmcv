@@ -187,18 +187,13 @@ void deformable_conv2d_ref_fp32(
           }
         }
       } else {
-        for (int64_t oc = 0; oc < oc_per_gp; ++oc) {
-          for (int64_t hw = 0; hw < dst_h * dst_w; ++hw) {
-            dst_ptr[oc * dst_h * dst_w + hw] = 0.0f;
-          }
-        }
+        memset(dst_ptr, 0.0f, sizeof(float) * oc_per_gp * dst_h * dst_w);
       }
       gemm_ref_fp32(filter + g * oc_per_gp * ic_per_gp * kernel_h * kernel_w,
                     columns, nullptr, dst_ptr, 0, 0, oc_per_gp, dst_h * dst_w,
                     ic_per_gp * kernel_h * kernel_w, 1.0f, 1.0f, dst_ptr);
     }
   }
-  delete[] columns;
 }
 
 MMCVModulatedDeformConvKernel::MMCVModulatedDeformConvKernel(
