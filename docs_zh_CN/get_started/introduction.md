@@ -31,4 +31,6 @@ MMCV 提供了如下众多功能：
 
 如想了解更多特性和使用，请参考[文档](https://mmcv.readthedocs.io/zh_CN/latest)。
 
-提示: MMCV 需要 Python 3.6 以上版本。
+```{note}
+MMCV 需要 Python 3.6 以上版本。
+```
