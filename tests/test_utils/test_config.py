@@ -500,8 +500,6 @@ def test_syntax_error():
     # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
     temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
-    # convert a string representation of the path with forward slashes (/)
-    temp_cfg_path = Path(temp_cfg_path).as_posix()
     # write a file with syntax error
     with open(temp_cfg_path, 'w') as f:
         f.write('a=0b=dict(c=1)')
