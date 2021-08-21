@@ -9,13 +9,13 @@ environment. The only difference of them is that DistEvalHook will broadcast
 BatchNorm's buffers of rank 0 to other ranks to avoid the inconsistent
 performance of models in different ranks.
 
-```{note}
+**Note**:
 Before the evaluation hooks emerged, we can also perform evaluation by
 setting the 'val' mode in workflow like `workflow = [('train', 1), ('val', 1)]`
 which means performing evaluation after training one epoch. However, the 'val'
 mode is not enough powerful and scalable. Now, we no longer recommend adding
 'val' to workflow and evaluationhooks is strongly recommended.
-```
+
 
 #### Examples
 
