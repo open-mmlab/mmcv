@@ -44,7 +44,9 @@
     git checkout -b branchname
     ```
 
-    NOTE: To make commit history clear, we strongly recommend you checkout the master branch before create a new branch.
+```{tip}
+To make commit history clear, we strongly recommend you checkout the master branch before create a new branch.
+```
 
 3. Commit your changes
     ```bash

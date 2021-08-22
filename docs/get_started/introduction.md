@@ -28,4 +28,6 @@ It provides the following functionalities.
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
-Note: MMCV requires Python 3.6+.
+```{note}
+MMCV requires Python 3.6+.
+```
