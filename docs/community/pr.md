@@ -6,7 +6,7 @@
 
 > Pull requests let you tell others about changes you've pushed to a branch in a repository on GitHub. Once a pull request is opened, you can discuss and review the potential changes with collaborators and add follow-up commits before your changes are merged into the base branch.
 
-## Basic Workflow
+### Basic Workflow
 
 1. Get the most recent codebase
 2. Checkout a new branch from the master branch
@@ -44,7 +44,9 @@
     git checkout -b branchname
     ```
 
-    NOTE: To make commit history clear, we strongly recommend you checkout the master branch before create a new branch.
+```{tip}
+To make commit history clear, we strongly recommend you checkout the master branch before create a new branch.
+```
 
 3. Commit your changes
     ```bash

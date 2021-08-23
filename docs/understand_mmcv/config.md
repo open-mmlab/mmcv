@@ -177,3 +177,24 @@ item1 = 'a'
 item2 = dict(item3='b')
 item = dict(a='a', b='b')
 ```
+
+### Add deprecation information in configs
+
+Deprecation information can be added in a config file, which will trigger a `UserWarning` when this config file is loaded.
+
+`deprecated_cfg.py`
+
+```python
+_base_ = 'expected_cfg.py'
+
+_deprecation_ = dict(
+    expected = 'expected_cfg.py',  # optional to show expected config path in the warning information
+    reference = 'url to related PR'  # optional to show reference link in the warning information
+)
+```
+
+```python
+>>> cfg = Config.fromfile('./deprecated_cfg.py')
+
+UserWarning: The config file deprecated.py will be deprecated in the future. Please use expected_cfg.py instead. More information can be found at https://github.com/open-mmlab/mmcv/pull/1275
+```
