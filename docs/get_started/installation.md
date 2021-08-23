@@ -5,7 +5,9 @@ There are two versions of MMCV:
 - **mmcv-full**: comprehensive, with full features and various CUDA ops out of box. It takes longer time to build.
 - **mmcv**: lite, without CUDA ops but all other features, similar to mmcv<1.0.0. It is useful when you do not need those CUDA ops.
 
-**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full verion is highly recommended if CUDA is avaliable`.
+```{warning}
+Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full verion is highly recommended if CUDA is avaliable`.
+```
 
 a. Install the full version.
 

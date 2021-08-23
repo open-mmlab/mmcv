@@ -44,7 +44,7 @@ struct MMCVCumMinKernel {
 
 struct MMCVCumMaxCustomOp
     : Ort::CustomOpBase<MMCVCumMaxCustomOp, MMCVCumMaxKernel> {
-  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MMCVCumMaxKernel(api, info);
   }
 
@@ -69,7 +69,7 @@ struct MMCVCumMaxCustomOp
 
 struct MMCVCumMinCustomOp
     : Ort::CustomOpBase<MMCVCumMinCustomOp, MMCVCumMinKernel> {
-  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MMCVCumMinKernel(api, info);
   }
 
