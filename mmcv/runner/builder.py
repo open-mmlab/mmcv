@@ -3,7 +3,6 @@ import copy
 
 from ..utils import Registry
 
-
 RUNNERS = Registry('runner')
 RUNNER_BUILDERS = Registry('runner builder')
 
