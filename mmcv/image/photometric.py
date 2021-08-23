@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import cv2
 import numpy as np
 
@@ -239,7 +240,7 @@ def auto_contrast(img, cutoff=0):
 
     This function maximize (normalize) image contrast by first removing cutoff
     percent of the lightest and darkest pixels from the histogram and remapping
-     the image so that the darkest pixel becomes black (0), and the lightest
+    the image so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
 
     Args:
@@ -300,7 +301,7 @@ def adjust_sharpness(img, factor=1., kernel=None):
     image and the degenerated mean image:
 
     .. math::
-    output = img * factor + degenerated * (1 - factor)
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be sharpened. BGR order.
@@ -308,7 +309,7 @@ def adjust_sharpness(img, factor=1., kernel=None):
         kernel (np.ndarray, optional): Filter kernel to be applied on the img
             to obtain the degenerated img. Defaults to None.
 
-    Notes:
+    Notes::
         No value sanity check is enforced on the kernel set by users. So with
         an inappropriate kernel, the `adjust_sharpness` may fail to perform
         the function its name indicates but end up performing whatever

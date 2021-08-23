@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef SYNC_BN_PYTORCH_H
 #define SYNC_BN_PYTORCH_H
 #include <torch/extension.h>

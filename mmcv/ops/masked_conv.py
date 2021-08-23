@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
 
 import torch
@@ -17,13 +18,13 @@ class MaskedConv2dFunction(Function):
     @staticmethod
     def symbolic(g, features, mask, weight, bias, padding, stride):
         return g.op(
-            'MMCVMaskedConv2d',
+            'mmcv::MMCVMaskedConv2d',
             features,
             mask,
             weight,
             bias,
-            padding=padding,
-            stride=stride)
+            padding_i=padding,
+            stride_i=stride)
 
     @staticmethod
     def forward(ctx, features, mask, weight, bias, padding=0, stride=1):

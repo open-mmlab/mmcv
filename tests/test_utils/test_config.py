@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import json
 import os
@@ -513,3 +513,15 @@ def test_pickle_support():
         pkl_cfg = load(pkl_cfg_filename)
 
     assert pkl_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_deprecation():
+    deprecated_cfg_files = [
+        osp.join(data_path, 'config/deprecated.py'),
+        osp.join(data_path, 'config/deprecated_as_base.py')
+    ]
+
+    for cfg_file in deprecated_cfg_files:
+        with pytest.warns(UserWarning):
+            cfg = Config.fromfile(cfg_file)
+        assert cfg.item1 == 'expected'

@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef CC_ATTENTION_PYTORCH_H
 #define CC_ATTENTION_PYTORCH_H
 #include <torch/extension.h>

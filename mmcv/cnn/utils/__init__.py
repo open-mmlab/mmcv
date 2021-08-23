@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .flops_counter import get_model_complexity_info
 from .fuse_conv_bn import fuse_conv_bn
 from .weight_init import (INITIALIZERS, Caffe2XavierInit, ConstantInit,

@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import ast
 import copy
 import os
@@ -26,6 +26,7 @@ else:
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
+DEPRECATION_KEY = '_deprecation_'
 RESERVED_KEYS = ['filename', 'text', 'pretty_text']
 
 
@@ -216,6 +217,19 @@ class Config:
                 cfg_dict = mmcv.load(temp_config_file.name)
             # close temp file
             temp_config_file.close()
+
+        # check deprecation information
+        if DEPRECATION_KEY in cfg_dict:
+            deprecation_info = cfg_dict.pop(DEPRECATION_KEY)
+            warning_msg = f'The config file {filename} will be deprecated ' \
+                'in the future.'
+            if 'expected' in deprecation_info:
+                warning_msg += f' Please use {deprecation_info["expected"]} ' \
+                    'instead.'
+            if 'reference' in deprecation_info:
+                warning_msg += ' More information can be found at ' \
+                    f'{deprecation_info["reference"]}'
+            warnings.warn(warning_msg)
 
         cfg_text = filename + '\n'
         with open(filename, 'r', encoding='utf-8') as f:

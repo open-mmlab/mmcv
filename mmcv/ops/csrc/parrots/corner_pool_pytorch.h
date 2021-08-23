@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef CORNER_POOL_PYTORCH_H
 #define CORNER_POOL_PYTORCH_H
 #include <torch/extension.h>
