@@ -43,6 +43,6 @@ __all__ = [
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook'
+    'GradientCumulativeFp16OptimizerHook',
     'DefaultRunnerConstructor',
 ]
