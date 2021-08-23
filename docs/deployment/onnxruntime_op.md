@@ -52,7 +52,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```bash
 cd mmcv # to MMCV root directory
-MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 pip install -e .
+MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 python setup.py develop
 ```
 
 ## How to do inference using exported ONNX models with custom operators in ONNX Runtime in python
