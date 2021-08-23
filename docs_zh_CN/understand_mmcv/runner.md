@@ -3,12 +3,12 @@
 执行器模块负责模型训练过程调度，主要目的是让用户使用更少的代码以及灵活可配置方式开启训练。其具备如下核心特性:
 
 - 支持以 `EpochBasedRunner` 和 `IterBasedRunner` 为单位的迭代模式以满足不同场景
-- 支持定制工作流以满足训练过程中各状态自由切换，目前支持训练和验证两个工作流
+- 支持定制工作流以满足训练过程中各状态自由切换，目前支持训练和验证两个工作流。工作流可以简单理解为一个完成的训练和验证迭代过程。
 - 配合各类默认和自定义 Hook，对外提供了灵活扩展能力
 
 ### EpochBasedRunner
 
-顾名思义，`EpochBasedRunner` 是指工作流中是以 epoch 为设置单位的，例如设置 workflow = [('train', 2), ('val', 1)] 表示循环迭代地训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
+顾名思义，`EpochBasedRunner` 是指以 epoch 为周期的工作流，例如设置 workflow = [('train', 2), ('val', 1)] 表示循环迭代地训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
 
@@ -40,7 +40,7 @@ def train(self, data_loader, **kwargs):
 ```
 
 ### IterBasedRunner
-不同于 `EpochBasedRunner`，`IterBasedRunner` 是指工作流中以 iter 为设置单位，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
+不同于 `EpochBasedRunner`，`IterBasedRunner` 是指以 iter 为周期的工作流，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
 
