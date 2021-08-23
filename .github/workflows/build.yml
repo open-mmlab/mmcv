@@ -164,6 +164,9 @@ jobs:
           - python-version: 3.8
             torch: 1.8.0+cu101
             torchvision: 0.9.0+cu101
+          - python-version: 3.9
+            torch: 1.8.0+cu101
+            torchvision: 0.9.0+cu101
 
     steps:
       - uses: actions/checkout@v2
