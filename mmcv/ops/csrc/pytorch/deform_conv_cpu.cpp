@@ -1,5 +1,4 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include "deform_conv_utils.hpp"
 #include "pytorch_cpp_helper.hpp"
 
 template <typename T>
