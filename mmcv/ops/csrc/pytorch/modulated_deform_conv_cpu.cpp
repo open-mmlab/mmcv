@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
 
-template <typename T> T dmcn_im2col_bilinear_cpu(
-  const T *input, const int data_width,
-  const int height, const int width, T h, T w) {
+template <typename T>
+T dmcn_im2col_bilinear_cpu(const T *input, const int data_width,
+                           const int height, const int width, T h, T w) {
   int h_low = floorf(h);
   int w_low = floorf(w);
   int h_high = h_low + 1;
@@ -14,7 +14,8 @@ template <typename T> T dmcn_im2col_bilinear_cpu(
   T hh = 1 - lh, hw = 1 - lw;
 
   T v1 = 0;
-  if (h_low >= 0 && w_low >= 0) v1 = input[h_low * data_width + w_low];
+  if (h_low >= 0 && w_low >= 0)
+    v1 = input[h_low * data_width + w_low];
   T v2 = 0;
   if (h_low >= 0 && w_high <= width - 1)
     v2 = input[h_low * data_width + w_high];
@@ -31,9 +32,9 @@ template <typename T> T dmcn_im2col_bilinear_cpu(
   return val;
 }
 
-template <typename T> T dmcn_get_gradient_weight_cpu(
-  T argmax_h, T argmax_w, const int h, const int w,
-  const int height, const int width) {
+template <typename T>
+T dmcn_get_gradient_weight_cpu(T argmax_h, T argmax_w, const int h, const int w,
+                               const int height, const int width) {
   if (argmax_h <= -1 || argmax_h >= height || argmax_w <= -1 ||
       argmax_w >= width) {
     // empty
@@ -57,9 +58,10 @@ template <typename T> T dmcn_get_gradient_weight_cpu(
   return weight;
 }
 
-template <typename T> T dmcn_get_coordinate_weight_cpu(
-  T argmax_h, T argmax_w, const int height, const int width,
-  const T *im_data, const int data_width, const int bp_dir) {
+template <typename T>
+T dmcn_get_coordinate_weight_cpu(T argmax_h, T argmax_w, const int height,
+                                 const int width, const T *im_data,
+                                 const int data_width, const int bp_dir) {
   if (argmax_h <= -1 || argmax_h >= height || argmax_w <= -1 ||
       argmax_w >= width) {
     // empty
@@ -104,7 +106,8 @@ template <typename T> T dmcn_get_coordinate_weight_cpu(
   return weight;
 }
 
-template <typename T> void modulated_deformable_im2col_cpu_kernel(
+template <typename T>
+void modulated_deformable_im2col_cpu_kernel(
     const int n, const T *data_im, const T *data_offset, const T *data_mask,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
@@ -155,7 +158,8 @@ template <typename T> void modulated_deformable_im2col_cpu_kernel(
         const T h_im = h_in + i * dilation_h + offset_h;
         const T w_im = w_in + j * dilation_w + offset_w;
         if (h_im > -1 && w_im > -1 && h_im < height && w_im < width)
-          val = dmcn_im2col_bilinear_cpu(data_im_ptr, width, height, width, h_im, w_im);
+          val = dmcn_im2col_bilinear_cpu(data_im_ptr, width, height, width,
+                                         h_im, w_im);
         *data_col_ptr = val * mask;
         data_col_ptr += batch_size * height_col * width_col;
       }
@@ -163,7 +167,8 @@ template <typename T> void modulated_deformable_im2col_cpu_kernel(
   }
 }
 
-template <typename T> void modulated_deformable_col2im_cpu_kernel(
+template <typename T>
+void modulated_deformable_col2im_cpu_kernel(
     const int n, const T *data_col, const T *data_offset, const T *data_mask,
     const int channels, const int height, const int width, const int kernel_h,
     const int kernel_w, const int pad_h, const int pad_w, const int stride_h,
@@ -171,7 +176,7 @@ template <typename T> void modulated_deformable_col2im_cpu_kernel(
     const int channel_per_deformable_group, const int batch_size,
     const int deformable_group, const int height_col, const int width_col,
     T *grad_im) {
-  for (int index = 0; index < n ; index++) {
+  for (int index = 0; index < n; index++) {
     const int j = (index / width_col / height_col / batch_size) % kernel_w;
     const int i =
         (index / width_col / height_col / batch_size / kernel_w) % kernel_h;
@@ -215,9 +220,9 @@ template <typename T> void modulated_deformable_col2im_cpu_kernel(
             abs(cur_inv_w_data - (cur_w + dx)) < 1) {
           int cur_bottom_grad_pos =
               ((b * channels + c) * height + cur_h + dy) * width + cur_w + dx;
-          T weight =
-              dmcn_get_gradient_weight_cpu(cur_inv_h_data, cur_inv_w_data,
-                                          cur_h + dy, cur_w + dx, height, width);
+          T weight = dmcn_get_gradient_weight_cpu(cur_inv_h_data,
+                                                  cur_inv_w_data, cur_h + dy,
+                                                  cur_w + dx, height, width);
           *(grad_im + cur_bottom_grad_pos) += weight * cur_top_grad;
         }
       }
@@ -225,7 +230,8 @@ template <typename T> void modulated_deformable_col2im_cpu_kernel(
   }
 }
 
-template <typename T> void modulated_deformable_col2im_coord_cpu_kernel(
+template <typename T>
+void modulated_deformable_col2im_coord_cpu_kernel(
     const int n, const T *data_col, const T *data_im, const T *data_offset,
     const T *data_mask, const int channels, const int height, const int width,
     const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
@@ -289,8 +295,8 @@ template <typename T> void modulated_deformable_col2im_coord_cpu_kernel(
         inv_h = inv_w = -2;
       else
         mval += data_col_ptr[col_pos] *
-                dmcn_im2col_bilinear_cpu(data_im_ptr + cnt * height * width, width,
-                                         height, width, inv_h, inv_w);
+                dmcn_im2col_bilinear_cpu(data_im_ptr + cnt * height * width,
+                                         width, height, width, inv_h, inv_w);
       const T weight = dmcn_get_coordinate_weight_cpu(
           inv_h, inv_w, height, width, data_im_ptr + cnt * height * width,
           width, bp_dir);
@@ -395,195 +401,4 @@ void modulated_deformable_col2im_coord_cpu(
             2 * kernel_h * kernel_w * deformable_group, deformable_group,
             height_col, width_col, grad_offset_, grad_mask_);
       }));
-}
-
-void ModulatedDeformConvForwardCPULauncher(
-    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
-    Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
-    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
-    const int dilation_h, const int dilation_w, const int group,
-    const int deformable_group, const bool with_bias) {
-  at::DeviceGuard guard(input.device());
-
-  const int batch = input.size(0);
-  const int channels = input.size(1);
-  const int height = input.size(2);
-  const int width = input.size(3);
-
-  const int channels_out = weight.size(0);
-  const int channels_kernel = weight.size(1);
-  const int kernel_h_ = weight.size(2);
-  const int kernel_w_ = weight.size(3);
-
-  if (kernel_h_ != kernel_h || kernel_w_ != kernel_w)
-    AT_ERROR("Input shape and kernel shape wont match: (%d x %d vs %d x %d).",
-             kernel_h_, kernel_w, kernel_h_, kernel_w_);
-  if (channels != channels_kernel * group)
-    AT_ERROR("Input shape and kernel channels wont match: (%d vs %d).",
-             channels, channels_kernel * group);
-
-  const int height_out =
-      (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-  const int width_out =
-      (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-
-  if (ones.ndimension() != 2 ||
-      ones.size(0) * ones.size(1) < height_out * width_out) {
-    // Resize plane and fill with ones...
-    ones = at::ones({height_out, width_out}, input.options());
-  }
-
-  // resize output
-  output = output.view({batch, channels_out, height_out, width_out}).zero_();
-  // resize temporary columns
-  columns =
-      at::zeros({channels * kernel_h * kernel_w, 1 * height_out * width_out},
-                input.options());
-
-  output = output.view({output.size(0), group, output.size(1) / group,
-                        output.size(2), output.size(3)});
-
-  for (int b = 0; b < batch; b++) {
-    modulated_deformable_im2col_cpu(
-        input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, columns);
-
-    // divide into group
-    weight = weight.view({group, weight.size(0) / group, weight.size(1),
-                          weight.size(2), weight.size(3)});
-    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
-
-    for (int g = 0; g < group; g++) {
-      output[b][g] = output[b][g]
-                         .flatten(1)
-                         .addmm_(weight[g].flatten(1), columns[g])
-                         .view_as(output[b][g]);
-    }
-
-    weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
-                          weight.size(3), weight.size(4)});
-    columns =
-        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
-  }
-
-  output = output.view({output.size(0), output.size(1) * output.size(2),
-                        output.size(3), output.size(4)});
-
-  if (with_bias) {
-    output += bias.view({1, bias.size(0), 1, 1});
-  }
-}
-
-void ModulatedDeformConvBackwardCPULauncher(
-    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
-    Tensor mask, Tensor columns, Tensor grad_input, Tensor grad_weight,
-    Tensor grad_bias, Tensor grad_offset, Tensor grad_mask, Tensor grad_output,
-    int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
-    int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
-    const bool with_bias) {
-  at::DeviceGuard guard(input.device());
-
-  const int batch = input.size(0);
-  const int channels = input.size(1);
-  const int height = input.size(2);
-  const int width = input.size(3);
-
-  const int channels_kernel = weight.size(1);
-  const int kernel_h_ = weight.size(2);
-  const int kernel_w_ = weight.size(3);
-  if (kernel_h_ != kernel_h || kernel_w_ != kernel_w)
-    AT_ERROR("Input shape and kernel shape wont match: (%d x %d vs %d x %d).",
-             kernel_h_, kernel_w, kernel_h_, kernel_w_);
-  if (channels != channels_kernel * group)
-    AT_ERROR("Input shape and kernel channels wont match: (%d vs %d).",
-             channels, channels_kernel * group);
-
-  const int height_out =
-      (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-  const int width_out =
-      (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-
-  if (ones.ndimension() != 2 ||
-      ones.size(0) * ones.size(1) < height_out * width_out) {
-    // Resize plane and fill with ones...
-    ones = at::ones({height_out, width_out}, input.options());
-  }
-
-  grad_input = grad_input.view({batch, channels, height, width});
-  columns = at::zeros({channels * kernel_h * kernel_w, height_out * width_out},
-                      input.options());
-
-  grad_output =
-      grad_output.view({grad_output.size(0), group, grad_output.size(1) / group,
-                        grad_output.size(2), grad_output.size(3)});
-
-  for (int b = 0; b < batch; b++) {
-    // divide int group
-    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
-    weight = weight.view({group, weight.size(0) / group, weight.size(1),
-                          weight.size(2), weight.size(3)});
-
-    for (int g = 0; g < group; g++) {
-      columns[g].addmm_(weight[g].flatten(1).transpose(0, 1),
-                        grad_output[b][g].flatten(1), 0.0f, 1.0f);
-    }
-
-    columns =
-        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
-    weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
-                          weight.size(3), weight.size(4)});
-
-    // gradient w.r.t. input coordinate data
-    modulated_deformable_col2im_coord_cpu(
-        columns, input[b], offset[b], mask[b], 1, channels, height, width,
-        height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h,
-        stride_w, dilation_h, dilation_w, deformable_group, grad_offset[b],
-        grad_mask[b]);
-    // gradient w.r.t. input data
-    modulated_deformable_col2im_cpu(
-        columns, offset[b], mask[b], 1, channels, height, width, height_out,
-        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, grad_input[b]);
-
-    // gradient w.r.t. weight, dWeight should accumulate across the batch and
-    // group
-    modulated_deformable_im2col_cpu(
-        input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-        dilation_h, dilation_w, deformable_group, columns);
-
-    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
-    grad_weight = grad_weight.view({group, grad_weight.size(0) / group,
-                                    grad_weight.size(1), grad_weight.size(2),
-                                    grad_weight.size(3)});
-    if (with_bias)
-      grad_bias = grad_bias.view({group, grad_bias.size(0) / group});
-
-    for (int g = 0; g < group; g++) {
-      grad_weight[g] =
-          grad_weight[g]
-              .flatten(1)
-              .addmm_(grad_output[b][g].flatten(1), columns[g].transpose(0, 1))
-              .view_as(grad_weight[g]);
-      if (with_bias) {
-        grad_bias[g] =
-            grad_bias[g]
-                .view({-1, 1})
-                .addmm_(grad_output[b][g].flatten(1), ones.view({-1, 1}))
-                .view(-1);
-      }
-    }
-
-    columns =
-        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
-    grad_weight = grad_weight.view({grad_weight.size(0) * grad_weight.size(1),
-                                    grad_weight.size(2), grad_weight.size(3),
-                                    grad_weight.size(4)});
-    if (with_bias)
-      grad_bias = grad_bias.view({grad_bias.size(0) * grad_bias.size(1)});
-  }
-  grad_output = grad_output.view({grad_output.size(0) * grad_output.size(1),
-                                  grad_output.size(2), grad_output.size(3),
-                                  grad_output.size(4)});
 }
