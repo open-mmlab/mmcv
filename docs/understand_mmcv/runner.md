@@ -58,7 +58,7 @@ while curr_iter < max_iters:
     for i, flow in enumerate(workflow):
         # mode(e.g. train) determines which function to run
         mode, iters = flow
-        # epoch_runner will be either self.train() or self.val()
+        # iter_runner will be either self.train() or self.val()
         iter_runner = getattr(self, mode)
         # execute the corresponding function
         for _ in range(iters):
