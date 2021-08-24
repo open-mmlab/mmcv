@@ -41,6 +41,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install utils
+        run: pip install psutil
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -73,6 +75,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install utils
+        run: pip install psutil
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
@@ -113,6 +117,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install utils
+        run: pip install psutil
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
@@ -181,6 +187,8 @@ jobs:
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
           sudo apt-get install -y ninja-build
+      - name: Install utils
+        run: pip install psutil
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
@@ -305,6 +313,8 @@ jobs:
           python-version: 3.7
       - name: Install system dependencies
         run: brew install ffmpeg jpeg-turbo
+      - name: Install utils
+        run: pip install psutil
       - name: Install Pillow
         run: pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}

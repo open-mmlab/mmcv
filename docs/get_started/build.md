@@ -35,10 +35,11 @@ e.g.,
 CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 ```
 
-Note: If you would like to use `opencv-python-headless` instead of `opencv-python`,
+```{note}
+If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
-
+```
 ### Build on Windows
 
 Building MMCV on Windows is a bit more complicated than that on Linux.
@@ -203,7 +204,9 @@ pip list
    $env:TORCH_CUDA_ARCH_LIST="3.5 3.7 5.0 5.2 6.0 6.1 7.0 7.5"
    ```
 
-   Note: Check your the compute capability of your GPU from [here](https://developer.nvidia.com/cuda-gpus).
+```{note}
+Check your the compute capability of your GPU from [here](https://developer.nvidia.com/cuda-gpus).
+```
 
 1. Launch compiling the same way as CPU
 

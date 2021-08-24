@@ -4,8 +4,6 @@
     <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
 </div>
 
-[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
-
 MMCV is a foundational library for computer vision research and supports many
 research projects as below:
 
@@ -30,4 +28,6 @@ It provides the following functionalities.
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
-Note: MMCV requires Python 3.6+.
+```{note}
+MMCV requires Python 3.6+.
+```
