@@ -199,6 +199,9 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install dependencies for compiling onnx when python=3.9
+        run: pip install protobuf && sudo apt-get install libprotobuf-dev protobuf-compiler
+        if: ${{matrix.python-version == '3.9'}}
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
@@ -279,16 +282,6 @@ jobs:
           coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
           coverage report -m
-      # Only upload coverage report for python3.7 && pytorch1.6
-      - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.6.0+cu102' && matrix.python-version == '3.7'}}
-        uses: codecov/codecov-action@v1.0.14
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umbrella
-          fail_ci_if_error: false
 
   build_macos:
     runs-on: macos-latest
