@@ -5,6 +5,7 @@ from .builder import RUNNERS, build_runner
 from .checkpoint import (CheckpointLoader, _load_checkpoint,
                          _load_checkpoint_with_prefix, load_checkpoint,
                          load_state_dict, save_checkpoint, weights_to_cpu)
+from .default_constructor import DefaultRunnerConstructor
 from .dist_utils import (allreduce_grads, allreduce_params, get_dist_info,
                          init_dist, master_only)
 from .epoch_based_runner import EpochBasedRunner, Runner
@@ -42,5 +43,5 @@ __all__ = [
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook'
+    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor'
 ]
