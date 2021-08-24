@@ -256,10 +256,14 @@ class DeformConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        n = self.in_channels // self.groups # fu added
+        # fills the weight with values according to the method
+        # described in `Delving deep into rectifiers: Surpassing human-level
+        # performance on ImageNet classification` - He, K. et al. (2015), using
+        # a uniform distribution
+        fan_in = self.in_channels // self.groups
         for k in self.kernel_size:
-            n *= k
-        stdv = 1. / math.sqrt(n)
+            fan_in *= k
+        stdv = 1. / math.sqrt(fan_in)
         self.weight.data.uniform_(-stdv, stdv)
 
     def forward(self, x: Tensor, offset: Tensor) -> Tensor:
