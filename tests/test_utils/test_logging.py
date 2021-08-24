@@ -1,4 +1,5 @@
 import logging
+import os
 import platform
 import tempfile
 from unittest.mock import patch
@@ -28,15 +29,21 @@ def test_get_logger_rank0():
     assert len(logger.handlers) == 1
     assert logger.handlers[0].level == logging.DEBUG
 
-    with tempfile.NamedTemporaryFile() as f:
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need to manually remove it
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('rank0.pkg3', log_file=f.name)
-    assert isinstance(logger, logging.Logger)
-    assert len(logger.handlers) == 2
-    assert isinstance(logger.handlers[0], logging.StreamHandler)
-    assert isinstance(logger.handlers[1], logging.FileHandler)
+        assert isinstance(logger, logging.Logger)
+        assert len(logger.handlers) == 2
+        assert isinstance(logger.handlers[0], logging.StreamHandler)
+        assert isinstance(logger.handlers[1], logging.FileHandler)
+        logger_pkg3 = get_logger('rank0.pkg3')
+        assert id(logger_pkg3) == id(logger)
+        # flushing and closing all handlers in order to remove `f.name`
+        logging.shutdown()
 
-    logger_pkg3 = get_logger('rank0.pkg3')
-    assert id(logger_pkg3) == id(logger)
+    os.remove(f.name)
 
     logger_pkg3 = get_logger('rank0.pkg3.subpkg')
     assert logger_pkg3.handlers == logger_pkg3.handlers
@@ -52,11 +59,18 @@ def test_get_logger_rank1():
     assert isinstance(logger.handlers[0], logging.StreamHandler)
     assert logger.handlers[0].level == logging.INFO
 
-    with tempfile.NamedTemporaryFile() as f:
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need to manually remove it
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('rank1.pkg2', log_file=f.name)
-    assert isinstance(logger, logging.Logger)
-    assert len(logger.handlers) == 1
-    assert logger.handlers[0].level == logging.INFO
+        assert isinstance(logger, logging.Logger)
+        assert len(logger.handlers) == 1
+        assert logger.handlers[0].level == logging.INFO
+        # flushing and closing all handlers in order to remove `f.name`
+        logging.shutdown()
+
+    os.remove(f.name)
 
 
 def test_print_log_print(capsys):
@@ -79,7 +93,10 @@ def test_print_log_logger(caplog):
     print_log('welcome', logger='mmcv', level=logging.ERROR)
     assert caplog.record_tuples[-1] == ('mmcv', logging.ERROR, 'welcome')
 
-    with tempfile.NamedTemporaryFile() as f:
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need to manually remove it
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    with tempfile.NamedTemporaryFile(delete=False) as f:
         logger = get_logger('abc', log_file=f.name)
         print_log('welcome', logger=logger)
         assert caplog.record_tuples[-1] == ('abc', logging.INFO, 'welcome')
@@ -89,6 +106,10 @@ def test_print_log_logger(caplog):
             match = re.fullmatch(regex_time + r' - abc - INFO - welcome\n',
                                  log_text)
             assert match is not None
+        # flushing and closing all handlers in order to remove `f.name`
+        logging.shutdown()
+
+    os.remove(f.name)
 
 
 def test_print_log_exception():
