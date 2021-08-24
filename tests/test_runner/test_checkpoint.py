@@ -256,13 +256,12 @@ def test_load_checkpoint_metadata():
             version = local_metadata.get('version', None)
             if version is None or version < 2:
                 state_dict_keys = list(state_dict.keys())
+                convert_map = {'conv1': 'conv0', 'conv2': 'conv1'}
                 for k in state_dict_keys:
-                    convert_map = {'conv1': 'conv0', 'conv2': 'conv1'}
-                    for ori_pattern, convert_pattern in convert_map.items():
-                        if k.startswith(prefix + ori_pattern):
-                            convert_key = k.replace(ori_pattern,
-                                                    convert_pattern)
-                            state_dict[convert_key] = state_dict[k]
+                    for ori_str, new_str in convert_map.items():
+                        if k.startswith(prefix + ori_str):
+                            new_key = k.replace(ori_str, new_str)
+                            state_dict[new_key] = state_dict[k]
                             del state_dict[k]
 
             super()._load_from_state_dict(state_dict, prefix, local_metadata,
