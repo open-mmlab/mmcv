@@ -3,7 +3,7 @@ import warnings
 
 import torch.nn as nn
 
-from mmcv.utils import _BatchNorm
+from mmcv.utils import _BatchNorm, _InstanceNorm
 from ..utils import constant_init, kaiming_init
 from .activation import build_activation_layer
 from .conv import build_conv_layer
@@ -146,9 +146,10 @@ class ConvModule(nn.Module):
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
             self.add_module(self.norm_name, norm)
             if self.with_bias:
-                if issubclass(norm, _BatchNorm):
+                if isinstance(norm, (_BatchNorm, _InstanceNorm)):
                     warnings.warn(
-                        'ConvModule has batch norm and bias at the same time')
+                        'ConvModule has batch/instance norm and bias at the'
+                        ' same time')
         else:
             self.norm_name = None
 

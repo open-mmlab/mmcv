@@ -167,7 +167,14 @@ def test_bias():
         ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='BN'))
     assert len(record) == 1
     assert record[0].message.args[
-        0] == 'ConvModule has batch norm and bias at the same time'
+        0] == 'ConvModule has batch/instance norm and bias at the same time'
+
+    # bias: True, with instance norm
+    with pytest.warns(UserWarning) as record:
+        ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='IN'))
+    assert len(record) == 1
+    assert record[0].message.args[
+        0] == 'ConvModule has batch/instance norm and bias at the same time'
 
     # bias: True, with other norm
     with pytest.warns(UserWarning) as record:
