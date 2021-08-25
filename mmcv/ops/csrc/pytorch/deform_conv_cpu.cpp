@@ -18,8 +18,7 @@ T deformable_im2col_bilinear_cpu(const T *input, const int data_width,
   T hh = 1 - lh, hw = 1 - lw;
 
   T v1 = 0;
-  if (h_low >= 0 && w_low >= 0)
-    v1 = input[h_low * data_width + w_low];
+  if (h_low >= 0 && w_low >= 0) v1 = input[h_low * data_width + w_low];
   T v2 = 0;
   if (h_low >= 0 && w_high <= width - 1)
     v2 = input[h_low * data_width + w_high];
@@ -229,7 +228,6 @@ void deformable_col2im_coord_cpu_kernel(
     const int channel_per_deformable_group, const int batch_size,
     const int offset_channels, const int deformable_group, const int height_col,
     const int width_col, T *grad_offset) {
-
   for (int index = 0; index < n; index++) {
     T val = 0;
     int w = index % width_col;
@@ -353,7 +351,6 @@ void deformable_col2im_coord_cpu(
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w, const int parallel_imgs,
     const int deformable_group, Tensor grad_offset) {
-
   int height_col =
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
   int width_col =

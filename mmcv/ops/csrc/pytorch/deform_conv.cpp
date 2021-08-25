@@ -508,7 +508,6 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
                    deformable_group * 2 * kH * kW, outputHeight, outputWidth});
 
   for (int elt = 0; elt < batchSize / im2col_step; elt++) {
-
     if (input.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
       deformable_im2col(input[elt], offset[elt], nInputPlane, inputHeight,

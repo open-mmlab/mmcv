@@ -14,8 +14,7 @@ T dmcn_im2col_bilinear_cpu(const T *input, const int data_width,
   T hh = 1 - lh, hw = 1 - lw;
 
   T v1 = 0;
-  if (h_low >= 0 && w_low >= 0)
-    v1 = input[h_low * data_width + w_low];
+  if (h_low >= 0 && w_low >= 0) v1 = input[h_low * data_width + w_low];
   T v2 = 0;
   if (h_low >= 0 && w_high <= width - 1)
     v2 = input[h_low * data_width + w_high];
