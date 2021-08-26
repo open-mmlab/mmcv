@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .ema import EMAHook
@@ -11,7 +11,8 @@ from .logger import (DvcliveLoggerHook, LoggerHook, MlflowLoggerHook,
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .momentum_updater import MomentumUpdaterHook
-from .optimizer import Fp16OptimizerHook, OptimizerHook
+from .optimizer import (Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
+                        GradientCumulativeOptimizerHook, OptimizerHook)
 from .profiler import ProfilerHook
 from .sampler_seed import DistSamplerSeedHook
 from .sync_buffer import SyncBuffersHook
@@ -23,5 +24,6 @@ __all__ = [
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
     'NeptuneLoggerHook', 'WandbLoggerHook', 'DvcliveLoggerHook',
     'MomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook', 'EvalHook',
-    'DistEvalHook', 'ProfilerHook'
+    'DistEvalHook', 'ProfilerHook', 'GradientCumulativeOptimizerHook',
+    'GradientCumulativeFp16OptimizerHook'
 ]

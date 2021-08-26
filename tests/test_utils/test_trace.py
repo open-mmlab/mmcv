@@ -1,13 +1,11 @@
-from distutils.version import LooseVersion
-
 import pytest
 import torch
 
-from mmcv.utils import is_jit_tracing
+from mmcv.utils import digit_version, is_jit_tracing
 
 
 @pytest.mark.skipif(
-    LooseVersion(torch.__version__) < LooseVersion('1.6.0'),
+    digit_version(torch.__version__) < digit_version('1.6.0'),
     reason='torch.jit.is_tracing is not available before 1.6.0')
 def test_is_jit_tracing():
 

@@ -27,7 +27,7 @@
 
 ## How to build custom operators for ONNX Runtime
 
-*Please be noted that only **onnxruntime>=1.5.1** of CPU version on Linux platform is tested by now.*
+*Please be noted that only **onnxruntime>=1.8.1** of CPU version on Linux platform is tested by now.*
 
 ### Prerequisite
 
@@ -37,14 +37,13 @@
 git clone https://github.com/open-mmlab/mmcv.git
 ```
 
-- Download `onnxruntime-linux-x64-1.5.1.tgz` from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.5.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
+- Download `onnxruntime-linux` from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
 
 ```bash
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.5.1/onnxruntime-linux-x64-1.5.1.tgz
-
-tar -zxvf onnxruntime-linux-x64-1.5.1.tgz
-cd onnxruntime-linux-x64-1.5.1
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+cd onnxruntime-linux-x64-1.8.1
 export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
@@ -53,7 +52,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```bash
 cd mmcv # to MMCV root directory
-MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 pip install -e .
+MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 python setup.py develop
 ```
 
 ## How to do inference using exported ONNX models with custom operators in ONNX Runtime in python
@@ -61,7 +60,7 @@ MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 pip install -e .
 Install ONNX Runtime with `pip`
 
 ```bash
-pip install onnxruntime==1.5.1
+pip install onnxruntime==1.8.1
 ```
 
 Inference Demo
@@ -98,7 +97,7 @@ Take custom operator `soft_nms` for example.
 
 1. Add header `soft_nms.h` to ONNX Runtime include directory `mmcv/ops/csrc/onnxruntime/`
 2. Add source `soft_nms.cpp` to ONNX Runtime source directory `mmcv/ops/csrc/onnxruntime/cpu/`
-3. Register `soft_nms` operator in [onnxruntime_register.cpp](../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)
+3. Register `soft_nms` operator in [onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)
 
     ```c++
     #include "soft_nms.h"
@@ -111,7 +110,7 @@ Take custom operator `soft_nms` for example.
     ```
 
 4. Add unit test into `tests/test_ops/test_onnx.py`
-   Check [here](../tests/test_ops/test_onnx.py) for examples.
+   Check [here](../../tests/test_ops/test_onnx.py) for examples.
 
 **Finally, welcome to send us PR of adding custom operators for ONNX Runtime in MMCV.** :nerd_face:
 

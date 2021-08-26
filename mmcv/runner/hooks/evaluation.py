@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
 import warnings
@@ -9,6 +10,7 @@ from torch.utils.data import DataLoader
 
 from mmcv.utils import is_seq_of
 from .hook import Hook
+from .logger import LoggerHook
 
 
 class EvalHook(Hook):
@@ -27,7 +29,7 @@ class EvalHook(Hook):
         interval (int): Evaluation interval. Default: 1.
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
-            default: True.
+            Default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
             checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
@@ -36,7 +38,7 @@ class EvalHook(Hook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -211,19 +213,31 @@ class EvalHook(Hook):
 
     def after_train_iter(self, runner):
         """Called after every training iter to evaluate the results."""
-        if not self.by_epoch:
+        if not self.by_epoch and self._should_evaluate(runner):
+            # Because the priority of EvalHook is higher than LoggerHook, the
+            # training log and the evaluating log are mixed. Therefore,
+            # we need to dump the training log and clear it before evaluating
+            # log is generated. In addition, this problem will only appear in
+            # `IterBasedRunner` whose `self.by_epoch` is False, because
+            # `EpochBasedRunner` whose `self.by_epoch` is True calls
+            # `_do_evaluate` in `after_train_epoch` stage, and at this stage
+            # the training log has been printed, so it will not cause any
+            # problem. more details at
+            # https://github.com/open-mmlab/mmsegmentation/issues/694
+            for hook in runner._hooks:
+                if isinstance(hook, LoggerHook):
+                    hook.after_train_iter(runner)
+            runner.log_buffer.clear()
+
             self._do_evaluate(runner)
 
     def after_train_epoch(self, runner):
         """Called after every training epoch to evaluate the results."""
-        if self.by_epoch:
+        if self.by_epoch and self._should_evaluate(runner):
             self._do_evaluate(runner)
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
-        if not self._should_evaluate(runner):
-            return
-
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
@@ -347,7 +361,7 @@ class DistEvalHook(EvalHook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -417,9 +431,6 @@ class DistEvalHook(EvalHook):
                               _BatchNorm) and module.track_running_stats:
                     dist.broadcast(module.running_var, 0)
                     dist.broadcast(module.running_mean, 0)
-
-        if not self._should_evaluate(runner):
-            return
 
         tmpdir = self.tmpdir
         if tmpdir is None:

@@ -1,8 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from pathlib import Path
 
-from mmcv.runner.dist_utils import master_only
-from mmcv.runner.hooks import HOOKS
-from mmcv.runner.hooks.logger.base import LoggerHook
+from ...dist_utils import master_only
+from ..hook import HOOKS
+from .base import LoggerHook
 
 
 @HOOKS.register_module()

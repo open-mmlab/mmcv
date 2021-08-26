@@ -1,10 +1,11 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import json
 import os
 import os.path as osp
 import shutil
 import tempfile
+from pathlib import Path
 
 import pytest
 import yaml
@@ -66,10 +67,14 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
-    cfg_dict = dict(
-        item1='h.py',
-        item2=f'{osp.dirname(__file__)}/data/config',
-        item3='abc_h')
+    path = osp.join(osp.dirname(__file__), 'data', 'config')
+    # the value of osp.dirname(__file__) may be `D:\a\xxx` in windows
+    # environment. When dumping the cfg_dict to file, `D:\a\xxx` will be
+    # converted to `D:\x07\xxx` and it will cause unexpected result when
+    # checking whether `D:\a\xxx` equals to `D:\x07\xxx`. Therefore, we forcely
+    # convert a string representation of the path with forward slashes (/)
+    path = Path(path).as_posix()
+    cfg_dict = dict(item1='h.py', item2=path, item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -96,7 +101,7 @@ def test_construct():
 
     # test p.yaml
     cfg_file = osp.join(data_path, 'config/p.yaml')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -115,7 +120,7 @@ def test_construct():
 
     # test o.json
     cfg_file = osp.join(data_path, 'config/o.json')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -490,17 +495,19 @@ def test_reserved_key():
 
 
 def test_syntax_error():
-    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py')
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need to manually remove it
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
     # write a file with syntax error
     with open(temp_cfg_path, 'w') as f:
         f.write('a=0b=dict(c=1)')
     with pytest.raises(
-            SyntaxError,
-            match='There are syntax errors in config '
-            f'file {temp_cfg_path}'):
+            SyntaxError, match='There are syntax errors in config file'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
+    os.remove(temp_cfg_path)
 
 
 def test_pickle_support():
@@ -513,3 +520,15 @@ def test_pickle_support():
         pkl_cfg = load(pkl_cfg_filename)
 
     assert pkl_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_deprecation():
+    deprecated_cfg_files = [
+        osp.join(data_path, 'config/deprecated.py'),
+        osp.join(data_path, 'config/deprecated_as_base.py')
+    ]
+
+    for cfg_file in deprecated_cfg_files:
+        with pytest.warns(UserWarning):
+            cfg = Config.fromfile(cfg_file)
+        assert cfg.item1 == 'expected'

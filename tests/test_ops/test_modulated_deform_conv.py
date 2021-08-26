@@ -1,10 +1,9 @@
 import os
-from distutils.version import LooseVersion
 
 import numpy
 import torch
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -114,7 +113,7 @@ class TestMdconv(object):
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
-                and LooseVersion(TORCH_VERSION) >= LooseVersion('1.6.0')):
+                and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
             with autocast(enabled=True):
                 self._test_amp_mdconv(torch.float)
                 self._test_amp_mdconv(torch.half)

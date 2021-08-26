@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
 import shutil
@@ -199,12 +199,12 @@ class TestVideoReader:
             start=10,
             end=50,
             show_progress=False)
-        v = mmcv.VideoReader(out_filename)
-        assert v.fps == 25
-        assert len(v) == 40
 
-        for i in range(self.num_frames):
-            filename = f'{frame_dir}/{i:06d}.jpg'
-            os.remove(filename)
-        shutil.rmtree(frame_dir)
-        os.remove(out_filename)
+        with mmcv.VideoReader(out_filename) as v:
+            assert v.fps == 25
+            assert len(v) == 40
+
+            for i in range(self.num_frames):
+                filename = f'{frame_dir}/{i:06d}.jpg'
+                os.remove(filename)
+            shutil.rmtree(frame_dir)
