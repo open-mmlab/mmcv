@@ -638,3 +638,95 @@ def test_roll(shifts_dims_pair):
         pytorch_output = wrapped_model(input.clone())
 
     torch.testing.assert_allclose(ort_output, pytorch_output)
+
+
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots',
+    reason='onnx is not supported in parrots directly')
+@pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason='modulated_deform_conv2d only supports in GPU')
+def test_modulated_deform_conv2d():
+    try:
+        from mmcv.ops import ModulatedDeformConv2d
+        from mmcv.ops import get_onnxruntime_op_path
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('modulated_deform_conv op is not successfully compiled')
+
+    ort_custom_op_path = get_onnxruntime_op_path()
+    # modulated deform conv config
+    in_channels = 3
+    out_channels = 64
+    stride = 1
+    padding = 0
+    dilation = 1
+    groups = 1
+    deform_groups = 1
+    kernel_size = 3
+
+    input = torch.rand(1, in_channels, 28, 28).cuda()  # (n, c, h, w)
+    conv_offset = nn.Conv2d(
+        in_channels=3,
+        out_channels=deform_groups * 3 * kernel_size * kernel_size,
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        bias=True).cuda()
+    conv_offset.cuda()
+    out = conv_offset(input)
+    o1, o2, mask = torch.chunk(out, 3, dim=1)
+    offset = torch.cat((o1, o2), dim=1)
+    mask = torch.sigmoid(mask)
+
+    model_with_bias = ModulatedDeformConv2d(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation,
+        groups,
+        deform_groups,
+        bias=True)
+    model_without_bias = ModulatedDeformConv2d(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation,
+        groups,
+        deform_groups,
+        bias=False)
+    models = [model_with_bias.cuda(), model_without_bias.cuda()]
+
+    for model in models:
+        # export and load onnx model
+        with torch.no_grad():
+            torch.onnx.export(
+                model, (input, offset, mask),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['input', 'offset', 'mask'],
+                opset_version=11)
+
+        session_options = rt.SessionOptions()
+        if os.path.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
+
+        # compute onnx_output
+        sess = rt.InferenceSession(onnx_file, session_options)
+        onnx_output = sess.run(
+            None, {
+                'input': input.cpu().detach().numpy(),
+                'offset': offset.cpu().detach().numpy(),
+                'mask': mask.cpu().detach().numpy()
+            })[0]
+
+        # compute pytorch_output
+        with torch.no_grad():
+            pytorch_output = model(input, offset, mask).cpu()
+        # allclose
+        assert np.allclose(pytorch_output, onnx_output, atol=1e-3)

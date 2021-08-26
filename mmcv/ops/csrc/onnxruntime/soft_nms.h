@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ONNXRUNTIME_SOFT_NMS_H
 #define ONNXRUNTIME_SOFT_NMS_H
 #include <onnxruntime_cxx_api.h>
@@ -21,7 +22,7 @@ struct SoftNmsKernel {
 };
 
 struct SoftNmsOp : Ort::CustomOpBase<SoftNmsOp, SoftNmsKernel> {
-  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) {
+  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) const {
     return new SoftNmsKernel(api, info);
   };
 

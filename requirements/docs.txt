@@ -1,4 +1,5 @@
 m2r
+myst-parser
 opencv-python
 sphinx
 sphinx_markdown_tables
