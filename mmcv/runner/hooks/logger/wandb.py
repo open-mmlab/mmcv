@@ -48,7 +48,6 @@ class WandbLoggerHook(LoggerHook):
                 self.wandb.log(
                     tags, step=self.get_iter(runner), commit=self.commit)
             else:
-                tags['global_step'] = self.get_iter(runner)
                 self.wandb.log(tags, commit=self.commit)
 
     @master_only

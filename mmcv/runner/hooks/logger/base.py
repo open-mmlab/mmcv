@@ -126,6 +126,8 @@ class LoggerHook(Hook):
             if add_mode:
                 var = f'{self.get_mode(runner)}/{var}'
             tags[var] = val
+        tags['iter'] = self.get_iter(runner)
+        tags['epoch'] = self.get_epoch(runner)
         tags.update(self.get_lr_tags(runner))
         tags.update(self.get_momentum_tags(runner))
         return tags
