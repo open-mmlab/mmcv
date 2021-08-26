@@ -6,7 +6,7 @@ from mmcv.runner.hooks.logger.base import LoggerHook
 
 
 @HOOKS.register_module()
-class DVCLiveLoggerHook(LoggerHook):
+class DvcliveLoggerHook(LoggerHook):
     """Class to log metrics with dvclive.
 
     It requires `dvclive`_ to be installed.
