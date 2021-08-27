@@ -148,8 +148,7 @@ class ConvModule(nn.Module):
             if self.with_bias:
                 if isinstance(norm, (_BatchNorm, _InstanceNorm)):
                     warnings.warn(
-                        'ConvModule has batch/instance norm and bias at the'
-                        ' same time')
+                        'Unnecessary conv bias before batch/instance norm')
         else:
             self.norm_name = None
 
