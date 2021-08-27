@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.cnn import PLUGIN_LAYERS
+from mmcv.cnn import PLUGIN_LAYERS, Scale
 
 
 def NEG_INF_DIAG(n, device):
@@ -38,18 +38,11 @@ class CrissCrossAttention(nn.Module):
 
     def __init__(self, in_channels):
         super().__init__()
+        self.query_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
+        self.key_conv = nn.Conv2d(in_channels, in_channels // 8, 1)
+        self.value_conv = nn.Conv2d(in_channels, in_channels, 1)
+        self.gamma = Scale(0.)
         self.in_channels = in_channels
-        self.query_conv = nn.Conv2d(
-            in_channels=in_channels,
-            out_channels=in_channels // 8,
-            kernel_size=1)
-        self.key_conv = nn.Conv2d(
-            in_channels=in_channels,
-            out_channels=in_channels // 8,
-            kernel_size=1)
-        self.value_conv = nn.Conv2d(
-            in_channels=in_channels, out_channels=in_channels, kernel_size=1)
-        self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
         """Forward pass of Criss-Cross Attention.
@@ -73,8 +66,7 @@ class CrissCrossAttention(nn.Module):
         out = torch.einsum('bciw,bhwi->bchw', value, attn[..., :H])
         out += torch.einsum('bchj,bhwj->bchw', value, attn[..., H:])
 
-        out *= self.gamma
-        out += x
+        out = self.gamma(out) + x
 
         return out
 
