@@ -2,7 +2,7 @@
     <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
 </div>
 
-[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/) [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
 [English](README.md) | 简体中文
 
@@ -58,10 +58,10 @@ i. 安装最新版本
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-请将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11``、``PyTorch 1.7.0`` 兼容的最新版 ``mmcv-full``，使用如下替换过的命令
+请将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11.1``、``PyTorch 1.9.0`` 兼容的最新版 ``mmcv-full``，使用如下替换过的命令
 
 ```shell
-pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
 如果想知道更多 CUDA 和 PyTorch 版本的命令，可以参考下面的表格，将链接中的 ``=={mmcv_version}`` 删去即可。
@@ -74,11 +74,11 @@ ii. 安装特定的版本
 pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-首先请参考版本发布信息找到想要安装的版本号，将 ``{mmcv_version}`` 替换成该版本号，例如 ``1.2.2``。
-然后将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11``、``PyTorch 1.7.0`` 兼容的 ``mmcv-full`` 1.2.2 版本，使用如下替换过的命令
+首先请参考版本发布信息找到想要安装的版本号，将 ``{mmcv_version}`` 替换成该版本号，例如 ``1.3.9``。
+然后将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11.1``、``PyTorch 1.9.0`` 兼容的 ``mmcv-full`` 1.3.9 版本，使用如下替换过的命令
 
 ```shell
-pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html
+pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
 对于更多的 PyTorch 和 CUDA 版本组合，请参考下表：
@@ -87,6 +87,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
+      <th valign="bottom" align="left" width="100">torch 1.9</th>
       <th valign="bottom" align="left" width="100">torch 1.8</th>
       <th valign="bottom" align="left" width="100">torch 1.7</th>
       <th valign="bottom" align="left" width="100">torch 1.6</th>
@@ -96,6 +97,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     </tr>
     <tr>
       <td align="left">11.1</td>
+      <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"> </td>
       <td align="left"> </td>
@@ -106,6 +108,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     <tr>
       <td align="left">11.0</td>
       <td align="left"> </td>
+      <td align="left"> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"> </td>
       <td align="left"> </td>
@@ -114,6 +117,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     </tr>
     <tr>
       <td align="left">10.2</td>
+      <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.6.0/index.html</code></pre> </details> </td>
@@ -123,6 +127,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     </tr>
     <tr>
       <td align="left">10.1</td>
+      <td align="left"> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html</code></pre> </details> </td>
@@ -133,6 +138,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     <tr>
       <td align="left">9.2</td>
       <td align="left"> </td>
+      <td align="left"> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.6.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.5.0/index.html</code></pre> </details> </td>
@@ -141,6 +147,7 @@ pip install mmcv-full==1.2.2 -f https://download.openmmlab.com/mmcv/dist/cu110/t
     </tr>
     <tr>
       <td align="left">cpu</td>
+      <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html</code></pre> </details> </td>
        <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> 安装 </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.6.0/index.html</code></pre> </details> </td>

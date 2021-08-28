@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
 
 std::string get_compiler_version();

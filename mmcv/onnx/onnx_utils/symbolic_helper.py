@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 """Modified from https://github.com/pytorch/pytorch."""
 import warnings
 from functools import wraps

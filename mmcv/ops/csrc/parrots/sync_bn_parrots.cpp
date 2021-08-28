@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
@@ -44,7 +45,7 @@ void sync_bn_forward_output_cuda_parrots(CudaContext& ctx,
   auto running_var = buildATensor(ctx, outs[1]);
   auto norm = buildATensor(ctx, outs[2]);
   auto std = buildATensor(ctx, outs[3]);
-  auto output = buildATensor(ctx, outs[3]);
+  auto output = buildATensor(ctx, outs[4]);
   sync_bn_forward_output_cuda(input, mean, var, running_mean, running_var,
                               weight, bias, norm, std, output, eps, momentum,
                               group_size);

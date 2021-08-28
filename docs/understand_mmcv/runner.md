@@ -58,7 +58,7 @@ while curr_iter < max_iters:
     for i, flow in enumerate(workflow):
         # mode(e.g. train) determines which function to run
         mode, iters = flow
-        # epoch_runner will be either self.train() or self.val()
+        # iter_runner will be either self.train() or self.val()
         iter_runner = getattr(self, mode)
         # execute the corresponding function
         for _ in range(iters):
@@ -121,13 +121,13 @@ runner = build_runner(
 ```python
 # register defalt hooks neccesary for traning
 runner.register_training_hooks(
-    # configs of learning rate，it is typically set as:
+    # configs of learning rate, it is typically set as:
     # lr_config = dict(policy='step', step=[100, 150])
     cfg.lr_config,
     # configuration of optimizer, e.g. grad_clip
     optimizer_config,
     # configuration of saving checkpoints, it is typically set as:
-    # checkpoint_config = dict(interval=1)，saving checkpoints every epochs
+    # checkpoint_config = dict(interval=1), saving checkpoints every epochs
     cfg.checkpoint_config,
     # configuration of logs
     cfg.log_config,

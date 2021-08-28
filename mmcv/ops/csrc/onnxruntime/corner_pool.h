@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ONNXRUNTIME_CORNER_POOL_H
 #define ONNXRUNTIME_CORNER_POOL_H
 
@@ -21,7 +22,7 @@ struct MMCVCornerPoolKernel {
 
 struct MMCVCornerPoolCustomOp
     : Ort::CustomOpBase<MMCVCornerPoolCustomOp, MMCVCornerPoolKernel> {
-  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MMCVCornerPoolKernel(api, info);
   }
 

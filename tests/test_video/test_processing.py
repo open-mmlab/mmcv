@@ -1,7 +1,10 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import platform
 import tempfile
+
+import pytest
 
 import mmcv
 
@@ -13,6 +16,7 @@ class TestVideoEditor:
         cls.video_path = osp.join(osp.dirname(__file__), '../data/test.mp4')
         cls.num_frames = 168
 
+    @pytest.mark.skipif(platform.system() == 'Windows', reason='skip windows')
     def test_cut_concat_video(self):
         part1_file = osp.join(tempfile.gettempdir(), '.mmcv_test1.mp4')
         part2_file = osp.join(tempfile.gettempdir(), '.mmcv_test2.mp4')
@@ -31,6 +35,7 @@ class TestVideoEditor:
         os.remove(part2_file)
         os.remove(out_file)
 
+    @pytest.mark.skipif(platform.system() == 'Windows', reason='skip windows')
     def test_resize_video(self):
         out_file = osp.join(tempfile.gettempdir(), '.mmcv_test.mp4')
         mmcv.resize_video(

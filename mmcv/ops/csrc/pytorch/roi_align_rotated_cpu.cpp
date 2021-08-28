@@ -4,7 +4,7 @@
 #include <ATen/ATen.h>
 #include <ATen/TensorUtils.h>
 
-#include "../pytorch_cpp_helper.hpp"
+#include "pytorch_cpp_helper.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
@@ -156,9 +156,9 @@ void ROIAlignRotatedForward(const int nthreads, const T* input,
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
+        (sampling_ratio > 0) ? sampling_ratio : ceilf(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
     const T count = std::max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
@@ -322,9 +322,9 @@ void ROIAlignRotatedBackward(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
+                             : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
+        (sampling_ratio > 0) ? sampling_ratio : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
