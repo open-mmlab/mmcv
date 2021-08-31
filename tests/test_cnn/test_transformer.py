@@ -36,13 +36,13 @@ def test_adaptive_padding():
         stride = (2, 2)
         dilation = (1, 1)
 
-        pool = AdaptivePadding(
+        adap_pad = AdaptivePadding(
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
             padding=padding)
         input = torch.rand(1, 1, 11, 13)
-        out = pool(input)
+        out = adap_pad(input)
         # padding to divisible by 2
         assert (out.shape[2], out.shape[3]) == (12, 14)
 
@@ -50,24 +50,24 @@ def test_adaptive_padding():
         stride = (10, 10)
         dilation = (1, 1)
 
-        pool = AdaptivePadding(
+        adap_pad = AdaptivePadding(
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
             padding=padding)
         input = torch.rand(1, 1, 10, 13)
-        out = pool(input)
+        out = adap_pad(input)
         #  no padding
         assert (out.shape[2], out.shape[3]) == (10, 13)
 
         kernel_size = (11, 11)
-        pool = AdaptivePadding(
+        adap_pad = AdaptivePadding(
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
             padding=padding)
         input = torch.rand(1, 1, 11, 13)
-        out = pool(input)
+        out = adap_pad(input)
         #  all padding
         assert (out.shape[2], out.shape[3]) == (21, 21)
 
@@ -77,21 +77,21 @@ def test_adaptive_padding():
         kernel_size = (4, 5)
         dilation = (2, 2)
         # actually (7, 9)
-        pool = AdaptivePadding(
+        adap_pad = AdaptivePadding(
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
             padding=padding)
-        dilation_out = pool(input)
+        dilation_out = adap_pad(input)
         assert (dilation_out.shape[2], dilation_out.shape[3]) == (16, 21)
         kernel_size = (7, 9)
         dilation = (1, 1)
-        pool = AdaptivePadding(
+        adap_pad = AdaptivePadding(
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
             padding=padding)
-        kernel79_out = pool(input)
+        kernel79_out = adap_pad(input)
         assert (kernel79_out.shape[2], kernel79_out.shape[3]) == (16, 21)
         assert kernel79_out.shape == dilation_out.shape
 
@@ -116,13 +116,11 @@ def test_patch_embed():
     patch_merge_1 = PatchEmbed(
         in_channels=C,
         embed_dims=embed_dims,
-        conv_type=None,
         kernel_size=kernel_size,
         stride=stride,
         padding=0,
         dilation=1,
-        norm_cfg=None,
-    )
+        norm_cfg=None)
 
     x1, shape = patch_merge_1(dummy_input)
     # test out shape
@@ -144,7 +142,6 @@ def test_patch_embed():
     patch_merge_2 = PatchEmbed(
         in_channels=C,
         embed_dims=embed_dims,
-        conv_type=None,
         kernel_size=kernel_size,
         stride=stride,
         padding=0,
@@ -168,7 +165,6 @@ def test_patch_embed():
     patch_merge_3 = PatchEmbed(
         in_channels=C,
         embed_dims=embed_dims,
-        conv_type=None,
         kernel_size=kernel_size,
         stride=stride,
         padding=0,
@@ -197,7 +193,6 @@ def test_patch_embed():
     patch_merge_3 = PatchEmbed(
         in_channels=C,
         embed_dims=embed_dims,
-        conv_type=None,
         kernel_size=kernel_size,
         stride=stride,
         padding=0,
@@ -216,7 +211,6 @@ def test_patch_embed():
     patch_merge_3 = PatchEmbed(
         in_channels=C,
         embed_dims=embed_dims,
-        conv_type=None,
         kernel_size=kernel_size,
         stride=stride,
         padding=0,

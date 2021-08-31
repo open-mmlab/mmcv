@@ -78,16 +78,15 @@ class AdaptivePadding(nn.Module):
         >>> stride = 16
         >>> dilation = 1
         >>> input = torch.rand(1, 1, 15, 17)
-        >>> pool = AdaptivePadding(
+        >>> adap_pad = AdaptivePadding(
         >>>     kernel_size=kernel_size,
         >>>     stride=stride,
         >>>     dilation=dilation,
-        >>>     padding="same")
-        >>> out = pool(input)
-        >>> # padding to divisible by 16
+        >>>     padding="corner")
+        >>> out = adap_pad(input)
         >>> assert (out.shape[2], out.shape[3]) == (16, 32)
         >>> input = torch.rand(1, 1, 16, 17)
-        >>> out = pool(input)
+        >>> out = adap_pad(input)
         >>> assert (out.shape[2], out.shape[3]) == (16, 32)
     """
 
@@ -107,18 +106,20 @@ class AdaptivePadding(nn.Module):
         self.stride = stride
         self.dilation = dilation
 
-    def forward(self, x):
-        input_h, input_w = x.size()[-2:]
+    def get_pad_shape(self, input_shape):
+        input_h, input_w = input_shape
         kernel_h, kernel_w = self.kernel_size
         stride_h, stride_w = self.stride
         output_h = math.ceil(input_h / stride_h)
         output_w = math.ceil(input_w / stride_w)
-        pad_h = (
-            max((output_h - 1) * stride_h + (kernel_h - 1) * self.dilation[0] +
-                1 - input_h, 0))
-        pad_w = (
-            max((output_w - 1) * stride_w + (kernel_w - 1) * self.dilation[1] +
-                1 - input_w, 0))
+        pad_h = max((output_h - 1) * stride_h +
+                    (kernel_h - 1) * self.dilation[0] + 1 - input_h, 0)
+        pad_w = max((output_w - 1) * stride_w +
+                    (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
+        return pad_h, pad_w
+
+    def forward(self, x):
+        pad_h, pad_w = self.get_pad_shape(x.size()[-2:])
         if pad_h > 0 or pad_w > 0:
             if self.padding == 'corner':
                 x = F.pad(x, [0, pad_w, 0, pad_h])
@@ -138,8 +139,8 @@ class PatchEmbed(BaseModule):
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (dict, optional): The config dict for embedding
-            conv layer type selection. Default: None.
+        conv_type (str): The config dict for embedding
+            conv layer type selection. Default: "Conv2d.
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: None (Would be set as `kernel_size`).
@@ -148,7 +149,7 @@ class PatchEmbed(BaseModule):
             of adaptive padding, support "same" and "corner" now.
             Default: "corner".
         dilation (int): The dilation rate of embedding conv. Default: 1.
-        bias (bool): Bias of embed conv. Default: False.
+        bias (bool): Bias of embed conv. Default: True.
         norm_cfg (dict, optional): Config dict for normalization layer.
             Default: None.
         input_size (int | tuple | None): The size of input, which will be
@@ -162,12 +163,12 @@ class PatchEmbed(BaseModule):
         self,
         in_channels=3,
         embed_dims=768,
-        conv_type=None,
+        conv_type='Conv2d',
         kernel_size=16,
         stride=16,
         padding='corner',
         dilation=1,
-        bias=False,
+        bias=True,
         norm_cfg=None,
         input_size=None,
         init_cfg=None,
@@ -177,9 +178,6 @@ class PatchEmbed(BaseModule):
         self.embed_dims = embed_dims
         if stride is None:
             stride = kernel_size
-
-        # Use conv layer to embed
-        conv_type = conv_type or 'Conv2d'
 
         kernel_size = to_2tuple(kernel_size)
         stride = to_2tuple(stride)
@@ -219,19 +217,8 @@ class PatchEmbed(BaseModule):
             # when `use_abs_pos_embed` outside
             self.init_input_size = input_size
             if self.adap_padding:
+                pad_h, pad_w = self.adap_padding.get_pad_shape(input_size)
                 input_h, input_w = input_size
-                kernel_h, kernel_w = self.adap_padding.kernel_size
-                stride_h, stride_w = self.adap_padding.stride
-                output_h = math.ceil(input_h / stride_h)
-                output_w = math.ceil(input_w / stride_w)
-                pad_h = (
-                    max((output_h - 1) * stride_h +
-                        (kernel_h - 1) * self.adap_padding.dilation[0] + 1 -
-                        input_h, 0))
-                pad_w = (
-                    max((output_w - 1) * stride_w +
-                        (kernel_w - 1) * self.adap_padding.dilation[1] + 1 -
-                        input_w, 0))
                 input_h = input_h + pad_h
                 input_w = input_w + pad_w
                 input_size = (input_h, input_w)
@@ -275,7 +262,8 @@ class PatchMerging(BaseModule):
 
     This layer groups feature map by kernel_size, and applies norm and linear
     layers to the grouped feature map. Our implementation uses `nn.Unfold` to
-    merge patch.
+    merge patch, which is about 25% faster than original implementation.
+    Instead, we need to modify pretrained models for compatibility.
 
     Args:
         in_channels (int): The num of input channels.
@@ -373,12 +361,13 @@ class PatchMerging(BaseModule):
         assert L == H * W, 'input feature has wrong size'
 
         x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
+        # Use nn.Unfold to merge patch. About 25% faster than original method,
+        # but need to modify pretrained model for compatibility
 
         if self.adap_padding:
             x = self.adap_padding(x)
             H, W = x.shape[-2:]
 
-        # Use nn.Unfold to merge patch.
         x = self.sampler(x)
         # if kernel_size=2 and stride=2, x should has shape (B, 4*C, H/2*W/2)
 
