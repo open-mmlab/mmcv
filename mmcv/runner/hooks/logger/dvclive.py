@@ -70,3 +70,4 @@ class DvcliveLoggerHook(LoggerHook):
                 filename_tmpl=Path(self.model_file).name,
                 create_symlink=False,
             )
+        self.dvclive.next_step()
