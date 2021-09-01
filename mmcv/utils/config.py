@@ -251,8 +251,10 @@ class Config:
 
             base_cfg_dict = dict()
             for c in cfg_dict_list:
-                if len(base_cfg_dict.keys() & c.keys()) > 0:
-                    raise KeyError('Duplicate key is not allowed among bases')
+                duplicate_keys = base_cfg_dict.keys() & c.keys()
+                if len(duplicate_keys) > 0:
+                    raise KeyError('Duplicate key is not allowed among bases. '
+                                   f'Duplicate keys: {duplicate_keys}')
                 base_cfg_dict.update(c)
 
             # Subtitute base variables from strings to their actual values
