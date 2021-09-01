@@ -1116,8 +1116,7 @@ def test_dvclive_hook(tmp_path):
     shutil.rmtree(runner.work_dir)
 
     hook.dvclive.next_step.assert_any_call()
-    hook.dvclive.log.assert_called_with('momentum', 0.95, step=1)
-    hook.dvclive.log.assert_any_call('learning_rate', 0.02, step=1)
+    hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
