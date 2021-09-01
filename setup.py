@@ -339,7 +339,7 @@ setup(
         'Topic :: Utilities',
     ],
     url='https://github.com/open-mmlab/mmcv',
-    author='MMCV Authors',
+    author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
