@@ -22,7 +22,7 @@ struct SoftNmsKernel {
 };
 
 struct SoftNmsOp : Ort::CustomOpBase<SoftNmsOp, SoftNmsKernel> {
-  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) {
+  void *CreateKernel(OrtApi api, const OrtKernelInfo *info) const {
     return new SoftNmsKernel(api, info);
   };
 

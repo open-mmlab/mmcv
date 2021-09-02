@@ -51,10 +51,11 @@ def test_flowwrite():
     flow = np.random.rand(100, 100, 2).astype(np.float32)
 
     # write to a .flo file
-    _, filename = tempfile.mkstemp()
+    tmp_filehandler, filename = tempfile.mkstemp()
     mmcv.flowwrite(flow, filename)
     flow_from_file = mmcv.flowread(filename)
     assert_array_equal(flow, flow_from_file)
+    os.close(tmp_filehandler)
     os.remove(filename)
 
     # write to two .jpg files

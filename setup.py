@@ -214,7 +214,14 @@ def get_extensions():
         from torch.utils.cpp_extension import CppExtension, CUDAExtension
 
         # prevent ninja from using too many resources
-        os.environ.setdefault('MAX_JOBS', '4')
+        try:
+            import psutil
+            num_cpu = len(psutil.Process().cpu_affinity())
+            cpu_use = max(4, num_cpu - 1)
+        except (ModuleNotFoundError, AttributeError):
+            cpu_use = 4
+
+        os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
         extra_compile_args = {'cxx': []}
         include_dirs = []
@@ -328,10 +335,11 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Utilities',
     ],
     url='https://github.com/open-mmlab/mmcv',
-    author='MMCV Authors',
+    author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],

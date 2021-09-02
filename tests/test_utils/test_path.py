@@ -38,9 +38,12 @@ def test_scandir():
     ])
     assert set(mmcv.scandir(folder, '.png')) == set()
 
+    # path of sep is `\\` in windows but `/` in linux, so osp.join should be
+    # used to join string for compatibility
     filenames_recursive = [
-        'a.bin', '1.txt', '2.txt', '1.json', '2.json', 'sub/1.json',
-        'sub/1.txt', '.file'
+        'a.bin', '1.txt', '2.txt', '1.json', '2.json',
+        osp.join('sub', '1.json'),
+        osp.join('sub', '1.txt'), '.file'
     ]
     # .file starts with '.' and is a file so it will not be scanned
     assert set(mmcv.scandir(folder, recursive=True)) == set(

@@ -16,6 +16,7 @@ import sys
 
 from m2r import MdInclude
 from recommonmark.transform import AutoStructify
+from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -49,9 +50,9 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'recommonmark',
     'sphinx.ext.autosectionlabel',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'myst_parser',
 ]  # yapf: disable
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
@@ -102,7 +103,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['../docs/_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -179,6 +180,10 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
+# set priority when building html
+StandaloneHTMLBuilder.supported_image_types = [
+    'image/svg+xml', 'image/gif', 'image/png', 'image/jpeg'
+]
 # -- Extension configuration -------------------------------------------------
 
 
