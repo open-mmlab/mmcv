@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..utils import xavier_init
-from .registry import UPSAMPLE_LAYERS
+from .registry import UPSAMPLE_LAYERS, build_upsample_layer_from_cfg
 
 UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
 UPSAMPLE_LAYERS.register_module('bilinear', module=nn.Upsample)
@@ -69,7 +69,7 @@ def build_upsample_layer(cfg, *args, **kwargs):
     Returns:
         nn.Module: Created upsample layer.
     """
-    from .registry import build_upsample_layer_from_cfg
+
     warnings.warn(
         ImportWarning(
             '``build_upsample_layer(cfg, *args, **kwargs)`` will be '
