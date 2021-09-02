@@ -3,18 +3,6 @@ import torch.nn as nn
 
 from mmcv.utils import Registry
 
-CONV_LAYERS = Registry('conv layer')
-NORM_LAYERS = Registry('norm layer')
-ACTIVATION_LAYERS = Registry('activation layer')
-PADDING_LAYERS = Registry('padding layer')
-PLUGIN_LAYERS = Registry('plugin layer')
-DROPOUT_LAYERS = Registry('drop out layers')
-POSITIONAL_ENCODING = Registry('position encoding')
-ATTENTION = Registry('attention')
-FEEDFORWARD_NETWORK = Registry('feed-forward Network')
-TRANSFORMER_LAYER = Registry('transformerLayer')
-TRANSFORMER_LAYER_SEQUENCE = Registry('transformer-layers sequence')
-
 
 def build_upsample_layer_from_cfg(cfg, registry, *args, **kwargs):
     """Build upsample layer.
@@ -54,5 +42,16 @@ def build_upsample_layer_from_cfg(cfg, registry, *args, **kwargs):
     return layer
 
 
+CONV_LAYERS = Registry('conv layer')
+NORM_LAYERS = Registry('norm layer')
+ACTIVATION_LAYERS = Registry('activation layer')
+PADDING_LAYERS = Registry('padding layer')
+PLUGIN_LAYERS = Registry('plugin layer')
 UPSAMPLE_LAYERS = Registry(
     'upsample layer', build_func=build_upsample_layer_from_cfg)
+DROPOUT_LAYERS = Registry('drop out layers')
+POSITIONAL_ENCODING = Registry('position encoding')
+ATTENTION = Registry('attention')
+FEEDFORWARD_NETWORK = Registry('feed-forward Network')
+TRANSFORMER_LAYER = Registry('transformerLayer')
+TRANSFORMER_LAYER_SEQUENCE = Registry('transformer-layers sequence')
