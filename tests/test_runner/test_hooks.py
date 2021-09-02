@@ -1115,7 +1115,6 @@ def test_dvclive_hook(tmp_path):
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.dvclive.next_step.assert_any_call()
     hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
 
 
