@@ -1,12 +1,12 @@
-## CNN
+## 卷积神经网络
 
-我们为CNN提供了一些构建模块，包括层构建、模块包和权重初始化。
+我们为CNN提供了一些构建模块，包括层构建、模块组件和权重初始化。
 
-### Layer building
+### 网络层的构建
 
-在运行实验时，我们可能需要尝试相同类型的不同层，但又不希望时常修改代码。所以这里我们提供了一些层构建方法，可以从字典构建层，也可以在配置文件中编写，或者通过命令行参数指定。
+在运行实验时，我们可能需要尝试同属一种类型但不同配置的层，但又不希望每次都修改代码。所以这里我们提供了一些层构建方法，可以从字典构建层，字典可以在配置文件中配置，也可以通过命令行参数指定。
 
-#### Usage
+#### 用法
 
 一个简单的例子：
 
@@ -15,13 +15,13 @@ cfg = dict(type='Conv3d')
 layer = build_conv_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
 ```
 
-- `build_conv_layer`: 支持的类型包括 Conv1d，Conv2d，Conv3d，Conv (alias for Conv2d)。
-- `build_norm_layer`: 支持的类型包括 BN1d，BN2d，BN3d，BN (alias for BN2d)，SyncBN，GN，LN，IN1d，IN2d，IN3d，IN (alias for IN2d)。
-- `build_activation_layer`: 支持的类型包括 ReLU，LeakyReLU，PReLU，RReLU，ReLU6，ELU，Sigmoid，Tanh，GELU。
-- `build_upsample_layer`: 支持的类型包括 nearest，bilinear，deconv，pixel_shuffle。
-- `build_padding_layer`: 支持的类型包括 zero，reflect，replicate。
+- `build_conv_layer`: 支持的类型包括 Conv1d、Conv2d、Conv3d、Conv (Conv是Conv2d的别名）
+- `build_norm_layer`: 支持的类型包括 BN1d、BN2d、BN3d、BN (alias for BN2d)、SyncBN、GN、LN、IN1d、IN2d、IN3d、IN（IN是IN2d的别名）
+- `build_activation_layer`：支持的类型包括 ReLU、LeakyReLU、PReLU、RReLU、ReLU6、ELU、Sigmoid、Tanh、GELU
+- `build_upsample_layer`: 支持的类型包括 nearest、bilinear、deconv、pixel_shuffle
+- `build_padding_layer`: 支持的类型包括 zero、reflect、replicate
 
-#### Extension
+#### 拓展
 
 我们还允许自定义层和算子来扩展构建方法。
 
@@ -40,17 +40,17 @@ layer = build_conv_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
             pass
     ```
 
-2. 在某处导入`MyUpsample`(例如`__init__.py`)然后使用它：
+2. 在某处导入 `MyUpsample` （例如 `__init__.py` ）然后使用它：
 
     ```python
     cfg = dict(type='MyUpsample', scale_factor=2)
     layer = build_upsample_layer(cfg)
     ```
 
-### Module bundles
+### 模块组件
 
-我们还提供了常用的模块包，以方便网络构建。
-卷积包 `ConvModule` 由 convolution， normalization，activation layers 组成，更多细节请参考 [ConvModule api](api.html#mmcv.cnn.ConvModule)。
+我们还提供了常用的模块组件，以方便网络构建。
+卷积组件 `ConvModule` 由 convolution、normalization以及activation layers 组成，更多细节请参考 [ConvModule api](api.html#mmcv.cnn.ConvModule)。
 
 ```python
 # conv + bn + relu
@@ -72,17 +72,17 @@ conv = ConvModule(
 
 > 实现细节可以在 [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)中找到
 
-在训练过程中，适当的初始化策略有利于加快训练速度或获得更高的性能。 在MMCV中，我们提供了一些常用的方法来初始化模块，比如 `nn.Conv2d`。当然，我们也提供了用于初始化包含一个或多个模块的模型的高级API。
+在训练过程中，适当的初始化策略有利于加快训练速度或获得更高的性能。 在MMCV中，我们提供了一些常用的方法来初始化模块，比如 `nn.Conv2d` 模块。当然，我们也提供了一些高级API，可用于初始化包含一个或多个模块的模型。
 
 #### Initialization functions
 
-以函数的方式初始化 `nn.Module`例如 `nn.Conv2d`，`nn.Linear` 等。
+以函数的方式初始化 `nn.Module` ，例如 `nn.Conv2d` 、 `nn.Linear` 等。
 
 我们提供以下初始化方法，
 
 - constant_init
 
-  使用给定常量值初始化模型参数。
+  使用给定常量值初始化模型参数
 
     ```python
     >>> import torch.nn as nn
@@ -95,7 +95,7 @@ conv = ConvModule(
 
 - xavier_init
 
-  根据 [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf) 描述的方法来初始化模型参数。
+  根据 [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf) 描述的方法来初始化模型参数
 
     ```python
     >>> import torch.nn as nn
@@ -107,7 +107,7 @@ conv = ConvModule(
 
 - normal_init
 
-  使用服从正态分布（高斯分布）中提取的值来初始化模型参数。
+  使用正态分布（高斯分布）初始化模型参数
 
     ```python
     >>> import torch.nn as nn
@@ -119,7 +119,7 @@ conv = ConvModule(
 
 - uniform_init
 
-  使用服从均匀分布中提取的值来初始化模型参数。
+  使用均匀分布初始化模型参数
 
     ```python
     >>> import torch.nn as nn
@@ -143,7 +143,7 @@ conv = ConvModule(
 
 - caffe2_xavier_init
 
-  caffe2中实现的 `xavier initialization`,对应于 PyTorch中的 `kaiming_uniform_`。
+  caffe2中实现的 `xavier initialization`，对应于 PyTorch中的 `kaiming_uniform_`
 
     ```python
     >>> import torch.nn as nn
@@ -167,7 +167,7 @@ conv = ConvModule(
 
 #### Initializers and configs
 
-在初始化方法的基础上，我们定义了相应的初始化类，并将它们注册到 `INITIALIZERS` 中，这样我们就可以使用`config`配置来初始化模型了。
+在初始化方法的基础上，我们定义了相应的初始化类，并将它们注册到 `INITIALIZERS` 中，这样我们就可以使用 `config` 配置来初始化模型了。
 
 我们提供以下初始化类：
 
@@ -179,17 +179,15 @@ conv = ConvModule(
 - Caffe2XavierInit
 - PretrainedInit
 
-接下来详细介绍 `initialize` 的使用方法，
+接下来详细介绍 `initialize` 的使用方法
 
-1. 通过关键字`layer`来初始化模型
+1. 通过关键字 `layer` 来初始化模型
 
-    如果我们只定义了关键字`layer`, 那么只初始化`layer`对应的Value中包含的层。
+    如果我们只定义了关键字 `layer` ，那么只初始化 `layer` 中包含的层。
 
-    注意: 关键字`layer`所对应的Value是带有 weights和bias 属性的PyTorch 类名，所以不支持 `MultiheadAttention layer`。
+    注意: 关键字 `layer` 支持的模块是带有 weights 和 bias 属性的 PyTorch 模块，所以不支持 `MultiheadAttention layer`
 
-- 定义用于初始化具有相同配置的模块的`layer`。
-
-
+- 定义用于初始化具有相同配置的模块的 `layer`
 
   ```python
   import torch.nn as nn
@@ -213,7 +211,7 @@ conv = ConvModule(
   #          [1., 1., 1.]]], requires_grad=True)
   ```
 
-- 定义关键字`layer`用于初始化不同配置的层.
+- 定义关键字 `layer` 用于初始化不同配置的层
 
   ```python
   import torch.nn as nn
@@ -247,7 +245,7 @@ conv = ConvModule(
 
 2. 通过关键字`override`初始化模型
 
-- 当用属性名初始化某个特定部分时, 我们可以使用关键字  `override`, 关键字 `override`对应的Value中的值会替代init_cfg中相应的值.
+- 当用属性名初始化某个特定部分时, 我们可以使用关键字 `override`, 关键字 `override` 对应的Value中的值会替代init_cfg中相应的值.
 
     ```python
     import torch.nn as nn
@@ -262,7 +260,7 @@ conv = ConvModule(
 
     # 如果我们想将模型的权重初始化为 1，将偏差初始化为 2
     # 但希望 `cls` 中的权重为 3，偏差为 4，则我们可以使用关键字override
-    
+
     model = FooNet()
     init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
                     override=dict(type='Constant', name='reg', val=3, bias=4))
@@ -527,4 +525,3 @@ MMCV中的Model Zoo Link 由 JSON 文件管理。 json 文件由模型名称及�
 - `http://xxx` and `https://xxx`: 下载checkpoint的链接，文件名中必需包含`SHA256`后缀。
 - `torchvision://xxx`: `torchvision.models`中的模型链接，更多细节参考 [torchvision](https://pytorch.org/docs/stable/torchvision/models.html)。
 - `open-mmlab://xxx`: 默认和其他 json 文件中提供的模型链接或文件路径。
-
