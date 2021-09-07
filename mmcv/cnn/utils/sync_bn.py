@@ -48,6 +48,7 @@ def revert_sync_batchnorm(module):
         module_output.running_var = module.running_var
         module_output.num_batches_tracked = module.num_batches_tracked
         module_output.training = module.training
+        # qconfig exists in quantized models
         if hasattr(module, 'qconfig'):
             module_output.qconfig = module.qconfig
     for name, child in module.named_children():
