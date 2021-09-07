@@ -69,7 +69,7 @@ class CrissCrossAttention(nn.Module):
 
         out = self.gamma(out) + x
         out = out.contiguous()
- 
+
         return out
 
     def __repr__(self):
