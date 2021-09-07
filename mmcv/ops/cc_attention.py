@@ -68,7 +68,8 @@ class CrissCrossAttention(nn.Module):
         out += torch.einsum('bchj,bhwj->bchw', value, attn[..., H:])
 
         out = self.gamma(out) + x
-
+        out = out.contiguous()
+        
         return out
 
     def __repr__(self):
