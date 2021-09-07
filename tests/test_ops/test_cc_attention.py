@@ -17,9 +17,6 @@ class Loss(nn.Module):
 class TestCrissCrossAttention(object):
 
     def test_cc_attention(self):
-        if not torch.cuda.is_available():
-            return
-
         from mmcv.ops import CrissCrossAttention
         loss_func = Loss()
 
