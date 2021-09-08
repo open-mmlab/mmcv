@@ -9,15 +9,24 @@ from mmcv.image.io import imread
 from mmcv.utils.registry import build_from_cfg
 
 
-@pytest.mark.parametrize('to_rgb', [True, False])
-def test_normalize(to_rgb):
-    img_norm_cfg = dict(
-        mean=[123.675, 116.28, 103.53],
-        std=[58.395, 57.12, 57.375],
-        to_rgb=to_rgb)
+@pytest.mark.parametrize('is_single_channel,to_rgb', [(True, False),
+                                                      (False, True),
+                                                      (False, False)])
+def test_normalize(is_single_channel, to_rgb):
     results = dict()
-    original_img = imread(
-        osp.join(osp.dirname(__file__), '../../../data/color.jpg'), 'color')
+    if is_single_channel:
+        img_norm_cfg = dict(mean=123.675, std=58.395, to_rgb=to_rgb)
+        original_img = imread(
+            osp.join(osp.dirname(__file__), '../../../data/grayscale.jpg'),
+            'grayscale')
+    else:
+        img_norm_cfg = dict(
+            mean=[123.675, 116.28, 103.53],
+            std=[58.395, 57.12, 57.375],
+            to_rgb=to_rgb)
+        original_img = imread(
+            osp.join(osp.dirname(__file__), '../../../data/color.jpg'),
+            'color')
     results['img'] = copy.deepcopy(original_img)
     results['img2'] = copy.deepcopy(original_img)
 
