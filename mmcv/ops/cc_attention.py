@@ -19,6 +19,10 @@ def NEG_INF_DIAG(n, device):
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module.
 
+    Note: Before v1.3.13, we use a CUDA op. Since v1.3.13, we switch
+        to a pure PyTorch and equivalent implementation. For more
+        details, please refer to PR #1201.
+
     Args:
         in_channels (int): Channels of the input feature map.
 
