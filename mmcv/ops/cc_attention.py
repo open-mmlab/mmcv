@@ -19,26 +19,27 @@ def NEG_INF_DIAG(n, device):
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module.
 
-    Note: Before v1.3.13, we use a CUDA op. Since v1.3.13, we switch
+    .. note::
+        Before v1.3.13, we use a CUDA op. Since v1.3.13, we switch
         to a pure PyTorch and equivalent implementation. For more
         details, please refer to PR #1201.
+        ... some results...
+        Time consuming for one forward pass:
+            Settings:
+                Input size: [2,512,97,97]
+                Device: 1 NVIDIA GeForce RTX 2080 Ti
+            Results:
+                (with torch.no_grad())
+                    The CUDA version: 0.0299619 s
+                    This implementation: 0.00554402 s
+                    Relative speed: 5.4x
+                (not with torch.no_grad())
+                    The CUDA version: 0.0301349 s
+                    This implementation: 0.00562803 s
+                    Relative speed: 5.4x
 
     Args:
         in_channels (int): Channels of the input feature map.
-
-    Time consuming for one forward pass:
-        Settings:
-            Input size: [2,512,97,97]
-            Device: 1 NVIDIA GeForce RTX 2080 Ti
-        Results:
-            (with torch.no_grad())
-                The CUDA version: 0.0299619 s
-                This implementation: 0.00554402 s
-                Relative speed: 5.4x
-            (not with torch.no_grad())
-                The CUDA version: 0.0301349 s
-                This implementation: 0.00562803 s
-                Relative speed: 5.4x
     """
 
     def __init__(self, in_channels):
@@ -50,13 +51,14 @@ class CrissCrossAttention(nn.Module):
         self.in_channels = in_channels
 
     def forward(self, x):
-        """Forward pass of Criss-Cross Attention.
+        """forward function of Criss-Cross Attention.
 
         Args:
-            x (Tensor): Input feature map. \
+            x (Tensor): Input feature. \
                 shape (batch_size, in_channels, height, width)
         Returns:
-            out (Tensor): shape (batch_size, in_channels, height, width)
+            Tensor: Output of the layer, with shape of \
+            (batch_size, in_channels, height, width)
         """
         B, C, H, W = x.size()
         query = self.query_conv(x)
