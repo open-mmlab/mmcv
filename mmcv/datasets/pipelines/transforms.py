@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from numbers import Number
 from typing import Union
 
 import numpy as np
@@ -12,8 +13,8 @@ class Normalize:
     """Normalize the image.
 
     Args:
-        mean (sequence): Mean values of channels.
-        std (sequence): Std values of channels.
+        mean (numeric | sequence): Mean values of channels.
+        std (numeric |sequence): Std values of channels.
         to_rgb (bool): Whether to convert the image from BGR to RGB,
             default is true.
 
@@ -34,8 +35,8 @@ class Normalize:
     """
 
     def __init__(self,
-                 mean: Union[int, Sequence],
-                 std: Union[int, Sequence],
+                 mean: Union[Number, Sequence],
+                 std: Union[Number, Sequence],
                  to_rgb: bool = True):
         self.mean = np.array(mean, dtype=np.float32)
         self.std = np.array(std, dtype=np.float32)

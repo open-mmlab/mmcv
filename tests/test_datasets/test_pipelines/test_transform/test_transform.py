@@ -45,5 +45,5 @@ def test_normalize(is_single_channel, to_rgb):
     std = np.array(img_norm_cfg['std'])
     if to_rgb:
         original_img = original_img[..., ::-1]
-    converted_img = (original_img - mean) / std
+    converted_img = (original_img.astype(np.float32) - mean) / std
     assert np.allclose(results['img'], converted_img)
