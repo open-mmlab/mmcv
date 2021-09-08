@@ -23,7 +23,6 @@ class CrissCrossAttention(nn.Module):
         Before v1.3.13, we use a CUDA op. Since v1.3.13, we switch
         to a pure PyTorch and equivalent implementation. For more
         details, please refer to PR #1201.
-        ... some results...
         Time consuming for one forward pass:
             Settings:
                 Input size: [2,512,97,97]
