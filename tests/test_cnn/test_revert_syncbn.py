@@ -27,10 +27,9 @@ def test_revert_syncbn():
 
 
 def test_revert_mmsyncbn():
-    if 'SLURM_NTASKS' not in os.environ or int(
-            os.environ['SLURM_NTASKS']) != 4:
-        print('must run with slurm has 4 processes!\n'
-              'srun -p test --gres=gpu:4 -n4')
+    if 'SLURM_NTASKS' not in os.environ or int(os.environ['SLURM_NTASKS']) < 2:
+        print('Must run on slurm with more than 1 process!\n'
+              'srun -p test --gres=gpu:2 -n2')
         return
     rank = int(os.environ['SLURM_PROCID'])
     world_size = int(os.environ['SLURM_NTASKS'])

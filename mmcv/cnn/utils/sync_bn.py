@@ -41,6 +41,8 @@ def revert_sync_batchnorm(module):
                                      module.momentum, module.affine,
                                      module.track_running_stats)
         if module.affine:
+            # no_grad() may not be needed here but
+            # just to be consistent with `convert_sync_batchnorm()`
             with torch.no_grad():
                 module_output.weight = module.weight
                 module_output.bias = module.bias
