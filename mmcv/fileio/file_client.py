@@ -212,9 +212,13 @@ class FileClient:
     and return it as a binary file. it can also register other backend
     accessor with a given name and backend class.
 
-    Attributes:
+    Args:
         backend (str): The storage backend type. Options are "disk", "ceph",
             "memcached", "lmdb" and "http".
+        prefixes (str or list[str] or tuple[str]): The prefix of the
+            registered storage backend.
+
+    Attributes:
         client (:obj:`BaseStorageBackend`): The backend object.
     """
 
@@ -226,17 +230,35 @@ class FileClient:
         'petrel': PetrelBackend,
         'http': HTTPBackend,
     }
+    _prefix_to_backends = {
+        's3://': PetrelBackend,
+        'http://': HTTPBackend,
+        'https://': HTTPBackend,
+    }
 
-    def __init__(self, backend='disk', **kwargs):
-        if backend not in self._backends:
+    def __init__(self, backend=None, prefix=None, **kwargs):
+        if backend is None and prefix is None:
+            backend = 'disk'
+        if backend is not None and prefix is not None:
+            raise ValueError(
+                'backend and prefix should not be `None` at the same time')
+        if backend is not None and backend not in self._backends:
             raise ValueError(
                 f'Backend {backend} is not supported. Currently supported ones'
                 f' are {list(self._backends.keys())}')
-        self.backend = backend
-        self.client = self._backends[backend](**kwargs)
+        if prefix is not None and prefix not in self._prefix_to_backends:
+            raise ValueError(
+                f'prefix {prefix} is not supported. Currently supported ones'
+                f' are {list(self._prefix_to_backends.keys())}')
+
+        if backend is not None:
+            self.client = self._backends[backend](**kwargs)
+        else:
+            _backend = self._prefix_to_backends[prefix]
+            self.client = self._backends[_backend](**kwargs)
 
     @classmethod
-    def _register_backend(cls, name, backend, force=False):
+    def _register_backend(cls, name, backend, force=False, prefixes=None):
         if not isinstance(name, str):
             raise TypeError('the backend name should be a string, '
                             f'but got {type(name)}')
@@ -252,9 +274,21 @@ class FileClient:
                 'add "force=True" if you want to override it')
 
         cls._backends[name] = backend
+        if prefixes is not None:
+            if isinstance(prefixes, str):
+                prefixes = [prefixes]
+            else:
+                assert isinstance(prefixes, (list, tuple))
+            for prefix in prefixes:
+                if (prefix not in cls._prefix_to_backends) or force:
+                    cls._prefix_to_backends[prefix] = backend
+                else:
+                    raise KeyError(
+                        f'{prefix} is already registered as a storage backend,'
+                        ' add "force=True" if you want to override it')
 
     @classmethod
-    def register_backend(cls, name, backend=None, force=False):
+    def register_backend(cls, name, backend=None, force=False, prefixes=None):
         """Register a backend to FileClient.
 
         This method can be used as a normal class method or a decorator.
@@ -292,13 +326,17 @@ class FileClient:
                 Defaults to None.
             force (bool, optional): Whether to override the backend if the name
                 has already been registered. Defaults to False.
+            prefixes (str or list[str] or tuple[str]): The prefix of the
+                registered storage backend.
         """
         if backend is not None:
-            cls._register_backend(name, backend, force=force)
+            cls._register_backend(
+                name, backend, force=force, prefixes=prefixes)
             return
 
         def _register(backend_cls):
-            cls._register_backend(name, backend_cls, force=force)
+            cls._register_backend(
+                name, backend_cls, force=force, prefixes=prefixes)
             return backend_cls
 
         return _register
