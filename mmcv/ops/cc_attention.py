@@ -24,19 +24,18 @@ class CrissCrossAttention(nn.Module):
         to a pure PyTorch and equivalent implementation. For more
         details, please refer to https://github.com/open-mmlab/mmcv/pull/1201.
 
-        Speed comparison for one forward pass:
-            Settings
-                * Input size: [2,512,97,97]
-                * Device: 1 NVIDIA GeForce RTX 2080 Ti
-            Results
-                with torch.no_grad()
-                    * The CUDA version: 0.0299619 s
-                    * This implementation: 0.00554402 s
-                    * Relative speed: 5.4x
-                not with torch.no_grad()
-                    * The CUDA version: 0.0301349 s
-                    * This implementation: 0.00562803 s
-                    * Relative speed: 5.4x
+        Speed comparison for one forward pass
+
+        - Input size: [2,512,97,97]
+        - Device: 1 NVIDIA GeForce RTX 2080 Ti
+
+        +-----------------------+---------------+------------+---------------+
+        |                       |PyTorch version|CUDA version|Relative speed |
+        +=======================+===============+============+===============+
+        |with torch.no_grad()   |0.00554402 s   |0.0299619 s |5.4x           |
+        +-----------------------+---------------+------------+---------------+
+        |no with torch.no_grad()|0.00562803 s   |0.0301349 s |5.4x           |
+        +-----------------------+---------------+------------+---------------+
 
     Args:
         in_channels (int): Channels of the input feature map.
