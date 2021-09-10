@@ -167,6 +167,14 @@ html_theme_options = {
                     'name': 'GitHub',
                     'url': 'https://github.com/open-mmlab/'
                 },
+                {
+                    'name': 'Twitter',
+                    'url': 'https://twitter.com/OpenMMLab'
+                },
+                {
+                    'name': 'Zhihu',
+                    'url': 'https://zhihu.com/people/openmmlab'
+                },
             ]
         },
     ]
