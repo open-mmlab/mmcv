@@ -214,9 +214,16 @@ class FileClient:
 
     Args:
         backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached", "lmdb" and "http".
-        prefixes (str or list[str] or tuple[str]): The prefix of the
-            registered storage backend.
+            "memcached", "lmdb", "http" and "petrel". Default: None.
+        prefixes (str or list[str] or tuple[str]): The prefixes of the
+            registered storage backend. Both backend and prefixes can be used
+            to choose a storage backend, but backend has a higher priority that
+            is if they are all set, the storage backend will be chosen by the
+            backend rather than prefixes. If backend and prefixes are all
+            `None`. The dist backend is be chosen. Default: None.
+
+    .. versionadd:: 1.3.14
+            The *prefixes* parameter.
 
     Attributes:
         client (:obj:`BaseStorageBackend`): The backend object.
@@ -231,31 +238,45 @@ class FileClient:
         'http': HTTPBackend,
     }
     _prefix_to_backends = {
-        's3://': PetrelBackend,
-        'http://': HTTPBackend,
-        'https://': HTTPBackend,
+        's3': PetrelBackend,
+        'http': HTTPBackend,
+        'https': HTTPBackend,
     }
 
-    def __init__(self, backend=None, prefix=None, **kwargs):
-        if backend is None and prefix is None:
+    def __init__(self, backend=None, prefixes=None, **kwargs):
+        if backend is None and prefixes is None:
             backend = 'disk'
-        if backend is not None and prefix is not None:
-            raise ValueError(
-                'backend and prefix should not be `None` at the same time')
         if backend is not None and backend not in self._backends:
             raise ValueError(
                 f'Backend {backend} is not supported. Currently supported ones'
                 f' are {list(self._backends.keys())}')
-        if prefix is not None and prefix not in self._prefix_to_backends:
-            raise ValueError(
-                f'prefix {prefix} is not supported. Currently supported ones'
-                f' are {list(self._prefix_to_backends.keys())}')
+        if prefixes is not None:
+            if isinstance(prefixes, str):
+                prefixes = [prefixes]
+            else:
+                assert isinstance(prefixes, (list, tuple))
+
+            if not set(prefixes).issubset(self._prefix_to_backends.keys()):
+                raise ValueError(
+                    f'prefixes {prefixes} is not supported. Currently '
+                    'supported ones are '
+                    f'{list(self._prefix_to_backends.keys())}')
 
         if backend is not None:
             self.client = self._backends[backend](**kwargs)
         else:
-            _backend = self._prefix_to_backends[prefix]
-            self.client = self._backends[_backend](**kwargs)
+            for prefix in prefixes:
+                self.client = self._prefix_to_backends[prefix](**kwargs)
+                break
+
+    @staticmethod
+    def parse_uri_prefix(uri):
+        uri = str(uri)
+        if '://' not in uri:
+            return None
+        else:
+            prefix, _ = uri.split('://')
+            return prefix
 
     @classmethod
     def _register_backend(cls, name, backend, force=False, prefixes=None):
@@ -328,6 +349,9 @@ class FileClient:
                 has already been registered. Defaults to False.
             prefixes (str or list[str] or tuple[str]): The prefix of the
                 registered storage backend.
+
+        .. versionadd:: 1.3.14
+            The *prefixes* parameter.
         """
         if backend is not None:
             cls._register_backend(

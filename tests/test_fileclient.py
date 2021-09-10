@@ -104,8 +104,10 @@ class TestFileClient:
             str(self.img_path).replace(str(self.test_data_dir), ceph_path))
 
     @patch('petrel_client.client.Client', MockS3Client)
-    def test_petrel_backend(self):
-        petrel_backend = FileClient('petrel')
+    @pytest.mark.parametrize('backend,prefixes', [('petrel', None),
+                                                  (None, 's3')])
+    def test_petrel_backend(self, backend, prefixes):
+        petrel_backend = FileClient(backend=backend, prefixes=prefixes)
 
         # input path is Path object
         with pytest.raises(NotImplementedError):
@@ -182,8 +184,10 @@ class TestFileClient:
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == (120, 125, 3)
 
-    def test_http_backend(self):
-        http_backend = FileClient('http')
+    @pytest.mark.parametrize('backend,prefixes', [('http', None),
+                                                  (None, 'http')])
+    def test_http_backend(self, backend, prefixes):
+        http_backend = FileClient(backend=backend, prefixes=prefixes)
         img_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
             'master/tests/data/color.jpg'
         text_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
@@ -207,6 +211,21 @@ class TestFileClient:
         # input url is http text
         value_buf = http_backend.get_text(text_url)
         assert self.text_path.open('r').read() == value_buf
+
+    def test_parse_uri_prefix(self):
+        # input path is Path object
+        assert FileClient.parse_uri_prefix(self.img_path) is None
+        # input path is str
+        assert FileClient.parse_uri_prefix(str(self.img_path)) is None
+
+        # input path starts with https
+        img_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
+            'master/tests/data/color.jpg'
+        assert FileClient.parse_uri_prefix(img_url) == 'https'
+
+        # input path starts with s3
+        img_url = 's3://your_bucket/img.png'
+        assert FileClient.parse_uri_prefix(img_url) == 's3'
 
     def test_register_backend(self):
 
@@ -299,3 +318,72 @@ class TestFileClient:
         example_backend = FileClient('example3')
         assert example_backend.get(self.img_path) == 'bytes5'
         assert example_backend.get_text(self.text_path) == 'text5'
+
+        # prefixes is a str
+        class Example6Backend(BaseStorageBackend):
+
+            def get(self, filepath):
+                return 'bytes6'
+
+            def get_text(self, filepath):
+                return 'text6'
+
+        FileClient.register_backend(
+            'example4',
+            Example6Backend,
+            force=True,
+            prefixes='example4_prefix')
+        example_backend = FileClient('example4')
+        assert example_backend.get(self.img_path) == 'bytes6'
+        assert example_backend.get_text(self.text_path) == 'text6'
+        example_backend = FileClient(prefixes='example4_prefix')
+        assert example_backend.get(self.img_path) == 'bytes6'
+        assert example_backend.get_text(self.text_path) == 'text6'
+        example_backend = FileClient('example4', prefixes='example4_prefix')
+        assert example_backend.get(self.img_path) == 'bytes6'
+        assert example_backend.get_text(self.text_path) == 'text6'
+
+        # prefixes is a list of str
+        class Example7Backend(BaseStorageBackend):
+
+            def get(self, filepath):
+                return 'bytes7'
+
+            def get_text(self, filepath):
+                return 'text7'
+
+        FileClient.register_backend(
+            'example5',
+            Example7Backend,
+            force=True,
+            prefixes=['example5_prefix1', 'example5_prefix2'])
+        example_backend = FileClient('example5')
+        assert example_backend.get(self.img_path) == 'bytes7'
+        assert example_backend.get_text(self.text_path) == 'text7'
+        example_backend = FileClient(prefixes='example5_prefix1')
+        assert example_backend.get(self.img_path) == 'bytes7'
+        assert example_backend.get_text(self.text_path) == 'text7'
+        example_backend = FileClient(prefixes='example5_prefix2')
+        assert example_backend.get(self.img_path) == 'bytes7'
+        assert example_backend.get_text(self.text_path) == 'text7'
+
+        # backend has a higher priority than prefixes
+        class Example8Backend(BaseStorageBackend):
+
+            def get(self, filepath):
+                return 'bytes8'
+
+            def get_text(self, filepath):
+                return 'text8'
+
+        FileClient.register_backend(
+            'example6',
+            Example8Backend,
+            force=True,
+            prefixes='example6_prefix')
+        example_backend = FileClient('example6')
+        assert example_backend.get(self.img_path) == 'bytes8'
+        assert example_backend.get_text(self.text_path) == 'text8'
+        example_backend = FileClient('example6', prefixes='example4_prefix')
+        assert example_backend.get(self.img_path) == 'bytes8'
+        assert example_backend.get_text(self.text_path) == 'text8'
