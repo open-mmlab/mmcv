@@ -29,7 +29,7 @@ from mmcv.utils import Registry
 CONVERTERS = Registry('converter')
 ```
 
-然后我们在包中可以实现不同的转换器（converter）。例如，在 `converters/converter1.py` 中实现 `Converter1`。 
+然后我们在包中可以实现不同的转换器（converter）。例如，在 `converters/converter1.py` 中实现 `Converter1`。
 
 ```python
 
