@@ -1118,6 +1118,24 @@ def test_dvclive_hook(tmp_path):
     hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
 
 
+def test_dvclive_hook_model_file(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    runner = _build_demo_runner()
+
+    hook = DvcliveLoggerHook(model_file=tmp_path / 'model.pth')
+    runner.register_hook(hook, priority='VERY_LOW')
+
+    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+
+    assert (tmp_path / 'model.pth').is_file()
+
+    shutil.rmtree(runner.work_dir)
+
+
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
                                     max_epochs=1,
                                     max_iters=None,

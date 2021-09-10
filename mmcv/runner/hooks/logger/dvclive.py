@@ -33,14 +33,12 @@ class DvcliveLoggerHook(LoggerHook):
         https://dvc.org/doc/dvclive
     """
 
-    def __init__(
-        self,
-        model_file=None,
-        interval=1,
-        ignore_last=True,
-        reset_flag=False,
-        by_epoch=True,
-    ):
+    def __init__(self,
+                 model_file=None,
+                 interval=1,
+                 ignore_last=True,
+                 reset_flag=False,
+                 by_epoch=True):
         self.model_file = model_file
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_dvclive()
