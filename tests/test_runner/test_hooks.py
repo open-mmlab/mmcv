@@ -1123,7 +1123,7 @@ def test_dvclive_hook_model_file(tmp_path):
     runner = _build_demo_runner()
 
     hook = DvcliveLoggerHook(model_file=tmp_path / 'model.pth')
-    runner.register_hook(hook, priority='VERY_LOW')
+    runner.register_hook(hook)
 
     loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
