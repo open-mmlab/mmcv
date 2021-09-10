@@ -139,7 +139,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
 
 2. 从父注册器中构建
 
-   MMCV中的 共享`MODELS`注册器 是所有下游代码库的父注册器（根注册器）：
+   MMCV中的共享`MODELS`注册器是所有下游代码库的父注册器（根注册器）：
 
    ```python
    from mmcv.cnn import MODELS as MMCV_MODELS
