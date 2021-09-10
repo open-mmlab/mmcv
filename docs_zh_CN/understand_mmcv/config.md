@@ -27,7 +27,6 @@ d = 'string'
 
 目前支持以下四个预定义变量：
 
-
 `{{ fileDirname }}` - 当前打开文件的目录名，例如 /home/your-username/your-project/folder
 
 `{{ fileBasename }}` - 当前打开文件的文件名，例如 file.ext
@@ -104,7 +103,7 @@ c = (1, 2)
 ...      c=(1, 2))
 ```
 
- 在基类配置文件：`config_a` 里的 `b.b2=None`被配置文件：`config_c.py`里的 `b.b2=1`替代。
+在基类配置文件：`config_a` 里的 `b.b2=None`被配置文件：`config_c.py`里的 `b.b2=1`替代。
 
 ### 从具有忽略字段的配置文件继承
 

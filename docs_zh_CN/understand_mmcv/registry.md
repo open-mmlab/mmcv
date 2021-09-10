@@ -1,7 +1,6 @@
 ## 注册器
-MMCV 实施注册表来管理具有相似功能的不同模块
 MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) 来管理具有相似功能的不同模块, 例如, 监测器中的骨干网络、前置网络头、和颈部网络。
-在 OpenMMLab 家族中的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting)，等。
+在 OpenMMLab 家族中的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting) 等。
 
 ### 什么是注册器
 在MMCV中，注册器可以看作类到字符串的映射。
@@ -12,9 +11,9 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 
 使用 `registry`（注册器）管理你存放在代码库中的模型，需要以下三个步骤。
 
-1. 创建一个构建方法（可选，在大多数情况下您可以只使用默认方法）。
-2. 创建注册器。
-3. 使用此注册器来管理模块。
+1. 创建一个构建方法（可选，在大多数情况下您可以只使用默认方法）
+2. 创建注册器
+3. 使用此注册器来管理模块
 `Registry`（注册器）的参数 `build_func`（构建函数） 用来自定以如何实例化类的实例，默认的是在[这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg)实现的`build_from_cfg`。
 
 ### 一个简单的例子
@@ -32,7 +31,6 @@ CONVERTERS = Registry('converter')
 然后我们在包中可以实现不同的转换器（converter）。例如，在 `converters/converter1.py` 中实现 `Converter1`。
 
 ```python
-
 from .builder import CONVERTERS
 
 # 使用注册器管理模块
@@ -80,8 +78,10 @@ def build_converter(cfg, registry, *args, **kwargs):
 CONVERTERS = Registry('converter', build_func=build_converter)
 ```
 
+```{note}
 注：在这个例子中，我们演示了如何使用参数：`build_func` 自定义构建类的实例的方法。
 该功能类似于默认的`build_from_cfg`。在大多数情况下，默认就足够了。
+```
 
 `build_model_from_cfg`也实现了在`nn.Sequentail`中构建PyTorch模块，你可以直接使用它们没必要自己实现。
 
@@ -91,7 +91,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
 
 下游代码库中所有 `MODELS`注册器 都是 MMCV `MODELS`注册器 的子注册器。基本上，使用以下两种方法从子注册器或相邻兄弟注册器构建模块。
 
-1. 从子注册器中构建。
+1. 从子注册器中构建
 
    例如：
 
@@ -137,7 +137,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    net_b = MODELS.build(cfg=dict(type='NetB'))
    ```
 
-2. 从父注册器中构建。
+2. 从父注册器中构建
 
    MMCV中的 共享`MODELS`注册器 是所有下游代码库的父注册器（根注册器）：
 
