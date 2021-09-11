@@ -1,5 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-def list_from_file(filename, prefix='', offset=0, max_num=0, encoding='utf-8'):
+
+from io import StringIO
+
+from .file_client import FileClient
+
+
+def list_from_file(filename,
+                   prefix='',
+                   offset=0,
+                   max_num=0,
+                   encoding='utf-8',
+                   file_client_args=None):
     """Load a text file and parse the content as a list of strings.
 
     Args:
@@ -9,13 +20,21 @@ def list_from_file(filename, prefix='', offset=0, max_num=0, encoding='utf-8'):
         max_num (int): The maximum number of lines to be read,
             zeros and negatives mean no limitation.
         encoding (str): Encoding used to open the file. Default utf-8.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
 
     Returns:
         list[str]: A list of strings.
     """
     cnt = 0
     item_list = []
-    with open(filename, 'r', encoding=encoding) as f:
+    if file_client_args is None:
+        file_prefix = FileClient.parse_uri_prefix(filename)
+        client = FileClient(prefixes=file_prefix)
+    else:
+        client = FileClient(**file_client_args)
+
+    with StringIO(client.get_text(filename, encoding)) as f:
         for _ in range(offset):
             f.readline()
         for line in f:
@@ -26,7 +45,10 @@ def list_from_file(filename, prefix='', offset=0, max_num=0, encoding='utf-8'):
     return item_list
 
 
-def dict_from_file(filename, key_type=str):
+def dict_from_file(filename,
+                   key_type=str,
+                   encoding='utf-8',
+                   file_client_args=None):
     """Load a text file and parse the content as a dict.
 
     Each line of the text file will be two or more columns split by
@@ -37,12 +59,21 @@ def dict_from_file(filename, key_type=str):
         filename(str): Filename.
         key_type(type): Type of the dict keys. str is user by default and
             type conversion will be performed if specified.
+        encoding (str): Encoding used to open the file. Default utf-8.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
 
     Returns:
         dict: The parsed contents.
     """
     mapping = {}
-    with open(filename, 'r') as f:
+    if file_client_args is None:
+        file_prefix = FileClient.parse_uri_prefix(filename)
+        client = FileClient(prefixes=file_prefix)
+    else:
+        client = FileClient(**file_client_args)
+
+    with StringIO(client.get_text(filename, encoding)) as f:
         for line in f:
             items = line.rstrip('\n').split()
             assert len(items) >= 2

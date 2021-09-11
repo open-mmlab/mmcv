@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from io import BytesIO, StringIO
 from pathlib import Path
 
 from ..utils import is_list_of, is_str
+from .file_client import FileClient
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 
 file_handlers = {
@@ -13,7 +15,7 @@ file_handlers = {
 }
 
 
-def load(file, file_format=None, **kwargs):
+def load(file, file_format=None, file_client_args=None, **kwargs):
     """Load data from json/yaml/pickle files.
 
     This method provides a unified api for loading data from serialized files.
@@ -25,6 +27,8 @@ def load(file, file_format=None, **kwargs):
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include "json", "yaml/yml" and
             "pickle/pkl".
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
 
     Returns:
         The content from the file.
@@ -36,9 +40,20 @@ def load(file, file_format=None, **kwargs):
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
 
+    if file_client_args is None:
+        file_prefix = FileClient.parse_uri_prefix(file)
+        client = FileClient(prefixes=file_prefix)
+    else:
+        client = FileClient(**file_client_args)
+
     handler = file_handlers[file_format]
     if is_str(file):
-        obj = handler.load_from_path(file, **kwargs)
+        if handler.str_like_obj:
+            with StringIO(client.get_text(file)) as f:
+                obj = handler.load_from_fileobj(f, **kwargs)
+        else:
+            with BytesIO(client.get(file)) as f:
+                obj = handler.load_from_fileobj(f, **kwargs)
     elif hasattr(file, 'read'):
         obj = handler.load_from_fileobj(file, **kwargs)
     else:
@@ -46,7 +61,7 @@ def load(file, file_format=None, **kwargs):
     return obj
 
 
-def dump(obj, file=None, file_format=None, **kwargs):
+def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
     """Dump data to json/yaml/pickle strings or files.
 
     This method provides a unified api for dumping data as strings or to files,
@@ -58,7 +73,8 @@ def dump(obj, file=None, file_format=None, **kwargs):
             specified, then the object is dump to a str, otherwise to a file
             specified by the filename or file-like object.
         file_format (str, optional): Same as :func:`load`.
-
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
     Returns:
         bool: True for success, False otherwise.
     """
@@ -73,11 +89,24 @@ def dump(obj, file=None, file_format=None, **kwargs):
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
 
+    if file_client_args is None:
+        file_prefix = FileClient.parse_uri_prefix(file)
+        client = FileClient(prefixes=file_prefix)
+    else:
+        client = FileClient(**file_client_args)
+
     handler = file_handlers[file_format]
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
-        handler.dump_to_path(obj, file, **kwargs)
+        if handler.str_like_obj:
+            f = StringIO()
+            handler.dump_to_fileobj(obj, f, **kwargs)
+            client.put_text(f.getvalue(), file)
+        else:
+            f = BytesIO()
+            handler.dump_to_fileobj(obj, f, **kwargs)
+            client.put(f.getvalue(), file)
     elif hasattr(file, 'write'):
         handler.dump_to_fileobj(obj, file, **kwargs)
     else:

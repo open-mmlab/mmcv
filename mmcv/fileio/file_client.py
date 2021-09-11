@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
+from typing import Optional, Union
 from urllib.request import urlopen
 
 
@@ -49,7 +51,7 @@ class CephBackend(BaseStorageBackend):
         value_buf = memoryview(value)
         return value_buf
 
-    def get_text(self, filepath):
+    def get_text(self, filepath, encoding=None):
         raise NotImplementedError
 
 
@@ -61,20 +63,26 @@ class PetrelBackend(BaseStorageBackend):
             path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
             be replaced by `dst`. Default: None.
         enable_mc (bool): whether to enable memcached support. Default: True.
+        enable_multi_cluster (bool): Whether to enable multi clusters.
+            Default: False.
     """
 
-    def __init__(self, path_mapping=None, enable_mc=True):
+    def __init__(self,
+                 path_mapping: Optional[dict] = None,
+                 enable_mc: bool = True,
+                 enable_multi_cluster: bool = False):
         try:
             from petrel_client import client
         except ImportError:
             raise ImportError('Please install petrel_client to enable '
                               'PetrelBackend.')
 
-        self._client = client.Client(enable_mc=enable_mc)
+        self._client = client.Client(
+            enable_mc=enable_mc, enable_multi_cluster=enable_multi_cluster)
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
-    def get(self, filepath):
+    def get(self, filepath: Union[str, Path]) -> memoryview:
         filepath = str(filepath)
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
@@ -83,8 +91,23 @@ class PetrelBackend(BaseStorageBackend):
         value_buf = memoryview(value)
         return value_buf
 
-    def get_text(self, filepath):
-        raise NotImplementedError
+    def get_text(self,
+                 filepath: Union[str, Path],
+                 encoding: str = 'utf-8') -> str:
+        return str(self.get(filepath), encoding=encoding)
+
+    def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
+        filepath = str(filepath)
+        if self.path_mapping is not None:
+            for k, v in self.path_mapping.items():
+                filepath = filepath.replace(k, v)
+        self._client.put(filepath, obj)
+
+    def put_text(self,
+                 obj: str,
+                 filepath: Union[str, Path],
+                 encoding: str = 'utf-8') -> None:
+        self.put(bytes(obj, encoding=encoding), filepath)
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -121,7 +144,7 @@ class MemcachedBackend(BaseStorageBackend):
         value_buf = mc.ConvertBuffer(self._mc_buffer)
         return value_buf
 
-    def get_text(self, filepath):
+    def get_text(self, filepath, encoding=None):
         raise NotImplementedError
 
 
@@ -173,7 +196,7 @@ class LmdbBackend(BaseStorageBackend):
             value_buf = txn.get(filepath.encode('ascii'))
         return value_buf
 
-    def get_text(self, filepath):
+    def get_text(self, filepath, encoding=None):
         raise NotImplementedError
 
 
@@ -186,11 +209,21 @@ class HardDiskBackend(BaseStorageBackend):
             value_buf = f.read()
         return value_buf
 
-    def get_text(self, filepath):
+    def get_text(self, filepath, encoding='utf-8'):
         filepath = str(filepath)
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
+
+    def put(self, obj, filepath):
+        filepath = str(filepath)
+        with open(filepath, 'wb') as f:
+            f.write(obj)
+
+    def put_text(self, obj, filepath, encoding='utf-8'):
+        filepath = str(filepath)
+        with open(filepath, 'w', encoding=encoding) as f:
+            f.write(obj)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -200,9 +233,9 @@ class HTTPBackend(BaseStorageBackend):
         value_buf = urlopen(filepath).read()
         return value_buf
 
-    def get_text(self, filepath):
+    def get_text(self, filepath, encoding='utf-8'):
         value_buf = urlopen(filepath).read()
-        return value_buf.decode('utf-8')
+        return value_buf.decode(encoding)
 
 
 class FileClient:
@@ -276,6 +309,9 @@ class FileClient:
             return None
         else:
             prefix, _ = uri.split('://')
+            # clusterName:s3://
+            if ':' in prefix:
+                _, prefix = prefix.split(':')
             return prefix
 
     @classmethod
@@ -368,5 +404,11 @@ class FileClient:
     def get(self, filepath):
         return self.client.get(filepath)
 
-    def get_text(self, filepath):
-        return self.client.get_text(filepath)
+    def get_text(self, filepath, encoding='utf-8'):
+        return self.client.get_text(filepath, encoding)
+
+    def put(self, obj, filepath):
+        self.client.put(obj, filepath)
+
+    def put_text(self, obj, filepath):
+        self.client.put_text(obj, filepath)

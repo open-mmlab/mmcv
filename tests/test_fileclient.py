@@ -24,6 +24,18 @@ class MockS3Client:
         return content
 
 
+class MockPetrelClient:
+
+    def __init__(self, enable_mc=True, enable_multi_cluster=False):
+        self.enable_mc = enable_mc
+        self.enable_multi_cluster = enable_multi_cluster
+
+    def Get(self, filepath):
+        with open(filepath, 'rb') as f:
+            content = f.read()
+        return content
+
+
 class MockMemcachedClient:
 
     def __init__(self, server_list_cfg, client_cfg):
@@ -103,18 +115,11 @@ class TestFileClient:
         ceph_backend.client._client.Get.assert_called_with(
             str(self.img_path).replace(str(self.test_data_dir), ceph_path))
 
-    @patch('petrel_client.client.Client', MockS3Client)
+    @patch('petrel_client.client.Client', MockPetrelClient)
     @pytest.mark.parametrize('backend,prefixes', [('petrel', None),
                                                   (None, 's3')])
     def test_petrel_backend(self, backend, prefixes):
         petrel_backend = FileClient(backend=backend, prefixes=prefixes)
-
-        # input path is Path object
-        with pytest.raises(NotImplementedError):
-            petrel_backend.get_text(self.text_path)
-        # input path is str
-        with pytest.raises(NotImplementedError):
-            petrel_backend.get_text(str(self.text_path))
 
         # input path is Path object
         img_bytes = petrel_backend.get(self.img_path)
@@ -227,6 +232,10 @@ class TestFileClient:
         img_url = 's3://your_bucket/img.png'
         assert FileClient.parse_uri_prefix(img_url) == 's3'
 
+        # input path starts with clusterName:s3
+        img_url = 'clusterName:s3://your_bucket/img.png'
+        assert FileClient.parse_uri_prefix(img_url) == 's3'
+
     def test_register_backend(self):
 
         # name must be a string
@@ -254,7 +263,7 @@ class TestFileClient:
             def get(self, filepath):
                 return filepath
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return filepath
 
         FileClient.register_backend('example', ExampleBackend)
@@ -268,7 +277,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes2'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text2'
 
         # force=False
@@ -286,7 +295,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes3'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text3'
 
         example_backend = FileClient('example3')
@@ -303,7 +312,7 @@ class TestFileClient:
                 def get(self, filepath):
                     return 'bytes4'
 
-                def get_text(self, filepath):
+                def get_text(self, filepath, encoding='utf-8'):
                     return 'text4'
 
         @FileClient.register_backend(name='example3', force=True)
@@ -312,7 +321,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes5'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text5'
 
         example_backend = FileClient('example3')
@@ -325,7 +334,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes6'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text6'
 
         FileClient.register_backend(
@@ -349,7 +358,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes7'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text7'
 
         FileClient.register_backend(
@@ -373,7 +382,7 @@ class TestFileClient:
             def get(self, filepath):
                 return 'bytes8'
 
-            def get_text(self, filepath):
+            def get_text(self, filepath, encoding='utf-8'):
                 return 'text8'
 
         FileClient.register_backend(
