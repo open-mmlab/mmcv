@@ -6,5 +6,4 @@ opencv-python
 sphinx==4.0.2
 sphinx-copybutton
 sphinx_markdown_tables
-sphinx_rtd_theme==0.5.2
 torch
