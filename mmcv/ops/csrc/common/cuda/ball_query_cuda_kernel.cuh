@@ -8,13 +8,13 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-__global__ void ball_query_kernel(int b, int n, int m,
-                                  float min_radius,
-                                  float max_radius,
-                                  int nsample,
-                                  const float *__restrict__ new_xyz,
-                                  const float *__restrict__ xyz,
-                                  int *__restrict__ idx)
+__global__ void ball_query_cuda_kernel(int b, int n, int m,
+                                       float min_radius,
+                                       float max_radius,
+                                       int nsample,
+                                       const float *__restrict__ new_xyz,
+                                       const float *__restrict__ xyz,
+                                       int *__restrict__ idx)
 {
     // new_xyz: (B, M, 3)
     // xyz: (B, N, 3)
