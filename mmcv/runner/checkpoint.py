@@ -520,9 +520,16 @@ def load_checkpoint(model,
         state_dict = checkpoint['state_dict']
     else:
         state_dict = checkpoint
+
     # strip prefix of state_dict
+    metadata = getattr(state_dict, '_metadata', OrderedDict())
     for p, r in revise_keys:
-        state_dict = {re.sub(p, r, k): v for k, v in state_dict.items()}
+        state_dict = OrderedDict(
+            {re.sub(p, r, k): v
+             for k, v in state_dict.items()})
+    # Keep metadata in state_dict
+    state_dict._metadata = metadata
+
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint
@@ -540,6 +547,8 @@ def weights_to_cpu(state_dict):
     state_dict_cpu = OrderedDict()
     for key, val in state_dict.items():
         state_dict_cpu[key] = val.cpu()
+    # Keep metadata in state_dict
+    state_dict_cpu._metadata = getattr(state_dict, '_metadata', OrderedDict())
     return state_dict_cpu
 
 
