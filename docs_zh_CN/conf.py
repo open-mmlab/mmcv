@@ -111,7 +111,7 @@ html_theme_options = {
         },
         {
             'name':
-            'Projects',
+            '算法库',
             'children': [
                 {
                     'name': 'MMAction2',
@@ -160,7 +160,7 @@ html_theme_options = {
             'OpenMMLab',
             'children': [
                 {
-                    'name': 'Homepage',
+                    'name': '官网',
                     'url': 'https://openmmlab.com/'
                 },
                 {
@@ -168,11 +168,11 @@ html_theme_options = {
                     'url': 'https://github.com/open-mmlab/'
                 },
                 {
-                    'name': 'Twitter',
+                    'name': '推特',
                     'url': 'https://twitter.com/OpenMMLab'
                 },
                 {
-                    'name': 'Zhihu',
+                    'name': '知乎',
                     'url': 'https://zhihu.com/people/openmmlab'
                 },
             ]
