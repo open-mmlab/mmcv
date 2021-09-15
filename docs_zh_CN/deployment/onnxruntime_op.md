@@ -97,7 +97,7 @@ onnx_results = sess.run(None, {'input' : input_data})
 以`soft_nms`为例：
 
 1. 在ONNX Runtime头文件目录`mmcv/ops/csrc/onnxruntime/`下添加头文件`soft_nms.h`
-2. 在ONNX Runtime实现目录`mmcv/ops/csrc/onnxruntime/cpu/`下添加算子实现`soft_nms.cpp`
+2. 在ONNX Runtime源码目录`mmcv/ops/csrc/onnxruntime/cpu/`下添加算子实现`soft_nms.cpp`
 3. 在[onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)中注册实现的算子`soft_nms`
 
     ```c++

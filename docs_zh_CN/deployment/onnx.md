@@ -2,7 +2,7 @@
 
 ## register_extra_symbolics
 
-在将PyTorch模型导出成ONNX时，需要注册额外的符号函数。
+在将PyTorch模型导出成ONNX时，需要注册额外的符号函数
 
 ### 范例
 

@@ -96,14 +96,14 @@
 
 ### 描述
 
-在特征图上计算RoIAlign，在多数双阶段目标检测模型的bbox_head中使用。
+在特征图上计算RoIAlign，通常在双阶段目标检测模型的bbox_head中使用
 
 ### 模型参数
 
 | 类型    | 参数名           | 描述                                                    |
 | ------- | ---------------- | ------------------------------------------------------- |
-| `int`   | `output_height`  | 输出roi特征的高度                                       |
-| `int`   | `output_width`   | 输出roi特征的宽度                                       |
+| `int`   | `output_height`  | roi特征的输出高度                                       |
+| `int`   | `output_width`   | roi特征的输出宽度                                       |
 | `float` | `spatial_scale`  | 输入检测框的缩放系数                                    |
 | `int`   | `sampling_ratio` | 输出的采样率。`0`表示使用密集采样                       |
 | `str`   | `mode`           | 池化方式。 `avg`或`max`                                 |
@@ -139,7 +139,7 @@
 
 | 类型    | 参数名          | 描述                                                  |
 | ------- | --------------- | ----------------------------------------------------- |
-| `float` | `iou_threshold` | 用来判断候选框覆盖度的阈值，取值范围[0, 1]。默认值为0 |
+| `float` | `iou_threshold` | 用来判断候选框重合度的阈值，取值范围[0, 1]。默认值为0 |
 | `int`   | `offset`        | 用来计算候选框的宽高(x2 - x1 + offset)。可选值0或1    |
 
 ### 输入
@@ -155,7 +155,7 @@
 
 <dl>
 <dt><tt>indices</tt>: tensor(int32, Linear)</dt>
-<dd>被选中的候选框序号。形状为(num_valid_boxes, )的一维张量，num_valid_boxes表示被选上的候选框数量。</dd>
+<dd>被选中的候选框索引。形状为(num_valid_boxes, )的一维张量，num_valid_boxes表示被选上的候选框数量。</dd>
 </dl>
 
 ### 类型约束
@@ -166,7 +166,7 @@
 
 ### 描述
 
-根据像素位置网格`grid`对`input`进行网格采样。
+根据`grid`的像素位置对`input`进行网格采样。
 
 ### 模型参数
 
@@ -174,7 +174,7 @@
 | ----- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `int` | `interpolation_mode` | 计算输出使用的插值模式。(0: `bilinear` , 1: `nearest`)                                                                                                 |
 | `int` | `padding_mode`       | 边缘填充模式。(0: `zeros`, 1: `border`, 2: `reflection`)                                                                                               |
-| `int` | `align_corners`      | 如果`align_corners=1`，则极值(`-1`和`1`)会被当做输入边缘像素的中心点。如果`align_corners=0`，则他们会被看做是边缘像素的边缘点,减小分辨率对采样的影响。 |
+| `int` | `align_corners`      | 如果`align_corners=1`，则极值(`-1`和`1`)会被当做输入边缘像素的中心点。如果`align_corners=0`，则它们会被看做是边缘像素的边缘点,减小分辨率对采样的影响  |
 
 ### 输入
 
@@ -274,14 +274,14 @@
 
 <dl>
 <dt><tt>input</tt>: T</dt>
-<dd>输入张量；可以使任意形状</dd>
+<dd>输入张量；可以是任意形状；也支持空Tensor</dd>
 </dl>
 
 ### 输出
 
 <dl>
 <dt><tt>output</tt>: T</dt>
-<dd>`input`第`dim`维的累计最小值，形状与`input`相同。</dd>
+<dd>`input`第`dim`维的累计最小值，形状与`input`相同。类型和`input`一致</dd>
 <dt><tt>indices</tt>: tensor(int64)</dt>
 <dd>第`dim`维最小值位置，形状与`input`相同。</dd>
 </dl>
