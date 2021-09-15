@@ -9,11 +9,7 @@ void ball_query_kernel_launcher(int b, int n, int m, float min_radius,
                                 const float *new_xyz, int *idx);
 #endif
 
-int ball_query_wrapper(int b, int n, int m, float min_radius, float max_radius,
-                       int nsample, at::Tensor new_xyz_tensor,
-                       at::Tensor xyz_tensor, at::Tensor idx_tensor);
-
-int ball_query_wrapper(int b, int n, int m, float min_radius, float max_radius,
+int ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
                        int nsample, at::Tensor new_xyz_tensor,
                        at::Tensor xyz_tensor, at::Tensor idx_tensor) {
   if (new_xyz_tensor.device().is_cuda()) {

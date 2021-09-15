@@ -4,7 +4,7 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', ['ball_query_wrapper'])
+ext_module = ext_loader.load_ext('_ext', ['ball_query_forward'])
 
 
 class BallQuery(Function):
@@ -37,7 +37,7 @@ class BallQuery(Function):
         npoint = center_xyz.size(1)
         idx = torch.cuda.IntTensor(B, npoint, sample_num).zero_()
 
-        ext_module.ball_query_wrapper(B, N, npoint, min_radius, max_radius,
+        ext_module.ball_query_forward(B, N, npoint, min_radius, max_radius,
                                       sample_num, center_xyz, xyz, idx)
         ctx.mark_non_differentiable(idx)
         return idx

@@ -172,7 +172,7 @@ void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
-int ball_query_wrapper(int b, int n, int m, float min_radius, float max_radius,
+int ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
                        int nsample, at::Tensor new_xyz_tensor,
                        at::Tensor xyz_tensor, at::Tensor idx_tensor);
 
@@ -419,7 +419,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
-  m.def("ball_query_wrapper", &ball_query_wrapper, "ball_query_wrapper");
+  m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
+        py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
+        py::arg("max_radius"), py::arg("nsample"), py::arg("new_xyz_tensor"),
+        py::arg("xyz_tensor"), py::arg("idx_tensor"));
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
