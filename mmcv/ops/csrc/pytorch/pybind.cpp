@@ -53,6 +53,14 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
+int gather_points_forward(int b, int c, int n, int npoints,
+                          at::Tensor points_tensor, at::Tensor idx_tensor,
+                          at::Tensor out_tensor);
+
+int gather_points_backward(int b, int c, int n, int npoints,
+                           at::Tensor grad_out_tensor, at::Tensor idx_tensor,
+                           at::Tensor grad_points_tensor);
+
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha);
 
@@ -230,6 +238,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
         py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
         py::arg("scale"));
+  m.def("gather_points_forward", &gather_points_forward,
+        "gather_points_forward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("points_tensor"), py::arg("idx_tensor"),
+        py::arg("out_tensor"));
+  m.def("gather_points_backward", &gather_points_backward,
+        "gather_points_backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("grad_out_tensor"), py::arg("idx_tensor"),
+        py::arg("grad_points_tensor"));
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
