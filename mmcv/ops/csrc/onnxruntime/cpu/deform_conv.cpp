@@ -1,85 +1,22 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "deform_conv.h"
 
-#include <cmath>
+#include "../ort_mmcv_utils.h"
+#include <torch/torch.h>
 #include <vector>
 
-#include "../ort_mmcv_utils.h"
-
-void gemm_ref_fp32_deform(const float *A, const float *B, const float *V,
-                          const float *H, const int32_t trans_A,
-                          const int32_t trans_B, const int32_t M,
-                          const int32_t N, const int32_t K, const float alpha,
-                          const float beta, float *Y) {
-  if (!trans_A && !trans_B) { // MK, KN; NN
-    for (int64_t m = 0; m < M; ++m) {
-      for (int64_t n = 0; n < N; ++n) {
-        float y = 0.0f;
-        for (int64_t k = 0; k < K; ++k) {
-          y += A[m * K + k] * B[k * N + n];
-        }
-        y *= alpha;
-        if (V)
-          y += beta * V[n];
-        if (H)
-          y += beta * H[m * N + n];
-        Y[m * N + n] = y;
-      }
-    }
-  }
-  if (trans_A && !trans_B) { // KM, KN; TN
-    for (int64_t m = 0; m < M; ++m) {
-      for (int64_t n = 0; n < N; ++n) {
-        float y = 0.0f;
-        for (int64_t k = 0; k < K; ++k) {
-          y += A[k * M + m] * B[k * N + n];
-        }
-        y *= alpha;
-        if (V)
-          y += beta * V[n];
-        if (H)
-          y += beta * H[m * N + n];
-        Y[m * N + n] = y;
-      }
-    }
-  }
-  if (trans_A && trans_B) { // KM, NK; TT
-    for (int64_t m = 0; m < M; ++m) {
-      for (int64_t n = 0; n < N; ++n) {
-        float y = 0.0f;
-        for (int64_t k = 0; k < K; ++k) {
-          y += A[k * M + m] * B[n * K + k];
-        }
-        y *= alpha;
-        if (V)
-          y += beta * V[n];
-        if (H)
-          y += beta * H[m * N + n];
-        Y[m * N + n] = y;
-      }
-    }
-  }
-  if (!trans_A && trans_B) { // MK, NK; NT
-    for (int64_t m = 0; m < M; ++m) {
-      for (int64_t n = 0; n < N; ++n) {
-        float y = 0.0f;
-        for (int64_t k = 0; k < K; ++k) {
-          y += A[m * K + k] * B[n * K + k];
-        }
-        y *= alpha;
-        if (V)
-          y += beta * V[n];
-        if (H)
-          y += beta * H[m * N + n];
-        Y[m * N + n] = y;
-      }
-    }
-  }
+at::Tensor to_torch_tensor(Ort::CustomOpApi &ort, const OrtValue *value) {
+  at::Tensor tensor =
+      at::from_blob((void *)ort.GetTensorData<float>(value),
+                    ort.GetTensorShape(ort.GetTensorTypeAndShape(value)));
+  return tensor;
 }
 
-float bilinear_interpolate(const float *src, const int64_t src_h,
-                           const int64_t src_w, const float h, const float w) {
-  if (h <= -1 || src_h <= h || w <= -1 || src_w <= w) {
+template <typename T>
+T deformable_im2col_bilinear_cpu(const T *input, const int64_t data_width,
+                                 const int64_t height, const int64_t width, T h,
+                                 T w) {
+  if (h <= -1 || height <= h || w <= -1 || width <= w) {
     return 0;
   }
 
@@ -88,105 +25,103 @@ float bilinear_interpolate(const float *src, const int64_t src_h,
   int64_t h_high = h_low + 1;
   int64_t w_high = w_low + 1;
 
-  float lh = h - h_low;
-  float lw = w - w_low;
-  float hh = 1 - lh;
-  float hw = 1 - lw;
+  T lh = h - h_low;
+  T lw = w - w_low;
+  T hh = 1 - lh, hw = 1 - lw;
 
-  float v1 = 0;
+  T v1 = 0;
   if (h_low >= 0 && w_low >= 0)
-    v1 = src[h_low * src_w + w_low];
-  float v2 = 0;
-  if (h_low >= 0 && w_high <= src_w - 1)
-    v2 = src[h_low * src_w + w_high];
-  float v3 = 0;
-  if (h_high <= src_h - 1 && w_low >= 0)
-    v3 = src[h_high * src_w + w_low];
-  float v4 = 0;
-  if (h_high <= src_h - 1 && w_high <= src_w - 1)
-    v4 = src[h_high * src_w + w_high];
+    v1 = input[h_low * data_width + w_low];
+  T v2 = 0;
+  if (h_low >= 0 && w_high <= width - 1)
+    v2 = input[h_low * data_width + w_high];
+  T v3 = 0;
+  if (h_high <= height - 1 && w_low >= 0)
+    v3 = input[h_high * data_width + w_low];
+  T v4 = 0;
+  if (h_high <= height - 1 && w_high <= width - 1)
+    v4 = input[h_high * data_width + w_high];
 
-  float w1 = hh * hw, w2 = hh * lw, w3 = lh * hw, w4 = lh * lw;
+  T w1 = hh * hw, w2 = hh * lw, w3 = lh * hw, w4 = lh * lw;
 
-  float val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);
+  T val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);
   return val;
 }
 
-void deformable_im2col(const float *input, const float *offset,
-                       const int64_t src_h, const int64_t src_w,
-                       const int64_t kernel_h, const int64_t kernel_w,
-                       const int64_t pad_h, const int64_t pad_w,
-                       const int64_t stride_h, const int64_t stride_w,
-                       const int64_t dilation_h, const int64_t dilation_w,
-                       const int64_t channels, const int64_t offset_groups,
-                       const int64_t dst_h, const int64_t dst_w,
-                       float *columns) {
-  const int64_t indices = channels * dst_h * dst_w;
-  for (int64_t index = 0; index != indices; ++index) {
-    const int64_t w_col = index % dst_w;
-    const int64_t h_col = (index / dst_w) % dst_h;
-    const int64_t c_im = index / (dst_w * dst_h);
+template <typename T>
+void deformable_im2col_cpu_kernel(
+    const int64_t n, const T *data_im, const T *data_offset,
+    const int64_t height, const int64_t width, const int64_t kernel_h,
+    const int64_t kernel_w, const int64_t pad_h, const int64_t pad_w,
+    const int64_t stride_h, const int64_t stride_w, const int64_t dilation_h,
+    const int64_t dilation_w, const int64_t channel_per_deformable_group,
+    const int64_t batch_size, const int64_t num_channels,
+    const int64_t deformable_group, const int64_t height_col,
+    const int64_t width_col, T *data_col) {
+  for (int64_t index = 0; index < n; index++) {
+    // index index of output matrix
+    const int64_t w_col = index % width_col;
+    const int64_t h_col = (index / width_col) % height_col;
+    const int64_t b_col = (index / width_col / height_col) % batch_size;
+    const int64_t c_im = (index / width_col / height_col) / batch_size;
     const int64_t c_col = c_im * kernel_h * kernel_w;
 
-    int64_t c_per_offset_grp = channels / offset_groups;
-    const int64_t grp_idx = c_im / c_per_offset_grp;
-    auto columns_ptr =
-        columns + (c_col * (dst_h * dst_w) + h_col * dst_w + w_col);
-    auto input_ptr = input + c_im * (src_h * src_w);
-    auto offset_ptr =
-        offset + grp_idx * 2 * kernel_h * kernel_w * dst_h * dst_w;
+    // compute deformable group index
+    const int64_t deformable_group_index = c_im / channel_per_deformable_group;
 
-    for (int64_t kh = 0; kh < kernel_h; ++kh) {
-      for (int64_t kw = 0; kw < kernel_w; ++kw) {
+    const int64_t h_in = h_col * stride_h - pad_h;
+    const int64_t w_in = w_col * stride_w - pad_w;
+    T *data_col_ptr =
+        data_col +
+        ((c_col * batch_size + b_col) * height_col + h_col) * width_col + w_col;
+    const T *data_im_ptr =
+        data_im + (b_col * num_channels + c_im) * height * width;
+    const T *data_offset_ptr =
+        data_offset + (b_col * deformable_group + deformable_group_index) * 2 *
+                          kernel_h * kernel_w * height_col * width_col;
 
-        const int data_offset_h_ptr =
-            ((2 * (kh * kernel_w + kw)) * dst_h + h_col) * dst_w + w_col;
-        const int data_offset_w_ptr =
-            ((2 * (kh * kernel_w + kw) + 1) * dst_h + h_col) * dst_w + w_col;
-
-        const float offset_h = offset_ptr[data_offset_h_ptr];
-        const float offset_w = offset_ptr[data_offset_w_ptr];
-        const float ih =
-            (h_col * stride_h - pad_h) + kh * dilation_h + offset_h;
-        const float iw =
-            (w_col * stride_w - pad_w) + kw * dilation_w + offset_w;
-        *columns_ptr = bilinear_interpolate(input_ptr, src_h, src_w, ih, iw);
-        columns_ptr += dst_h * dst_w;
+    for (int64_t i = 0; i < kernel_h; ++i) {
+      for (int64_t j = 0; j < kernel_w; ++j) {
+        const int64_t data_offset_h_ptr =
+            ((2 * (i * kernel_w + j)) * height_col + h_col) * width_col + w_col;
+        const int64_t data_offset_w_ptr =
+            ((2 * (i * kernel_w + j) + 1) * height_col + h_col) * width_col +
+            w_col;
+        const T offset_h = data_offset_ptr[data_offset_h_ptr];
+        const T offset_w = data_offset_ptr[data_offset_w_ptr];
+        T val = static_cast<T>(0);
+        const T h_im = h_in + i * dilation_h + offset_h;
+        const T w_im = w_in + j * dilation_w + offset_w;
+        if (h_im > -1 && w_im > -1 && h_im < height && w_im < width)
+          val = deformable_im2col_bilinear_cpu(data_im_ptr, width, height,
+                                               width, h_im, w_im);
+        *data_col_ptr = val;
+        data_col_ptr += batch_size * height_col * width_col;
       }
     }
   }
 }
 
-void deformable_conv_forward(
-    const float *src, const float *offset, const float *filter,
-    const int64_t batch, const int64_t src_c, const int64_t src_h,
-    const int64_t src_w, const int64_t dst_c, const int64_t dst_h,
-    const int64_t dst_w, const int64_t group, const int64_t offset_group,
-    const int64_t channels, const int64_t num_output, const int64_t kernel_h,
-    const int64_t kernel_w, const int64_t stride_h, const int64_t stride_w,
-    const int64_t pad_h, const int64_t pad_w, const int64_t dilation_h,
-    const int64_t dilation_w, float *columns, float *dst) {
-  const int64_t ic_per_gp = channels / group;
-  const int64_t oc_per_gp = num_output / group;
-  for (int64_t b = 0; b < batch; ++b) {
-    for (int64_t g = 0; g < group; ++g) {
-      deformable_im2col(
-          src + b * src_c * src_h * src_w + g * ic_per_gp * src_h * src_w,
-          offset + b * offset_group * 2 * kernel_h * kernel_w * dst_h * dst_w,
-          src_h, src_w, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, ic_per_gp, offset_group, dst_h, dst_w,
-          columns);
-      float *dst_ptr =
-          dst + b * dst_c * dst_h * dst_w + g * oc_per_gp * dst_h * dst_w;
-
-      memset(dst_ptr, 0.0f, sizeof(float) * oc_per_gp * dst_h * dst_w);
-
-      gemm_ref_fp32_deform(
-          filter + g * oc_per_gp * ic_per_gp * kernel_h * kernel_w, columns,
-          nullptr, dst_ptr, 0, 0, oc_per_gp, dst_h * dst_w,
-          ic_per_gp * kernel_h * kernel_w, 1.0f, 1.0f, dst_ptr);
-    }
-  }
+void deformable_im2col(at::Tensor data_im, at::Tensor data_offset,
+                       const int64_t channels, const int64_t height,
+                       const int64_t width, const int64_t ksize_h,
+                       const int64_t ksize_w, const int64_t pad_h,
+                       const int64_t pad_w, const int64_t stride_h,
+                       const int64_t stride_w, const int64_t dilation_h,
+                       const int64_t dilation_w, const int64_t parallel_imgs,
+                       const int64_t deformable_group, at::Tensor data_col) {
+  int64_t height_col =
+      (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
+  int64_t width_col =
+      (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
+  int64_t num_kernels = channels * height_col * width_col * parallel_imgs;
+  int64_t channel_per_deformable_group = channels / deformable_group;
+  deformable_im2col_cpu_kernel<float>(
+      num_kernels, data_im.data_ptr<float>(), data_offset.data_ptr<float>(),
+      height, width, ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w,
+      dilation_h, dilation_w, channel_per_deformable_group, parallel_imgs,
+      channels, deformable_group, height_col, width_col,
+      data_col.data_ptr<float>());
 }
 
 MMCVDeformConvKernel::MMCVDeformConvKernel(OrtApi api,
@@ -208,31 +143,22 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(OrtApi api,
       ort_.KernelInfoGetAttribute<int64_t>(info, "deform_groups");
   group_ = ort_.KernelInfoGetAttribute<int64_t>(info, "groups");
 
+  im2col_step_ = ort_.KernelInfoGetAttribute<int64_t>(info, "im2col_step");
+
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
 }
 
 void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
-  const int64_t stride_height = stride_height_;
-  const int64_t stride_width = stride_width_;
-  const int64_t padding_height = padding_height_;
-  const int64_t padding_width = padding_width_;
-  const int64_t dilation_height = dilation_height_;
-  const int64_t dilation_width = dilation_width_;
-  const int64_t deformable_group = deformable_group_;
-  const int64_t group = group_;
 
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
-  const float *input_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
+  at::Tensor input_data = to_torch_tensor(ort_, input);
 
   const OrtValue *offset = ort_.KernelContext_GetInput(context, 1);
-  const float *offset_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(offset));
+  at::Tensor offset_data = to_torch_tensor(ort_, offset);
 
   const OrtValue *filter = ort_.KernelContext_GetInput(context, 2);
-  const float *filter_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(filter));
+  at::Tensor filter_data = to_torch_tensor(ort_, filter);
 
   OrtTensorDimensions input_dims(ort_, input);
   OrtTensorDimensions filter_dims(ort_, filter);
@@ -244,6 +170,16 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
   int64_t out_channels = filter_dims[0];
   int64_t kernel_height = filter_dims[2];
   int64_t kernel_width = filter_dims[3];
+
+  const int64_t stride_height = stride_height_;
+  const int64_t stride_width = stride_width_;
+  const int64_t padding_height = padding_height_;
+  const int64_t padding_width = padding_width_;
+  const int64_t dilation_height = dilation_height_;
+  const int64_t dilation_width = dilation_width_;
+  const int64_t deformable_group = deformable_group_;
+  const int64_t im2col_step = std::min(im2col_step_, batch_size);
+  const int64_t group = group_;
 
   // get output memory
   int64_t out_height = floor((in_height + 2 * padding_height -
@@ -262,14 +198,74 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
       context, 0, output_dims.data(), output_dims.size());
   float *out_ptr = ort_.GetTensorMutableData<float>(output);
 
-  // allocate tmp memory
-  int64_t column_len = (in_channels / group) * kernel_height * kernel_width *
-                       out_height * out_width;
-  float *columns = (float *)allocator_.Alloc(sizeof(float) * column_len);
-  deformable_conv_forward(
-      input_data, offset_data, filter_data, batch_size, in_channels, in_height,
-      in_width, out_channels, out_height, out_width, group, deformable_group,
-      in_channels, out_channels, kernel_height, kernel_width, stride_height,
-      stride_width, padding_height, padding_width, dilation_height,
-      dilation_width, columns, out_ptr);
+  int batch = 1;
+  if (input_dims.size() == 3) {
+    batch = 0;
+    input_data.unsqueeze_(0);
+    offset_data.unsqueeze_(0);
+  }
+
+  at::Tensor output_data = at::zeros({batch_size / im2col_step, im2col_step,
+                                      out_channels, out_height, out_width},
+                                     input_data.options());
+  at::Tensor columns = at::zeros({in_channels * kernel_width * kernel_height,
+                                  im2col_step * out_height * out_width},
+                                 input_data.options());
+
+  input_data = input_data.view({batch_size / im2col_step, im2col_step,
+                                in_channels, in_height, in_width});
+  offset_data =
+      offset_data.view({batch_size / im2col_step, im2col_step,
+                        deformable_group * 2 * kernel_height * kernel_width,
+                        out_height, out_width});
+
+  at::Tensor output_buffer = at::zeros({batch_size / im2col_step, out_channels,
+                                        im2col_step * out_height, out_width},
+                                       output_data.options());
+  output_buffer = output_buffer.view(
+      {output_buffer.size(0), group, output_buffer.size(1) / group,
+       output_buffer.size(2), output_buffer.size(3)});
+
+  for (int64_t elt = 0; elt < batch_size / im2col_step; elt++) {
+    deformable_im2col(input_data[elt], offset_data[elt], in_channels, in_height,
+                      in_width, kernel_height, kernel_width, padding_height,
+                      padding_width, stride_height, stride_width,
+                      dilation_height, dilation_width, im2col_step,
+                      deformable_group, columns);
+
+    columns = columns.view({group, columns.size(0) / group, columns.size(1)});
+    filter_data = filter_data.view({group, filter_data.size(0) / group,
+                                    filter_data.size(1), filter_data.size(2),
+                                    filter_data.size(3)});
+
+    for (int64_t g = 0; g < group; g++) {
+      output_buffer[elt][g] = output_buffer[elt][g]
+                                  .flatten(1)
+                                  .addmm_(filter_data[g].flatten(1), columns[g])
+                                  .view_as(output_buffer[elt][g]);
+    }
+    columns =
+        columns.view({columns.size(0) * columns.size(1), columns.size(2)});
+    filter_data = filter_data.view({filter_data.size(0) * filter_data.size(1),
+                                    filter_data.size(2), filter_data.size(3),
+                                    filter_data.size(4)});
+  }
+
+  output_buffer = output_buffer.view(
+      {output_buffer.size(0), output_buffer.size(1) * output_buffer.size(2),
+       output_buffer.size(3), output_buffer.size(4)});
+
+  output_buffer = output_buffer.view({batch_size / im2col_step, out_channels,
+                                      im2col_step, out_height, out_width});
+  output_buffer.transpose_(1, 2);
+  output_data.copy_(output_buffer);
+  output_data =
+      output_data.view({batch_size, out_channels, out_height, out_width});
+
+  if (batch == 0)
+    output_data = output_data.view({out_channels, out_height, out_width});
+
+  std::memcpy(out_ptr, output_data.data_ptr<float>(),
+              sizeof(float) * batch_size * out_channels * out_height *
+                  out_width);
 }

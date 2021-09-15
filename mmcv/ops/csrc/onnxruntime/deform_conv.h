@@ -23,6 +23,7 @@ protected:
   int64_t dilation_width_;
   int64_t deformable_group_;
   int64_t group_;
+  int64_t im2col_step_;
 };
 
 struct MMCVDeformConvOp
