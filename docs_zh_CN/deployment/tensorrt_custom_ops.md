@@ -64,14 +64,14 @@
 
 ### 描述
 
-在特征图上计算RoIAlign，在多数双阶段目标检测模型的bbox_head中使用。
+在特征图上计算RoIAlign，在多数双阶段目标检测模型的bbox_head中使用
 
 ### 模型参数
 
 | 类型    | 参数名           | 描述                                                    |
 | ------- | ---------------- | ------------------------------------------------------- |
-| `int`   | `output_height`  | 输出roi特征的高度                                       |
-| `int`   | `output_width`   | 输出roi特征的宽度                                       |
+| `int`   | `output_height`  | roi特征的输出高度                                       |
+| `int`   | `output_width`   | roi特征的输出宽度                                       |
 | `float` | `spatial_scale`  | 输入检测框的缩放系数                                    |
 | `int`   | `sampling_ratio` | 输出的采样率。`0`表示使用密集采样                       |
 | `str`   | `mode`           | 池化方式。 `avg`或`max`                                 |
@@ -151,7 +151,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 | ------- | ---------------------------- | ---------------------------------------------------------------------------------------- |
 | `int`   | `center_point_box`           | 0 - 候选框的格式为[y1, x1, y2, x2]， 1-候选框的格式为[x_center, y_center, width, height] |
 | `int`   | `max_output_boxes_per_class` | 每一类最大的输出检测框个数。默认为0，输出检测框个数等于输入候选框数                      |
-| `float` | `iou_threshold`              | 用来判断候选框覆盖度的阈值，取值范围[0, 1]。默认值为0                                    |
+| `float` | `iou_threshold`              | 用来判断候选框重合度的阈值，取值范围[0, 1]。默认值为0                                    |
 | `float` | `score_threshold`            | 用来判断候选框是否合法的阈值                                                             |
 | `int`   | `offset`                     | 检测框长宽计算方式为(x2 - x1 + offset)，可选值0或1                                       |
 
@@ -168,9 +168,9 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>outputs[0]</tt>: tensor(int32, Linear)</dt>
-<dd>被选中的候选框序号。形状为(num_selected_indices, 3)的二维张量。每一行内容为[batch_index, class_index, box_index]。</dd>
+<dd>被选中的候选框索引。形状为(num_selected_indices, 3)的二维张量。每一行内容为[batch_index, class_index, box_index]。</dd>
 <dd>其中 num_selected_indices=num_batches* num_classes* min(max_output_boxes_per_class, spatial_dimension)。</dd>
-<dd>所有未被选中的候选框序号都会被填充为-1</dd>
+<dd>所有未被选中的候选框索引都会被填充为-1</dd>
 </dl>
 
 ### 类型约束
@@ -220,7 +220,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 ### 描述
 
-根据像素位置网格`grid`对`input`进行网格采样。
+根据`grid`的像素位置对`input`进行网格采样。
 
 ### 模型参数
 
@@ -228,7 +228,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 | ----- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `int` | `interpolation_mode` | 计算输出使用的插值模式。(0: `bilinear` , 1: `nearest`)                                                                                               |
 | `int` | `padding_mode`       | 边缘填充模式。(0: `zeros`, 1: `border`, 2: `reflection`)                                                                                             |
-| `int` | `align_corners`      | 如果`align_corners=1`，则极值(`-1`和`1`)会被当做输入边缘像素的中心点。如果`align_corners=0`，则他们会被看做是边缘像素的边缘点,减小分辨率对采样的影响 |
+| `int` | `align_corners`      | 如果`align_corners=1`，则极值(`-1`和`1`)会被当做输入边缘像素的中心点。如果`align_corners=0`，则它们会被看做是边缘像素的边缘点,减小分辨率对采样的影响 |
 
 ### 输入
 
@@ -275,7 +275,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>`input`第`dim`维的累计最大值，形状与`input`相同。</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最大值位置，形状与`input`相同。</dd>
+<dd>第`dim`维最大值位置，形状与`input`相同。类型和`input`一致</dd>
 </dl>
 
 ### 类型约束
@@ -307,7 +307,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>`input`第`dim`维的累计最小值，形状与`input`相同。</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最小值位置，形状与`input`相同。</dd>
+<dd>第`dim`维最小值位置，形状与`input`相同。类型和`input`一致</dd>
 </dl>
 
 ### 类型约束

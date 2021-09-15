@@ -142,8 +142,8 @@ with torch.no_grad():
 **以RoIAlign算子插件`roi_align`举例。**
 
 1. 在TensorRT包含目录`mmcv/ops/csrc/tensorrt/`中添加头文件`trt_roi_align.hpp`
-2. 在TensorRT源目录`mmcv/ops/csrc/tensorrt/plugins/`中添加头文件`trt_roi_align.cpp`
-3. 在TensorRT源目录`mmcv/ops/csrc/tensorrt/plugins/`中添加cuda kernel文件`trt_roi_align_kernel.cu`
+2. 在TensorRT源码目录`mmcv/ops/csrc/tensorrt/plugins/`中添加头文件`trt_roi_align.cpp`
+3. 在TensorRT源码目录`mmcv/ops/csrc/tensorrt/plugins/`中添加cuda kernel文件`trt_roi_align_kernel.cu`
 4. 在[trt_plugin.cpp](https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc/tensorrt/plugins/trt_plugin.cpp)中注册`roi_align`插件
 
     ```c++
