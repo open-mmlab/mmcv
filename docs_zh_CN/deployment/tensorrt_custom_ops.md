@@ -273,9 +273,9 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>`input`第`dim`维的累计最大值，形状与`input`相同。</dd>
+<dd>`input`第`dim`维的累计最大值，形状与`input`相同。类型和`input`一致</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最大值位置，形状与`input`相同。类型和`input`一致</dd>
+<dd>第`dim`维最大值位置，形状与`input`相同。</dd>
 </dl>
 
 ### 类型约束
@@ -305,9 +305,9 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>`input`第`dim`维的累计最小值，形状与`input`相同。</dd>
+<dd>`input`第`dim`维的累计最小值，形状与`input`相同。类型和`input`一致</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最小值位置，形状与`input`相同。类型和`input`一致</dd>
+<dd>第`dim`维最小值位置，形状与`input`相同。</dd>
 </dl>
 
 ### 类型约束
