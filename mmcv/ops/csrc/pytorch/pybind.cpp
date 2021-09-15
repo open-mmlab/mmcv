@@ -69,6 +69,16 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
+int furthest_point_sampling_forward(int b, int n, int m,
+                                    at::Tensor points_tensor,
+                                    at::Tensor temp_tensor,
+                                    at::Tensor idx_tensor);
+
+int furthest_point_sampling_with_dist_forward(int b, int n, int m,
+                                              at::Tensor points_tensor,
+                                              at::Tensor temp_tensor,
+                                              at::Tensor idx_tensor);
+
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
                            const int kernel_h, const int kernel_w,
@@ -300,6 +310,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("furthest_point_sampling_forward", &furthest_point_sampling_forward,
+        "furthest_point_sampling_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("points_tensor"), py::arg("temp_tensor"),
+        py::arg("idx_tensor"));
+  m.def("furthest_point_sampling_with_dist_forward",
+        &furthest_point_sampling_with_dist_forward,
+        "furthest_point_sampling_with_dist_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("points_tensor"), py::arg("temp_tensor"),
+        py::arg("idx_tensor"));
   m.def("masked_im2col_forward", &masked_im2col_forward,
         "masked_im2col_forward", py::arg("im"), py::arg("mask_h_idx"),
         py::arg("mask_w_idx"), py::arg("col"), py::arg("kernel_h"),
