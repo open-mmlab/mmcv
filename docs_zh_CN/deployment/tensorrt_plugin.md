@@ -1,4 +1,4 @@
-# MMCV中的TensorRT自定义算子 (实验性)
+## MMCV中的TensorRT自定义算子 (实验性)
 
 <!-- TOC -->
 
@@ -17,12 +17,12 @@
 
 <!-- TOC -->
 
-## 介绍
+### 介绍
 
 **NVIDIA TensorRT**是一个为深度学习模型高性能推理准备的软件开发工具(SDK)。它包括深度学习推理优化器和运行时，可为深度学习推理应用提供低延迟和高吞吐量。请访问[developer's website](https://developer.nvidia.com/tensorrt)了解更多信息。
 为了简化TensorRT部署带有MMCV自定义算子的模型的流程，MMCV中添加了一系列TensorRT插件。
 
-## MMCV中的TensorRT插件列表
+### MMCV中的TensorRT插件列表
 
 |         ONNX算子          |                                  TensorRT插件                                   | MMCV版本 |
 | :-----------------------: | :-----------------------------------------------------------------------------: | :------: |
@@ -40,9 +40,9 @@
 
 - 以上所有算子均在 TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0 环境下开发。
 
-## 如何编译MMCV中的TensorRT插件
+### 如何编译MMCV中的TensorRT插件
 
-### 准备
+#### 准备
 
 - 克隆代码仓库
 
@@ -75,14 +75,14 @@ pip install $TENSORRT_DIR/graphsurgeon/graphsurgeon-0.4.5-py2.py3-none-any.whl
 
 想了解更多通过tar包安装TensorRT，请访问[Nvidia' website](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-721/install-guide/index.html#installing-tar).
 
-### 在Linux上编译
+#### 在Linux上编译
 
 ```bash
-cd mmcv # to MMCV root directory
+cd mmcv ## to MMCV root directory
 MMCV_WITH_OPS=1 MMCV_WITH_TRT=1 pip install -e .
 ```
 
-## 创建TensorRT推理引擎并在python下进行推理
+### 创建TensorRT推理引擎并在python下进行推理
 
 范例如下：
 
@@ -99,26 +99,26 @@ onnx_file = 'sample.onnx'
 trt_file = 'sample.trt'
 onnx_model = onnx.load(onnx_file)
 
-# Model input
+## Model input
 inputs = torch.rand(1, 3, 224, 224).cuda()
-# Model input shape info
+## Model input shape info
 opt_shape_dict = {
     'input': [list(inputs.shape),
               list(inputs.shape),
               list(inputs.shape)]
 }
 
-# Create TensorRT engine
+## Create TensorRT engine
 max_workspace_size = 1 << 30
 trt_engine = onnx2trt(
     onnx_model,
     opt_shape_dict,
     max_workspace_size=max_workspace_size)
 
-# Save TensorRT engine
+## Save TensorRT engine
 save_trt_engine(trt_engine, trt_file)
 
-# Run inference with TensorRT
+## Run inference with TensorRT
 trt_model = TRTWrapper(trt_file, ['input'], ['output'])
 
 with torch.no_grad():
@@ -127,9 +127,9 @@ with torch.no_grad():
 
 ```
 
-## 如何在MMCV中添加新的TensorRT自定义算子
+### 如何在MMCV中添加新的TensorRT自定义算子
 
-### 主要流程
+#### 主要流程
 
 下面是主要的步骤：
 
@@ -160,15 +160,15 @@ with torch.no_grad():
 
 5. 在`tests/test_ops/test_tensorrt.py`中添加单元测试
 
-### 注意
+#### 注意
 
 - 部分MMCV中的自定义算子存在对应的cuda实现，在进行TensorRT插件开发的时候可以参考。
 
-## 已知问题
+### 已知问题
 
 - 无
 
-## 引用
+### 引用
 
 - [Developer guide of Nvidia TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html)
 - [TensorRT Open Source Software](https://github.com/NVIDIA/TensorRT)
