@@ -119,13 +119,13 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>秩为r >= 1的输入`data`。</dd>
+<dd>秩为r >= 1的输入`data`</dd>
 
 <dt><tt>inputs[1]</tt>: tensor(int32, Linear)</dt>
-<dd>秩为q >= 1的输入`update`。</dd>
+<dd>秩为q >= 1的输入`update`</dd>
 
 <dt><tt>inputs[2]</tt>: T</dt>
-<dd>秩为 q + r - indices.shape[-1] -1 的输入`update`。</dd>
+<dd>秩为 q + r - indices.shape[-1] -1 的输入`update`</dd>
 </dl>
 
 ### 输出
@@ -159,9 +159,9 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>输入候选框。形状为(num_batches, spatial_dimension, 4)的三维张量。</dd>
+<dd>输入候选框。形状为(num_batches, spatial_dimension, 4)的三维张量</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
-<dd>输入得分。形状为(num_batches, num_classes, spatial_dimension)的三维张量。</dd>
+<dd>输入得分。形状为(num_batches, num_classes, spatial_dimension)的三维张量</dd>
 </dl>
 
 ### 输出
@@ -198,18 +198,18 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽。</dd>
+<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
-<dd>输入偏移量；形状为(N, deformable_group* 2* kH* kW, outH, outW)的四维张量，kH和kW为输入特征图的高和宽，outH和outW为输入特征图的高和宽。</dd>
+<dd>输入偏移量；形状为(N, deformable_group* 2* kH* kW, outH, outW)的四维张量，kH和kW为输入特征图的高和宽，outH和outW为输入特征图的高和宽</dd>
 <dt><tt>inputs[2]</tt>: T</dt>
-<dd>输入权重；形状为(output_channel, input_channel, kH, kW)的四维张量。</dd>
+<dd>输入权重；形状为(output_channel, input_channel, kH, kW)的四维张量</dd>
 </dl>
 
 ### 输出
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>输出特征；形状为(N, output_channel, outH, outW)的四维张量。</dd>
+<dd>输出特征；形状为(N, output_channel, outH, outW)的四维张量</dd>
 </dl>
 
 ### 类型约束
@@ -234,16 +234,16 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽。</dd>
+<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
-<dd>输入网格；形状为(N, outH, outW, 2)的四维张量，outH和outW为输出的高和宽。 </dd>
+<dd>输入网格；形状为(N, outH, outW, 2)的四维张量，outH和outW为输出的高和宽 </dd>
 </dl>
 
 ### 输出
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>输出特征；形状为(N, C, outH, outW)的四维张量。</dd>
+<dd>输出特征；形状为(N, C, outH, outW)的四维张量</dd>
 </dl>
 
 ### 类型约束
@@ -275,7 +275,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>`input`第`dim`维的累计最大值，形状与`input`相同。类型和`input`一致</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最大值位置，形状与`input`相同。</dd>
+<dd>第`dim`维最大值位置，形状与`input`相同</dd>
 </dl>
 
 ### 类型约束
@@ -307,7 +307,7 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>`input`第`dim`维的累计最小值，形状与`input`相同。类型和`input`一致</dd>
 <dt><tt>outputs[1]</tt>: (int32, Linear)</dt>
-<dd>第`dim`维最小值位置，形状与`input`相同。</dd>
+<dd>第`dim`维最小值位置，形状与`input`相同</dd>
 </dl>
 
 ### 类型约束
@@ -330,18 +330,18 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>输入特征。形状为(N, C, H， W)的四维张量，其中N为batch大小，C为输入通道数，H和W为输入特征图的高和宽。</dd>
+<dd>输入特征。形状为(N, C, H， W)的四维张量，其中N为batch大小，C为输入通道数，H和W为输入特征图的高和宽</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
-<dd>输入缩放系数。形状为(C，)的一维张量。</dd>
+<dd>输入缩放系数。形状为(C，)的一维张量</dd>
 <dt><tt>inputs[2]</tt>: T</dt>
-<dd>输入偏移量。形状为(C，)的一维张量。</dd>
+<dd>输入偏移量。形状为(C，)的一维张量</dd>
 </dl>
 
 ### 输出
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>输出特征。形状为(N, C, H， W)的四维张量。</dd>
+<dd>输出特征。形状为(N, C, H， W)的四维张量</dd>
 </dl>
 
 ### 类型约束
@@ -368,22 +368,22 @@ ScatterND接收三个输入，分别为秩为r >= 1的`data`，秩为q >= 1的`i
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
-<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽。</dd>
+<dd>输入特征；形状为(N, C, inH, inW)的四维张量，其中N为batch大小，C为输入通道数，inH和inW为输入特征图的高和宽</dd>
 <dt><tt>inputs[1]</tt>: T</dt>
-<dd>输入偏移量；形状为(N, deformable_group* 2* kH* kW, outH, outW)的四维张量，kH和kW为输入特征图的高和宽，outH和outW为输入特征图的高和宽。</dd>
+<dd>输入偏移量；形状为(N, deformable_group* 2* kH* kW, outH, outW)的四维张量，kH和kW为输入特征图的高和宽，outH和outW为输入特征图的高和宽</dd>
 <dt><tt>inputs[2]</tt>: T</dt>
-<dd>输入掩码；形状为(N, deformable_group* kH* kW, outH, outW)的四维张量。</dd>
+<dd>输入掩码；形状为(N, deformable_group* kH* kW, outH, outW)的四维张量</dd>
 <dt><tt>inputs[3]</tt>: T</dt>
-<dd>输入权重；形状为(output_channel, input_channel, kH, kW)的四维张量。</dd>
+<dd>输入权重；形状为(output_channel, input_channel, kH, kW)的四维张量</dd>
 <dt><tt>inputs[4]</tt>: T, optional</dt>
-<dd>输入偏移量；形状为(output_channel)的一维张量。</dd>
+<dd>输入偏移量；形状为(output_channel)的一维张量</dd>
 </dl>
 
 ### 输出
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>输出特征；形状为(N, output_channel, outH, outW)的四维张量。</dd>
+<dd>输出特征；形状为(N, output_channel, outH, outW)的四维张量</dd>
 </dl>
 
 ### 类型约束
