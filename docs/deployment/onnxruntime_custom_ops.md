@@ -82,9 +82,9 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 ### Outputs
 
 <dl>
-<dt><tt>dets</tt>: tensor(int64)</dt>
+<dt><tt>dets</tt>: T</dt>
 <dd>Output boxes and scores. 2-D tensor of shape (num_valid_boxes, 5), [[x1, y1, x2, y2, score], ...]. num_valid_boxes is the number of valid boxes.</dd>
-<dt><tt>indices</tt>: T</dt>
+<dt><tt>indices</tt>: tensor(int64)</dt>
 <dd>Output indices. 1-D tensor of shape (num_valid_boxes, ).</dd>
 </dl>
 
@@ -204,9 +204,9 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `mode`          | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
+| Type  | Parameter | Description                                                      |
+| ----- | --------- | ---------------------------------------------------------------- |
+| `int` | `mode`    | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
 
 ### Inputs
 
@@ -234,9 +234,9 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum e
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `dim`           | the dimension to do the operation over                           |
+| Type  | Parameter | Description                            |
+| ----- | --------- | -------------------------------------- |
+| `int` | `dim`     | the dimension to do the operation over |
 
 ### Inputs
 
@@ -266,9 +266,9 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum e
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `dim`           | the dimension to do the operation over                           |
+| Type  | Parameter | Description                            |
+| ----- | --------- | -------------------------------------- |
+| `int` | `dim`     | the dimension to do the operation over |
 
 ### Inputs
 
@@ -298,11 +298,11 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 
 ### Parameters
 
-| Type           | Parameter          | Description                                                                           |
-| -------------- | ------------------ | ------------------------------------------------------------------------------------- |
-| `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW)                                         |
-| `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW)                                     |
-| `list of ints` | `dilation`         | The spacing between kernel elements. (dH, dW)                                         |
+| Type           | Parameter           | Description                                                                           |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `list of ints` | `stride`            | The stride of the convolving kernel. (sH, sW)                                         |
+| `list of ints` | `padding`           | Paddings on both sides of the input. (padH, padW)                                     |
+| `list of ints` | `dilation`          | The spacing between kernel elements. (dH, dW)                                         |
 | `int`          | `deformable_groups` | Groups of deformable offset.                                                          |
 | `int`          | `groups`            | Split input into groups. `input_channel` should be divisible by the number of groups. |
 
