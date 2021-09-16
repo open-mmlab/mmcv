@@ -172,9 +172,9 @@ void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 
-int ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
-                       int nsample, at::Tensor new_xyz_tensor,
-                       at::Tensor xyz_tensor, at::Tensor idx_tensor);
+void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
+                        int nsample, at::Tensor new_xyz_tensor,
+                        at::Tensor xyz_tensor, at::Tensor idx_tensor);
 
 Tensor bottom_pool_forward(Tensor input);
 

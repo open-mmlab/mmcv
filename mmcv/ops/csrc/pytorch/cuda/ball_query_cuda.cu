@@ -10,29 +10,29 @@
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-void ball_query_kernel_launcher(int b, int n, int m, float min_radius,
-                                float max_radius, int nsample,
-                                const float *new_xyz, const float *xyz,
-                                int *idx) {
+void BallQueryForwardCUDAKerenlLauncher(int b, int n, int m, float min_radius,
+                                        float max_radius, int nsample,
+                                        const Tensor new_xyz, const Tensor xyz,
+                                        int *idx) {
   // new_xyz: (B, M, 3)
   // xyz: (B, N, 3)
   // output:
   //      idx: (B, M, nsample)
 
-  cudaError_t err;
-
-  cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
+  at::cuda::CUDAGuard device_guard(new_xyz.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   dim3 blocks(DIVUP(m, THREADS_PER_BLOCK),
               b);  // blockIdx.x(col), blockIdx.y(row)
   dim3 threads(THREADS_PER_BLOCK);
 
-  ball_query_cuda_kernel<<<blocks, threads, 0, stream>>>(
-      b, n, m, min_radius, max_radius, nsample, new_xyz, xyz, idx);
-  // cudaDeviceSynchronize();  // for using printf in kernel function
-  err = cudaGetLastError();
-  if (cudaSuccess != err) {
-    fprintf(stderr, "CUDA kernel failed : %s\n", cudaGetErrorString(err));
-    exit(-1);
-  }
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      new_xyz.scalar_type(), "ball_query_forward_cuda_kernel", [&] {
+        ball_query_forward_cuda_kernel<scalar_t>
+            <<<blocks, threads, 0, stream>>>(
+                b, n, m, min_radius, max_radius, nsample,
+                new_xyz.data_ptr<scalar_t>(), xyz.data_ptr<scalar_t>(), idx);
+      });
+
+  AT_CUDA_CHECK(cudaGetLastError());
 }

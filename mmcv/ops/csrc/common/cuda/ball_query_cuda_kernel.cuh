@@ -8,11 +8,12 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-__global__ void ball_query_cuda_kernel(int b, int n, int m, float min_radius,
-                                       float max_radius, int nsample,
-                                       const float *__restrict__ new_xyz,
-                                       const float *__restrict__ xyz,
-                                       int *__restrict__ idx) {
+template <typename T>
+__global__ void ball_query_forward_cuda_kernel(int b, int n, int m,
+                                               float min_radius,
+                                               float max_radius, int nsample,
+                                               const T* new_xyz, const T* xyz,
+                                               int* idx) {
   // new_xyz: (B, M, 3)
   // xyz: (B, N, 3)
   // output:
@@ -27,17 +28,17 @@ __global__ void ball_query_cuda_kernel(int b, int n, int m, float min_radius,
 
   float max_radius2 = max_radius * max_radius;
   float min_radius2 = min_radius * min_radius;
-  float new_x = new_xyz[0];
-  float new_y = new_xyz[1];
-  float new_z = new_xyz[2];
+  T new_x = new_xyz[0];
+  T new_y = new_xyz[1];
+  T new_z = new_xyz[2];
 
   int cnt = 0;
   for (int k = 0; k < n; ++k) {
-    float x = xyz[k * 3 + 0];
-    float y = xyz[k * 3 + 1];
-    float z = xyz[k * 3 + 2];
-    float d2 = (new_x - x) * (new_x - x) + (new_y - y) * (new_y - y) +
-               (new_z - z) * (new_z - z);
+    T x = xyz[k * 3 + 0];
+    T y = xyz[k * 3 + 1];
+    T z = xyz[k * 3 + 2];
+    T d2 = (new_x - x) * (new_x - x) + (new_y - y) * (new_y - y) +
+           (new_z - z) * (new_z - z);
     if (d2 == 0 || (d2 >= min_radius2 && d2 < max_radius2)) {
       if (cnt == 0) {
         for (int l = 0; l < nsample; ++l) {
