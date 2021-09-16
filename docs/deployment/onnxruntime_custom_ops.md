@@ -1,4 +1,4 @@
-# Onnxruntime Custom Ops
+## Onnxruntime Custom Ops
 
 <!-- TOC -->
 
@@ -54,13 +54,13 @@
 
 <!-- TOC -->
 
-## SoftNMS
+### SoftNMS
 
-### Description
+#### Description
 
 Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object Detection With One Line of Code](https://arxiv.org/abs/1704.04503) for detail.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter       | Description                                                    |
 | ------- | --------------- | -------------------------------------------------------------- |
@@ -70,7 +70,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 | `int`   | `method`        | method to do the nms, (0: `naive`, 1: `linear`, 2: `gaussian`) |
 | `int`   | `offset`        | `boxes` width or height is (x2 - x1 + offset). (0 or 1)        |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>boxes</tt>: T</dt>
@@ -79,7 +79,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Input scores. 1-D tensor of shape (N, ).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>dets</tt>: T</dt>
@@ -88,17 +88,17 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 <dd>Output indices. 1-D tensor of shape (num_valid_boxes, ).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## RoIAlign
+### RoIAlign
 
-### Description
+#### Description
 
 Perform RoIAlign on output feature, used in bbox_head of most two-stage detectors.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -109,7 +109,7 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 | `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
 | `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -118,31 +118,31 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 <dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of input.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>feat</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## NMS
+### NMS
 
-### Description
+#### Description
 
 Filter out boxes has high IoU overlap with previously selected boxes.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter       | Description                                                                                                      |
 | ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0. |
 | `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>bboxes</tt>: T</dt>
@@ -151,24 +151,24 @@ Filter out boxes has high IoU overlap with previously selected boxes.
 <dd>Input scores. 1-D tensor of shape (num_boxes, ).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>indices</tt>: tensor(int32, Linear)</dt>
 <dd>Selected indices. 1-D tensor of shape (num_valid_boxes, ). num_valid_boxes is the number of valid boxes.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## grid_sampler
+### grid_sampler
 
-### Description
+#### Description
 
 Perform sample from `input` with pixel locations from `grid`.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
 | ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -176,7 +176,7 @@ Perform sample from `input` with pixel locations from `grid`.
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -185,67 +185,67 @@ Perform sample from `input` with pixel locations from `grid`.
 <dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW is the height and width of offset and output. </dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## CornerPool
+### CornerPool
 
-### Description
+#### Description
 
 Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as Paired Keypoints](https://arxiv.org/abs/1808.01244) for more details.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter | Description                                                      |
 | ----- | --------- | ---------------------------------------------------------------- |
 | `int` | `mode`    | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
 <dd>Input features. 4-D tensor of shape (N, C, H, W). N is the batch size.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>Output the pooled features. 4-D tensor of shape (N, C, H, W).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## cummax
+### cummax
 
-### Description
+#### Description
 
 Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum elements of `input` in the dimension `dim`. And `indices` is the index location of each maximum value found in the dimension `dim`. Read [torch.cummax](https://pytorch.org/docs/stable/generated/torch.cummax.html) for more details.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter | Description                            |
 | ----- | --------- | -------------------------------------- |
 | `int` | `dim`     | the dimension to do the operation over |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
 <dd>The input tensor with various shapes. Tensor with empty element is also supported.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
@@ -254,30 +254,30 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum e
 <dd>Output the index location of each cumulative maximum value found in the dimension `dim`, with the same shape as `input`.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## cummin
+### cummin
 
-### Description
+#### Description
 
 Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum elements of `input` in the dimension `dim`. And `indices` is the index location of each minimum value found in the dimension `dim`. Read [torch.cummin](https://pytorch.org/docs/stable/generated/torch.cummin.html) for more details.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter | Description                            |
 | ----- | --------- | -------------------------------------- |
 | `int` | `dim`     | the dimension to do the operation over |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
 <dd>The input tensor with various shapes. Tensor with empty element is also supported.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
@@ -286,17 +286,17 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum e
 <dd>Output the index location of each cumulative minimum value found in the dimension `dim`, with the same shape as `input`.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32)
 
-## MMCVModulatedDeformConv2d
+### MMCVModulatedDeformConv2d
 
-### Description
+#### Description
 
 Perform Modulated Deformable Convolution on input feature, read [Deformable ConvNets v2: More Deformable, Better Results](https://arxiv.org/abs/1811.11168?from=timeline) for detail.
 
-### Parameters
+#### Parameters
 
 | Type           | Parameter           | Description                                                                           |
 | -------------- | ------------------- | ------------------------------------------------------------------------------------- |
@@ -306,7 +306,7 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 | `int`          | `deformable_groups` | Groups of deformable offset.                                                          |
 | `int`          | `groups`            | Split input into groups. `input_channel` should be divisible by the number of groups. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -321,13 +321,13 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 <dd>Input bias; 1-D tensor of shape (output_channel).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
