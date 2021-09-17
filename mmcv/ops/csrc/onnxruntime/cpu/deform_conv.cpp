@@ -5,7 +5,7 @@
 #include <torch/torch.h>
 #include <vector>
 
-at::Tensor to_torch_tensor(Ort::CustomOpApi &ort, const OrtValue *value) {
+at::Tensor ort_to_tensor(Ort::CustomOpApi &ort, const OrtValue *value) {
   at::Tensor tensor =
       at::from_blob((void *)ort.GetTensorData<float>(value),
                     ort.GetTensorShape(ort.GetTensorTypeAndShape(value)));
@@ -152,24 +152,24 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(OrtApi api,
 void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
 
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
-  at::Tensor input_data = to_torch_tensor(ort_, input);
+  at::Tensor input_data = ort_to_tensor(ort_, input);
 
   const OrtValue *offset = ort_.KernelContext_GetInput(context, 1);
-  at::Tensor offset_data = to_torch_tensor(ort_, offset);
+  at::Tensor offset_data = ort_to_tensor(ort_, offset);
 
   const OrtValue *filter = ort_.KernelContext_GetInput(context, 2);
-  at::Tensor filter_data = to_torch_tensor(ort_, filter);
+  at::Tensor filter_data = ort_to_tensor(ort_, filter);
 
   OrtTensorDimensions input_dims(ort_, input);
   OrtTensorDimensions filter_dims(ort_, filter);
 
-  int64_t batch_size = input_dims[0];
-  int64_t in_channels = input_dims[1];
-  int64_t in_height = input_dims[2];
-  int64_t in_width = input_dims[3];
-  int64_t out_channels = filter_dims[0];
-  int64_t kernel_height = filter_dims[2];
-  int64_t kernel_width = filter_dims[3];
+  const int64_t batch_size = input_dims[0];
+  const int64_t in_channels = input_dims[1];
+  const int64_t in_height = input_dims[2];
+  const int64_t in_width = input_dims[3];
+  const int64_t out_channels = filter_dims[0];
+  const int64_t kernel_height = filter_dims[2];
+  const int64_t kernel_width = filter_dims[3];
 
   const int64_t stride_height = stride_height_;
   const int64_t stride_width = stride_width_;
@@ -182,11 +182,11 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
   const int64_t group = group_;
 
   // get output memory
-  int64_t out_height = floor((in_height + 2 * padding_height -
-                              dilation_height * (kernel_height - 1) - 1) /
-                                 stride_height +
-                             1);
-  int64_t out_width = floor(
+  const int64_t out_height = floor((in_height + 2 * padding_height -
+                                    dilation_height * (kernel_height - 1) - 1) /
+                                       stride_height +
+                                   1);
+  const int64_t out_width = floor(
       (in_width + 2 * padding_width - dilation_width * (kernel_width - 1) - 1) /
           stride_width +
       1);
@@ -212,6 +212,10 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
                                   im2col_step * out_height * out_width},
                                  input_data.options());
 
+  at::Tensor output_buffer = at::zeros({batch_size / im2col_step, out_channels,
+                                        im2col_step * out_height, out_width},
+                                       output_data.options());
+
   input_data = input_data.view({batch_size / im2col_step, im2col_step,
                                 in_channels, in_height, in_width});
   offset_data =
@@ -219,9 +223,6 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
                         deformable_group * 2 * kernel_height * kernel_width,
                         out_height, out_width});
 
-  at::Tensor output_buffer = at::zeros({batch_size / im2col_step, out_channels,
-                                        im2col_step * out_height, out_width},
-                                       output_data.options());
   output_buffer = output_buffer.view(
       {output_buffer.size(0), group, output_buffer.size(1) / group,
        output_buffer.size(2), output_buffer.size(3)});
