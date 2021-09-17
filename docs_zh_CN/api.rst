@@ -1,7 +1,3 @@
-API 文档
-=========
-
-
 fileio
 -------
 .. automodule:: mmcv.fileio
