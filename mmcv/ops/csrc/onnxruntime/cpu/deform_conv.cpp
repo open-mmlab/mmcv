@@ -1,9 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "deform_conv.h"
 
-#include "../ort_mmcv_utils.h"
 #include <torch/torch.h>
+
 #include <vector>
+
+#include "../ort_mmcv_utils.h"
 
 at::Tensor ort_to_tensor(Ort::CustomOpApi &ort, const OrtValue *value) {
   at::Tensor tensor =
@@ -30,8 +32,7 @@ T deformable_im2col_bilinear_cpu(const T *input, const int64_t data_width,
   T hh = 1 - lh, hw = 1 - lw;
 
   T v1 = 0;
-  if (h_low >= 0 && w_low >= 0)
-    v1 = input[h_low * data_width + w_low];
+  if (h_low >= 0 && w_low >= 0) v1 = input[h_low * data_width + w_low];
   T v2 = 0;
   if (h_low >= 0 && w_high <= width - 1)
     v2 = input[h_low * data_width + w_high];
@@ -150,7 +151,6 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(OrtApi api,
 }
 
 void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
-
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
   at::Tensor input_data = ort_to_tensor(ort_, input);
 
@@ -266,7 +266,7 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
   if (batch == 0)
     output_data = output_data.view({out_channels, out_height, out_width});
 
-  std::memcpy(out_ptr, output_data.data_ptr<float>(),
-              sizeof(float) * batch_size * out_channels * out_height *
-                  out_width);
+  std::memcpy(
+      out_ptr, output_data.data_ptr<float>(),
+      sizeof(float) * batch_size * out_channels * out_height * out_width);
 }

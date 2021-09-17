@@ -9,7 +9,7 @@ struct MMCVDeformConvKernel {
 
   void Compute(OrtKernelContext *context);
 
-protected:
+ protected:
   OrtApi api_;
   Ort::CustomOpApi ort_;
   const OrtKernelInfo *info_;
@@ -39,8 +39,8 @@ struct MMCVDeformConvOp
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
   };
 
-  OrtCustomOpInputOutputCharacteristic
-  GetInputCharacteristic(size_t index) const {
+  OrtCustomOpInputOutputCharacteristic GetInputCharacteristic(
+      size_t index) const {
     return OrtCustomOpInputOutputCharacteristic::INPUT_OUTPUT_REQUIRED;
   }
 
