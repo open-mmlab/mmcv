@@ -40,9 +40,9 @@ def test_fps_with_dist():
     assert torch.all(idx == expected_idx)
 
     import numpy as np
-    fps_idx = np.load('tests/data/ops/fps_idx.npy')
+    fps_idx = np.load('tests/data/for_3d_ops/fps_idx.npy')
     features_for_fps_distance = np.load(
-        'tests/data/ops/features_for_fps_distance.npy')
+        'tests/data/for_3d_ops/features_for_fps_distance.npy')
     expected_idx = torch.from_numpy(fps_idx).cuda()
     features_for_fps_distance = torch.from_numpy(
         features_for_fps_distance).cuda()

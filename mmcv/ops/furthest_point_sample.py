@@ -19,8 +19,7 @@ class FurthestPointSampling(Function):
     @staticmethod
     def forward(ctx, points_xyz: torch.Tensor,
                 num_points: int) -> torch.Tensor:
-        """forward.
-
+        """
         Args:
             points_xyz (Tensor): (B, N, 3) where N > num_points.
             num_points (int): Number of points in the sampled set.
@@ -54,8 +53,7 @@ class FurthestPointSamplingWithDist(Function):
     @staticmethod
     def forward(ctx, points_dist: torch.Tensor,
                 num_points: int) -> torch.Tensor:
-        """forward.
-
+        """
         Args:
             points_dist (Tensor): (B, N, N) Distance between each point pair.
             num_points (int): Number of points in the sampled set.

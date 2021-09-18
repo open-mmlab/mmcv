@@ -69,15 +69,13 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
-int furthest_point_sampling_forward(int b, int n, int m,
-                                    at::Tensor points_tensor,
-                                    at::Tensor temp_tensor,
-                                    at::Tensor idx_tensor);
+void furthest_point_sampling_forward(int b, int n, int m, Tensor points_tensor,
+                                     Tensor temp_tensor, Tensor idx_tensor);
 
-int furthest_point_sampling_with_dist_forward(int b, int n, int m,
-                                              at::Tensor points_tensor,
-                                              at::Tensor temp_tensor,
-                                              at::Tensor idx_tensor);
+void furthest_point_sampling_with_dist_forward(int b, int n, int m,
+                                               Tensor points_tensor,
+                                               Tensor temp_tensor,
+                                               Tensor idx_tensor);
 
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
