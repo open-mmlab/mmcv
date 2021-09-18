@@ -16,8 +16,7 @@ class GatherPoints(Function):
     @staticmethod
     def forward(ctx, features: torch.Tensor,
                 indices: torch.Tensor) -> torch.Tensor:
-        """forward.
-
+        """
         Args:
             features (Tensor): (B, C, N) features to gather.
             indices (Tensor): (B, M) where M is the number of points.

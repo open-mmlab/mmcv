@@ -8,10 +8,11 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-__global__ void gather_points_kernel(int b, int c, int n, int m,
-                                     const float *__restrict__ points,
-                                     const int *__restrict__ idx,
-                                     float *__restrict__ out) {
+template <typename T>
+__global__ void gather_points_forward_cuda_kernel(int b, int c, int n, int m,
+                                                  const T *points,
+                                                  const int *__restrict__ idx,
+                                                  T *out) {
   // points: (B, C, N)
   // idx: (B, M)
   // output:
@@ -28,10 +29,11 @@ __global__ void gather_points_kernel(int b, int c, int n, int m,
   out[0] = points[idx[0]];
 }
 
-__global__ void gather_points_grad_kernel(int b, int c, int n, int m,
-                                          const float *__restrict__ grad_out,
-                                          const int *__restrict__ idx,
-                                          float *__restrict__ grad_points) {
+template <typename T>
+__global__ void gather_points_backward_cuda_kernel(int b, int c, int n, int m,
+                                                   const T *grad_out,
+                                                   const int *__restrict__ idx,
+                                                   T *grad_points) {
   // grad_out: (B, C, M)
   // idx: (B, M)
   // output:

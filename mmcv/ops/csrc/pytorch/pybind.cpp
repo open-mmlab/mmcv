@@ -53,13 +53,13 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
-int gather_points_forward(int b, int c, int n, int npoints,
-                          at::Tensor points_tensor, at::Tensor idx_tensor,
-                          at::Tensor out_tensor);
+void gather_points_forward(int b, int c, int n, int npoints,
+                           Tensor points_tensor, Tensor idx_tensor,
+                           Tensor out_tensor);
 
-int gather_points_backward(int b, int c, int n, int npoints,
-                           at::Tensor grad_out_tensor, at::Tensor idx_tensor,
-                           at::Tensor grad_points_tensor);
+void gather_points_backward(int b, int c, int n, int npoints,
+                            Tensor grad_out_tensor, Tensor idx_tensor,
+                            Tensor grad_points_tensor);
 
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha);
