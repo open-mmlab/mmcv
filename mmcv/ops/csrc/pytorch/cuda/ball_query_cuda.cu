@@ -10,7 +10,7 @@
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-void BallQueryForwardCUDAKerenlLauncher(int b, int n, int m, float min_radius,
+void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                         float max_radius, int nsample,
                                         const Tensor new_xyz, const Tensor xyz,
                                         int *idx) {

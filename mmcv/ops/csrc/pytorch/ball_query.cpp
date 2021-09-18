@@ -4,7 +4,7 @@
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA
-void BallQueryForwardCUDAKerenlLauncher(int b, int n, int m, float min_radius,
+void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                         float max_radius, int nsample,
                                         const Tensor new_xyz, const Tensor xyz,
                                         int *idx);
@@ -12,7 +12,7 @@ void BallQueryForwardCUDAKerenlLauncher(int b, int n, int m, float min_radius,
 void ball_query_forward_cuda(int b, int n, int m, float min_radius,
                              float max_radius, int nsample, Tensor new_xyz,
                              Tensor xyz, int *idx) {
-  BallQueryForwardCUDAKerenlLauncher(b, n, m, min_radius, max_radius, nsample,
+  BallQueryForwardCUDAKernelLauncher(b, n, m, min_radius, max_radius, nsample,
                                      new_xyz, xyz, idx);
 };
 #endif
