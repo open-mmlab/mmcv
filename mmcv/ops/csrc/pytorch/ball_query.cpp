@@ -18,8 +18,8 @@ void ball_query_forward_cuda(int b, int n, int m, float min_radius,
 #endif
 
 void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
-                        int nsample, at::Tensor new_xyz_tensor,
-                        at::Tensor xyz_tensor, at::Tensor idx_tensor) {
+                        int nsample, Tensor new_xyz_tensor, Tensor xyz_tensor,
+                        Tensor idx_tensor) {
   if (new_xyz_tensor.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(new_xyz_tensor);
