@@ -69,6 +69,9 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
+void knn_forward(int b, int n, int m, int nsample, Tensor xyz_tensor,
+                 Tensor new_xyz_tensor, Tensor idx_tensor, Tensor dist2_tensor);
+
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
                            const int kernel_h, const int kernel_w,
@@ -233,6 +236,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
+  m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
+        py::arg("dist2_tensor"));
   m.def("carafe_naive_forward", &carafe_naive_forward, "carafe_naive_forward",
         py::arg("features"), py::arg("masks"), py::arg("output"),
         py::arg("kernel_size"), py::arg("group_size"), py::arg("scale_factor"));
