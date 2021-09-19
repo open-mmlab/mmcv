@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
@@ -16,8 +17,10 @@ from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
+from .group_points import GroupAll, QueryAndGroup, grouping_operation
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
+from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
@@ -51,6 +54,7 @@ __all__ = [
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
+    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'QueryAndGroup',
+    'GroupAll', 'grouping_operation', 'knn', 'ball_query', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
 ]

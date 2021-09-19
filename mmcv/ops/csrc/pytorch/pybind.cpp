@@ -53,6 +53,13 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
+void group_points_forward(int b, int c, int n, int npoints, int nsample,
+                          Tensor points_tensor, Tensor idx_tensor,
+                          Tensor out_tensor);
+void group_points_backward(int b, int c, int n, int npoints, int nsample,
+                           Tensor grad_out_tensor, Tensor idx_tensor,
+                           Tensor grad_points_tensor);
+
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha);
 
@@ -68,6 +75,9 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
+
+void knn_forward(int b, int n, int m, int nsample, Tensor xyz_tensor,
+                 Tensor new_xyz_tensor, Tensor idx_tensor, Tensor dist2_tensor);
 
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
@@ -111,16 +121,16 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset);
 
-std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
+std::vector<std::vector<int>> nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float> > pixel_group(
+std::vector<std::vector<float>> pixel_group(
     Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
     Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
-std::vector<std::vector<int> > contour_expand(Tensor kernel_mask,
-                                              Tensor internal_kernel_label,
-                                              int min_kernel_area,
-                                              int kernel_num);
+std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
+                                             Tensor internal_kernel_label,
+                                             int min_kernel_area,
+                                             int kernel_num);
 
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
@@ -171,6 +181,10 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
 void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
+
+void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
+                        int nsample, Tensor new_xyz_tensor, Tensor xyz_tensor,
+                        Tensor idx_tensor);
 
 Tensor bottom_pool_forward(Tensor input);
 
@@ -300,6 +314,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("group_points_forward", &group_points_forward, "group_points_forward",
+        py::arg("b"), py::arg("c"), py::arg("n"), py::arg("npoints"),
+        py::arg("nsample"), py::arg("points_tensor"), py::arg("idx_tensor"),
+        py::arg("out_tensor"));
+  m.def("group_points_backward", &group_points_backward,
+        "group_points_backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("nsample"), py::arg("grad_out_tensor"),
+        py::arg("idx_tensor"), py::arg("grad_points_tensor"));
+  m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
+        py::arg("dist2_tensor"));
   m.def("masked_im2col_forward", &masked_im2col_forward,
         "masked_im2col_forward", py::arg("im"), py::arg("mask_h_idx"),
         py::arg("mask_w_idx"), py::arg("col"), py::arg("kernel_h"),
@@ -415,6 +441,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
+        py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
+        py::arg("max_radius"), py::arg("nsample"), py::arg("new_xyz_tensor"),
+        py::arg("xyz_tensor"), py::arg("idx_tensor"));
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
