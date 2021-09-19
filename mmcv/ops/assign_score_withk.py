@@ -31,7 +31,8 @@ class AssignScoreWithK(Function):
                 center_features,
                 knn_idx,
                 aggregate='sum'):
-        """
+        """forward.
+
         Args:
             scores (torch.Tensor): (B, npoint, K, M), predicted scores to
                 aggregate weight matrices in the weight bank.
