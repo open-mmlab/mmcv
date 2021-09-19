@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .bbox import bbox_overlaps
+from .assign_score_withk import assign_score_withk
 from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
@@ -49,8 +50,9 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
+    'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
+    'box_iou_rotated', 'nms_rotated', 'upfirdn2d', 'FusedBiasLeakyReLU',
+    'fused_bias_leakyrelu', 'RoIAlignRotated', 'roi_align_rotated',
+    'pixel_group', 'contour_expand', 'MultiScaleDeformableAttention',
+    'BorderAlign', 'border_align'
 ]
