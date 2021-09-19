@@ -82,10 +82,12 @@ class SyncBatchNormFunction(Function):
         total_batch = vec[-1].detach()
         mean = vec[:num_channels]
 
-        if self.stats_mode == '':
+        if self.stats_mode == 'default':
             mean = mean / self.group_size
-        else:
+        elif self.stats_mode == 'N':
             mean = mean / total_batch.clamp(min=1)
+        else:
+            raise NotImplementedError
 
         if batch_size > 0:
             ext_module.sync_bn_forward_var(input3d, mean, var)
@@ -96,13 +98,17 @@ class SyncBatchNormFunction(Function):
         if self.group_size > 1:
             dist.all_reduce(var, group=self.group)
 
-        if self.stats_mode == '':
+        if self.stats_mode == 'default':
             var /= self.group_size
-        else:
+        elif self.stats_mode == 'N':
             var /= total_batch.clamp(min=1)
+        else:
+            raise NotImplementedError
 
-        total_batch_flag = total_batch.clamp(max=1)
-        momentum = total_batch_flag * self.momentum
+        # if the total batch size of all the ranks is zero,
+        # we should not update the statistics in the current batch
+        update_flag = total_batch.clamp(max=1)
+        momentum = update_flag * self.momentum
         ext_module.sync_bn_forward_output(
             input3d,
             mean,
@@ -173,8 +179,8 @@ class SyncBatchNorm(Module):
             each process group individually. By default it is synchronization
             across the whole world. Defaults to None.
         stats_mode (str, optional): The statistical mode. Available options
-            includes ``''`` and ``'N'``. Defaults to ''.
-            When ``stats_mode==''``, it compute the overall statistics using
+            includes ``'default'`` and ``'N'``. Defaults to 'default'.
+            When ``stats_mode=='default'``, it compute the overall statistics using
             those from each worker with equal weight, i.e., the statistics are
             synchronized and simply divied by ``group``. This mode will produce
             inaccurate statistics when empty tensors occur.
@@ -193,7 +199,7 @@ class SyncBatchNorm(Module):
                  affine=True,
                  track_running_stats=True,
                  group=None,
-                 stats_mode=''):
+                 stats_mode='default'):
         super(SyncBatchNorm, self).__init__()
         self.num_features = num_features
         self.eps = eps
@@ -203,7 +209,7 @@ class SyncBatchNorm(Module):
         group = dist.group.WORLD if group is None else group
         self.group = group
         self.group_size = dist.get_world_size(group)
-        assert stats_mode in ['', 'N']
+        assert stats_mode in ['default', 'N']
         self.stats_mode = stats_mode
         if self.affine:
             self.weight = Parameter(torch.Tensor(num_features))
