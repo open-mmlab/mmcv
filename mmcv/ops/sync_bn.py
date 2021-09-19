@@ -180,10 +180,10 @@ class SyncBatchNorm(Module):
             across the whole world. Defaults to None.
         stats_mode (str, optional): The statistical mode. Available options
             includes ``'default'`` and ``'N'``. Defaults to 'default'.
-            When ``stats_mode=='default'``, it compute the overall statistics using
-            those from each worker with equal weight, i.e., the statistics are
-            synchronized and simply divied by ``group``. This mode will produce
-            inaccurate statistics when empty tensors occur.
+            When ``stats_mode=='default'``, it computes the overall statistics
+            using those from each worker with equal weight, i.e., the
+            statistics are synchronized and simply divied by ``group``. This
+            mode will produce inaccurate statistics when empty tensors occur.
             When ``stats_mode=='N'``, it compute the overall statistics using
             the total number of batches in each worker ignoring the number of
             group, i.e., the statistics are synchronized and then divied by
@@ -209,7 +209,8 @@ class SyncBatchNorm(Module):
         group = dist.group.WORLD if group is None else group
         self.group = group
         self.group_size = dist.get_world_size(group)
-        assert stats_mode in ['default', 'N']
+        assert stats_mode in ['default', 'N'], \
+            f'"stats_mode" only accepts "default" and "N", got "{stats_mode}"'
         self.stats_mode = stats_mode
         if self.affine:
             self.weight = Parameter(torch.Tensor(num_features))

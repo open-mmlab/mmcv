@@ -184,7 +184,8 @@ class TestSyncBN(object):
             group = groups[rank]
         elif size == 4:
             group = dist.group.WORLD
-        syncbn = SyncBatchNorm(3, group=group).cuda()
+
+        syncbn = SyncBatchNorm(3, group=group, stats_mode='N').cuda()
         syncbn.weight.data[0] = 0.2
         syncbn.weight.data[1] = 0.5
         syncbn.weight.data[2] = 0.7
@@ -250,6 +251,10 @@ class TestSyncBN(object):
                            sb_grad.data.cpu().numpy(), 1e-3)
         assert np.allclose(x_grad.data.cpu().numpy(),
                            sx_grad.data.cpu().numpy(), 1e-2)
+
+        # 'stats_mode' only allows 'default' and 'N'
+        with pytest.raises(AssertionError):
+            SyncBatchNorm(3, group=group, stats_mode='X')
 
     def test_syncbn_1(self):
         self._test_syncbn_train(size=1)
