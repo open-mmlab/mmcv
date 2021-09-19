@@ -158,16 +158,6 @@ void sync_bn_backward_data(const Tensor grad_output, const Tensor weight,
                            const Tensor norm, const Tensor std,
                            Tensor grad_input);
 
-void ca_forward(const Tensor t, const Tensor f, Tensor weight);
-
-void ca_backward(const Tensor dw, const Tensor t, const Tensor f, Tensor dt,
-                 Tensor df);
-
-void ca_map_forward(const Tensor weight, const Tensor g, Tensor out);
-
-void ca_map_backward(const Tensor dout, const Tensor weight, const Tensor g,
-                     Tensor dw, Tensor dg);
-
 void psamask_forward(const Tensor input, Tensor output, const int psa_type,
                      const int num_, const int h_feature, const int w_feature,
                      const int h_mask, const int w_mask, const int half_h_mask,
@@ -385,15 +375,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "sync_bn backward_data", py::arg("grad_output"), py::arg("weight"),
         py::arg("grad_weight"), py::arg("grad_bias"), py::arg("norm"),
         py::arg("std"), py::arg("grad_input"));
-  m.def("ca_forward", &ca_forward, "ccattention forward", py::arg("t"),
-        py::arg("f"), py::arg("weight"));
-  m.def("ca_backward", &ca_backward, "ccattention backward", py::arg("dw"),
-        py::arg("t"), py::arg("f"), py::arg("dt"), py::arg("df"));
-  m.def("ca_map_forward", &ca_map_forward, "ccattention map forward",
-        py::arg("weight"), py::arg("g"), py::arg("out"));
-  m.def("ca_map_backward", &ca_map_backward, "ccattention map backward",
-        py::arg("dout"), py::arg("weight"), py::arg("g"), py::arg("dw"),
-        py::arg("dg"));
   m.def("psamask_forward", &psamask_forward, "PSAMASK forward (CPU/CUDA)",
         py::arg("input"), py::arg("output"), py::arg("psa_type"),
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),

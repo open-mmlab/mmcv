@@ -221,6 +221,76 @@ def test_load_checkpoint():
     os.remove(checkpoint_path)
 
 
+def test_load_checkpoint_metadata():
+    import os
+    import tempfile
+
+    from mmcv.runner import load_checkpoint, save_checkpoint
+
+    class ModelV1(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.block = Block()
+            self.conv1 = nn.Conv2d(3, 3, 1)
+            self.conv2 = nn.Conv2d(3, 3, 1)
+            nn.init.normal_(self.conv1.weight)
+            nn.init.normal_(self.conv2.weight)
+
+    class ModelV2(nn.Module):
+        _version = 2
+
+        def __init__(self):
+            super().__init__()
+            self.block = Block()
+            self.conv0 = nn.Conv2d(3, 3, 1)
+            self.conv1 = nn.Conv2d(3, 3, 1)
+            nn.init.normal_(self.conv0.weight)
+            nn.init.normal_(self.conv1.weight)
+
+        def _load_from_state_dict(self, state_dict, prefix, local_metadata,
+                                  *args, **kwargs):
+            """load checkpoints."""
+
+            # Names of some parameters in has been changed.
+            version = local_metadata.get('version', None)
+            if version is None or version < 2:
+                state_dict_keys = list(state_dict.keys())
+                convert_map = {'conv1': 'conv0', 'conv2': 'conv1'}
+                for k in state_dict_keys:
+                    for ori_str, new_str in convert_map.items():
+                        if k.startswith(prefix + ori_str):
+                            new_key = k.replace(ori_str, new_str)
+                            state_dict[new_key] = state_dict[k]
+                            del state_dict[k]
+
+            super()._load_from_state_dict(state_dict, prefix, local_metadata,
+                                          *args, **kwargs)
+
+    model_v1 = ModelV1()
+    model_v1_conv0_weight = model_v1.conv1.weight.detach()
+    model_v1_conv1_weight = model_v1.conv2.weight.detach()
+    model_v2 = ModelV2()
+    model_v2_conv0_weight = model_v2.conv0.weight.detach()
+    model_v2_conv1_weight = model_v2.conv1.weight.detach()
+    ckpt_v1_path = os.path.join(tempfile.gettempdir(), 'checkpoint_v1.pth')
+    ckpt_v2_path = os.path.join(tempfile.gettempdir(), 'checkpoint_v2.pth')
+
+    # Save checkpoint
+    save_checkpoint(model_v1, ckpt_v1_path)
+    save_checkpoint(model_v2, ckpt_v2_path)
+
+    # test load v1 model
+    load_checkpoint(model_v2, ckpt_v1_path)
+    assert torch.allclose(model_v2.conv0.weight, model_v1_conv0_weight)
+    assert torch.allclose(model_v2.conv1.weight, model_v1_conv1_weight)
+
+    # test load v2 model
+    load_checkpoint(model_v2, ckpt_v2_path)
+    assert torch.allclose(model_v2.conv0.weight, model_v2_conv0_weight)
+    assert torch.allclose(model_v2.conv1.weight, model_v2_conv1_weight)
+
+
 def test_load_classes_name():
     import os
 
