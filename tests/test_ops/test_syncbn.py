@@ -2,6 +2,7 @@ import os
 import platform
 
 import numpy as np
+import pytest
 import torch
 import torch.distributed as dist
 import torch.nn as nn

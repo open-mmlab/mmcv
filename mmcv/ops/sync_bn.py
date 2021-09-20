@@ -52,8 +52,8 @@ class SyncBatchNormFunction(Function):
         output3d = output.view_as(input3d)
         num_channels = input3d.size(1)
 
-        # make sure mean/var/norm/std are initialized as zeros
-        # torch.empty does not guarantee that
+        # ensure mean/var/norm/std are initialized as zeros
+        # ``torch.empty()`` does not guarantee that
         mean = torch.zeros(
             num_channels, dtype=torch.float, device=input3d.device)
         var = torch.zeros(
@@ -71,14 +71,12 @@ class SyncBatchNormFunction(Function):
             # skip updating mean and leave it as zeros when the input is empty
             batch_flag = torch.zeros([1], device=mean.device, dtype=mean.dtype)
 
-        # sync mean and the batch flag
+        # synchronize mean and the batch flag
         vec = torch.cat([mean, batch_flag])
         if self.stats_mode == 'N':
             vec *= batch_size
-
         if self.group_size > 1:
             dist.all_reduce(vec, group=self.group)
-        # need total batch to decide whether to update the momentum
         total_batch = vec[-1].detach()
         mean = vec[:num_channels]
 
@@ -89,9 +87,9 @@ class SyncBatchNormFunction(Function):
         else:
             raise NotImplementedError
 
+        # leave var as zeros when the input is empty
         if batch_size > 0:
             ext_module.sync_bn_forward_var(input3d, mean, var)
-        # skip updating var and leave it as zeros when the input is empty
 
         if self.stats_mode == 'N':
             var *= batch_size
@@ -105,7 +103,7 @@ class SyncBatchNormFunction(Function):
         else:
             raise NotImplementedError
 
-        # if the total batch size of all the ranks is zero,
+        # if the total batch size over all the ranks is zero,
         # we should not update the statistics in the current batch
         update_flag = total_batch.clamp(max=1)
         momentum = update_flag * self.momentum
