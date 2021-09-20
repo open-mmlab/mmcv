@@ -69,6 +69,18 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
+void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                     Tensor ans_overlap);
+
+void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                 Tensor ans_iou);
+
+int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh,
+                      int device_id);
+
+int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
+                             float nms_overlap_thresh, int device_id);
+
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
                            const int kernel_h, const int kernel_w,
@@ -300,6 +312,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("iou3d_boxes_overlap_bev_forward", &iou3d_boxes_overlap_bev_forward,
+        "iou3d_boxes_overlap_bev_forward", py::arg("boxes_a"),
+        py::arg("boxes_b"), py::arg("ans_overlap"));
+  m.def("iou3d_boxes_iou_bev_forward", &iou3d_boxes_iou_bev_forward,
+        "iou3d_boxes_iou_bev_forward", py::arg("boxes_a"), py::arg("boxes_b"),
+        py::arg("ans_iou"));
+  m.def("iou3d_nms_forward", &iou3d_nms_forward, "iou3d_nms_forward",
+        py::arg("boxes"), py::arg("keep"), py::arg("nms_overlap_thresh"),
+        py::arg("device_id"));
+  m.def("iou3d_nms_normal_forward", &iou3d_nms_normal_forward,
+        "iou3d_nms_normal_forward", py::arg("boxes"), py::arg("keep"),
+        py::arg("nms_overlap_thresh"), py::arg("device_id"));
   m.def("masked_im2col_forward", &masked_im2col_forward,
         "masked_im2col_forward", py::arg("im"), py::arg("mask_h_idx"),
         py::arg("mask_w_idx"), py::arg("col"), py::arg("kernel_h"),

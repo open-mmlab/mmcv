@@ -18,6 +18,7 @@ from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
+from .iou3d import boxes_iou_bev, nms_gpu, nms_normal_gpu
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
@@ -50,7 +51,8 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
+    'upfirdn2d', 'FusedBiasLeakyReLU', 'boxes_iou_bev', 'nms_gpu',
+    'nms_normal_gpu', 'fused_bias_leakyrelu', 'RoIAlignRotated',
+    'roi_align_rotated', 'pixel_group', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
 ]
