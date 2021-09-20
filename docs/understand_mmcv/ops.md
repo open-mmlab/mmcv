@@ -13,6 +13,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - MaskedConv
 - NMS
 - PSAMask
+- RoIPointPool3d
 - RoIPool
 - RoIAlign
 - SimpleRoIAlign

@@ -53,6 +53,9 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
+void roipoint_pool3d_forward(Tensor xyz, Tensor boxes3d, Tensor pts_feature,
+                             Tensor pooled_features, Tensor pooled_empty_flag);
+
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha);
 
@@ -281,6 +284,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_offset"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("sampling_ratio"), py::arg("gamma"));
+  m.def("roipoint_pool3d_forward", &roipoint_pool3d_forward,
+        "roipoint_pool3d_forward", py::arg("xyz"), py::arg("boxes3d"),
+        py::arg("pts_feature"), py::arg("pooled_features"),
+        py::arg("pooled_empty_flag"));
   m.def("sigmoid_focal_loss_forward", &sigmoid_focal_loss_forward,
         "sigmoid_focal_loss_forward ", py::arg("input"), py::arg("target"),
         py::arg("weight"), py::arg("output"), py::arg("gamma"),

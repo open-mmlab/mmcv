@@ -31,6 +31,7 @@ from .psa_mask import PSAMask
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
+from .roipoint_pool3d import RoIPointPool3d
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
@@ -49,8 +50,8 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
+    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'RoIPointPool3d',
+    'nms_rotated', 'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
 ]
