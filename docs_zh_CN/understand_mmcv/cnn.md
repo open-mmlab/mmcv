@@ -1,10 +1,10 @@
 ## 卷积神经网络
 
-我们为CNN提供了一些构建模块，包括层构建、模块组件和权重初始化。
+我们为卷积神经网络提供了一些构建模块，包括层构建、模块组件和权重初始化。
 
 ### 网络层的构建
 
-在运行实验时，我们可能需要尝试同属一种类型但不同配置的层，但又不希望每次都修改代码。所以这里我们提供了一些层构建方法，可以从字典构建层，字典可以在配置文件中配置，也可以通过命令行参数指定。
+在运行实验时，我们可能需要尝试同属一种类型但不同配置的层，但又不希望每次都修改代码。于是我们提供一些层构建方法，可以从字典构建层，字典可以在配置文件中配置，也可以通过命令行参数指定。
 
 #### 用法
 
@@ -70,9 +70,9 @@ conv = ConvModule(
 
 ### Weight initialization
 
-> 实现细节可以在 [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)中找到
+> 实现细节可以在 [mmcv/cnn/utils/weight_init.py](../../mmcv/cnn/utils/weight_init.py)中找到
 
-在训练过程中，适当的初始化策略有利于加快训练速度或获得更高的性能。 在MMCV中，我们提供了一些常用的方法来初始化模块，比如 `nn.Conv2d` 模块。当然，我们也提供了一些高级API，可用于初始化包含一个或多个模块的模型。
+在训练过程中，适当的初始化策略有利于加快训练速度或者获得更高的性能。 在MMCV中，我们提供了一些常用的方法来初始化模块，比如 `nn.Conv2d` 模块。当然，我们也提供了一些高级API，可用于初始化包含一个或多个模块的模型。
 
 #### Initialization functions
 
@@ -95,7 +95,7 @@ conv = ConvModule(
 
 - xavier_init
 
-  根据 [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf) 描述的方法来初始化模型参数
+   按照 [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf) 描述的方法初始化模型参数
 
     ```python
     >>> import torch.nn as nn
@@ -131,7 +131,7 @@ conv = ConvModule(
 
 - kaiming_init
 
-  根据 [Delving deep into rectifiers: Surpassing human-level performance on ImageNet classification - He, K. et al. (2015)](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf) 中描述的方法来初始化模型参数。
+   按照 [Delving deep into rectifiers: Surpassing human-level performance on ImageNet classification - He, K. et al. (2015)](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf) 描述的方法来初始化模型参数。
 
     ```python
     >>> import torch.nn as nn
@@ -187,7 +187,7 @@ conv = ConvModule(
 
     注意: 关键字 `layer` 支持的模块是带有 weights 和 bias 属性的 PyTorch 模块，所以不支持 `MultiheadAttention layer`
 
-- 定义用于初始化具有相同配置的模块的 `layer`
+- 定义关键字 `layer` 列表并使用相同相同配置初始化模块
 
   ```python
   import torch.nn as nn
@@ -202,7 +202,7 @@ conv = ConvModule(
 
   model = FooNet()
   init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d', 'Linear'], val=1)
-  # 用相同的配置初始化整个模块
+  # 使用相同的配置初始化整个模块
   initialize(model, init_cfg)
   # model.feat.weight
   # Parameter containing:
@@ -243,9 +243,9 @@ conv = ConvModule(
   #           [2., 2., 2.]]]], requires_grad=True)
   ```
 
-2. 通过关键字`override`初始化模型
+2. 定义关键字`override`初始化模型
 
-- 当用属性名初始化某个特定部分时, 我们可以使用关键字 `override`, 关键字 `override` 对应的Value中的值会替代init_cfg中相应的值.
+- 当用属性名初始化某个特定部分时, 我们可以使用关键字 `override`, 关键字 `override` 对应的Value会替代init_cfg中相应的值
 
     ```python
     import torch.nn as nn
@@ -278,7 +278,7 @@ conv = ConvModule(
     #            [3., 3., 3.]]]], requires_grad=True)
     ```
 
-- 如果 init_cfg 中的关键字`layer`为None，则只初始化在关键字override中的子模块，并且省略override中的 type 和其他参数。
+- 如果 init_cfg 中的关键字`layer`为None，则只初始化在关键字override中的子模块，并且省略override中的 type 和其他参数
 
     ```python
     model = FooNet()
@@ -299,7 +299,7 @@ conv = ConvModule(
 
 - 如果我们没有定义关键字`layer`或`override` , 将不会初始化任何东西
 
-- 关键字`override`的无效使用
+- 关键字`override`的无效用法
 
    ```python
    # 没有重写任何子模块
@@ -355,13 +355,13 @@ conv = ConvModule(
     initialize(model, init_cfg)
     ```
 
-4. 初始化继承自BaseModule, Sequential, ModuleList的模型
+4. 初始化继承自BaseModule、Sequential、ModuleList的模型
 
-    `BaseModule` 继承自 `torch.nn.Module`, 它们之间唯一的不同是 `BaseModule` 实现了 `init_weight`.
+    `BaseModule` 继承自 `torch.nn.Module`, 它们之间唯一的不同是 `BaseModule` 实现了 `init_weight`
 
-    `Sequential` 继承自 `BaseModule` 和 `torch.nn.Sequential`.
+    `Sequential` 继承自 `BaseModule` 和 `torch.nn.Sequential`
 
-    `ModuleList` 继承自 `BaseModule` 和 `torch.nn.ModuleList`.
+    `ModuleList` 继承自 `BaseModule` 和 `torch.nn.ModuleList`
 
     `````python
     import torch.nn as nn
@@ -489,8 +489,6 @@ conv = ConvModule(
 
 除了`torchvision`的预训练模型，我们还提供以下 CNN 的预训练模型：
 
-
-
 - VGG Caffe
 - ResNet Caffe
 - ResNeXt
@@ -521,7 +519,7 @@ MMCV中的Model Zoo Link 由 JSON 文件管理。 json 文件由模型名称及�
 
 `mmcv.load_checkpoint()`的参数`filename`支持以下类型：
 
-- filepath: `checkpoint`路径。
-- `http://xxx` and `https://xxx`: 下载checkpoint的链接，文件名中必需包含`SHA256`后缀。
-- `torchvision://xxx`: `torchvision.models`中的模型链接，更多细节参考 [torchvision](https://pytorch.org/docs/stable/torchvision/models.html)。
-- `open-mmlab://xxx`: 默认和其他 json 文件中提供的模型链接或文件路径。
+- filepath: `checkpoint`路径
+- `http://xxx` and `https://xxx`: 下载checkpoint的链接，文件名中必需包含`SHA256`后缀
+- `torchvision://xxx`: `torchvision.models`中的模型链接，更多细节参考 [torchvision](https://pytorch.org/docs/stable/torchvision/models.html)
+- `open-mmlab://xxx`: 默认和其他 json 文件中提供的模型链接或文件路径
