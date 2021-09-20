@@ -2,8 +2,9 @@
 
 All kinds of contributions are welcome, including but not limited to the following.
 
-- Fixes (typo, bugs)
-- New features and components
+- Fixes typo or bugs
+- Add documentation or translate the documentation into other language
+- Add new features and components
 
 ### Workflow
 
