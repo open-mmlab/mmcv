@@ -63,7 +63,7 @@ class PetrelBackend(BaseStorageBackend):
             path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
             be replaced by `dst`. Default: None.
         enable_mc (bool): whether to enable memcached support. Default: True.
-        enable_multi_cluster (bool): Whether to enable multi clusters.
+        enable_multi_cluster (bool): Whether to enable multiple clusters.
             Default: False.
     """
 
@@ -242,21 +242,31 @@ class FileClient:
     """A general file client to access files in different backend.
 
     The client loads a file or text in a specified backend from its path
-    and return it as a binary file. it can also register other backend
-    accessor with a given name and backend class.
+    and return it as a binary or text file. There are two ways to choose a
+    backend, the name of backend and the prefixes of path. Although both of
+    them can be used to choose a storage backend, backend has a higher priority
+    that is if they are all set, the storage backend will be chosen by the
+    backend argument. If they are all `None`, the dist backend will be chosen.
+    Note that It can also register other backend accessor with a given name,
+    prefixes, and backend class.
 
     Args:
         backend (str): The storage backend type. Options are "disk", "ceph",
             "memcached", "lmdb", "http" and "petrel". Default: None.
         prefixes (str or list[str] or tuple[str]): The prefixes of the
-            registered storage backend. Both backend and prefixes can be used
-            to choose a storage backend, but backend has a higher priority that
-            is if they are all set, the storage backend will be chosen by the
-            backend rather than prefixes. If backend and prefixes are all
-            `None`. The dist backend is be chosen. Default: None.
+            registered storage backend. Options are "s3", "http", "https".
+            Default: None.
 
     .. versionadd:: 1.3.14
             The *prefixes* parameter.
+
+    Example:
+        >>> # only set backend
+        >>> file_client = FileClient(backend='ceph')
+        >>> # only set prefixes
+        >>> file_client = FileClient(prefixes='s3')
+        >>> # set both backend and prefixes but use backend to choose client
+        >>> file_client = FileClient(backend='ceph', prefixes='s3')
 
     Attributes:
         client (:obj:`BaseStorageBackend`): The backend object.
@@ -309,7 +319,8 @@ class FileClient:
             return None
         else:
             prefix, _ = uri.split('://')
-            # clusterName:s3://
+            # In the case of ceph, the prefix may contains the cluster name
+            # like clusterName:s3
             if ':' in prefix:
                 _, prefix = prefix.split(':')
             return prefix

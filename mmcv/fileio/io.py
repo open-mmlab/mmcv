@@ -100,13 +100,13 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
         if handler.str_like_obj:
-            f = StringIO()
-            handler.dump_to_fileobj(obj, f, **kwargs)
-            client.put_text(f.getvalue(), file)
+            with StringIO as f:
+                handler.dump_to_fileobj(obj, f, **kwargs)
+                client.put_text(f.getvalue(), file)
         else:
-            f = BytesIO()
-            handler.dump_to_fileobj(obj, f, **kwargs)
-            client.put(f.getvalue(), file)
+            with BytesIO() as f:
+                handler.dump_to_fileobj(obj, f, **kwargs)
+                client.put(f.getvalue(), file)
     elif hasattr(file, 'write'):
         handler.dump_to_fileobj(obj, file, **kwargs)
     else:
