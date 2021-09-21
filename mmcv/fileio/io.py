@@ -100,7 +100,7 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
         if handler.str_like_obj:
-            with StringIO as f:
+            with StringIO() as f:
                 handler.dump_to_fileobj(obj, f, **kwargs)
                 client.put_text(f.getvalue(), file)
         else:

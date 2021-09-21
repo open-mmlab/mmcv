@@ -107,7 +107,14 @@ class PetrelBackend(BaseStorageBackend):
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
-        self.put(bytes(obj, encoding=encoding), filepath)
+        self.put(bytes(obj, encoding=encoding), str(filepath))
+
+    def remove(self, filepath: Union[str, Path]) -> None:
+        filepath = str(filepath)
+        if self.path_mapping is not None:
+            for k, v in self.path_mapping.items():
+                filepath = filepath.replace(k, v)
+        self._client.delete(filepath)
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -244,11 +251,11 @@ class FileClient:
     The client loads a file or text in a specified backend from its path
     and return it as a binary or text file. There are two ways to choose a
     backend, the name of backend and the prefixes of path. Although both of
-    them can be used to choose a storage backend, backend has a higher priority
-    that is if they are all set, the storage backend will be chosen by the
-    backend argument. If they are all `None`, the dist backend will be chosen.
-    Note that It can also register other backend accessor with a given name,
-    prefixes, and backend class.
+    them can be used to choose a storage backend, ``backend`` has a higher
+    priority that is if they are all set, the storage backend will be chosen by
+    the backend argument. If they are all `None`, the disk backend will be
+    chosen. Note that It can also register other backend accessor with a given
+    name, prefixes, and backend class.
 
     Args:
         backend (str): The storage backend type. Options are "disk", "ceph",
@@ -423,3 +430,6 @@ class FileClient:
 
     def put_text(self, obj, filepath):
         self.client.put_text(obj, filepath)
+
+    def remove(self, filepath):
+        self.client.remove(filepath)
