@@ -52,9 +52,8 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     CommandLine:
         python -c "import setup; print(setup.parse_requirements())"
     """
-    from os.path import exists
-
     import sys
+    from os.path import exists
     require_fpath = fname
 
     def parse_line(line):
@@ -181,7 +180,6 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
-
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
@@ -279,8 +277,8 @@ def get_extensions():
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
         ext_name = 'mmcv._ext_ort'
+        from torch.utils.cpp_extension import library_paths, include_paths
         import onnxruntime
-        from torch.utils.cpp_extension import include_paths, library_paths
         library_dirs = []
         libraries = []
         include_dirs = []
@@ -307,8 +305,8 @@ def get_extensions():
             include_dirs += include_paths(cuda=False)
             library_dirs += library_paths(cuda=False)
 
-        from torch.utils.cpp_extension import CppExtension
-        ext_ops = CppExtension(
+        from setuptools import Extension
+        ext_ops = Extension(
             name=ext_name,
             sources=op_files,
             include_dirs=include_dirs,
