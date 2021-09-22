@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .all_pairs_correlation import AllPairsCorrelation
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
@@ -55,5 +54,5 @@ __all__ = [
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'AllPairsCorrelation', 'Correlation'
+    'Correlation'
 ]

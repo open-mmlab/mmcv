@@ -4,6 +4,7 @@
 // Original licence: Under MIT License
 
 #include "correlation_cuda.cuh"
+#include "pytorch_cuda_helper.hpp"
 
 void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
     Tensor output, int kH, int kW,
@@ -31,6 +32,9 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
 
     const int threads = THREADS_FORWARD;
     const dim3 blocks(batch_size, oH, oW);
+
+    at::cuda::CUDAGuard device_guard(input1.device());
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(input1.scalar_type(),
                                         "correlation_forward_cuda",
@@ -65,6 +69,9 @@ void CorrelationBackwardCUDAKernelLauncher(Tensor grad_output, Tensor input1,
 
     const dim3 blocks(C, iH, iW);
     const dim3 threads(THREADS_BACKWARD, THREADS_BACKWARD);
+
+    at::cuda::CUDAGuard device_guard(input1.device());
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(input1.scalar_type(),
                                         "correlation_backward_cuda",

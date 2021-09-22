@@ -471,6 +471,4 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("correlation_backward", &correlation_backward, "Correlation backward");
   m.def("all_pairs_correlation_forward", &all_pairs_correlation_forward,
             "All-pairs correlation forward");
-  m.def("all_pairs_correlation_backward", &all_pairs_correlation_backward,
-            "All-pairs correlation backward");
 }

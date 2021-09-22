@@ -143,7 +143,6 @@ class Correlation(nn.Module):
                  padding: int = 0,
                  dilation: int = 1,
                  dilation_patch: int = 1) -> None:
-
         super().__init__()
         self.kernel_size = kernel_size
         self.max_displacement = max_displacement
