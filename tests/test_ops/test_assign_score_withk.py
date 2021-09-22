@@ -7,8 +7,6 @@ from mmcv.ops import assign_score_withk
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_paconv_assign_scores():
-    if not torch.cuda.is_available():
-        pytest.skip()
     scores = torch.tensor([[[[0.06947571, 0.6065746], [0.28462553, 0.8378516],
                              [0.7595994, 0.97220325], [0.519155, 0.766185]],
                             [[0.15348864, 0.6051019], [0.21510637, 0.31916398],
