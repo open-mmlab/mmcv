@@ -4,9 +4,6 @@
 #include "gather_points_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-#define TOTAL_THREADS 1024
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void GatherPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                            const Tensor points,
                                            const Tensor idx, Tensor out) {

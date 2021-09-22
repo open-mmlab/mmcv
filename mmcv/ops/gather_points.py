@@ -8,10 +8,7 @@ ext_module = ext_loader.load_ext(
 
 
 class GatherPoints(Function):
-    """Gather Points.
-
-    Gather points with given index.
-    """
+    """Gather points with given index."""
 
     @staticmethod
     def forward(ctx, features: torch.Tensor,

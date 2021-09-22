@@ -4,6 +4,8 @@ import torch
 from mmcv.ops import gather_points
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_gather_points():
     if not torch.cuda.is_available():
         pytest.skip()
