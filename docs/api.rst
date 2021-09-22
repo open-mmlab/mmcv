@@ -1,7 +1,3 @@
-API Reference
-=================
-
-
 fileio
 -------
 .. automodule:: mmcv.fileio
