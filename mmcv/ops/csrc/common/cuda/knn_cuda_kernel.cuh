@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
+// Modified from
+// https://github.com/CVMI-Lab/PAConv/tree/main/scene_seg/lib/pointops/src/knnquery_heap
 #ifndef KNN_CUDA_KERNEL_CUH
 #define KNN_CUDA_KERNEL_CUH
 
@@ -7,6 +9,8 @@
 #else
 #include "pytorch_cuda_helper.hpp"
 #endif
+
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 __device__ void swap_float(float *x, float *y) {
   float tmp = *x;
