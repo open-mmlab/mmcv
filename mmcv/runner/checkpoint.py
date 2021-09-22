@@ -506,7 +506,6 @@ def load_checkpoint(model,
             pair of the regular expression operations. Default: strip
             the prefix 'module.' by [(r'^module\\.', '')].
 
-
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
@@ -616,7 +615,11 @@ def get_state_dict(module, destination=None, prefix='', keep_vars=False):
     return destination
 
 
-def save_checkpoint(model, filename, optimizer=None, meta=None):
+def save_checkpoint(model,
+                    filename,
+                    optimizer=None,
+                    meta=None,
+                    file_client_args=None):
     """Save checkpoint to file.
 
     The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
@@ -627,6 +630,8 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         filename (str): Checkpoint filename.
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
     """
     if meta is None:
         meta = {}
@@ -654,6 +659,10 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
             checkpoint['optimizer'][name] = optim.state_dict()
 
     if filename.startswith('pavi://'):
+        if file_client_args is not None:
+            raise ValueError(
+                'file_client_args should be "None" if filename starts with'
+                '"pavi://"')
         try:
             from pavi import modelcloud
             from pavi import exception
@@ -674,8 +683,15 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
-        mmcv.mkdir_or_exist(osp.dirname(filename))
-        # immediately flush buffer
-        with open(filename, 'wb') as f:
+        if file_client_args is None:
+            file_prefix = FileClient.parse_uri_prefix(filename)
+            client = FileClient(prefixes=file_prefix)
+        else:
+            client = FileClient(**file_client_args)
+
+        if client.backend_name == 'disk':
+            mmcv.mkdir_or_exist(osp.dirname(filename))
+
+        with io.BytesIO() as f:
             torch.save(checkpoint, f)
-            f.flush()
+            client.put(f.getvalue(), filename)

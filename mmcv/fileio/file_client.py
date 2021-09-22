@@ -319,6 +319,11 @@ class FileClient:
                 self.client = self._prefix_to_backends[prefix](**kwargs)
                 break
 
+        for name, backend_cls in self._backends.items():
+            if isinstance(self.client, backend_cls):
+                self.backend_name = name
+                break
+
     @staticmethod
     def parse_uri_prefix(uri):
         uri = str(uri)

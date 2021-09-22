@@ -1,17 +1,22 @@
 import sys
 from collections import OrderedDict
 from tempfile import TemporaryDirectory
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from torch.nn.parallel import DataParallel
 
+from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
-                                    load_from_pavi)
+                                    load_from_pavi, save_checkpoint)
+
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 
 
 @MODULE_WRAPPERS.register_module()
@@ -392,3 +397,36 @@ def test_checkpoint_loader():
     filename = 'a/b/c/d'
     loader = CheckpointLoader._get_checkpoint_loader(filename)
     assert loader.__name__ == 'load_from_abc'
+
+
+def test_save_checkpoint(tmp_path):
+    model = Model()
+    optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+    # meta is not a dict
+    with pytest.raises(TypeError):
+        save_checkpoint(model, '/path/of/your/filename', meta='invalid type')
+
+    # 1. save to disk
+    filename = str(tmp_path / 'checkpoint1.pth')
+    save_checkpoint(model, filename)
+
+    filename = str(tmp_path / 'checkpoint2.pth')
+    save_checkpoint(model, filename, optimizer)
+
+    filename = str(tmp_path / 'checkpoint3.pth')
+    save_checkpoint(model, filename, meta={'test': 'test'})
+
+    filename = str(tmp_path / 'checkpoint4.pth')
+    save_checkpoint(model, filename, file_client_args={'backend': 'disk'})
+
+    # 2. save to petrel oss
+    with patch.object(PetrelBackend, 'put') as mock_method:
+        filename = 's3://path/of/your/checkpoint1.pth'
+        save_checkpoint(model, filename)
+    mock_method.assert_called()
+
+    with patch.object(PetrelBackend, 'put') as mock_method:
+        filename = 's3://path//of/your/checkpoint2.pth'
+        save_checkpoint(
+            model, filename, file_client_args={'backend': 'petrel'})
+    mock_method.assert_called()
