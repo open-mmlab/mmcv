@@ -733,8 +733,6 @@ def test_modulated_deform_conv2d():
 @pytest.mark.skipif(
     torch.__version__ == 'parrots',
     reason='onnx is not supported in parrots directly')
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='deform_conv2d only supports in GPU')
 def test_deform_conv2d(threshold=1e-3):
     try:
         from mmcv.ops import DeformConv2d, get_onnxruntime_op_path
@@ -760,8 +758,6 @@ def test_deform_conv2d(threshold=1e-3):
     offset_bias = [0.7, 0.1, 0.8, 0.5, 0.6, 0.5, 0.4, 0.7]
     deform_weight = [[[0.4, 0.2, 0.1, 0.9]]]
 
-    gt_out = [[[[1.650, 0.], [0.000, 0.]]]]
-
     x = torch.tensor(input)
     conv_offset = nn.Conv2d(
         in_channels=in_channels,
@@ -784,9 +780,6 @@ def test_deform_conv2d(threshold=1e-3):
 
     model.weight.data = torch.nn.Parameter(
         torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
-
-    out = model(x, offset)
-    assert np.allclose(out.data.detach().cpu().numpy(), gt_out, threshold)
 
     with torch.no_grad():
         torch.onnx.export(
