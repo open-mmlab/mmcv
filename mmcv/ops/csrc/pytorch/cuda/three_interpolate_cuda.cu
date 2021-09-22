@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 #include "pytorch_cuda_helper.hpp"
 #include "three_interpolate_cuda_kernel.cuh"
 

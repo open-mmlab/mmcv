@@ -8,8 +8,6 @@
 #include "pytorch_cuda_helper.hpp"
 #include "three_nn_cuda_kernel.cuh"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void ThreeNNForwardCUDAKernelLauncher(int b, int n, int m, const Tensor unknown,
                                       const Tensor known, Tensor dist2,
                                       Tensor idx) {

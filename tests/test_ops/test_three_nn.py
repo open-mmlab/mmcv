@@ -4,6 +4,8 @@ import torch
 from mmcv.ops import three_nn
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_three_nn():
     if not torch.cuda.is_available():
         pytest.skip()
