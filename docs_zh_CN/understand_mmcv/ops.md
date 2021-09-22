@@ -1,3 +1,25 @@
 ## CUDA 算子
 
-欢迎有兴趣的朋友一起翻译 MMCV 文档。如有兴趣，请在 [MMCV issue](https://github.com/open-mmlab/mmcv/issues) 提 issue 确定翻译的文档。
+
+我们实现了在检测、分割等任务中使用的公共 CUDA 算子：
+
+- BallQuery
+- BBoxOverlaps
+- CARAFE
+- CrissCrossAttention
+- ContextBlock
+- CornerPool
+- Deformable Convolution v1/v2
+- Deformable RoIPool
+- GeneralizedAttention
+- MaskedConv
+- NMS
+- PSAMask
+- RoIPool
+- RoIAlign
+- SimpleRoIAlign
+- SigmoidFocalLoss
+- SoftmaxFocalLoss
+- SoftNMS
+- Synchronized BatchNorm
+- Weight standardization
