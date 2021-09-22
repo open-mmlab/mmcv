@@ -8,10 +8,7 @@ ext_module = ext_loader.load_ext('_ext', ['ball_query_forward'])
 
 
 class BallQuery(Function):
-    """Ball Query.
-
-    Find nearby points in spherical space.
-    """
+    """Find nearby points in spherical space."""
 
     @staticmethod
     def forward(ctx, min_radius: float, max_radius: float, sample_num: int,

@@ -7,11 +7,12 @@
 void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                         float max_radius, int nsample,
                                         const Tensor new_xyz, const Tensor xyz,
-                                        int *idx);
+                                        Tensor idx);
 
 void ball_query_forward_cuda(int b, int n, int m, float min_radius,
-                             float max_radius, int nsample, Tensor new_xyz,
-                             Tensor xyz, int *idx) {
+                             float max_radius, int nsample,
+                             const Tensor new_xyz, const Tensor xyz,
+                             Tensor idx) {
   BallQueryForwardCUDAKernelLauncher(b, n, m, min_radius, max_radius, nsample,
                                      new_xyz, xyz, idx);
 };
@@ -24,10 +25,9 @@ void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(new_xyz_tensor);
     CHECK_CUDA_INPUT(xyz_tensor);
-    int *idx = idx_tensor.data_ptr<int>();
 
     ball_query_forward_cuda(b, n, m, min_radius, max_radius, nsample,
-                            new_xyz_tensor, xyz_tensor, idx);
+                            new_xyz_tensor, xyz_tensor, idx_tensor);
 #else
     AT_ERROR("ball_query is not compiled with GPU support");
 #endif

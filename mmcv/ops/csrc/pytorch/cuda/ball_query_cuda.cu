@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 // Modified from
 // https://github.com/sshaoshuai/Pointnet2.PyTorch/tree/master/pointnet2/src/ball_query_gpu.cu
 
@@ -8,12 +9,10 @@
 #include "ball_query_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                         float max_radius, int nsample,
                                         const Tensor new_xyz, const Tensor xyz,
-                                        int *idx) {
+                                        Tensor idx) {
   // new_xyz: (B, M, 3)
   // xyz: (B, N, 3)
   // output:
@@ -31,7 +30,8 @@ void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
         ball_query_forward_cuda_kernel<scalar_t>
             <<<blocks, threads, 0, stream>>>(
                 b, n, m, min_radius, max_radius, nsample,
-                new_xyz.data_ptr<scalar_t>(), xyz.data_ptr<scalar_t>(), idx);
+                new_xyz.data_ptr<scalar_t>(), xyz.data_ptr<scalar_t>(),
+                idx.data_ptr<int>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
