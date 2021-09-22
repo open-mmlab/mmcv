@@ -11,8 +11,6 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - Deformable Convolution v1/v2
 - Deformable RoIPool
 - GeneralizedAttention
-- GroupPoints
-- KNN
 - MaskedConv
 - NMS
 - PSAMask
