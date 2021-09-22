@@ -21,7 +21,7 @@ class AllPairsCorrelationFunction(Function):
         batch_size = input1.shape[0]
         output_size = (batch_size, iH1, iW1, iH2, iW2)
 
-        output = input1.new_empty(output_size)
+        output = input1.new_zeros(output_size)
 
         ext_module.all_pairs_correlation_forward(input1, input2, output)
         return output

@@ -37,7 +37,7 @@ class CorrelationFunction(Function):
 
         output_size = CorrelationFunction._output_size(ctx, input1)
 
-        output = input1.new_empty(output_size)
+        output = input1.new_zeros(output_size)
 
         ext_module.correlation_forward(input1, input2, output, kH, kW,
                                        patch_size, patch_size, padH, padW,
