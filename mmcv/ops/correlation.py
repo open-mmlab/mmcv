@@ -98,19 +98,20 @@ class Correlation(nn.Module):
 
     .. math::
         H_{out} = \left\lfloor\frac{H_{in}  + 2 \times \text{padding} -
-                \text{dilation} \times (\text{kernel\_size} - 1) - 1}
+                \text{dilation} \times (\text{kernel_size} - 1) - 1}
                 {\text{stride}} + 1\right\rfloor
 
     .. math::
         W_{out} = \left\lfloor\frac{W_{in}  + 2 \times \text{padding} -
-            \text{dilation} \times (\text{kernel\_size} - 1) - 1}
+            \text{dilation} \times (\text{kernel_size} - 1) - 1}
             {\text{stride}} + 1\right\rfloor
 
     the correlation item :math:`(n, dx, dy, i, j)` is formed by taking the dot
     product between input1 and input2,
 
     .. math::
-        Corr(n, dx, dy, i, j) = \sum_{c=0}^{C-1}
+        Corr(n, dx, dy, i, j) = \\
+            \sum_{c=0}^{C-1}
             \sum_{k_i=-\text{kernel_size}}^{\text{kernel_size}}
             \sum_{k_j=-\text{kernel_size}}^{\text{kernel_size}}
             input1(n, c, i + k_i, j + k_j) \cdot
