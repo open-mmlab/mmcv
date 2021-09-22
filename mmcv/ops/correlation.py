@@ -89,11 +89,11 @@ class CorrelationFunction(Function):
 class Correlation(nn.Module):
     r"""Correlation operator
 
-    This correaltion operator works for optical flow correlation computation.
+    This correlation operator works for optical flow correlation computation.
 
     There are two batched tensors with shape :math:`(N, C, H, W)`,
     and the correlation output's shape is
-    :math:`(N, max\_displacement*2+1, max\_displacement*2+1, H_{out}, W_{out})` ,
+    :math:`(N, max\_displacement*2+1, max\_displacement*2+1, H_{out}, W_{out})`
     where
 
     .. math::
@@ -111,8 +111,8 @@ class Correlation(nn.Module):
 
     .. math::
         Corr(n, dx, dy, i, j) = \sum_{c=0}^{C-1}
-            \sum_{k_i=-\text{kernel\_size}}^{\text{kernel\_size}}
-            \sum_{k_j=-\text{kernel\_size}}^{\text{kernel\_size}}
+            \sum_{k_i=-\text{kernel_size}}^{\text{kernel_size}}
+            \sum_{k_j=-\text{kernel_size}}^{\text{kernel_size}}
             input1(n, c, i + k_i, j + k_j) \cdot
             input2(n, c, i + k_i + dx, j + k_j + dy)
 
