@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .bbox import bbox_overlaps
-from .knn import knn
 from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
@@ -19,6 +18,7 @@ from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
+from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
@@ -51,7 +51,7 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu', 'knn',
+    'upfirdn2d', 'FusedBiasLeakyReLU', 'knn', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
 ]
