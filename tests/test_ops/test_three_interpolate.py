@@ -7,8 +7,6 @@ from mmcv.ops import three_interpolate
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_three_interpolate():
-    if not torch.cuda.is_available():
-        pytest.skip()
     features = torch.tensor([[[2.4350, 4.7516, 4.4995, 2.4350, 2.4350, 2.4350],
                               [3.1236, 2.6278, 3.0447, 3.1236, 3.1236, 3.1236],
                               [2.6732, 2.8677, 2.6436, 2.6732, 2.6732, 2.6732],
