@@ -7,8 +7,6 @@ from mmcv.ops import gather_points
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_gather_points():
-    if not torch.cuda.is_available():
-        pytest.skip()
     features = torch.tensor([[[
         -1.6095, -0.1029, -0.8876, -1.2447, -2.4031, 0.3708, -1.1586, -1.4967,
         -0.4800, 0.2252
