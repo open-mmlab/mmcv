@@ -12,8 +12,6 @@ All Rights Reserved 2018.
 #include "pytorch_cuda_helper.hpp"
 #include "roipoint_pool3d_cuda_kernel.cuh"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void RoIPointPool3dForwardCUDAKernelLauncher(
     int batch_size, int pts_num, int boxes_num, int feature_in_len,
     int sampled_pts_num, const Tensor xyz, const Tensor boxes3d,
