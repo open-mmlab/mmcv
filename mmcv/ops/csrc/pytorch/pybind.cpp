@@ -221,6 +221,29 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size);
 
+void correlation_forward(Tensor input1, Tensor input2, Tensor output,
+                         int kH, int kW, int patchH, int patchW,
+                         int padH, int padW,
+                         int dilationH, int dilationW,
+                         int dilation_patchH, int dilation_patchW,
+                         int dH, int dW);
+
+void correlation_backward(Tensor grad_output,
+                          Tensor input1, Tensor input2,
+                          Tensor grad_input1, Tensor grad_input2,
+                          int kH, int kW,
+                          int patchH, int patchW,
+                          int padH, int padW,
+                          int dilationH, int dilationW,
+                          int dilation_patchH, int dilation_patchW,
+                          int dH, int dW);
+
+void all_pairs_correlation_forward(Tensor input1, Tensor input2, Tensor output);
+
+void all_pairs_correlation_backward(Tensor grad_output,
+                                    Tensor input1, Tensor input2,
+                                    Tensor grad_input1, Tensor grad_input2);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -444,4 +467,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "backward function of border_align", py::arg("grad_output"),
         py::arg("boxes"), py::arg("argmax_idx"), py::arg("grad_input"),
         py::arg("pool_size"));
+  m.def("correlation_forward", &correlation_forward, "Correlation forward");
+  m.def("correlation_backward", &correlation_backward, "Correlation backward");
+  m.def("all_pairs_correlation_forward", &all_pairs_correlation_forward,
+            "All-pairs correlation forward");
+  m.def("all_pairs_correlation_backward", &all_pairs_correlation_backward,
+            "All-pairs correlation backward");
 }
