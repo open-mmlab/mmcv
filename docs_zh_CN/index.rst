@@ -4,14 +4,60 @@
 您可以在页面左下角切换中英文文档。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :caption: 介绍与安装
 
-   get_started.rst
-   understand_mmcv.rst
-   deployment.rst
+   get_started/introduction.md
+   get_started/installation.md
+   get_started/build.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 深入理解 MMCV
+
+   understand_mmcv/config.md
+   understand_mmcv/registry.md
+   understand_mmcv/runner.md
+   understand_mmcv/io.md
+   understand_mmcv/data_process.md
+   understand_mmcv/visualization.md
+   understand_mmcv/cnn.md
+   understand_mmcv/ops.md
+   understand_mmcv/utils.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 部署
+
+   deployment/onnx.md
+   deployment/onnxruntime_op.md
+   deployment/onnxruntime_custom_ops.md
+   deployment/tensorrt_plugin.md
+   deployment/tensorrt_custom_ops.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 兼容性
+
    compatibility.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 常见问题
+
    faq.md
-   community.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 社区
+
+   community/contributing.md
+   community/pr.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API 文档
+
    api.rst
 
 
