@@ -238,12 +238,6 @@ void correlation_backward(Tensor grad_output,
                           int dilation_patchH, int dilation_patchW,
                           int dH, int dW);
 
-void all_pairs_correlation_forward(Tensor input1, Tensor input2, Tensor output);
-
-void all_pairs_correlation_backward(Tensor grad_output,
-                                    Tensor input1, Tensor input2,
-                                    Tensor grad_input1, Tensor grad_input2);
-
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -469,6 +463,4 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pool_size"));
   m.def("correlation_forward", &correlation_forward, "Correlation forward");
   m.def("correlation_backward", &correlation_backward, "Correlation backward");
-  m.def("all_pairs_correlation_forward", &all_pairs_correlation_forward,
-            "All-pairs correlation forward");
 }
