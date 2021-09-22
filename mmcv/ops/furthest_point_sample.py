@@ -10,11 +10,8 @@ ext_module = ext_loader.load_ext('_ext', [
 
 
 class FurthestPointSampling(Function):
-    """Furthest Point Sampling.
-
-    Uses iterative furthest point sampling to select a set of features whose
-    corresponding points have the furthest distance.
-    """
+    """Uses iterative furthest point sampling to select a set of features whose
+    corresponding points have the furthest distance."""
 
     @staticmethod
     def forward(ctx, points_xyz: torch.Tensor,
@@ -44,11 +41,8 @@ class FurthestPointSampling(Function):
 
 
 class FurthestPointSamplingWithDist(Function):
-    """Furthest Point Sampling With Distance.
-
-    Uses iterative furthest point sampling to select a set of features whose
-    corresponding points have the furthest distance.
-    """
+    """Uses iterative furthest point sampling to select a set of features whose
+    corresponding points have the furthest distance."""
 
     @staticmethod
     def forward(ctx, points_dist: torch.Tensor,

@@ -4,6 +4,8 @@ import torch
 from mmcv.ops import furthest_point_sample, furthest_point_sample_with_dist
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_fps():
     if not torch.cuda.is_available():
         pytest.skip()

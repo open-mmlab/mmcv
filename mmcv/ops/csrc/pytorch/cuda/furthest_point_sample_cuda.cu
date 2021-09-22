@@ -7,8 +7,6 @@
 #include "furthest_point_sample_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 inline int opt_n_threads(int work_size) {
   const int pow_2 = std::log(static_cast<double>(work_size)) / std::log(2.0);
 

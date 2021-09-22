@@ -8,6 +8,8 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+
 __device__ void __update(float *__restrict__ dists, int *__restrict__ dists_i,
                          int idx1, int idx2) {
   const float v1 = dists[idx1], v2 = dists[idx2];
