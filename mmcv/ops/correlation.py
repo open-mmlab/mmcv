@@ -93,7 +93,7 @@ class Correlation(nn.Module):
 
     There are two batched tensors with shape :math:`(N, C, H, W)`,
     and the correlation output's shape is
-    :math:`(N, max_displacement*2+1, max_displacement*2+1, H_{out}, W_{out})` ,
+    :math:`(N, max\_displacement*2+1, max\_displacement*2+1, H_{out}, W_{out})` ,
     where
 
     .. math::
@@ -109,7 +109,7 @@ class Correlation(nn.Module):
     the correlation item :math:`(n, dx, dy, i, j)` is formed by taking the dot
     product between input1 and input2,
 
-    ..math::
+    .. math::
         Corr(n, dx, dy, i, j) = \sum_{c=0}^{C-1}
             \sum_{k_i=-\text{kernel\_size}}^{\text{kernel\_size}}
             \sum_{k_j=-\text{kernel\_size}}^{\text{kernel\_size}}

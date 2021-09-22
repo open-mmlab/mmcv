@@ -43,7 +43,7 @@ class AllPairsCorrelation(nn.Module):
     """All-pairs correlation operator.
 
     All-pairs correlation is used to compute visual similarity in `RAFT
-        <https://link.springer.com/chapter/10.1007/978-3-030-58536-5_24>`_.
+    <https://link.springer.com/chapter/10.1007/978-3-030-58536-5_24>`_.
     The correlation output with the shape (N, H, W, H, W) is formed by taking
     the dot product between all pairs of input feature vectors , and H, W is
     equal the input tensors'.
