@@ -204,7 +204,7 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
 def flow_from_bytes(content):
     """Read dense optical flow from bytes.
 
-    ..note::
+    .. note::
         This load optical flow function works for FlyingChairs, FlyingThings3D,
         Sintel, FlyingChairsOcc datasets, but cannot load the ChairsSDHom
         dataset.
