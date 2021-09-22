@@ -21,3 +21,4 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - SoftNMS
 - Synchronized BatchNorm
 - Weight standardization
+- Correlation
