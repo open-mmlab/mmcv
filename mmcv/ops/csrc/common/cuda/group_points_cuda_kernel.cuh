@@ -8,6 +8,8 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+
 template <typename T>
 __global__ void group_points_forward_cuda_kernel(int b, int c, int n,
                                                  int npoints, int nsample,

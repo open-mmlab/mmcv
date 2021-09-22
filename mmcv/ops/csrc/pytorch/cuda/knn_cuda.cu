@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 // Modified from
 // https://github.com/CVMI-Lab/PAConv/tree/main/scene_seg/lib/pointops/src/knnquery_heap
 
@@ -6,8 +7,6 @@
 
 #include "knn_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
                                   const Tensor xyz, const Tensor new_xyz,

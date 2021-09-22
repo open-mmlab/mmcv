@@ -4,6 +4,8 @@ import torch
 from mmcv.ops import grouping_operation
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_grouping_points():
     if not torch.cuda.is_available():
         pytest.skip()

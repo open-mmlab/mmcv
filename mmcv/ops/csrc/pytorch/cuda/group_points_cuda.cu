@@ -4,8 +4,6 @@
 #include "group_points_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void GroupPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                           int nsample, const Tensor points,
                                           const Tensor idx, Tensor out) {

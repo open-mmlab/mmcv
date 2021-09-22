@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
+// Modified from
+// https://github.com/sshaoshuai/Pointnet2.PyTorch/tree/master/pointnet2/src/ball_query_gpu.cu
 #ifndef BALL_QUERY_CUDA_KERNEL_CUH
 #define BALL_QUERY_CUDA_KERNEL_CUH
 
@@ -7,6 +9,8 @@
 #else
 #include "pytorch_cuda_helper.hpp"
 #endif
+
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 template <typename T>
 __global__ void ball_query_forward_cuda_kernel(int b, int n, int m,

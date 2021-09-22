@@ -13,9 +13,7 @@ ext_module = ext_loader.load_ext(
 
 
 class QueryAndGroup(nn.Module):
-    """Query and Group.
-
-    Groups with a ball query of radius
+    """Groups with a ball query of radius.
 
     Args:
         max_radius (float): The maximum radius of the balls.
@@ -66,8 +64,7 @@ class QueryAndGroup(nn.Module):
                 'can not normalize grouped xyz when max_radius is None'
 
     def forward(self, points_xyz, center_xyz, features=None):
-        """forward.
-
+        """
         Args:
             points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
             center_xyz (Tensor): (B, npoint, 3) Centriods.
@@ -134,9 +131,7 @@ class QueryAndGroup(nn.Module):
 
 
 class GroupAll(nn.Module):
-    """Group All.
-
-    Group xyz with feature.
+    """Group xyz with feature.
 
     Args:
         use_xyz (bool): Whether to use xyz.
@@ -175,10 +170,7 @@ class GroupAll(nn.Module):
 
 
 class GroupingOperation(Function):
-    """Grouping Operation.
-
-    Group feature with given index.
-    """
+    """Group feature with given index."""
 
     @staticmethod
     def forward(ctx, features: torch.Tensor,
@@ -209,8 +201,7 @@ class GroupingOperation(Function):
     @staticmethod
     def backward(ctx,
                  grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """backward.
-
+        """
         Args:
             grad_out (Tensor): (B, C, npoint, nsample) tensor of the gradients
                 of the output from forward.
