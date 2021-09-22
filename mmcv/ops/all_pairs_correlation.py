@@ -44,9 +44,9 @@ class AllPairsCorrelation(nn.Module):
 
     All-pairs correlation is used to compute visual similarity in `RAFT
         <https://link.springer.com/chapter/10.1007/978-3-030-58536-5_24>`_.
-    The correlation output is formed by taking the dot product between all
-    pairs of feature vectors with the shape (N, H, W, H, W), and H, W is from
-    the input tensor.
+    The correlation output with the shape (N, H, W, H, W) is formed by taking
+    the dot product between all pairs of input feature vectors , and H, W is
+    equal the input tensors'.
     """
 
     def __init__(self) -> None:

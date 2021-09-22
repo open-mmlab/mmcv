@@ -76,9 +76,6 @@ __global__ void all_pairs_correlation_backward_cuda_kernel_input1(const TensorAc
   const int iH = input2.size(2);
   const int iW = input2.size(3);
 
-  // const int H = grad_output.size(3);
-  // const int W = grad_output.size(4);
-
   const int n = batch;
   const int c = blockIdx.x;
   const int h = blockIdx.y;
