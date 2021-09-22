@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .all_pairs_correlation import AllPairsCorrelation
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
@@ -6,6 +7,7 @@ from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
 from .corner_pool import CornerPool
+from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
 from .deform_roi_pool import (DeformRoIPool, DeformRoIPoolPack,
                               ModulatedDeformRoIPoolPack, deform_roi_pool)
@@ -35,8 +37,6 @@ from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
-from .all_pairs_correlation import AllPairsCorrelation
-from .correlation import Correlation
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',

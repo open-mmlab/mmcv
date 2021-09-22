@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from torch import Tensor
-from torch import nn
+from torch import Tensor, nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -41,14 +40,13 @@ class AllPairsCorrelationFunction(Function):
 
 
 class AllPairsCorrelation(nn.Module):
-    """All-pairs correlation operator
+    """All-pairs correlation operator.
 
     All-pairs correlation is used to compute visual similarity in `RAFT
         <https://link.springer.com/chapter/10.1007/978-3-030-58536-5_24>`_.
     The correlation output is formed by taking the dot product between all
     pairs of feature vectors with the shape (N, H, W, H, W), and H, W is from
     the input tensor.
-
     """
 
     def __init__(self) -> None:
