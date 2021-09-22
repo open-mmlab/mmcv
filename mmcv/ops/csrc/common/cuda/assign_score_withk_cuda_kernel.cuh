@@ -8,6 +8,8 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+
 // input: points(B,N0,M,O), centers(B,N0,M,O), scores(B,N1,K,M), knn_idx(B,N1,K)
 // output: fout(B,O,N)
 // algo: fout(b,i,k,j) = s(b,i,k,m)*p(b,c(i),k,m,j) =  s(b,i,k,m)*p(b,i(k),m,j)

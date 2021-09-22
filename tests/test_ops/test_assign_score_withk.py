@@ -4,6 +4,8 @@ import torch
 from mmcv.ops import assign_score_withk
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_paconv_assign_scores():
     if not torch.cuda.is_available():
         pytest.skip()

@@ -6,8 +6,6 @@
 #include "assign_score_withk_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 void AssignScoreWithKForwardCUDAKernelLauncher(
     int B, int N0, int N1, int M, int K, int O, int aggregate,
     const Tensor& points, const Tensor& centers, const Tensor& scores,
