@@ -256,9 +256,8 @@ def test_flow_from_bytes():
     # read .flo file
     flow_fromfile = mmcv.flowread(flow_file)
 
-    file_client = mmcv.FileClient(backend='disk')
-    # read flow from bytes
-    flow_bytes = file_client.get(flow_file)
+    with open(flow_file, 'rb') as f:
+        flow_bytes = f.read()
     flow_frombytes = mmcv.flow_from_bytes(flow_bytes)
 
     assert flow_frombytes.shape == flow_shape
@@ -269,9 +268,9 @@ def test_sparse_flow_from_bytes():
     data_dir = osp.join(osp.dirname(__file__), '../data')
     flow_file = osp.join(data_dir, 'sparse_flow.png')
 
-    file_client = mmcv.FileClient(backend='disk')
+    with open(flow_file, 'rb') as f:
+        flow_bytes = f.read()
     # read flow from bytes
-    flow_bytes = file_client.get(flow_file)
     flow_frombytes, valid_frombytes = mmcv.sparse_flow_from_bytes(flow_bytes)
 
     # test flow shape is [H, W, 2] and valid shape is [H, W]
