@@ -15,7 +15,7 @@ cd mmcv
 pip install -e .
 ```
 
-也可以按照 full 版本
+也可以安装 full 版本
 
 ```bash
 MMCV_WITH_OPS=1 pip install -e .
@@ -68,7 +68,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
     conda activate mmcv  # 确保做任何操作前先激活环境
     ```
 
-3. 安装 PyTorch，可以根据需要安装支持 CUDA 或不支持 CUDA 版本
+3. 安装 PyTorch 时，可以根据需要安装支持 CUDA 或不支持 CUDA 的版本
 
     ```shell
     # CUDA version
@@ -94,15 +94,15 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 
 MMCV 有三种安装的模式：
 
-1. Lite version（不包含算子）
+1. Lite 版本（不包含算子）
 
     这种方式下，没有算子被编译，这种模式的 mmcv 是原生的 python 包
 
-2. Full version（只包含 CPU 算子）
+2. Full 版本（只包含 CPU 算子）
 
     编译 CPU 算子，但只有 x86 将会被编译，并且编译版本只能在 CPU only 情况下运行
 
-3. Full version（既包含 CPU 算子，也包含 CUDA 算子）
+3. Full 版本（既包含 CPU 算子，又包含 CUDA 算子）
 
     同时编译 CPU 和 CUDA 算子，`ops` 模块的 x86 与 CUDA 的代码都可以被编译。同时编译的版本可以在 CUDA 上调用 GPU
 
@@ -122,7 +122,7 @@ MMCV 有三种安装的模式：
 
     为了兼容性，我们使用 x86-hosted 以及 x64-targeted 版本，即路径中的 `Hostx86\x64` 。
 
-    因为 Pytorch 将解析 `cl.exe` 的输出以检查其版本，只有 utf-8 将会被识别，你可能需要将系统语言更改为英语。控制面板 -> 地区-> 管理-> 非 Unicode 来进行语言转换。
+    因为 PyTorch 将解析 `cl.exe` 的输出以检查其版本，只有 utf-8 将会被识别，你可能需要将系统语言更改为英语。控制面板 -> 地区-> 管理-> 非 Unicode 来进行语言转换。
 
 ##### 安装方式一：Lite version（不包含算子）
 
@@ -160,7 +160,7 @@ pip list
     pip list  # 检查是否安装成功
     ```
 
-##### 安装方式三：Full version（既编译 CPU 算子也编译 CUDA 算子）
+##### 安装方式三：Full version（既编译 CPU 算子又编译 CUDA 算子）
 
 1. 完成上述的公共步骤
 
