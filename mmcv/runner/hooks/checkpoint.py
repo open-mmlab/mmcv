@@ -110,14 +110,10 @@ class CheckpointHook(Hook):
             for _step in redundant_ckpts:
                 ckpt_path = os.path.join(self.out_dir,
                                          filename_tmpl.format(_step))
-                # TODO, refactor the following block
-                if self.client.backend_name == 'disk':
-                    if os.path.exists(ckpt_path):
-                        self.client.remove(ckpt_path)
-                    else:
-                        break
-                else:
+                if self.client.check_exist(ckpt_path):
                     self.client.remove(ckpt_path)
+                else:
+                    break
 
     def after_train_iter(self, runner):
         if self.by_epoch:
