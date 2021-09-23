@@ -106,24 +106,25 @@ class Correlation(nn.Module):
             \text{dilation} \times (\text{kernel_size} - 1) - 1}
             {\text{stride}} + 1\right\rfloor
 
-    the correlation item :math:`(n, dx, dy, i, j)` is formed by taking the dot
-    product between input1 and input2,
+    the correlation item :math:`(N_i, dy, dx)` is formed by taking the sliding
+    window convolution between input1 and shifted input2,
 
     .. math::
-        &Corr(n, dx, dy, i, j) = \\
+        Corr(N_i, dx, dy) =
         &\sum_{c=0}^{C-1}
-        \sum_{k_i=-\text{kernel_size}}^{\text{kernel_size}}
-        \sum_{k_j=-\text{kernel_size}}^{\text{kernel_size}}
-        input1(n, c, i + k_i, j + k_j) \cdot
-        input2(n, c, i + k_i + dx, j + k_j + dy)
+        input1(N_i, c) \start
+        \mathcal{S}(input2(N_i, c), dy, dx)
 
-    and :math:`dx, dy \in
-    [-max\_displacement \times dilation\_patch, max\_displacement \times dilation\_patch]`.
+    where :math:`\start` is the valid 2d sliding window convolution operator,
+    and :math:`\matchcal{S}` means shifting the input features (auto-complete
+    zero marginal), and :math:`dx, dy \in
+    [-\text{max_displacement} \times \text{dilation_patch},
+    \text{max_displacement} \times \text{dilation_patch}]`.
 
     Args:
-        kernel_size (int): The size of local neighborhood representing the
-            center points and involved in correlation computation.
-            Defaults to 1.
+        kernel_size (int): The size of sliding window i.e. local neighborhood
+            representing the center points and involved in correlation
+            computation. Defaults to 1.
         max_displacement (int): The radius for computing correlation volume,
             but the actual working space can be dilated by dilation_patch.
             Defaults to 1.
