@@ -216,7 +216,7 @@ def flow_from_bytes(content):
         ndarray: Loaded optical flow with the shape (H, W, 2).
     """
 
-    # head in first 4 bytes
+    # header in first 4 bytes
     header = content[:4]
     if header.decode('utf-8') != 'PIEH':
         raise Exception('Flow file header does not contain PIEH')
@@ -224,7 +224,7 @@ def flow_from_bytes(content):
     width = np.frombuffer(content[4:], np.int32, 1).squeeze()
     # height in third 4 bytes
     height = np.frombuffer(content[8:], np.int32, 1).squeeze()
-    # flow after 12 bytes
+    # after first 12 bytes, all bytes are flow
     flow = np.frombuffer(content[12:], np.float32, width * height * 2).reshape(
         (height, width, 2))
 
