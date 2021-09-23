@@ -1,6 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#ifdef MMCV_WITH_MLU
 #include "pytorch_mlu_helper.hpp"
+#endif
 
 #ifdef MMCV_WITH_CUDA
 void SigmoidFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
@@ -80,8 +82,8 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 #else
     AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
 #endif
-  } else if (input.device().type() == at::kMLU ){
 #ifdef MMCV_WITH_MLU
+  } else if (input.device().type() == at::kMLU ){
     CHECK_MLU(input);
     CHECK_MLU(target);
     sigmoid_focal_loss_forward_mlu(input, target, weight, output, gamma,
