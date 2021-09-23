@@ -206,8 +206,8 @@ def flow_from_bytes(content):
 
     .. note::
         This load optical flow function works for FlyingChairs, FlyingThings3D,
-        Sintel, FlyingChairsOcc datasets, but cannot load the ChairsSDHom
-        dataset.
+        Sintel, FlyingChairsOcc datasets, but cannot load the data from
+        ChairsSDHom.
 
     Args:
         content (bytes): Optical flow bytes got from files or other streams.
