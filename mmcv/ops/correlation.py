@@ -116,7 +116,7 @@ class Correlation(nn.Module):
         \mathcal{S}(input2(N_i, c), dy, dx)
 
     where :math:`\star` is the valid 2d sliding window convolution operator,
-    and :math:`\matchcal{S}` means shifting the input features (auto-complete
+    and :math:`\mathcal{S}` means shifting the input features (auto-complete
     zero marginal), and :math:`dx, dy \in
     [-\text{max_displacement} \times \text{dilation_patch},
     \text{max_displacement} \times \text{dilation_patch}]`.
