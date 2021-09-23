@@ -110,15 +110,15 @@ class Correlation(nn.Module):
     product between input1 and input2,
 
     .. math::
-        Corr(n, dx, dy, i, j) = \\
-            \sum_{c=0}^{C-1}
-            \sum_{k_i=-\text{kernel_size}}^{\text{kernel_size}}
-            \sum_{k_j=-\text{kernel_size}}^{\text{kernel_size}}
-            input1(n, c, i + k_i, j + k_j) \cdot
-            input2(n, c, i + k_i + dx, j + k_j + dy)
+        &Corr(n, dx, dy, i, j) = \\
+        &\sum_{c=0}^{C-1}
+        \sum_{k_i=-\text{kernel_size}}^{\text{kernel_size}}
+        \sum_{k_j=-\text{kernel_size}}^{\text{kernel_size}}
+        input1(n, c, i + k_i, j + k_j) \cdot
+        input2(n, c, i + k_i + dx, j + k_j + dy)
 
     and :math:`dx, dy \in
-    [-max_\displacement*dilation_patch, max_\displacement*dilation_patch]`.
+    [-max\_displacement*dilation_patch, max\_displacement*dilation_patch]`.
 
     Args:
         kernel_size (int): The size of local neighborhood representing the
