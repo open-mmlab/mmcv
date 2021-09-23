@@ -112,10 +112,10 @@ class Correlation(nn.Module):
     .. math::
         Corr(N_i, dx, dy) =
         \sum_{c=0}^{C-1}
-        input1(N_i, c) \start
+        input1(N_i, c) \star
         \mathcal{S}(input2(N_i, c), dy, dx)
 
-    where :math:`\start` is the valid 2d sliding window convolution operator,
+    where :math:`\star` is the valid 2d sliding window convolution operator,
     and :math:`\matchcal{S}` means shifting the input features (auto-complete
     zero marginal), and :math:`dx, dy \in
     [-\text{max_displacement} \times \text{dilation_patch},
