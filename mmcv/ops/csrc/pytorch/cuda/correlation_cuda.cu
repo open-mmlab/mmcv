@@ -34,7 +34,6 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
     const dim3 blocks(batch_size, oH, oW);
 
     at::cuda::CUDAGuard device_guard(input1.device());
-    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(input1.scalar_type(),
                                         "correlation_forward_cuda",
@@ -43,7 +42,8 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
     TensorAcc4R trInput2_acc = trInput2.packed_accessor32<scalar_t,4,RestrictPtrTraits>();
     TensorAcc5R output_acc = output.packed_accessor32<scalar_t,5,RestrictPtrTraits>();
 
-    correlation_forward_cuda_kernel<scalar_t><<<blocks, threads>>>(
+    correlation_forward_cuda_kernel<scalar_t><<<blocks, threads, 0, 
+        at::cuda::getCurrentCUDAStream()>>>(
         trInput1_acc, trInput2_acc, output_acc,
         kH, kW, patchH, patchW, padH, padW, dilationH, dilationW,
         dilation_patchH, dilation_patchW, dH, dW);
@@ -71,7 +71,6 @@ void CorrelationBackwardCUDAKernelLauncher(Tensor grad_output, Tensor input1,
     const dim3 threads(THREADS_BACKWARD, THREADS_BACKWARD);
 
     at::cuda::CUDAGuard device_guard(input1.device());
-    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(input1.scalar_type(),
                                         "correlation_backward_cuda",
@@ -83,7 +82,8 @@ void CorrelationBackwardCUDAKernelLauncher(Tensor grad_output, Tensor input1,
     TensorAcc5R grad_output_acc = grad_output.packed_accessor32<scalar_t,5,RestrictPtrTraits>();
 
     for (int n = 0; n < batch_size; ++n){
-        correlation_backward_cuda_kernel_input1<scalar_t><<<blocks, threads>>>(
+        correlation_backward_cuda_kernel_input1<scalar_t><<<blocks, threads, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
             grad_output_acc, input2_acc, grad_input1_acc,
             kH, kW, patchH, patchW, padH, padW,
             dilationH, dilationW,
@@ -92,7 +92,8 @@ void CorrelationBackwardCUDAKernelLauncher(Tensor grad_output, Tensor input1,
       }
 
       for (int n = 0; n < batch_size; ++n){
-        correlation_backward_cuda_kernel_input2<scalar_t><<<blocks, threads>>>(
+        correlation_backward_cuda_kernel_input2<scalar_t><<<blocks, threads, 0,
+            at::cuda::getCurrentCUDAStream()>>>(
             grad_output_acc, input1_acc, grad_input2_acc,
             kH, kW, patchH, patchW, padH, padW,
             dilationH, dilationW,
