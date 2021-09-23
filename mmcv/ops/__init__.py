@@ -7,6 +7,7 @@ from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
 from .corner_pool import CornerPool
+from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
 from .deform_roi_pool import (DeformRoIPool, DeformRoIPoolPack,
                               ModulatedDeformRoIPoolPack, deform_roi_pool)
@@ -53,5 +54,6 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
     'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
+    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
+    'Correlation'
 ]
