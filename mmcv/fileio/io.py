@@ -40,14 +40,9 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
 
-    if file_client_args is None:
-        file_prefix = FileClient.parse_uri_prefix(file)
-        client = FileClient(prefixes=file_prefix)
-    else:
-        client = FileClient(**file_client_args)
-
     handler = file_handlers[file_format]
     if is_str(file):
+        client = FileClient.infer_client(file_client_args, file)
         if handler.is_str_like_obj:
             with StringIO(client.get_text(file)) as f:
                 obj = handler.load_from_fileobj(f, **kwargs)
@@ -89,16 +84,11 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
 
-    if file_client_args is None:
-        file_prefix = FileClient.parse_uri_prefix(file)
-        client = FileClient(prefixes=file_prefix)
-    else:
-        client = FileClient(**file_client_args)
-
     handler = file_handlers[file_format]
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
+        client = FileClient.infer_client(file_client_args, file)
         if handler.is_str_like_obj:
             with StringIO() as f:
                 handler.dump_to_fileobj(obj, f, **kwargs)
