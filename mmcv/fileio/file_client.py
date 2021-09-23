@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+import os
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
@@ -232,6 +233,11 @@ class HardDiskBackend(BaseStorageBackend):
         with open(filepath, 'w', encoding=encoding) as f:
             f.write(obj)
 
+    def remove(self, filepath: Union[str, Path]) -> None:
+        """Remove a file."""
+        filepath = str(filepath)
+        os.remove(filepath)
+
 
 class HTTPBackend(BaseStorageBackend):
     """HTTP and HTTPS storage bachend."""
@@ -319,13 +325,19 @@ class FileClient:
                 self.client = self._prefix_to_backends[prefix](**kwargs)
                 break
 
-        for name, backend_cls in self._backends.items():
+        for backend_name, backend_cls in self._backends.items():
             if isinstance(self.client, backend_cls):
-                self.backend_name = name
+                self.backend_name = backend_name
                 break
 
     @staticmethod
-    def parse_uri_prefix(uri):
+    def parse_uri_prefix(uri: Union[str, Path]) -> Optional[str]:
+        """Parse the prefix of a uri.
+
+        Args:
+            uri (str | Path): Uri to be parsed its prefix.
+        """
+        assert isinstance(uri, str) or isinstance(uri, Path)
         uri = str(uri)
         if '://' not in uri:
             return None
@@ -336,6 +348,25 @@ class FileClient:
             if ':' in prefix:
                 _, prefix = prefix.split(':')
             return prefix
+
+    @classmethod
+    def infer_client(cls,
+                     file_client_args: Optional[dict] = None,
+                     uri: Optional[Union[str, Path]] = None) -> 'FileClient':
+        """Infer a file client.
+
+        Args:
+            file_client_args (dict): Arguments to instantiate a FileClient.
+                Default: None.
+            uri (str | Path, optional): Uri to be parsed its prefix.
+                Default: None.
+        """
+        assert file_client_args is not None or uri is not None
+        if file_client_args is None:
+            file_prefix = cls.parse_uri_prefix(uri)  # type: ignore
+            return cls(prefixes=file_prefix)
+        else:
+            return cls(**file_client_args)
 
     @classmethod
     def _register_backend(cls, name, backend, force=False, prefixes=None):
