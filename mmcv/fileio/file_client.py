@@ -1,10 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import os
+import os.path as osp
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
 from urllib.request import urlopen
+
+from mmcv.utils.path import is_filepath
 
 
 class BaseStorageBackend(metaclass=ABCMeta):
@@ -83,11 +86,14 @@ class PetrelBackend(BaseStorageBackend):
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
-    def get(self, filepath: Union[str, Path]) -> memoryview:
-        filepath = str(filepath)
+    def _path_mapping(self, filepath: str) -> str:
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
                 filepath = filepath.replace(k, v)
+        return filepath
+
+    def get(self, filepath: Union[str, Path]) -> memoryview:
+        filepath = self._path_mapping(str(filepath))
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -98,10 +104,7 @@ class PetrelBackend(BaseStorageBackend):
         return str(self.get(filepath), encoding=encoding)
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
-        filepath = str(filepath)
-        if self.path_mapping is not None:
-            for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
+        filepath = self._path_mapping(str(filepath))
         self._client.put(filepath, obj)
 
     def put_text(self,
@@ -111,11 +114,12 @@ class PetrelBackend(BaseStorageBackend):
         self.put(bytes(obj, encoding=encoding), str(filepath))
 
     def remove(self, filepath: Union[str, Path]) -> None:
-        filepath = str(filepath)
-        if self.path_mapping is not None:
-            for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
+        filepath = self._path_mapping(str(filepath))
         self._client.delete(filepath)
+
+    def check_exist(self, filepath: Union[str, Path]) -> bool:
+        # TODO, need other team to support the feature
+        return True
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -238,6 +242,9 @@ class HardDiskBackend(BaseStorageBackend):
         filepath = str(filepath)
         os.remove(filepath)
 
+    def check_exist(self, filepath: Union[str, Path]) -> bool:
+        return osp.exists(str(filepath))
+
 
 class HTTPBackend(BaseStorageBackend):
     """HTTP and HTTPS storage bachend."""
@@ -337,7 +344,7 @@ class FileClient:
         Args:
             uri (str | Path): Uri to be parsed its prefix.
         """
-        assert isinstance(uri, str) or isinstance(uri, Path)
+        assert is_filepath(uri)
         uri = str(uri)
         if '://' not in uri:
             return None
@@ -469,3 +476,6 @@ class FileClient:
 
     def remove(self, filepath):
         self.client.remove(filepath)
+
+    def check_exist(self, filepath):
+        return self.client.check_exist(filepath)
