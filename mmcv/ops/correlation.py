@@ -111,7 +111,7 @@ class Correlation(nn.Module):
 
     .. math::
         Corr(N_i, dx, dy) =
-        &\sum_{c=0}^{C-1}
+        \sum_{c=0}^{C-1}
         input1(N_i, c) \start
         \mathcal{S}(input2(N_i, c), dy, dx)
 
