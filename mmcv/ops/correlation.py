@@ -120,7 +120,7 @@ class Correlation(nn.Module):
 
     where :math:`\star` is the valid 2d sliding window convolution operator,
     and :math:`\mathcal{S}` means shifting the input features (auto-complete
-    zero marginal), and :math:`dx, dy` are shfting distance, :math:`dx, dy \in
+    zero marginal), and :math:`dx, dy` are shifting distance, :math:`dx, dy \in
     [-\text{max_displacement} \times \text{dilation_patch},
     \text{max_displacement} \times \text{dilation_patch}]`.
 
