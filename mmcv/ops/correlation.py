@@ -118,7 +118,7 @@ class Correlation(nn.Module):
         input2(n, c, i + k_i + dx, j + k_j + dy)
 
     and :math:`dx, dy \in
-    [-max\_displacement*dilation_patch, max\_displacement*dilation_patch]`.
+    [-max\_displacement \times dilation\_patch, max\_displacement \times dilation\_patch]`.
 
     Args:
         kernel_size (int): The size of local neighborhood representing the
