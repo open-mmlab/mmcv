@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 
+from ...fileio import FileClient
 from ..dist_utils import allreduce_params, master_only
 from .hook import HOOKS, Hook
 
@@ -28,6 +29,8 @@ class CheckpointHook(Hook):
             regardless of interval.
         sync_buffer (bool): Whether to synchronize buffers in different
             gpus. Default: False.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
     """
 
     def __init__(self,
@@ -38,6 +41,7 @@ class CheckpointHook(Hook):
                  max_keep_ckpts=-1,
                  save_last=True,
                  sync_buffer=False,
+                 file_client_args=None,
                  **kwargs):
         self.interval = interval
         self.by_epoch = by_epoch
@@ -47,10 +51,18 @@ class CheckpointHook(Hook):
         self.save_last = save_last
         self.args = kwargs
         self.sync_buffer = sync_buffer
+        self.file_client_args = file_client_args
 
     def before_run(self, runner):
         if not self.out_dir:
             self.out_dir = runner.work_dir
+
+        self.client = FileClient.infer_client(self.file_client_args,
+                                              self.out_dir)
+        # disable the create_symlink option when the backend is not
+        # HardDiskBackend
+        if self.client.backend_name != 'disk':
+            self.args['create_symlink'] = False
 
     def after_train_epoch(self, runner):
         if not self.by_epoch:
@@ -98,10 +110,14 @@ class CheckpointHook(Hook):
             for _step in redundant_ckpts:
                 ckpt_path = os.path.join(self.out_dir,
                                          filename_tmpl.format(_step))
-                if os.path.exists(ckpt_path):
-                    os.remove(ckpt_path)
+                # TODO, refactor the following block
+                if self.client.backend_name == 'disk':
+                    if os.path.exists(ckpt_path):
+                        self.client.remove(ckpt_path)
+                    else:
+                        break
                 else:
-                    break
+                    self.client.remove(ckpt_path)
 
     def after_train_iter(self, runner):
         if self.by_epoch:

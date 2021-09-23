@@ -683,12 +683,7 @@ def save_checkpoint(model,
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
-        if file_client_args is None:
-            file_prefix = FileClient.parse_uri_prefix(filename)
-            client = FileClient(prefixes=file_prefix)
-        else:
-            client = FileClient(**file_client_args)
-
+        client = FileClient.infer_client(file_client_args, filename)
         if client.backend_name == 'disk':
             mmcv.mkdir_or_exist(osp.dirname(filename))
 
