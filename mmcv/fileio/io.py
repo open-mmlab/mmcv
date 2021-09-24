@@ -42,12 +42,12 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
 
     handler = file_handlers[file_format]
     if is_str(file):
-        client = FileClient.infer_client(file_client_args, file)
+        file_client = FileClient.infer_client(file_client_args, file)
         if handler.is_str_like_obj:
-            with StringIO(client.get_text(file)) as f:
+            with StringIO(file_client.get_text(file)) as f:
                 obj = handler.load_from_fileobj(f, **kwargs)
         else:
-            with BytesIO(client.get(file)) as f:
+            with BytesIO(file_client.get(file)) as f:
                 obj = handler.load_from_fileobj(f, **kwargs)
     elif hasattr(file, 'read'):
         obj = handler.load_from_fileobj(file, **kwargs)
@@ -88,15 +88,15 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
-        client = FileClient.infer_client(file_client_args, file)
+        file_client = FileClient.infer_client(file_client_args, file)
         if handler.is_str_like_obj:
             with StringIO() as f:
                 handler.dump_to_fileobj(obj, f, **kwargs)
-                client.put_text(f.getvalue(), file)
+                file_client.put_text(f.getvalue(), file)
         else:
             with BytesIO() as f:
                 handler.dump_to_fileobj(obj, f, **kwargs)
-                client.put(f.getvalue(), file)
+                file_client.put(f.getvalue(), file)
     elif hasattr(file, 'write'):
         handler.dump_to_fileobj(obj, file, **kwargs)
     else:
