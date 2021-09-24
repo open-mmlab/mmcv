@@ -30,11 +30,11 @@ def list_from_file(filename,
     item_list = []
     if file_client_args is None:
         file_prefix = FileClient.parse_uri_prefix(filename)
-        client = FileClient(prefixes=file_prefix)
+        file_client = FileClient(prefixes=file_prefix)
     else:
-        client = FileClient(**file_client_args)
+        file_client = FileClient(**file_client_args)
 
-    with StringIO(client.get_text(filename, encoding)) as f:
+    with StringIO(file_client.get_text(filename, encoding)) as f:
         for _ in range(offset):
             f.readline()
         for line in f:
@@ -69,11 +69,11 @@ def dict_from_file(filename,
     mapping = {}
     if file_client_args is None:
         file_prefix = FileClient.parse_uri_prefix(filename)
-        client = FileClient(prefixes=file_prefix)
+        file_client = FileClient(prefixes=file_prefix)
     else:
-        client = FileClient(**file_client_args)
+        file_client = FileClient(**file_client_args)
 
-    with StringIO(client.get_text(filename, encoding)) as f:
+    with StringIO(file_client.get_text(filename, encoding)) as f:
         for line in f:
             items = line.rstrip('\n').split()
             assert len(items) >= 2
