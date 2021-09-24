@@ -57,11 +57,11 @@ class CheckpointHook(Hook):
         if not self.out_dir:
             self.out_dir = runner.work_dir
 
-        self.client = FileClient.infer_client(self.file_client_args,
-                                              self.out_dir)
+        self.file_client = FileClient.infer_client(self.file_client_args,
+                                                   self.out_dir)
         # disable the create_symlink option when the backend is not
         # HardDiskBackend
-        if self.client.backend_name != 'disk':
+        if self.file_client.backend_name != 'disk':
             self.args['create_symlink'] = False
 
     def after_train_epoch(self, runner):
@@ -110,8 +110,8 @@ class CheckpointHook(Hook):
             for _step in redundant_ckpts:
                 ckpt_path = os.path.join(self.out_dir,
                                          filename_tmpl.format(_step))
-                if self.client.check_exist(ckpt_path):
-                    self.client.remove(ckpt_path)
+                if self.file_client.check_exist(ckpt_path):
+                    self.file_client.remove(ckpt_path)
                 else:
                     break
 

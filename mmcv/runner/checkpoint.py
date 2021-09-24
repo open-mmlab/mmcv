@@ -683,10 +683,10 @@ def save_checkpoint(model,
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
-        client = FileClient.infer_client(file_client_args, filename)
-        if client.backend_name == 'disk':
+        file_client = FileClient.infer_client(file_client_args, filename)
+        if file_client.backend_name == 'disk':
             mmcv.mkdir_or_exist(osp.dirname(filename))
 
         with io.BytesIO() as f:
             torch.save(checkpoint, f)
-            client.put(f.getvalue(), filename)
+            file_client.put(f.getvalue(), filename)
