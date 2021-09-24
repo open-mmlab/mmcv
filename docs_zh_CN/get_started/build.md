@@ -44,7 +44,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 
 请首先安装以下的依赖项：
 
-- [Git](https://git-scm.com/download/win：安装期间，请选择 **add git to Path**
+- [Git](https://git-scm.com/download/win)：安装期间，请选择 **add git to Path**
 - [Visual Studio Community 2019](https://visualstudio.microsoft.com)：用于编译 C++ 和 CUDA 代码
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)：包管理工具
 - [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive)：如果只需要 CPU 版本可以不安装 CUDA，安装CUDA时，可根据需要进行自定义安装。如果已经安装新版本的显卡驱动，建议取消驱动程序的安装
