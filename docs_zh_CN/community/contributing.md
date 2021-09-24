@@ -58,9 +58,9 @@ rvm autolibs disable
 rvm install 2.7.1
 ```
 
-或者参考 [这个算法库](https://github.com/innerlee/setup) 和 [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh)。
+或者参考 [这个代码库](https://github.com/innerlee/setup) 和 [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh)。
 
-至此，每一次 commit 修改都会触发 pref-commit 检查代码格式。
+至此，每一次 commit 修改都会触发 pre-commit 检查代码格式。
 
 >提交拉取请求前，请确保你的代码符合 yapf 的格式
 
