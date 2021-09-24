@@ -1,10 +1,10 @@
-# Introduction of onnx module in MMCV (Experimental)
+## Introduction of onnx module in MMCV (Experimental)
 
-## register_extra_symbolics
+### register_extra_symbolics
 
 Some extra symbolic functions need to be registered before exporting PyTorch model to ONNX.
 
-### Example
+#### Example
 
 ```python
 import mmcv
@@ -14,6 +14,6 @@ opset_version = 11
 register_extra_symbolics(opset_version)
 ```
 
-### FAQs
+#### FAQs
 
 - None
