@@ -42,7 +42,7 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
     TensorAcc4R trInput2_acc = trInput2.packed_accessor32<scalar_t,4,RestrictPtrTraits>();
     TensorAcc5R output_acc = output.packed_accessor32<scalar_t,5,RestrictPtrTraits>();
 
-    correlation_forward_cuda_kernel<scalar_t><<<blocks, threads, 0, 
+    correlation_forward_cuda_kernel<scalar_t><<<blocks, threads, 0,
         at::cuda::getCurrentCUDAStream()>>>(
         trInput1_acc, trInput2_acc, output_acc,
         kH, kW, patchH, patchW, padH, padW, dilationH, dilationW,
