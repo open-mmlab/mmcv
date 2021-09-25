@@ -1,23 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import pytest
 import torch
 
 from mmcv.ops import Correlation
 
 _input1 = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
 _input2 = [[[[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]]]]
-_input2_2 = [[[[1., 2.], [3., 1.], [8., 5.]]]]
+
 gt_out_shape = (1, 1, 1, 3, 3)
 _gt_out = [[[[[1., 4., 9.], [0., 1., 4.], [24., 25., 4.]]]]]
 gt_input1_grad = [[[[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]]]]
-_ap_gt_out = [[[[[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]],
-                [[2., 4., 6.], [6., 2., 4.], [16., 10., 4.]],
-                [[3., 6., 9.], [9., 3., 6.], [24., 15., 6.]]],
-               [[[0., 0., 0.], [0., 0., 0.], [0., 0., 0.]],
-                [[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]],
-                [[2., 4., 6.], [6., 2., 4.], [16., 10., 4.]]],
-               [[[3., 6., 9.], [9., 3., 6.], [24., 15., 6.]],
-                [[5., 10., 15.], [15., 5., 10.], [40., 25., 10.]],
-                [[2., 4., 6.], [6., 2., 4.], [16., 10., 4.]]]]]
 
 
 def assert_equal_tensor(tensor_a, tensor_b):
@@ -43,6 +35,8 @@ class TestCorrelation:
         assert_equal_tensor(input1.grad.detach().cpu(), input2.cpu())
         assert_equal_tensor(input2.grad.detach().cpu(), input1.cpu())
 
+    @pytest.mark.skipif(
+        not torch.cuda.is_available(), reason='requires CUDA support')
     def test_correlation(self):
         self._test_correlation(torch.float)
         self._test_correlation(torch.double)
