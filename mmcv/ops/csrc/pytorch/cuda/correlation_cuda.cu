@@ -43,7 +43,6 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
                 trInput1_acc, trInput2_acc, output_acc, kH, kW, patchH, patchW,
                 padH, padW, dilationH, dilationW, dilation_patchH,
                 dilation_patchW, dH, dW);
-
       }));
 }
 
@@ -77,18 +76,18 @@ void CorrelationBackwardCUDAKernelLauncher(
 
         for (int n = 0; n < batch_size; ++n) {
           correlation_backward_cuda_kernel_input1<scalar_t>
-            <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
-                grad_output_acc, input2_acc, grad_input1_acc, kH, kW, patchH,
-                patchW, padH, padW, dilationH, dilationW, dilation_patchH,
-                dilation_patchW, dH, dW, n);
+              <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
+                  grad_output_acc, input2_acc, grad_input1_acc, kH, kW, patchH,
+                  patchW, padH, padW, dilationH, dilationW, dilation_patchH,
+                  dilation_patchW, dH, dW, n);
         }
 
         for (int n = 0; n < batch_size; ++n) {
           correlation_backward_cuda_kernel_input2<scalar_t>
-            <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
-              grad_output_acc, input1_acc, grad_input2_acc, kH, kW, patchH,
-              patchW, padH, padW, dilationH, dilationW, dilation_patchH,
-              dilation_patchW, dH, dW, n);
+              <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
+                  grad_output_acc, input1_acc, grad_input2_acc, kH, kW, patchH,
+                  patchW, padH, padW, dilationH, dilationW, dilation_patchH,
+                  dilation_patchW, dH, dW, n);
         }
       }));
 }
