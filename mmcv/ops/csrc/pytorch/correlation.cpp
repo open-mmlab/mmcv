@@ -48,7 +48,7 @@ void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
                          int kW, int patchH, int patchW, int padH, int padW,
                          int dilationH, int dilationW, int dilation_patchH,
                          int dilation_patchW, int dH, int dW) {
-  if (input1.device().is_cuda() and input2.device().is_cuda()) {
+  if (input1.device().is_cuda() && input2.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(input1);
     CHECK_CUDA_INPUT(input2);
@@ -68,7 +68,7 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int kW, int patchH, int patchW, int padH, int padW,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW) {
-  if (input1.device().is_cuda() and input2.device().is_cuda()) {
+  if (input1.device().is_cuda() && input2.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_output);
     CHECK_CUDA_INPUT(input1);
