@@ -670,12 +670,17 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         with TemporaryDirectory() as tmp_dir:
             checkpoint_file = osp.join(tmp_dir, model_name)
             with open(checkpoint_file, 'wb') as f:
-                torch.save(checkpoint, f)
+                # The 1.6 release of PyTorch switched torch.save to use a new
+                # zipfile-based file format. It will cause RuntimeError when a
+                # checkpoint was saved in high version (PyTorch version>=1.6.0)
+                # but loaded in low version (PyTorch version<1.6.0). More
+                # details at https://github.com/open-mmlab/mmpose/issues/904
+                torch.save(checkpoint, f, _use_new_zipfile_serialization=False)
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
         mmcv.mkdir_or_exist(osp.dirname(filename))
         # immediately flush buffer
         with open(filename, 'wb') as f:
-            torch.save(checkpoint, f)
+            torch.save(checkpoint, f, _use_new_zipfile_serialization=False)
             f.flush()
