@@ -30,10 +30,11 @@ class TextLoggerHook(LoggerHook):
         interval_exp_name (int): Logging interval for experiment name. This
             feature is to help users conveniently get the experiment
             information from screen or log file. Default: 1000.
-        out_dir (str, optional): The directory to save logs. If not specified,
-            ``runner.work_dir`` will be used by default.
-        keep_local_log (bool): Whether to keep local log when out_dir is
-            specified. If False, the local log will be removed. Default: True.
+        out_dir (str, optional): Logs are saved in ``runner.work_dir``. If
+            out_dir is specified. Logs will be copied to `out_dir`.
+            Default: None.
+        keep_log (bool): Whether to keep local log when out_dir is specified.
+            If False, the local log will be removed. Default: True.
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details. Default: None.
     """
@@ -45,7 +46,7 @@ class TextLoggerHook(LoggerHook):
                  reset_flag=False,
                  interval_exp_name=1000,
                  out_dir=None,
-                 keep_local_log=True,
+                 keep_log=True,
                  file_client_args=None):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
                                              by_epoch)
@@ -53,12 +54,12 @@ class TextLoggerHook(LoggerHook):
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
 
-        if out_dir is not None and file_client_args is None:
+        if out_dir is None and file_client_args is not None:
             raise ValueError(
-                'file_client_args should not be "None" when out_dir is '
-                'specified')
+                'file_client_args should be "None" when out_dir is specified')
+
         self.out_dir = out_dir
-        self.keep_local_log = keep_local_log
+        self.keep_log = keep_log
         if self.out_dir is None and file_client_args is None:
             self.file_client = None
         else:
@@ -203,14 +204,13 @@ class TextLoggerHook(LoggerHook):
         return log_dict
 
     def after_run(self, runner):
+        # copy or upload logs to self.out_dir
         if self.file_client is not None:
             for filename in scandir(runner.work_dir, '.log.json'):
                 local_filepath = osp.join(runner.work_dir, filename)
-                # TODO, if the system is windows and the file client is petrel
-                # oss, the out_filepath is invalid and it will break.
                 out_filepath = osp.join(self.out_dir, filename)
                 with open(local_filepath, 'r') as f:
                     self.file_client.put_text(f.read(), out_filepath)
 
-                if not self.keep_local_log:
+                if not self.keep_log:
                     os.remove(local_filepath)
