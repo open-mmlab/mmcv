@@ -323,7 +323,7 @@ def load_from_pavi(filename, map_location=None):
 
 
 @CheckpointLoader.register_scheme(prefixes='s3://')
-def load_from_ceph(filename, map_location=None, backend='ceph'):
+def load_from_ceph(filename, map_location=None, backend='petrel'):
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -331,19 +331,26 @@ def load_from_ceph(filename, map_location=None, backend='ceph'):
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
-        backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached" and "lmdb". Default: 'ceph'
+        backend (str): The storage backend type. Options are 'ceph', 'petrel'.
+            Default: 'petrel'.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-
-    allowed_backends = ['ceph']
+    allowed_backends = ['ceph', 'petrel']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
 
-    fileclient = FileClient(backend=backend)
-    buffer = io.BytesIO(fileclient.get(filename))
+    # CephClient and PetrelBackend has the same prefix 's3://' and the latter
+    # will be chosen default. If PetrelBackend can not be instantiated
+    # successfully, the CephClient will be chosen.
+    try:
+        file_client = FileClient(backend=backend)
+    except ImportError:
+        allowed_backends.remove(backend)
+        file_client = FileClient(backend=allowed_backends[0])
+
+    buffer = io.BytesIO(file_client.get(filename))
     checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
