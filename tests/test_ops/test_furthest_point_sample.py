@@ -21,9 +21,9 @@ def test_fps():
     assert torch.all(idx == expected_idx)
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_fps_with_dist():
-    if not torch.cuda.is_available():
-        pytest.skip()
     xyz = torch.tensor([[[-0.2748, 1.0020, -1.1674], [0.1015, 1.3952, -1.2681],
                          [-0.8070, 2.4137,
                           -0.5845], [-1.0001, 2.1982, -0.5859],
