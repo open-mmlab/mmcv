@@ -342,7 +342,7 @@ class FileClient:
         """Parse the prefix of a uri.
 
         Args:
-            uri (str | Path): Uri to be parsed its prefix.
+            uri (str | Path): Uri to be parsed that contains the file prefix.
         """
         assert is_filepath(uri)
         uri = str(uri)
@@ -360,13 +360,13 @@ class FileClient:
     def infer_client(cls,
                      file_client_args: Optional[dict] = None,
                      uri: Optional[Union[str, Path]] = None) -> 'FileClient':
-        """Infer a file client.
+        """Infer a suitable file client based on the URI and arguments.
 
         Args:
             file_client_args (dict): Arguments to instantiate a FileClient.
                 Default: None.
-            uri (str | Path, optional): Uri to be parsed its prefix.
-                Default: None.
+            uri (str | Path, optional): Uri to be parsed that contains the file
+                prefix. Default: None.
         """
         assert file_client_args is not None or uri is not None
         if file_client_args is None:

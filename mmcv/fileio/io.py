@@ -70,6 +70,7 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
         file_format (str, optional): Same as :func:`load`.
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details. Default: None.
+
     Returns:
         bool: True for success, False otherwise.
     """

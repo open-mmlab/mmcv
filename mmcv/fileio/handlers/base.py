@@ -3,6 +3,12 @@ from abc import ABCMeta, abstractmethod
 
 
 class BaseFileHandler(metaclass=ABCMeta):
+    # is_str_like_obj is a flag to mark which type of file object is processed,
+    # bytes-like object or str-like object. For example, pickle only process
+    # the bytes-like object and json only process the str-like object. The flag
+    # will be used to check which type of buffer is used. If str-like object,
+    # StringIO will be used. If bytes-like object, BytesIO will be used. The
+    # usage of the flag can be found in `mmcv.load` or `mmcv.dump`
     is_str_like_obj = True
 
     @abstractmethod
