@@ -53,9 +53,8 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'knn', 'fused_bias_leakyrelu',
-    'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'Correlation'
+    'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
+    'fused_bias_leakyrelu', 'RoIAlignRotated', 'roi_align_rotated',
+    'pixel_group', 'contour_expand', 'MultiScaleDeformableAttention',
+    'BorderAlign', 'border_align', 'Correlation'
 ]
