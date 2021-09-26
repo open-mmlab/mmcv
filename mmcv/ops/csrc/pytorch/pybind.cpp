@@ -111,16 +111,16 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset);
 
-std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
+std::vector<std::vector<int>> nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float> > pixel_group(
+std::vector<std::vector<float>> pixel_group(
     Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
     Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
-std::vector<std::vector<int> > contour_expand(Tensor kernel_mask,
-                                              Tensor internal_kernel_label,
-                                              int min_kernel_area,
-                                              int kernel_num);
+std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
+                                             Tensor internal_kernel_label,
+                                             int min_kernel_area,
+                                             int kernel_num);
 
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
@@ -171,6 +171,10 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
 void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
+
+void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
+                        int nsample, Tensor new_xyz_tensor, Tensor xyz_tensor,
+                        Tensor idx_tensor);
 
 Tensor bottom_pool_forward(Tensor input);
 
@@ -236,6 +240,17 @@ void roiaware_pool3d_forward(Tensor rois, Tensor pts, Tensor pts_feature,
 
 void roiaware_pool3d_backward(Tensor pts_idx_of_voxels, Tensor argmax,
                               Tensor grad_out, Tensor grad_in, int pool_method);
+
+void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
+                         int kW, int patchH, int patchW, int padH, int padW,
+                         int dilationH, int dilationW, int dilation_patchH,
+                         int dilation_patchW, int dH, int dW);
+
+void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
+                          Tensor grad_input1, Tensor grad_input2, int kH,
+                          int kW, int patchH, int patchW, int padH, int padW,
+                          int dilationH, int dilationW, int dilation_patchH,
+                          int dilation_patchW, int dH, int dW);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -431,6 +446,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
+        py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
+        py::arg("max_radius"), py::arg("nsample"), py::arg("new_xyz_tensor"),
+        py::arg("xyz_tensor"), py::arg("idx_tensor"));
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
@@ -477,4 +496,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
         py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
         py::arg("pool_method"));
+  m.def("correlation_forward", &correlation_forward, "Correlation forward");
+  m.def("correlation_backward", &correlation_backward, "Correlation backward");
 }

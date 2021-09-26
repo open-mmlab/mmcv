@@ -1,3 +1,19 @@
-# MMCV 中的 onnx 模块 (实验性质)
+## MMCV中ONNX模块简介 (实验性)
 
-欢迎有兴趣的朋友一起翻译 MMCV 文档。如有兴趣，请在 [MMCV issue](https://github.com/open-mmlab/mmcv/issues) 提 issue 确定翻译的文档。
+### register_extra_symbolics
+
+在将PyTorch模型导出成ONNX时，需要注册额外的符号函数
+
+#### 范例
+
+```python
+import mmcv
+from mmcv.onnx import register_extra_symbolics
+
+opset_version = 11
+register_extra_symbolics(opset_version)
+```
+
+#### 常见问题
+
+- 无
