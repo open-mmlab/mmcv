@@ -2,6 +2,7 @@
 
 MMCV 提供了检测、分割等任务中常用的 CUDA 算子
 
+- BallQuery
 - BBoxOverlaps
 - CARAFE
 - CrissCrossAttention
@@ -21,3 +22,4 @@ MMCV 提供了检测、分割等任务中常用的 CUDA 算子
 - SoftNMS
 - Synchronized BatchNorm
 - Weight standardization
+- Correlation

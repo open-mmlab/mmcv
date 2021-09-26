@@ -74,7 +74,7 @@ conv = ConvModule(
 
 ### Weight initialization
 
-> Implementation details are available at [mmcv/cnn/utils/weight_init.py](../mmcv/cnn/utils/weight_init.py)
+> Implementation details are available at [mmcv/cnn/utils/weight_init.py](../../mmcv/cnn/utils/weight_init.py)
 
 During training, a proper initialization strategy is beneficial to speed up the
 training or obtain a higher performance. In MMCV, we provide some commonly used
