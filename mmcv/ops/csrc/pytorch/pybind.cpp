@@ -228,22 +228,16 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size);
 
-void correlation_forward(Tensor input1, Tensor input2, Tensor output,
-                         int kH, int kW, int patchH, int patchW,
-                         int padH, int padW,
-                         int dilationH, int dilationW,
-                         int dilation_patchH, int dilation_patchW,
-                         int dH, int dW);
+void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
+                         int kW, int patchH, int patchW, int padH, int padW,
+                         int dilationH, int dilationW, int dilation_patchH,
+                         int dilation_patchW, int dH, int dW);
 
-void correlation_backward(Tensor grad_output,
-                          Tensor input1, Tensor input2,
-                          Tensor grad_input1, Tensor grad_input2,
-                          int kH, int kW,
-                          int patchH, int patchW,
-                          int padH, int padW,
-                          int dilationH, int dilationW,
-                          int dilation_patchH, int dilation_patchW,
-                          int dH, int dW);
+void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
+                          Tensor grad_input1, Tensor grad_input2, int kH,
+                          int kW, int patchH, int patchW, int padH, int padW,
+                          int dilationH, int dilationW, int dilation_patchH,
+                          int dilation_patchW, int dH, int dW);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
