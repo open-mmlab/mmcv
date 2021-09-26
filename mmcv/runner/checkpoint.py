@@ -350,8 +350,8 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         allowed_backends.remove(backend)
         file_client = FileClient(backend=allowed_backends[0])
 
-    buffer = io.BytesIO(file_client.get(filename))
-    checkpoint = torch.load(buffer, map_location=map_location)
+    with io.BytesIO(file_client.get(filename)) as buffer:
+        checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
 
