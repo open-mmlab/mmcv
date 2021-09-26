@@ -15,6 +15,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - PSAMask
 - RoIPool
 - RoIAlign
+- RoIAwarePool3d
 - SimpleRoIAlign
 - SigmoidFocalLoss
 - SoftmaxFocalLoss

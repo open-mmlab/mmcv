@@ -27,10 +27,13 @@ from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
+from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
+                              points_in_boxes_part)
 from .psa_mask import PSAMask
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
+from .roiaware_pool3d import RoIAwarePool3d
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
@@ -52,5 +55,7 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align'
+    'MultiScaleDeformableAttention', 'BorderAlign', 'RoIAwarePool3d',
+    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
+    'border_align'
 ]
