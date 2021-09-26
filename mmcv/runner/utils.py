@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import time
+import warnings
 from getpass import getuser
 from socket import gethostname
 
@@ -13,7 +14,13 @@ import mmcv
 
 
 def get_host_info():
-    return f'{getuser()}@{gethostname()}'
+    host = ''
+    try:
+        host = f'{getuser()}@{gethostname()}'
+    except Exception as e:
+        warnings.warn('Host not found: %s' % (str(e)))
+    finally:
+        return host
 
 
 def get_time_str():
