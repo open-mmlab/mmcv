@@ -28,12 +28,7 @@ def list_from_file(filename,
     """
     cnt = 0
     item_list = []
-    if file_client_args is None:
-        file_prefix = FileClient.parse_uri_prefix(filename)
-        file_client = FileClient(prefixes=file_prefix)
-    else:
-        file_client = FileClient(**file_client_args)
-
+    file_client = FileClient.infer_client(file_client_args, filename)
     with StringIO(file_client.get_text(filename, encoding)) as f:
         for _ in range(offset):
             f.readline()
@@ -67,12 +62,7 @@ def dict_from_file(filename,
         dict: The parsed contents.
     """
     mapping = {}
-    if file_client_args is None:
-        file_prefix = FileClient.parse_uri_prefix(filename)
-        file_client = FileClient(prefixes=file_prefix)
-    else:
-        file_client = FileClient(**file_client_args)
-
+    file_client = FileClient.infer_client(file_client_args, filename)
     with StringIO(file_client.get_text(filename, encoding)) as f:
         for line in f:
             items = line.rstrip('\n').split()
