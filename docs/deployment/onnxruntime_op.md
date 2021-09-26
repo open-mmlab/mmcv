@@ -1,19 +1,19 @@
-# Custom operators for ONNX Runtime in MMCV
+## Custom operators for ONNX Runtime in MMCV
 
-## Introduction of ONNX Runtime
+### Introduction of ONNX Runtime
 
 **ONNX Runtime** is a cross-platform inferencing and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
 
-## Introduction of ONNX
+### Introduction of ONNX
 
 **ONNX** stands for **Open Neural Network Exchange**, which acts as *Intermediate Representation(IR)* for ML/DNN models from many frameworks. Check its [github](https://github.com/onnx/onnx) for more information.
 
-## Why include custom operators for ONNX Runtime in MMCV
+### Why include custom operators for ONNX Runtime in MMCV
 
 - To verify the correctness of exported ONNX models in ONNX Runtime.
 - To ease the deployment of ONNX models with custom operators from `mmcv.ops` in ONNX Runtime.
 
-## List of operators for ONNX Runtime supported in MMCV
+### List of operators for ONNX Runtime supported in MMCV
 
 |                        Operator                        |  CPU  |  GPU  | MMCV Releases |
 | :----------------------------------------------------: | :---: | :---: | :-----------: |
@@ -25,11 +25,11 @@
 |       [cummax](onnxruntime_custom_ops.md#cummax)       |   Y   |   N   |    master     |
 |       [cummin](onnxruntime_custom_ops.md#cummin)       |   Y   |   N   |    master     |
 
-## How to build custom operators for ONNX Runtime
+### How to build custom operators for ONNX Runtime
 
 *Please be noted that only **onnxruntime>=1.8.1** of CPU version on Linux platform is tested by now.*
 
-### Prerequisite
+#### Prerequisite
 
 - Clone repository
 
@@ -48,14 +48,14 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
-### Build on Linux
+#### Build on Linux
 
 ```bash
-cd mmcv # to MMCV root directory
+cd mmcv ## to MMCV root directory
 MMCV_WITH_OPS=1 MMCV_WITH_ORT=1 python setup.py develop
 ```
 
-## How to do inference using exported ONNX models with custom operators in ONNX Runtime in python
+### How to do inference using exported ONNX models with custom operators in ONNX Runtime in python
 
 Install ONNX Runtime with `pip`
 
@@ -77,21 +77,21 @@ ort_custom_op_path = get_onnxruntime_op_path()
 assert os.path.exists(ort_custom_op_path)
 session_options = ort.SessionOptions()
 session_options.register_custom_ops_library(ort_custom_op_path)
-# exported ONNX model with custom operators
+## exported ONNX model with custom operators
 onnx_file = 'sample.onnx'
 input_data = np.random.randn(1, 3, 224, 224).astype(np.float32)
 sess = ort.InferenceSession(onnx_file, session_options)
 onnx_results = sess.run(None, {'input' : input_data})
 ```
 
-## How to add a new custom operator for ONNX Runtime in MMCV
+### How to add a new custom operator for ONNX Runtime in MMCV
 
-### Reminder
+#### Reminder
 
 - The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
 - The custom operator should be able to be exported to ONNX.
 
-### Main procedures
+#### Main procedures
 
 Take custom operator `soft_nms` for example.
 
@@ -114,13 +114,13 @@ Take custom operator `soft_nms` for example.
 
 **Finally, welcome to send us PR of adding custom operators for ONNX Runtime in MMCV.** :nerd_face:
 
-## Known Issues
+### Known Issues
 
 - "RuntimeError: tuple appears in op that does not forward tuples, unsupported kind: `prim::PythonOp`."
    1. Note generally `cummax` or `cummin` is exportable to ONNX as long as the torch version >= 1.5.0, since `torch.cummax` is only supported with torch >= 1.5.0. But when `cummax` or `cummin` serves as an intermediate component whose outputs is used as inputs for another modules, it's expected that torch version must be >= 1.7.0. Otherwise the above error might arise, when running exported ONNX model with onnxruntime.
    2. Solution: update the torch version to 1.7.0 or higher.
 
-## References
+### References
 
 - [How to export Pytorch model with custom op to ONNX and run it in ONNX Runtime](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
 - [How to add a custom operator/kernel in ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/master/docs/AddingCustomOp.md)
