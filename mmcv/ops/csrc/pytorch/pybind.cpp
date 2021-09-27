@@ -111,16 +111,16 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset);
 
-std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
+std::vector<std::vector<int>> nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float> > pixel_group(
+std::vector<std::vector<float>> pixel_group(
     Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
     Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
-std::vector<std::vector<int> > contour_expand(Tensor kernel_mask,
-                                              Tensor internal_kernel_label,
-                                              int min_kernel_area,
-                                              int kernel_num);
+std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
+                                             Tensor internal_kernel_label,
+                                             int min_kernel_area,
+                                             int kernel_num);
 
 void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                        Tensor argmax_y, Tensor argmax_x, int aligned_height,
@@ -158,16 +158,6 @@ void sync_bn_backward_data(const Tensor grad_output, const Tensor weight,
                            const Tensor norm, const Tensor std,
                            Tensor grad_input);
 
-void ca_forward(const Tensor t, const Tensor f, Tensor weight);
-
-void ca_backward(const Tensor dw, const Tensor t, const Tensor f, Tensor dt,
-                 Tensor df);
-
-void ca_map_forward(const Tensor weight, const Tensor g, Tensor out);
-
-void ca_map_backward(const Tensor dout, const Tensor weight, const Tensor g,
-                     Tensor dw, Tensor dg);
-
 void psamask_forward(const Tensor input, Tensor output, const int psa_type,
                      const int num_, const int h_feature, const int w_feature,
                      const int h_mask, const int w_mask, const int half_h_mask,
@@ -181,6 +171,10 @@ void psamask_backward(Tensor grad_output, const Tensor grad_input,
 void tin_shift_forward(Tensor input, Tensor shift, Tensor output);
 
 void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
+
+void ball_query_forward(int b, int n, int m, float min_radius, float max_radius,
+                        int nsample, Tensor new_xyz_tensor, Tensor xyz_tensor,
+                        Tensor idx_tensor);
 
 Tensor bottom_pool_forward(Tensor input);
 
@@ -230,6 +224,17 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
 void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size);
+
+void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
+                         int kW, int patchH, int patchW, int padH, int padW,
+                         int dilationH, int dilationW, int dilation_patchH,
+                         int dilation_patchW, int dH, int dW);
+
+void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
+                          Tensor grad_input1, Tensor grad_input2, int kH,
+                          int kW, int patchH, int patchW, int padH, int padW,
+                          int dilationH, int dilationW, int dilation_patchH,
+                          int dilation_patchW, int dH, int dW);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -385,15 +390,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "sync_bn backward_data", py::arg("grad_output"), py::arg("weight"),
         py::arg("grad_weight"), py::arg("grad_bias"), py::arg("norm"),
         py::arg("std"), py::arg("grad_input"));
-  m.def("ca_forward", &ca_forward, "ccattention forward", py::arg("t"),
-        py::arg("f"), py::arg("weight"));
-  m.def("ca_backward", &ca_backward, "ccattention backward", py::arg("dw"),
-        py::arg("t"), py::arg("f"), py::arg("dt"), py::arg("df"));
-  m.def("ca_map_forward", &ca_map_forward, "ccattention map forward",
-        py::arg("weight"), py::arg("g"), py::arg("out"));
-  m.def("ca_map_backward", &ca_map_backward, "ccattention map backward",
-        py::arg("dout"), py::arg("weight"), py::arg("g"), py::arg("dw"),
-        py::arg("dg"));
   m.def("psamask_forward", &psamask_forward, "PSAMASK forward (CPU/CUDA)",
         py::arg("input"), py::arg("output"), py::arg("psa_type"),
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),
@@ -434,6 +430,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
         py::arg("iou_threshold"), py::arg("multi_label"));
+  m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
+        py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
+        py::arg("max_radius"), py::arg("nsample"), py::arg("new_xyz_tensor"),
+        py::arg("xyz_tensor"), py::arg("idx_tensor"));
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
@@ -463,4 +463,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "backward function of border_align", py::arg("grad_output"),
         py::arg("boxes"), py::arg("argmax_idx"), py::arg("grad_input"),
         py::arg("pool_size"));
+  m.def("correlation_forward", &correlation_forward, "Correlation forward");
+  m.def("correlation_backward", &correlation_backward, "Correlation backward");
 }
