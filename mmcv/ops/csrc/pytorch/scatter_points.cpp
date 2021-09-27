@@ -24,9 +24,11 @@ void dynamic_point_to_voxel_backward_cuda(
     torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
     const torch::Tensor &feats, const torch::Tensor &reduced_feats,
     const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
-    const reduce_t reduce_type){DynamicPointToVoxelBackwardCUDAKernelLauncher(
-    grad_feats, grad_reduced_feats, feats, reduced_feats, coors_idx,
-    reduce_count, reduce_type)};
+    const reduce_t reduce_type) {
+  DynamicPointToVoxelBackwardCUDAKernelLauncher(grad_feats, grad_reduced_feats,
+                                                feats, reduced_feats, coors_idx,
+                                                reduce_count, reduce_type);
+};
 #endif
 
 std::vector<at::Tensor> dynamic_point_to_voxel_forward_cpu(
@@ -50,6 +52,8 @@ inline std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
     const std::string &reduce_type) {
   if (feats.device().is_cuda()) {
 #ifdef WITH_CUDA
+    CHECK_CUDA_INPUT(feats);
+    CHECK_CUDA_INPUT(coors);
     return dynamic_point_to_voxel_forward_cuda(
         feats, coors, convert_reduce_type(reduce_type));
 #else
@@ -68,6 +72,12 @@ inline void dynamic_point_to_voxel_backward(
     const std::string &reduce_type) {
   if (grad_feats.device().is_cuda()) {
 #ifdef WITH_CUDA
+    CHECK_CUDA_INPUT(grad_feats);
+    CHECK_CUDA_INPUT(grad_reduced_feats);
+    CHECK_CUDA_INPUT(feats);
+    CHECK_CUDA_INPUT(reduced_feats);
+    CHECK_CUDA_INPUT(coors_idx);
+    CHECK_CUDA_INPUT(reduce_count);
     dynamic_point_to_voxel_backward_cuda(grad_feats, grad_reduced_feats, feats,
                                          reduced_feats, coors_idx, reduce_count,
                                          convert_reduce_type(reduce_type));

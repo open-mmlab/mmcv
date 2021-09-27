@@ -10,10 +10,6 @@
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
 
-#define CUDA_1D_KERNEL_LOOP(i, n)                            \
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; \
-       i += blockDim.x * gridDim.x)
-
 template <typename T, typename T_int>
 __global__ void dynamic_voxelize_kernel(
     const T* points, T_int* coors, const float voxel_x, const float voxel_y,

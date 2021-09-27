@@ -11,7 +11,6 @@ int HardVoxelizeForwardCUDAKernelLauncher(
     const int max_voxels, const int NDim = 3) {
   // current version tooks about 0.04s for one frame on cpu
   // check device
-  CHECK_CUDA_INPUT(points);
 
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -155,7 +154,6 @@ void DynamicVoxelizeForwardCUDAKernelLauncher(
     const int NDim = 3) {
   // current version tooks about 0.04s for one frame on cpu
   // check device
-  CHECK_CUDA_INPUT(points);
 
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -177,9 +175,9 @@ void DynamicVoxelizeForwardCUDAKernelLauncher(
   const int grid_y = round((coors_y_max - coors_y_min) / voxel_y);
   const int grid_z = round((coors_z_max - coors_z_min) / voxel_z);
 
-  const int col_blocks = at::cuda::ATenCeilDiv(num_points, threadsPerBlock);
+  const int col_blocks = at::cuda::ATenCeilDiv(num_points, THREADS_PER_BLOCK);
   dim3 blocks(col_blocks);
-  dim3 threads(threadsPerBlock);
+  dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_ALL_TYPES(points.scalar_type(), "dynamic_voxelize_kernel", [&] {
     dynamic_voxelize_kernel<scalar_t, int><<<blocks, threads, 0, stream>>>(

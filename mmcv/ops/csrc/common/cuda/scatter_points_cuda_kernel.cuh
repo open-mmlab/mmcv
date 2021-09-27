@@ -9,6 +9,7 @@
 #endif
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
+int const maxGridDim = 50000;
 
 __device__ __forceinline__ static void reduceMax(float *address, float val) {
   int *address_as_i = reinterpret_cast<int *>(address);
