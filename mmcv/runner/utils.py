@@ -23,7 +23,7 @@ def get_host_info():
     try:
         host = f'{getuser()}@{gethostname()}'
     except Exception as e:
-        warnings.warn('Host not found: %s' % (str(e)))
+        warnings.warn('Host or user not found: %s' % (str(e)))
     finally:
         return host
 
