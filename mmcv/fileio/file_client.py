@@ -121,6 +121,9 @@ class PetrelBackend(BaseStorageBackend):
         # TODO, need other team to support the feature
         return True
 
+    def join_paths(self, path, *paths) -> str:
+        return f'{path}/{"/".join(paths)}'
+
 
 class MemcachedBackend(BaseStorageBackend):
     """Memcached storage backend.
@@ -244,6 +247,9 @@ class HardDiskBackend(BaseStorageBackend):
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
         return osp.exists(str(filepath))
+
+    def join_paths(self, path, *paths) -> str:
+        return osp.join(path, *paths)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -479,3 +485,6 @@ class FileClient:
 
     def check_exist(self, filepath):
         return self.client.check_exist(filepath)
+
+    def join_paths(self, path, *paths) -> str:
+        return self.client.join_paths(path, *paths)
