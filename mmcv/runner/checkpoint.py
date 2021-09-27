@@ -630,7 +630,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         meta (dict, optional): Metadata to be saved in checkpoint.
     """
 
-    def _save(checkpoint, file):
+    def _save_ckpt(checkpoint, file):
         # The 1.6 release of PyTorch switched torch.save to use a new
         # zipfile-based file format. It will cause RuntimeError when a
         # checkpoint was saved in high version (PyTorch version>=1.6.0) but
@@ -683,12 +683,12 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         with TemporaryDirectory() as tmp_dir:
             checkpoint_file = osp.join(tmp_dir, model_name)
             with open(checkpoint_file, 'wb') as f:
-                _save(checkpoint, f)
+                _save_ckpt(checkpoint, f)
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
         mmcv.mkdir_or_exist(osp.dirname(filename))
         # immediately flush buffer
         with open(filename, 'wb') as f:
-            _save(checkpoint, f)
+            _save_ckpt(checkpoint, f)
             f.flush()
