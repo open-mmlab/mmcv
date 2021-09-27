@@ -47,11 +47,11 @@ inline reduce_t convert_reduce_type(const std::string &reduce_type) {
   return reduce_t::SUM;
 }
 
-inline std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
     const torch::Tensor &feats, const torch::Tensor &coors,
     const std::string &reduce_type) {
   if (feats.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(feats);
     CHECK_CUDA_INPUT(coors);
     return dynamic_point_to_voxel_forward_cuda(
@@ -65,13 +65,15 @@ inline std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
   }
 }
 
-inline void dynamic_point_to_voxel_backward(
-    torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
-    const torch::Tensor &feats, const torch::Tensor &reduced_feats,
-    const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
-    const std::string &reduce_type) {
+void dynamic_point_to_voxel_backward(torch::Tensor &grad_feats,
+                                     const torch::Tensor &grad_reduced_feats,
+                                     const torch::Tensor &feats,
+                                     const torch::Tensor &reduced_feats,
+                                     const torch::Tensor &coors_idx,
+                                     const torch::Tensor &reduce_count,
+                                     const std::string &reduce_type) {
   if (grad_feats.device().is_cuda()) {
-#ifdef WITH_CUDA
+#ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(grad_feats);
     CHECK_CUDA_INPUT(grad_reduced_feats);
     CHECK_CUDA_INPUT(feats);
@@ -81,7 +83,6 @@ inline void dynamic_point_to_voxel_backward(
     dynamic_point_to_voxel_backward_cuda(grad_feats, grad_reduced_feats, feats,
                                          reduced_feats, coors_idx, reduce_count,
                                          convert_reduce_type(reduce_type));
-    return;
 #else
     AT_ERROR("dynamic_point_to_voxel is not compiled with GPU support");
 #endif

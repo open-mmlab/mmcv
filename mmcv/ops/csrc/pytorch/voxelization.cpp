@@ -46,13 +46,12 @@ void dynamic_voxelize_forward_cpu(const at::Tensor &points, at::Tensor &coors,
                                   const std::vector<float> coors_range,
                                   const int NDim = 3);
 
-inline int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
-                                 at::Tensor &coors,
-                                 at::Tensor &num_points_per_voxel,
-                                 const std::vector<float> voxel_size,
-                                 const std::vector<float> coors_range,
-                                 const int max_points, const int max_voxels,
-                                 const int NDim = 3) {
+int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
+                          at::Tensor &coors, at::Tensor &num_points_per_voxel,
+                          const std::vector<float> voxel_size,
+                          const std::vector<float> coors_range,
+                          const int max_points, const int max_voxels,
+                          const int NDim = 3) {
   if (points.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(points);
@@ -69,11 +68,10 @@ inline int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
                                    max_voxels, NDim);
 }
 
-inline void dynamic_voxelize_forward(const at::Tensor &points,
-                                     at::Tensor &coors,
-                                     const std::vector<float> voxel_size,
-                                     const std::vector<float> coors_range,
-                                     const int NDim = 3) {
+void dynamic_voxelize_forward(const at::Tensor &points, at::Tensor &coors,
+                              const std::vector<float> voxel_size,
+                              const std::vector<float> coors_range,
+                              const int NDim = 3) {
   if (points.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(points);
