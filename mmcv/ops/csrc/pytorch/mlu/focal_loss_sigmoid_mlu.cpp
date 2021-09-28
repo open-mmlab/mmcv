@@ -13,11 +13,6 @@
 #include <string>
 #include <vector>
 
-#define NFU_ALIGN_SIZE 128
-#ifndef PAD_UP
-#define PAD_UP(x, y) (((x) / (y) + (int)((x) % (y) > 0)) * (y))
-#endif
-
 // policy function
 static void policyFunc(cnrtDim3_t *k_dim,
                        cnrtFunctionType_t *k_type,
@@ -117,15 +112,14 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
   auto input_C = input.size(1);
   auto split_target_num = 2;
   int split_pipeline_num = 6;
-  split_pipeline_num = weight.data_ptr() == nullptr? split_pipeline_num : split_pipeline_num + 1;
   auto nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
 
   // target supports only INT on MLU device
   // while it keeps LONG on host side, so target.itemsize()/2
-  auto threshold_C = (nram_size - NFU_ALIGN_SIZE -
-                           split_target_num * target.itemsize()/2) /
-                          split_pipeline_num / NFU_ALIGN_SIZE * NFU_ALIGN_SIZE /
-                          input.itemsize();
+  auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE -
+                               split_target_num * target.itemsize()/2) /
+                               split_pipeline_num, NFU_ALIGN_SIZE) /
+                               input.itemsize();
 
   TORCH_CHECK(threshold_C >= input_C, "input.size(1) should be in the range of [0, ",
           threshold_C, "]. ", "But now input.size(1) is ", input_C, ".");
