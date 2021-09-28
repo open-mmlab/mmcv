@@ -20,19 +20,15 @@ def calc_square_dist(point_feat_a, point_feat_b, norm=True):
     Returns:
         Tensor: (B, N, M) Distance between each pair points.
     """
-    length_a = point_feat_a.shape[1]
-    length_b = point_feat_b.shape[1]
     num_channel = point_feat_a.shape[-1]
     # [bs, n, 1]
     a_square = torch.sum(point_feat_a.unsqueeze(dim=2).pow(2), dim=-1)
     # [bs, 1, m]
     b_square = torch.sum(point_feat_b.unsqueeze(dim=1).pow(2), dim=-1)
-    a_square = a_square.repeat((1, 1, length_b))  # [bs, n, m]
-    b_square = b_square.repeat((1, length_a, 1))  # [bs, n, m]
 
-    coor = torch.matmul(point_feat_a, point_feat_b.transpose(1, 2))
+    corr_matrix = torch.matmul(point_feat_a, point_feat_b.transpose(1, 2))
 
-    dist = a_square + b_square - 2 * coor
+    dist = a_square + b_square - 2 * corr_matrix
     if norm:
         dist = torch.sqrt(dist) / num_channel
     return dist
@@ -179,10 +175,9 @@ class FS_Sampler(nn.Module):
         """Sampling points with FS_Sampling."""
         assert features is not None, \
             'feature input to FS_Sampler should not be None'
-        features_for_fps = torch.cat([points, features.transpose(1, 2)], dim=2)
-        features_dist = calc_square_dist(
-            features_for_fps, features_for_fps, norm=False)
-        fps_idx_ffps = furthest_point_sample_with_dist(features_dist, npoint)
-        fps_idx_dfps = furthest_point_sample(points, npoint)
+        ffps_sampler = FFPS_Sampler()
+        dfps_sampler = DFPS_Sampler()
+        fps_idx_ffps = ffps_sampler(points, features, npoint)
+        fps_idx_dfps = dfps_sampler(points, features, npoint)
         fps_idx = torch.cat([fps_idx_ffps, fps_idx_dfps], dim=1)
         return fps_idx
