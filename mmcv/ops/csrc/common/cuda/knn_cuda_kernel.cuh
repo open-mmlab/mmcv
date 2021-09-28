@@ -12,8 +12,9 @@
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-__device__ void swap_float(float *x, float *y) {
-  float tmp = *x;
+template <typename T>
+__device__ void swap_float(T *x, T *y) {
+  T tmp = *x;
   *x = *y;
   *y = tmp;
 }
@@ -24,7 +25,8 @@ __device__ void swap_int(int *x, int *y) {
   *y = tmp;
 }
 
-__device__ void reheap(float *dist, int *idx, int k) {
+template <typename T>
+__device__ void reheap(T *dist, int *idx, int k) {
   int root = 0;
   int child = root * 2 + 1;
   while (child < k) {
@@ -37,7 +39,8 @@ __device__ void reheap(float *dist, int *idx, int k) {
   }
 }
 
-__device__ void heap_sort(float *dist, int *idx, int k) {
+template <typename T>
+__device__ void heap_sort(T *dist, int *idx, int k) {
   int i;
   for (i = k - 1; i > 0; i--) {
     swap_float(&dist[0], &dist[i]);
@@ -65,7 +68,7 @@ __global__ void knn_forward_cuda_kernel(int b, int n, int m, int nsample,
   T new_y = new_xyz[1];
   T new_z = new_xyz[2];
 
-  float best_dist[100];
+  T best_dist[100];
   int best_idx[100];
   for (int i = 0; i < nsample; i++) {
     best_dist[i] = 1e10;
