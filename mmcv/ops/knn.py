@@ -35,7 +35,7 @@ class KNN(Function):
             Tensor: (B, k, npoint) tensor with the indicies of
                 the features that form k-nearest neighbours.
         """
-        assert k > 0
+        assert (k > 0) & (k < 100), 'k should be in range(0, 100)'
 
         if center_xyz is None:
             center_xyz = xyz
