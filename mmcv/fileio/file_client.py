@@ -2,6 +2,7 @@
 import inspect
 import os
 import os.path as osp
+import re
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
@@ -92,8 +93,19 @@ class PetrelBackend(BaseStorageBackend):
                 filepath = filepath.replace(k, v)
         return filepath
 
+    def _format_path(self, filepath: str) -> str:
+        """Convert filepath to standard format of petrel oss.
+
+        Since the filepath is concatenated by `os.path.join`, in a windows
+        environment, the filepath will be the format of
+        's3://bucket_name\\image.jpg'. By invoking `_format_path`, the above
+        filepath will be converted to 's3://bucket_name/image.jpn'.
+        """
+        return re.sub(r'\\+', '/', filepath)
+
     def get(self, filepath: Union[str, Path]) -> memoryview:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -105,24 +117,23 @@ class PetrelBackend(BaseStorageBackend):
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         self._client.put(filepath, obj)
 
     def put_text(self,
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
-        self.put(bytes(obj, encoding=encoding), str(filepath))
+        self.put(bytes(obj, encoding=encoding), filepath)
 
     def remove(self, filepath: Union[str, Path]) -> None:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
         # TODO, need other team to support the feature
         return True
-
-    def join_paths(self, path, *paths) -> str:
-        return f'{path}/{"/".join(paths)}'
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -247,9 +258,6 @@ class HardDiskBackend(BaseStorageBackend):
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
         return osp.exists(str(filepath))
-
-    def join_paths(self, path, *paths) -> str:
-        return osp.join(path, *paths)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -485,6 +493,3 @@ class FileClient:
 
     def check_exist(self, filepath):
         return self.client.check_exist(filepath)
-
-    def join_paths(self, path, *paths) -> str:
-        return self.client.join_paths(path, *paths)
