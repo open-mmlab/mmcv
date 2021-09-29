@@ -45,9 +45,9 @@ def get_sampler_cls(sampler_type):
         class: Points sampler type.
     """
     sampler_mappings = {
-        'D-FPS': DFPS_Sampler,
-        'F-FPS': FFPS_Sampler,
-        'FS': FS_Sampler,
+        'D-FPS': DFPSSampler,
+        'F-FPS': FFPSSampler,
+        'FS': FSSampler,
     }
     try:
         return sampler_mappings[sampler_type]
@@ -57,7 +57,7 @@ def get_sampler_cls(sampler_type):
                 {sampler_type}')
 
 
-class Points_Sampler(nn.Module):
+class PointsSampler(nn.Module):
     """Points sampling.
 
     Args:
@@ -130,7 +130,7 @@ class Points_Sampler(nn.Module):
         return indices
 
 
-class DFPS_Sampler(nn.Module):
+class DFPSSampler(nn.Module):
     """Using Euclidean distances of points for FPS."""
 
     def __init__(self):
@@ -142,7 +142,7 @@ class DFPS_Sampler(nn.Module):
         return fps_idx
 
 
-class FFPS_Sampler(nn.Module):
+class FFPSSampler(nn.Module):
     """Using feature distances for FPS."""
 
     def __init__(self):
@@ -159,7 +159,7 @@ class FFPS_Sampler(nn.Module):
         return fps_idx
 
 
-class FS_Sampler(nn.Module):
+class FSSampler(nn.Module):
     """Using F-FPS and D-FPS simultaneously."""
 
     def __init__(self):
@@ -169,8 +169,8 @@ class FS_Sampler(nn.Module):
         """Sampling points with FS_Sampling."""
         assert features is not None, \
             'feature input to FS_Sampler should not be None'
-        ffps_sampler = FFPS_Sampler()
-        dfps_sampler = DFPS_Sampler()
+        ffps_sampler = FFPSSampler()
+        dfps_sampler = DFPSSampler()
         fps_idx_ffps = ffps_sampler(points, features, npoint)
         fps_idx_dfps = dfps_sampler(points, features, npoint)
         fps_idx = torch.cat([fps_idx_ffps, fps_idx_dfps], dim=1)
