@@ -34,7 +34,7 @@ def calc_square_dist(point_feat_a, point_feat_b, norm=True):
     return dist
 
 
-def get_sampler_type(sampler_type):
+def get_sampler_cls(sampler_type):
     """Get the type and mode of points sampler.
 
     Args:
@@ -44,17 +44,17 @@ def get_sampler_type(sampler_type):
     Returns:
         class: Points sampler type.
     """
-    if sampler_type == 'D-FPS':
-        sampler = DFPS_Sampler
-    elif sampler_type == 'F-FPS':
-        sampler = FFPS_Sampler
-    elif sampler_type == 'FS':
-        sampler = FS_Sampler
-    else:
-        raise ValueError('Only "sampler_type" of "D-FPS", "F-FPS", or "FS"'
-                         f' are supported, got {sampler_type}')
-
-    return sampler
+    sampler_mappings = {
+        'D-FPS': DFPS_Sampler,
+        'F-FPS': FFPS_Sampler,
+        'FS': FS_Sampler,
+    }
+    try:
+        return sampler_mappings[sampler_type]
+    except KeyError:
+        raise KeyError(
+            f'Supported `sampler_type` are {sampler_mappings.keys()}, but got \
+                {sampler_type}')
 
 
 class Points_Sampler(nn.Module):
@@ -75,7 +75,7 @@ class Points_Sampler(nn.Module):
                  num_point: List[int],
                  fps_mod_list: List[str] = ['D-FPS'],
                  fps_sample_range_list: List[int] = [-1]):
-        super(Points_Sampler, self).__init__()
+        super().__init__()
         # FPS would be applied to different fps_mod in the list,
         # so the length of the num_point should be equal to
         # fps_mod_list and fps_sample_range_list.
@@ -85,13 +85,12 @@ class Points_Sampler(nn.Module):
         self.fps_sample_range_list = fps_sample_range_list
         self.samplers = nn.ModuleList()
         for fps_mod in fps_mod_list:
-            self.samplers.append(get_sampler_type(fps_mod)())
+            self.samplers.append(get_sampler_cls(fps_mod)())
         self.fp16_enabled = False
 
     @force_fp32()
     def forward(self, points_xyz, features):
-        """forward.
-
+        """
         Args:
             points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
             features (Tensor): (B, C, N) Descriptors of the features.
@@ -108,14 +107,18 @@ class Points_Sampler(nn.Module):
 
             if fps_sample_range == -1:
                 sample_points_xyz = points_xyz[:, last_fps_end_index:]
-                sample_features = features[:, :, last_fps_end_index:] if \
-                    features is not None else None
+                if features is not None:
+                    sample_features = features[:, :, last_fps_end_index:]
+                else:
+                    sample_features = None
             else:
                 sample_points_xyz = \
                     points_xyz[:, last_fps_end_index:fps_sample_range]
-                sample_features = \
-                    features[:, :, last_fps_end_index:fps_sample_range] if \
-                    features is not None else None
+                if features is not None:
+                    sample_features = features[:, :, last_fps_end_index:
+                                               fps_sample_range]
+                else:
+                    sample_features = None
 
             fps_idx = sampler(sample_points_xyz.contiguous(), sample_features,
                               npoint)
@@ -128,13 +131,10 @@ class Points_Sampler(nn.Module):
 
 
 class DFPS_Sampler(nn.Module):
-    """DFPS_Sampling.
-
-    Using Euclidean distances of points for FPS.
-    """
+    """Using Euclidean distances of points for FPS."""
 
     def __init__(self):
-        super(DFPS_Sampler, self).__init__()
+        super().__init__()
 
     def forward(self, points, features, npoint):
         """Sampling points with D-FPS."""
@@ -143,13 +143,10 @@ class DFPS_Sampler(nn.Module):
 
 
 class FFPS_Sampler(nn.Module):
-    """FFPS_Sampler.
-
-    Using feature distances for FPS.
-    """
+    """Using feature distances for FPS."""
 
     def __init__(self):
-        super(FFPS_Sampler, self).__init__()
+        super().__init__()
 
     def forward(self, points, features, npoint):
         """Sampling points with F-FPS."""
@@ -163,13 +160,10 @@ class FFPS_Sampler(nn.Module):
 
 
 class FS_Sampler(nn.Module):
-    """FS_Sampling.
-
-    Using F-FPS and D-FPS simultaneously.
-    """
+    """Using F-FPS and D-FPS simultaneously."""
 
     def __init__(self):
-        super(FS_Sampler, self).__init__()
+        super().__init__()
 
     def forward(self, points, features, npoint):
         """Sampling points with FS_Sampling."""
