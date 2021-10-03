@@ -20,6 +20,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - SigmoidFocalLoss
 - SoftmaxFocalLoss
 - SoftNMS
+- SPConv
 - Synchronized BatchNorm
 - Weight standardization
 - Correlation

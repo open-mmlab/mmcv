@@ -34,6 +34,12 @@ from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .saconv import SAConv2d
+from .sparse_conv import (SparseConv2d, SparseConv3d, SparseConvTranspose2d,
+                          SparseConvTranspose3d, SparseInverseConv2d,
+                          SparseInverseConv3d, SubMConv2d, SubMConv3d)
+from .sparse_modules import SparseModule, SparseSequential
+from .sparse_pool import SparseMaxPool2d, SparseMaxPool3d
+from .sparse_structure import SparseConvTensor, scatter_nd
 from .sync_bn import SyncBatchNorm
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
@@ -47,13 +53,18 @@ __all__ = [
     'get_compiler_version', 'get_compiling_cuda_version',
     'get_onnxruntime_op_path', 'MaskedConv2d', 'masked_conv2d',
     'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
-    'modulated_deform_conv2d', 'batched_nms', 'nms', 'soft_nms', 'nms_match',
-    'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
-    'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
-    'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
+    'modulated_deform_conv2d', 'SparseConv2d', 'SparseConv3d', 'SubMConv2d',
+    'SubMConv3d', 'SparseConvTranspose2d', 'SparseConvTranspose3d',
+    'SparseInverseConv2d', 'SparseInverseConv3d', 'SparseModule',
+    'SparseSequential', 'SparseMaxPool2d', 'SparseMaxPool3d',
+    'SparseConvTensor', 'scatter_nd', 'batched_nms', 'nms', 'soft_nms',
+    'nms_match', 'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool',
+    'SyncBatchNorm', 'Conv2d', 'ConvTranspose2d', 'Linear', 'MaxPool2d',
+    'CrissCrossAttention', 'PSAMask', 'point_sample',
+    'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign', 'SAConv2d', 'TINShift',
+    'tin_shift', 'box_iou_rotated', 'nms_rotated', 'ball_query', 'upfirdn2d',
+    'FusedBiasLeakyReLU', 'fused_bias_leakyrelu', 'RoIAlignRotated',
+    'roi_align_rotated', 'pixel_group', 'contour_expand',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
     'Correlation'
 ]

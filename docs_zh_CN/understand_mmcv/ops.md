@@ -20,6 +20,7 @@ MMCV 提供了检测、分割等任务中常用的 CUDA 算子
 - SigmoidFocalLoss
 - SoftmaxFocalLoss
 - SoftNMS
+- SPConv
 - Synchronized BatchNorm
 - Weight standardization
 - Correlation
