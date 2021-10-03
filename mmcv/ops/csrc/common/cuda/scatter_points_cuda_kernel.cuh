@@ -74,8 +74,7 @@ __global__ void feats_reduce_kernel(
     const T *feats, const int32_t *coors_map,
     T *reduced_feats,  // shall be 0 at initialization
     const int num_input, const int num_feats, const reduce_t reduce_type) {
-  for (int x = blockIdx.x * blockDim.x + threadIdx.x; x < num_input;
-       x += gridDim.x * blockDim.x) {
+  CUDA_1D_KERNEL_LOOP(x, num_input) {
     int32_t reduce_to = coors_map[x];
     if (reduce_to == -1) continue;
 
@@ -98,8 +97,7 @@ __global__ void add_reduce_traceback_grad_kernel(
     T *grad_feats, const T *grad_reduced_feats, const int32_t *coors_map,
     const int32_t *reduce_count, const int num_input, const int num_feats,
     const reduce_t reduce_type) {
-  for (int x = blockIdx.x * blockDim.x + threadIdx.x; x < num_input;
-       x += gridDim.x * blockDim.x) {
+  CUDA_1D_KERNEL_LOOP(x, num_input) {
     int32_t reduce_to = coors_map[x];
     if (reduce_to == -1) {
       continue;
@@ -127,8 +125,7 @@ template <typename T>
 __global__ void max_reduce_traceback_scatter_idx_kernel(
     const T *feats, const T *reduced_feats, int32_t *reduce_from,
     const int32_t *coors_map, const int num_input, const int num_feats) {
-  for (int x = blockIdx.x * blockDim.x + threadIdx.x; x < num_input;
-       x += gridDim.x * blockDim.x) {
+  CUDA_1D_KERNEL_LOOP(x, num_input) {
     int32_t reduce_to = coors_map[x];
 
     const int input_offset = x * num_feats;
@@ -156,8 +153,7 @@ __global__ void max_reduce_scatter_grad_kernel(T *grad_feats,
                                                const int32_t *reduce_from,
                                                const int num_reduced,
                                                const int num_feats) {
-  for (int x = blockIdx.x * blockDim.x + threadIdx.x; x < num_reduced;
-       x += gridDim.x * blockDim.x) {
+  CUDA_1D_KERNEL_LOOP(x, num_reduced) {
     const int reduced_offset = x * num_feats;
     const int32_t *scatter_to_offset = reduce_from + reduced_offset;
     const T *grad_reduced_feats_offset = grad_reduced_feats + reduced_offset;

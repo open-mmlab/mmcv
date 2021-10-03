@@ -35,10 +35,10 @@ class _Voxelization(Function):
                 before call this function because max_voxels may drop points.
 
         Returns:
-            voxels: [M, max_points, ndim] float tensor. only contain points
+            voxels_out: [M, max_points, ndim] float tensor. only contain points
                     and returned when max_points != -1.
-            coordinates: [M, 3] int32 tensor, always returned.
-            num_points_per_voxel: [M] int32 tensor. Only returned when
+            coors_out: [M, 3] int32 tensor, always returned.
+            num_points_per_voxel_out: [M] int32 tensor. Only returned when
                 max_points != -1.
         """
         if max_points == -1 or max_voxels == -1:
