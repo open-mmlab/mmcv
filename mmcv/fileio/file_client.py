@@ -2,6 +2,7 @@
 import inspect
 import os
 import os.path as osp
+import re
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
@@ -28,7 +29,7 @@ class BaseStorageBackend(metaclass=ABCMeta):
 
 
 class CephBackend(BaseStorageBackend):
-    """Ceph storage backend.
+    """Ceph storage backend (for internal use).
 
     Args:
         path_mapping (dict|None): path mapping dict from local path to Petrel
@@ -62,27 +63,35 @@ class CephBackend(BaseStorageBackend):
 class PetrelBackend(BaseStorageBackend):
     """Petrel storage backend (for internal use).
 
+    PetrelBackend supports reading or writing data to multiple clusters. If the
+    filepath contains the cluster name, PetrelBackend will read from the
+    filepath or write to the filepath. Otherwise, PetrelBackend will access
+    the default cluster.
+
     Args:
         path_mapping (dict|None): path mapping dict from local path to Petrel
             path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
             be replaced by `dst`. Default: None.
         enable_mc (bool): whether to enable memcached support. Default: True.
-        enable_multi_cluster (bool): Whether to enable multiple clusters.
-            Default: False.
+
+    Examples:
+        >>> filepath1 = 's3://path/of/file'
+        >>> filepath2 = 'cluster-name:s3://path/of/file'
+        >>> client = PetrelBackend()
+        >>> client.get(filepath1)  # get from default cluster
+        >>> client.get(filepath2)  # get from cluster-name
     """
 
     def __init__(self,
                  path_mapping: Optional[dict] = None,
-                 enable_mc: bool = True,
-                 enable_multi_cluster: bool = False):
+                 enable_mc: bool = True):
         try:
             from petrel_client import client
         except ImportError:
             raise ImportError('Please install petrel_client to enable '
                               'PetrelBackend.')
 
-        self._client = client.Client(
-            enable_mc=enable_mc, enable_multi_cluster=enable_multi_cluster)
+        self._client = client.Client(enable_mc=enable_mc)
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
@@ -92,8 +101,19 @@ class PetrelBackend(BaseStorageBackend):
                 filepath = filepath.replace(k, v)
         return filepath
 
+    def _format_path(self, filepath: str) -> str:
+        """Convert filepath to standard format of petrel oss.
+
+        Since the filepath is concatenated by `os.path.join`, in a windows
+        environment, the filepath will be the format of
+        's3://bucket_name\\image.jpg'. By invoking `_format_path`, the above
+        filepath will be converted to 's3://bucket_name/image.jpg'.
+        """
+        return re.sub(r'\\+', '/', filepath)
+
     def get(self, filepath: Union[str, Path]) -> memoryview:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -105,24 +125,24 @@ class PetrelBackend(BaseStorageBackend):
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         self._client.put(filepath, obj)
 
     def put_text(self,
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
-        self.put(bytes(obj, encoding=encoding), str(filepath))
+        self.put(bytes(obj, encoding=encoding), filepath)
 
     def remove(self, filepath: Union[str, Path]) -> None:
         filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
-        # TODO, need other team to support the feature
-        return True
-
-    def join_paths(self, path, *paths) -> str:
-        return f'{path}/{"/".join(paths)}'
+        filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
+        return self._client.contains(filepath)
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -247,9 +267,6 @@ class HardDiskBackend(BaseStorageBackend):
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
         return osp.exists(str(filepath))
-
-    def join_paths(self, path, *paths) -> str:
-        return osp.join(path, *paths)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -485,6 +502,3 @@ class FileClient:
 
     def check_exist(self, filepath):
         return self.client.check_exist(filepath)
-
-    def join_paths(self, path, *paths) -> str:
-        return self.client.join_paths(path, *paths)

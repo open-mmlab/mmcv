@@ -1,4 +1,3 @@
-import platform
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -145,10 +144,15 @@ class TestFileClient:
         assert img.shape == self.img_shape
         petrel_backend.client._client.Get.assert_called_with(
             str(self.img_path).replace(str(self.test_data_dir), petrel_path))
-        # remove a file
+        # test `remove`
         petrel_backend.client._client.delete = MagicMock()
         petrel_backend.remove(self.img_path)
         petrel_backend.client._client.delete.assert_called_with(
+            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
+        # test `check_exist`
+        petrel_backend.client._client.contains = MagicMock(return_value=True)
+        assert petrel_backend.check_exist(self.img_path)
+        petrel_backend.client._client.contains.assert_called_with(
             str(self.img_path).replace(str(self.test_data_dir), petrel_path))
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
@@ -264,23 +268,6 @@ class TestFileClient:
         uri = 's3://user_data'
         client = FileClient.infer_client(uri=uri)
         assert client.backend_name == 'petrel'
-
-    def test_join_paths(self):
-        # HardDiskBackend
-        file_client_args = {'backend': 'disk'}
-        client = FileClient(**file_client_args)
-        dir1 = '/path/of/your/directory'
-        dir2 = 'c:\\windows\\path\\of\\your\\directory'
-        filename1 = 'filename'
-        if platform.system() == 'Windows':
-            assert client.join_paths(dir2, filename1) == f'{dir2}\\{filename1}'
-        else:
-            assert client.join_paths(dir1, filename1) == f'{dir1}/{filename1}'
-
-        # PetrelBackend
-        file_client_args = {'backend': 'petrel'}
-        client = FileClient(**file_client_args)
-        assert client.join_paths(dir1, filename1) == f'{dir1}/{filename1}'
 
     def test_register_backend(self):
 
