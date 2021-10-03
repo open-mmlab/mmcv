@@ -16,6 +16,8 @@ class ThreeNN(Function):
         """Find the top-3 nearest neighbors of the target set from the source
         set.
 
+        Paper reference: https://arxiv.org/abs/1706.02413
+
         Args:
             target (Tensor): shape (B, N, 3), points set that needs to
                 find the nearest neighbors.

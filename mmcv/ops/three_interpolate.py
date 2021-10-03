@@ -18,7 +18,7 @@ class ThreeInterpolate(Function):
 
         Args:
             features (Tensor): (B, C, M) Features descriptors to be
-                interpolated from
+                interpolated
             indices (Tensor): (B, n, 3) index three nearest neighbors
                 of the target features in features
             weight (Tensor): (B, n, 3) weights of interpolation
