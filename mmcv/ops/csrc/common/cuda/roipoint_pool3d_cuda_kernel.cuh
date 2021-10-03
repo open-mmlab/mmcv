@@ -65,7 +65,6 @@ __global__ void assign_pts_to_box3d(int batch_size, int pts_num, int boxes_num,
   // + pt_idx]);
 }
 
-template <typename T>
 __global__ void get_pooled_idx(int batch_size, int pts_num, int boxes_num,
                                int sampled_pts_num, const int *pts_assign,
                                int *pts_idx, int *pooled_empty_flag) {

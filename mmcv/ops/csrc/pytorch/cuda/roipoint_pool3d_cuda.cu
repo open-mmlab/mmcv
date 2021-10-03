@@ -41,12 +41,9 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK),
                batch_size);  // blockIdx.x(col), blockIdx.y(row)
 
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      pooled_empty_flag.scalar_type(), "get_pooled_idx", [&] {
-        get_pooled_idx<scalar_t><<<blocks2, threads>>>(
-            batch_size, pts_num, boxes_num, sampled_pts_num, pts_assign,
-            pts_idx, pooled_empty_flag.data_ptr<int>());
-      });
+  get_pooled_idx<<<blocks2, threads>>>(batch_size, pts_num, boxes_num,
+                                       sampled_pts_num, pts_assign, pts_idx,
+                                       pooled_empty_flag.data_ptr<int>());
 
   dim3 blocks_pool(DIVUP(sampled_pts_num, THREADS_PER_BLOCK), boxes_num,
                    batch_size);
