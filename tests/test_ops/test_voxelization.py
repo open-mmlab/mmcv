@@ -13,7 +13,7 @@ def _get_voxel_points_indices(points, coors, voxel):
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-def test_voxelization_cpu():
+def test_voxelization():
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 
@@ -52,3 +52,6 @@ def test_voxelization_cpu():
         assert np.all(
             points[indices] == expected_coors[i][:num_points_current_voxel])
         assert num_points_current_voxel == expected_num_points_per_voxel[i]
+
+
+test_voxelization()
