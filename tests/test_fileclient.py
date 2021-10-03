@@ -144,10 +144,15 @@ class TestFileClient:
         assert img.shape == self.img_shape
         petrel_backend.client._client.Get.assert_called_with(
             str(self.img_path).replace(str(self.test_data_dir), petrel_path))
-        # remove a file
+        # test `remove`
         petrel_backend.client._client.delete = MagicMock()
         petrel_backend.remove(self.img_path)
         petrel_backend.client._client.delete.assert_called_with(
+            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
+        # test `check_exist`
+        petrel_backend.client._client.contains = MagicMock(return_value=True)
+        assert petrel_backend.check_exist(self.img_path)
+        petrel_backend.client._client.contains.assert_called_with(
             str(self.img_path).replace(str(self.test_data_dir), petrel_path))
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
