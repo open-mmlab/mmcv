@@ -144,6 +144,14 @@ class PetrelBackend(BaseStorageBackend):
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
+    def isfile(self, filepath: Union[str, Path]) -> bool:
+        filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
+        # petrel checks a filepath whether it is a file by its ending char
+        if filepath.endswith('/'):
+            return False
+        return self.check_exist(filepath)
+
 
 class MemcachedBackend(BaseStorageBackend):
     """Memcached storage backend.
@@ -267,6 +275,9 @@ class HardDiskBackend(BaseStorageBackend):
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
         return osp.exists(str(filepath))
+
+    def isfile(self, filepath: Union[str, Path]) -> bool:
+        return osp.isfile(str(filepath))
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -502,3 +513,6 @@ class FileClient:
 
     def check_exist(self, filepath):
         return self.client.check_exist(filepath)
+
+    def isfile(self, filepath):
+        return self.client.isfile(filepath)

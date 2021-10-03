@@ -133,27 +133,42 @@ class TestFileClient:
         # `path_mapping` is either None or dict
         with pytest.raises(AssertionError):
             FileClient('petrel', path_mapping=1)
-        # test `path_mapping`
+
+        # test `_path_mapping`
         petrel_path = 's3://user/data'
         petrel_backend = FileClient(
             'petrel', path_mapping={str(self.test_data_dir): petrel_path})
-        petrel_backend.client._client.Get = MagicMock(
-            return_value=petrel_backend.client._client.Get(self.img_path))
-        img_bytes = petrel_backend.get(self.img_path)
-        img = mmcv.imfrombytes(img_bytes)
-        assert img.shape == self.img_shape
-        petrel_backend.client._client.Get.assert_called_with(
-            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
+        assert petrel_backend.client._path_mapping(str(self.img_path)) == \
+            str(self.img_path).replace(str(self.test_data_dir), petrel_path)
+
+        petrel_path = 's3://user/data/test.jpg'
+        petrel_backend = FileClient('petrel')
+
+        # test `_format_path`
+        assert petrel_backend.client._format_path('s3://user\\data\\test.jpg')\
+            == petrel_path
+
+        # test `get`
+        petrel_backend.client._client.Get = MagicMock(return_value=b'petrel')
+        petrel_backend.get(petrel_path)
+        petrel_backend.client._client.Get.assert_called_with(petrel_path)
+
         # test `remove`
         petrel_backend.client._client.delete = MagicMock()
-        petrel_backend.remove(self.img_path)
-        petrel_backend.client._client.delete.assert_called_with(
-            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
+        petrel_backend.remove(petrel_path)
+        petrel_backend.client._client.delete.assert_called_with(petrel_path)
+
         # test `check_exist`
         petrel_backend.client._client.contains = MagicMock(return_value=True)
-        assert petrel_backend.check_exist(self.img_path)
-        petrel_backend.client._client.contains.assert_called_with(
-            str(self.img_path).replace(str(self.test_data_dir), petrel_path))
+        assert petrel_backend.check_exist(petrel_path)
+        petrel_backend.client._client.contains.assert_called_with(petrel_path)
+
+        # test `isfile`
+        petrel_backend.client._client.contains = MagicMock(return_value=True)
+        assert petrel_backend.isfile(petrel_path)
+        petrel_backend.client._client.contains.assert_called_with(petrel_path)
+        # if ending with '/', it is not a file
+        assert not petrel_backend.isfile(f'{petrel_path}/')
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
     @patch('mc.pyvector', MagicMock)
