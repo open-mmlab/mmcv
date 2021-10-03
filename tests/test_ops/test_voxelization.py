@@ -52,6 +52,3 @@ def test_voxelization():
         assert np.all(
             points[indices] == expected_coors[i][:num_points_current_voxel])
         assert num_points_current_voxel == expected_num_points_per_voxel[i]
-
-
-test_voxelization()
