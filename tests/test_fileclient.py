@@ -116,10 +116,10 @@ class TestFileClient:
             str(self.img_path).replace(str(self.test_data_dir), ceph_path))
 
     @patch('petrel_client.client.Client', MockPetrelClient)
-    @pytest.mark.parametrize('backend,prefixes', [('petrel', None),
-                                                  (None, 's3')])
-    def test_petrel_backend(self, backend, prefixes):
-        petrel_backend = FileClient(backend=backend, prefixes=prefixes)
+    @pytest.mark.parametrize('backend,prefix', [('petrel', None),
+                                                (None, 's3')])
+    def test_petrel_backend(self, backend, prefix):
+        petrel_backend = FileClient(backend=backend, prefix=prefix)
 
         # input path is Path object
         img_bytes = petrel_backend.get(self.img_path)
@@ -214,10 +214,10 @@ class TestFileClient:
         img = mmcv.imfrombytes(img_bytes)
         assert img.shape == (120, 125, 3)
 
-    @pytest.mark.parametrize('backend,prefixes', [('http', None),
-                                                  (None, 'http')])
-    def test_http_backend(self, backend, prefixes):
-        http_backend = FileClient(backend=backend, prefixes=prefixes)
+    @pytest.mark.parametrize('backend,prefix', [('http', None),
+                                                (None, 'http')])
+    def test_http_backend(self, backend, prefix):
+        http_backend = FileClient(backend=backend, prefix=prefix)
         img_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
             'master/tests/data/color.jpg'
         text_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
@@ -241,6 +241,36 @@ class TestFileClient:
         # input url is http text
         value_buf = http_backend.get_text(text_url)
         assert self.text_path.open('r').read() == value_buf
+
+    def test_new_magic_method(self):
+
+        class DummyBackend1(BaseStorageBackend):
+
+            def get(self, filepath):
+                return filepath
+
+            def get_text(self, filepath, encoding='utf-8'):
+                return filepath
+
+        FileClient.register_backend('dummy_backend', DummyBackend1)
+        client1 = FileClient(backend='dummy_backend')
+        client2 = FileClient(backend='dummy_backend')
+        assert client1 is client2
+
+        # if a backend is overwrote, it will disable the singleton pattern for
+        # the backend
+        class DummyBackend2(BaseStorageBackend):
+
+            def get(self, filepath):
+                pass
+
+            def get_text(self, filepath):
+                pass
+
+        FileClient.register_backend('dummy_backend', DummyBackend2, force=True)
+        client3 = FileClient(backend='dummy_backend')
+        client4 = FileClient(backend='dummy_backend')
+        assert client3 is not client4
 
     def test_parse_uri_prefix(self):
         # input path is None
@@ -323,7 +353,7 @@ class TestFileClient:
         class Example2Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes2'
+                return b'bytes2'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text2'
@@ -334,20 +364,20 @@ class TestFileClient:
 
         FileClient.register_backend('example', Example2Backend, force=True)
         example_backend = FileClient('example')
-        assert example_backend.get(self.img_path) == 'bytes2'
+        assert example_backend.get(self.img_path) == b'bytes2'
         assert example_backend.get_text(self.text_path) == 'text2'
 
         @FileClient.register_backend(name='example3')
         class Example3Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes3'
+                return b'bytes3'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text3'
 
         example_backend = FileClient('example3')
-        assert example_backend.get(self.img_path) == 'bytes3'
+        assert example_backend.get(self.img_path) == b'bytes3'
         assert example_backend.get_text(self.text_path) == 'text3'
         assert 'example3' in FileClient._backends
 
@@ -358,7 +388,7 @@ class TestFileClient:
             class Example4Backend(BaseStorageBackend):
 
                 def get(self, filepath):
-                    return 'bytes4'
+                    return b'bytes4'
 
                 def get_text(self, filepath, encoding='utf-8'):
                     return 'text4'
@@ -367,20 +397,20 @@ class TestFileClient:
         class Example5Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes5'
+                return b'bytes5'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text5'
 
         example_backend = FileClient('example3')
-        assert example_backend.get(self.img_path) == 'bytes5'
+        assert example_backend.get(self.img_path) == b'bytes5'
         assert example_backend.get_text(self.text_path) == 'text5'
 
         # prefixes is a str
         class Example6Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes6'
+                return b'bytes6'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text6'
@@ -391,20 +421,20 @@ class TestFileClient:
             force=True,
             prefixes='example4_prefix')
         example_backend = FileClient('example4')
-        assert example_backend.get(self.img_path) == 'bytes6'
+        assert example_backend.get(self.img_path) == b'bytes6'
         assert example_backend.get_text(self.text_path) == 'text6'
-        example_backend = FileClient(prefixes='example4_prefix')
-        assert example_backend.get(self.img_path) == 'bytes6'
+        example_backend = FileClient(prefix='example4_prefix')
+        assert example_backend.get(self.img_path) == b'bytes6'
         assert example_backend.get_text(self.text_path) == 'text6'
-        example_backend = FileClient('example4', prefixes='example4_prefix')
-        assert example_backend.get(self.img_path) == 'bytes6'
+        example_backend = FileClient('example4', prefix='example4_prefix')
+        assert example_backend.get(self.img_path) == b'bytes6'
         assert example_backend.get_text(self.text_path) == 'text6'
 
         # prefixes is a list of str
         class Example7Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes7'
+                return b'bytes7'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text7'
@@ -415,20 +445,20 @@ class TestFileClient:
             force=True,
             prefixes=['example5_prefix1', 'example5_prefix2'])
         example_backend = FileClient('example5')
-        assert example_backend.get(self.img_path) == 'bytes7'
+        assert example_backend.get(self.img_path) == b'bytes7'
         assert example_backend.get_text(self.text_path) == 'text7'
-        example_backend = FileClient(prefixes='example5_prefix1')
-        assert example_backend.get(self.img_path) == 'bytes7'
+        example_backend = FileClient(prefix='example5_prefix1')
+        assert example_backend.get(self.img_path) == b'bytes7'
         assert example_backend.get_text(self.text_path) == 'text7'
-        example_backend = FileClient(prefixes='example5_prefix2')
-        assert example_backend.get(self.img_path) == 'bytes7'
+        example_backend = FileClient(prefix='example5_prefix2')
+        assert example_backend.get(self.img_path) == b'bytes7'
         assert example_backend.get_text(self.text_path) == 'text7'
 
         # backend has a higher priority than prefixes
         class Example8Backend(BaseStorageBackend):
 
             def get(self, filepath):
-                return 'bytes8'
+                return b'bytes8'
 
             def get_text(self, filepath, encoding='utf-8'):
                 return 'text8'
@@ -439,8 +469,8 @@ class TestFileClient:
             force=True,
             prefixes='example6_prefix')
         example_backend = FileClient('example6')
-        assert example_backend.get(self.img_path) == 'bytes8'
+        assert example_backend.get(self.img_path) == b'bytes8'
         assert example_backend.get_text(self.text_path) == 'text8'
-        example_backend = FileClient('example6', prefixes='example4_prefix')
-        assert example_backend.get(self.img_path) == 'bytes8'
+        example_backend = FileClient('example6', prefix='example4_prefix')
+        assert example_backend.get(self.img_path) == b'bytes8'
         assert example_backend.get_text(self.text_path) == 'text8'

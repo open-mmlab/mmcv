@@ -156,7 +156,7 @@ def test_list_from_file():
             filename, file_client_args={'backend': 'http'})
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
         filelist = mmcv.list_from_file(
-            filename, file_client_args={'prefixes': 'http'})
+            filename, file_client_args={'prefix': 'http'})
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
         filelist = mmcv.list_from_file(filename)
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
@@ -169,7 +169,7 @@ def test_list_from_file():
             filename, file_client_args={'backend': 'petrel'})
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
         filelist = mmcv.list_from_file(
-            filename, file_client_args={'prefixes': 's3'})
+            filename, file_client_args={'prefix': 's3'})
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
         filelist = mmcv.list_from_file(filename)
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
@@ -191,7 +191,7 @@ def test_dict_from_file():
             filename, file_client_args={'backend': 'http'})
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
         mapping = mmcv.dict_from_file(
-            filename, file_client_args={'prefixes': 'http'})
+            filename, file_client_args={'prefix': 'http'})
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
         mapping = mmcv.dict_from_file(filename)
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
@@ -205,7 +205,7 @@ def test_dict_from_file():
             filename, file_client_args={'backend': 'petrel'})
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
         mapping = mmcv.dict_from_file(
-            filename, file_client_args={'prefixes': 's3'})
+            filename, file_client_args={'prefix': 's3'})
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
         mapping = mmcv.dict_from_file(filename)
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
