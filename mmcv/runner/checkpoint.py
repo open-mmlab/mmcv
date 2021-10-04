@@ -334,6 +334,9 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         backend (str): The storage backend type. Options are 'ceph', 'petrel'.
             Default: 'petrel'.
 
+    ..warning::
+        :class:`CephBackend` is deprecated using :class:`PetrelBackend` instead
+
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
@@ -341,7 +344,10 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
 
-    # CephClient and PetrelBackend has the same prefix 's3://' and the latter
+    if backend == 'ceph':
+        warnings.warn('CephBackend is deprecated using PetrelBackend instead')
+
+    # CephClient and PetrelBackend have the same prefix 's3://' and the latter
     # will be chosen default. If PetrelBackend can not be instantiated
     # successfully, the CephClient will be chosen.
     try:
