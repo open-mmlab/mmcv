@@ -69,10 +69,10 @@ class PetrelBackend(BaseStorageBackend):
     the default cluster.
 
     Args:
-        path_mapping (dict|None): path mapping dict from local path to Petrel
-            path. When `path_mapping={'src': 'dst'}`, `src` in `filepath` will
-            be replaced by `dst`. Default: None.
-        enable_mc (bool): whether to enable memcached support. Default: True.
+        path_mapping (dict, optional): Path mapping dict from local path to
+            Petrel path. When `path_mapping={'src': 'dst'}`, `src` in
+            `filepath` will be replaced by `dst`. Default: None.
+        enable_mc (bool): Whether to enable memcached support. Default: True.
 
     Examples:
         >>> filepath1 = 's3://path/of/file'
@@ -297,30 +297,28 @@ class FileClient:
 
     The client loads a file or text in a specified backend from its path
     and return it as a binary or text file. There are two ways to choose a
-    backend, the name of backend and the prefixes of path. Although both of
-    them can be used to choose a storage backend, ``backend`` has a higher
-    priority that is if they are all set, the storage backend will be chosen by
-    the backend argument. If they are all `None`, the disk backend will be
-    chosen. Note that It can also register other backend accessor with a given
-    name, prefixes, and backend class.
+    backend, the name of backend and the prefix of path. Although both of them
+    can be used to choose a storage backend, ``backend`` has a higher priority
+    that is if they are all set, the storage backend will be chosen by the
+    backend argument. If they are all `None`, the disk backend will be chosen.
+    Note that It can also register other backend accessor with a given name,
+    prefixes, and backend class. In addition, We use the singleton pattern to
+    avoid repeated object creationIf the arguments are the same, the same
+    object is returned.
 
     Args:
-        backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached", "lmdb", "http" and "petrel". Default: None.
-        prefixes (str or list[str] or tuple[str]): The prefixes of the
-            registered storage backend. Options are "s3", "http", "https".
-            Default: None.
-
-    .. versionadd:: 1.3.14
-            The *prefixes* parameter.
+        backend (str, optional): The storage backend type. Options are "disk",
+            "ceph", "memcached", "lmdb", "http" and "petrel". Default: None.
+        prefix (str, optional): The prefix of the registered storage backend.
+            Options are "s3", "http", "https". Default: None.
 
     Example:
         >>> # only set backend
         >>> file_client = FileClient(backend='ceph')
         >>> # only set prefixes
-        >>> file_client = FileClient(prefixes='s3')
+        >>> file_client = FileClient(prefix='s3')
         >>> # set both backend and prefixes but use backend to choose client
-        >>> file_client = FileClient(backend='ceph', prefixes='s3')
+        >>> file_client = FileClient(backend='ceph', prefix='s3')
 
     Attributes:
         client (:obj:`BaseStorageBackend`): The backend object.
@@ -334,42 +332,55 @@ class FileClient:
         'petrel': PetrelBackend,
         'http': HTTPBackend,
     }
+    # This collection is used to record the overridden backend, and when a
+    # backend appears in the collection, the singleton pattern is disabled for
+    # that backend, because if the singleton pattern is used, then the object
+    # returned will be the backend before the override
+    _overridden_backends = set()
     _prefix_to_backends = {
         's3': PetrelBackend,
         'http': HTTPBackend,
         'https': HTTPBackend,
     }
+    _overridden_prefixes = set()
 
-    def __init__(self, backend=None, prefixes=None, **kwargs):
-        if backend is None and prefixes is None:
+    _instances = {}
+
+    def __new__(cls, backend=None, prefix=None, **kwargs):
+        if backend is None and prefix is None:
             backend = 'disk'
-        if backend is not None and backend not in self._backends:
+        if backend is not None and backend not in cls._backends:
             raise ValueError(
                 f'Backend {backend} is not supported. Currently supported ones'
-                f' are {list(self._backends.keys())}')
-        if prefixes is not None:
-            if isinstance(prefixes, str):
-                prefixes = [prefixes]
-            else:
-                assert isinstance(prefixes, (list, tuple))
+                f' are {list(cls._backends.keys())}')
+        if prefix is not None and prefix not in cls._prefix_to_backends:
+            raise ValueError(
+                f'prefix {prefix} is not supported. Currently supported ones '
+                f'are {list(cls._prefix_to_backends.keys())}')
 
-            if not set(prefixes).issubset(self._prefix_to_backends.keys()):
-                raise ValueError(
-                    f'prefixes {prefixes} is not supported. Currently '
-                    'supported ones are '
-                    f'{list(self._prefix_to_backends.keys())}')
+        arg_key = f'{backend}:{prefix}'
+        for key, value in kwargs.items():
+            arg_key += f':{key}:{value}'
 
-        if backend is not None:
-            self.client = self._backends[backend](**kwargs)
+        if (arg_key in cls._instances
+                and backend not in cls._overridden_backends
+                and prefix not in cls._overridden_prefixes):
+            _instance = cls._instances[arg_key]
         else:
-            for prefix in prefixes:
-                self.client = self._prefix_to_backends[prefix](**kwargs)
-                break
+            _instance = super().__new__(cls)
+            if backend is not None:
+                _instance.client = cls._backends[backend](**kwargs)
+                _instance.backend_name = backend
+            else:
+                _instance.client = cls._prefix_to_backends[prefix](**kwargs)
+                # infer the backend name according to prefix
+                for backend_name, backend_cls in cls._backends.items():
+                    if isinstance(_instance.client, backend_cls):
+                        _instance.backend_name = backend_name
+                        break
+            cls._instances[arg_key] = _instance
 
-        for backend_name, backend_cls in self._backends.items():
-            if isinstance(self.client, backend_cls):
-                self.backend_name = backend_name
-                break
+        return _instance
 
     @staticmethod
     def parse_uri_prefix(uri: Union[str, Path]) -> Optional[str]:
@@ -405,7 +416,7 @@ class FileClient:
         assert file_client_args is not None or uri is not None
         if file_client_args is None:
             file_prefix = cls.parse_uri_prefix(uri)  # type: ignore
-            return cls(prefixes=file_prefix)
+            return cls(prefix=file_prefix)
         else:
             return cls(**file_client_args)
 
@@ -425,14 +436,20 @@ class FileClient:
                 f'{name} is already registered as a storage backend, '
                 'add "force=True" if you want to override it')
 
+        if name in cls._backends and force:
+            cls._overridden_backends.add(name)
         cls._backends[name] = backend
+
         if prefixes is not None:
             if isinstance(prefixes, str):
                 prefixes = [prefixes]
             else:
                 assert isinstance(prefixes, (list, tuple))
             for prefix in prefixes:
-                if (prefix not in cls._prefix_to_backends) or force:
+                if prefix not in cls._prefix_to_backends:
+                    cls._prefix_to_backends[prefix] = backend
+                elif (prefix in cls._prefix_to_backends) and force:
+                    cls._overridden_prefixes.add(prefix)
                     cls._prefix_to_backends[prefix] = backend
                 else:
                     raise KeyError(
