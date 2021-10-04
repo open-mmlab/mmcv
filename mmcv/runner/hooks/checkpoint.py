@@ -2,7 +2,7 @@
 import os
 import os.path as osp
 
-from ...fileio import FileClient
+from mmcv.fileio import FileClient
 from ..dist_utils import allreduce_params, master_only
 from .hook import HOOKS, Hook
 

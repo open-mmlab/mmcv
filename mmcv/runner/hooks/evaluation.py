@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import os.path as osp
 import warnings
 from math import inf
@@ -8,6 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
+from mmcv.fileio import FileClient
 from mmcv.utils import is_seq_of
 from .hook import Hook
 from .logger import LoggerHook
@@ -54,6 +54,12 @@ class EvalHook(Hook):
         less_keys (List[str] | None, optional): Metric keys that will be
             inferred by 'less' comparison rule. If ``None``, _default_less_keys
             will be used. (default: ``None``)
+        out_dir (str, optional): The root directory to save checkpoints. If not
+            specified, `runner.work_dir` will be used by default. If specified,
+            the `out_dir` will be the concatenation of `out_dir` and the last
+            level directory of `runner.work_dir`.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
@@ -84,6 +90,8 @@ class EvalHook(Hook):
                  test_fn=None,
                  greater_keys=None,
                  less_keys=None,
+                 out_dir=None,
+                 file_client_args=None,
                  **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError(f'dataloader must be a pytorch DataLoader, '
@@ -137,6 +145,9 @@ class EvalHook(Hook):
             self.best_ckpt_path = None
             self._init_rule(rule, self.save_best)
 
+        self.out_dir = out_dir
+        self.file_client_args = file_client_args
+
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
 
@@ -187,6 +198,17 @@ class EvalHook(Hook):
             self.compare_func = self.rule_map[self.rule]
 
     def before_run(self, runner):
+        if not self.out_dir:
+            self.out_dir = runner.work_dir
+
+        if self.out_dir != runner.work_dir:
+            # The final `self.out_dir` is the concatenation of `self.out_dir`
+            # and the last level directory of `runner.work_dir`
+            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+            self.out_dir = osp.join(self.out_dir, basename)
+
+        self.file_client = FileClient.infer_client(self.file_client_args,
+                                                   self.out_dir)
         if self.save_best is not None:
             if runner.meta is None:
                 warnings.warn('runner.meta is None. Creating an empty one.')
@@ -299,15 +321,16 @@ class EvalHook(Hook):
             best_score = key_score
             runner.meta['hook_msgs']['best_score'] = best_score
 
-            if self.best_ckpt_path and osp.isfile(self.best_ckpt_path):
-                os.remove(self.best_ckpt_path)
+            if self.best_ckpt_path and self.file_client.isfile(
+                    self.best_ckpt_path):
+                self.file_client.remove(self.best_ckpt_path)
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
-            self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
+            self.best_ckpt_path = osp.join(self.out_dir, best_ckpt_name)
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
 
             runner.save_checkpoint(
-                runner.work_dir, best_ckpt_name, create_symlink=False)
+                self.out_dir, best_ckpt_name, create_symlink=False)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(
@@ -378,6 +401,12 @@ class DistEvalHook(EvalHook):
         broadcast_bn_buffer (bool): Whether to broadcast the
             buffer(running_mean and running_var) of rank 0 to other rank
             before evaluation. Default: True.
+        out_dir (str, optional): The root directory to save checkpoints. If not
+            specified, `runner.work_dir` will be used by default. If specified,
+            the `out_dir` will be the concatenation of `out_dir` and the last
+            level directory of `runner.work_dir`.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
     """
@@ -395,6 +424,8 @@ class DistEvalHook(EvalHook):
                  broadcast_bn_buffer=True,
                  tmpdir=None,
                  gpu_collect=False,
+                 out_dir=None,
+                 file_client_args=None,
                  **eval_kwargs):
 
         if test_fn is None:
@@ -411,6 +442,8 @@ class DistEvalHook(EvalHook):
             test_fn=test_fn,
             greater_keys=greater_keys,
             less_keys=less_keys,
+            out_dir=out_dir,
+            file_client_args=file_client_args,
             **eval_kwargs)
 
         self.broadcast_bn_buffer = broadcast_bn_buffer
