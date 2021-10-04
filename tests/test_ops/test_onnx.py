@@ -737,9 +737,12 @@ def test_deform_conv2d(threshold=1e-3):
     try:
         from mmcv.ops import DeformConv2d, get_onnxruntime_op_path
     except (ImportError, ModuleNotFoundError):
-        pytest.skip('modulated_deform_conv op is not successfully compiled')
+        pytest.skip('deform_conv op is not successfully compiled')
 
     ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
     # deform conv config
     # modulated deform conv config
     in_channels = 1
