@@ -47,7 +47,7 @@ def scandir(dir_path, suffix=None, recursive=False):
             directory. Default: False.
 
     Returns:
-        A generator for all the interested files with relative pathes.
+        A generator for all the interested files with relative paths.
     """
     if isinstance(dir_path, (str, Path)):
         dir_path = str(dir_path)
