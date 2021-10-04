@@ -3,6 +3,7 @@ import inspect
 import os
 import os.path as osp
 import re
+import warnings
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
@@ -35,6 +36,9 @@ class CephBackend(BaseStorageBackend):
         path_mapping (dict|None): path mapping dict from local path to Petrel
             path. When ``path_mapping={'src': 'dst'}``, ``src`` in ``filepath``
             will be replaced by ``dst``. Default: None.
+
+    ..warning::
+        :class:`CephBackend` is deprecated using :class:`PetrelBackend` instead
     """
 
     def __init__(self, path_mapping=None):
@@ -43,6 +47,7 @@ class CephBackend(BaseStorageBackend):
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
+        warnings.warn('CephBackend is deprecated using PetrelBackend instead')
         self._client = ceph.S3Client()
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
@@ -293,7 +298,7 @@ class HTTPBackend(BaseStorageBackend):
 
 
 class FileClient:
-    """A general file client to access files in different backend.
+    """A general file client to access files in different backends.
 
     The client loads a file or text in a specified backend from its path
     and return it as a binary or text file. There are two ways to choose a
@@ -303,7 +308,7 @@ class FileClient:
     backend argument. If they are all `None`, the disk backend will be chosen.
     Note that It can also register other backend accessor with a given name,
     prefixes, and backend class. In addition, We use the singleton pattern to
-    avoid repeated object creationIf the arguments are the same, the same
+    avoid repeated object creation. If the arguments are the same, the same
     object is returned.
 
     Args:
