@@ -35,8 +35,8 @@ class TextLoggerHook(LoggerHook):
             which is the concatenation of `out_dir` and the last level
             directory of `runner.work_dir`. Default: None.
             `New in version 1.3.15.`
-        out_suffix (str, list[str]): Those filenames ending with `out_suffix`
-            will be copied to `out_dir`. Default: ['.log.json', '.log', '.py'].
+        out_suffix (str, tuple[str]): Those filenames ending with `out_suffix`
+            will be copied to `out_dir`. Default: ('.log.json', '.log', '.py').
             `New in version 1.3.15.`
         keep_log (bool): Whether to keep local log when out_dir is specified.
             If False, the local log will be removed. Default: True.
@@ -53,7 +53,7 @@ class TextLoggerHook(LoggerHook):
                  reset_flag=False,
                  interval_exp_name=1000,
                  out_dir=None,
-                 out_suffix=['.log.json', '.log', '.py'],
+                 out_suffix=('.log.json', '.log', '.py'),
                  keep_log=True,
                  file_client_args=None):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
