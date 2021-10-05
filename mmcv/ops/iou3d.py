@@ -37,7 +37,7 @@ def nms_gpu(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
         boxes (torch.Tensor): Input boxes with the shape of [N, 5]
             ([x1, y1, x2, y2, ry]).
         scores (torch.Tensor): Scores of boxes with the shape of [N].
-        thresh (int): Threshold.
+        thresh (int): Overlap threshold of NMS.
         pre_max_size (int, optional): Max size of boxes before NMS.
             Default: None.
         post_max_size (int, optional): Max size of boxes after NMS.
@@ -69,7 +69,7 @@ def nms_normal_gpu(boxes, scores, thresh):
     Args:
         boxes (torch.Tensor): Input boxes with shape (N, 5).
         scores (torch.Tensor): Scores of predicted boxes with shape (N).
-        thresh (torch.Tensor): Threshold of NMS.
+        thresh (torch.Tensor): Overlap threshold of NMS.
 
     Returns:
         torch.Tensor: Remaining indices with scores in descending order.
