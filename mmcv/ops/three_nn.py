@@ -9,15 +9,15 @@ ext_module = ext_loader.load_ext('_ext', ['three_nn_forward'])
 
 
 class ThreeNN(Function):
+    """Find the top-3 nearest neighbors of the target set from the source set.
+
+    Please refer to https://arxiv.org/abs/1706.02413 for more details.
+    """
 
     @staticmethod
     def forward(ctx, target: torch.Tensor,
                 source: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Find the top-3 nearest neighbors of the target set from the source
-        set.
-
-        Paper reference: https://arxiv.org/abs/1706.02413
-
+        """
         Args:
             target (Tensor): shape (B, N, 3), points set that needs to
                 find the nearest neighbors.

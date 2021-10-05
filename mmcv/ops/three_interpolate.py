@@ -10,12 +10,15 @@ ext_module = ext_loader.load_ext(
 
 
 class ThreeInterpolate(Function):
+    """Performs weighted linear interpolation on 3 features.
+
+    Please refer to https://arxiv.org/abs/1706.02413 for more details.
+    """
 
     @staticmethod
     def forward(ctx, features: torch.Tensor, indices: torch.Tensor,
                 weight: torch.Tensor) -> torch.Tensor:
-        """Performs weighted linear interpolation on 3 features.
-
+        """
         Args:
             features (Tensor): (B, C, M) Features descriptors to be
                 interpolated
@@ -43,8 +46,7 @@ class ThreeInterpolate(Function):
     def backward(
         ctx, grad_out: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Backward of three interpolate.
-
+        """
         Args:
             grad_out (Tensor): (B, C, N) tensor with gradients of outputs
 
