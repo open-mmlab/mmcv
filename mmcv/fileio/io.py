@@ -20,6 +20,10 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
 
     This method provides a unified api for loading data from serialized files.
 
+    Note:
+        In v1.3.15 and later, :function:`load` supports loading data from
+        serialized files those can be storaged in different backends.
+
     Args:
         file (str or :obj:`Path` or file-like object): Filename or a file-like
             object.
@@ -61,6 +65,10 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
 
     This method provides a unified api for dumping data as strings or to files,
     and also supports custom arguments for each file format.
+
+    Note:
+        In v1.3.15 and later, :function:`dump` supports dumping data as strings
+        or to different backends.
 
     Args:
         obj (any): The python object to be dumped.

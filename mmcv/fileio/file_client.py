@@ -37,7 +37,7 @@ class CephBackend(BaseStorageBackend):
             path. When ``path_mapping={'src': 'dst'}``, ``src`` in ``filepath``
             will be replaced by ``dst``. Default: None.
 
-    ..warning::
+    .. warning::
         :class:`CephBackend` is deprecated using :class:`PetrelBackend` instead
     """
 
@@ -84,7 +84,7 @@ class PetrelBackend(BaseStorageBackend):
         >>> filepath2 = 'cluster-name:s3://path/of/file'
         >>> client = PetrelBackend()
         >>> client.get(filepath1)  # get from default cluster
-        >>> client.get(filepath2)  # get from cluster-name
+        >>> client.get(filepath2)  # get from 'cluster-name' cluster
     """
 
     def __init__(self,
@@ -317,13 +317,17 @@ class FileClient:
         prefix (str, optional): The prefix of the registered storage backend.
             Options are "s3", "http", "https". Default: None.
 
-    Example:
+    Examples:
         >>> # only set backend
-        >>> file_client = FileClient(backend='ceph')
-        >>> # only set prefixes
+        >>> file_client = FileClient(backend='petrel')
+        >>> # only set prefix
         >>> file_client = FileClient(prefix='s3')
-        >>> # set both backend and prefixes but use backend to choose client
-        >>> file_client = FileClient(backend='ceph', prefix='s3')
+        >>> # set both backend and prefix but use backend to choose client
+        >>> file_client = FileClient(backend='petrel', prefix='s3')
+        >>> # if the arguments are the same, the same object is returned
+        >>> file_client1 = FileClient(backend='petrel')
+        >>> file_client1 is file_client
+        True
 
     Attributes:
         client (:obj:`BaseStorageBackend`): The backend object.
@@ -393,6 +397,10 @@ class FileClient:
 
         Args:
             uri (str | Path): Uri to be parsed that contains the file prefix.
+
+        Examples:
+            >>> FileClient.parse_uri_prefix('s3://path/of/your/file')
+            's3'
         """
         assert is_filepath(uri)
         uri = str(uri)
@@ -400,8 +408,8 @@ class FileClient:
             return None
         else:
             prefix, _ = uri.split('://')
-            # In the case of ceph, the prefix may contains the cluster name
-            # like clusterName:s3
+            # In the case of PetrelBackend, the prefix may contains the cluster
+            # name like clusterName:s3
             if ':' in prefix:
                 _, prefix = prefix.split(':')
             return prefix
@@ -417,6 +425,12 @@ class FileClient:
                 Default: None.
             uri (str | Path, optional): Uri to be parsed that contains the file
                 prefix. Default: None.
+
+        Examples:
+            >>> uri = 's3://path/of/your/file'
+            >>> file_client = FileClient.infer_client(uri=uri)
+            >>> file_client_args = {'backend': 'petrel'}
+            >>> file_client = FileClient.infer_client(file_client_args)
         """
         assert file_client_args is not None or uri is not None
         if file_client_args is None:
