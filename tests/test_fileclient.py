@@ -150,8 +150,25 @@ class TestFileClient:
 
         # test `get`
         petrel_backend.client._client.Get = MagicMock(return_value=b'petrel')
-        petrel_backend.get(petrel_path)
+        assert petrel_backend.get(petrel_path) == b'petrel'
         petrel_backend.client._client.Get.assert_called_with(petrel_path)
+
+        # test `get_text`
+        petrel_backend.client._client.Get = MagicMock(return_value=b'petrel')
+        assert petrel_backend.get_text(petrel_path) == 'petrel'
+        petrel_backend.client._client.Get.assert_called_with(petrel_path)
+
+        # test `put`
+        petrel_backend.client._client.put = MagicMock()
+        petrel_backend.put(b'petrel', petrel_path)
+        petrel_backend.client._client.put.assert_called_with(
+            petrel_path, b'petrel')
+
+        # test `put_text`
+        petrel_backend.client._client.put = MagicMock()
+        petrel_backend.put_text('petrel', petrel_path)
+        petrel_backend.client._client.put.assert_called_with(
+            petrel_path, b'petrel')
 
         # test `remove`
         petrel_backend.client._client.delete = MagicMock()
