@@ -2,9 +2,15 @@
 
 文件输入输出模块提供了两个通用的 API 接口用于读取和保存不同格式的文件。
 
+```{note}
+在 v1.3.15 及之后的版本中，`File IO` 支持从不同后端读取数据和将数据保存至不同后端。更多细节请访问 https://github.com/open-mmlab/mmcv/pull/1330。
+```
+
 ### 读取和保存数据
 
 `mmcv` 提供了一个通用的 api 用于读取和保存数据，目前支持的格式有 json、yaml 和 pickle。
+
++ 从硬盘读取数据或者将数据保存至硬盘
 
 ```python
 import mmcv
@@ -26,6 +32,20 @@ mmcv.dump(data, 'out.pkl')
 # 将数据保存至文件对象
 with open('test.yaml', 'w') as f:
     data = mmcv.dump(data, f, file_format='yaml')
+```
+
++ 从其他后端加载或者保存至其他后端
+
+```python
+import mmcv
+
+# 从 s3 文件读取数据
+data = mmcv.load('s3://bucket-name/test.json')
+data = mmcv.load('s3://bucket-name/test.yaml')
+data = mmcv.load('s3://bucket-name/test.pkl')
+
+# 将数据保存至 s3 文件 (根据文件名后缀反推文件类型)
+mmcv.dump(data, 's3://bucket-name/out.pkl')
 ```
 
 我们提供了易于拓展的方式以支持更多的文件格式。我们只需要创建一个继承自 `BaseFileHandler` 的
@@ -88,6 +108,8 @@ d
 e
 ```
 
++ 从硬盘读取
+
 使用 `list_from_file` 读取 `a.txt` 。
 
 ```python
@@ -109,11 +131,35 @@ e
 3 panda
 ```
 
-使用 `dict_from_file` 读取 `b.txt` 。
+使用 `dict_from_file` 读取 `b.txt`。
 
 ```python
 >>> mmcv.dict_from_file('b.txt')
 {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 >>> mmcv.dict_from_file('b.txt', key_type=int)
+{1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
+```
+
++ 从其他后端读取
+
+使用 `list_from_file` 读取 `s3://bucket-name/a.txt` 。
+
+```python
+>>> mmcv.list_from_file('s3://bucket-name/a.txt')
+['a', 'b', 'c', 'd', 'e']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', offset=2)
+['c', 'd', 'e']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', max_num=2)
+['a', 'b']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', prefix='/mnt/')
+['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
+```
+
+使用 `dict_from_file` 读取 `b.txt`。
+
+```python
+>>> mmcv.dict_from_file('s3://bucket-name/b.txt')
+{'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+>>> mmcv.dict_from_file('s3://bucket-name/b.txt', key_type=int)
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
 ```
