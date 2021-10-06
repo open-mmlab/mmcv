@@ -2,10 +2,16 @@
 
 This module provides two universal API to load and dump files of different formats.
 
+```{note}
+In v1.3.15 and later, `File IO` also supports loading data from different backends and dumping data to different backends. More datails at https://github.com/open-mmlab/mmcv/pull/1330.
+```
+
 ### Load and dump data
 
 `mmcv` provides a universal api for loading and dumping data, currently
 supported formats are json, yaml and pickle.
+
++ Load from disk or dump to disk
 
 ```python
 import mmcv
@@ -27,6 +33,20 @@ mmcv.dump(data, 'out.pkl')
 # dump data to a file with a file-like object
 with open('test.yaml', 'w') as f:
     data = mmcv.dump(data, f, file_format='yaml')
+```
+
++ Load from other backends or dump to other backends
+
+```python
+import mmcv
+
+# load data from a file
+data = mmcv.load('s3://bucket-name/test.json')
+data = mmcv.load('s3://bucket-name/test.yaml')
+data = mmcv.load('s3://bucket-name/test.pkl')
+
+# dump data to a file with a filename (infer format from file extension)
+mmcv.dump(data, 's3://bucket-name/out.pkl')
 ```
 
 It is also very convenient to extend the api to support more file formats.
@@ -92,7 +112,9 @@ d
 e
 ```
 
-Then use `list_from_file` to load the list from a.txt.
++ Load from disk
+
+Use `list_from_file` to load the list from a.txt.
 
 ```python
 >>> mmcv.list_from_file('a.txt')
@@ -113,11 +135,35 @@ For example `b.txt` is a text file with 3 lines.
 3 panda
 ```
 
-Then use `dict_from_file` to load the dict from `b.txt` .
+Then use `dict_from_file` to load the dict from `b.txt`.
 
 ```python
 >>> mmcv.dict_from_file('b.txt')
 {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 >>> mmcv.dict_from_file('b.txt', key_type=int)
+{1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
+```
+
++ load from other backends
+
+Use `list_from_file` to load the list from `s3://bucket-name/a.txt`.
+
+```python
+>>> mmcv.list_from_file('s3://bucket-name/a.txt')
+['a', 'b', 'c', 'd', 'e']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', offset=2)
+['c', 'd', 'e']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', max_num=2)
+['a', 'b']
+>>> mmcv.list_from_file('s3://bucket-name/a.txt', prefix='/mnt/')
+['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
+```
+
+Use `dict_from_file` to load the dict from `s3://bucket-name/b.txt`.
+
+```python
+>>> mmcv.dict_from_file('s3://bucket-name/b.txt')
+{'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+>>> mmcv.dict_from_file('s3://bucket-name/b.txt', key_type=int)
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
 ```

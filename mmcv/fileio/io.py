@@ -20,6 +20,10 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
 
     This method provides a unified api for loading data from serialized files.
 
+    Note:
+        In v1.3.15 and later, `load` supports loading data from serialized
+        files those can be storaged in different backends.
+
     Args:
         file (str or :obj:`Path` or file-like object): Filename or a file-like
             object.
@@ -27,8 +31,14 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include "json", "yaml/yml" and
             "pickle/pkl".
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+
+    Examples:
+        >>> load('/path/of/your/file')  # file is storaged in disk
+        >>> load('https://path/of/your/file')  # file is storage in Internet
+        >>> load('s3://path/of/your/file')  # file is storage in ceph or petrel
 
     Returns:
         The content from the file.
@@ -62,14 +72,23 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
     This method provides a unified api for dumping data as strings or to files,
     and also supports custom arguments for each file format.
 
+    Note:
+        In v1.3.15 and later, `dump` supports dumping data as strings or to
+        files which is saved to different backends.
+
     Args:
         obj (any): The python object to be dumped.
         file (str or :obj:`Path` or file-like object, optional): If not
-            specified, then the object is dump to a str, otherwise to a file
+            specified, then the object is dumped to a str, otherwise to a file
             specified by the filename or file-like object.
         file_format (str, optional): Same as :func:`load`.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+
+    Examples:
+        >>> dump('hello world', '/path/of/your/file')  # disk
+        >>> dump('hello world', 's3://path/of/your/file')  # ceph or petrel
 
     Returns:
         bool: True for success, False otherwise.

@@ -13,6 +13,11 @@ def list_from_file(filename,
                    file_client_args=None):
     """Load a text file and parse the content as a list of strings.
 
+    Note:
+        In v1.3.15 and later, `list_from_file` supports loading a text file
+        which can be storaged in different backends and parsing the content as
+        a list for strings.
+
     Args:
         filename (str): Filename.
         prefix (str): The prefix to be inserted to the begining of each item.
@@ -20,8 +25,15 @@ def list_from_file(filename,
         max_num (int): The maximum number of lines to be read,
             zeros and negatives mean no limitation.
         encoding (str): Encoding used to open the file. Default utf-8.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+
+    Examples:
+        >>> list_from_file('/path/of/your/file')  # disk
+        ['hello', 'world']
+        >>> list_from_file('s3://path/of/your/file')  # ceph or petrel
+        ['hello', 'world']
 
     Returns:
         list[str]: A list of strings.
@@ -50,13 +62,25 @@ def dict_from_file(filename,
     whitespaces or tabs. The first column will be parsed as dict keys, and
     the following columns will be parsed as dict values.
 
+    Note:
+        In v1.3.15 and later, `dict_from_file` supports loading a text file
+        which can be storaged in different backends and parsing the content as
+        a dict.
+
     Args:
         filename(str): Filename.
         key_type(type): Type of the dict keys. str is user by default and
             type conversion will be performed if specified.
         encoding (str): Encoding used to open the file. Default utf-8.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+
+    Examples:
+        >>> dict_from_file('/path/of/your/file')  # disk
+        {'key1': 'value1', 'key2': 'value2'}
+        >>> dict_from_file('s3://path/of/your/file')  # ceph or petrel
+        {'key1': 'value1', 'key2': 'value2'}
 
     Returns:
         dict: The parsed contents.
