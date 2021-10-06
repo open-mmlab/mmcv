@@ -1,3 +1,4 @@
+import os.path as osp
 import sys
 import tempfile
 from pathlib import Path
@@ -102,6 +103,12 @@ class TestFileClient:
 
             # test `check_exist`
             assert not disk_backend.check_exist(filepath2)
+
+        disk_dir = '/path/of/your/directory'
+        assert disk_backend.concat_paths(disk_dir, 'file') == \
+            osp.join(disk_dir, 'file')
+        assert disk_backend.concat_paths(disk_dir, 'dir', 'file') == \
+            osp.join(disk_dir, 'dir', 'file')
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
@@ -209,6 +216,13 @@ class TestFileClient:
         petrel_backend.client._client.contains.assert_called_with(petrel_path)
         # if ending with '/', it is not a file
         assert not petrel_backend.isfile(f'{petrel_path}/')
+
+        # test `concat_paths`
+        petrel_dir = 's3://path/of/your/directory'
+        assert petrel_backend.concat_paths(petrel_dir, 'file') == \
+            f'{petrel_dir}/file'
+        assert petrel_backend.concat_paths(petrel_dir, 'dir', 'file') == \
+            f'{petrel_dir}/dir/file'
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
     @patch('mc.pyvector', MagicMock)

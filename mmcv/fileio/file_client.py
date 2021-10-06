@@ -157,6 +157,12 @@ class PetrelBackend(BaseStorageBackend):
             return False
         return self.check_exist(filepath)
 
+    def concat_paths(self, path, *paths) -> str:
+        formatted_paths = [self._format_path(self._path_mapping(path))]
+        for path in paths:
+            formatted_paths.append(self._format_path(self._path_mapping(path)))
+        return '/'.join(formatted_paths)
+
 
 class MemcachedBackend(BaseStorageBackend):
     """Memcached storage backend.
@@ -284,6 +290,9 @@ class HardDiskBackend(BaseStorageBackend):
     def isfile(self, filepath: Union[str, Path]) -> bool:
         return osp.isfile(str(filepath))
 
+    def concat_paths(self, path, *paths):
+        return osp.join(path, *paths)
+
 
 class HTTPBackend(BaseStorageBackend):
     """HTTP and HTTPS storage bachend."""
@@ -341,7 +350,7 @@ class FileClient:
         'petrel': PetrelBackend,
         'http': HTTPBackend,
     }
-    # This collection is used to record the overridden backend, and when a
+    # This collection is used to record the overridden backends, and when a
     # backend appears in the collection, the singleton pattern is disabled for
     # that backend, because if the singleton pattern is used, then the object
     # returned will be the backend before the override
@@ -552,3 +561,6 @@ class FileClient:
 
     def isfile(self, filepath):
         return self.client.isfile(filepath)
+
+    def concat_paths(self, path, *paths):
+        return self.client.concat_paths(path, *paths)
