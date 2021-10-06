@@ -201,14 +201,16 @@ class EvalHook(Hook):
         if not self.out_dir:
             self.out_dir = runner.work_dir
 
+        self.file_client = FileClient.infer_client(self.file_client_args,
+                                                   self.out_dir)
+
         if self.out_dir != runner.work_dir:
             # The final `self.out_dir` is the concatenation of `self.out_dir`
             # and the last level directory of `runner.work_dir`
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-            self.out_dir = osp.join(self.out_dir, basename)
+            self.out_dir = self.file_client.concat_paths(
+                self.out_dir, basename)
 
-        self.file_client = FileClient.infer_client(self.file_client_args,
-                                                   self.out_dir)
         if self.save_best is not None:
             if runner.meta is None:
                 warnings.warn('runner.meta is None. Creating an empty one.')
@@ -326,7 +328,8 @@ class EvalHook(Hook):
                 self.file_client.remove(self.best_ckpt_path)
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
-            self.best_ckpt_path = osp.join(self.out_dir, best_ckpt_name)
+            self.best_ckpt_path = self.file_client.concat_paths(
+                self.out_dir, best_ckpt_name)
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
 
             runner.save_checkpoint(
