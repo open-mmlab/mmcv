@@ -1,4 +1,5 @@
 import sys
+import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -62,6 +63,7 @@ class TestFileClient:
     def test_disk_backend(self):
         disk_backend = FileClient('disk')
 
+        # test `get`
         # input path is Path object
         img_bytes = disk_backend.get(self.img_path)
         img = mmcv.imfrombytes(img_bytes)
@@ -73,12 +75,33 @@ class TestFileClient:
         assert self.img_path.open('rb').read() == img_bytes
         assert img.shape == self.img_shape
 
+        # test `get_text`
         # input path is Path object
         value_buf = disk_backend.get_text(self.text_path)
         assert self.text_path.open('r').read() == value_buf
         # input path is str
         value_buf = disk_backend.get_text(str(self.text_path))
         assert self.text_path.open('r').read() == value_buf
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # test `put`
+            filepath1 = Path(tmp_dir) / 'test_put'
+            disk_backend.put(b'hello world', filepath1)
+            assert filepath1.open('rb').read() == b'hello world'
+
+            # test `put_text`
+            filepath2 = Path(tmp_dir) / 'test_put_text'
+            disk_backend.put_text('hello world', filepath2)
+            assert filepath2.open('r').read() == 'hello world'
+
+            # test `isfile`
+            assert disk_backend.isfile(filepath2)
+
+            # test `remove`
+            disk_backend.remove(filepath2)
+
+            # test `check_exist`
+            assert not disk_backend.check_exist(filepath2)
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
