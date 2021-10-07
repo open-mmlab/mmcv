@@ -58,7 +58,8 @@ def test_checkpoint_hook(tmp_path):
     runner.meta = dict()
     out_dir = 's3://user/data'
     with patch.object(PetrelBackend, 'put') as mock_put, \
-         patch.object(PetrelBackend, 'remove') as mock_remove:
+         patch.object(PetrelBackend, 'remove') as mock_remove, \
+         patch.object(PetrelBackend, 'check_exist') as mock_check_exist:
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=True, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
@@ -68,6 +69,7 @@ def test_checkpoint_hook(tmp_path):
             out_dir, basename, 'epoch_4.pth')
     mock_put.assert_called()
     mock_remove.assert_called()
+    mock_check_exist.assert_called()
     shutil.rmtree(runner.work_dir)
 
     # test iter based runner
