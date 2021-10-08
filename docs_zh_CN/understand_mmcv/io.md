@@ -3,14 +3,14 @@
 文件输入输出模块提供了两个通用的 API 接口用于读取和保存不同格式的文件。
 
 ```{note}
-在 v1.3.15 及之后的版本中，`File IO` 支持从不同后端读取数据和将数据保存至不同后端。更多细节请访问 https://github.com/open-mmlab/mmcv/pull/1330。
+在 v1.3.15 及之后的版本中，IO 模块支持从不同后端读取数据和将数据保存至不同后端。更多细节请访问 PR [#1330](https://github.com/open-mmlab/mmcv/pull/1330)。
 ```
 
 ### 读取和保存数据
 
 `mmcv` 提供了一个通用的 api 用于读取和保存数据，目前支持的格式有 json、yaml 和 pickle。
 
-+ 从硬盘读取数据或者将数据保存至硬盘
+#### 从硬盘读取数据或者将数据保存至硬盘
 
 ```python
 import mmcv
@@ -34,7 +34,7 @@ with open('test.yaml', 'w') as f:
     data = mmcv.dump(data, f, file_format='yaml')
 ```
 
-+ 从其他后端加载或者保存至其他后端
+#### 从其他后端加载或者保存至其他后端
 
 ```python
 import mmcv
@@ -69,7 +69,7 @@ class TxtHandler1(mmcv.BaseFileHandler):
         return str(obj)
 ```
 
-举 `PickleHandler` 为例。
+举 `PickleHandler` 为例
 
 ```python
 import pickle
@@ -107,8 +107,7 @@ c
 d
 e
 ```
-
-+ 从硬盘读取
+#### 从硬盘读取
 
 使用 `list_from_file` 读取 `a.txt` 。
 
@@ -140,7 +139,7 @@ e
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
 ```
 
-+ 从其他后端读取
+#### 从其他后端读取
 
 使用 `list_from_file` 读取 `s3://bucket-name/a.txt` 。
 

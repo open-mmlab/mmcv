@@ -3,7 +3,7 @@
 This module provides two universal API to load and dump files of different formats.
 
 ```{note}
-In v1.3.15 and later, `File IO` also supports loading data from different backends and dumping data to different backends. More datails at https://github.com/open-mmlab/mmcv/pull/1330.
+Since v1.3.15, the IO modules support loading and dumping data from and to different backends, respectively. More details are in PR [#1330](https://github.com/open-mmlab/mmcv/pull/1330).
 ```
 
 ### Load and dump data
@@ -11,7 +11,7 @@ In v1.3.15 and later, `File IO` also supports loading data from different backen
 `mmcv` provides a universal api for loading and dumping data, currently
 supported formats are json, yaml and pickle.
 
-+ Load from disk or dump to disk
+#### Load from disk or dump to disk
 
 ```python
 import mmcv
@@ -35,7 +35,7 @@ with open('test.yaml', 'w') as f:
     data = mmcv.dump(data, f, file_format='yaml')
 ```
 
-+ Load from other backends or dump to other backends
+#### Load from other backends or dump to other backends
 
 ```python
 import mmcv
@@ -112,7 +112,7 @@ d
 e
 ```
 
-+ Load from disk
+#### Load from disk
 
 Use `list_from_file` to load the list from a.txt.
 
@@ -144,7 +144,7 @@ Then use `dict_from_file` to load the dict from `b.txt`.
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
 ```
 
-+ load from other backends
+#### Load from other backends
 
 Use `list_from_file` to load the list from `s3://bucket-name/a.txt`.
 
