@@ -21,30 +21,31 @@ class CheckpointHook(Hook):
             checkpoint. It is usually used for resuming experiments.
             Default: True.
         out_dir (str, optional): The root directory to save checkpoints. If not
-            specified, `runner.work_dir` will be used by default. If specified,
-            the `out_dir` will be the concatenation of `out_dir` and the last
-            level directory of `runner.work_dir`.
+            specified, ``runner.work_dir`` will be used by default. If
+            specified, the ``out_dir`` will be the concatenation of ``out_dir``
+            and the last level directory of ``runner.work_dir``.
             `Changed in version 1.3.15.`
         max_keep_ckpts (int, optional): The maximum checkpoints to keep.
             In some cases we want only the latest few checkpoints and would
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
-        save_last (bool): Whether to force the last checkpoint to be saved
-            regardless of interval.
-        sync_buffer (bool): Whether to synchronize buffers in different
-            gpus. Default: False.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        save_last (bool, optional): Whether to force the last checkpoint to be
+            saved regardless of interval. Default: True.
+        sync_buffer (bool, optional): Whether to synchronize buffers in
+            different gpus. Default: False.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
             `New in version 1.3.15.`
 
     .. warning::
-        Before v1.3.15, the `out_dir` argument indicates the path where the
-        checkpoint is stored. However, in v1.3.15 and later, `out_dir`
-        indicates the root directory and the final path to save checkpoint is
-        the concatenation of out_dir and the last level directory of
-        `runner.work_dir`. Suppose the value of `out_dir` is "/path/of/A" and
-        the value of `runner.work_dir` is "/path/of/B", then the final path
-        will be "/path/of/A/B".
+        Before v1.3.15, the ``out_dir`` argument indicates the path where the
+        checkpoint is stored. However, since v1.3.15, ``out_dir`` indicates the
+        root directory and the final path to save checkpoint is the
+        concatenation of ``out_dir`` and the last level directory of
+        ``runner.work_dir``. Suppose the value of ``out_dir`` is "/path/of/A"
+        and the value of ``runner.work_dir`` is "/path/of/B", then the final
+        path will be "/path/of/A/B".
     """
 
     def __init__(self,
@@ -72,8 +73,9 @@ class CheckpointHook(Hook):
             self.out_dir = runner.work_dir
 
         if self.out_dir != runner.work_dir:
-            # The final `self.out_dir` is the concatenation of `self.out_dir`
-            # and the last level directory of `runner.work_dir`
+            # The final ``self.out_dir`` is the concatenation of
+            # ``self.out_dir`` and the last level directory of
+            # ``runner.work_dir``
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = osp.join(self.out_dir, basename)
 

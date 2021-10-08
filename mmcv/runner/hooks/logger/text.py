@@ -9,7 +9,7 @@ import torch.distributed as dist
 
 import mmcv
 from mmcv.fileio.file_client import FileClient
-from mmcv.utils import scandir
+from mmcv.utils import is_tuple_of, scandir
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -22,27 +22,33 @@ class TextLoggerHook(LoggerHook):
     saved in json file.
 
     Args:
-        by_epoch (bool): Whether EpochBasedRunner is used.
-        interval (int): Logging interval (every k iterations).
-        ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-        reset_flag (bool): Whether to clear the output buffer after logging.
-        interval_exp_name (int): Logging interval for experiment name. This
-            feature is to help users conveniently get the experiment
+        by_epoch (bool, optional): Whether EpochBasedRunner is used.
+            Default: True.
+        interval (int, optional): Logging interval (every k iterations).
+            Default: 10.
+        ignore_last (bool, optional): Ignore the log of last iterations in each
+            epoch if less than :attr:`interval`. Default: True.
+        reset_flag (bool, optional): Whether to clear the output buffer after
+            logging. Default: False.
+        interval_exp_name (int, optional): Logging interval for experiment
+            name. This feature is to help users conveniently get the experiment
             information from screen or log file. Default: 1000.
-        out_dir (str, optional): Logs are saved in `runner.work_dir` default.
-            If `out_dir` is specified, logs will be copied to a new directory
-            which is the concatenation of `out_dir` and the last level
-            directory of `runner.work_dir`. Default: None.
+        out_dir (str, optional): Logs are saved in ``runner.work_dir`` default.
+            If ``out_dir`` is specified, logs will be copied to a new directory
+            which is the concatenation of ``out_dir`` and the last level
+            directory of ``runner.work_dir``. Default: None.
             `New in version 1.3.15.`
-        out_suffix (str, tuple[str]): Those filenames ending with `out_suffix`
-            will be copied to `out_dir`. Default: ('.log.json', '.log', '.py').
+        out_suffix (str or tuple[str], optional): Those filenames ending with
+            ``out_suffix`` will be copied to ``out_dir``.
+            Default: ('.log.json', '.log', '.py').
             `New in version 1.3.15.`
-        keep_log (bool): Whether to keep local log when out_dir is specified.
-            If False, the local log will be removed. Default: True.
+        keep_log (bool, optional): Whether to keep local log when
+            :attr:`out_dir` is specified. If False, the local log will be
+            removed. Default: True.
             `New in version 1.3.15.`
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
             `New in version 1.3.15.`
     """
 
@@ -67,7 +73,12 @@ class TextLoggerHook(LoggerHook):
                 'file_client_args should be "None" when `out_dir` is not'
                 'specified.')
         self.out_dir = out_dir
+
+        if not isinstance(out_dir, str) and not is_tuple_of(str):
+            raise TypeError(
+                f'out_dir should be str or tuple of str, but got {out_dir}')
         self.out_suffix = out_suffix
+
         self.keep_log = keep_log
         if self.out_dir is not None:
             self.file_client = FileClient.infer_client(file_client_args,
@@ -77,8 +88,9 @@ class TextLoggerHook(LoggerHook):
         super(TextLoggerHook, self).before_run(runner)
 
         if self.out_dir is not None:
-            # The final `self.out_dir` is the concatenation of `self.out_dir`
-            # and the last level directory of `runner.work_dir`
+            # The final ``self.out_dir`` is the concatenation of
+            # ``self.out_dir`` and the last level directory of
+            # ``runner.work_dir``
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = osp.join(self.out_dir, basename)
 

@@ -331,11 +331,13 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
-        backend (str): The storage backend type. Options are 'ceph', 'petrel'.
+        backend (str, optional): The storage backend type. Options are 'ceph',
+            'petrel'.
             Default: 'petrel'.
 
-    ..warning::
-        :class:`CephBackend` is deprecated using :class:`PetrelBackend` instead
+    .. warning::
+        :class:`CephBackend` will be deprecated, please use
+        :class:`PetrelBackend` instead
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -345,7 +347,8 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         raise ValueError(f'Load from Backend {backend} is not supported.')
 
     if backend == 'ceph':
-        warnings.warn('CephBackend is deprecated using PetrelBackend instead')
+        warnings.warn(
+            'CephBackend will be deprecated, please use PetrelBackend instead')
 
     # CephClient and PetrelBackend have the same prefix 's3://' and the latter
     # will be chosen default. If PetrelBackend can not be instantiated
@@ -643,8 +646,10 @@ def save_checkpoint(model,
         filename (str): Checkpoint filename.
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+            `New in version 1.3.15.`
     """
     if meta is None:
         meta = {}
@@ -675,7 +680,7 @@ def save_checkpoint(model,
         if file_client_args is not None:
             raise ValueError(
                 'file_client_args should be "None" if filename starts with'
-                '"pavi://"')
+                f'"pavi://", but got {file_client_args}')
         try:
             from pavi import modelcloud
             from pavi import exception
