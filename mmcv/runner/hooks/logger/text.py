@@ -74,9 +74,10 @@ class TextLoggerHook(LoggerHook):
                 'specified.')
         self.out_dir = out_dir
 
-        if not isinstance(out_dir, str) and not is_tuple_of(str):
-            raise TypeError(
-                f'out_dir should be str or tuple of str, but got {out_dir}')
+        if not (out_dir is None or isinstance(out_dir, str)
+                or is_tuple_of(out_dir, str)):
+            raise TypeError('out_dir should be  "None" or string or tuple of '
+                            'string, but got {out_dir}')
         self.out_suffix = out_suffix
 
         self.keep_log = keep_log
