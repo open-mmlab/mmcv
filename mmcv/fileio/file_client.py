@@ -38,7 +38,8 @@ class CephBackend(BaseStorageBackend):
             will be replaced by ``dst``. Default: None.
 
     .. warning::
-        :class:`CephBackend` is deprecated using :class:`PetrelBackend` instead
+        :class:`CephBackend` will be deprecated, please use
+        :class:`PetrelBackend` instead
     """
 
     def __init__(self, path_mapping=None):
@@ -47,7 +48,8 @@ class CephBackend(BaseStorageBackend):
         except ImportError:
             raise ImportError('Please install ceph to enable CephBackend.')
 
-        warnings.warn('CephBackend is deprecated using PetrelBackend instead')
+        warnings.warn(
+            'CephBackend will be deprecated, please use PetrelBackend instead')
         self._client = ceph.S3Client()
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
@@ -101,6 +103,11 @@ class PetrelBackend(BaseStorageBackend):
         self.path_mapping = path_mapping
 
     def _path_mapping(self, filepath: str) -> str:
+        """Replace the prefix of filepath with path_mapping.
+
+        Args:
+            filepath (str): Path to be mapped.
+        """
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
                 filepath = filepath.replace(k, v)
@@ -113,10 +120,18 @@ class PetrelBackend(BaseStorageBackend):
         environment, the filepath will be the format of
         's3://bucket_name\\image.jpg'. By invoking `_format_path`, the above
         filepath will be converted to 's3://bucket_name/image.jpg'.
+
+        Args:
+            filepath (str): Path to be formatted.
         """
         return re.sub(r'\\+', '/', filepath)
 
     def get(self, filepath: Union[str, Path]) -> memoryview:
+        """Read data from a given filepath with 'rb' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+        """
         filepath = self._path_mapping(str(filepath))
         filepath = self._format_path(filepath)
         value = self._client.Get(filepath)
@@ -126,9 +141,22 @@ class PetrelBackend(BaseStorageBackend):
     def get_text(self,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> str:
+        """Read data from a given filepath with 'r' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+            encoding (str, optional): The encoding format used to open the
+                `filepath`. Default: 'utf-8'.
+        """
         return str(self.get(filepath), encoding=encoding)
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
+        """Save data to a given filepath.
+
+        Args:
+            obj (bytes): Data to be saved.
+            filepath (str or Path): Path to write data.
+        """
         filepath = self._path_mapping(str(filepath))
         filepath = self._format_path(filepath)
         self._client.put(filepath, obj)
@@ -137,19 +165,42 @@ class PetrelBackend(BaseStorageBackend):
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
+        """Save data to a given filepath.
+
+        Args:
+            obj (str): Data to be written.
+            filepath (str or Path): Path to write data.
+            encoding (str, optional): The encoding format used to encode the
+                `obj`. Default: 'utf-8'.
+        """
         self.put(bytes(obj, encoding=encoding), filepath)
 
     def remove(self, filepath: Union[str, Path]) -> None:
+        """Remove a file.
+
+        Args:
+            filepath (str or Path): Path to be removed.
+        """
         filepath = self._path_mapping(str(filepath))
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether exists.
+
+        Args:
+            filepath (str or Path): Path to be checked whether exists.
+        """
         filepath = self._path_mapping(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a file.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a file.
+        """
         filepath = self._path_mapping(str(filepath))
         filepath = self._format_path(filepath)
         # petrel checks a filepath whether it is a file by its ending char
@@ -157,10 +208,19 @@ class PetrelBackend(BaseStorageBackend):
             return False
         return self.check_exist(filepath)
 
-    def concat_paths(self, path, *paths) -> str:
-        formatted_paths = [self._format_path(self._path_mapping(path))]
-        for path in paths:
-            formatted_paths.append(self._format_path(self._path_mapping(path)))
+    def concat_paths(self, filepath: Union[str, Path],
+                     *filepaths: Union[str, Path]) -> str:
+        """Concatenate all filepaths.
+
+        Args:
+            filepath (str or Path): Path to be concatenated.
+        """
+        formatted_paths = [
+            self._format_path(self._path_mapping(str(filepath)))
+        ]
+        for path in filepaths:
+            formatted_paths.append(
+                self._format_path(self._path_mapping(str(path))))
         return '/'.join(formatted_paths)
 
 
@@ -257,41 +317,97 @@ class LmdbBackend(BaseStorageBackend):
 class HardDiskBackend(BaseStorageBackend):
     """Raw hard disks storage backend."""
 
-    def get(self, filepath):
+    def get(self, filepath: Union[str, Path]) -> bytes:
+        """Read data from a given filepath with 'rb' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+        """
         filepath = str(filepath)
         with open(filepath, 'rb') as f:
             value_buf = f.read()
         return value_buf
 
-    def get_text(self, filepath, encoding='utf-8'):
+    def get_text(self,
+                 filepath: Union[str, Path],
+                 encoding: str = 'utf-8') -> str:
+        """Read data from a given filepath with 'r' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+            encoding (str, optional): The encoding format used to open the
+                `filepath`. Default: 'utf-8'.
+        """
         filepath = str(filepath)
         with open(filepath, 'r', encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
 
-    def put(self, obj, filepath):
+    def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
+        """Write data to a given filepath with 'wb' mode.
+
+        Args:
+            obj (bytes): Data to be written.
+            filepath (str or Path): Path to write data.
+        """
         filepath = str(filepath)
         with open(filepath, 'wb') as f:
             f.write(obj)
 
-    def put_text(self, obj, filepath, encoding='utf-8'):
+    def put_text(self,
+                 obj: str,
+                 filepath: Union[str, Path],
+                 encoding: str = 'utf-8') -> None:
+        """Write data to a given filepath with 'w' mode.
+
+        Args:
+            obj (str): Data to be written.
+            filepath (str or Path): Path to write data.
+            encoding (str, optional): The encoding format used to open the
+                `filepath`. Default: 'utf-8'.
+        """
         filepath = str(filepath)
         with open(filepath, 'w', encoding=encoding) as f:
             f.write(obj)
 
     def remove(self, filepath: Union[str, Path]) -> None:
-        """Remove a file."""
+        """Remove a file.
+
+        Args:
+            filepath (str or Path): Path to be removed.
+        """
         filepath = str(filepath)
         os.remove(filepath)
 
     def check_exist(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether exists.
+
+        Args:
+            filepath (str or Path): Path to be checked whether exists.
+        """
         return osp.exists(str(filepath))
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a file.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a file.
+        """
         return osp.isfile(str(filepath))
 
-    def concat_paths(self, path, *paths):
-        return osp.join(path, *paths)
+    def concat_paths(self, filepath: Union[str, Path],
+                     *filepaths: Union[str, Path]) -> str:
+        """Concatenate all filepaths.
+
+        Join one or more filepath components intelligently. The return value
+        is the concatenation of filepath and any members of *filepaths.
+
+        Args:
+            filepath (str or Path): Path to be concatenated.
+        """
+        filepath = str(filepath)
+        filepaths = [str(path) for path in filepaths]
+        return osp.join(filepath, *filepaths)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -310,7 +426,7 @@ class FileClient:
     """A general file client to access files in different backends.
 
     The client loads a file or text in a specified backend from its path
-    and return it as a binary or text file. There are two ways to choose a
+    and returns it as a binary or text file. There are two ways to choose a
     backend, the name of backend and the prefix of path. Although both of them
     can be used to choose a storage backend, ``backend`` has a higher priority
     that is if they are all set, the storage backend will be chosen by the
@@ -391,7 +507,7 @@ class FileClient:
                 _instance.backend_name = backend
             else:
                 _instance.client = cls._prefix_to_backends[prefix](**kwargs)
-                # infer the backend name according to prefix
+                # infer the backend name according to the prefix
                 for backend_name, backend_cls in cls._backends.items():
                     if isinstance(_instance.client, backend_cls):
                         _instance.backend_name = backend_name
@@ -406,6 +522,9 @@ class FileClient:
 
         Args:
             uri (str | Path): Uri to be parsed that contains the file prefix.
+
+        Returns:
+            return the prefix of uri if it contains "://" else None.
 
         Examples:
             >>> FileClient.parse_uri_prefix('s3://path/of/your/file')
@@ -430,8 +549,8 @@ class FileClient:
         """Infer a suitable file client based on the URI and arguments.
 
         Args:
-            file_client_args (dict): Arguments to instantiate a FileClient.
-                Default: None.
+            file_client_args (dict, optional): Arguments to instantiate a
+                FileClient. Default: None.
             uri (str | Path, optional): Uri to be parsed that contains the file
                 prefix. Default: None.
 
@@ -523,11 +642,9 @@ class FileClient:
                 Defaults to None.
             force (bool, optional): Whether to override the backend if the name
                 has already been registered. Defaults to False.
-            prefixes (str or list[str] or tuple[str]): The prefix of the
-                registered storage backend.
-
-        .. versionadd:: 1.3.14
-            The *prefixes* parameter.
+            prefixes (str or list[str] or tuple[str], optional): The prefixes
+                of the registered storage backend. Default: None.
+                `New in version 1.3.15.`
         """
         if backend is not None:
             cls._register_backend(
@@ -541,26 +658,76 @@ class FileClient:
 
         return _register
 
-    def get(self, filepath):
+    def get(self, filepath: Union[str, Path]) -> Union[bytes, memoryview]:
+        """Read data from a given filepath with 'rb' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+        """
         return self.client.get(filepath)
 
-    def get_text(self, filepath, encoding='utf-8'):
+    def get_text(self, filepath: Union[str, Path], encoding='utf-8') -> str:
+        """Read data from a given filepath with 'r' mode.
+
+        Args:
+            filepath (str or Path): Path to read data.
+            encoding (str, optional): The encoding format used to open the
+                `filepath`. Default: 'utf-8'.
+        """
         return self.client.get_text(filepath, encoding)
 
-    def put(self, obj, filepath):
+    def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
+        """Write data to a given filepath with 'wb' mode.
+
+        Args:
+            obj (bytes): Data to be written.
+            filepath (str or Path): Path to write data.
+        """
         self.client.put(obj, filepath)
 
-    def put_text(self, obj, filepath):
+    def put_text(self, obj: str, filepath: Union[str, Path]) -> None:
+        """Write data to a given filepath with 'w' mode.
+
+        Args:
+            obj (str): Data to be written.
+            filepath (str or Path): Path to write data.
+            encoding (str, optional): The encoding format used to open the
+                `filepath`. Default: 'utf-8'.
+        """
         self.client.put_text(obj, filepath)
 
-    def remove(self, filepath):
+    def remove(self, filepath: Union[str, Path]) -> None:
+        """Remove a file.
+
+        Args:
+            filepath (str, Path): Path to be removed.
+        """
         self.client.remove(filepath)
 
-    def check_exist(self, filepath):
+    def check_exist(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether exists.
+
+        Args:
+            filepath (str or Path): Path to be checked whether exists.
+        """
         return self.client.check_exist(filepath)
 
-    def isfile(self, filepath):
+    def isfile(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a file.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a file.
+        """
         return self.client.isfile(filepath)
 
-    def concat_paths(self, path, *paths):
-        return self.client.concat_paths(path, *paths)
+    def concat_paths(self, filepath: Union[str, Path],
+                     *filepaths: Union[str, Path]) -> str:
+        """Concatenate all filepaths.
+
+        Join one or more filepath components intelligently. The return value
+        is the concatenation of filepath and any members of *filepaths.
+
+        Args:
+            filepath (str or Path): Path to be concatenated.
+        """
+        return self.client.concat_paths(filepath, *filepaths)
