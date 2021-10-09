@@ -50,7 +50,6 @@ int HardVoxelizeForwardCUDAKernelLauncher(
             NDim);
       }));
 
-  cudaDeviceSynchronize();
   AT_CUDA_CHECK(cudaGetLastError());
 
   // 2. map point to the idx of the corresponding voxel, find duplicate coor
@@ -78,7 +77,6 @@ int HardVoxelizeForwardCUDAKernelLauncher(
             max_voxels, num_points, NDim);
       }));
 
-  cudaDeviceSynchronize();
   AT_CUDA_CHECK(cudaGetLastError());
 
   // 3. determin voxel num and voxel's coor index
@@ -104,7 +102,6 @@ int HardVoxelizeForwardCUDAKernelLauncher(
                               max_points, max_voxels, num_points);
                         }));
 
-  cudaDeviceSynchronize();
   AT_CUDA_CHECK(cudaGetLastError());
 
   // 4. copy point features to voxels
@@ -139,7 +136,6 @@ int HardVoxelizeForwardCUDAKernelLauncher(
                 coors.contiguous().data_ptr<int>(), num_points, NDim);
       }));
 
-  cudaDeviceSynchronize();
   AT_CUDA_CHECK(cudaGetLastError());
 
   auto voxel_num_cpu = voxel_num.to(at::kCPU);
@@ -187,6 +183,5 @@ void DynamicVoxelizeForwardCUDAKernelLauncher(
         coors_z_max, grid_x, grid_y, grid_z, num_points, num_features, NDim);
   });
 
-  cudaDeviceSynchronize();
   AT_CUDA_CHECK(cudaGetLastError());
 }

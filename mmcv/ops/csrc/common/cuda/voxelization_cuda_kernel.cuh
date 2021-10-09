@@ -26,14 +26,14 @@ __global__ void dynamic_voxelize_kernel(
     int c_x = floor((points_offset[0] - coors_x_min) / voxel_x);
     if (c_x < 0 || c_x >= grid_x) {
       coors_offset[0] = -1;
-      return;
+      continue;
     }
 
     int c_y = floor((points_offset[1] - coors_y_min) / voxel_y);
     if (c_y < 0 || c_y >= grid_y) {
       coors_offset[0] = -1;
       coors_offset[1] = -1;
-      return;
+      continue;
     }
 
     int c_z = floor((points_offset[2] - coors_z_min) / voxel_z);

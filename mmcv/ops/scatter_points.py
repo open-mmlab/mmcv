@@ -16,16 +16,18 @@ class _dynamic_scatter(Function):
         """convert kitti points(N, >=3) to voxels.
 
         Args:
-            feats: [N, C] float tensor. points features to be reduced
+            feats (torch.Tensor): [N, C]. Points features to be reduced
                 into voxels.
-            coors: [N, ndim] int tensor. corresponding voxel coordinates
+            coors (torch.Tensor): [N, ndim]. Corresponding voxel coordinates
                 (specifically multi-dim voxel index) of each points.
-            reduce_type: str. reduce op. support 'max', 'sum' and 'mean'
+            reduce_type (str, optional): Reduce op. support 'max', 'sum' and
+                'mean'. Default: 'max'.
+
         Returns:
-            tuple
-            voxel_feats: [M, C] float tensor. reduced features. input features
-                that shares the same voxel coordinates are reduced to one row
-            coordinates: [M, ndim] int tensor, voxel coordinates.
+            voxel_feats (torch.Tensor): [M, C]. Reduced features, input
+                features that shares the same voxel coordinates are reduced to
+                one row.
+            voxel_coors (torch.Tensor): [M, ndim]. Voxel coordinates.
         """
         results = ext_module.dynamic_point_to_voxel_forward(
             feats, coors, reduce_type)
@@ -54,22 +56,23 @@ dynamic_scatter = _dynamic_scatter.apply
 
 
 class DynamicScatter(nn.Module):
+    """Scatters points into voxels, used in the voxel encoder with dynamic
+    voxelization.
+
+    **Note**: The CPU and GPU implementation get the same output, but have
+        numerical difference after summation and division (e.g., 5e-7).
+
+    Args:
+        voxel_size (list): list [x, y, z] size of three dimension.
+        point_cloud_range (list): The coordinate range of points, [x_min,
+            y_min, z_min, x_max, y_max, z_max].
+        average_points (bool): whether to use avg pooling to scatter points
+            into voxel.
+    """
 
     def __init__(self, voxel_size, point_cloud_range, average_points: bool):
         super(DynamicScatter, self).__init__()
-        """Scatters points into voxels, used in the voxel encoder with
-           dynamic voxelization
 
-        **Note**: The CPU and GPU implementation get the same output, but
-        have numerical difference after summation and division (e.g., 5e-7).
-
-        Args:
-            average_points (bool): whether to use avg pooling to scatter
-                points into voxel voxel_size (list): list [x, y, z] size
-                of three dimension
-            point_cloud_range (list):
-                [x_min, y_min, z_min, x_max, y_max, z_max]
-        """
         self.voxel_size = voxel_size
         self.point_cloud_range = point_cloud_range
         self.average_points = average_points
@@ -79,10 +82,6 @@ class DynamicScatter(nn.Module):
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
 
     def forward(self, points, coors):
-        """
-        Args:
-            input: NC points
-        """
         if coors.size(-1) == 3:
             return self.forward_single(points, coors)
         else:

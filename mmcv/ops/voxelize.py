@@ -22,24 +22,27 @@ class _Voxelization(Function):
         """convert kitti points(N, >=3) to voxels.
 
         Args:
-            points: [N, ndim] float tensor. points[:, :3] contain xyz points
-                and points[:, 3:] contain other information like reflectivity
-            voxel_size: [3] list/tuple or array, float. xyz, indicate voxel
-                size
-            coors_range: [6] list/tuple or array, float. indicate voxel
-                range. format: xyzxyz, minmax
-            max_points: int. indicate maximum points contained in a voxel. if
-                max_points=-1, it means using dynamic_voxelize
-            max_voxels: int. indicate maximum voxels this function create.
+            points (torch.Tensor): [N, ndim]. Points[:, :3] contain xyz points
+                and points[:, 3:] contain other information like reflectivity.
+            voxel_size (tuple or float): The size of voxel with the shape of
+                [3].
+            coors_range (tuple or float): The coordinate range of voxel with
+                the shape of [6].
+            max_points (int, optional): maximum points contained in a voxel. if
+                max_points=-1, it means using dynamic_voxelize. Default: 35.
+            max_voxels (int, optional): maximum voxels this function create.
                 for second, 20000 is a good choice. Users should shuffle points
                 before call this function because max_voxels may drop points.
+                Default: 20000.
 
         Returns:
-            voxels_out: [M, max_points, ndim] float tensor. only contain points
-                    and returned when max_points != -1.
-            coors_out: [M, 3] int32 tensor, always returned.
-            num_points_per_voxel_out: [M] int32 tensor. Only returned when
+            voxels_out (torch.Tensor): Output voxels with the shape of [M,
+                max_points, ndim]. Only contain points and returned when
                 max_points != -1.
+            coors_out (torch.Tensor): Output coordinates with the shape of
+                [M, 3].
+            num_points_per_voxel_out (torch.Tensor): Num points per voxel with
+                the shape of [M]. Only returned when max_points != -1.
         """
         if max_points == -1 or max_voxels == -1:
             coors = points.new_zeros(size=(points.size(0), 3), dtype=torch.int)
@@ -66,22 +69,27 @@ voxelization = _Voxelization.apply
 
 
 class Voxelization(nn.Module):
+    """Paper reference: https://arxiv.org/abs/1907.03739.
+
+    Args:
+        voxel_size (tuple or float): The size of voxel with the shape of [3].
+        point_cloud_range (tuple or float): The coordinate range of voxel with
+            the shape of [6].
+        max_num_points (int): maximum points contained in a voxel. if
+            max_points=-1, it means using dynamic_voxelize.
+        max_voxels (int, optional): maximum voxels this function create.
+            for second, 20000 is a good choice. Users should shuffle points
+            before call this function because max_voxels may drop points.
+            Default: 20000.
+    """
 
     def __init__(self,
                  voxel_size,
                  point_cloud_range,
                  max_num_points,
                  max_voxels=20000):
-        super(Voxelization, self).__init__()
-        """
-        Args:
-            voxel_size (list): list [x, y, z] size of three dimension
-            point_cloud_range (list):
-                [x_min, y_min, z_min, x_max, y_max, z_max]
-            max_num_points (int): max number of points per voxel
-            max_voxels (tuple or int): max number of voxels in
-                (training, testing) time
-        """
+        super().__init__()
+
         self.voxel_size = voxel_size
         self.point_cloud_range = point_cloud_range
         self.max_num_points = max_num_points
@@ -104,10 +112,6 @@ class Voxelization(nn.Module):
         self.pcd_shape = [*input_feat_shape, 1][::-1]
 
     def forward(self, input):
-        """
-        Args:
-            input: NC points
-        """
         if self.training:
             max_voxels = self.max_voxels[0]
         else:

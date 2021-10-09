@@ -33,6 +33,9 @@ std::vector<at::Tensor> DynamicPointToVoxelForwardCUDAKernelLauncher(
   auto reduced_feats =
       at::empty({out_coors.size(0), num_feats}, feats.options());
 
+  at::cuda::CUDAGuard device_guard(feats.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   AT_DISPATCH_FLOATING_TYPES(
       feats.scalar_type(), "feats_reduce_kernel", ([&] {
         if (reduce_type == reduce_t::MAX)
@@ -43,7 +46,7 @@ std::vector<at::Tensor> DynamicPointToVoxelForwardCUDAKernelLauncher(
         dim3 blocks(std::min(
             at::cuda::ATenCeilDiv(num_input, THREADS_PER_BLOCK), maxGridDim));
         dim3 threads(THREADS_PER_BLOCK);
-        feats_reduce_kernel<<<blocks, threads>>>(
+        feats_reduce_kernel<<<blocks, threads, 0, stream>>>(
             feats.data_ptr<scalar_t>(), coors_map.data_ptr<int32_t>(),
             reduced_feats.data_ptr<scalar_t>(), num_input, num_feats,
             reduce_type);
@@ -69,6 +72,8 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
   // copy voxel grad to points
 
   if (num_input == 0 || num_reduced == 0) return;
+  at::cuda::CUDAGuard device_guard(feats.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   if (reduce_type == reduce_t::MEAN || reduce_type == reduce_t::SUM) {
     AT_DISPATCH_FLOATING_TYPES(
@@ -77,7 +82,7 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
           dim3 blocks(std::min(
               at::cuda::ATenCeilDiv(num_input, THREADS_PER_BLOCK), maxGridDim));
           dim3 threads(THREADS_PER_BLOCK);
-          add_reduce_traceback_grad_kernel<<<blocks, threads>>>(
+          add_reduce_traceback_grad_kernel<<<blocks, threads, 0, stream>>>(
               grad_feats.data_ptr<scalar_t>(),
               grad_reduced_feats.data_ptr<scalar_t>(),
               coors_map.data_ptr<int32_t>(), reduce_count.data_ptr<int32_t>(),
@@ -94,7 +99,8 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
           dim3 blocks(std::min(
               at::cuda::ATenCeilDiv(num_input, THREADS_PER_BLOCK), maxGridDim));
           dim3 threads(THREADS_PER_BLOCK);
-          max_reduce_traceback_scatter_idx_kernel<<<blocks, threads>>>(
+          max_reduce_traceback_scatter_idx_kernel<<<blocks, threads, 0,
+                                                    stream>>>(
               feats.data_ptr<scalar_t>(), reduced_feats.data_ptr<scalar_t>(),
               reduce_from.data_ptr<int32_t>(), coors_map.data_ptr<int32_t>(),
               num_input, num_feats);
@@ -109,7 +115,7 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
               std::min(at::cuda::ATenCeilDiv(num_reduced, THREADS_PER_BLOCK),
                        maxGridDim));
           dim3 threads(THREADS_PER_BLOCK);
-          max_reduce_scatter_grad_kernel<<<blocks, threads>>>(
+          max_reduce_scatter_grad_kernel<<<blocks, threads, 0, stream>>>(
               grad_feats.data_ptr<scalar_t>(),
               grad_reduced_feats.data_ptr<scalar_t>(),
               reduce_from.data_ptr<int32_t>(), num_reduced, num_feats);
