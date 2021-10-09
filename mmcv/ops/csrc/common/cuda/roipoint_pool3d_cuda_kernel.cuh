@@ -141,9 +141,8 @@ __global__ void roipoint_pool3d_forward(
 
   int src_feature_offset =
       bs_idx * pts_num * feature_in_len + src_pt_idx * feature_in_len;
-  for (int j = 0; j < feature_in_len; j++)
-    pooled_features[dst_feature_offset + 3 + j] =
-        pts_feature[src_feature_offset + j];
+  memcpy(pooled_features + dst_feature_offset + 3,
+         pts_feature + dst_feature_offset, feature_in_len * sizeof(T));
 }
 
 #endif  // ROIPOINT_POOL3D_CUDA_KERNEL_CUH

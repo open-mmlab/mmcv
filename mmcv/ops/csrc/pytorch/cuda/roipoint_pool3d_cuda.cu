@@ -23,13 +23,16 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   // cudaMemset(&pts_assign, -1, batch_size * pts_num * boxes_num *
   // sizeof(int));
 
+  at::cuda::CUDAGuard device_guard(xyz.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num,
               batch_size);  // blockIdx.x(col), blockIdx.y(row)
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       xyz.scalar_type(), "assign_pts_to_box3d", [&] {
-        assign_pts_to_box3d<scalar_t><<<blocks, threads>>>(
+        assign_pts_to_box3d<scalar_t><<<blocks, threads, 0, stream>>>(
             batch_size, pts_num, boxes_num, xyz.data_ptr<scalar_t>(),
             boxes3d.data_ptr<scalar_t>(), pts_assign);
       });
@@ -41,16 +44,16 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK),
                batch_size);  // blockIdx.x(col), blockIdx.y(row)
 
-  get_pooled_idx<<<blocks2, threads>>>(batch_size, pts_num, boxes_num,
-                                       sampled_pts_num, pts_assign, pts_idx,
-                                       pooled_empty_flag.data_ptr<int>());
+  get_pooled_idx<<<blocks2, threads, 0, stream>>>(
+      batch_size, pts_num, boxes_num, sampled_pts_num, pts_assign, pts_idx,
+      pooled_empty_flag.data_ptr<int>());
 
   dim3 blocks_pool(DIVUP(sampled_pts_num, THREADS_PER_BLOCK), boxes_num,
                    batch_size);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       xyz.scalar_type(), "roipoint_pool3d_forward", [&] {
-        roipoint_pool3d_forward<scalar_t><<<blocks_pool, threads>>>(
+        roipoint_pool3d_forward<scalar_t><<<blocks_pool, threads, 0, stream>>>(
             batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num,
             xyz.data_ptr<scalar_t>(), pts_idx, pts_feature.data_ptr<scalar_t>(),
             pooled_features.data_ptr<scalar_t>(),
