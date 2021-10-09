@@ -7,8 +7,6 @@ from mmcv.ops import ball_query
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_ball_query():
-    if not torch.cuda.is_available():
-        pytest.skip()
     new_xyz = torch.tensor([[[-0.0740, 1.3147, -1.3625],
                              [-2.2769, 2.7817, -0.2334],
                              [-0.4003, 2.4666, -0.5116],

@@ -7,8 +7,6 @@ from mmcv.ops import grouping_operation
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_grouping_points():
-    if not torch.cuda.is_available():
-        pytest.skip()
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
                         [[0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0], [0, 0, 0],
