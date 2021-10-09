@@ -28,8 +28,8 @@ class ThreeNN(Function):
             Tensor: shape (B, N, 3), L2 distance of each point in target
                 set to their corresponding nearest neighbors.
         """
-        assert target.is_contiguous()
-        assert source.is_contiguous()
+        target = target.contiguous()
+        source = source.contiguous()
 
         B, N, _ = target.size()
         m = source.size(1)
