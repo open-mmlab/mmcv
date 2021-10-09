@@ -45,8 +45,8 @@ def scandir(dir_path, suffix=None, recursive=False, case_sensitive=True):
             interested in. Default: None.
         recursive (bool, optional): If set to True, recursively scan the
             directory. Default: False.
-        case_insensitive (bool, optional) : If set to True, ignore the case of
-            suffix. Default: False.
+        case_sensitive (bool, optional) : If set to False, ignore the case of
+            suffix. Default: True.
 
     Returns:
         A generator for all the interested files with relative paths.
