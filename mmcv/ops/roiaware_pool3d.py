@@ -10,30 +10,34 @@ ext_module = ext_loader.load_ext(
 
 
 class RoIAwarePool3d(nn.Module):
+    """Encode the geometry-specific features of each 3D proposal. Paper
+    reference: https://arxiv.org/pdf/1907.03670.pdf.
+
+    Args:
+        out_size (int or tuple): The size of output features. n or
+            [n1, n2, n3].
+        max_pts_per_voxel (int, optional): The maximum number of points per
+            voxel. Default: 128.
+        mode (str, optional): Pooling method of RoIAware, 'max' or 'avg'.
+            Default: 'max'.
+    """
 
     def __init__(self, out_size, max_pts_per_voxel=128, mode='max'):
         super().__init__()
-        """RoIAwarePool3d module
 
-        Args:
-            out_size (int or tuple): n or [n1, n2, n3]
-            max_pts_per_voxel (int): m
-            mode (str): 'max' or 'avg'
-        """
         self.out_size = out_size
         self.max_pts_per_voxel = max_pts_per_voxel
         assert mode in ['max', 'avg']
-        pool_method_map = {'max': 0, 'avg': 1}
-        self.mode = pool_method_map[mode]
+        pool_mapping = {'max': 0, 'avg': 1}
+        self.mode = pool_mapping[mode]
 
     def forward(self, rois, pts, pts_feature):
-        """RoIAwarePool3d module forward.
-
+        """
         Args:
-            rois (torch.Tensor): [N, 7],in LiDAR coordinate,
-                (x, y, z) is the bottom center of rois
-            pts (torch.Tensor): [npoints, 3]
-            pts_feature (torch.Tensor): [npoints, C]
+            rois (torch.Tensor): [N, 7], in LiDAR coordinate,
+                (x, y, z) is the bottom center of rois.
+            pts (torch.Tensor): [npoints, 3], coordinates of input points.
+            pts_feature (torch.Tensor): [npoints, C], features of input points.
 
         Returns:
             pooled_features (torch.Tensor): [N, out_x, out_y, out_z, C]
@@ -49,19 +53,22 @@ class RoIAwarePool3dFunction(Function):
     @staticmethod
     def forward(ctx, rois, pts, pts_feature, out_size, max_pts_per_voxel,
                 mode):
-        """RoIAwarePool3d function forward.
-
+        """
         Args:
             rois (torch.Tensor): [N, 7], in LiDAR coordinate,
-                (x, y, z) is the bottom center of rois
-            pts (torch.Tensor): [npoints, 3]
-            pts_feature (torch.Tensor): [npoints, C]
-            out_size (int or tuple): n or [n1, n2, n3]
-            max_pts_per_voxel (int): m
-            mode (int): 0 (max pool) or 1 (average pool)
+                (x, y, z) is the bottom center of rois.
+            pts (torch.Tensor): [npoints, 3], coordinates of input points.
+            pts_feature (torch.Tensor): [npoints, C], features of input points.
+            out_size (int or tuple): The size of output features. n or
+                [n1, n2, n3].
+            max_pts_per_voxel (int): The maximum number of points per voxel.
+                Default: 128.
+            mode (int): Pooling method of RoIAware, 0 (max pool) or 1 (average
+                pool).
 
         Returns:
-            pooled_features (torch.Tensor): [N, out_x, out_y, out_z, C]
+            pooled_features (torch.Tensor): [N, out_x, out_y, out_z, C], output
+                pooled features.
         """
 
         if isinstance(out_size, int):
@@ -93,13 +100,6 @@ class RoIAwarePool3dFunction(Function):
 
     @staticmethod
     def backward(ctx, grad_out):
-        """RoIAwarePool3d function forward.
-
-        Args:
-            grad_out (torch.Tensor): [N, out_x, out_y, out_z, C]
-        Returns:
-            grad_in (torch.Tensor): [npoints, C]
-        """
         ret = ctx.roiaware_pool3d_for_backward
         pts_idx_of_voxels, argmax, mode, num_pts, num_channels = ret
 
@@ -109,7 +109,3 @@ class RoIAwarePool3dFunction(Function):
                                             mode)
 
         return None, None, grad_in, None, None, None
-
-
-if __name__ == '__main__':
-    pass

@@ -32,9 +32,10 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       rois.scalar_type(), "generate_pts_mask_for_box3d", [&] {
-        generate_pts_mask_for_box3d<scalar_t><<<blocks_mask, threads>>>(
-            boxes_num, pts_num, out_x, out_y, out_z, rois.data_ptr<scalar_t>(),
-            pts.data_ptr<scalar_t>(), pts_mask);
+        generate_pts_mask_for_box3d<scalar_t>
+            <<<blocks_mask, threads, 0, stream>>>(
+                boxes_num, pts_num, out_x, out_y, out_z,
+                rois.data_ptr<scalar_t>(), pts.data_ptr<scalar_t>(), pts_mask);
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -45,9 +46,10 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
 
   AT_DISPATCH_INTEGRAL_TYPES(
       pts_idx_of_voxels.scalar_type(), "collect_inside_pts_for_box3d", [&] {
-        collect_inside_pts_for_box3d<scalar_t><<<blocks_collect, threads>>>(
-            boxes_num, pts_num, max_pts_each_voxel, out_x, out_y, out_z,
-            pts_mask, pts_idx_of_voxels.data_ptr<scalar_t>());
+        collect_inside_pts_for_box3d<scalar_t>
+            <<<blocks_collect, threads, 0, stream>>>(
+                boxes_num, pts_num, max_pts_each_voxel, out_x, out_y, out_z,
+                pts_mask, pts_idx_of_voxels.data_ptr<scalar_t>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -57,7 +59,7 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
   if (pool_method == 0) {
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         pts_feature.scalar_type(), "roiaware_maxpool3d", [&] {
-          roiaware_maxpool3d<scalar_t><<<blocks_pool, threads>>>(
+          roiaware_maxpool3d<scalar_t><<<blocks_pool, threads, 0, stream>>>(
               boxes_num, pts_num, channels, max_pts_each_voxel, out_x, out_y,
               out_z, pts_feature.data_ptr<scalar_t>(),
               pts_idx_of_voxels.data_ptr<int>(),
@@ -66,7 +68,7 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
   } else if (pool_method == 1) {
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         pts_feature.scalar_type(), "roiaware_avgpool3d", [&] {
-          roiaware_avgpool3d<scalar_t><<<blocks_pool, threads>>>(
+          roiaware_avgpool3d<scalar_t><<<blocks_pool, threads, 0, stream>>>(
               boxes_num, pts_num, channels, max_pts_each_voxel, out_x, out_y,
               out_z, pts_feature.data_ptr<scalar_t>(),
               pts_idx_of_voxels.data_ptr<int>(),
@@ -102,14 +104,14 @@ void RoiawarePool3dBackwardCUDAKernelLauncher(
   if (pool_method == 0) {
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         grad_in.scalar_type(), "roiaware_maxpool3d_backward", [&] {
-          roiaware_maxpool3d_backward<scalar_t><<<blocks, threads>>>(
+          roiaware_maxpool3d_backward<scalar_t><<<blocks, threads, 0, stream>>>(
               boxes_num, channels, out_x, out_y, out_z, argmax.data_ptr<int>(),
               grad_out.data_ptr<scalar_t>(), grad_in.data_ptr<scalar_t>());
         });
   } else if (pool_method == 1) {
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         grad_in.scalar_type(), "roiaware_avgpool3d_backward", [&] {
-          roiaware_avgpool3d_backward<scalar_t><<<blocks, threads>>>(
+          roiaware_avgpool3d_backward<scalar_t><<<blocks, threads, 0, stream>>>(
               boxes_num, channels, out_x, out_y, out_z, max_pts_each_voxel,
               pts_idx_of_voxels.data_ptr<int>(), grad_out.data_ptr<scalar_t>(),
               grad_in.data_ptr<scalar_t>());
