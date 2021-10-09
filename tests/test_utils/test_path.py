@@ -56,14 +56,14 @@ def test_scandir():
     ])
     assert set(
         mmcv.scandir(folder, '.TXT', recursive=True,
-                     case_insensitive=True)) == set([
+                     case_sensitive=False)) == set([
                          filename for filename in filenames_recursive
                          if filename.endswith(('.txt', '.TXT'))
                      ])
     assert set(
         mmcv.scandir(
             folder, ('.TXT', '.JSON'), recursive=True,
-            case_insensitive=True)) == set([
+            case_sensitive=False)) == set([
                 filename for filename in filenames_recursive
                 if filename.endswith(('.txt', '.json', '.TXT'))
             ])
