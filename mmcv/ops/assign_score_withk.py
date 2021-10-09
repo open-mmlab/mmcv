@@ -31,8 +31,7 @@ class AssignScoreWithK(Function):
                 center_features,
                 knn_idx,
                 aggregate='sum'):
-        """forward.
-
+        """
         Args:
             scores (torch.Tensor): (B, npoint, K, M), predicted scores to
                 aggregate weight matrices in the weight bank.
@@ -46,7 +45,7 @@ class AssignScoreWithK(Function):
             knn_idx (torch.Tensor): (B, npoint, K), index of sampled kNN.
                 We assume the first idx in each row is the idx of the center.
             aggregate (str, optional): Aggregation method.
-                Can be 'sum', 'avg' or 'max'. Defaults to 'sum'.
+                Can be 'sum', 'avg' or 'max'. Defaults: 'sum'.
 
         Returns:
             torch.Tensor: (B, out_dim, npoint, K), the aggregated features.

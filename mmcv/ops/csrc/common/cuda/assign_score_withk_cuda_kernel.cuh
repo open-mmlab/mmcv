@@ -27,29 +27,26 @@ __global__ void assign_score_withk_forward_cuda_kernel(
   long i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= B * N1 * K * O) return;
   // ------- loop for M ----------
-  for (int m = 0; m < M; m++) {
-    int b = (int)(i / (O * N1 * K));
-    int o = (int)(i % (O * N1 * K) / (N1 * K));
-    int n = (int)(i % (N1 * K) / K);
-    int k = (int)(i % K);
-    int cn = (int)knn_idx[b * K * N1 + n * K +
-                          0];  // The first neighbor is the center point
-    int kn = (int)knn_idx[b * K * N1 + n * K + k];
-    if (kn >= N0 ||
-        kn < 0) {  // if index overflows, it is out of the neighborhood range
-      continue;
-    }
-    assert(b < B);
-    assert(kn < N0);
-    assert(cn < N0);
-    assert(o < O);
-    assert(n < N1);
-    atomicAdd(output + b * N1 * O * K + o * N1 * K + n * K + k,
-              points[b * N0 * M * O + kn * M * O + m * O + o] *
-                      scores[b * N1 * K * M + n * K * M + k * M + m] -
-                  centers[b * N0 * M * O + cn * M * O + m * O + o] *
-                      scores[b * N1 * K * M + n * K * M + k * M + m]);
+  const int b = (int)(i / (O * N1 * K));
+  const int o = (int)(i % (O * N1 * K) / (N1 * K));
+  const int n = (int)(i % (N1 * K) / K);
+  const int k = (int)(i % K);
+  const int cn = (int)knn_idx[b * K * N1 + n * K +
+                              0];  // The first neighbor is the center point
+  const int kn = (int)knn_idx[b * K * N1 + n * K + k];
+  if (kn >= N0 ||
+      kn < 0) {  // if index overflows, it is out of the neighborhood range
+    return;
   }
+  const int out_idx = b * N1 * O * K + o * N1 * K + n * K + k;
+  T val = output[out_idx];
+  for (int m = 0; m < M; m++) {
+    val += points[b * N0 * M * O + kn * M * O + m * O + o] *
+               scores[b * N1 * K * M + n * K * M + k * M + m] -
+           centers[b * N0 * M * O + cn * M * O + m * O + o] *
+               scores[b * N1 * K * M + n * K * M + k * M + m];
+  }
+  output[out_idx] = val;
 }
 
 template <typename T>
@@ -91,24 +88,26 @@ __global__ void assign_score_withk_scores_backward_cuda_kernel(
   // ----- parallel loop for B, N, K, M ---------
   long i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= B * N * K * M) return;
-  int b = (int)(i / (N * M * K));
-  int n = (int)(i % (N * M * K) / M / K);
-  int k = (int)(i % (M * K) / M);
-  int m = (int)(i % M);
-  int cn = knn_idx[b * N * K + n * K + 0];
-  int kn = knn_idx[b * N * K + n * K + k];
+  const int b = (int)(i / (N * M * K));
+  const int n = (int)(i % (N * M * K) / M / K);
+  const int k = (int)(i % (M * K) / M);
+  const int m = (int)(i % M);
+  const int cn = knn_idx[b * N * K + n * K + 0];
+  const int kn = knn_idx[b * N * K + n * K + k];
   if (kn >= N0 ||
       kn < 0) {  // if index overflows, it is out of the neighborhood range
     return;
   }
 
   // -------------- loop for O ------------------------
+  const int out_idx = b * N * K * M + n * K * M + k * M + m;
+  T val = grad_scores[out_idx];
   for (int o = 0; o < O; o++) {
-    atomicAdd(grad_scores + b * N * K * M + n * K * M + k * M + m,
-              (points[b * N0 * M * O + kn * M * O + m * O + o] -
+    val += points[b * N0 * M * O + kn * M * O + m * O + o] -
                centers[b * N0 * M * O + cn * M * O + m * O + o]) *
-                  grad_out[b * O * N * K + o * N * K + n * K + k]);
+                  grad_out[b * O * N * K + o * N * K + n * K + k];
   }
+  grad_scores[out_idx] = val;
 }
 
 #endif  // ASSIGN_SCORE_WITHK_CUDA_KERNEL_CUH
