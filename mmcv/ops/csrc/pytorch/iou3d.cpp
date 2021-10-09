@@ -84,6 +84,7 @@ void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
     CHECK_CUDA_INPUT(boxes_a);
     CHECK_CUDA_INPUT(boxes_b);
     CHECK_CUDA_INPUT(ans_overlap);
+    at::cuda::CUDAGuard device_guard(boxes_a.device());
 
     int num_a = boxes_a.size(0);
     int num_b = boxes_b.size(0);
@@ -113,6 +114,7 @@ void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
     CHECK_CUDA_INPUT(boxes_a);
     CHECK_CUDA_INPUT(boxes_b);
     CHECK_CUDA_INPUT(ans_iou);
+    at::cuda::CUDAGuard device_guard(boxes_a.device());
 
     int num_a = boxes_a.size(0);
     int num_b = boxes_b.size(0);
@@ -140,6 +142,7 @@ int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh,
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(boxes);
     CHECK_CONTIGUOUS(keep);
+    at::cuda::CUDAGuard device_guard(boxes.device());
     cudaSetDevice(device_id);
 
     int boxes_num = boxes.size(0);
@@ -205,6 +208,7 @@ int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
 #ifdef MMCV_WITH_CUDA
     CHECK_CUDA_INPUT(boxes);
     CHECK_CONTIGUOUS(keep);
+    at::cuda::CUDAGuard device_guard(boxes.device());
     cudaSetDevice(device_id);
 
     int boxes_num = boxes.size(0);

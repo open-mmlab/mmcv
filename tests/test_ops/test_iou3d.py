@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.ops import boxes_iou_bev, nms_gpu, nms_normal_gpu
+from mmcv.ops import boxes_iou_bev, nms_bev, nms_normal_bev
 
 
 @pytest.mark.skipif(
@@ -38,7 +38,7 @@ def test_nms_gpu():
     np_inds = np.array([1, 0, 3])
     boxes = torch.from_numpy(np_boxes)
     scores = torch.from_numpy(np_scores)
-    inds = nms_gpu(boxes.cuda(), scores.cuda(), thresh=0.3)
+    inds = nms_bev(boxes.cuda(), scores.cuda(), thresh=0.3)
 
     assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
@@ -53,6 +53,6 @@ def test_nms_normal_gpu():
     np_inds = np.array([1, 2, 0, 3])
     boxes = torch.from_numpy(np_boxes)
     scores = torch.from_numpy(np_scores)
-    inds = nms_normal_gpu(boxes.cuda(), scores.cuda(), thresh=0.3)
+    inds = nms_normal_bev(boxes.cuda(), scores.cuda(), thresh=0.3)
 
     assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu

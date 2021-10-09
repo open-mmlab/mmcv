@@ -27,7 +27,7 @@ def boxes_iou_bev(boxes_a, boxes_b):
     return ans_iou
 
 
-def nms_gpu(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
+def nms_bev(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     """NMS function GPU implementation (for BEV boxes). The overlap of two
     boxes for IoU calculation is defined as the exact overlapping area of the
     two boxes. In this function, one can also set `pre_max_size` and
@@ -61,7 +61,7 @@ def nms_gpu(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     return keep
 
 
-def nms_normal_gpu(boxes, scores, thresh):
+def nms_normal_bev(boxes, scores, thresh):
     """Normal NMS function GPU implementation (for BEV boxes). The overlap of
     two boxes for IoU calculation is defined as the exact overlapping area of
     the two boxes WITH their yaw angle set to 0.

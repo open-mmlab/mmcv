@@ -17,12 +17,14 @@ void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
                                                    const int num_b,
                                                    const float *boxes_b,
                                                    float *ans_overlap) {
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   dim3 blocks(
       DIVUP(num_b, THREADS_PER_BLOCK),
       DIVUP(num_a, THREADS_PER_BLOCK));  // blockIdx.x(col), blockIdx.y(row)
   dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
 
-  iou3d_boxes_overlap_bev_forward_cuda_kernel<<<blocks, threads>>>(
+  iou3d_boxes_overlap_bev_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
       num_a, boxes_a, num_b, boxes_b, ans_overlap);
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -33,12 +35,14 @@ void IoU3DBoxesIoUBevForwardCUDAKernelLauncher(const int num_a,
                                                const int num_b,
                                                const float *boxes_b,
                                                float *ans_iou) {
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   dim3 blocks(
       DIVUP(num_b, THREADS_PER_BLOCK),
       DIVUP(num_a, THREADS_PER_BLOCK));  // blockIdx.x(col), blockIdx.y(row)
   dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
 
-  iou3d_boxes_iou_bev_forward_cuda_kernel<<<blocks, threads>>>(
+  iou3d_boxes_iou_bev_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
       num_a, boxes_a, num_b, boxes_b, ans_iou);
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -47,12 +51,14 @@ void IoU3DBoxesIoUBevForwardCUDAKernelLauncher(const int num_a,
 void IoU3DNMSForwardCUDAKernelLauncher(const float *boxes,
                                        unsigned long long *mask, int boxes_num,
                                        float nms_overlap_thresh) {
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   dim3 blocks(DIVUP(boxes_num, THREADS_PER_BLOCK_NMS),
               DIVUP(boxes_num, THREADS_PER_BLOCK_NMS));
   dim3 threads(THREADS_PER_BLOCK_NMS);
 
-  nms_forward_cuda_kernel<<<blocks, threads>>>(boxes_num, nms_overlap_thresh,
-                                               boxes, mask);
+  nms_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
+      boxes_num, nms_overlap_thresh, boxes, mask);
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
@@ -65,7 +71,7 @@ void IoU3DNMSNormalForwardCUDAKernelLauncher(const float *boxes,
               DIVUP(boxes_num, THREADS_PER_BLOCK_NMS));
   dim3 threads(THREADS_PER_BLOCK_NMS);
 
-  nms_normal_forward_cuda_kernel<<<blocks, threads>>>(
+  nms_normal_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
       boxes_num, nms_overlap_thresh, boxes, mask);
 
   AT_CUDA_CHECK(cudaGetLastError());
