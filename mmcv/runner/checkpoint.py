@@ -13,10 +13,9 @@ from tempfile import TemporaryDirectory
 import torch
 import torchvision
 from torch.optim import Optimizer
-from torch.utils import model_zoo
 
 import mmcv
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import load_url
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
@@ -281,12 +280,12 @@ def load_from_http(filename, map_location=None, model_dir=None):
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(
+        checkpoint = load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(
+            checkpoint = load_url(
                 filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
@@ -629,18 +628,6 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
     """
-
-    def _save_ckpt(checkpoint, file):
-        # The 1.6 release of PyTorch switched torch.save to use a new
-        # zipfile-based file format. It will cause RuntimeError when a
-        # checkpoint was saved in high version (PyTorch version>=1.6.0) but
-        # loaded in low version (PyTorch version<1.6.0). More details at
-        # https://github.com/open-mmlab/mmpose/issues/904
-        if digit_version(TORCH_VERSION) >= digit_version('1.6.0'):
-            torch.save(checkpoint, file, _use_new_zipfile_serialization=False)
-        else:
-            torch.save(checkpoint, file)
-
     if meta is None:
         meta = {}
     elif not isinstance(meta, dict):
@@ -683,12 +670,12 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         with TemporaryDirectory() as tmp_dir:
             checkpoint_file = osp.join(tmp_dir, model_name)
             with open(checkpoint_file, 'wb') as f:
-                _save_ckpt(checkpoint, f)
+                torch.save(checkpoint, f)
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
         mmcv.mkdir_or_exist(osp.dirname(filename))
         # immediately flush buffer
         with open(filename, 'wb') as f:
-            _save_ckpt(checkpoint, f)
+            torch.save(checkpoint, f)
             f.flush()
