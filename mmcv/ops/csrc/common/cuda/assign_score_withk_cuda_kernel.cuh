@@ -38,6 +38,11 @@ __global__ void assign_score_withk_forward_cuda_kernel(
       kn < 0) {  // if index overflows, it is out of the neighborhood range
     return;
   }
+  assert(b < B);
+  assert(kn < N0);
+  assert(cn < N0);
+  assert(o < O);
+  assert(n < N1);
   const int out_idx = b * N1 * O * K + o * N1 * K + n * K + k;
   T val = output[out_idx];
   for (int m = 0; m < M; m++) {
@@ -103,9 +108,9 @@ __global__ void assign_score_withk_scores_backward_cuda_kernel(
   const int out_idx = b * N * K * M + n * K * M + k * M + m;
   T val = grad_scores[out_idx];
   for (int o = 0; o < O; o++) {
-    val += points[b * N0 * M * O + kn * M * O + m * O + o] -
-               centers[b * N0 * M * O + cn * M * O + m * O + o]) *
-                  grad_out[b * O * N * K + o * N * K + n * K + k];
+    val += (points[b * N0 * M * O + kn * M * O + m * O + o] -
+            centers[b * N0 * M * O + cn * M * O + m * O + o]) *
+           grad_out[b * O * N * K + o * N * K + n * K + k];
   }
   grad_scores[out_idx] = val;
 }
