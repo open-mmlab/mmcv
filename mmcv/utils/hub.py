@@ -1,12 +1,13 @@
 # The 1.6 release of PyTorch switched torch.save to use a new zipfile-based
-# file format. It will cause RuntimeError when a checkpoint was saved in high
-# version (PyTorch version>=1.6.0) but loaded in low version torch < 1.6.0.
-# More details at# https://github.com/open-mmlab/mmpose/issues/904
-from .parrots_wrapper import TORCH_VERSION, digit_version
+# file format. It will cause RuntimeError when a checkpoint was saved in
+# torch >= 1.6.0 but loaded in torch < 1.7.0.
+# More details at https://github.com/open-mmlab/mmpose/issues/904
+from .parrots_wrapper import TORCH_VERSION
 from .path import mkdir_or_exist
+from .version_utils import digit_version
 
 if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
-        '1.6.0'):
+        '1.7.0'):
     # Modified from https://github.com/pytorch/pytorch/blob/master/torch/hub.py
     import os
     import torch

@@ -15,11 +15,10 @@ import torchvision
 from torch.optim import Optimizer
 
 import mmcv
-from mmcv.utils import load_url
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import mkdir_or_exist
+from ..utils import load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
