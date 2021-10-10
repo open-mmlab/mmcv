@@ -17,11 +17,7 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
     int sampled_pts_num, const Tensor xyz, const Tensor boxes3d,
     const Tensor pts_feature, Tensor pooled_features,
     Tensor pooled_empty_flag) {
-  int *pts_assign = NULL;
-  cudaMalloc(&pts_assign, batch_size * pts_num * boxes_num *
-                              sizeof(int));  // (batch_size, N, M)
-  // cudaMemset(&pts_assign, -1, batch_size * pts_num * boxes_num *
-  // sizeof(int));
+  Tensor pts_assign = at::empty({batch_size, pts_num, boxes_num}, boxes3d.options().dtype(at::kInt));
 
   at::cuda::CUDAGuard device_guard(xyz.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -34,18 +30,16 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
       xyz.scalar_type(), "assign_pts_to_box3d", [&] {
         assign_pts_to_box3d<scalar_t><<<blocks, threads, 0, stream>>>(
             batch_size, pts_num, boxes_num, xyz.data_ptr<scalar_t>(),
-            boxes3d.data_ptr<scalar_t>(), pts_assign);
+            boxes3d.data_ptr<scalar_t>(), pts_assign.data_ptr<int>());
       });
 
-  int *pts_idx = NULL;
-  cudaMalloc(&pts_idx, batch_size * boxes_num * sampled_pts_num *
-                           sizeof(int));  // (batch_size, M, sampled_pts_num)
+  Tensor pts_idx = at::empty({batch_size, boxes_num, sampled_pts_num}, boxes3d.options().dtype(at::kInt));
 
   dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK),
                batch_size);  // blockIdx.x(col), blockIdx.y(row)
 
   get_pooled_idx<<<blocks2, threads, 0, stream>>>(
-      batch_size, pts_num, boxes_num, sampled_pts_num, pts_assign, pts_idx,
+      batch_size, pts_num, boxes_num, sampled_pts_num, pts_assign.data_ptr<int>(), pts_idx.data_ptr<int>(),
       pooled_empty_flag.data_ptr<int>());
 
   dim3 blocks_pool(DIVUP(sampled_pts_num, THREADS_PER_BLOCK), boxes_num,
@@ -55,11 +49,8 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
       xyz.scalar_type(), "roipoint_pool3d_forward", [&] {
         roipoint_pool3d_forward<scalar_t><<<blocks_pool, threads, 0, stream>>>(
             batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num,
-            xyz.data_ptr<scalar_t>(), pts_idx, pts_feature.data_ptr<scalar_t>(),
+            xyz.data_ptr<scalar_t>(), pts_idx.data_ptr<int>(), pts_feature.data_ptr<scalar_t>(),
             pooled_features.data_ptr<scalar_t>(),
             pooled_empty_flag.data_ptr<int>());
       });
-
-  cudaFree(pts_assign);
-  cudaFree(pts_idx);
 }
