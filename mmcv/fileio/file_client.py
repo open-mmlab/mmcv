@@ -3,6 +3,7 @@ import inspect
 import os
 import os.path as osp
 import re
+import shutil
 import warnings
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
@@ -195,6 +196,20 @@ class PetrelBackend(BaseStorageBackend):
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
+    def isdir(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a directory.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a
+                directory.
+        """
+        filepath = self._path_mapping(str(filepath))
+        filepath = self._format_path(filepath)
+        # petrel checks a filepath whether it is a file by its ending char
+        if not filepath.endswith('/'):
+            return False
+        return self.check_exist(filepath)
+
     def isfile(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether it is a file.
 
@@ -222,6 +237,32 @@ class PetrelBackend(BaseStorageBackend):
             formatted_paths.append(
                 self._format_path(self._path_mapping(str(path))))
         return '/'.join(formatted_paths)
+
+    def copyfile(self,
+                 src_path: Union[str, Path],
+                 dst_path: Union[str, Path],
+                 force: bool = False) -> None:
+        """Copy a file from src_path starting with 's3' to dst_path which is a
+        disk path.
+
+        Args:
+            src_path (str or Path): Download a file from ``src_path``.
+            dst_path (str or Path): Save a file to ``dst_path``.
+            force (bool): Whether to overwrite the file when ``dst_path``
+                exists. Default: False.
+        """
+        src_path = str(src_path)
+        dst_path = str(dst_path)
+
+        if self.isdir(src_path) or osp.isdir(dst_path):
+            raise ValueError('src_path and dst_path should both be a path of '
+                             'file rather than a directory')
+        if not self.isfile(src_path):
+            raise FileNotFoundError(f'src_path {src_path} cannot be found')
+
+        if force or not osp.isfile(dst_path):
+            with open(dst_path, 'wb') as f:
+                f.write(self.get(src_path))
 
 
 class MemcachedBackend(BaseStorageBackend):
@@ -387,6 +428,15 @@ class HardDiskBackend(BaseStorageBackend):
         """
         return osp.exists(str(filepath))
 
+    def isdir(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a directory.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a
+                directory.
+        """
+        return osp.isdir(str(filepath))
+
     def isfile(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether it is a file.
 
@@ -408,6 +458,30 @@ class HardDiskBackend(BaseStorageBackend):
         filepath = str(filepath)
         filepaths = [str(path) for path in filepaths]
         return osp.join(filepath, *filepaths)
+
+    def copyfile(self,
+                 src_path: Union[str, Path],
+                 dst_path: Union[str, Path],
+                 force: bool = False) -> None:
+        """Copy a file from src_path to dst_path.
+
+        Args:
+            src_path (str or Path): Copy a file from ``src_path``.
+            dst_path (str or Path): Save a file to ``dst_path``.
+            force (bool): Whether to overwrite the file when ``dst_path``
+                exists. Default: False.
+        """
+        src_path = str(src_path)
+        dst_path = str(dst_path)
+
+        if self.isdir(src_path) or self.isdir(dst_path):
+            raise ValueError('src_path and dst_path should both be a path of '
+                             'file rather than a directory')
+        if not self.isfile(src_path):
+            raise FileNotFoundError(f'src_path {src_path} cannot be found')
+
+        if force or not self.isfile(dst_path):
+            shutil.copyfile(src_path, dst_path)
 
 
 class HTTPBackend(BaseStorageBackend):
@@ -712,6 +786,15 @@ class FileClient:
         """
         return self.client.check_exist(filepath)
 
+    def isdir(self, filepath: Union[str, Path]) -> bool:
+        """Check a filepath whether it is a directory.
+
+        Args:
+            filepath (str or Path): Path to be checked whether it is a
+                directory.
+        """
+        return self.client.isdir(filepath)
+
     def isfile(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether it is a file.
 
@@ -731,3 +814,17 @@ class FileClient:
             filepath (str or Path): Path to be concatenated.
         """
         return self.client.concat_paths(filepath, *filepaths)
+
+    def copyfile(self,
+                 src_path: Union[str, Path],
+                 dst_path: Union[str, Path],
+                 force: bool = False) -> None:
+        """Copy a file from src_path to dst_path.
+
+        Args:
+            src_path (str or Path): Copy a file from ``src_path``.
+            dst_path (str or Path): Save a file to ``dst_path``.
+            force (bool): Whether to overwrite the file when ``dst_path``
+                exists. Default: False.
+        """
+        self.client.copyfile(src_path, dst_path, force)
