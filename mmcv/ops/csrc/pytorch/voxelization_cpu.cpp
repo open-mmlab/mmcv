@@ -109,7 +109,7 @@ void dynamic_voxelize_forward_cpu(const at::Tensor& points, at::Tensor& coors,
 
   // coors, num_points_per_voxel, coor_to_voxelidx are int Tensor
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      points.scalar_type(), "dynamic_voxelize_forward_cuda_kernel", [&] {
+      points.scalar_type(), "dynamic_voxelize_forward_cpu_kernel", [&] {
         dynamic_voxelize_forward_cpu_kernel<scalar_t, int>(
             points.accessor<scalar_t, 2>(), coors.accessor<int, 2>(),
             voxel_size, coors_range, grid_size, num_points, num_features, NDim);
@@ -144,7 +144,7 @@ int hard_voxelize_forward_cpu(const at::Tensor& points, at::Tensor& voxels,
 
   int voxel_num = 0;
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      points.scalar_type(), "hard_voxelize_forward_cuda_kernel", [&] {
+      points.scalar_type(), "hard_voxelize_forward_cpu_kernel", [&] {
         hard_voxelize_forward_cpu_kernel<scalar_t, int>(
             points.accessor<scalar_t, 2>(), voxels.accessor<scalar_t, 3>(),
             coors.accessor<int, 2>(), num_points_per_voxel.accessor<int, 1>(),

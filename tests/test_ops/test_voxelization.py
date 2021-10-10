@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
-import pytest
 import torch
 
 from mmcv.ops import Voxelization
@@ -11,8 +10,6 @@ def _get_voxel_points_indices(points, coors, voxel):
     return result_form[:, 0] & result_form[:, 1] & result_form[:, 2]
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_voxelization():
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
@@ -31,8 +28,11 @@ def test_voxelization():
     hard_voxelization = Voxelization(voxel_size, point_cloud_range,
                                      max_num_points)
 
-    # test hard_voxelization on gpu
-    points = torch.tensor(points).contiguous().to(device='cuda:0')
+    device = torch.device(
+        'cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+
+    # test hard_voxelization on cpu/gpu
+    points = torch.tensor(points).contiguous().to(device)
     coors, voxels, num_points_per_voxel = hard_voxelization.forward(points)
     coors = coors.cpu().detach().numpy()
     voxels = voxels.cpu().detach().numpy()
@@ -41,7 +41,7 @@ def test_voxelization():
     assert np.all(voxels == expected_voxels)
     assert np.all(num_points_per_voxel == expected_num_points_per_voxel)
 
-    # test dynamic_voxelization on gpu
+    # test dynamic_voxelization on cpu/gpu
     coors = dynamic_voxelization.forward(points)
     coors = coors.cpu().detach().numpy()
     points = points.cpu().detach().numpy()

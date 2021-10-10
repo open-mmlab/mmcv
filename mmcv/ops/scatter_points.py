@@ -9,7 +9,7 @@ ext_module = ext_loader.load_ext(
     ['dynamic_point_to_voxel_forward', 'dynamic_point_to_voxel_backward'])
 
 
-class _dynamic_scatter(Function):
+class _DynamicScatter(Function):
 
     @staticmethod
     def forward(ctx, feats, coors, reduce_type='max'):
@@ -52,15 +52,16 @@ class _dynamic_scatter(Function):
         return grad_feats, None, None
 
 
-dynamic_scatter = _dynamic_scatter.apply
+dynamic_scatter = _DynamicScatter.apply
 
 
 class DynamicScatter(nn.Module):
     """Scatters points into voxels, used in the voxel encoder with dynamic
     voxelization.
 
-    **Note**: The CPU and GPU implementation get the same output, but have
-        numerical difference after summation and division (e.g., 5e-7).
+    Note:
+        The CPU and GPU implementation get the same output, but have numerical
+        difference after summation and division (e.g., 5e-7).
 
     Args:
         voxel_size (list): list [x, y, z] size of three dimension.
@@ -71,17 +72,41 @@ class DynamicScatter(nn.Module):
     """
 
     def __init__(self, voxel_size, point_cloud_range, average_points: bool):
-        super(DynamicScatter, self).__init__()
+        super().__init__()
 
         self.voxel_size = voxel_size
         self.point_cloud_range = point_cloud_range
         self.average_points = average_points
 
     def forward_single(self, points, coors):
+        """Scatters points into voxels.
+
+        Args:
+            points (torch.Tensor): Points to be reduced into voxels.
+            coors (torch.Tensor): Corresponding voxel coordinates (specifically
+                multi-dim voxel index) of each points.
+
+        Returns:
+            voxel_feats (torch.Tensor): Reduced features, input features that
+                shares the same voxel coordinates are reduced to one row.
+            voxel_coors (torch.Tensor): Voxel coordinates.
+        """
         reduce = 'mean' if self.average_points else 'max'
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
 
     def forward(self, points, coors):
+        """Scatters points/features into voxels.
+
+        Args:
+            points (torch.Tensor): Points to be reduced into voxels.
+            coors (torch.Tensor): Corresponding voxel coordinates (specifically
+                multi-dim voxel index) of each points.
+
+        Returns:
+            voxel_feats (torch.Tensor): Reduced features, input features that
+                shares the same voxel coordinates are reduced to one row.
+            voxel_coors (torch.Tensor): Voxel coordinates.
+        """
         if coors.size(-1) == 3:
             return self.forward_single(points, coors)
         else:
@@ -101,9 +126,9 @@ class DynamicScatter(nn.Module):
             return features, feature_coors
 
     def __repr__(self):
-        tmpstr = self.__class__.__name__ + '('
-        tmpstr += 'voxel_size=' + str(self.voxel_size)
-        tmpstr += ', point_cloud_range=' + str(self.point_cloud_range)
-        tmpstr += ', average_points=' + str(self.average_points)
-        tmpstr += ')'
-        return tmpstr
+        s = self.__class__.__name__ + '('
+        s += 'voxel_size=' + str(self.voxel_size)
+        s += ', point_cloud_range=' + str(self.point_cloud_range)
+        s += ', average_points=' + str(self.average_points)
+        s += ')'
+        return s

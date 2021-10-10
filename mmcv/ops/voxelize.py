@@ -68,7 +68,9 @@ voxelization = _Voxelization.apply
 
 
 class Voxelization(nn.Module):
-    """Paper reference: https://arxiv.org/abs/1907.03739.
+    """convert kitti points(N, >=3) to voxels.
+
+    Paper reference: https://arxiv.org/abs/1907.03739.
 
     Args:
         voxel_size (tuple or float): The size of voxel with the shape of [3].
@@ -120,10 +122,10 @@ class Voxelization(nn.Module):
                             self.max_num_points, max_voxels)
 
     def __repr__(self):
-        tmpstr = self.__class__.__name__ + '('
-        tmpstr += 'voxel_size=' + str(self.voxel_size)
-        tmpstr += ', point_cloud_range=' + str(self.point_cloud_range)
-        tmpstr += ', max_num_points=' + str(self.max_num_points)
-        tmpstr += ', max_voxels=' + str(self.max_voxels)
-        tmpstr += ')'
-        return tmpstr
+        s = self.__class__.__name__ + '('
+        s += 'voxel_size=' + str(self.voxel_size)
+        s += ', point_cloud_range=' + str(self.point_cloud_range)
+        s += ', max_num_points=' + str(self.max_num_points)
+        s += ', max_voxels=' + str(self.max_voxels)
+        s += ')'
+        return s
