@@ -86,23 +86,48 @@ class TestFileClient:
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             # test `put`
-            filepath1 = Path(tmp_dir) / 'test_put'
-            disk_backend.put(b'hello world', filepath1)
-            assert filepath1.open('rb').read() == b'hello world'
+            filepath1 = Path(tmp_dir) / 'test.jpg'
+            disk_backend.put(b'disk', filepath1)
+            assert filepath1.open('rb').read() == b'disk'
 
             # test `put_text`
-            filepath2 = Path(tmp_dir) / 'test_put_text'
-            disk_backend.put_text('hello world', filepath2)
-            assert filepath2.open('r').read() == 'hello world'
+            filepath2 = Path(tmp_dir) / 'test.txt'
+            disk_backend.put_text('disk', filepath2)
+            assert filepath2.open('r').read() == 'disk'
+
+            # test `isdir`
+            assert disk_backend.isdir(tmp_dir)
 
             # test `isfile`
             assert disk_backend.isfile(filepath2)
+            assert not disk_backend.isfile(Path(tmp_dir) / 'not/existed/path')
 
             # test `remove`
             disk_backend.remove(filepath2)
 
             # test `check_exist`
             assert not disk_backend.check_exist(filepath2)
+
+            # test `copyfile`
+            filepath3 = Path(tmp_dir) / 'test1.jpg'
+            with pytest.raises(ValueError):
+                # src_path and dst_path should both be a path of file rather
+                # than a directory
+                disk_backend.copyfile(src_path=tmp_dir, dst_path=tmp_dir)
+            with pytest.raises(FileNotFoundError):
+                # src_path should exist
+                disk_backend.copyfile(
+                    src_path='/not/existed/path', dst_path=filepath3)
+            disk_backend.copyfile(filepath1, filepath3)
+            assert disk_backend.isfile(filepath3)
+            # force = False
+            disk_backend.put(b'overwrite disk', filepath3)
+            # filepath2 exists
+            disk_backend.copyfile(filepath1, filepath3, force=False)
+            assert filepath3.open('rb').read() == b'overwrite disk'
+            # force = True
+            disk_backend.copyfile(filepath1, filepath3, force=True)
+            assert filepath3.open('rb').read() == b'disk'
 
         disk_dir = '/path/of/your/directory'
         assert disk_backend.concat_paths(disk_dir, 'file') == \
@@ -165,13 +190,13 @@ class TestFileClient:
             FileClient('petrel', path_mapping=1)
 
         # test `_path_mapping`
-        petrel_path = 's3://user/data'
+        petrel_dir = 's3://user/data'
         petrel_backend = FileClient(
-            'petrel', path_mapping={str(self.test_data_dir): petrel_path})
+            'petrel', path_mapping={str(self.test_data_dir): petrel_dir})
         assert petrel_backend.client._path_mapping(str(self.img_path)) == \
-            str(self.img_path).replace(str(self.test_data_dir), petrel_path)
+            str(self.img_path).replace(str(self.test_data_dir), petrel_dir)
 
-        petrel_path = 's3://user/data/test.jpg'
+        petrel_path = f'{petrel_dir}/test.jpg'
         petrel_backend = FileClient('petrel')
 
         # test `_format_path`
@@ -210,7 +235,13 @@ class TestFileClient:
         assert petrel_backend.check_exist(petrel_path)
         petrel_backend.client._client.contains.assert_called_with(petrel_path)
 
+        # test `isdir`
+        assert petrel_backend.isdir(f'{petrel_dir}/')
+        # directory should end with '/'
+        assert not petrel_backend.isdir(petrel_dir)
+
         # test `isfile`
+        petrel_backend.client._client.contains = MagicMock(return_value=True)
         petrel_backend.client._client.contains = MagicMock(return_value=True)
         assert petrel_backend.isfile(petrel_path)
         petrel_backend.client._client.contains.assert_called_with(petrel_path)
@@ -218,11 +249,39 @@ class TestFileClient:
         assert not petrel_backend.isfile(f'{petrel_path}/')
 
         # test `concat_paths`
-        petrel_dir = 's3://path/of/your/directory'
         assert petrel_backend.concat_paths(petrel_dir, 'file') == \
             f'{petrel_dir}/file'
         assert petrel_backend.concat_paths(petrel_dir, 'dir', 'file') == \
             f'{petrel_dir}/dir/file'
+
+        # test `copyfile`
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            disk_path = Path(tmp_dir) / 'test.jpg'
+            with pytest.raises(ValueError):
+                # src_path and dst_path should both be a path of file rather
+                # than a directory
+                petrel_backend.copyfile(src_path=petrel_dir, dst_path=tmp_dir)
+            with pytest.raises(FileNotFoundError):
+                # src_path should exist
+                petrel_backend.client._client.contains = MagicMock(
+                    return_value=False)
+                petrel_backend.copyfile(
+                    src_path=petrel_path, dst_path=disk_path)
+            petrel_backend.client._client.contains = MagicMock(
+                return_value=True)
+            petrel_backend.copyfile(petrel_path, disk_path)
+            assert osp.isfile(disk_path)
+            assert disk_path.open('rb').read() == b'petrel'
+
+            # force = False
+            # filepath2 exists
+            petrel_backend.client._client.Get = MagicMock(
+                return_value=b'new petrel')
+            petrel_backend.copyfile(petrel_path, disk_path, force=False)
+            assert disk_path.open('rb').read() == b'petrel'
+            # force = True
+            petrel_backend.copyfile(petrel_path, disk_path, force=True)
+            assert disk_path.open('rb').read() == b'new petrel'
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
     @patch('mc.pyvector', MagicMock)
