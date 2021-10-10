@@ -67,6 +67,8 @@ void IoU3DNMSNormalForwardCUDAKernelLauncher(const float *boxes,
                                              unsigned long long *mask,
                                              int boxes_num,
                                              float nms_overlap_thresh) {
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
   dim3 blocks(DIVUP(boxes_num, THREADS_PER_BLOCK_NMS),
               DIVUP(boxes_num, THREADS_PER_BLOCK_NMS));
   dim3 threads(THREADS_PER_BLOCK_NMS);
