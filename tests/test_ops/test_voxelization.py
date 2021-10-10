@@ -14,7 +14,8 @@ def test_voxelization():
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 
-    voxel_dict = np.load('tests/data/for_3d_ops/test_voxel.npy').item()
+    voxel_dict = np.load(
+        'tests/data/for_3d_ops/test_voxel.npy', allow_pickle=True).item()
     expected_coors = voxel_dict['coors']
     expected_voxels = voxel_dict['voxels']
     expected_num_points_per_voxel = voxel_dict['num_points_per_voxel']
