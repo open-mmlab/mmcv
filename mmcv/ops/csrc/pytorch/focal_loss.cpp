@@ -61,10 +61,21 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input, Tensor target,
                                               const float gamma,
                                               const float alpha);
 
+void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor grad_input,
+                                               const float gamma,
+                                               const float alpha);
+
 void sigmoid_focal_loss_forward_mlu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
   SigmoidFocalLossForwardMLUKernelLauncher(input, target, weight, output,
                                             gamma, alpha);
+}
+
+void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target,
+                                     Tensor weight, Tensor grad_input,
+                                     float gamma, float alpha) {
+  SigmoidFocalLossBackwardMLUKernelLauncher(input, target, weight, grad_input, gamma, alpha);
 }
 #endif
 
@@ -109,6 +120,18 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                      alpha);
 #else
     AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
+#endif
+#ifdef MMCV_WITH_MLU
+  } else if (input.device().type() == at::kMLU ){
+    CHECK_MLU(input);
+    CHECK_MLU(target);
+    CHECK_MLU(weight);
+    CHECK_MLU(grad_input);
+
+    sigmoid_focal_loss_backward_mlu(input, target, weight, grad_input, gamma,
+                                    alpha);
+#else
+    AT_ERROR("SigmoidFocalLoss is not compiled with MLU support");
 #endif
   } else {
     AT_ERROR("SigmoidFocalLoss is not implemented on CPU");

@@ -59,13 +59,10 @@ class Testfocalloss(object):
     def _test_sigmoid(self, dtype=torch.float):
         if torch.cuda.is_available():
             device = 'cuda'
-            backward_test = True
         else:
             try:
                 if torch.is_mlu_available():
                     device = 'mlu'
-                    #sigmoid_focal_loss_backward has not been implemented on MLU yet.
-                    backward_test = False
                 else:
                     return
             except:
@@ -83,12 +80,10 @@ class Testfocalloss(object):
             y = torch.from_numpy(np_y).to(device).long()
 
             loss = sigmoid_focal_loss(x, y, gamma, alpha, None, 'mean')
-            if backward_test:
-                loss.backward()
+            loss.backward()
 
             assert np.allclose(loss.data.cpu().numpy(), output[0], 1e-2)
-            if backward_test:
-                assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
+            assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
     def _test_grad_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
