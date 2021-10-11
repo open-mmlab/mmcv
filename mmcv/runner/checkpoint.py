@@ -279,7 +279,7 @@ def load_from_http(filename, map_location=None, model_dir=None):
     """
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
-    if rank == 0:
+    if rank == 0 or world_size == 1:
         checkpoint = model_zoo.load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
