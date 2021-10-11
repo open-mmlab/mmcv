@@ -13,10 +13,9 @@ def test_load_url():
     # torch >= 1.6.0 but loaded in torch < 1.7.0.
     # More details at https://github.com/open-mmlab/mmpose/issues/904
     if digit_version(TORCH_VERSION) < digit_version('1.7.0'):
+        model_zoo.load_url(url1)
         with pytest.raises(RuntimeError):
             model_zoo.load_url(url2)
-        with pytest.raises(RuntimeError):
-            model_zoo.load_url(url1)
     else:
         # high version of PyTorch can load checkpoints from url, regardless
         # of which version they were saved in
