@@ -61,8 +61,6 @@ __global__ void assign_pts_to_box3d(int batch_size, int pts_num, int boxes_num,
   int cur_in_flag = check_pt_in_box3d(xyz + pt_offset, boxes3d + box_offset,
                                       local_x, local_y);
   pts_assign[assign_idx] = cur_in_flag;
-  // printf("bs=%d, pt=%d, in=%d\n", bs_idx, pt_idx, pts_assign[bs_idx * pts_num
-  // + pt_idx]);
 }
 
 __global__ void get_pooled_idx(int batch_size, int pts_num, int boxes_num,
@@ -142,7 +140,7 @@ __global__ void roipoint_pool3d_forward(
   int src_feature_offset =
       bs_idx * pts_num * feature_in_len + src_pt_idx * feature_in_len;
   memcpy(pooled_features + dst_feature_offset + 3,
-         pts_feature + dst_feature_offset, feature_in_len * sizeof(T));
+         pts_feature + src_feature_offset, feature_in_len * sizeof(T));
 }
 
 #endif  // ROIPOINT_POOL3D_CUDA_KERNEL_CUH

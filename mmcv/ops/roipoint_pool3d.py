@@ -7,8 +7,9 @@ ext_module = ext_loader.load_ext('_ext', ['roipoint_pool3d_forward'])
 
 
 class RoIPointPool3d(nn.Module):
-    """Encode the geometry-specific features of each 3D proposal. Paper
-    reference: https://arxiv.org/pdf/1907.03670.pdf.
+    """Encode the geometry-specific features of each 3D proposal.
+
+    Paper reference: https://arxiv.org/pdf/1907.03670.pdf.
 
     Args:
         num_sampled_points (int, optional): Number of samples in each roi.
@@ -17,7 +18,6 @@ class RoIPointPool3d(nn.Module):
 
     def __init__(self, num_sampled_points=512):
         super().__init__()
-
         self.num_sampled_points = num_sampled_points
 
     def forward(self, points, point_features, boxes3d):
@@ -55,7 +55,7 @@ class RoIPointPool3dFunction(Function):
                 shape is (B, M, 512, 3 + C).
             pooled_empty_flag (torch.Tensor): Empty flag whose shape is (B, M).
         """
-        assert points.shape.__len__() == 3 and points.shape[2] == 3
+        assert len(points.shape) == 3 and points.shape[2] == 3
         batch_size, boxes_num, feature_len = points.shape[0], boxes3d.shape[
             1], point_features.shape[2]
         pooled_boxes3d = boxes3d.view(batch_size, -1, 7)
@@ -74,7 +74,3 @@ class RoIPointPool3dFunction(Function):
     @staticmethod
     def backward(ctx, grad_out):
         raise NotImplementedError
-
-
-if __name__ == '__main__':
-    pass
