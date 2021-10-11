@@ -12,109 +12,97 @@ author: maningsheng
     - [Inputs](#inputs)
     - [Outputs](#outputs)
     - [Type Constraints](#type-constraints)
-  - [~~MMCVCARAFENaive~~](#mmcvcarafenaive)
+  - [MMCVCARAFE](#mmcvcarafe)
     - [Description](#description-1)
     - [Parameters](#parameters-1)
     - [Inputs](#inputs-1)
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
-  - [MMCVCARAFE](#mmcvcarafe)
+  - [MMCVCAWeight](#mmcvcaweight)
     - [Description](#description-2)
     - [Parameters](#parameters-2)
     - [Inputs](#inputs-2)
     - [Outputs](#outputs-2)
     - [Type Constraints](#type-constraints-2)
-  - [MMCVCAWeight](#mmcvcaweight)
+  - [MMCVCAMap](#mmcvcamap)
     - [Description](#description-3)
     - [Parameters](#parameters-3)
     - [Inputs](#inputs-3)
     - [Outputs](#outputs-3)
     - [Type Constraints](#type-constraints-3)
-  - [MMCVCAMap](#mmcvcamap)
+  - [MMCVCornerPool](#mmcvcornerpool)
     - [Description](#description-4)
     - [Parameters](#parameters-4)
     - [Inputs](#inputs-4)
     - [Outputs](#outputs-4)
     - [Type Constraints](#type-constraints-4)
-  - [MMCVCornerPool](#mmcvcornerpool)
+  - [MMCVDeformConv2d](#mmcvdeformconv2d)
     - [Description](#description-5)
     - [Parameters](#parameters-5)
     - [Inputs](#inputs-5)
     - [Outputs](#outputs-5)
     - [Type Constraints](#type-constraints-5)
-  - [MMCVDeformConv2d](#mmcvdeformconv2d)
+  - [MMCVModulatedDeformConv2d](#mmcvmodulateddeformconv2d)
     - [Description](#description-6)
     - [Parameters](#parameters-6)
     - [Inputs](#inputs-6)
     - [Outputs](#outputs-6)
     - [Type Constraints](#type-constraints-6)
-  - [MMCVModulatedDeformConv2d](#mmcvmodulateddeformconv2d)
+  - [MMCVDeformRoIPool](#mmcvdeformroipool)
     - [Description](#description-7)
     - [Parameters](#parameters-7)
     - [Inputs](#inputs-7)
     - [Outputs](#outputs-7)
     - [Type Constraints](#type-constraints-7)
-  - [MMCVDeformRoIPool](#mmcvdeformroipool)
+  - [MMCVMaskedConv2d](#mmcvmaskedconv2d)
     - [Description](#description-8)
     - [Parameters](#parameters-8)
     - [Inputs](#inputs-8)
     - [Outputs](#outputs-8)
     - [Type Constraints](#type-constraints-8)
-  - [MMCVMaskedConv2d](#mmcvmaskedconv2d)
+  - [MMCVPSAMask](#mmcvpsamask)
     - [Description](#description-9)
     - [Parameters](#parameters-9)
     - [Inputs](#inputs-9)
     - [Outputs](#outputs-9)
     - [Type Constraints](#type-constraints-9)
-  - [MMCVPSAMask](#mmcvpsamask)
+  - [NonMaxSuppression](#nonmaxsuppression)
     - [Description](#description-10)
     - [Parameters](#parameters-10)
     - [Inputs](#inputs-10)
     - [Outputs](#outputs-10)
     - [Type Constraints](#type-constraints-10)
-  - [NonMaxSuppression](#nonmaxsuppression)
+  - [MMCVRoIAlign](#mmcvroialign)
     - [Description](#description-11)
     - [Parameters](#parameters-11)
     - [Inputs](#inputs-11)
     - [Outputs](#outputs-11)
     - [Type Constraints](#type-constraints-11)
-  - [~~NonMaxSuppression(MMCV)~~](#nonmaxsuppressionmmcv)
+  - [MMCVRoIAlignRotated](#mmcvroialignrotated)
     - [Description](#description-12)
     - [Parameters](#parameters-12)
     - [Inputs](#inputs-12)
     - [Outputs](#outputs-12)
     - [Type Constraints](#type-constraints-12)
-  - [MMCVRoIAlign](#mmcvroialign)
+- [torch](#torch)
+  - [grid_sampler](#grid_sampler)
     - [Description](#description-13)
     - [Parameters](#parameters-13)
     - [Inputs](#inputs-13)
     - [Outputs](#outputs-13)
     - [Type Constraints](#type-constraints-13)
-  - [MMCVRoIAlignRotated](#mmcvroialignrotated)
+  - [cummax](#cummax)
     - [Description](#description-14)
     - [Parameters](#parameters-14)
     - [Inputs](#inputs-14)
     - [Outputs](#outputs-14)
     - [Type Constraints](#type-constraints-14)
-- [torch](#torch)
-  - [grid_sampler](#grid_sampler)
+  - [cummin](#cummin)
     - [Description](#description-15)
     - [Parameters](#parameters-15)
     - [Inputs](#inputs-15)
     - [Outputs](#outputs-15)
     - [Type Constraints](#type-constraints-15)
-  - [cummax](#cummax)
-    - [Description](#description-16)
-    - [Parameters](#parameters-16)
-    - [Inputs](#inputs-16)
-    - [Outputs](#outputs-16)
-    - [Type Constraints](#type-constraints-16)
-  - [cummin](#cummin)
-    - [Description](#description-17)
-    - [Parameters](#parameters-17)
-    - [Inputs](#inputs-17)
-    - [Outputs](#outputs-17)
-    - [Type Constraints](#type-constraints-17)
 <!-- TOC -->
 
 ## MMCVBorderAlign
@@ -157,43 +145,6 @@ Read [BorderDet: Border Feature for Dense Object Detection](ttps://arxiv.org/abs
 ### Type Constraints
 
 - T:tensor(float32)
-
-## ~~MMCVCARAFENaive~~
-
-### Description
-
-CARAFE operator performs feature upsampling.
-
-Read [CARAFE: Content-Aware ReAssembly of FEatures](https://arxiv.org/abs/1905.02188)) for more detailed information.
-
-### Parameters
-
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
-| `int`   | `kernel_size`        | reassemble kernel size, should be odd integer|
-| `int`   | `group_size`        | reassemble group size |
-| `int`   | `scale_factor`        | upsample ratio(>=1) |
-
-### Inputs
-
-<dl>
-<dt><tt>features</tt>: T</dt>
-<dd>Input features. 4-D tensor of shape (N, C, H, W). N is the batch size.</dd>
-<dt><tt>masks</tt>: T</dt>
-<dd>The input mask tensor</dd>
-</dl>
-
-### Outputs
-
-<dl>
-<dt><tt>output</tt>: T</dt>
-<dd>The upsampled features. 4-D tensor of shape (N, C, H * scale_factor, W * scale_factor). N is the batch size.</dd>
-</dl>
-
-### Type Constraints
-
-- T:tensor(float32)
-
 
 ## MMCVCARAFE
 
@@ -559,40 +510,6 @@ Note this definition is slightly different with [onnx: NonMaxSuppression](https:
 ### Type Constraints
 
 - T:tensor(float32, Linear)
-
-
-## ~~NonMaxSuppression(MMCV)~~
-
-### Description
-
-Filter out boxes has high IoU overlap with previously selected boxes. Note this implementation only supports class-agnostic type. For class-specific, you could repeat bboxes and make them to be class-agnostic.
-
-### Parameters
-
-| Type    | Parameter       | Description                                                                                                      |
-| ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0. |
-| `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
-
-### Inputs
-
-<dl>
-<dt><tt>bboxes</tt>: T</dt>
-<dd>Input boxes. 2-D tensor of shape (num_boxes, 4). num_boxes is the number of input boxes.</dd>
-<dt><tt>scores</tt>: T</dt>
-<dd>Input scores. 1-D tensor of shape (num_boxes, ).</dd>
-</dl>
-
-### Outputs
-
-<dl>
-<dt><tt>indices</tt>: tensor(int32, Linear)</dt>
-<dd>Selected indices. 1-D tensor of shape (num_valid_boxes, ). num_valid_boxes is the number of valid boxes.</dd>
-</dl>
-
-### Type Constraints
-
-- T:tensor(float32)
 
 ## MMCVRoIAlign
 
