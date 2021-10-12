@@ -319,15 +319,16 @@ def deprecated_api_warning(name_dict, cls_name=None):
                         arg_names[arg_names.index(src_arg_name)] = dst_arg_name
             if kwargs:
                 for src_arg_name, dst_arg_name in name_dict.items():
-                    if src_arg_name in kwargs and dst_arg_name in kwargs:
-                        raise AssertionError(
-                            f'`{src_arg_name}` and `{dst_arg_name}` are '
-                            f'specified at the same '
-                            f'time in your config, which is confusing, the'
-                            f' `{src_arg_name} will be deprecated in the'
-                            f' future, please use `{dst_arg_name}` ')
-
                     if src_arg_name in kwargs:
+
+                        if dst_arg_name in kwargs:
+                            raise AssertionError(
+                                f'`{src_arg_name}` and `{dst_arg_name}` '
+                                f'exist in your config at the same ',
+                                f'which is confusing, the '
+                                f' `{src_arg_name} will be deprecated in the'
+                                f' future, please use `{dst_arg_name}`')
+
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
                             f'`{func_name}`, please use "{dst_arg_name}" '

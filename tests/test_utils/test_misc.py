@@ -2,6 +2,7 @@
 import pytest
 
 import mmcv
+from mmcv import deprecated_api_warning
 
 
 def test_to_ntuple():
@@ -190,3 +191,17 @@ def test_is_method_overridden():
     base_instance = Base()
     with pytest.raises(AssertionError):
         mmcv.is_method_overridden('foo1', base_instance, sub_instance)
+
+
+def test_deprecated_api_warning():
+
+    @deprecated_api_warning(name_dict=dict(old_key='new_key'))
+    def dummy_func(new_key=1):
+        return new_key
+
+    # test can map old_key to new_key
+    assert dummy_func(old_key=2) == 2
+
+    # assert old_key and new_key can not
+    with pytest.raises(AssertionError):
+        dummy_func(old_key=1, new_key=2)
