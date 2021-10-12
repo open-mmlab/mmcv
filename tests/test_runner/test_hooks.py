@@ -65,8 +65,8 @@ def test_checkpoint_hook(tmp_path):
         runner.register_hook(checkpointhook)
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-        assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
-            out_dir, basename, 'epoch_4.pth')
+        assert runner.meta['hook_msgs']['last_ckpt'] == \
+            '/'.join([out_dir, basename, 'epoch_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_check_exist.assert_called()
@@ -96,8 +96,8 @@ def test_checkpoint_hook(tmp_path):
         runner.register_hook(checkpointhook)
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-        assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
-            out_dir, basename, 'iter_4.pth')
+        assert runner.meta['hook_msgs']['last_ckpt'] == \
+            '/'.join([out_dir, basename, 'iter_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_check_exist.assert_called()
