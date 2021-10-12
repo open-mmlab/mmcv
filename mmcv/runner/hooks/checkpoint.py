@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import os.path as osp
 
 from mmcv.fileio import FileClient
@@ -72,15 +71,20 @@ class CheckpointHook(Hook):
         if not self.out_dir:
             self.out_dir = runner.work_dir
 
-        if self.out_dir != runner.work_dir:
-            # The final ``self.out_dir`` is the concatenation of
-            # ``self.out_dir`` and the last level directory of
-            # ``runner.work_dir``
-            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-            self.out_dir = osp.join(self.out_dir, basename)
-
         self.file_client = FileClient.infer_client(self.file_client_args,
                                                    self.out_dir)
+
+        # if `self.out_dir` is not equal to `runner.work_dir`, it means that
+        # `self.out_dir` is set so the final `self.out_dir` is the
+        # concatenation of `self.out_dir` and the last level directory of
+        # `runner.work_dir`
+        if self.out_dir != runner.work_dir:
+            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+            self.out_dir = self.file_client.concat_paths(
+                self.out_dir, basename)
+
+        runner.logger.info(f'checkpoints will be saved to {self.out_dir}')
+
         # disable the create_symlink option when the backend is not
         # HardDiskBackend
         if self.file_client.backend_name != 'disk':
@@ -115,8 +119,9 @@ class CheckpointHook(Hook):
                 cur_ckpt_filename = self.args.get(
                     'filename_tmpl', 'iter_{}.pth').format(runner.iter + 1)
             runner.meta.setdefault('hook_msgs', dict())
-            runner.meta['hook_msgs']['last_ckpt'] = os.path.join(
-                self.out_dir, cur_ckpt_filename)
+            runner.meta['hook_msgs'][
+                'last_ckpt'] = self.file_client.concat_paths(
+                    self.out_dir, cur_ckpt_filename)
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
             if self.by_epoch:
@@ -130,8 +135,8 @@ class CheckpointHook(Hook):
                 -self.interval)
             filename_tmpl = self.args.get('filename_tmpl', name)
             for _step in redundant_ckpts:
-                ckpt_path = os.path.join(self.out_dir,
-                                         filename_tmpl.format(_step))
+                ckpt_path = self.file_client.concat_paths(
+                    self.out_dir, filename_tmpl.format(_step))
                 if self.file_client.isfile(ckpt_path):
                     self.file_client.remove(ckpt_path)
                 else:

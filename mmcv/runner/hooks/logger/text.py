@@ -81,6 +81,7 @@ class TextLoggerHook(LoggerHook):
         self.out_suffix = out_suffix
 
         self.keep_log = keep_log
+        self.file_client_args = file_client_args
         if self.out_dir is not None:
             self.file_client = FileClient.infer_client(file_client_args,
                                                        self.out_dir)
@@ -89,11 +90,13 @@ class TextLoggerHook(LoggerHook):
         super(TextLoggerHook, self).before_run(runner)
 
         if self.out_dir is not None:
-            # The final ``self.out_dir`` is the concatenation of
-            # ``self.out_dir`` and the last level directory of
-            # ``runner.work_dir``
+            self.file_client = FileClient.infer_client(self.file_client_args,
+                                                       self.out_dir)
+            # The final `self.out_dir` is the concatenation of `self.out_dir`
+            # and the last level directory of `runner.work_dir`
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-            self.out_dir = osp.join(self.out_dir, basename)
+            self.out_dir = self.file_client.concat_paths(
+                self.out_dir, basename)
 
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
@@ -235,7 +238,8 @@ class TextLoggerHook(LoggerHook):
         if self.out_dir is not None:
             for filename in scandir(runner.work_dir, self.out_suffix, True):
                 local_filepath = osp.join(runner.work_dir, filename)
-                out_filepath = osp.join(self.out_dir, filename)
+                out_filepath = self.file_client.concat_paths(
+                    self.out_dir, filename)
                 with open(local_filepath, 'r') as f:
                     self.file_client.put_text(f.read(), out_filepath)
 

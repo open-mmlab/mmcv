@@ -58,8 +58,10 @@ class EvalHook(Hook):
             specified, `runner.work_dir` will be used by default. If specified,
             the `out_dir` will be the concatenation of `out_dir` and the last
             level directory of `runner.work_dir`.
+            `New in version 1.3.15.`
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details. Default: None.
+            `New in version 1.3.15.`
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
@@ -204,9 +206,11 @@ class EvalHook(Hook):
         self.file_client = FileClient.infer_client(self.file_client_args,
                                                    self.out_dir)
 
+        # if `self.out_dir` is not equal to `runner.work_dir`, it means that
+        # `self.out_dir` is set so the final `self.out_dir` is the
+        # concatenation of `self.out_dir` and the last level directory of
+        # `runner.work_dir`
         if self.out_dir != runner.work_dir:
-            # The final `self.out_dir` is the concatenation of `self.out_dir`
-            # and the last level directory of `runner.work_dir`
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.concat_paths(
                 self.out_dir, basename)

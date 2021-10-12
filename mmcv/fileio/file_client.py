@@ -40,8 +40,8 @@ class CephBackend(BaseStorageBackend):
             will be replaced by ``dst``. Default: None.
 
     .. warning::
-        :class:`CephBackend` will be deprecated, please use
-        :class:`PetrelBackend` instead
+        :class:`mmcv.fileio.file_client.CephBackend` will be deprecated,
+        please use :class:`mmcv.fileio.file_client.PetrelBackend` instead.
     """
 
     def __init__(self, path_mapping=None):
