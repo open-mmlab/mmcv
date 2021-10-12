@@ -110,6 +110,18 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
 
         if _is_legacy_zip_format(cached_file):
             return _legacy_zip_load(cached_file, model_dir, map_location)
-        return torch.load(cached_file, map_location=map_location)
+
+        try:
+            return torch.load(cached_file, map_location=map_location)
+        except RuntimeError as error:
+            if digit_version(TORCH_VERSION) < digit_version('1.5.0'):
+                warnings.warn(
+                    f'If the error is the same as "{cached_file} is a zip '
+                    'archive (did you mean to use torch.jit.load()?)", you can'
+                    ' upgrade your torch to 1.5.0 or higher (current torch '
+                    f'version is {TORCH_VERSION}). The error was raised '
+                    ' because the checkpoint was saved in torch>=1.6.0 but '
+                    'loaded in torch<1.5.')
+            raise error
 else:
     from torch.utils.model_zoo import load_url  # noqa: F401

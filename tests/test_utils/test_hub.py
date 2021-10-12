@@ -22,6 +22,11 @@ def test_load_url():
         model_zoo.load_url(url1)
         model_zoo.load_url(url2)
 
-    # load_url works well for all versions of PyTorch
     load_url(url1)
-    load_url(url2)
+    # if a checkpoint was saved in torch >= 1.6.0 but loaded in torch < 1.5.0,
+    # it will raise a RuntimeError
+    if digit_version(TORCH_VERSION) < digit_version('1.5.0'):
+        with pytest.raises(RuntimeError):
+            load_url(url2)
+    else:
+        load_url(url2)
