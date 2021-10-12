@@ -95,9 +95,6 @@ class TestFileClient:
             disk_backend.put_text('disk', filepath2)
             assert filepath2.open('r').read() == 'disk'
 
-            # test `isdir`
-            assert disk_backend.isdir(tmp_dir)
-
             # test `isfile`
             assert disk_backend.isfile(filepath2)
             assert not disk_backend.isfile(Path(tmp_dir) / 'not/existed/path')
@@ -105,8 +102,8 @@ class TestFileClient:
             # test `remove`
             disk_backend.remove(filepath2)
 
-            # test `check_exist`
-            assert not disk_backend.check_exist(filepath2)
+            # test `exists`
+            assert not disk_backend.exists(filepath2)
 
             # test `_get_local_path`
             # if the backend is disk, `get_local_path` just return the input
@@ -215,22 +212,15 @@ class TestFileClient:
         petrel_backend.remove(petrel_path)
         petrel_backend.client._client.delete.assert_called_with(petrel_path)
 
-        # test `check_exist`
+        # test `exists`
         petrel_backend.client._client.contains = MagicMock(return_value=True)
-        assert petrel_backend.check_exist(petrel_path)
+        assert petrel_backend.exists(petrel_path)
         petrel_backend.client._client.contains.assert_called_with(petrel_path)
-
-        # test `isdir`
-        assert petrel_backend.isdir(f'{petrel_dir}/')
-        # directory should end with '/'
-        assert not petrel_backend.isdir(petrel_dir)
 
         # test `isfile`
         petrel_backend.client._client.contains = MagicMock(return_value=True)
         assert petrel_backend.isfile(petrel_path)
         petrel_backend.client._client.contains.assert_called_with(petrel_path)
-        # if ending with '/', it is not a file
-        assert not petrel_backend.isfile(f'{petrel_path}/')
 
         # test `concat_paths`
         assert petrel_backend.concat_paths(petrel_dir, 'file') == \

@@ -187,7 +187,7 @@ class PetrelBackend(BaseStorageBackend):
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
-    def check_exist(self, filepath: Union[str, Path]) -> bool:
+    def exists(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether exists.
 
         Args:
@@ -197,32 +197,13 @@ class PetrelBackend(BaseStorageBackend):
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
-    def isdir(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a directory.
-
-        Args:
-            filepath (str or Path): Path to be checked whether it is a
-                directory.
-        """
-        filepath = self._path_mapping(str(filepath))
-        filepath = self._format_path(filepath)
-        # petrel checks a filepath whether it is a file by its ending char
-        if not filepath.endswith('/'):
-            return False
-        return self.check_exist(filepath)
-
     def isfile(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether it is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
         """
-        filepath = self._path_mapping(str(filepath))
-        filepath = self._format_path(filepath)
-        # petrel checks a filepath whether it is a file by its ending char
-        if filepath.endswith('/'):
-            return False
-        return self.check_exist(filepath)
+        return self.exists(filepath)
 
     def concat_paths(self, filepath: Union[str, Path],
                      *filepaths: Union[str, Path]) -> str:
@@ -417,7 +398,7 @@ class HardDiskBackend(BaseStorageBackend):
         filepath = str(filepath)
         os.remove(filepath)
 
-    def check_exist(self, filepath: Union[str, Path]) -> bool:
+    def exists(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether exists.
 
         Args:
@@ -779,13 +760,13 @@ class FileClient:
         """
         self.client.remove(filepath)
 
-    def check_exist(self, filepath: Union[str, Path]) -> bool:
+    def exists(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
         """
-        return self.client.check_exist(filepath)
+        return self.client.exists(filepath)
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
         """Check a filepath whether it is a directory.
