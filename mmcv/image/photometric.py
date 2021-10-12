@@ -311,7 +311,7 @@ def adjust_sharpness(img, factor=1., kernel=None):
 
     Note:
         No value sanity check is enforced on the kernel set by users. So with
-        an inappropriate kernel, the `adjust_sharpness` may fail to perform
+        an inappropriate kernel, the ``adjust_sharpness`` may fail to perform
         the function its name indicates but end up performing whatever
         transform determined by the kernel.
 
