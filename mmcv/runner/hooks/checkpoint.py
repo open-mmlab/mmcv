@@ -132,7 +132,7 @@ class CheckpointHook(Hook):
             for _step in redundant_ckpts:
                 ckpt_path = os.path.join(self.out_dir,
                                          filename_tmpl.format(_step))
-                if self.file_client.check_exist(ckpt_path):
+                if self.file_client.isfile(ckpt_path):
                     self.file_client.remove(ckpt_path)
                 else:
                     break
