@@ -51,7 +51,7 @@ def _interpolate(name, dim, interpolate_mode):
                 'Resize',
                 input,
                 empty_tensor,
-                # roi only takes effect whith
+                # roi only takes effect with
                 # coordinate_transformation_mode="tf_crop_and_resize"
                 scales,  # scales is not needed since we are sending out_size
                 output_size,
