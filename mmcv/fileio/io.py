@@ -21,7 +21,7 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
     This method provides a unified api for loading data from serialized files.
 
     Note:
-        In v1.3.15 and later, `load` supports loading data from serialized
+        In v1.3.15 and later, ``load`` supports loading data from serialized
         files those can be storaged in different backends.
 
     Args:
@@ -37,8 +37,8 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
 
     Examples:
         >>> load('/path/of/your/file')  # file is storaged in disk
-        >>> load('https://path/of/your/file')  # file is storage in Internet
-        >>> load('s3://path/of/your/file')  # file is storage in ceph or petrel
+        >>> load('https://path/of/your/file')  # file is storaged in Internet
+        >>> load('s3://path/of/your/file')  # file is storaged in petrel
 
     Returns:
         The content from the file.
@@ -73,7 +73,7 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
     and also supports custom arguments for each file format.
 
     Note:
-        In v1.3.15 and later, `dump` supports dumping data as strings or to
+        In v1.3.15 and later, ``dump`` supports dumping data as strings or to
         files which is saved to different backends.
 
     Args:

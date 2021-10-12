@@ -14,13 +14,13 @@ def list_from_file(filename,
     """Load a text file and parse the content as a list of strings.
 
     Note:
-        In v1.3.15 and later, `list_from_file` supports loading a text file
+        In v1.3.15 and later, ``list_from_file`` supports loading a text file
         which can be storaged in different backends and parsing the content as
         a list for strings.
 
     Args:
         filename (str): Filename.
-        prefix (str): The prefix to be inserted to the begining of each item.
+        prefix (str): The prefix to be inserted to the beginning of each item.
         offset (int): The offset of lines.
         max_num (int): The maximum number of lines to be read,
             zeros and negatives mean no limitation.
@@ -63,7 +63,7 @@ def dict_from_file(filename,
     the following columns will be parsed as dict values.
 
     Note:
-        In v1.3.15 and later, `dict_from_file` supports loading a text file
+        In v1.3.15 and later, ``dict_from_file`` supports loading a text file
         which can be storaged in different backends and parsing the content as
         a dict.
 
