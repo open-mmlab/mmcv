@@ -202,6 +202,7 @@ def test_deprecated_api_warning():
     # replace `old_key` to `new_key`
     assert dummy_func(old_key=2) == 2
 
-    # assert old_key and new_key can not
+    # The expected behavior is to replace the deprecated key `old_key` to `new_key`,
+    # but got them in the arguments at the same time
     with pytest.raises(AssertionError):
         dummy_func(old_key=1, new_key=2)
