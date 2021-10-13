@@ -199,7 +199,7 @@ def test_deprecated_api_warning():
     def dummy_func(new_key=1):
         return new_key
 
-    # test can map old_key to new_key
+    # replace `old_key` to `new_key`
     assert dummy_func(old_key=2) == 2
 
     # assert old_key and new_key can not
