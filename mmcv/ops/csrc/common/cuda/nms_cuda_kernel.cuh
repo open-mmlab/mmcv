@@ -13,7 +13,6 @@
 #endif  // MMCV_USE_PARROTS
 #endif  // MMCV_WITH_TRT
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 int const threadsPerBlock = sizeof(unsigned long long int) * 8;
 
 __device__ inline bool devIoU(float const *const a, float const *const b,
