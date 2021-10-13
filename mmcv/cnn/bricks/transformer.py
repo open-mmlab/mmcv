@@ -60,14 +60,17 @@ def build_transformer_layer_sequence(cfg, default_args=None):
 
 
 class AdaptivePadding(nn.Module):
-    """Applies padding to input (if needed) so that input can get fully covered
-    by filter you specified. It support two modes "same" and "corner". The
-    "same" mode is same with "SAME" padding mode in TensorFlow, pad zero around
-    input. The "corner"  mode would pad zero to bottom right.
+    """Applies padding adaptively to the input.
+
+    This module can make input get fully covered by filter
+    you specified. It support two modes "same" and "corner". The
+    "same" mode is same with "SAME" padding mode in TensorFlow, pad
+    zero around input. The "corner"  mode would pad zero
+    to bottom right.
 
     Args:
-        kernel_size (int | tuple): Size of the kernel:
-        stride (int | tuple): Stride of the filter. Default: 1:
+        kernel_size (int | tuple): Size of the kernel. Default: 1.
+        stride (int | tuple): Stride of the filter. Default: 1.
         dilation (int | tuple): Spacing between kernel elements.
             Default: 1
         padding (str): Support "same" and "corner", "corner" mode
@@ -91,14 +94,11 @@ class AdaptivePadding(nn.Module):
     """
 
     def __init__(self, kernel_size=1, stride=1, dilation=1, padding='corner'):
-
         super(AdaptivePadding, self).__init__()
-
         assert padding in ('same', 'corner')
 
         kernel_size = to_2tuple(kernel_size)
         stride = to_2tuple(stride)
-        padding = to_2tuple(padding)
         dilation = to_2tuple(dilation)
 
         self.padding = padding
@@ -107,6 +107,15 @@ class AdaptivePadding(nn.Module):
         self.dilation = dilation
 
     def get_pad_shape(self, input_shape):
+        """Calculate the padding size of input.
+
+        Args:
+            input_shape (:obj:`torch.Size`): arrange as (H, W).
+
+        Returns:
+            Tuple[int]: The padding size along the
+                original H and W directions
+        """
         input_h, input_w = input_shape
         kernel_h, kernel_w = self.kernel_size
         stride_h, stride_w = self.stride
@@ -119,6 +128,14 @@ class AdaptivePadding(nn.Module):
         return pad_h, pad_w
 
     def forward(self, x):
+        """Add padding to `x`
+
+        Args:
+            x (Tensor): Input tensor has shape (B, C, H, W).
+
+        Returns:
+            Tensor: The tensor with adaptive padding
+        """
         pad_h, pad_w = self.get_pad_shape(x.size()[-2:])
         if pad_h > 0 or pad_w > 0:
             if self.padding == 'corner':
@@ -139,11 +156,10 @@ class PatchEmbed(BaseModule):
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (str): The config dict for embedding
-            conv layer type selection. Default: "Conv2d.
+        conv_type (str): The type of embedding-conv. Default: "Conv2d".
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
-            Default: None (Would be set as `kernel_size`).
+            Default: 16.
         padding (int | tuple | string ): The padding length of
             embedding conv. When it is a string, it means the mode
             of adaptive padding, support "same" and "corner" now.
@@ -159,20 +175,18 @@ class PatchEmbed(BaseModule):
             Default: None.
     """
 
-    def __init__(
-        self,
-        in_channels=3,
-        embed_dims=768,
-        conv_type='Conv2d',
-        kernel_size=16,
-        stride=16,
-        padding='corner',
-        dilation=1,
-        bias=True,
-        norm_cfg=None,
-        input_size=None,
-        init_cfg=None,
-    ):
+    def __init__(self,
+                 in_channels=3,
+                 embed_dims=768,
+                 conv_type='Conv2d',
+                 kernel_size=16,
+                 stride=16,
+                 padding='corner',
+                 dilation=1,
+                 bias=True,
+                 norm_cfg=None,
+                 input_size=None,
+                 init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
@@ -267,8 +281,7 @@ class PatchMerging(BaseModule):
 
     Args:
         in_channels (int): The num of input channels.
-            to gets fully covered by filter and stride you specified..
-            Default: True.
+            to gets fully covered by filter and stride you specified.
         out_channels (int): The num of output channels.
         kernel_size (int | tuple, optional): the kernel size in the unfold
             layer. Defaults to 2.
