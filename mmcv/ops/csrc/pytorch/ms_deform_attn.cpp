@@ -39,6 +39,7 @@ Tensor ms_deform_attn_forward(const Tensor &value, const Tensor &spatial_shapes,
     CHECK_CUDA_INPUT(level_start_index)
     CHECK_CUDA_INPUT(sampling_loc)
     CHECK_CUDA_INPUT(attn_weight)
+    at::DeviceGuard guard(value.device());
     return ms_deform_attn_cuda_forward(value, spatial_shapes, level_start_index,
                                        sampling_loc, attn_weight, im2col_step);
 #else
@@ -66,6 +67,7 @@ void ms_deform_attn_backward(const Tensor &value, const Tensor &spatial_shapes,
     CHECK_CUDA_INPUT(grad_value)
     CHECK_CUDA_INPUT(grad_sampling_loc)
     CHECK_CUDA_INPUT(grad_attn_weight)
+    at::DeviceGuard guard(value.device());
     ms_deform_attn_cuda_backward(value, spatial_shapes, level_start_index,
                                  sampling_loc, attn_weight, grad_output,
                                  grad_value, grad_sampling_loc,
