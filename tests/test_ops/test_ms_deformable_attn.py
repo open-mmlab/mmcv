@@ -33,6 +33,7 @@ def test_multiscale_deformable_attention():
     spatial_shapes = torch.Tensor([[2, 2], [1, 1]]).long().to(device)
     level_start_index = torch.Tensor([0, 4]).long().to(device)
     reference_points = torch.rand(bs, num_query, 2, 2).to(device)
+    msda.to(device)
     msda(
         query,
         key,
