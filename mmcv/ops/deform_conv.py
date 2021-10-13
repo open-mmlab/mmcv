@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 from typing import Tuple, Union
 
 import torch
@@ -256,11 +255,11 @@ class DeformConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        n = self.in_channels
-        for k in self.kernel_size:
-            n *= k
-        stdv = 1. / math.sqrt(n)
-        self.weight.data.uniform_(-stdv, stdv)
+        # switch the initialization of `self.weight` to the standard kaiming
+        # method described in `Delving deep into rectifiers: Surpassing
+        # human-level performance on ImageNet classification` - He, K. et al.
+        # (2015), using a uniform distribution
+        nn.init.kaiming_uniform_(self.weight, nonlinearity='relu')
 
     def forward(self, x: Tensor, offset: Tensor) -> Tensor:
         """Deformable Convolutional forward function.
