@@ -358,6 +358,9 @@ class EvalHook(Hook):
         """
         eval_res = self.dataloader.dataset.evaluate(
             results, logger=runner.logger, **self.eval_kwargs)
+
+        assert eval_res, '`eval_res` should not be a null dict.'
+
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
         runner.log_buffer.ready = True
