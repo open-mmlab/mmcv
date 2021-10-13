@@ -321,13 +321,14 @@ def deprecated_api_warning(name_dict, cls_name=None):
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in kwargs:
 
-                        if dst_arg_name in kwargs:
-                            raise AssertionError(
-                                f'`{src_arg_name}` and `{dst_arg_name}` '
-                                f'exist in your config at the same ',
-                                f'which is confusing, the '
-                                f' `{src_arg_name} will be deprecated in the'
-                                f' future, please use `{dst_arg_name}`')
+                        assert dst_arg_name not in kwargs, (
+                            f'The expected behavior is to replace '
+                            f'the deprecated key `{src_arg_name}` to '
+                            f'new key `{dst_arg_name}`, but got them '
+                            f'in the arguments at the same time, which '
+                            f'is confusing. `{src_arg_name} will be '
+                            f'deprecated in the future, please '
+                            f'use `{dst_arg_name}` instead.')
 
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
