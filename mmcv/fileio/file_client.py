@@ -72,23 +72,24 @@ class CephBackend(BaseStorageBackend):
 class PetrelBackend(BaseStorageBackend):
     """Petrel storage backend (for internal use).
 
-    PetrelBackend supports reading or writing data to multiple clusters. If the
-    filepath contains the cluster name, PetrelBackend will read from the
-    filepath or write to the filepath. Otherwise, PetrelBackend will access
-    the default cluster.
+    PetrelBackend supports reading and writing data to multiple clusters.
+    If the file path contains the cluster name, PetrelBackend will read data
+    from specified cluster or write data to it. Otherwise, PetrelBackend will
+    access the default cluster.
 
     Args:
         path_mapping (dict, optional): Path mapping dict from local path to
-            Petrel path. When `path_mapping={'src': 'dst'}`, `src` in
-            `filepath` will be replaced by `dst`. Default: None.
-        enable_mc (bool): Whether to enable memcached support. Default: True.
+            Petrel path. When ``path_mapping={'src': 'dst'}``, ``src`` in
+            ``filepath`` will be replaced by ``dst``. Default: None.
+        enable_mc (bool, optional): Whether to enable memcached support.
+            Default: True.
 
     Examples:
         >>> filepath1 = 's3://path/of/file'
         >>> filepath2 = 'cluster-name:s3://path/of/file'
         >>> client = PetrelBackend()
-        >>> client.get(filepath1)  # get from default cluster
-        >>> client.get(filepath2)  # get from 'cluster-name' cluster
+        >>> client.get(filepath1)  # get data from default cluster
+        >>> client.get(filepath2)  # get data from 'cluster-name' cluster
     """
 
     def __init__(self,
@@ -105,7 +106,7 @@ class PetrelBackend(BaseStorageBackend):
         self.path_mapping = path_mapping
 
     def _path_mapping(self, filepath: str) -> str:
-        """Replace the prefix of filepath with path_mapping.
+        """Replace the prefix of ``filepath`` with :attr:`path_mapping`.
 
         Args:
             filepath (str): Path to be mapped.
@@ -116,12 +117,12 @@ class PetrelBackend(BaseStorageBackend):
         return filepath
 
     def _format_path(self, filepath: str) -> str:
-        """Convert filepath to standard format of petrel oss.
+        """Convert a ``filepath`` to standard format of petrel oss.
 
-        Since the filepath is concatenated by `os.path.join`, in a windows
-        environment, the filepath will be the format of
-        's3://bucket_name\\image.jpg'. By invoking `_format_path`, the above
-        filepath will be converted to 's3://bucket_name/image.jpg'.
+        If the ``filepath`` is concatenated by ``os.path.join``, in a windows
+        environment, the ``filepath`` will be the format of
+        's3://bucket_name\\image.jpg'. By invoking :meth:`_format_path`, the
+        above ``filepath`` will be converted to 's3://bucket_name/image.jpg'.
 
         Args:
             filepath (str): Path to be formatted.
@@ -129,7 +130,7 @@ class PetrelBackend(BaseStorageBackend):
         return re.sub(r'\\+', '/', filepath)
 
     def get(self, filepath: Union[str, Path]) -> memoryview:
-        """Read data from a given filepath with 'rb' mode.
+        """Read data from a given ``filepath`` with 'rb' mode.
 
         Args:
             filepath (str or Path): Path to read data.
@@ -143,17 +144,17 @@ class PetrelBackend(BaseStorageBackend):
     def get_text(self,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> str:
-        """Read data from a given filepath with 'r' mode.
+        """Read data from a given ``filepath`` with 'r' mode.
 
         Args:
             filepath (str or Path): Path to read data.
             encoding (str, optional): The encoding format used to open the
-                `filepath`. Default: 'utf-8'.
+                ``filepath``. Default: 'utf-8'.
         """
         return str(self.get(filepath), encoding=encoding)
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
-        """Save data to a given filepath.
+        """Save data to a given ``filepath``.
 
         Args:
             obj (bytes): Data to be saved.
@@ -167,13 +168,13 @@ class PetrelBackend(BaseStorageBackend):
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
-        """Save data to a given filepath.
+        """Save data to a given ``filepath``.
 
         Args:
             obj (str): Data to be written.
             filepath (str or Path): Path to write data.
             encoding (str, optional): The encoding format used to encode the
-                `obj`. Default: 'utf-8'.
+                ``obj``. Default: 'utf-8'.
         """
         self.put(bytes(obj, encoding=encoding), filepath)
 
@@ -188,7 +189,7 @@ class PetrelBackend(BaseStorageBackend):
         self._client.delete(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether exists.
+        """Check a ``filepath`` whether exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -198,7 +199,7 @@ class PetrelBackend(BaseStorageBackend):
         return self._client.contains(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a file.
+        """Check a ``filepath`` whether it is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -221,7 +222,7 @@ class PetrelBackend(BaseStorageBackend):
         return '/'.join(formatted_paths)
 
     def _release_resource(self, filepath: str) -> None:
-        """Release the resource generated by _get_local_path.
+        """Release the resource generated by :meth:`_get_local_path`.
 
         Args:
             filepath (str): Path to be released.
@@ -229,7 +230,7 @@ class PetrelBackend(BaseStorageBackend):
         os.remove(filepath)
 
     def _get_local_path(self, filepath: str) -> str:
-        """Download a file from filepath.
+        """Download a file from ``filepath``.
 
         Args:
             filepath (str): Download a file from ``filepath``.
@@ -337,7 +338,7 @@ class HardDiskBackend(BaseStorageBackend):
     """Raw hard disks storage backend."""
 
     def get(self, filepath: Union[str, Path]) -> bytes:
-        """Read data from a given filepath with 'rb' mode.
+        """Read data from a given ``filepath`` with 'rb' mode.
 
         Args:
             filepath (str or Path): Path to read data.
@@ -350,12 +351,12 @@ class HardDiskBackend(BaseStorageBackend):
     def get_text(self,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> str:
-        """Read data from a given filepath with 'r' mode.
+        """Read data from a given ``filepath`` with 'r' mode.
 
         Args:
             filepath (str or Path): Path to read data.
             encoding (str, optional): The encoding format used to open the
-                `filepath`. Default: 'utf-8'.
+                ``filepath``. Default: 'utf-8'.
         """
         filepath = str(filepath)
         with open(filepath, 'r', encoding=encoding) as f:
@@ -363,7 +364,7 @@ class HardDiskBackend(BaseStorageBackend):
         return value_buf
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
-        """Write data to a given filepath with 'wb' mode.
+        """Write data to a given ``filepath`` with 'wb' mode.
 
         Args:
             obj (bytes): Data to be written.
@@ -377,7 +378,7 @@ class HardDiskBackend(BaseStorageBackend):
                  obj: str,
                  filepath: Union[str, Path],
                  encoding: str = 'utf-8') -> None:
-        """Write data to a given filepath with 'w' mode.
+        """Write data to a given ``filepath`` with 'w' mode.
 
         Args:
             obj (str): Data to be written.
@@ -399,7 +400,7 @@ class HardDiskBackend(BaseStorageBackend):
         os.remove(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether exists.
+        """Check a ``filepath`` whether exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -407,7 +408,7 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.exists(str(filepath))
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a directory.
+        """Check a ``filepath`` whether it is a directory.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a
@@ -416,7 +417,7 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.isdir(str(filepath))
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a file.
+        """Check a ``filepath`` whether it is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -458,7 +459,7 @@ class HTTPBackend(BaseStorageBackend):
         return value_buf.decode(encoding)
 
     def _release_resource(self, filepath: str) -> None:
-        """Release the resource generated by _get_local_path.
+        """Release the resource generated by :meth:`_get_local_path`.
 
         Args:
             filepath (str): Path to be released.
@@ -525,7 +526,7 @@ class FileClient:
     # This collection is used to record the overridden backends, and when a
     # backend appears in the collection, the singleton pattern is disabled for
     # that backend, because if the singleton pattern is used, then the object
-    # returned will be the backend before the override
+    # returned will be the backend before overwriting
     _overridden_backends = set()
     _prefix_to_backends = {
         's3': PetrelBackend,
@@ -548,15 +549,19 @@ class FileClient:
                 f'prefix {prefix} is not supported. Currently supported ones '
                 f'are {list(cls._prefix_to_backends.keys())}')
 
+        # concatenate the arguments to a unique key for determining whether
+        # objects with the same arguments were created
         arg_key = f'{backend}:{prefix}'
         for key, value in kwargs.items():
             arg_key += f':{key}:{value}'
 
+        # if a backend was overridden, it will create a new object
         if (arg_key in cls._instances
                 and backend not in cls._overridden_backends
                 and prefix not in cls._overridden_prefixes):
             _instance = cls._instances[arg_key]
         else:
+            # create a new object and put it to _instance
             _instance = super().__new__(cls)
             if backend is not None:
                 _instance.client = cls._backends[backend](**kwargs)
@@ -715,7 +720,7 @@ class FileClient:
         return _register
 
     def get(self, filepath: Union[str, Path]) -> Union[bytes, memoryview]:
-        """Read data from a given filepath with 'rb' mode.
+        """Read data from a given ``filepath`` with 'rb' mode.
 
         Args:
             filepath (str or Path): Path to read data.
@@ -723,7 +728,7 @@ class FileClient:
         return self.client.get(filepath)
 
     def get_text(self, filepath: Union[str, Path], encoding='utf-8') -> str:
-        """Read data from a given filepath with 'r' mode.
+        """Read data from a given ``filepath`` with 'r' mode.
 
         Args:
             filepath (str or Path): Path to read data.
@@ -733,7 +738,7 @@ class FileClient:
         return self.client.get_text(filepath, encoding)
 
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
-        """Write data to a given filepath with 'wb' mode.
+        """Write data to a given ``filepath`` with 'wb' mode.
 
         Args:
             obj (bytes): Data to be written.
@@ -742,7 +747,7 @@ class FileClient:
         self.client.put(obj, filepath)
 
     def put_text(self, obj: str, filepath: Union[str, Path]) -> None:
-        """Write data to a given filepath with 'w' mode.
+        """Write data to a given ``filepath`` with 'w' mode.
 
         Args:
             obj (str): Data to be written.
@@ -761,7 +766,7 @@ class FileClient:
         self.client.remove(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether exists.
+        """Check a ``filepath`` whether exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -769,7 +774,7 @@ class FileClient:
         return self.client.exists(filepath)
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a directory.
+        """Check a ``filepath`` whether it is a directory.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a
@@ -778,7 +783,7 @@ class FileClient:
         return self.client.isdir(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a filepath whether it is a file.
+        """Check a ``filepath`` whether it is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -799,9 +804,9 @@ class FileClient:
 
     @contextmanager
     def get_local_path(self, filepath: Union[str, Path]):
-        """Download data from given filepath and write the data to local path.
+        """Download data from ``filepath`` and write the data to local path.
 
-        If the ``filepath`` is a local path, just return the ``filepath``.
+        If the ``filepath`` is a local path, just return the itself.
 
         Note:
             ``get_local_path`` is an experimental interface that may change in
