@@ -80,7 +80,7 @@ def test_roialign():
                 opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
-        # create trt engine and wraper
+        # create trt engine and wrapper
         opt_shape_dict = {
             'input': [list(input.shape),
                       list(input.shape),
@@ -141,7 +141,7 @@ def test_nms():
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'boxes': [list(boxes.shape),
                   list(boxes.shape),
@@ -220,7 +220,7 @@ def test_batched_nms():
             output_names=output_names,
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'boxes': [list(boxes.shape),
                   list(boxes.shape),
@@ -295,7 +295,7 @@ def test_scatternd():
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(data.shape),
                   list(data.shape),
@@ -372,7 +372,7 @@ def test_deform_conv():
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(x.shape), list(x.shape),
                   list(x.shape)],
@@ -443,7 +443,7 @@ def test_modulated_deform_conv(with_bias):
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(x.shape), list(x.shape),
                   list(x.shape)],
@@ -515,7 +515,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(input.shape),
                   list(input.shape),
@@ -602,7 +602,7 @@ def test_cummin_cummax(func: Callable):
 
             onnx_model = onnx.load(onnx_file)
 
-            # create trt engine and wraper
+            # create trt engine and wrapper
             opt_shape_dict = {
                 'input':
                 [list(input.shape),
@@ -688,7 +688,7 @@ def test_instance_norm(dynamic_export, fp16_mode):
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     if dynamic_export:
         opt_shape_dict = {
             'input':
@@ -777,7 +777,7 @@ def test_corner_pool(mode):
                 opset_version=opset)
         onnx_model = onnx.load(onnx_file)
 
-        # create trt engine and wraper
+        # create trt engine and wrapper
         opt_shape_dict = {
             'input': [list(input.shape),
                       list(input.shape),

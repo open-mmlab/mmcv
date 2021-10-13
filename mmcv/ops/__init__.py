@@ -17,6 +17,8 @@ from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
+from .furthest_point_sample import (furthest_point_sample,
+                                    furthest_point_sample_with_dist)
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
@@ -30,6 +32,7 @@ from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
+from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
@@ -56,5 +59,6 @@ __all__ = [
     'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
     'fused_bias_leakyrelu', 'RoIAlignRotated', 'roi_align_rotated',
     'pixel_group', 'contour_expand', 'MultiScaleDeformableAttention',
-    'BorderAlign', 'border_align', 'Correlation'
+    'BorderAlign', 'border_align', 'furthest_point_sample',
+    'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation'
 ]

@@ -419,7 +419,7 @@ conv = ConvModule(
     #           [2., 2., 2.],
     #           [2., 2., 2.]]]], requires_grad=True)
 
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
@@ -462,7 +462,7 @@ conv = ConvModule(
     #           [2., 2., 2.],
     #           [2., 2., 2.]]]], requires_grad=True)
 
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     model1 = FooConv1d(init_cfg1)
     model2 = FooConv2d(init_cfg2)
     init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)

@@ -257,7 +257,7 @@ class Config:
                                    f'Duplicate keys: {duplicate_keys}')
                 base_cfg_dict.update(c)
 
-            # Subtitute base variables from strings to their actual values
+            # Substitute base variables from strings to their actual values
             cfg_dict = Config._substitute_base_vars(cfg_dict, base_var_dict,
                                                     base_cfg_dict)
 

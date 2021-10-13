@@ -10,8 +10,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 inline __device__ void swap_float(float *x, float *y) {
   float tmp = *x;
   *x = *y;
