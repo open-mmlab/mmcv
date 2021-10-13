@@ -20,12 +20,6 @@ def test_multiscale_deformable_attention():
             embed_dims=256,
             num_heads=7,
         )
-    with pytest.raises(ValueError):
-        # embed_dims must be divisible by num_heads,
-        MultiScaleDeformableAttention(
-            embed_dims=256,
-            num_heads=7,
-        )
 
     msda = MultiScaleDeformableAttention(
         embed_dims=3, num_levels=2, num_heads=3)
