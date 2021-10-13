@@ -23,7 +23,7 @@ def test_multiscale_deformable_attention():
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     msda = MultiScaleDeformableAttention(
-        embed_dims=3, num_levels=2, num_heads=3).to(device)
+        embed_dims=3, num_levels=2, num_heads=3)
     msda.init_weights()
     num_query = 5
     bs = 1
