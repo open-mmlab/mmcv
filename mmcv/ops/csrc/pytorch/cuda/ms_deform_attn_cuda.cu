@@ -29,6 +29,7 @@ void ms_deformable_im2col_cuda(cudaStream_t stream, const scalar_t *data_value,
                                const int num_heads, const int channels,
                                const int num_levels, const int num_query,
                                const int num_point, scalar_t *data_col) {
+  at::DeviceGuard guard(data_value.device());
   const int num_kernels = batch_size * num_query * num_heads * channels;
   const int num_actual_kernels = batch_size * num_query * num_heads * channels;
   const int num_threads = CUDA_NUM_THREADS;
@@ -53,6 +54,7 @@ void ms_deformable_col2im_cuda(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  at::DeviceGuard guard(data_value.device());
   const int num_threads =
       (channels > CUDA_NUM_THREADS) ? CUDA_NUM_THREADS : channels;
   const int num_kernels = batch_size * num_query * num_heads * channels;
