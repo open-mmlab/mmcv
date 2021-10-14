@@ -20,6 +20,7 @@ from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
 from .furthest_point_sample import (furthest_point_sample,
                                     furthest_point_sample_with_dist)
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
+from .gather_points import gather_points
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
 from .knn import knn
@@ -59,6 +60,6 @@ __all__ = [
     'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
     'fused_bias_leakyrelu', 'RoIAlignRotated', 'roi_align_rotated',
     'pixel_group', 'contour_expand', 'MultiScaleDeformableAttention',
-    'BorderAlign', 'border_align', 'furthest_point_sample',
+    'BorderAlign', 'border_align', 'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation'
 ]
