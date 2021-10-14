@@ -503,7 +503,7 @@ def test_sequential_model_weight_init():
                        torch.full(seq_model[1].conv2d.weight.shape, 2.))
     assert torch.equal(seq_model[1].conv2d.bias,
                        torch.full(seq_model[1].conv2d.bias.shape, 3.))
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     layers = [build_from_cfg(cfg, COMPONENTS) for cfg in seq_model_cfg]
     seq_model = Sequential(
         *layers,
@@ -540,7 +540,7 @@ def test_modulelist_weight_init():
                        torch.full(modellist[1].conv2d.weight.shape, 2.))
     assert torch.equal(modellist[1].conv2d.bias,
                        torch.full(modellist[1].conv2d.bias.shape, 3.))
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     layers = [build_from_cfg(cfg, COMPONENTS) for cfg in models_cfg]
     modellist = ModuleList(
         layers,
