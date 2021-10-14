@@ -13,36 +13,41 @@ except ImportError:
     _USING_PARROTS = False
 
 
-def test_multiscale_deformable_attention():
+@pytest.mark.parametrize('device_type', [
+    'cpu',
+    pytest.param(
+        'cuda:0',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support'))
+])
+def test_multiscale_deformable_attention(device_type):
+
     with pytest.raises(ValueError):
         # embed_dims must be divisible by num_heads,
         MultiScaleDeformableAttention(
             embed_dims=256,
             num_heads=7,
         )
-    available_devices = ['cpu']
-    if torch.cuda.is_available():
-        available_devices.append('cuda:0')
-    for device in available_devices:
-        msda = MultiScaleDeformableAttention(
-            embed_dims=3, num_levels=2, num_heads=3)
-        msda.init_weights()
-        num_query = 5
-        bs = 1
-        embed_dims = 3
-        query = torch.rand(num_query, bs, embed_dims).to(device)
-        key = torch.rand(num_query, bs, embed_dims).to(device)
-        spatial_shapes = torch.Tensor([[2, 2], [1, 1]]).long().to(device)
-        level_start_index = torch.Tensor([0, 4]).long().to(device)
-        reference_points = torch.rand(bs, num_query, 2, 2).to(device)
-        msda.to(device)
-        msda(
-            query,
-            key,
-            key,
-            reference_points=reference_points,
-            spatial_shapes=spatial_shapes,
-            level_start_index=level_start_index)
+    device = torch.device(device_type)
+    msda = MultiScaleDeformableAttention(
+        embed_dims=3, num_levels=2, num_heads=3)
+    msda.init_weights()
+    num_query = 5
+    bs = 1
+    embed_dims = 3
+    query = torch.rand(num_query, bs, embed_dims).to(device)
+    key = torch.rand(num_query, bs, embed_dims).to(device)
+    spatial_shapes = torch.Tensor([[2, 2], [1, 1]]).long().to(device)
+    level_start_index = torch.Tensor([0, 4]).long().to(device)
+    reference_points = torch.rand(bs, num_query, 2, 2).to(device)
+    msda.to(device)
+    msda(
+        query,
+        key,
+        key,
+        reference_points=reference_points,
+        spatial_shapes=spatial_shapes,
+        level_start_index=level_start_index)
 
 
 def test_forward_multi_scale_deformable_attn_pytorch():
