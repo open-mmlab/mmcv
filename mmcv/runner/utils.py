@@ -16,14 +16,14 @@ import mmcv
 def get_host_info():
     """Get hostname and username.
 
-    Return empty string if exception raised, e.g. `getuser()` will lead to
-    error in docker container
+    Return empty string if exception raised, e.g. ``getpass.getuser()`` will
+    lead to error in docker container
     """
     host = ''
     try:
         host = f'{getuser()}@{gethostname()}'
     except Exception as e:
-        warnings.warn('Host or user not found: %s' % (str(e)))
+        warnings.warn(f'Host or user not found: {str(e)}')
     finally:
         return host
 
