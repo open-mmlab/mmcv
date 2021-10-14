@@ -350,7 +350,7 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
             'CephBackend will be deprecated, please use PetrelBackend instead')
 
     # CephClient and PetrelBackend have the same prefix 's3://' and the latter
-    # will be chosen default. If PetrelBackend can not be instantiated
+    # will be chosen as default. If PetrelBackend can not be instantiated
     # successfully, the CephClient will be chosen.
     try:
         file_client = FileClient(backend=backend)

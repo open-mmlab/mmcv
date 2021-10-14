@@ -417,7 +417,7 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.isdir(str(filepath))
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether it is a file.
+        """Check whether a file path is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -439,11 +439,11 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.join(filepath, *filepaths)
 
     def _release_resource(self, filepath: str) -> None:
-        """Do nothing in order to unify API."""
+        """Only for unified API and do nothing."""
         pass
 
     def _get_local_path(self, filepath: str) -> str:
-        """Do nothing in order to unify API."""
+        """Only for unified API and do nothing."""
         return filepath
 
 
@@ -491,7 +491,7 @@ class FileClient:
     Note that It can also register other backend accessor with a given name,
     prefixes, and backend class. In addition, We use the singleton pattern to
     avoid repeated object creation. If the arguments are the same, the same
-    object is returned.
+    object will be returned.
 
     Args:
         backend (str, optional): The storage backend type. Options are "disk",
