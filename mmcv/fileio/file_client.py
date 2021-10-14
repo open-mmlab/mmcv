@@ -189,7 +189,7 @@ class PetrelBackend(BaseStorageBackend):
         self._client.delete(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether exists.
+        """Check whether a file path exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -199,7 +199,7 @@ class PetrelBackend(BaseStorageBackend):
         return self._client.contains(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether it is a file.
+        """Check whether a file path is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -208,7 +208,7 @@ class PetrelBackend(BaseStorageBackend):
 
     def concat_paths(self, filepath: Union[str, Path],
                      *filepaths: Union[str, Path]) -> str:
-        """Concatenate all filepaths.
+        """Concatenate all file paths.
 
         Args:
             filepath (str or Path): Path to be concatenated.
@@ -400,7 +400,7 @@ class HardDiskBackend(BaseStorageBackend):
         os.remove(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether exists.
+        """Check whether a file path exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -408,7 +408,7 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.exists(str(filepath))
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether it is a directory.
+        """Check whether a file path is a directory.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a
@@ -426,7 +426,7 @@ class HardDiskBackend(BaseStorageBackend):
 
     def concat_paths(self, filepath: Union[str, Path],
                      *filepaths: Union[str, Path]) -> str:
-        """Concatenate all filepaths.
+        """Concatenate all file paths.
 
         Join one or more filepath components intelligently. The return value
         is the concatenation of filepath and any members of *filepaths.
@@ -766,7 +766,7 @@ class FileClient:
         self.client.remove(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether exists.
+        """Check whether a file path exists.
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
@@ -774,7 +774,7 @@ class FileClient:
         return self.client.exists(filepath)
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether it is a directory.
+        """Check whether a file path is a directory.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a
@@ -783,7 +783,7 @@ class FileClient:
         return self.client.isdir(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
-        """Check a ``filepath`` whether it is a file.
+        """Check whether a file path is a file.
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
@@ -792,7 +792,7 @@ class FileClient:
 
     def concat_paths(self, filepath: Union[str, Path],
                      *filepaths: Union[str, Path]) -> str:
-        """Concatenate all filepaths.
+        """Concatenate all file paths.
 
         Join one or more filepath components intelligently. The return value
         is the concatenation of filepath and any members of *filepaths.
