@@ -74,6 +74,19 @@ void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor buff, Tensor grad_input, float gamma,
                                  float alpha);
 
+void three_interpolate_forward(int b, int c, int m, int n, Tensor points_tensor,
+                               Tensor idx_tensor, Tensor weight_tensor,
+                               Tensor out_tensor);
+
+void three_interpolate_backward(int b, int c, int n, int m,
+                                Tensor grad_out_tensor, Tensor idx_tensor,
+                                Tensor weight_tensor,
+                                Tensor grad_points_tensor);
+
+void three_nn_forward(int b, int n, int m, Tensor unknown_tensor,
+                      Tensor known_tensor, Tensor dist2_tensor,
+                      Tensor idx_tensor);
+
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
@@ -343,6 +356,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "softmax_focal_loss_backward", py::arg("input"), py::arg("target"),
         py::arg("weight"), py::arg("buff"), py::arg("grad_input"),
         py::arg("gamma"), py::arg("alpha"));
+  m.def("three_interpolate_forward", &three_interpolate_forward,
+        "three_interpolate_forward", py::arg("b"), py::arg("c"), py::arg("m"),
+        py::arg("n"), py::arg("points_tensor"), py::arg("idx_tensor"),
+        py::arg("weight_tensor"), py::arg("out_tensor"));
+  m.def("three_interpolate_backward", &three_interpolate_backward,
+        "three_interpolate_backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("m"), py::arg("grad_out_tensor"), py::arg("idx_tensor"),
+        py::arg("weight_tensor"), py::arg("grad_points_tensor"));
+  m.def("three_nn_forward", &three_nn_forward, "three_nn_forward", py::arg("b"),
+        py::arg("n"), py::arg("m"), py::arg("unknown_tensor"),
+        py::arg("known_tensor"), py::arg("dist2_tensor"),
+        py::arg("idx_tensor"));
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));

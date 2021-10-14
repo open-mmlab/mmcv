@@ -25,5 +25,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - SoftmaxFocalLoss
 - SoftNMS
 - Synchronized BatchNorm
+- ThreeInterpolate
+- ThreeNN
 - Weight standardization
 - Correlation
