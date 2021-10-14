@@ -9,7 +9,6 @@
 #endif
 
 #define TOTAL_THREADS 1024
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 template <typename T>
 __global__ void gather_points_forward_cuda_kernel(int b, int c, int n, int m,

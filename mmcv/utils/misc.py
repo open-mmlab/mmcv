@@ -320,6 +320,16 @@ def deprecated_api_warning(name_dict, cls_name=None):
             if kwargs:
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in kwargs:
+
+                        assert dst_arg_name not in kwargs, (
+                            f'The expected behavior is to replace '
+                            f'the deprecated key `{src_arg_name}` to '
+                            f'new key `{dst_arg_name}`, but got them '
+                            f'in the arguments at the same time, which '
+                            f'is confusing. `{src_arg_name} will be '
+                            f'deprecated in the future, please '
+                            f'use `{dst_arg_name}` instead.')
+
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
                             f'`{func_name}`, please use "{dst_arg_name}" '
