@@ -22,8 +22,8 @@ void ThreeInterpolateForwardCUDAKernelLauncher(int b, int c, int m, int n,
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c,
-              b);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -50,8 +50,8 @@ void ThreeInterpolateBackwardCUDAKernelLauncher(int b, int c, int n, int m,
   at::cuda::CUDAGuard device_guard(grad_out.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c,
-              b);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

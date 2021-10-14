@@ -12,7 +12,8 @@ ext_module = ext_loader.load_ext(
 class ThreeInterpolate(Function):
     """Performs weighted linear interpolation on 3 features.
 
-    Please refer to https://arxiv.org/abs/1706.02413 for more details.
+    Please refer to `Paper of PointNet++ <https://arxiv.org/abs/1706.02413>`_
+    for more details.
     """
 
     @staticmethod

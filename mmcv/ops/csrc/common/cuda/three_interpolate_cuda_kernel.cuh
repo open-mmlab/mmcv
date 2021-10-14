@@ -8,8 +8,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 template <typename T>
 __global__ void three_interpolate_forward_cuda_kernel(
     int b, int c, int m, int n, const T *points, const int *__restrict__ idx,

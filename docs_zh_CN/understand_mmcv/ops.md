@@ -10,7 +10,11 @@ MMCV 提供了检测、分割等任务中常用的 CUDA 算子
 - CornerPool
 - Deformable Convolution v1/v2
 - Deformable RoIPool
+- GatherPoints
+- FurthestPointSample
+- FurthestPointSampleWithDist
 - GeneralizedAttention
+- KNN
 - MaskedConv
 - NMS
 - PSAMask

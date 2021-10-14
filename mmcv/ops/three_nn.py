@@ -11,7 +11,8 @@ ext_module = ext_loader.load_ext('_ext', ['three_nn_forward'])
 class ThreeNN(Function):
     """Find the top-3 nearest neighbors of the target set from the source set.
 
-    Please refer to https://arxiv.org/abs/1706.02413 for more details.
+    Please refer to `Paper of PointNet++ <https://arxiv.org/abs/1706.02413>`_
+    for more details.
     """
 
     @staticmethod

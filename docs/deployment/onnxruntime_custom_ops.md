@@ -51,6 +51,12 @@
     - [Inputs](#inputs-7)
     - [Outputs](#outputs-7)
     - [Type Constraints](#type-constraints-7)
+  - [MMCVDeformConv2d](#mmcvdeformconv2d)
+    - [Description](#description-8)
+    - [Parameters](#parameters-8)
+    - [Inputs](#inputs-8)
+    - [Outputs](#outputs-8)
+    - [Type Constraints](#type-constraints-8)
 
 <!-- TOC -->
 
@@ -329,5 +335,44 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 </dl>
 
 #### Type Constraints
+
+- T:tensor(float32, Linear)
+
+## MMCVDeformConv2d
+
+### Description
+
+Perform Deformable Convolution on input feature, read [Deformable Convolutional Network](https://arxiv.org/abs/1703.06211) for detail.
+
+### Parameters
+
+| Type           | Parameter          | Description                                                                                                                       |
+| -------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW)                                                                                     |
+| `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW)                                                                                 |
+| `list of ints` | `dilation`         | The spacing between kernel elements. (dH, dW)                                                                                     |
+| `int`          | `deformable_group` | Groups of deformable offset.                                                                                                      |
+| `int`          | `group`            | Split input into groups. `input_channel` should be divisible by the number of groups.                                             |
+| `int`          | `im2col_step`      | DeformableConv2d use im2col to compute convolution. im2col_step is used to split input and offset, reduce memory usage of column. |
+
+### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the numbers of channels, inH and inW are the height and width of the data.</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
+</dl>
+
+### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
+</dl>
+
+### Type Constraints
 
 - T:tensor(float32, Linear)

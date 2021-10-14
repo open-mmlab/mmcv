@@ -20,8 +20,8 @@ void ThreeNNForwardCUDAKernelLauncher(int b, int n, int m, const Tensor unknown,
   at::cuda::CUDAGuard device_guard(unknown.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK),
-              b);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

@@ -53,6 +53,14 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
+void gather_points_forward(int b, int c, int n, int npoints,
+                           Tensor points_tensor, Tensor idx_tensor,
+                           Tensor out_tensor);
+
+void gather_points_backward(int b, int c, int n, int npoints,
+                            Tensor grad_out_tensor, Tensor idx_tensor,
+                            Tensor grad_points_tensor);
+
 void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                 Tensor output, float gamma, float alpha);
 
@@ -81,6 +89,17 @@ void three_nn_forward(int b, int n, int m, Tensor unknown_tensor,
 
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
+
+void knn_forward(int b, int n, int m, int nsample, Tensor xyz_tensor,
+                 Tensor new_xyz_tensor, Tensor idx_tensor, Tensor dist2_tensor);
+
+void furthest_point_sampling_forward(int b, int n, int m, Tensor points_tensor,
+                                     Tensor temp_tensor, Tensor idx_tensor);
+
+void furthest_point_sampling_with_dist_forward(int b, int n, int m,
+                                               Tensor points_tensor,
+                                               Tensor temp_tensor,
+                                               Tensor idx_tensor);
 
 void masked_im2col_forward(const Tensor im, const Tensor mask_h_idx,
                            const Tensor mask_w_idx, Tensor col,
@@ -258,9 +277,21 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
         py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
         py::arg("scale"));
+  m.def("gather_points_forward", &gather_points_forward,
+        "gather_points_forward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("points_tensor"), py::arg("idx_tensor"),
+        py::arg("out_tensor"));
+  m.def("gather_points_backward", &gather_points_backward,
+        "gather_points_backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("grad_out_tensor"), py::arg("idx_tensor"),
+        py::arg("grad_points_tensor"));
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
+  m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
+        py::arg("dist2_tensor"));
   m.def("carafe_naive_forward", &carafe_naive_forward, "carafe_naive_forward",
         py::arg("features"), py::arg("masks"), py::arg("output"),
         py::arg("kernel_size"), py::arg("group_size"), py::arg("scale_factor"));
@@ -340,6 +371,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("furthest_point_sampling_forward", &furthest_point_sampling_forward,
+        "furthest_point_sampling_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("points_tensor"), py::arg("temp_tensor"),
+        py::arg("idx_tensor"));
+  m.def("furthest_point_sampling_with_dist_forward",
+        &furthest_point_sampling_with_dist_forward,
+        "furthest_point_sampling_with_dist_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("points_tensor"), py::arg("temp_tensor"),
+        py::arg("idx_tensor"));
   m.def("masked_im2col_forward", &masked_im2col_forward,
         "masked_im2col_forward", py::arg("im"), py::arg("mask_h_idx"),
         py::arg("mask_w_idx"), py::arg("col"), py::arg("kernel_h"),
