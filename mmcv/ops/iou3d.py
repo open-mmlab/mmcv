@@ -30,8 +30,8 @@ def boxes_iou_bev(boxes_a, boxes_b):
 def nms_bev(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     """NMS function GPU implementation (for BEV boxes). The overlap of two
     boxes for IoU calculation is defined as the exact overlapping area of the
-    two boxes. In this function, one can also set `pre_max_size` and
-    `post_max_size`.
+    two boxes. In this function, one can also set ``pre_max_size`` and
+    ``post_max_size``.
 
     Args:
         boxes (torch.Tensor): Input boxes with the shape of [N, 5]
@@ -53,8 +53,7 @@ def nms_bev(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     boxes = boxes[order].contiguous()
 
     keep = torch.zeros(boxes.size(0), dtype=torch.long)
-    num_out = ext_module.iou3d_nms_forward(boxes, keep, thresh,
-                                           boxes.device.index)
+    num_out = ext_module.iou3d_nms_forward(boxes, keep, thresh)
     keep = order[keep[:num_out].cuda(boxes.device)].contiguous()
     if post_max_size is not None:
         keep = keep[:post_max_size]
@@ -79,6 +78,5 @@ def nms_normal_bev(boxes, scores, thresh):
     boxes = boxes[order].contiguous()
 
     keep = torch.zeros(boxes.size(0), dtype=torch.long)
-    num_out = ext_module.iou3d_nms_normal_forward(boxes, keep, thresh,
-                                                  boxes.device.index)
+    num_out = ext_module.iou3d_nms_normal_forward(boxes, keep, thresh)
     return order[keep[:num_out].cuda(boxes.device)].contiguous()

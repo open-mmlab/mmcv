@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
@@ -17,10 +18,14 @@ from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
+from .furthest_point_sample import (furthest_point_sample,
+                                    furthest_point_sample_with_dist)
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
+from .gather_points import gather_points
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
 from .iou3d import boxes_iou_bev, nms_bev, nms_normal_bev
+from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
@@ -30,12 +35,16 @@ from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
+from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
+from .roipoint_pool3d import RoIPointPool3d
 from .saconv import SAConv2d
 from .sync_bn import SyncBatchNorm
+from .three_interpolate import three_interpolate
+from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 
@@ -52,10 +61,12 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
+    'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
+    'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'boxes_iou_bev', 'nms_bev',
     'nms_normal_bev', 'fused_bias_leakyrelu', 'RoIAlignRotated',
-    'roi_align_rotated', 'pixel_group', 'contour_expand',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'ball_query', 'Correlation'
+    'roi_align_rotated', 'pixel_group', 'contour_expand', 'three_nn',
+    'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
+    'border_align', 'gather_points', 'furthest_point_sample',
+    'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation'
 ]

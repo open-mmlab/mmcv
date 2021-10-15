@@ -33,7 +33,7 @@ def _any(judge_result):
             if _any(element):
                 return True
     except TypeError:
-        # Maybe encouter the case: torch.tensor(True) | torch.tensor(False)
+        # Maybe encounter the case: torch.tensor(True) | torch.tensor(False)
         if judge_result:
             return True
     return False

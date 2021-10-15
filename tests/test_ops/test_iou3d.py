@@ -17,8 +17,8 @@ def test_boxes_iou_bev():
          [5.0, 5.0, 6.0, 7.0, 0.4]],
         dtype=np.float32)
     np_expect_ious = np.asarray(
-        [[0.3708, 0.4351, 0.0000], [0.1104, 0.4487, 0.0424],
-         [0.0000, 0.0000, 0.3622]],
+        [[0.2621, 0.2948, 0.0000], [0.0549, 0.1587, 0.0000],
+         [0.0000, 0.0000, 0.0000]],
         dtype=np.float32)
 
     boxes1 = torch.from_numpy(np_boxes1).cuda()
