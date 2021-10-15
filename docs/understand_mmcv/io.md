@@ -3,7 +3,7 @@
 This module provides two universal API to load and dump files of different formats.
 
 ```{note}
-Since v1.3.15, the IO modules support loading and dumping data from and to different backends, respectively. More details are in PR [#1330](https://github.com/open-mmlab/mmcv/pull/1330).
+Since v1.3.15, the IO modules support loading (dumping) data from (to) different backends, respectively. More details are in PR [#1330](https://github.com/open-mmlab/mmcv/pull/1330).
 ```
 
 ### Load and dump data
