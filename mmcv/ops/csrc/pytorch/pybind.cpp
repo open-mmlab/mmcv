@@ -4,6 +4,18 @@
 std::string get_compiler_version();
 std::string get_compiling_cuda_version();
 
+void assign_score_withk_forward(int B, int N0, int N1, int M, int K, int O,
+                                int aggregate, const Tensor &points,
+                                const Tensor &centers, const Tensor &scores,
+                                const Tensor &knn_idx, Tensor &output);
+
+void assign_score_withk_backward(int B, int N0, int N1, int M, int K, int O,
+                                 int aggregate, const Tensor &grad_out,
+                                 const Tensor &points, const Tensor &centers,
+                                 const Tensor &scores, const Tensor &knn_idx,
+                                 Tensor &grad_points, Tensor &grad_centers,
+                                 Tensor &grad_scores);
+
 void carafe_naive_forward(Tensor features, Tensor masks, Tensor output,
                           int kernel_size, int group_size, int scale_factor);
 
@@ -288,6 +300,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
   m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
         "get_compiling_cuda_version");
+  m.def("assign_score_withk_forward", &assign_score_withk_forward,
+        "assign_score_withk_forward", py::arg("B"), py::arg("N0"),
+        py::arg("N1"), py::arg("M"), py::arg("K"), py::arg("O"),
+        py::arg("aggregate"), py::arg("points"), py::arg("centers"),
+        py::arg("scores"), py::arg("knn_idx"), py::arg("output"));
+  m.def("assign_score_withk_backward", &assign_score_withk_backward,
+        "assign_score_withk_backward", py::arg("B"), py::arg("N0"),
+        py::arg("N1"), py::arg("M"), py::arg("K"), py::arg("O"),
+        py::arg("aggregate"), py::arg("grad_out"), py::arg("points"),
+        py::arg("centers"), py::arg("scores"), py::arg("knn_idx"),
+        py::arg("grad_points"), py::arg("grad_centers"),
+        py::arg("grad_scores"));
   m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
         py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
         py::arg("new_xyz_tensor"), py::arg("idx_tensor"),

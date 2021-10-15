@@ -2,6 +2,7 @@
 
 We implement common CUDA ops used in detection, segmentation, etc.
 
+- AssignScoreWithK
 - BallQuery
 - BBoxOverlaps
 - CARAFE

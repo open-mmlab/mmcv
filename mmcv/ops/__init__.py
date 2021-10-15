@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
@@ -58,11 +59,11 @@ __all__ = [
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
-    'SAConv2d', 'TINShift', 'tin_shift', 'box_iou_rotated', 'nms_rotated',
-    'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
-    'fused_bias_leakyrelu', 'RoIAlignRotated', 'roi_align_rotated',
-    'pixel_group', 'contour_expand', 'three_nn', 'three_interpolate',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'gather_points', 'furthest_point_sample',
+    'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
+    'box_iou_rotated', 'nms_rotated', 'knn', 'ball_query', 'upfirdn2d',
+    'FusedBiasLeakyReLU', 'fused_bias_leakyrelu', 'RoIAlignRotated',
+    'roi_align_rotated', 'pixel_group', 'contour_expand', 'three_nn',
+    'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
+    'border_align', 'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation'
 ]
