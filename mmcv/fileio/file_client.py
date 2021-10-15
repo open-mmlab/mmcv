@@ -105,7 +105,7 @@ class PetrelBackend(BaseStorageBackend):
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
-    def _path_mapping(self, filepath: str) -> str:
+    def _map_path(self, filepath: str) -> str:
         """Replace the prefix of ``filepath`` with :attr:`path_mapping`.
 
         Args:
@@ -135,7 +135,7 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to read data.
         """
-        filepath = self._path_mapping(str(filepath))
+        filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
@@ -160,7 +160,7 @@ class PetrelBackend(BaseStorageBackend):
             obj (bytes): Data to be saved.
             filepath (str or Path): Path to write data.
         """
-        filepath = self._path_mapping(str(filepath))
+        filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         self._client.put(filepath, obj)
 
@@ -184,7 +184,7 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be removed.
         """
-        filepath = self._path_mapping(str(filepath))
+        filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
@@ -194,7 +194,7 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be checked whether exists.
         """
-        filepath = self._path_mapping(str(filepath))
+        filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
@@ -213,12 +213,10 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be concatenated.
         """
-        formatted_paths = [
-            self._format_path(self._path_mapping(str(filepath)))
-        ]
+        formatted_paths = [self._format_path(self._map_path(str(filepath)))]
         for path in filepaths:
             formatted_paths.append(
-                self._format_path(self._path_mapping(str(path))))
+                self._format_path(self._map_path(str(path))))
         return '/'.join(formatted_paths)
 
     def _release_resource(self, filepath: str) -> None:
@@ -384,7 +382,7 @@ class HardDiskBackend(BaseStorageBackend):
             obj (str): Data to be written.
             filepath (str or Path): Path to write data.
             encoding (str, optional): The encoding format used to open the
-                `filepath`. Default: 'utf-8'.
+                ``filepath``. Default: 'utf-8'.
         """
         filepath = str(filepath)
         with open(filepath, 'w', encoding=encoding) as f:
