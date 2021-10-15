@@ -171,11 +171,11 @@ class TestFileClient:
         with pytest.raises(AssertionError):
             FileClient('petrel', path_mapping=1)
 
-        # test `_path_mapping`
+        # test `_map_path`
         petrel_dir = 's3://user/data'
         petrel_backend = FileClient(
             'petrel', path_mapping={str(self.test_data_dir): petrel_dir})
-        assert petrel_backend.client._path_mapping(str(self.img_path)) == \
+        assert petrel_backend.client._map_path(str(self.img_path)) == \
             str(self.img_path).replace(str(self.test_data_dir), petrel_dir)
 
         petrel_path = f'{petrel_dir}/test.jpg'
