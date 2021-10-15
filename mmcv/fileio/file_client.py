@@ -119,7 +119,7 @@ class PetrelBackend(BaseStorageBackend):
     def _format_path(self, filepath: str) -> str:
         """Convert a ``filepath`` to standard format of petrel oss.
 
-        If the ``filepath`` is concatenated by ``os.path.join``, in a windows
+        If the ``filepath`` is concatenated by ``os.path.join``, in a Windows
         environment, the ``filepath`` will be the format of
         's3://bucket_name\\image.jpg'. By invoking :meth:`_format_path`, the
         above ``filepath`` will be converted to 's3://bucket_name/image.jpg'.
