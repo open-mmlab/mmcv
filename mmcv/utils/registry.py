@@ -68,7 +68,7 @@ class Registry:
 
     Please refer to
     https://mmcv.readthedocs.io/en/latest/understand_mmcv/registry.html for
-    advanced useage.
+    advanced usage.
 
     Args:
         name (str): Registry name.

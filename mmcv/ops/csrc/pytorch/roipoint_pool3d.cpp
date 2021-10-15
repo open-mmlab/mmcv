@@ -1,6 +1,6 @@
 /*
-Modified for
-https://github.com/open-mmlab/OpenPCDet/blob/master/pcdet/ops/roipoint_pool3d/src/roipoint_pool3d_kernel.cu
+Modified from
+https://github.com/open-mmlab/OpenPCDet/blob/master/pcdet/ops/roipoint_pool3d/src/roipoint_pool3d.cpp
 Point cloud feature pooling
 Written by Shaoshuai Shi
 All Rights Reserved 2018.

@@ -1,6 +1,6 @@
 /*
 Modified from
-https://github.com/sshaoshuai/PCDet/blob/master/pcdet/ops/roipoint_pool3d/src/roipoint_pool3d_kernel.cu
+https://github.com/open-mmlab/OpenPCDet/blob/master/pcdet/ops/roipoint_pool3d/src/roipoint_pool3d_kernel.cu
 Point cloud feature pooling
 Written by Shaoshuai Shi
 All Rights Reserved 2018.
@@ -23,8 +23,8 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(xyz.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num,
-              batch_size);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num, batch_size);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -37,8 +37,8 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   Tensor pts_idx = at::empty({batch_size, boxes_num, sampled_pts_num},
                              boxes3d.options().dtype(at::kInt));
 
-  dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK),
-               batch_size);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK), batch_size);
 
   get_pooled_idx<<<blocks2, threads, 0, stream>>>(
       batch_size, pts_num, boxes_num, sampled_pts_num,

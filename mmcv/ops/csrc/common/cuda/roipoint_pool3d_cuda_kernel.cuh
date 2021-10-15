@@ -8,8 +8,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 template <typename T>
 __device__ inline void lidar_to_local_coords(T shift_x, T shift_y, T rz,
                                              T &local_x, T &local_y) {
