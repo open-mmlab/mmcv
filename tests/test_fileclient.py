@@ -105,7 +105,7 @@ class TestFileClient:
             # test `exists`
             assert not disk_backend.exists(filepath2)
 
-            # test `_get_local_path`
+            # test `get_local_path`
             # if the backend is disk, `get_local_path` just return the input
             with disk_backend.get_local_path(filepath1) as path:
                 assert str(filepath1) == path
@@ -228,7 +228,7 @@ class TestFileClient:
         assert petrel_backend.concat_paths(petrel_dir, 'dir', 'file') == \
             f'{petrel_dir}/dir/file'
 
-        # test `_get_local_path`
+        # test `get_local_path`
         # exist the with block and path will be released
         petrel_backend.client._client.contains = MagicMock(return_value=True)
         with petrel_backend.get_local_path(petrel_path) as path:
