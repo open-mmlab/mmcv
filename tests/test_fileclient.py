@@ -111,11 +111,106 @@ class TestFileClient:
                 assert str(filepath1) == path
             assert osp.isfile(filepath1)
 
+        # test `concat_paths`
         disk_dir = '/path/of/your/directory'
         assert disk_backend.concat_paths(disk_dir, 'file') == \
             osp.join(disk_dir, 'file')
         assert disk_backend.concat_paths(disk_dir, 'dir', 'file') == \
             osp.join(disk_dir, 'dir', 'file')
+
+        # test `list_dir_or_file`
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            text1 = Path(tmp_dir) / 'text1.txt'
+            text1.open('w').write('text1')
+            text2 = Path(tmp_dir) / 'text2.txt'
+            text2.open('w').write('text2')
+            dir1 = Path(tmp_dir) / 'dir1'
+            dir1.mkdir()
+            text3 = dir1 / 'text3.txt'
+            text3.open('w').write('text3')
+            dir2 = Path(tmp_dir) / 'dir2'
+            dir2.mkdir()
+            jpg1 = dir2 / 'img.jpg'
+            jpg1.open('wb').write(b'img')
+            dir3 = dir2 / 'dir3'
+            dir3.mkdir()
+            text4 = dir3 / 'text4.txt'
+            text4.open('w').write('text4')
+            # 1. list directories and files
+            assert set(disk_backend.list_dir_or_file(tmp_dir)) == set(
+                ['dir1', 'dir2', 'text1.txt', 'text2.txt'])
+            # 2. list directories and files recursively
+            assert set(disk_backend.list_dir_or_file(
+                tmp_dir, recursive=True)) == set([
+                    'dir1',
+                    osp.join('dir1', 'text3.txt'), 'dir2',
+                    osp.join('dir2', 'dir3'),
+                    osp.join('dir2', 'dir3', 'text4.txt'),
+                    osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                ])
+            # 3. only list directories
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_file=False)) == set(['dir1', 'dir2'])
+            with pytest.raises(
+                    TypeError,
+                    match='`suffix` should be None when `list_dir` is True'):
+                # Exception is raised among the `list_dir_or_file` of client,
+                # so we need to invode the client to trigger the exception
+                disk_backend.client.list_dir_or_file(
+                    tmp_dir, list_file=False, suffix='.txt')
+            # 4. only list directories recursively
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_file=False, recursive=True)) == set(
+                        ['dir1', 'dir2',
+                         osp.join('dir2', 'dir3')])
+            # 5. only list files
+            assert set(disk_backend.list_dir_or_file(
+                tmp_dir, list_dir=False)) == set(['text1.txt', 'text2.txt'])
+            # 6. only list files recursively
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'),
+                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix='.txt')) == set(['text1.txt', 'text2.txt'])
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix=('.txt',
+                            '.jpg'))) == set(['text1.txt', 'text2.txt'])
+            with pytest.raises(
+                    TypeError,
+                    match='`suffix` must be a string or tuple of strings'):
+                disk_backend.client.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix=['.txt', '.jpg'])
+            # 8. only list files ending with suffix recursively
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix='.txt',
+                    recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'), 'text1.txt',
+                        'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                disk_backend.list_dir_or_file(
+                    tmp_dir,
+                    list_dir=False,
+                    suffix=('.txt', '.jpg'),
+                    recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'),
+                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                    ])
 
     @patch('ceph.S3Client', MockS3Client)
     def test_ceph_backend(self):
