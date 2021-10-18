@@ -19,8 +19,6 @@ class DvcliveLoggerHook(LoggerHook):
             be saved to {model_file}.
         interval (int): Logging interval (every k iterations).
             Default 10.
-            If `by_epoch` is True, the value will be set to 0 in
-            order to properly work with `dvclive`_.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`.
             Default: True.
