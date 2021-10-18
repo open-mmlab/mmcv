@@ -179,39 +179,30 @@ def get_extensions():
 
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
-        from parrots.utils.build_extension import Extension , use_camb
+        from parrots.utils.build_extension import Extension, use_camb
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         include_dirs = []
-        op_files = []
-        if use_camb:
-        #if 0:
-            op_files = glob.glob('./mmcv/ops/csrc/parrots/camb/*.mlu') +\
-                glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
-                #glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu')
-        else:
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
-                glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
+            glob.glob('./mmcv/ops/csrc/parrots/*.cpp') + \
+            glob.glob('./mmcv/ops/csrc/parrots/camb/*.cpp')
+
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
+            'cncc': ["-v", '-fPIC', '-shared', '--bang-mlu-arch=MLU290'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
-            if use_camb:
-                extra_compile_args['cncc'] += [
-                    "-v", '-fPIC', '-shared', '--bang-mlu-arch=MLU290'
-                ]
-            else:
-                define_macros += [('MMCV_WITH_CUDA', None)]
-                extra_compile_args['nvcc'] += [
-                    '-D__CUDA_NO_HALF_OPERATORS__',
-                    '-D__CUDA_NO_HALF_CONVERSIONS__',
-                    '-D__CUDA_NO_HALF2_OPERATORS__',
-                ]
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            extra_compile_args['nvcc'] += [
+                '-D__CUDA_NO_HALF_OPERATORS__',
+                '-D__CUDA_NO_HALF_CONVERSIONS__',
+                '-D__CUDA_NO_HALF2_OPERATORS__',
+            ]
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
