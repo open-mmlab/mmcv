@@ -23,9 +23,8 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(pts_feature.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  int *pts_mask = NULL;
-  cudaMalloc(&pts_mask, boxes_num * pts_num * sizeof(int));  // (N, M)
-  cudaMemset(pts_mask, -1, boxes_num * pts_num * sizeof(int));
+  Tensor pts_mask =
+      -at::ones({boxes_num, pts_num}, pts_feature.options().dtype(at::kInt));
 
   dim3 blocks_mask(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num);
   dim3 threads(THREADS_PER_BLOCK);
@@ -35,7 +34,8 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
         generate_pts_mask_for_box3d<scalar_t>
             <<<blocks_mask, threads, 0, stream>>>(
                 boxes_num, pts_num, out_x, out_y, out_z,
-                rois.data_ptr<scalar_t>(), pts.data_ptr<scalar_t>(), pts_mask);
+                rois.data_ptr<scalar_t>(), pts.data_ptr<scalar_t>(),
+                pts_mask.data_ptr<int>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -49,7 +49,8 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
         collect_inside_pts_for_box3d<scalar_t>
             <<<blocks_collect, threads, 0, stream>>>(
                 boxes_num, pts_num, max_pts_each_voxel, out_x, out_y, out_z,
-                pts_mask, pts_idx_of_voxels.data_ptr<scalar_t>());
+                pts_mask.data_ptr<int>(),
+                pts_idx_of_voxels.data_ptr<scalar_t>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -77,11 +78,6 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
   }
 
   AT_CUDA_CHECK(cudaGetLastError());
-  cudaFree(pts_mask);
-
-#ifdef DEBUG
-  cudaDeviceSynchronize();  // for using printf in kernel function
-#endif
 }
 
 void RoiawarePool3dBackwardCUDAKernelLauncher(

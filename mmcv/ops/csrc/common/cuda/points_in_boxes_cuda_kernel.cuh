@@ -8,8 +8,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 template <typename T>
 __device__ inline void lidar_to_local_coords(T shift_x, T shift_y, T rz,
                                              T &local_x, T &local_y) {
@@ -83,13 +81,12 @@ __global__ void points_in_boxes_all_forward_cuda_kernel(
   box_idx_of_points += bs_idx * pts_num * boxes_num + pt_idx * boxes_num;
 
   T local_x = 0, local_y = 0;
-  int cur_in_flag = 0;
   for (int k = 0; k < boxes_num; k++) {
-    cur_in_flag = check_pt_in_box3d(pts, boxes + k * 7, local_x, local_y);
+    const int cur_in_flag =
+        check_pt_in_box3d(pts, boxes + k * 7, local_x, local_y);
     if (cur_in_flag) {
       box_idx_of_points[k] = 1;
     }
-    cur_in_flag = 0;
   }
 }
 

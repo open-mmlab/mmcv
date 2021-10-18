@@ -8,8 +8,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 template <typename T>
 __device__ inline void lidar_to_local_coords(T shift_x, T shift_y, T rz,
                                              T &local_x, T &local_y) {
@@ -75,13 +73,6 @@ __global__ void generate_pts_mask_for_box3d(int boxes_num, int pts_num,
     z_idx = min(max(z_idx, 0), out_z - 1);
 
     unsigned int idx_encoding = (x_idx << 16) + (y_idx << 8) + z_idx;
-#ifdef DEBUG
-    printf(
-        "mask: pts_%d(%.3f, %.3f, %.3f), local(%.3f, %.3f, %.3f), idx(%d, %d, "
-        "%d), res(%.3f, %.3f, %.3f), idx_encoding=%x\n",
-        pt_idx, pts[0], pts[1], pts[2], local_x, local_y, local_z, x_idx, y_idx,
-        z_idx, x_res, y_res, z_res, idx_encoding);
-#endif
 
     pts_mask[0] = idx_encoding;
   }
@@ -116,10 +107,6 @@ __global__ void collect_inside_pts_for_box3d(int boxes_num, int pts_num,
         pts_idx_of_voxels[base_offset + cnt + 1] = k;
         pts_idx_of_voxels[base_offset]++;
       }
-#ifdef DEBUG
-      printf("collect: pts_%d, idx(%d, %d, %d), idx_encoding=%x\n", k, x_idx,
-             y_idx, z_idx, idx_encoding);
-#endif
     }
   }
 }
@@ -146,11 +133,6 @@ __global__ void roiaware_maxpool3d(int boxes_num, int pts_num, int channels,
       y_idx >= out_y || z_idx >= out_z)
     return;
 
-#ifdef DEBUG
-  printf("src pts_idx_of_voxels: (%p, ), argmax: %p\n", pts_idx_of_voxels,
-         argmax);
-#endif
-
   int offset_base = x_idx * out_y * out_z + y_idx * out_z + z_idx;
   pts_idx_of_voxels += box_idx * out_x * out_y * out_z * max_pts_each_voxel +
                        offset_base * max_pts_each_voxel;
@@ -175,14 +157,6 @@ __global__ void roiaware_maxpool3d(int boxes_num, int pts_num, int channels,
     pooled_features[0] = max_val;
   }
   argmax[0] = argmax_idx;
-
-#ifdef DEBUG
-  printf(
-      "channel_%d idx(%d, %d, %d), argmax_idx=(%d, %.3f), total=%d, after "
-      "pts_idx: %p, argmax: (%p, %d)\n",
-      channel_idx, x_idx, y_idx, z_idx, argmax_idx, max_val, total_pts,
-      pts_idx_of_voxels, argmax, argmax_idx);
-#endif
 }
 
 template <typename T>

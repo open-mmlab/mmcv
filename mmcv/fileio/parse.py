@@ -4,7 +4,7 @@ def list_from_file(filename, prefix='', offset=0, max_num=0, encoding='utf-8'):
 
     Args:
         filename (str): Filename.
-        prefix (str): The prefix to be inserted to the begining of each item.
+        prefix (str): The prefix to be inserted to the beginning of each item.
         offset (int): The offset of lines.
         max_num (int): The maximum number of lines to be read,
             zeros and negatives mean no limitation.

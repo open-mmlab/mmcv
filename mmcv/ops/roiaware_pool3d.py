@@ -10,8 +10,10 @@ ext_module = ext_loader.load_ext(
 
 
 class RoIAwarePool3d(nn.Module):
-    """Encode the geometry-specific features of each 3D proposal. Paper
-    reference: https://arxiv.org/pdf/1907.03670.pdf.
+    """Encode the geometry-specific features of each 3D proposal. Paper.
+
+    Please refer to `Paper of PartA2 <https://arxiv.org/pdf/1907.03670.pdf>`_
+    for more details.
 
     Args:
         out_size (int or tuple): The size of output features. n or
