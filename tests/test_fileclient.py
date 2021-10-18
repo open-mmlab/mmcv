@@ -1,6 +1,8 @@
+import os
 import os.path as osp
 import sys
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -13,6 +15,41 @@ sys.modules['ceph'] = MagicMock()
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
 sys.modules['mc'] = MagicMock()
+
+
+@contextmanager
+def build_temporary_directory():
+    """Build a temporary directory containing many files to test
+    ``FileClient.list_dir_or_file``.
+
+    . \n
+    | -- dir1 \n
+    | -- | -- text3.txt \n
+    | -- dir2 \n
+    | -- | -- dir3 \n
+    | -- | -- | -- text4.txt \n
+    | -- | -- img.jpg \n
+    | -- text1.txt \n
+    | -- text2.txt \n
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        text1 = Path(tmp_dir) / 'text1.txt'
+        text1.open('w').write('text1')
+        text2 = Path(tmp_dir) / 'text2.txt'
+        text2.open('w').write('text2')
+        dir1 = Path(tmp_dir) / 'dir1'
+        dir1.mkdir()
+        text3 = dir1 / 'text3.txt'
+        text3.open('w').write('text3')
+        dir2 = Path(tmp_dir) / 'dir2'
+        dir2.mkdir()
+        jpg1 = dir2 / 'img.jpg'
+        jpg1.open('wb').write(b'img')
+        dir3 = dir2 / 'dir3'
+        dir3.mkdir()
+        text4 = dir3 / 'text4.txt'
+        text4.open('w').write('text4')
+        yield tmp_dir
 
 
 class MockS3Client:
@@ -36,6 +73,25 @@ class MockPetrelClient:
         with open(filepath, 'rb') as f:
             content = f.read()
         return content
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def contains(self):
+        pass
+
+    def isdir(self):
+        pass
+
+    def list(self, dir_path):
+        for entry in os.scandir(dir_path):
+            if not entry.name.startswith('.') and entry.is_file():
+                yield entry.path
+            elif osp.isdir(entry.path):
+                yield entry.path + '/'
 
 
 class MockMemcachedClient:
@@ -119,23 +175,7 @@ class TestFileClient:
             osp.join(disk_dir, 'dir', 'file')
 
         # test `list_dir_or_file`
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            text1 = Path(tmp_dir) / 'text1.txt'
-            text1.open('w').write('text1')
-            text2 = Path(tmp_dir) / 'text2.txt'
-            text2.open('w').write('text2')
-            dir1 = Path(tmp_dir) / 'dir1'
-            dir1.mkdir()
-            text3 = dir1 / 'text3.txt'
-            text3.open('w').write('text3')
-            dir2 = Path(tmp_dir) / 'dir2'
-            dir2.mkdir()
-            jpg1 = dir2 / 'img.jpg'
-            jpg1.open('wb').write(b'img')
-            dir3 = dir2 / 'dir3'
-            dir3.mkdir()
-            text4 = dir3 / 'text4.txt'
-            text4.open('w').write('text4')
+        with build_temporary_directory() as tmp_dir:
             # 1. list directories and files
             assert set(disk_backend.list_dir_or_file(tmp_dir)) == set(
                 ['dir1', 'dir2', 'text1.txt', 'text2.txt'])
@@ -281,41 +321,55 @@ class TestFileClient:
             == petrel_path
 
         # test `get`
-        petrel_backend.client._client.Get = MagicMock(return_value=b'petrel')
-        assert petrel_backend.get(petrel_path) == b'petrel'
-        petrel_backend.client._client.Get.assert_called_with(petrel_path)
+        with patch.object(
+                petrel_backend.client._client, 'Get',
+                return_value=b'petrel') as mock_get:
+            assert petrel_backend.get(petrel_path) == b'petrel'
+            mock_get.assert_called_once_with(petrel_path)
 
         # test `get_text`
-        petrel_backend.client._client.Get = MagicMock(return_value=b'petrel')
-        assert petrel_backend.get_text(petrel_path) == 'petrel'
-        petrel_backend.client._client.Get.assert_called_with(petrel_path)
+        with patch.object(
+                petrel_backend.client._client, 'Get',
+                return_value=b'petrel') as mock_get:
+            assert petrel_backend.get_text(petrel_path) == 'petrel'
+            mock_get.assert_called_once_with(petrel_path)
 
         # test `put`
-        petrel_backend.client._client.put = MagicMock()
-        petrel_backend.put(b'petrel', petrel_path)
-        petrel_backend.client._client.put.assert_called_with(
-            petrel_path, b'petrel')
+        with patch.object(petrel_backend.client._client, 'put') as mock_put:
+            petrel_backend.put(b'petrel', petrel_path)
+            mock_put.assert_called_once_with(petrel_path, b'petrel')
 
         # test `put_text`
-        petrel_backend.client._client.put = MagicMock()
-        petrel_backend.put_text('petrel', petrel_path)
-        petrel_backend.client._client.put.assert_called_with(
-            petrel_path, b'petrel')
+        with patch.object(petrel_backend.client._client, 'put') as mock_put:
+            petrel_backend.put_text('petrel', petrel_path)
+            mock_put.assert_called_once_with(petrel_path, b'petrel')
 
         # test `remove`
-        petrel_backend.client._client.delete = MagicMock()
-        petrel_backend.remove(petrel_path)
-        petrel_backend.client._client.delete.assert_called_with(petrel_path)
+        with patch.object(petrel_backend.client._client,
+                          'delete') as mock_delete:
+            petrel_backend.remove(petrel_path)
+            mock_delete.assert_called_once_with(petrel_path)
 
         # test `exists`
-        petrel_backend.client._client.contains = MagicMock(return_value=True)
-        assert petrel_backend.exists(petrel_path)
-        petrel_backend.client._client.contains.assert_called_with(petrel_path)
+        with patch.object(
+                petrel_backend.client._client, 'contains',
+                return_value=True) as mock_contains:
+            assert petrel_backend.exists(petrel_path)
+            mock_contains.assert_called_once_with(petrel_path)
+
+        # test `isdir`
+        with patch.object(
+                petrel_backend.client._client, 'isdir',
+                return_value=True) as mock_isdir:
+            assert petrel_backend.isdir(petrel_dir)
+            mock_isdir.assert_called_once_with(petrel_dir)
 
         # test `isfile`
-        petrel_backend.client._client.contains = MagicMock(return_value=True)
-        assert petrel_backend.isfile(petrel_path)
-        petrel_backend.client._client.contains.assert_called_with(petrel_path)
+        with patch.object(
+                petrel_backend.client._client, 'contains',
+                return_value=True) as mock_contains:
+            assert petrel_backend.isfile(petrel_path)
+            mock_contains.assert_called_once_with(petrel_path)
 
         # test `concat_paths`
         assert petrel_backend.concat_paths(petrel_dir, 'file') == \
@@ -324,11 +378,97 @@ class TestFileClient:
             f'{petrel_dir}/dir/file'
 
         # test `get_local_path`
-        # exist the with block and path will be released
-        petrel_backend.client._client.contains = MagicMock(return_value=True)
-        with petrel_backend.get_local_path(petrel_path) as path:
-            assert Path(path).open('rb').read() == b'petrel'
-        assert not osp.isfile(path)
+        with patch.object(petrel_backend.client._client, 'Get',
+                          return_value=b'petrel') as mock_get, \
+             patch.object(petrel_backend.client._client, 'contains',
+                          return_value=True) as mock_contains:
+            with petrel_backend.get_local_path(petrel_path) as path:
+                assert Path(path).open('rb').read() == b'petrel'
+            # exist the with block and path will be released
+            assert not osp.isfile(path)
+            mock_get.assert_called_once_with(petrel_path)
+            mock_contains.assert_called_once_with(petrel_path)
+
+        # test `list_dir_or_file`
+        with build_temporary_directory() as tmp_dir:
+            # 1. list directories and files
+            assert set(petrel_backend.list_dir_or_file(tmp_dir)) == set(
+                ['dir1', 'dir2', 'text1.txt', 'text2.txt'])
+            # 2. list directories and files recursively
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, recursive=True)) == set([
+                        'dir1',
+                        osp.join('dir1', 'text3.txt'), 'dir2',
+                        osp.join('dir2', 'dir3'),
+                        osp.join('dir2', 'dir3', 'text4.txt'),
+                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                    ])
+            # 3. only list directories
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_file=False)) == set(['dir1', 'dir2'])
+            with pytest.raises(
+                    TypeError,
+                    match='`suffix` should be None when `list_dir` is True'):
+                # Exception is raised among the `list_dir_or_file` of client,
+                # so we need to invode the client to trigger the exception
+                petrel_backend.client.list_dir_or_file(
+                    tmp_dir, list_file=False, suffix='.txt')
+            # 4. only list directories recursively
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_file=False, recursive=True)) == set(
+                        ['dir1', 'dir2',
+                         osp.join('dir2', 'dir3')])
+            # 5. only list files
+            assert set(
+                petrel_backend.list_dir_or_file(tmp_dir,
+                                                list_dir=False)) == set(
+                                                    ['text1.txt', 'text2.txt'])
+            # 6. only list files recursively
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'),
+                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix='.txt')) == set(['text1.txt', 'text2.txt'])
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix=('.txt',
+                            '.jpg'))) == set(['text1.txt', 'text2.txt'])
+            with pytest.raises(
+                    TypeError,
+                    match='`suffix` must be a string or tuple of strings'):
+                petrel_backend.client.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix=['.txt', '.jpg'])
+            # 8. only list files ending with suffix recursively
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix='.txt',
+                    recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'), 'text1.txt',
+                        'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                petrel_backend.list_dir_or_file(
+                    tmp_dir,
+                    list_dir=False,
+                    suffix=('.txt', '.jpg'),
+                    recursive=True)) == set([
+                        osp.join('dir1', 'text3.txt'),
+                        osp.join('dir2', 'dir3', 'text4.txt'),
+                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                    ])
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
     @patch('mc.pyvector', MagicMock)
