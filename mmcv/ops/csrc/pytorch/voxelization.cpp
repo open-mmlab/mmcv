@@ -62,10 +62,11 @@ int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
 #else
     AT_ERROR("hard_voxelize is not compiled with GPU support");
 #endif
+  } else {
+    return hard_voxelize_forward_cpu(points, voxels, coors,
+                                     num_points_per_voxel, voxel_size,
+                                     coors_range, max_points, max_voxels, NDim);
   }
-  return hard_voxelize_forward_cpu(points, voxels, coors, num_points_per_voxel,
-                                   voxel_size, coors_range, max_points,
-                                   max_voxels, NDim);
 }
 
 void dynamic_voxelize_forward(const at::Tensor &points, at::Tensor &coors,
@@ -80,6 +81,7 @@ void dynamic_voxelize_forward(const at::Tensor &points, at::Tensor &coors,
 #else
     AT_ERROR("dynamic_voxelize is not compiled with GPU support");
 #endif
+  } else {
+    dynamic_voxelize_forward_cpu(points, coors, voxel_size, coors_range, NDim);
   }
-  dynamic_voxelize_forward_cpu(points, coors, voxel_size, coors_range, NDim);
 }

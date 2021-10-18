@@ -2,6 +2,7 @@
 
 We implement common CUDA ops used in detection, segmentation, etc.
 
+- AssignScoreWithK
 - BallQuery
 - BBoxOverlaps
 - CARAFE
@@ -11,10 +12,15 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - Deformable Convolution v1/v2
 - Deformable RoIPool
 - DynamicScatter
+- GatherPoints
+- FurthestPointSample
+- FurthestPointSampleWithDist
 - GeneralizedAttention
+- KNN
 - MaskedConv
 - NMS
 - PSAMask
+- RoIPointPool3d
 - RoIPool
 - RoIAlign
 - SimpleRoIAlign
@@ -23,5 +29,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - SoftNMS
 - Synchronized BatchNorm
 - Voxelization
+- ThreeInterpolate
+- ThreeNN
 - Weight standardization
 - Correlation

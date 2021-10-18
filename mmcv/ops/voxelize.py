@@ -70,7 +70,8 @@ voxelization = _Voxelization.apply
 class Voxelization(nn.Module):
     """convert kitti points(N, >=3) to voxels.
 
-    Paper reference: https://arxiv.org/abs/1907.03739.
+    Please refer to `Paper of PVCNN <https://arxiv.org/abs/1907.03739>`_
+    for more details.
 
     Args:
         voxel_size (tuple or float): The size of voxel with the shape of [3].
