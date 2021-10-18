@@ -72,7 +72,7 @@ class AdaptivePadding(nn.Module):
         kernel_size (int | tuple): Size of the kernel. Default: 1.
         stride (int | tuple): Stride of the filter. Default: 1.
         dilation (int | tuple): Spacing between kernel elements.
-            Default: 1
+            Default: 1.
         padding (str): Support "same" and "corner", "corner" mode
             would pad zero to bottom right, and "same" mode would
             pad zero around input. Default: "corner".
