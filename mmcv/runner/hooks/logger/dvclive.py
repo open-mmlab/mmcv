@@ -28,9 +28,14 @@ class DvcliveLoggerHook(LoggerHook):
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
+        kwargs:
+            Arguments for instantiating `Live_`
 
     .. _dvclive:
         https://dvc.org/doc/dvclive
+
+    .. _Live:
+        https://dvc.org/doc/dvclive/api-reference/live#parameters
     """
 
     def __init__(self,
@@ -38,26 +43,27 @@ class DvcliveLoggerHook(LoggerHook):
                  interval=1,
                  ignore_last=True,
                  reset_flag=False,
-                 by_epoch=True):
-        self.model_file = model_file
+                 by_epoch=True,
+                 **kwargs):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
-        self.import_dvclive()
+        self.model_file = model_file
+        self.import_dvclive(**kwargs)
 
-    def import_dvclive(self):
+    def import_dvclive(self, **kwargs):
         try:
-            import dvclive
+            from dvclive import Live
         except ImportError:
             raise ImportError(
                 'Please run "pip install dvclive" to install dvclive')
-        self.dvclive = dvclive
+        self.dvclive = Live(**kwargs)
 
     @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         if tags:
+            self.dvclive.set_step(self.get_iter(runner))
             for k, v in tags.items():
-                step = self.get_iter(runner)
-                self.dvclive.log(k, v, step=step)
+                self.dvclive.log(k, v)
 
     @master_only
     def after_train_epoch(self, runner):

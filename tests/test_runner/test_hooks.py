@@ -1104,34 +1104,35 @@ def test_neptune_hook():
     hook.run.stop.assert_called_with()
 
 
-def test_dvclive_hook(tmp_path):
+def test_dvclive_hook():
     sys.modules['dvclive'] = MagicMock()
     runner = _build_demo_runner()
 
     hook = DvcliveLoggerHook()
+    dvclive_mock = hook.dvclive
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
+    dvclive_mock.set_step.assert_called_with(6)
+    dvclive_mock.log.assert_called_with('momentum', 0.95)
 
 
 def test_dvclive_hook_model_file(tmp_path):
     sys.modules['dvclive'] = MagicMock()
     runner = _build_demo_runner()
 
-    hook = DvcliveLoggerHook(model_file=tmp_path / 'model.pth')
+    hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
     runner.register_hook(hook)
 
     loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
 
-    runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
 
-    assert (tmp_path / 'model.pth').is_file()
+    assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
 
