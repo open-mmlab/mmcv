@@ -89,9 +89,11 @@ class MockPetrelClient:
     def list(self, dir_path):
         for entry in os.scandir(dir_path):
             if not entry.name.startswith('.') and entry.is_file():
-                yield entry.path
+                path = entry.path.replace(os.sep, '/')
+                yield path
             elif osp.isdir(entry.path):
-                yield entry.path + '/'
+                path = entry.path.replace(os.sep, '/')
+                yield path + '/'
 
 
 class MockMemcachedClient:
@@ -398,11 +400,10 @@ class TestFileClient:
             assert set(
                 petrel_backend.list_dir_or_file(
                     tmp_dir, recursive=True)) == set([
-                        'dir1',
-                        osp.join('dir1', 'text3.txt'), 'dir2',
-                        osp.join('dir2', 'dir3'),
-                        osp.join('dir2', 'dir3', 'text4.txt'),
-                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                        'dir1', '/'.join(('dir1', 'text3.txt')), 'dir2',
+                        '/'.join(('dir2', 'dir3')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
                     ])
             # 3. only list directories
             assert set(
@@ -419,8 +420,7 @@ class TestFileClient:
             assert set(
                 petrel_backend.list_dir_or_file(
                     tmp_dir, list_file=False, recursive=True)) == set(
-                        ['dir1', 'dir2',
-                         osp.join('dir2', 'dir3')])
+                        ['dir1', 'dir2', '/'.join(('dir2', 'dir3'))])
             # 5. only list files
             assert set(
                 petrel_backend.list_dir_or_file(tmp_dir,
@@ -430,9 +430,9 @@ class TestFileClient:
             assert set(
                 petrel_backend.list_dir_or_file(
                     tmp_dir, list_dir=False, recursive=True)) == set([
-                        osp.join('dir1', 'text3.txt'),
-                        osp.join('dir2', 'dir3', 'text4.txt'),
-                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
                     ])
             # 7. only list files ending with suffix
             assert set(
@@ -454,8 +454,8 @@ class TestFileClient:
                 petrel_backend.list_dir_or_file(
                     tmp_dir, list_dir=False, suffix='.txt',
                     recursive=True)) == set([
-                        osp.join('dir1', 'text3.txt'),
-                        osp.join('dir2', 'dir3', 'text4.txt'), 'text1.txt',
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), 'text1.txt',
                         'text2.txt'
                     ])
             # 7. only list files ending with suffix
@@ -465,9 +465,9 @@ class TestFileClient:
                     list_dir=False,
                     suffix=('.txt', '.jpg'),
                     recursive=True)) == set([
-                        osp.join('dir1', 'text3.txt'),
-                        osp.join('dir2', 'dir3', 'text4.txt'),
-                        osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
                     ])
 
     @patch('mc.MemcachedClient.GetInstance', MockMemcachedClient)
