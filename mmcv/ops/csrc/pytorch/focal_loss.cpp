@@ -99,8 +99,6 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
     CHECK_MLU(target);
     sigmoid_focal_loss_forward_mlu(input, target, weight, output, gamma,
                                    alpha);
-#else
-    AT_ERROR("SigmoidFocalLoss is not compiled with MLU support");
 #endif
   } else {
     AT_ERROR("SigmoidFocalLoss is not implemented on CPU");
@@ -130,8 +128,6 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 
     sigmoid_focal_loss_backward_mlu(input, target, weight, grad_input, gamma,
                                     alpha);
-#else
-    AT_ERROR("SigmoidFocalLoss is not compiled with MLU support");
 #endif
   } else {
     AT_ERROR("SigmoidFocalLoss is not implemented on CPU");
