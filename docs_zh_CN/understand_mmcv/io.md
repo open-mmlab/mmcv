@@ -69,7 +69,7 @@ class TxtHandler1(mmcv.BaseFileHandler):
         return str(obj)
 ```
 
-举 `PickleHandler` 为例
+以 `PickleHandler` 为例
 
 ```python
 import pickle
@@ -109,7 +109,7 @@ e
 ```
 #### 从硬盘读取
 
-使用 `list_from_file` 读取 `a.txt` 。
+使用 `list_from_file` 读取 `a.txt`
 
 ```python
 >>> mmcv.list_from_file('a.txt')
@@ -130,7 +130,7 @@ e
 3 panda
 ```
 
-使用 `dict_from_file` 读取 `b.txt`。
+使用 `dict_from_file` 读取 `b.txt`
 
 ```python
 >>> mmcv.dict_from_file('b.txt')
@@ -154,7 +154,7 @@ e
 ['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
 ```
 
-使用 `dict_from_file` 读取 `b.txt`。
+使用 `dict_from_file` 读取 `b.txt`
 
 ```python
 >>> mmcv.dict_from_file('s3://bucket-name/b.txt')
