@@ -914,6 +914,12 @@ class FileClient:
     def get(self, filepath: Union[str, Path]) -> Union[bytes, memoryview]:
         """Read data from a given ``filepath`` with 'rb' mode.
 
+        Note:
+            There are two types of return values for ``get``, one is ``bytes``
+            and the other is ``memoryview``. The advantage of using memoryview
+            is that you can avoid copying, and if you want to convert it to
+            ``bytes``, you can use ``.tobytes()``.
+
         Args:
             filepath (str or Path): Path to read data.
 
@@ -1039,7 +1045,7 @@ class FileClient:
             ...     # do something here
 
         Yields:
-            Iterable[str]: Only yield one temporary path.
+            Iterable[str]: Only yield one path.
         """
         with self.client.get_local_path(str(filepath)) as local_path:
             yield local_path
