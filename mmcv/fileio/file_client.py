@@ -134,6 +134,11 @@ class PetrelBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to read data.
+
+        Returns:
+            memoryview: A memory view of expected bytes object to avoid
+                copying. The memoryview object can be converted to bytes by
+                ``value_buf.tobytes()``.
         """
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
@@ -148,8 +153,11 @@ class PetrelBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to read data.
-            encoding (str, optional): The encoding format used to open the
-                ``filepath``. Default: 'utf-8'.
+            encoding (str): The encoding format used to open the ``filepath``.
+                Default: 'utf-8'.
+
+        Returns:
+            str: Expected text reading from ``filepath``.
         """
         return str(self.get(filepath), encoding=encoding)
 
@@ -173,8 +181,8 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             obj (str): Data to be written.
             filepath (str or Path): Path to write data.
-            encoding (str, optional): The encoding format used to encode the
-                ``obj``. Default: 'utf-8'.
+            encoding (str): The encoding format used to encode the ``obj``.
+                Default: 'utf-8'.
         """
         self.put(bytes(obj, encoding=encoding), filepath)
 
@@ -193,6 +201,9 @@ class PetrelBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
@@ -204,6 +215,10 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be checked whether it is a
                 directory.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a directory,
+                ``False`` otherwise.
         """
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
@@ -214,6 +229,10 @@ class PetrelBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a file, ``False``
+                otherwise.
         """
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
@@ -225,6 +244,9 @@ class PetrelBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be concatenated.
+
+        Returns:
+            str: The result of concatenation.
         """
         formatted_paths = [self._format_path(self._map_path(str(filepath)))]
         for path in filepaths:
@@ -234,7 +256,11 @@ class PetrelBackend(BaseStorageBackend):
 
     @contextmanager
     def get_local_path(self, filepath: str) -> Iterable[str]:
-        """Download a file from ``filepath``.
+        """Download a file from ``filepath`` and return a temporary path.
+
+        ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
+        can be called with ``with`` statement, and when exists from the
+        ``with`` statement, the temporary path will be released.
 
         Args:
             filepath (str): Download a file from ``filepath``.
@@ -245,6 +271,9 @@ class PetrelBackend(BaseStorageBackend):
             >>> # the path will be removed
             >>> with client.get_local_path('s3://path/of/your/file') as path:
             ...     # do something here
+
+        Yields:
+            Iterable[str]: Only yield one temporary path.
         """
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
@@ -285,6 +314,9 @@ class PetrelBackend(BaseStorageBackend):
                 that we are interested in. Default: None.
             recursive (bool): If set to True, recursively scan the
                 directory. Default: False.
+
+        Yields:
+            Iterable[str]: A relative path to ``dir_path``.
         """
         dir_path = self._map_path(str(dir_path))
         dir_path = self._format_path(dir_path)
@@ -422,6 +454,9 @@ class HardDiskBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to read data.
+
+        Returns:
+            bytes: Expected bytes object.
         """
         filepath = str(filepath)
         with open(filepath, 'rb') as f:
@@ -435,8 +470,11 @@ class HardDiskBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to read data.
-            encoding (str, optional): The encoding format used to open the
-                ``filepath``. Default: 'utf-8'.
+            encoding (str): The encoding format used to open the ``filepath``.
+                Default: 'utf-8'.
+
+        Returns:
+            str: Expected text reading from ``filepath``.
         """
         filepath = str(filepath)
         with open(filepath, 'r', encoding=encoding) as f:
@@ -463,8 +501,8 @@ class HardDiskBackend(BaseStorageBackend):
         Args:
             obj (str): Data to be written.
             filepath (str or Path): Path to write data.
-            encoding (str, optional): The encoding format used to open the
-                ``filepath``. Default: 'utf-8'.
+            encoding (str): The encoding format used to open the ``filepath``.
+                Default: 'utf-8'.
         """
         filepath = str(filepath)
         with open(filepath, 'w', encoding=encoding) as f:
@@ -484,6 +522,9 @@ class HardDiskBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
         return osp.exists(str(filepath))
 
@@ -493,6 +534,10 @@ class HardDiskBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be checked whether it is a
                 directory.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a directory,
+                ``False`` otherwise.
         """
         return osp.isdir(str(filepath))
 
@@ -501,6 +546,10 @@ class HardDiskBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a file, ``False``
+                otherwise.
         """
         return osp.isfile(str(filepath))
 
@@ -513,6 +562,9 @@ class HardDiskBackend(BaseStorageBackend):
 
         Args:
             filepath (str or Path): Path to be concatenated.
+
+        Returns:
+            str: The result of concatenation.
         """
         filepath = str(filepath)
         filepaths = [str(path) for path in filepaths]
@@ -543,6 +595,9 @@ class HardDiskBackend(BaseStorageBackend):
                 that we are interested in. Default: None.
             recursive (bool): If set to True, recursively scan the
                 directory. Default: False.
+
+        Yields:
+            Iterable[str]: A relative path to ``dir_path``.
         """
         dir_path = str(dir_path)
         if list_dir and suffix is not None:
@@ -588,6 +643,10 @@ class HTTPBackend(BaseStorageBackend):
     @contextmanager
     def get_local_path(self, filepath: str) -> Iterable[str]:
         """Download a file from ``filepath``.
+
+        ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
+        can be called with ``with`` statement, and when exists from the
+        ``with`` statement, the temporary path will be released.
 
         Args:
             filepath (str): Download a file from ``filepath``.
@@ -713,12 +772,13 @@ class FileClient:
         Args:
             uri (str | Path): Uri to be parsed that contains the file prefix.
 
-        Returns:
-            return the prefix of uri if it contains "://" else None.
-
         Examples:
             >>> FileClient.parse_uri_prefix('s3://path/of/your/file')
             's3'
+
+        Returns:
+            str | None: Return the prefix of uri if the uri contains '://'
+                else ``None``.
         """
         assert is_filepath(uri)
         uri = str(uri)
@@ -749,6 +809,9 @@ class FileClient:
             >>> file_client = FileClient.infer_client(uri=uri)
             >>> file_client_args = {'backend': 'petrel'}
             >>> file_client = FileClient.infer_client(file_client_args)
+
+        Returns:
+            FileClient: Instantiated FileClient object.
         """
         assert file_client_args is not None or uri is not None
         if file_client_args is None:
@@ -853,6 +916,10 @@ class FileClient:
 
         Args:
             filepath (str or Path): Path to read data.
+
+        Returns:
+            bytes | memoryview: Expected bytes object or a memory view of the
+                bytes object.
         """
         return self.client.get(filepath)
 
@@ -861,8 +928,11 @@ class FileClient:
 
         Args:
             filepath (str or Path): Path to read data.
-            encoding (str, optional): The encoding format used to open the
-                `filepath`. Default: 'utf-8'.
+            encoding (str): The encoding format used to open the ``filepath``.
+                Default: 'utf-8'.
+
+        Returns:
+            str: Expected text reading from ``filepath``.
         """
         return self.client.get_text(filepath, encoding)
 
@@ -899,6 +969,9 @@ class FileClient:
 
         Args:
             filepath (str or Path): Path to be checked whether exists.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
         return self.client.exists(filepath)
 
@@ -908,6 +981,10 @@ class FileClient:
         Args:
             filepath (str or Path): Path to be checked whether it is a
                 directory.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a directory,
+                ``False`` otherwise.
         """
         return self.client.isdir(filepath)
 
@@ -916,6 +993,10 @@ class FileClient:
 
         Args:
             filepath (str or Path): Path to be checked whether it is a file.
+
+        Returns:
+            bool: Return ``True`` if ``filepath`` points to a file, ``False``
+                otherwise.
         """
         return self.client.isfile(filepath)
 
@@ -928,6 +1009,9 @@ class FileClient:
 
         Args:
             filepath (str or Path): Path to be concatenated.
+
+        Returns:
+            str: The result of concatenation.
         """
         return self.client.concat_paths(filepath, *filepaths)
 
@@ -935,7 +1019,12 @@ class FileClient:
     def get_local_path(self, filepath: Union[str, Path]) -> Iterable[str]:
         """Download data from ``filepath`` and write the data to local path.
 
-        If the ``filepath`` is a local path, just return itself.
+        ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
+        can be called with ``with`` statement, and when exists from the
+        ``with`` statement, the temporary path will be released.
+
+        Note:
+            If the ``filepath`` is a local path, just return itself.
 
         .. warning::
             ``get_local_path`` is an experimental interface that may change in
@@ -948,6 +1037,9 @@ class FileClient:
             >>> file_client = FileClient(prefix='s3')
             >>> with file_client.get_local_path('s3://bucket/abc.jpg') as path:
             ...     # do something here
+
+        Yields:
+            Iterable[str]: Only yield one temporary path.
         """
         with self.client.get_local_path(str(filepath)) as local_path:
             yield local_path
@@ -972,6 +1064,9 @@ class FileClient:
                 that we are interested in. Default: None.
             recursive (bool): If set to True, recursively scan the
                 directory. Default: False.
+
+        Yields:
+            Iterable[str]: A relative path to ``dir_path``.
         """
         yield from self.client.list_dir_or_file(dir_path, list_dir, list_file,
                                                 suffix, recursive)

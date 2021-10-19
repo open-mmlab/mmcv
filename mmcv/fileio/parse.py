@@ -14,7 +14,7 @@ def list_from_file(filename,
     """Load a text file and parse the content as a list of strings.
 
     Note:
-        In v1.3.15 and later, ``list_from_file`` supports loading a text file
+        In v1.3.16 and later, ``list_from_file`` supports loading a text file
         which can be storaged in different backends and parsing the content as
         a list for strings.
 
@@ -63,7 +63,7 @@ def dict_from_file(filename,
     the following columns will be parsed as dict values.
 
     Note:
-        In v1.3.15 and later, ``dict_from_file`` supports loading a text file
+        In v1.3.16 and later, ``dict_from_file`` supports loading a text file
         which can be storaged in different backends and parsing the content as
         a dict.
 
