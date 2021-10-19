@@ -105,7 +105,12 @@ PARROTS_EXTENSION_REGISTER(softmax_focal_loss_backward)
 #endif
 
 #ifdef PARROTS_USE_CAMB
-#include "bang_internal.h"
+#if 1
+void sigmoidFocalLossForwardMLUKernelLauncher(CambContext &ctx,
+                                              const DArrayLite &input, const DArrayLite &target,
+                                              const DArrayLite &weight, DArrayLite &output, float gamma,
+                                              float alpha);
+#endif
 void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
                                              const SSElement& attr,
                                              const OperatorBase::in_list_t& ins,

@@ -1,5 +1,7 @@
+#include <parrots/extension.hpp>
 #ifdef PARROTS_USE_CAMB
-//#include "./bang_internal.h"
+
+using namespace parrots;
 #include "./mlu_utils.h"
 #include <cnrt.h>
 cnrtDataType_t getCnrtDataType(parrots::ValueType vt) {
@@ -25,11 +27,10 @@ cnrtDataType_t getCnrtDataType(parrots::ValueType vt) {
 }
 
 int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
-    int ordinal = -1;
+    int ordinal = 0;
     cnrtGetDevice(&ordinal);
     int value = 0;
     cnrtDeviceGetAttribute(&value, attr, ordinal);
-    printf("device: %d, attr %d : %d.\n", ordinal, attr, value);
     return value;
 }
 
@@ -186,6 +187,7 @@ void sigmoidFocalLossForwardMLUKernelLauncher(CambContext& ctx,
     auto input_ptr = input.data();
     auto target_ptr = target.data();
     auto weight_ptr = weight.data();
+    weight_ptr = nullptr;
     auto output_ptr = output.data();
     // get dtype of input
     cnrtDataType_t d_type = getCnrtDataType(input.elemType());
@@ -193,6 +195,7 @@ void sigmoidFocalLossForwardMLUKernelLauncher(CambContext& ctx,
     // launch kernel
     KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input_ptr,
         target_ptr, weight_ptr, input_N, input_C, alpha, gamma, output_ptr);
+    cnrtSyncQueue(queue);
 }
 
 #endif  // PARROTS_USE_CAMB

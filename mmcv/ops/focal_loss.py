@@ -54,6 +54,8 @@ class SigmoidFocalLossFunction(Function):
 
         ext_module.sigmoid_focal_loss_forward(
             input, target, weight, output, gamma=ctx.gamma, alpha=ctx.alpha)
+        #print('input:', input)
+        #print('output:', output)
         if ctx.reduction == ctx.reduction_dict['mean']:
             output = output.sum() / input.size(0)
         elif ctx.reduction == ctx.reduction_dict['sum']:
