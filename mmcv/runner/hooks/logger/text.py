@@ -37,19 +37,19 @@ class TextLoggerHook(LoggerHook):
             If ``out_dir`` is specified, logs will be copied to a new directory
             which is the concatenation of ``out_dir`` and the last level
             directory of ``runner.work_dir``. Default: None.
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
         out_suffix (str or tuple[str], optional): Those filenames ending with
             ``out_suffix`` will be copied to ``out_dir``.
             Default: ('.log.json', '.log', '.py').
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
         keep_log (bool, optional): Whether to keep local log when
             :attr:`out_dir` is specified. If False, the local log will be
             removed. Default: True.
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
         file_client_args (dict, optional): Arguments to instantiate a
             FileClient. See :class:`mmcv.fileio.FileClient` for details.
             Default: None.
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
     """
 
     def __init__(self,

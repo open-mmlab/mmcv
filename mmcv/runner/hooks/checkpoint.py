@@ -23,7 +23,7 @@ class CheckpointHook(Hook):
             specified, ``runner.work_dir`` will be used by default. If
             specified, the ``out_dir`` will be the concatenation of ``out_dir``
             and the last level directory of ``runner.work_dir``.
-            `Changed in version 1.3.15.`
+            `Changed in version 1.3.16.`
         max_keep_ckpts (int, optional): The maximum checkpoints to keep.
             In some cases we want only the latest few checkpoints and would
             like to delete old ones to save the disk space.
@@ -35,11 +35,11 @@ class CheckpointHook(Hook):
         file_client_args (dict, optional): Arguments to instantiate a
             FileClient. See :class:`mmcv.fileio.FileClient` for details.
             Default: None.
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
 
     .. warning::
-        Before v1.3.15, the ``out_dir`` argument indicates the path where the
-        checkpoint is stored. However, since v1.3.15, ``out_dir`` indicates the
+        Before v1.3.16, the ``out_dir`` argument indicates the path where the
+        checkpoint is stored. However, since v1.3.16, ``out_dir`` indicates the
         root directory and the final path to save checkpoint is the
         concatenation of ``out_dir`` and the last level directory of
         ``runner.work_dir``. Suppose the value of ``out_dir`` is "/path/of/A"

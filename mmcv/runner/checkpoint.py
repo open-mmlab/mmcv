@@ -648,7 +648,7 @@ def save_checkpoint(model,
         file_client_args (dict, optional): Arguments to instantiate a
             FileClient. See :class:`mmcv.fileio.FileClient` for details.
             Default: None.
-            `New in version 1.3.15.`
+            `New in version 1.3.16.`
     """
     if meta is None:
         meta = {}
