@@ -9,16 +9,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include "pytorch_mlu_helper.hpp"
 #include <string>
 #include <vector>
+
+#include "pytorch_mlu_helper.hpp"
 
 // policy function
 static void policyFunc(cnrtDim3_t *k_dim,
                        cnrtFunctionType_t *k_type,
-                       const Tensor& input,
-                       const Tensor& target,
-                       const Tensor& weight) {
+                       const Tensor &input,
+                       const Tensor &target,
+                       const Tensor &weight) {
   auto N = input.size(0);
   auto C = input.size(1);
 
@@ -28,13 +29,16 @@ static void policyFunc(cnrtDim3_t *k_dim,
   const int split_pipeline_num = 6;
   auto scalar_size = NFU_ALIGN_SIZE;
   auto weight_size = c_align_size;
-  const int target_data_width = 
-      target.scalar_type() == at::kLong ? target.itemsize()/2 : target.itemsize();
+  const int target_data_width = target.scalar_type() == at::kLong
+                                    ? target.itemsize() / 2
+                                    : target.itemsize();
 
-  // n_seg * c_align_size * split_pipeline_num + n_seg * target.itemsize() * split_target_num
-  //     + weight_size + scalar_size <= nram_size
-  auto n_seg = (nram_size - weight_size - scalar_size) / (c_align_size * split_pipeline_num
-                   + target_data_width * split_target_num);
+  // n_seg * c_align_size * split_pipeline_num +
+  //    n_seg * target.itemsize() * split_target_num +
+  //    weight_size + scalar_size <= nram_size
+  auto n_seg = (nram_size - weight_size - scalar_size) /
+               (c_align_size * split_pipeline_num +
+                target_data_width * split_target_num);
   auto seg_num = (N + n_seg - 1) / n_seg;
 
   auto core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
@@ -42,7 +46,8 @@ static void policyFunc(cnrtDim3_t *k_dim,
   auto core_num = core_dim * cluster_num;
 
   k_dim->x = *k_type;
-  k_dim->y = seg_num > core_num ? cluster_num : (seg_num + core_dim - 1) / core_dim;
+  k_dim->y =
+      seg_num > core_num ? cluster_num : (seg_num + core_dim - 1) / core_dim;
   k_dim->z = 1;
 }
 
@@ -57,18 +62,21 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
               "But now gamma is ", gamma, ".");
 
   // check dtype
-  TORCH_CHECK(input.scalar_type() == at::kFloat || input.scalar_type() == at::kHalf, 
-              "Data type of input should be Float or Half. But now input type is ",
-              input.scalar_type(), ".");
+  TORCH_CHECK(
+      input.scalar_type() == at::kFloat || input.scalar_type() == at::kHalf,
+      "Data type of input should be Float or Half. But now input type is ",
+      input.scalar_type(), ".");
 
-  TORCH_CHECK((target.scalar_type() == at::kInt || target.scalar_type() == at::kLong),
-              "target type should be Int or Long. ",
-              "But now target type is ", target.scalar_type(), ".");
+  TORCH_CHECK(
+      (target.scalar_type() == at::kInt || target.scalar_type() == at::kLong),
+      "target type should be Int or Long. ", "But now target type is ",
+      target.scalar_type(), ".");
 
   if (weight.data_ptr() != nullptr) {
-    TORCH_CHECK(weight.scalar_type() == input.scalar_type(), 
-                "Data types of input and weight should be the same. But now input type is ",
-                input.scalar_type(), ", weight type is ", weight.scalar_type(), ".");
+    TORCH_CHECK(weight.scalar_type() == input.scalar_type(),
+                "Data types of input and weight should be the same. But now "
+                "input type is ", input.scalar_type(), ", weight type is ",
+                weight.scalar_type(), ".");
   } else {
     CNLOG(INFO) << "weight is a empty tensor.";
   }
@@ -81,19 +89,23 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
   const int split_pipeline_num = 6;
   const int has_weight = (int)(weight.data_ptr() != nullptr);
 
-  // target supports only INT on MLU device
-  // while it keeps LONG on host side, so target.itemsize()/2
-  const int target_data_width = 
-      target.scalar_type() == at::kLong ? target.itemsize()/2 : target.itemsize();
-  auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE - split_target_num * target_data_width) /
-                              (split_pipeline_num + has_weight), NFU_ALIGN_SIZE) / input.itemsize();
+  // target supports only INT on MLU device while it keeps LONG on host side,
+  // so target.itemsize() / 2
+  const int target_data_width = target.scalar_type() == at::kLong
+                                    ? target.itemsize() / 2
+                                    : target.itemsize();
+  auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE -
+                               split_target_num * target_data_width) /
+                                  (split_pipeline_num + has_weight),
+                              NFU_ALIGN_SIZE) / input.itemsize();
 
-  TORCH_CHECK(threshold_C >= input_C, "input.size(1) should be in the range of [0, ",
-              threshold_C, "]. ", "But now input.size(1) is ", input_C, ".");
+  TORCH_CHECK(threshold_C >= input_C,
+              "input.size(1) should be in the range of [0, ", threshold_C,
+              "]. ", "But now input.size(1) is ", input_C, ".");
 
   if (input.numel() == 0 || target.numel() == 0 || output.numel() == 0) {
     // return if zero-element
-    return ;
+    return;
   }
 
   // calculate task dimension
@@ -118,9 +130,11 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
   // get dtype of input
   cnrtDataType_t d_type = torch_mlu::toCnrtDtype(input.dtype());
 
-  CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidForward<<<Union" << k_type / core_dim
-              << ", " << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
+  CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidForward<<<Union"
+              << k_type / core_dim << ", " << k_dim.x << ", " << k_dim.y << ", "
+              << k_dim.z << ">>>";
   // launch kernel
   KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input_ptr,
-          target_ptr, weight_ptr, input_N, input_C, alpha, gamma, output_ptr);
+                                target_ptr, weight_ptr, input_N, input_C, alpha,
+                                gamma, output_ptr);
 }

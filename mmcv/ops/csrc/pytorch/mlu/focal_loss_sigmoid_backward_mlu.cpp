@@ -10,7 +10,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
 #include "pytorch_mlu_helper.hpp"
-#include "utils.h"
 
 // Policy Function
 static void policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type) {
@@ -21,16 +20,20 @@ static void policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type) {
   k_dim->z = 1;
 }
 
-void getDealNAndThresholdC(const int compute_data_bytes, const int target_data_bytes,
-                           const int total_c, int *deal_n_ptr, int *threshold_c_ptr,
-                           const bool has_weight, const bool is_half) {
+void getDealNAndThresholdC(const int compute_data_bytes,
+                           const int target_data_bytes,
+                           const int total_c,
+                           int *deal_n_ptr,
+                           int *threshold_c_ptr,
+                           const bool has_weight,
+                           const bool is_half) {
   /* NRAM partition:
-  *
-  * |-----------------ping pong---------------------|
-  * | input | pt | alpha_t | temp | output | target | flt_min | gamma | weight |
-  *
-  * split_pipeline_num is 5: including input, pt, alpha_t, temp, output.
-  */
+   *
+   * |-----------------ping pong--------------------|
+   * |input | pt | alpha_t | temp | output | target | flt_min | gamma | weight|
+   *
+   * split_pipeline_num is 5: including input, pt, alpha_t, temp, output.
+   */
   const int nram_split_num = 5;
   const int nram_split_pingpong = 2;
   const int max_nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
@@ -40,10 +43,11 @@ void getDealNAndThresholdC(const int compute_data_bytes, const int target_data_b
   }
   const int32_t compute_align_num = compute_align_size / compute_data_bytes;
   // reservered_align_size: including input(ping pong), pt(ping pong),
-  //                        alpha_t(ping pong), temp(ping pong), output(ping pong),
-  //                        target(ping pong), flt_min and gamma.
-  const int reservered_align_size = ((nram_split_num + 1) * nram_split_pingpong + 2) *
-                                    compute_align_size;
+  //                        alpha_t(ping pong), temp(ping pong),
+  //                        output(ping pong), target(ping pong),
+  //                        flt_min and gamma.
+  const int reservered_align_size =
+      ((nram_split_num + 1) * nram_split_pingpong + 2) * compute_align_size;
   int nram_pingpong_size = max_nram_size - reservered_align_size;
 
   int compute_c = total_c;
@@ -53,10 +57,11 @@ void getDealNAndThresholdC(const int compute_data_bytes, const int target_data_b
     nram_pingpong_size -= NFU_ALIGN_SIZE;
 
     // threshold_c * nram_split_pingpong * compute_data_bytes * nram_split_num +
-    // nram_split_pingpong * target_data_bytes + threshold_c * compute_data_bytes <=
-    // nram_pingpong_size
-    threshold_c = (nram_pingpong_size - nram_split_pingpong * target_data_bytes) /
-                  (compute_data_bytes * (nram_split_num * nram_split_pingpong + 1));
+    //     nram_split_pingpong * target_data_bytes +
+    //     threshold_c * compute_data_bytes <= nram_pingpong_size
+    threshold_c =
+        (nram_pingpong_size - nram_split_pingpong * target_data_bytes) /
+        (compute_data_bytes * (nram_split_num * nram_split_pingpong + 1));
     threshold_c = PAD_DOWN(threshold_c, compute_align_num);
     int weight_space = PAD_UP(total_c * compute_data_bytes, NFU_ALIGN_SIZE);
 
@@ -65,39 +70,47 @@ void getDealNAndThresholdC(const int compute_data_bytes, const int target_data_b
     compute_c = PAD_UP(total_c, compute_align_num);
   } else {
     // threshold_c * nram_split_pingpong * compute_data_bytes * nram_split_num +
-    // nram_split_pingpong * target_data_bytes <= nram_pingpong_size
-    threshold_c = (nram_pingpong_size / nram_split_pingpong - target_data_bytes) /
-                  (nram_split_num * compute_data_bytes);
+    //     nram_split_pingpong * target_data_bytes <= nram_pingpong_size
+    threshold_c =
+        (nram_pingpong_size / nram_split_pingpong - target_data_bytes) /
+        (nram_split_num * compute_data_bytes);
   }
-  // deal_n * compute_c * nram_split_pingpong * compute_data_bytes * nram_split_num +
-  // deal_n * nram_split_pingpong * target_data_bytes <= nram_pingpong_size
-  *deal_n_ptr = nram_pingpong_size /
-                ((nram_split_num * compute_c * compute_data_bytes + target_data_bytes) *
-                nram_split_pingpong);
+  // deal_n * compute_c * nram_split_pingpong * compute_data_bytes *
+  //     nram_split_num + deal_n * nram_split_pingpong * target_data_bytes <=
+  //     nram_pingpong_size
+  *deal_n_ptr =
+      nram_pingpong_size /
+      ((nram_split_num * compute_c * compute_data_bytes + target_data_bytes) *
+       nram_split_pingpong);
   *threshold_c_ptr = threshold_c;
 }
 
-void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
-                                               Tensor weight, Tensor output,
+void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input,
+                                               Tensor target,
+                                               Tensor weight,
+                                               Tensor output,
                                                const float gamma,
                                                const float alpha) {
   // params check
   TORCH_CHECK(gamma >= 0, "gamma should be greater than or equal to 0. ",
               "But now gamma is ", gamma, ".");
   // check dtype
-  TORCH_CHECK(input.scalar_type() == at::kFloat || input.scalar_type() == at::kHalf, 
-              "Data type of input should be Float or Half. But now input type is ",
-              input.scalar_type(), ".");
+  TORCH_CHECK(
+      input.scalar_type() == at::kFloat || input.scalar_type() == at::kHalf,
+      "Data type of input should be Float or Half. But now input type is ",
+      input.scalar_type(), ".");
 
-  TORCH_CHECK((target.scalar_type() == at::kInt || target.scalar_type() == at::kLong),
-              "target type should be Int or Long. ",
-              "But now target type is ", target.scalar_type(), ".");
+  TORCH_CHECK(
+      (target.scalar_type() == at::kInt || target.scalar_type() == at::kLong),
+      "target type should be Int or Long. ", "But now target type is ",
+      target.scalar_type(), ".");
 
   bool has_weight = false;
   if (weight.data_ptr() != nullptr) {
-    TORCH_CHECK(weight.scalar_type() == input.scalar_type(), 
-                "Data types of input and weight should be the same. But now input type is ",
-                input.scalar_type(), ", weight type is ", weight.scalar_type(), ".");
+    TORCH_CHECK(weight.scalar_type() == input.scalar_type(),
+                "Data types of input and weight should be the same. But now "
+                "input type is ", input.scalar_type(), ", weight type is ",
+                weight.scalar_type(), ".");
     has_weight = true;
   } else {
     CNLOG(INFO) << "weight is a empty tensor.";
@@ -105,10 +118,11 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
 
   auto dim_c = input.size(1);
   const int compute_data_bytes = sizeof(float);
-  // target only supports INT on MLU device,
-  // while it keeps LONG on host side, so target.itemsize() / 2.
-  const int target_data_bytes =
-      target.scalar_type() == at::kLong ? (target.itemsize() / 2) : target.itemsize();
+  // target supports only INT on MLU device while it keeps LONG on host side,
+  // so target.itemsize() / 2
+  const int target_data_bytes = target.scalar_type() == at::kLong
+                                    ? (target.itemsize() / 2)
+                                    : target.itemsize();
   int deal_n = 0;
   int threshold_c = 0;
   bool is_half = false;
@@ -116,16 +130,17 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
     is_half = true;
   }
   // calculate deal_n and threshold_c
-  getDealNAndThresholdC(compute_data_bytes, target_data_bytes, dim_c,
-                        &deal_n, &threshold_c, has_weight, is_half);
+  getDealNAndThresholdC(compute_data_bytes, target_data_bytes, dim_c, &deal_n,
+                        &threshold_c, has_weight, is_half);
 
   // check C
-  TORCH_CHECK(threshold_c >= dim_c, "input.size(1) should be in the range of [0, ",
-              threshold_c, "]. ", "But now input.size(1) is ", dim_c, ".");
+  TORCH_CHECK(threshold_c >= dim_c,
+              "input.size(1) should be in the range of [0, ", threshold_c,
+              "]. ", "But now input.size(1) is ", dim_c, ".");
 
   if (input.numel() == 0 || target.numel() == 0 || output.numel() == 0) {
     // return if zero-element
-    return ;
+    return;
   }
 
   // set task dimension
@@ -151,10 +166,12 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
   auto core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
   auto dim_n = input.size(0);
 
-  CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidBackward<<<Union" << k_type / core_dim
-              << ", " << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
- 
+  CNLOG(INFO) << "Launch Kernel KernelFocalLossSigmoidBackward<<<Union"
+              << k_type / core_dim << ", " << k_dim.x << ", " << k_dim.y << ", "
+              << k_dim.z << ">>>";
+
   // launch kernel
-  KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input_ptr, target_ptr, weight_ptr,
-                                 gamma, alpha, dim_n, deal_n, dim_c, output_ptr);
+  KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input_ptr,
+                                 target_ptr, weight_ptr, gamma, alpha, dim_n,
+                                 deal_n, dim_c, output_ptr);
 }

@@ -9,13 +9,13 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#ifndef BANG_INTERNEL_H
-#define BANG_INTERNEL_H
+#ifndef BANG_INTERNEL_H_
+#define BANG_INTERNEL_H_
 
 void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim,
                                    cnrtFunctionType_t k_type,
                                    cnrtQueue_t queue,
-                                   cnrtDataType_t d_type,
+                                   const cnrtDataType_t d_type,
                                    const void *input,
                                    const void *target,
                                    const void *weight,
@@ -24,11 +24,11 @@ void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim,
                                    const float alpha,
                                    const float gamma,
                                    void *output);
-                                   
+
 void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim,
                                     cnrtFunctionType_t k_type,
                                     cnrtQueue_t queue,
-                                    cnrtDataType_t d_type,
+                                    const cnrtDataType_t d_type,
                                     const void *input,
                                     const void *target,
                                     const void *weight,
@@ -38,4 +38,5 @@ void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim,
                                     const int32_t deal_n,
                                     const int32_t dim_c,
                                     void *output);
-#endif // BANG_INTERNEL_H
+
+#endif  // BANG_INTERNEL_H_
