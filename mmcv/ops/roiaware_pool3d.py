@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from torch import nn as nn
 from torch.autograd import Function
@@ -10,10 +11,10 @@ ext_module = ext_loader.load_ext(
 
 
 class RoIAwarePool3d(nn.Module):
-    """Encode the geometry-specific features of each 3D proposal. Paper.
+    """Encode the geometry-specific features of each 3D proposal.
 
-    Please refer to `Paper of PartA2 <https://arxiv.org/pdf/1907.03670.pdf>`_
-    for more details.
+    Please refer to `PartA2 <https://arxiv.org/pdf/1907.03670.pdf>`_ for more
+    details.
 
     Args:
         out_size (int or tuple): The size of output features. n or

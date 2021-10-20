@@ -1,3 +1,8 @@
+// Modified from
+// https://github.com/sshaoshuai/PCDet/blob/master/pcdet/ops/roiaware_pool3d/src/roiaware_pool3d_kernel.cu
+// Written by Shaoshuai Shi
+// All Rights Reserved 2019.
+
 #include <stdio.h>
 
 #include "points_in_boxes_cuda_kernel.cuh"
@@ -21,9 +26,10 @@ void PointsInBoxesPartForwardCUDAKernelLauncher(int batch_size, int boxes_num,
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       boxes.scalar_type(), "points_in_boxes_part_forward_cuda_kernel", [&] {
-        points_in_boxes_part_forward_cuda_kernel<scalar_t><<<blocks, threads>>>(
-            batch_size, boxes_num, pts_num, boxes.data_ptr<scalar_t>(),
-            pts.data_ptr<scalar_t>(), box_idx_of_points.data_ptr<int>());
+        points_in_boxes_part_forward_cuda_kernel<scalar_t>
+            <<<blocks, threads, 0, stream>>>(
+                batch_size, boxes_num, pts_num, boxes.data_ptr<scalar_t>(),
+                pts.data_ptr<scalar_t>(), box_idx_of_points.data_ptr<int>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
@@ -46,9 +52,10 @@ void PointsInBoxesAllForwardCUDAKernelLauncher(int batch_size, int boxes_num,
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       boxes.scalar_type(), "points_in_boxes_all_forward_cuda_kernel", [&] {
-        points_in_boxes_all_forward_cuda_kernel<scalar_t><<<blocks, threads>>>(
-            batch_size, boxes_num, pts_num, boxes.data_ptr<scalar_t>(),
-            pts.data_ptr<scalar_t>(), box_idx_of_points.data_ptr<int>());
+        points_in_boxes_all_forward_cuda_kernel<scalar_t>
+            <<<blocks, threads, 0, stream>>>(
+                batch_size, boxes_num, pts_num, boxes.data_ptr<scalar_t>(),
+                pts.data_ptr<scalar_t>(), box_idx_of_points.data_ptr<int>());
       });
 
   AT_CUDA_CHECK(cudaGetLastError());
