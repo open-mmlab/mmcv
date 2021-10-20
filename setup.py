@@ -190,9 +190,10 @@ def get_extensions():
             op_files += glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
                 glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         if use_camb:
-            op_files += glob.glob('./mmcv/ops/csrc/parrots/camb/*.mlu')
-            op_files += ['./mmcv/ops/csrc/parrots/camb_focal_loss_parrots.cpp',
-                        './mmcv/ops/csrc/parrots/focal_loss_parrots.cpp',]
+            op_files += glob.glob('./mmcv/ops/csrc/parrots/device/camb/kernel/*.mlu')
+            op_files += ['./mmcv/ops/csrc/parrots/device/camb/camb_sigmoid_focal_loss_forward_parrots.cpp',
+                         './mmcv/ops/csrc/parrots/device/camb/camb_sigmoid_focal_loss_backward_parrots.cpp',
+                         './mmcv/ops/csrc/parrots/focal_loss_parrots.cpp',]
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))

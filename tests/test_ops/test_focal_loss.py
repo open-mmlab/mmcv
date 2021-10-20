@@ -67,9 +67,9 @@ class Testfocalloss(object):
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
+            x = torch.from_numpy(np_x).type(dtype).cuda()
             x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
+            y = torch.from_numpy(np_y).int().cuda()
 
             loss = sigmoid_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
