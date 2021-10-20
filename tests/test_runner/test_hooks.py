@@ -53,13 +53,13 @@ def test_checkpoint_hook(tmp_path):
         runner.work_dir, 'epoch_1.pth')
     shutil.rmtree(runner.work_dir)
 
-    # test petrel oss when type of runner is EpochBasedRunner
+    # test petrel oss when the type of runner is `EpochBasedRunner`
     runner = _build_demo_runner('EpochBasedRunner', max_epochs=4)
     runner.meta = dict()
     out_dir = 's3://user/data'
     with patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
-         patch.object(PetrelBackend, 'exists') as mock_check_exist:
+         patch.object(PetrelBackend, 'isfile') as mock_isfile:
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=True, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
@@ -69,7 +69,7 @@ def test_checkpoint_hook(tmp_path):
             '/'.join([out_dir, basename, 'epoch_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
-    mock_check_exist.assert_called()
+    mock_isfile.assert_called()
     shutil.rmtree(runner.work_dir)
 
     # test iter based runner
@@ -83,14 +83,14 @@ def test_checkpoint_hook(tmp_path):
         runner.work_dir, 'iter_1.pth')
     shutil.rmtree(runner.work_dir)
 
-    # test petrel oss when type of runner is IterBasedRunner
+    # test petrel oss when the type of runner is `IterBasedRunner`
     runner = _build_demo_runner(
         'IterBasedRunner', max_iters=4, max_epochs=None)
     runner.meta = dict()
     out_dir = 's3://user/data'
     with patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
-         patch.object(PetrelBackend, 'exists') as mock_check_exist:
+         patch.object(PetrelBackend, 'isfile') as mock_isfile:
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=False, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
@@ -100,7 +100,7 @@ def test_checkpoint_hook(tmp_path):
             '/'.join([out_dir, basename, 'iter_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
-    mock_check_exist.assert_called()
+    mock_isfile.assert_called()
     shutil.rmtree(runner.work_dir)
 
 
