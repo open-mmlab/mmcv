@@ -53,7 +53,7 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
     handler = file_handlers[file_format]
     if is_str(file):
         file_client = FileClient.infer_client(file_client_args, file)
-        if handler.is_str_like_obj:
+        if handler.str_like:
             with StringIO(file_client.get_text(file)) as f:
                 obj = handler.load_from_fileobj(f, **kwargs)
         else:
@@ -109,7 +109,7 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
         return handler.dump_to_str(obj, **kwargs)
     elif is_str(file):
         file_client = FileClient.infer_client(file_client_args, file)
-        if handler.is_str_like_obj:
+        if handler.str_like:
             with StringIO() as f:
                 handler.dump_to_fileobj(obj, f, **kwargs)
                 file_client.put_text(f.getvalue(), file)
