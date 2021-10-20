@@ -49,8 +49,8 @@ void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                    const float gamma, void* output);
 
 void sigmoidFocalLossForwardMLUKernelLauncher(
-    CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
-    const DArrayLite& weight, DArrayLite& output, float gamma, float alpha) {
+        CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
+        const DArrayLite& weight, DArrayLite& output, float gamma, float alpha) {
     // params check
     PARROTS_CHECKARGS(gamma >= 0)
         << "gamma should be greater than or equal to 0. "

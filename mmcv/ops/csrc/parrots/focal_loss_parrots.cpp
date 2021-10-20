@@ -79,8 +79,6 @@ void softmax_focal_loss_backward_cuda_parrots(
                                    gamma, alpha);
 }
 
-
-
 PARROTS_EXTENSION_REGISTER(softmax_focal_loss_forward)
     .attr("gamma")
     .attr("alpha")
@@ -100,14 +98,14 @@ PARROTS_EXTENSION_REGISTER(softmax_focal_loss_backward)
 
 #ifdef PARROTS_USE_CAMB
 
-void sigmoidFocalLossForwardMLUKernelLauncher(CambContext &ctx,
-                                              const DArrayLite &input, const DArrayLite &target,
-                                              const DArrayLite &weight, DArrayLite &output, float gamma,
-                                              float alpha);
-void SigmoidFocalLossBackwardMLUKernelLauncher(CambContext& ctx,const DArrayLite& input, const DArrayLite& target,
-                                               const DArrayLite& weight, DArrayLite& output,
-                                               const float gamma,
-                                               const float alpha);
+void sigmoidFocalLossForwardMLUKernelLauncher(
+        CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
+        const DArrayLite& weight, DArrayLite& output, float gamma, float alpha);
+
+void SigmoidFocalLossBackwardMLUKernelLauncher(
+        CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
+        const DArrayLite& weight, DArrayLite& output, const float gamma,
+        const float alpha);
 
 void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
                                              const SSElement& attr,
@@ -118,33 +116,33 @@ void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
     SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
 
     // get inputs and outputs
-    const auto &input = ins[0];
-    const auto &target = ins[1];
-    const auto &weight = ins[2];
-    auto &output = outs[0];
+    const auto& input = ins[0];
+    const auto& target = ins[1];
+    const auto& weight = ins[2];
+    auto& output = outs[0];
 
-    sigmoidFocalLossForwardMLUKernelLauncher(
-        ctx, input, target, weight, output, gamma, alpha);
+    sigmoidFocalLossForwardMLUKernelLauncher(ctx, input, target, weight, output,
+                                             gamma, alpha);
 }
 
 void sigmoid_focal_loss_backward_camb_parrots(
-    CambContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
-    OperatorBase::out_list_t& outs) {
-  float gamma;
-  float alpha;
-  SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
+        CambContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+        OperatorBase::out_list_t& outs) {
+    float gamma;
+    float alpha;
+    SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
 
-  // get inputs and outputs
-  const auto& input = ins[0];
-  const auto& target = ins[1];
-  const auto& weight = ins[2];
+    // get inputs and outputs
+    const auto& input = ins[0];
+    const auto& target = ins[1];
+    const auto& weight = ins[2];
 
-  auto& grad_input = outs[0];
-  SigmoidFocalLossBackwardMLUKernelLauncher(
-      ctx, input, target, weight, grad_input, gamma, alpha);
+    auto& grad_input = outs[0];
+    SigmoidFocalLossBackwardMLUKernelLauncher(ctx, input, target, weight,
+                                              grad_input, gamma, alpha);
 }
 
-#endif // PARROTS_USE_CAMB
+#endif  // PARROTS_USE_CAMB
 
 PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_forward)
     .attr("gamma")

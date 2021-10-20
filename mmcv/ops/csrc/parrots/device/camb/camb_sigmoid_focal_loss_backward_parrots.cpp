@@ -87,8 +87,8 @@ void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                     void* output);
 
 void SigmoidFocalLossBackwardMLUKernelLauncher(
-    CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
-    const DArrayLite& weight, DArrayLite& output, const float gamma,
+        CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
+        const DArrayLite& weight, DArrayLite& output, const float gamma,
     const float alpha) {
     bool has_weight = false;
 
