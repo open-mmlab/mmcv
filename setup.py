@@ -4,7 +4,6 @@ import re
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
-
 EXT_TYPE = ''
 try:
     import torch

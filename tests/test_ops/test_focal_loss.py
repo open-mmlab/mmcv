@@ -63,11 +63,11 @@ class Testfocalloss(object):
         alpha = 0.25
         gamma = 2.0
         for case, output in zip(inputs, sigmoid_outputs):
-            np_x = np.array(case[0])
+            np_x = np.array(case[0]).astype(np.float32)
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).type(dtype).cuda()
+            x = torch.from_numpy(np_x).cuda().type(dtype)
             x.requires_grad_()
             y = torch.from_numpy(np_y).int().cuda()
 

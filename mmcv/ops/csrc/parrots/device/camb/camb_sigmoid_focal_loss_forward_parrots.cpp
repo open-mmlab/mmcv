@@ -1,52 +1,15 @@
-#include <parrots/extension.hpp>
-#ifdef PARROTS_USE_CAMB
-#include <iostream>
-using namespace parrots;
-#include "./mlu_utils.h"
-#include <cnrt.h>
-inline cnrtDataType_t getCnrtDataType(parrots::ValueType vt) {
-    switch (vt.prim()) {
-        case Prim::Float16:
-            return cnrtFloat16;
-        case Prim::Float32:
-            return cnrtFloat32;
-        case Prim::Int16:
-            return cnrtInt16;
-        case Prim::Int32:
-            return cnrtInt32;
-        case Prim::Int64:
-            return cnrtInt64;
-        case Prim::Int8:
-            return cnrtInt8;
-        case Prim::Uint8:
-            return cnrtUInt8;
-        case Prim::Bool:
-            return cnrtBool;
-        default:
-            PARROTS_NOTSUPPORTED << "Unsupported data type for CNRT: "
-                                 << vt.name();
-    }
-}
+// Copyright (c) 2021, SenseTime.
 
-inline int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
-    int ordinal = -1;
-    cnrtGetDevice(&ordinal);
-    int value = 0;
-    cnrtDeviceGetAttribute(&value, attr, ordinal);
-    return value;
-}
-inline int itemsize(const DArrayLite& input) {
-    int itemSize = 0;
-    if (input.size() > 0)
-    {
-        itemSize = input.nbytes() / input.size();
-    }
-    return itemSize;
-}
+#include "parrots_camb_utils.h"
+
+#ifdef PARROTS_USE_CAMB
+
+using namespace parrots;
+
 // policy function
 static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
-        const DArrayLite& input, const DArrayLite& target,
-        const DArrayLite& weight) {
+                       const DArrayLite& input, const DArrayLite& target,
+                       const DArrayLite& weight) {
     auto N = input.dim(0);
     auto C = input.dim(1);
 
@@ -65,7 +28,7 @@ static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
     //     + weight_size + scalar_size <= nram_size
     auto n_seg = (nram_size - weight_size - scalar_size) /
                  (c_align_size * split_pipeline_num +
-                     target_data_width * split_target_num);
+                  target_data_width * split_target_num);
     auto seg_num = (N + n_seg - 1) / n_seg;
 
     auto core_dim = getDeviceAttr(cnrtAttrMcorePerCluster);
@@ -79,22 +42,23 @@ static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
 }
 
 void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-        cnrtQueue_t queue, cnrtDataType_t d_type, const void* input,
-        const void* target, const void* weight, const int32_t N,
-        const int32_t C, const float alpha, const float gamma, void* output);
+                                   cnrtQueue_t queue, cnrtDataType_t d_type,
+                                   const void* input, const void* target,
+                                   const void* weight, const int32_t N,
+                                   const int32_t C, const float alpha,
+                                   const float gamma, void* output);
 
-void sigmoidFocalLossForwardMLUKernelLauncher(CambContext& ctx,
-        const DArrayLite& input, const DArrayLite& target,
-        const DArrayLite& weight, DArrayLite& output, float gamma,
-        float alpha) {
+void sigmoidFocalLossForwardMLUKernelLauncher(
+    CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
+    const DArrayLite& weight, DArrayLite& output, float gamma, float alpha) {
     // params check
     PARROTS_CHECKARGS(gamma >= 0)
         << "gamma should be greater than or equal to 0. "
         << "But now gamma is " << gamma << ".";
 
     // check dtype
-    PARROTS_CHECKARGS(
-        (input.elemType() == Prim::Float32) || (input.elemType() == Prim::Float16))
+    PARROTS_CHECKARGS((input.elemType() == Prim::Float32) ||
+                      (input.elemType() == Prim::Float16))
         << "Data type of input should be Float or Half. But now input type is "
         << input.elemType() << ".";
 
@@ -122,12 +86,16 @@ void sigmoidFocalLossForwardMLUKernelLauncher(CambContext& ctx,
     auto split_target_num = 2;
     int split_pipeline_num = 6;
     const int has_weight = (int)(weight.size() > 0);
-    const int target_data_width =
-    target.elemType() == Prim::Int64 ? itemsize(target)/2 : itemsize(target);
+    const int target_data_width = target.elemType() == Prim::Int64
+                                      ? itemsize(target) / 2
+                                      : itemsize(target);
     // target supports only INT on MLU device
     // while it keeps LONG on host side, so target.itemsize()/2
-    auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE - split_target_num * target_data_width) /
-                              (split_pipeline_num + has_weight), NFU_ALIGN_SIZE) / itemsize(input);
+    auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE -
+                                 split_target_num * target_data_width) /
+                                    (split_pipeline_num + has_weight),
+                                NFU_ALIGN_SIZE) /
+                       itemsize(input);
     PARROTS_CHECKARGS(threshold_C >= input_C)
         << "input.size(1) should be in the range of [0, " << threshold_C
         << "], but now input.dim(1) is " << input_C << ".";
@@ -147,14 +115,15 @@ void sigmoidFocalLossForwardMLUKernelLauncher(CambContext& ctx,
     auto queue = getStreamNative<CambDevice>(ctx.getStream());
     auto input_ptr = input.data();
     auto target_ptr = target.data();
-    auto weight_ptr = weight.size() > 0 ? weight.data():nullptr;
+    auto weight_ptr = weight.size() > 0 ? weight.data() : nullptr;
     auto output_ptr = output.data();
     // get dtype of input
     cnrtDataType_t d_type = getCnrtDataType(input.elemType());
 
     // launch kernel
     KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input_ptr,
-        target_ptr, weight_ptr, input_N, input_C, alpha, gamma, output_ptr);
+                                  target_ptr, weight_ptr, input_N, input_C,
+                                  alpha, gamma, output_ptr);
 }
 
 #endif  // PARROTS_USE_CAMB
