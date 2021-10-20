@@ -1,4 +1,4 @@
-// Copyright (c) OpenMMLab. All rights reserved
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef VOXELIZATION_CUDA_KERNEL_CUH
 #define VOXELIZATION_CUDA_KERNEL_CUH
 
@@ -143,8 +143,6 @@ __global__ void determin_voxel_num(
     const int max_points, const int max_voxels, const int num_points) {
   // only calculate the coors before this coor[index]
   for (int i = 0; i < num_points; ++i) {
-    // if (coor[i][0] == -1)
-    //    continue;
     int point_pos_in_voxel = point_to_voxelidx[i];
     // record voxel
     if (point_pos_in_voxel == -1) {

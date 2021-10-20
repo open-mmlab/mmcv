@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "pytorch_cpp_helper.hpp"
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;

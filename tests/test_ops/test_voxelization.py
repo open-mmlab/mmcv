@@ -1,5 +1,5 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
+import pytest
 import torch
 
 from mmcv.ops import Voxelization
@@ -10,7 +10,14 @@ def _get_voxel_points_indices(points, coors, voxel):
     return result_form[:, 0] & result_form[:, 1] & result_form[:, 2]
 
 
-def test_voxelization():
+@pytest.mark.parametrize('device_type', [
+    'cpu',
+    pytest.param(
+        'cuda:0',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support'))
+])
+def test_voxelization(device_type):
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 
@@ -29,8 +36,7 @@ def test_voxelization():
     hard_voxelization = Voxelization(voxel_size, point_cloud_range,
                                      max_num_points)
 
-    device = torch.device(
-        'cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device(device_type)
 
     # test hard_voxelization on cpu/gpu
     points = torch.tensor(points).contiguous().to(device)

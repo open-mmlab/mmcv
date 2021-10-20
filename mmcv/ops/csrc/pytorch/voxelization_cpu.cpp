@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "pytorch_cpp_helper.hpp"
 
 template <typename T, typename T_int>
@@ -24,12 +25,10 @@ void dynamic_voxelize_forward_cpu_kernel(
       coor[ndim_minus_1 - j] = c;
     }
 
-    for (int k = 0; k < NDim; ++k) {
-      if (failed)
-        coors[i][k] = -1;
-      else
-        coors[i][k] = coor[k];
-    }
+    if (failed)
+      memset(&coors[i][0], -1, NDim * sizeof(T_int));
+    else
+      memcpy(&coors[i][0], &coor[0], NDim * sizeof(T_int));
   }
 
   delete[] coor;
@@ -72,18 +71,14 @@ void hard_voxelize_forward_cpu_kernel(
       voxel_num += 1;
 
       coor_to_voxelidx[coor[i][0]][coor[i][1]][coor[i][2]] = voxelidx;
-
-      for (int k = 0; k < NDim; ++k) {
-        coors[voxelidx][k] = coor[i][k];
-      }
+      memcpy(&coors[voxelidx][0], &coor[i][0], NDim * sizeof(T_int));
     }
 
     // put points into voxel
     num = num_points_per_voxel[voxelidx];
     if (max_points == -1 || num < max_points) {
-      for (int k = 0; k < num_features; ++k) {
-        voxels[voxelidx][num][k] = points[i][k];
-      }
+      memcpy(&voxels[voxelidx][num][0], &points[i][0],
+             num_features * sizeof(T));
       num_points_per_voxel[voxelidx] += 1;
     }
   }

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from torch import nn
 from torch.autograd import Function
@@ -18,7 +19,7 @@ class _Voxelization(Function):
                 coors_range,
                 max_points=35,
                 max_voxels=20000):
-        """convert kitti points(N, >=3) to voxels.
+        """Convert kitti points(N, >=3) to voxels.
 
         Args:
             points (torch.Tensor): [N, ndim]. Points[:, :3] contain xyz points
@@ -68,10 +69,10 @@ voxelization = _Voxelization.apply
 
 
 class Voxelization(nn.Module):
-    """convert kitti points(N, >=3) to voxels.
+    """Convert kitti points(N, >=3) to voxels.
 
-    Please refer to `Paper of PVCNN <https://arxiv.org/abs/1907.03739>`_
-    for more details.
+    Please refer to `PVCNN <https://arxiv.org/abs/1907.03739>`_ for more
+    details.
 
     Args:
         voxel_size (tuple or float): The size of voxel with the shape of [3].
@@ -102,7 +103,6 @@ class Voxelization(nn.Module):
 
         point_cloud_range = torch.tensor(
             point_cloud_range, dtype=torch.float32)
-        # [0, -40, -3, 70.4, 40, 1]
         voxel_size = torch.tensor(voxel_size, dtype=torch.float32)
         grid_size = (point_cloud_range[3:] -
                      point_cloud_range[:3]) / voxel_size
