@@ -27,6 +27,14 @@ pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
+```{tip}
+PyTorch 在 1.x.0 和 1.x.1 之间通常是兼容的，故 mmcv-full 只提供 1.x.0 的编译包。如果你
+的 PyTorch 版本是 1.x.1，你可以放心地安装在 1.x.0 版本编译的 mmcv-full。例如，如果你的
+PyTorch 版本是 1.8.1、CUDA 版本是 11.1，你可以使用以下命令安装 mmcv-full。
+
+`pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html`
+```
+
 如果想知道更多 CUDA 和 PyTorch 版本的命令，可以参考下面的表格，将链接中的 ``=={mmcv_version}`` 删去即可。
 
 ii. 安装特定的版本
@@ -50,13 +58,13 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="100">torch 1.9</th>
-      <th valign="bottom" align="left" width="100">torch 1.8</th>
-      <th valign="bottom" align="left" width="100">torch 1.7</th>
-      <th valign="bottom" align="left" width="100">torch 1.6</th>
-      <th valign="bottom" align="left" width="100">torch 1.5</th>
-      <th valign="bottom" align="left" width="100">torch 1.4</th>
-      <th valign="bottom" align="left" width="100">torch 1.3</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.9</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.8</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.7</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.6</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.5</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.4</th>
+      <th valign="bottom" align="left" style="min-width: 100px">torch 1.3</th>
     </tr>
     <tr>
       <td align="left">11.1</td>

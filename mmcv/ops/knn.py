@@ -25,17 +25,19 @@ class KNN(Function):
             k (int): number of nearest neighbors.
             xyz (Tensor): (B, N, 3) if transposed == False, else (B, 3, N).
                 xyz coordinates of the features.
-            center_xyz (Tensor): (B, npoint, 3) if transposed == False,
-                else (B, 3, npoint). centers of the knn query.
-            transposed (bool): whether the input tensors are transposed.
-                defaults to False. Should not expicitly use this keyword
-                when calling knn (=KNN.apply), just add the fourth param.
+            center_xyz (Tensor, optional): (B, npoint, 3) if transposed ==
+                False, else (B, 3, npoint). centers of the knn query.
+                Default: None.
+            transposed (bool, optional): whether the input tensors are
+                transposed. Should not explicitly use this keyword when
+                calling knn (=KNN.apply), just add the fourth param.
+                Default: False.
 
         Returns:
-            Tensor: (B, k, npoint) tensor with the indicies of
+            Tensor: (B, k, npoint) tensor with the indices of
                 the features that form k-nearest neighbours.
         """
-        assert k > 0
+        assert (k > 0) & (k < 100), 'k should be in range(0, 100)'
 
         if center_xyz is None:
             center_xyz = xyz

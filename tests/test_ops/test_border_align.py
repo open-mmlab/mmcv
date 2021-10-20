@@ -15,7 +15,7 @@ boxes_arr = [[[0, 0, 2, 1], [1, 0, 3, 1], [1, 0, 2, 1], [0, 0, 3, 1],
               [0, 1, 1, 2], [0, 0, 3, 2], [1, 0, 3, 2], [2, 0, 3, 2]]]
 output_dict = {
     # [1,c,h*w,4] for each value,
-    # the ouput is manually checked for its correctness
+    # the output is manually checked for its correctness
 
     # pool_size=1
     1: [[[[3., 6., 1., 2.], [4., 7., -1., 1.], [3., 7., 1., 2.],

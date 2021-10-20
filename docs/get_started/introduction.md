@@ -1,9 +1,5 @@
 ## Introduction
 
-<div align="center">
-    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
-</div>
-
 MMCV is a foundational library for computer vision research and supports many
 research projects as below:
 

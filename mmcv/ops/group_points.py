@@ -13,7 +13,7 @@ ext_module = ext_loader.load_ext(
 
 
 class QueryAndGroup(nn.Module):
-    """Groups with a ball query of radius.
+    """Groups points with a ball query of radius.
 
     Args:
         max_radius (float): The maximum radius of the balls.
@@ -45,7 +45,7 @@ class QueryAndGroup(nn.Module):
                  uniform_sample=False,
                  return_unique_cnt=False,
                  return_grouped_idx=False):
-        super(QueryAndGroup, self).__init__()
+        super().__init__()
         self.max_radius = max_radius
         self.min_radius = min_radius
         self.sample_num = sample_num
@@ -67,7 +67,7 @@ class QueryAndGroup(nn.Module):
         """
         Args:
             points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            center_xyz (Tensor): (B, npoint, 3) Centriods.
+            center_xyz (Tensor): (B, npoint, 3) coordinates of the centriods.
             features (Tensor): (B, C, N) Descriptors of the features.
 
         Return：
@@ -145,11 +145,10 @@ class GroupAll(nn.Module):
                 xyz: torch.Tensor,
                 new_xyz: torch.Tensor,
                 features: torch.Tensor = None):
-        """forward.
-
+        """
         Args:
             xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            new_xyz (Tensor): Ignored.
+            new_xyz (Tensor): new xyz coordinates of the features.
             features (Tensor): (B, C, N) features to group.
 
         Return:
@@ -159,8 +158,9 @@ class GroupAll(nn.Module):
         if features is not None:
             grouped_features = features.unsqueeze(2)
             if self.use_xyz:
+                # (B, 3 + C, 1, N)
                 new_features = torch.cat([grouped_xyz, grouped_features],
-                                         dim=1)  # (B, 3 + C, 1, N)
+                                         dim=1)
             else:
                 new_features = grouped_features
         else:
@@ -175,8 +175,7 @@ class GroupingOperation(Function):
     @staticmethod
     def forward(ctx, features: torch.Tensor,
                 indices: torch.Tensor) -> torch.Tensor:
-        """forward.
-
+        """
         Args:
             features (Tensor): (B, C, N) tensor of features to group.
             indices (Tensor): (B, npoint, nsample) the indicies of

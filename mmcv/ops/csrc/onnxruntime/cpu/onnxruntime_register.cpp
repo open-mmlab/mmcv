@@ -2,6 +2,7 @@
 #include "onnxruntime_register.h"
 
 #include "corner_pool.h"
+#include "deform_conv.h"
 #include "grid_sample.h"
 #include "modulated_deform_conv.h"
 #include "nms.h"
@@ -21,6 +22,7 @@ MMCVCumMaxCustomOp c_MMCVCumMaxCustomOp;
 MMCVCumMinCustomOp c_MMCVCumMinCustomOp;
 MMCVCornerPoolCustomOp c_MMCVCornerPoolCustomOp;
 MMCVModulatedDeformConvOp c_MMCVModulatedDeformConvOp;
+MMCVDeformConvOp c_MMCVDeformConvOp;
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
                                           const OrtApiBase *api) {
@@ -68,6 +70,10 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
 
   if (auto status =
           ortApi->CustomOpDomain_Add(domain, &c_MMCVModulatedDeformConvOp)) {
+    return status;
+  }
+
+  if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVDeformConvOp)) {
     return status;
   }
 

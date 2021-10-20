@@ -60,7 +60,9 @@ Install them first.
   - Not required for building CPU version.
   - Customize the installation if necessary. As a recommendation, skip the driver installation if a newer version is already installed.
 
-**You should know how to set up environment variables, especially `Path`, on Windows. The following instruction relies heavily on this skill.**
+```{note}
+You should know how to set up environment variables, especially `Path`, on Windows. The following instruction relies heavily on this skill.
+```
 
 #### Setup Python Environment
 
@@ -187,7 +189,7 @@ pip list
    <... omit some lines ...>
    ```
 
-   This should already be done by CUDA installer. If not, or you have multiple version of CUDA tookit installed, set it with
+   This should already be done by CUDA installer. If not, or you have multiple version of CUDA toolkit installed, set it with
 
    ```shell
    $env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2"
@@ -200,7 +202,7 @@ pip list
    ```shell
    # Suppose you are using GTX 1080, which is of capability 6.1
    $env:TORCH_CUDA_ARCH_LIST="6.1"
-   # OR build all suppoted arch, will be slow
+   # OR build all supported arch, will be slow
    $env:TORCH_CUDA_ARCH_LIST="3.5 3.7 5.0 5.2 6.0 6.1 7.0 7.5"
    ```
 
@@ -225,7 +227,8 @@ Check your the compute capability of your GPU from [here](https://developer.nvid
    pip list
    ```
 
-   **Note**: If you are compiling against PyTorch 1.6.0, you might meet some errors from PyTorch as described in [this issue](https://github.com/pytorch/pytorch/issues/42467).
-   Follow [this pull request](https://github.com/pytorch/pytorch/pull/43380/files) to modify the source code in your local PyTorch installation.
+```{note}
+If you are compiling against PyTorch 1.6.0, you might meet some errors from PyTorch as described in [this issue](https://github.com/pytorch/pytorch/issues/42467). Follow [this pull request](https://github.com/pytorch/pytorch/pull/43380/files) to modify the source code in your local PyTorch installation.
+```
 
-If you meet issues when running or compiling mmcv, we list some common issues in [TROUBLESHOOTING](./trouble_shooting.html).
+If you meet issues when running or compiling mmcv, we list some common issues in [Frequently Asked Question](../faq.html).
