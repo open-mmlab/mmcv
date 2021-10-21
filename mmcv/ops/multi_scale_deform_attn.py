@@ -153,10 +153,10 @@ def multi_scale_deformable_attn_pytorch(value, value_spatial_shapes,
 
 @ATTENTION.register_module()
 class MultiScaleDeformableAttention(BaseModule):
-    """An attention module used in Deformable-Detr. `Deformable DETR:
-    Deformable Transformers for End-to-End Object Detection.
+    """An attention module used in Deformable-Detr.
 
-      <https://arxiv.org/pdf/2010.04159.pdf>`_.
+    `Deformable DETR: Deformable Transformers for End-to-End Object Detection.
+    <https://arxiv.org/pdf/2010.04159.pdf>`_.
 
     Args:
         embed_dims (int): The embedding dimension of Attention.

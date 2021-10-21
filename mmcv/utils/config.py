@@ -121,7 +121,7 @@ class Config:
             regexp = r'\{\{\s*' + str(key) + r'\s*\}\}'
             value = value.replace('\\', '/')
             config_file = re.sub(regexp, value, config_file)
-        with open(temp_config_name, 'w') as tmp_config_file:
+        with open(temp_config_name, 'w', encoding='utf-8') as tmp_config_file:
             tmp_config_file.write(config_file)
 
     @staticmethod
@@ -139,7 +139,7 @@ class Config:
             base_var_dict[randstr] = base_var
             regexp = r'\{\{\s*' + BASE_KEY + r'\.' + base_var + r'\s*\}\}'
             config_file = re.sub(regexp, f'"{randstr}"', config_file)
-        with open(temp_config_name, 'w') as tmp_config_file:
+        with open(temp_config_name, 'w', encoding='utf-8') as tmp_config_file:
             tmp_config_file.write(config_file)
         return base_var_dict
 
@@ -353,7 +353,8 @@ class Config:
             warnings.warn(
                 'Please check "file_format", the file format may be .py')
         with tempfile.NamedTemporaryFile(
-                'w', suffix=file_format, delete=False) as temp_file:
+                'w', encoding='utf-8', suffix=file_format,
+                delete=False) as temp_file:
             temp_file.write(cfg_str)
             # on windows, previous implementation cause error
             # see PR 1077 for details
@@ -536,7 +537,7 @@ class Config:
             if file is None:
                 return self.pretty_text
             else:
-                with open(file, 'w') as f:
+                with open(file, 'w', encoding='utf-8') as f:
                     f.write(self.pretty_text)
         else:
             import mmcv
