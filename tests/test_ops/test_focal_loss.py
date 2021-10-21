@@ -139,9 +139,9 @@ class Testfocalloss(object):
 
             floss = SigmoidFocalLoss(gamma, alpha)
             if _USING_PARROTS:
-                pass
                 # gradcheck(floss, (x, y),
                 #           no_grads=[y])
+                pass
             else:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
