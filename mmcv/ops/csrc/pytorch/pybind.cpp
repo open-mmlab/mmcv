@@ -264,6 +264,30 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int pooled_width, float spatial_scale,
                                 int sample_num, bool aligned, bool clockwise);
 
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const std::string &reduce_type);
+
+void dynamic_point_to_voxel_backward(torch::Tensor &grad_feats,
+                                     const torch::Tensor &grad_reduced_feats,
+                                     const torch::Tensor &feats,
+                                     const torch::Tensor &reduced_feats,
+                                     const torch::Tensor &coors_idx,
+                                     const torch::Tensor &reduce_count,
+                                     const std::string &reduce_type);
+
+int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
+                          at::Tensor &coors, at::Tensor &num_points_per_voxel,
+                          const std::vector<float> voxel_size,
+                          const std::vector<float> coors_range,
+                          const int max_points, const int max_voxels,
+                          const int NDim);
+
+void dynamic_voxelize_forward(const at::Tensor &points, at::Tensor &coors,
+                              const std::vector<float> voxel_size,
+                              const std::vector<float> coors_range,
+                              const int NDim);
+
 void border_align_forward(const Tensor &input, const Tensor &boxes,
                           Tensor output, Tensor argmax_idx,
                           const int pool_size);
@@ -540,6 +564,22 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
+  m.def("dynamic_point_to_voxel_forward", &dynamic_point_to_voxel_forward,
+        "dynamic_point_to_voxel_forward", py::arg("feats"), py::arg("coors"),
+        py::arg("reduce_type"));
+  m.def("dynamic_point_to_voxel_backward", &dynamic_point_to_voxel_backward,
+        "dynamic_point_to_voxel_backward", py::arg("grad_feats"),
+        py::arg("grad_reduced_feats"), py::arg("feats"),
+        py::arg("reduced_feats"), py::arg("coors_idx"), py::arg("reduce_count"),
+        py::arg("reduce_type"));
+  m.def("hard_voxelize_forward", &hard_voxelize_forward,
+        "hard_voxelize_forward", py::arg("points"), py::arg("voxels"),
+        py::arg("coors"), py::arg("num_points_per_voxel"),
+        py::arg("voxel_size"), py::arg("coors_range"), py::arg("max_points"),
+        py::arg("max_voxels"), py::arg("NDim"));
+  m.def("dynamic_voxelize_forward", &dynamic_voxelize_forward,
+        "dynamic_voxelize_forward", py::arg("points"), py::arg("coors"),
+        py::arg("voxel_size"), py::arg("coors_range"), py::arg("NDim"));
   m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
         "forward function of multi-scale deformable attention",
         py::arg("value"), py::arg("value_spatial_shapes"),

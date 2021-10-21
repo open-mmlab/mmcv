@@ -41,11 +41,13 @@ from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .roipoint_pool3d import RoIPointPool3d
 from .saconv import SAConv2d
+from .scatter_points import DynamicScatter, dynamic_scatter
 from .sync_bn import SyncBatchNorm
 from .three_interpolate import three_interpolate
 from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
+from .voxelize import Voxelization, voxelization
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -65,6 +67,7 @@ __all__ = [
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'contour_expand',
     'three_nn', 'three_interpolate', 'MultiScaleDeformableAttention',
+    'Voxelization', 'voxelization', 'dynamic_scatter', 'DynamicScatter',
     'BorderAlign', 'border_align', 'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation'
 ]
