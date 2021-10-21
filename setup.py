@@ -179,7 +179,16 @@ def get_extensions():
 
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
-        from parrots.utils.build_extension import Extension, use_camb, use_cuda
+        from parrots.utils.build_extension import Extension
+        try :
+            from parrots.base import use_cuda
+        except (ImportError):
+            use_cuda = False
+        try :
+            from parrots.base import use_camb
+        except (ImportError):
+            use_camb = False
+
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
@@ -189,10 +198,8 @@ def get_extensions():
             op_files += glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
                 glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         if use_camb:
-            op_files += glob.glob('./mmcv/ops/csrc/parrots/device/camb/kernel/*.mlu')
-            op_files += ['./mmcv/ops/csrc/parrots/device/camb/camb_sigmoid_focal_loss_forward_parrots.cpp',
-                         './mmcv/ops/csrc/parrots/device/camb/camb_sigmoid_focal_loss_backward_parrots.cpp',
-                         './mmcv/ops/csrc/parrots/focal_loss_parrots.cpp',]
+            op_files += glob.glob('./mmcv/ops/csrc/parrots/camb/kernel/*.mlu') +\
+                glob.glob('./mmcv/ops/csrc/parrots/camb/*.cpp')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))

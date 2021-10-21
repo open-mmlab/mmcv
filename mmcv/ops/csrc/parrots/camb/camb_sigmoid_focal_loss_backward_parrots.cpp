@@ -15,9 +15,8 @@ static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type) {
     k_dim->z = 1;
 }
 
-void getDealNAndThresholdC(const int compute_data_bytes,
-                           const int target_data_bytes, const int total_c,
-                           int* deal_n_ptr, int* threshold_c_ptr,
+void getDealNAndThresholdC(const int compute_data_bytes, const int target_data_bytes,
+                           const int total_c, int* deal_n_ptr, int* threshold_c_ptr,
                            const bool has_weight, const bool is_half) {
     /* NRAM partition:
      *
@@ -51,9 +50,8 @@ void getDealNAndThresholdC(const int compute_data_bytes,
         // threshold_c * nram_split_pingpong * compute_data_bytes *
         // nram_split_num + nram_split_pingpong * target_data_bytes +
         // threshold_c * compute_data_bytes <= nram_pingpong_size
-        threshold_c =
-            (nram_pingpong_size - nram_split_pingpong * target_data_bytes) /
-            (compute_data_bytes * (nram_split_num * nram_split_pingpong + 1));
+        threshold_c = (nram_pingpong_size - nram_split_pingpong * target_data_bytes) /
+                      (compute_data_bytes * (nram_split_num * nram_split_pingpong + 1));
         threshold_c = PAD_DOWN(threshold_c, compute_align_num);
         int weight_space = PAD_UP(total_c * compute_data_bytes, NFU_ALIGN_SIZE);
 
@@ -64,48 +62,41 @@ void getDealNAndThresholdC(const int compute_data_bytes,
         // threshold_c * nram_split_pingpong * compute_data_bytes *
         // nram_split_num + nram_split_pingpong * target_data_bytes <=
         // nram_pingpong_size
-        threshold_c =
-            (nram_pingpong_size / nram_split_pingpong - target_data_bytes) /
-            (nram_split_num * compute_data_bytes);
+        threshold_c = (nram_pingpong_size / nram_split_pingpong - target_data_bytes) /
+                      (nram_split_num * compute_data_bytes);
     }
     // deal_n * compute_c * nram_split_pingpong * compute_data_bytes *
     // nram_split_num + deal_n * nram_split_pingpong * target_data_bytes <=
     // nram_pingpong_size
-    *deal_n_ptr =
-        nram_pingpong_size /
-        ((nram_split_num * compute_c * compute_data_bytes + target_data_bytes) *
-         nram_split_pingpong);
+    *deal_n_ptr = nram_pingpong_size /
+                  ((nram_split_num * compute_c * compute_data_bytes + target_data_bytes) *
+                   nram_split_pingpong);
     *threshold_c_ptr = threshold_c;
 }
 
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                                    cnrtQueue_t queue, cnrtDataType_t d_type,
-                                    const void* input, const void* target,
-                                    const void* weight, const float gamma,
-                                    const float alpha, const int32_t dim_n,
-                                    const int32_t deal_n, const int32_t dim_c,
+void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+                                    cnrtDataType_t d_type, const void* input, const void* target,
+                                    const void* weight, const float gamma, const float alpha,
+                                    const int32_t dim_n, const int32_t deal_n, const int32_t dim_c,
                                     void* output);
 
-void SigmoidFocalLossBackwardMLUKernelLauncher(
-        CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
-        const DArrayLite& weight, DArrayLite& output, const float gamma,
-    const float alpha) {
+void SigmoidFocalLossBackwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
+                                               const DArrayLite& target, const DArrayLite& weight,
+                                               DArrayLite& output, const float gamma,
+                                               const float alpha) {
     bool has_weight = false;
 
     // params check
-    PARROTS_CHECKARGS(gamma >= 0)
-        << "gamma should be greater than or equal to 0. "
-        << "But now gamma is " << gamma << ".";
+    PARROTS_CHECKARGS(gamma >= 0) << "gamma should be greater than or equal to 0. "
+                                  << "But now gamma is " << gamma << ".";
 
     // check dtype
-    PARROTS_CHECKARGS((input.elemType() == Prim::Float32) ||
-                      (input.elemType() == Prim::Float16))
-        << "Data type of input should be Float or Half. But now input type is "
-        << input.elemType() << ".";
+    PARROTS_CHECKARGS((input.elemType() == Prim::Float32) || (input.elemType() == Prim::Float16))
+        << "Data type of input should be Float or Half. But now input type is " << input.elemType()
+        << ".";
 
     PARROTS_CHECKARGS(target.elemType() == Prim::Int32)
-        << "target type should be int 32. But now target type is "
-        << target.elemType() << ".";
+        << "target type should be int 32. But now target type is " << target.elemType() << ".";
 
     PARROTS_CHECKARGS(output.elemType() == input.elemType())
         << "Data types of input and output should be the same. But now input "
@@ -117,8 +108,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
         PARROTS_CHECKARGS(weight.elemType() == input.elemType())
             << "Data types of input and weight should be the same. But now "
                "input type is "
-            << input.elemType() << ", weight type is " << weight.elemType()
-            << ".";
+            << input.elemType() << ", weight type is " << weight.elemType() << ".";
         has_weight = true;
     }
 
@@ -135,8 +125,8 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
         is_half = true;
     }
     // calculate deal_n and threshold_c
-    getDealNAndThresholdC(compute_data_bytes, target_data_bytes, dim_c, &deal_n,
-                          &threshold_c, has_weight, is_half);
+    getDealNAndThresholdC(compute_data_bytes, target_data_bytes, dim_c, &deal_n, &threshold_c,
+                          has_weight, is_half);
 
     // check C
     PARROTS_CHECKARGS(threshold_c >= dim_c)
@@ -168,9 +158,33 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
     auto dim_n = input.dim(0);
 
     // launch kernel
-    KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input_ptr,
-                                   target_ptr, weight_ptr, gamma, alpha, dim_n,
-                                   deal_n, dim_c, output_ptr);
+    KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input_ptr, target_ptr, weight_ptr,
+                                   gamma, alpha, dim_n, deal_n, dim_c, output_ptr);
 }
+
+void sigmoid_focal_loss_backward_camb_parrots(
+        CambContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+        OperatorBase::out_list_t& outs) {
+    float gamma;
+    float alpha;
+    SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
+
+    // get inputs and outputs
+    const auto& input = ins[0];
+    const auto& target = ins[1];
+    const auto& weight = ins[2];
+
+    auto& grad_input = outs[0];
+    SigmoidFocalLossBackwardMLUKernelLauncher(ctx, input, target, weight,
+                                              grad_input, gamma, alpha);
+}
+
+PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_backward)
+    .attr("gamma")
+    .attr("alpha")
+    .input(3)
+    .output(1)
+    .apply(sigmoid_focal_loss_backward_camb_parrots)
+    .done();
 
 #endif  // PARROTS_USE_CAMB
