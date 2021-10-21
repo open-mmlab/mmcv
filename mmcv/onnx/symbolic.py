@@ -409,8 +409,8 @@ def cummin(g, input, dim):
 
 @parse_args('v', 'v', 'is')
 def roll(g, input, shifts, dims):
-    from torch.onnx.symbolic_opset9 import squeeze
     from packaging import version
+    from torch.onnx.symbolic_opset9 import squeeze
     input_shape = g.op('Shape', input)
 
     need_flatten = len(dims) == 0

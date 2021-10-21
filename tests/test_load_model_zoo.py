@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-from unittest.mock import patch
 
 import pytest
+from unittest.mock import patch
 
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,

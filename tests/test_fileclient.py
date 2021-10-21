@@ -1,8 +1,7 @@
+import pytest
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 import mmcv
 from mmcv import BaseStorageBackend, FileClient

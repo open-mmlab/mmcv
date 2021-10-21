@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import inspect
 from abc import ABCMeta, abstractmethod
+
+import inspect
 from urllib.request import urlopen
 
 

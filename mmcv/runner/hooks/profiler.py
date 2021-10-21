@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Callable, List, Optional, Union
 
 import torch
+from typing import Callable, List, Optional, Union
 
 from ..dist_utils import master_only
 from .hook import HOOKS, Hook

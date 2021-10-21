@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-
 from torch import nn
 from torch.nn import functional as F
 

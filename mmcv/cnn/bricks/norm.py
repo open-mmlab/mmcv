@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-
 import torch.nn as nn
 
 from mmcv.utils import is_tuple_of

@@ -1,6 +1,5 @@
-import tempfile
-
 import pytest
+import tempfile
 import torch
 from torch import nn
 
@@ -88,9 +87,11 @@ class FooModel(BaseModule):
 def test_initilization_info_logger():
     # 'override' has higher priority
 
-    import torch.nn as nn
-    from mmcv.utils.logging import get_logger
     import os
+
+    import torch.nn as nn
+
+    from mmcv.utils.logging import get_logger
 
     class OverloadInitConv(nn.Conv2d, BaseModule):
 

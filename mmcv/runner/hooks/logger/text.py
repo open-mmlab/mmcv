@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import datetime
 import os.path as osp
-from collections import OrderedDict
 
+import datetime
 import torch
 import torch.distributed as dist
+from collections import OrderedDict
 
 import mmcv
 from ..hook import HOOKS

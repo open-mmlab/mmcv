@@ -112,7 +112,7 @@ class TestPhotometric:
 
         def _imequalize(img):
             # equalize the image using PIL.ImageOps.equalize
-            from PIL import ImageOps, Image
+            from PIL import Image, ImageOps
             img = Image.fromarray(img)
             equalized_img = np.asarray(ImageOps.equalize(img))
             return equalized_img
@@ -141,8 +141,8 @@ class TestPhotometric:
         def _adjust_brightness(img, factor):
             # adjust the brightness of image using
             # PIL.ImageEnhance.Brightness
-            from PIL.ImageEnhance import Brightness
             from PIL import Image
+            from PIL.ImageEnhance import Brightness
             img = Image.fromarray(img)
             brightened_img = Brightness(img).enhance(factor)
             return np.asarray(brightened_img)
@@ -169,8 +169,9 @@ class TestPhotometric:
     def test_adjust_contrast(self, nb_rand_test=100):
 
         def _adjust_contrast(img, factor):
-            from PIL.ImageEnhance import Contrast
             from PIL import Image
+            from PIL.ImageEnhance import Contrast
+
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
@@ -204,8 +205,9 @@ class TestPhotometric:
     def test_auto_contrast(self, nb_rand_test=100):
 
         def _auto_contrast(img, cutoff=0):
-            from PIL.ImageOps import autocontrast
             from PIL import Image
+            from PIL.ImageOps import autocontrast
+
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
@@ -250,8 +252,8 @@ class TestPhotometric:
         def _adjust_sharpness(img, factor):
             # adjust the sharpness of image using
             # PIL.ImageEnhance.Sharpness
-            from PIL.ImageEnhance import Sharpness
             from PIL import Image
+            from PIL.ImageEnhance import Sharpness
             img = Image.fromarray(img)
             sharpened_img = Sharpness(img).enhance(factor)
             return np.asarray(sharpened_img)

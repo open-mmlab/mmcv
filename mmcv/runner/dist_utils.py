@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import functools
 import os
-import subprocess
-from collections import OrderedDict
 
+import functools
+import subprocess
 import torch
 import torch.multiprocessing as mp
+from collections import OrderedDict
 from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)

@@ -1,8 +1,8 @@
 import os
-from functools import wraps
 
 import onnx
 import torch
+from functools import wraps
 
 from mmcv.ops import nms
 from mmcv.tensorrt.preprocess import preprocess_onnx

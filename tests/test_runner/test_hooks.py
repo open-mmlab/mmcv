@@ -6,19 +6,19 @@ CommandLine:
 """
 import logging
 import os.path as osp
+
 import platform
+import pytest
 import random
 import re
 import shutil
 import sys
 import tempfile
-from unittest.mock import MagicMock, call
-
-import pytest
 import torch
 import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
+from unittest.mock import MagicMock, call
 
 from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          Fp16OptimizerHook,

@@ -23,12 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
-from functools import partial
-
 import numpy as np
+import sys
 import torch
 import torch.nn as nn
+from functools import partial
 
 import mmcv
 

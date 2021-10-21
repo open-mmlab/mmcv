@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import platform
-import tempfile
 
+import platform
 import pytest
+import tempfile
 
 import mmcv
 

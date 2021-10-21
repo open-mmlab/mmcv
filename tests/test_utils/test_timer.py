@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import time
-
 import pytest
+import time
 
 import mmcv
 

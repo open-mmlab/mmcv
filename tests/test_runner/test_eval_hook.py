@@ -1,15 +1,15 @@
-import json
 import os.path as osp
-import tempfile
-import unittest.mock as mock
-from collections import OrderedDict
-from unittest.mock import MagicMock, patch
 
+import json
 import pytest
+import tempfile
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import unittest.mock as mock
+from collections import OrderedDict
 from torch.utils.data import DataLoader, Dataset
+from unittest.mock import MagicMock, patch
 
 from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.runner import EpochBasedRunner

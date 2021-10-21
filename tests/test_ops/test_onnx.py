@@ -1,6 +1,5 @@
 import os
 import warnings
-from functools import partial
 
 import numpy as np
 import onnx
@@ -8,6 +7,7 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
+from functools import partial
 from packaging import version
 
 onnx_file = 'tmp.onnx'

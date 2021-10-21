@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import json
-
 import numpy as np
 
 from .base import BaseFileHandler

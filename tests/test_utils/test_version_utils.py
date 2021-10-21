@@ -1,6 +1,5 @@
-from unittest.mock import patch
-
 import pytest
+from unittest.mock import patch
 
 from mmcv import get_git_hash, parse_version_info
 from mmcv.utils import digit_version

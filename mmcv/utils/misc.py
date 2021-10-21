@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import collections.abc
 import functools
 import itertools
 import subprocess
-import warnings
 from collections import abc
 from importlib import import_module
 from inspect import getfullargspec

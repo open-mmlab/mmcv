@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import inspect
-
 import torch
 
 from ...utils import Registry, build_from_cfg
