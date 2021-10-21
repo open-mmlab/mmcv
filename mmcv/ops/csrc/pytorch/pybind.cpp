@@ -296,6 +296,22 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size);
 
+void points_in_boxes_cpu_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                 Tensor pts_indices_tensor);
+
+void points_in_boxes_part_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                  Tensor box_idx_of_points_tensor);
+
+void points_in_boxes_all_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                 Tensor box_idx_of_points_tensor);
+
+void roiaware_pool3d_forward(Tensor rois, Tensor pts, Tensor pts_feature,
+                             Tensor argmax, Tensor pts_idx_of_voxels,
+                             Tensor pooled_features, int pool_method);
+
+void roiaware_pool3d_backward(Tensor pts_idx_of_voxels, Tensor argmax,
+                              Tensor grad_out, Tensor grad_in, int pool_method);
+
 void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
                          int kW, int patchH, int patchW, int padH, int padW,
                          int dilationH, int dilationW, int dilation_patchH,
@@ -599,6 +615,23 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "backward function of border_align", py::arg("grad_output"),
         py::arg("boxes"), py::arg("argmax_idx"), py::arg("grad_input"),
         py::arg("pool_size"));
+  m.def("points_in_boxes_cpu_forward", &points_in_boxes_cpu_forward,
+        "points_in_boxes_cpu_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("pts_indices_tensor"));
+  m.def("points_in_boxes_part_forward", &points_in_boxes_part_forward,
+        "points_in_boxes_part_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("box_idx_of_points_tensor"));
+  m.def("points_in_boxes_all_forward", &points_in_boxes_all_forward,
+        "points_in_boxes_all_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("box_idx_of_points_tensor"));
+  m.def("roiaware_pool3d_forward", &roiaware_pool3d_forward,
+        "roiaware_pool3d_forward", py::arg("rois"), py::arg("pts"),
+        py::arg("pts_feature"), py::arg("argmax"), py::arg("pts_idx_of_voxels"),
+        py::arg("pooled_features"), py::arg("pool_method"));
+  m.def("roiaware_pool3d_backward", &roiaware_pool3d_backward,
+        "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
+        py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
+        py::arg("pool_method"));
   m.def("correlation_forward", &correlation_forward, "Correlation forward");
   m.def("correlation_backward", &correlation_backward, "Correlation backward");
 }
