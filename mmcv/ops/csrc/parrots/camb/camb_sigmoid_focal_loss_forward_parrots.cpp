@@ -137,9 +137,7 @@ PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_forward)
     .attr("alpha")
     .input(3)
     .output(1)
-    #ifdef PARROTS_USE_CAMB
     .apply(sigmoid_focal_loss_forward_camb_parrots)
-    #endif // PARROTS_USE_CAMB
     .done();
 
 #endif  // PARROTS_USE_CAMB
