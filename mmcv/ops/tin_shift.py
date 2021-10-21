@@ -18,6 +18,8 @@ class TINShiftFunction(Function):
 
     @staticmethod
     def forward(ctx, input, shift):
+        assert input.size(2) // shift.size(1) > 0 and input.size(
+            2) % shift.size(1) == 0, 'C should be multiple of num_segments.'
 
         ctx.save_for_backward(shift)
 
