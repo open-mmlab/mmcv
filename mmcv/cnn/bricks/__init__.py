@@ -21,6 +21,7 @@ from .swish import Swish
 from .upsample import build_upsample_layer
 from .wrappers import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                        Linear, MaxPool2d, MaxPool3d)
+from .crf import ConditionalRandomField
 
 __all__ = [
     'ConvModule', 'build_activation_layer', 'build_conv_layer',
@@ -31,5 +32,6 @@ __all__ = [
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
     'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish', 'Linear',
     'Conv2dAdaptivePadding', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d',
-    'ConvTranspose3d', 'MaxPool3d', 'Conv3d', 'Dropout', 'DropPath'
+    'ConvTranspose3d', 'MaxPool3d', 'Conv3d', 'Dropout', 'DropPath',
+    'ConditionalRandomField'
 ]
