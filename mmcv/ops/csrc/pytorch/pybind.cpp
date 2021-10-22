@@ -105,6 +105,17 @@ void three_nn_forward(int b, int n, int m, Tensor unknown_tensor,
 void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                    const int mode, const bool aligned, const int offset);
 
+void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                     Tensor ans_overlap);
+
+void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                 Tensor ans_iou);
+
+int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh);
+
+int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
+                             float nms_overlap_thresh);
+
 void knn_forward(int b, int n, int m, int nsample, Tensor xyz_tensor,
                  Tensor new_xyz_tensor, Tensor idx_tensor, Tensor dist2_tensor);
 
@@ -442,6 +453,17 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("iou3d_boxes_overlap_bev_forward", &iou3d_boxes_overlap_bev_forward,
+        "iou3d_boxes_overlap_bev_forward", py::arg("boxes_a"),
+        py::arg("boxes_b"), py::arg("ans_overlap"));
+  m.def("iou3d_boxes_iou_bev_forward", &iou3d_boxes_iou_bev_forward,
+        "iou3d_boxes_iou_bev_forward", py::arg("boxes_a"), py::arg("boxes_b"),
+        py::arg("ans_iou"));
+  m.def("iou3d_nms_forward", &iou3d_nms_forward, "iou3d_nms_forward",
+        py::arg("boxes"), py::arg("keep"), py::arg("nms_overlap_thresh"));
+  m.def("iou3d_nms_normal_forward", &iou3d_nms_normal_forward,
+        "iou3d_nms_normal_forward", py::arg("boxes"), py::arg("keep"),
+        py::arg("nms_overlap_thresh"));
   m.def("furthest_point_sampling_forward", &furthest_point_sampling_forward,
         "furthest_point_sampling_forward", py::arg("b"), py::arg("n"),
         py::arg("m"), py::arg("points_tensor"), py::arg("temp_tensor"),
