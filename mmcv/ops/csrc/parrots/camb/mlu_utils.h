@@ -7,8 +7,8 @@
 #define REM_FOR_STACK (128 * 1024)  // 128KB reserved for cncc
 
 #ifdef __BANG_ARCH__
-#define MAX_NRAM_SIZE                                                          \
-    (__MLU_NRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
+#define MAX_NRAM_SIZE \
+  (__MLU_NRAM_SIZE__ * 1024 - REM_FOR_STACK)  // 128KB reserved for cncc
 #else
 #define MAX_NRAM_SIZE (384 * 1024)  // 384KB, initialization value
 #endif
