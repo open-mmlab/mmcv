@@ -11,6 +11,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - CornerPool
 - Deformable Convolution v1/v2
 - Deformable RoIPool
+- DynamicScatter
 - GatherPoints
 - FurthestPointSample
 - FurthestPointSampleWithDist
@@ -23,11 +24,13 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - RoIPointPool3d
 - RoIPool
 - RoIAlign
+- RoIAwarePool3d
 - SimpleRoIAlign
 - SigmoidFocalLoss
 - SoftmaxFocalLoss
 - SoftNMS
 - Synchronized BatchNorm
+- Voxelization
 - ThreeInterpolate
 - ThreeNN
 - Weight standardization
