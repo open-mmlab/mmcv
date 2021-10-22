@@ -192,6 +192,11 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be removed.
         """
+        if not hasattr(self._client, 'delete'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `delete` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
@@ -205,6 +210,13 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
+        if not (hasattr(self._client, 'delete')
+                and hasattr(self._client, 'isdir')):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `contains` '
+                 '`isdir` method, please use a higher version or dev branch '
+                 'instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath) or self._client.isdir(filepath)
@@ -220,6 +232,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
+        if not hasattr(self._client, 'isdir'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `isdir` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.isdir(filepath)
@@ -234,6 +251,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
+        if not hasattr(self._client, 'contains'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `contains` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
@@ -318,6 +340,11 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
+        if not hasattr(self._client, 'list'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `list` '
+                 'method, please use a higher version or dev branch instead.'))
+
         dir_path = self._map_path(str(dir_path))
         dir_path = self._format_path(dir_path)
         if list_dir and suffix is not None:
@@ -458,7 +485,6 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             bytes: Expected bytes object.
         """
-        filepath = str(filepath)
         with open(filepath, 'rb') as f:
             value_buf = f.read()
         return value_buf
@@ -476,7 +502,6 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             str: Expected text reading from ``filepath``.
         """
-        filepath = str(filepath)
         with open(filepath, 'r', encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
@@ -488,7 +513,6 @@ class HardDiskBackend(BaseStorageBackend):
             obj (bytes): Data to be written.
             filepath (str or Path): Path to write data.
         """
-        filepath = str(filepath)
         with open(filepath, 'wb') as f:
             f.write(obj)
 
@@ -504,7 +528,6 @@ class HardDiskBackend(BaseStorageBackend):
             encoding (str): The encoding format used to open the ``filepath``.
                 Default: 'utf-8'.
         """
-        filepath = str(filepath)
         with open(filepath, 'w', encoding=encoding) as f:
             f.write(obj)
 
@@ -514,7 +537,6 @@ class HardDiskBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be removed.
         """
-        filepath = str(filepath)
         os.remove(filepath)
 
     def exists(self, filepath: Union[str, Path]) -> bool:
@@ -526,7 +548,7 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
-        return osp.exists(str(filepath))
+        return osp.exists(filepath)
 
     def isdir(self, filepath: Union[str, Path]) -> bool:
         """Check whether a file path is a directory.
@@ -539,7 +561,7 @@ class HardDiskBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
-        return osp.isdir(str(filepath))
+        return osp.isdir(filepath)
 
     def isfile(self, filepath: Union[str, Path]) -> bool:
         """Check whether a file path is a file.
@@ -551,7 +573,7 @@ class HardDiskBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
-        return osp.isfile(str(filepath))
+        return osp.isfile(filepath)
 
     def concat_paths(self, filepath: Union[str, Path],
                      *filepaths: Union[str, Path]) -> str:
@@ -566,8 +588,6 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             str: The result of concatenation.
         """
-        filepath = str(filepath)
-        filepaths = [str(path) for path in filepaths]
         return osp.join(filepath, *filepaths)
 
     @contextmanager
@@ -599,7 +619,6 @@ class HardDiskBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
-        dir_path = str(dir_path)
         if list_dir and suffix is not None:
             raise TypeError('`suffix` should be None when `list_dir` is True')
 
