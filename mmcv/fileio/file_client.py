@@ -190,7 +190,7 @@ class PetrelBackend(BaseStorageBackend):
         """
         self.put(bytes(obj, encoding=encoding), filepath)
 
-    def _ensure_methods(self, method_names: Union[str, Sequence]):
+    def _ensure_method_implemented(self, method_names: Union[str, Sequence]):
         """Ensure that methods have been implemented before called.
 
         Args:
@@ -216,7 +216,7 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be removed.
         """
-        self._ensure_methods('delete')
+        self._ensure_method_implemented('delete')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -231,7 +231,7 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
-        self._ensure_methods(['contains', 'isdir'])
+        self._ensure_method_implemented(['contains', 'isdir'])
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -248,7 +248,7 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
-        self._ensure_methods('isdir')
+        self._ensure_method_implemented('isdir')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -264,7 +264,7 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
-        self._ensure_methods('contains')
+        self._ensure_method_implemented('contains')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -280,7 +280,10 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             str: The result after concatenation.
         """
-        formatted_paths = [self._format_path(self._map_path(filepath))]
+        filepath = self._format_path(self._map_path(filepath))
+        if filepath.endswith('/'):
+            filepath = filepath[:-1]
+        formatted_paths = [filepath]
         for path in filepaths:
             formatted_paths.append(self._format_path(self._map_path(path)))
         return '/'.join(formatted_paths)
@@ -349,12 +352,13 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
-        self._ensure_methods('list')
+        self._ensure_method_implemented('list')
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
         if list_dir and suffix is not None:
-            raise TypeError('`suffix` should be None when `list_dir` is True')
+            raise TypeError(
+                '`list_dir` should be False when `suffix` is not None')
 
         if (suffix is not None) and not isinstance(suffix, (str, tuple)):
             raise TypeError('`suffix` must be a string or tuple of strings')
@@ -369,18 +373,23 @@ class PetrelBackend(BaseStorageBackend):
         def _list_dir_or_file(dir_path, list_dir, list_file, suffix,
                               recursive):
             for path in self._client.list(dir_path):
-                # the `self.isdir` is not used here to determine if path is a
-                # directory, because `self.isdir` relies on `self._client.list`
+                # the `self.isdir` is not used here to determine whether path
+                # is a directory, because `self.isdir` relies on
+                # `self._client.list`
                 if path.endswith('/'):  # a directory path
+                    next_dir_path = self.concat_paths(dir_path, path)
                     if list_dir:
-                        # exclude the last character '/'
-                        rel_dir = path[len(root):-1]
+                        # get the relative path and exclude the last
+                        # character '/'
+                        rel_dir = next_dir_path[len(root):-1]
                         yield rel_dir
                     if recursive:
-                        yield from _list_dir_or_file(path, list_dir, list_file,
-                                                     suffix, recursive)
+                        yield from _list_dir_or_file(next_dir_path, list_dir,
+                                                     list_file, suffix,
+                                                     recursive)
                 else:  # a file path
-                    rel_path = path[len(root):]
+                    absolute_path = self.concat_paths(dir_path, path)
+                    rel_path = absolute_path[len(root):]
                     if (suffix is None
                             or rel_path.endswith(suffix)) and list_file:
                         yield rel_path
