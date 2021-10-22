@@ -105,12 +105,14 @@ class PetrelBackend(BaseStorageBackend):
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
-    def _map_path(self, filepath: str) -> str:
-        """Replace the prefix of ``filepath`` with :attr:`path_mapping`.
+    def _map_path(self, filepath: Union[str, Path]) -> str:
+        """Map ``filepath`` to a string path whose prefix will be replaced by
+        :attr:`self.path_mapping`.
 
         Args:
             filepath (str): Path to be mapped.
         """
+        filepath = str(filepath)
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
                 filepath = filepath.replace(k, v)
@@ -140,7 +142,7 @@ class PetrelBackend(BaseStorageBackend):
                 copying. The memoryview object can be converted to bytes by
                 ``value_buf.tobytes()``.
         """
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
@@ -168,7 +170,7 @@ class PetrelBackend(BaseStorageBackend):
             obj (bytes): Data to be saved.
             filepath (str or Path): Path to write data.
         """
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         self._client.put(filepath, obj)
 
@@ -197,7 +199,7 @@ class PetrelBackend(BaseStorageBackend):
                 ('Current version of Petrel has not supported the `delete` '
                  'method, please use a higher version or dev branch instead.'))
 
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
 
@@ -217,7 +219,7 @@ class PetrelBackend(BaseStorageBackend):
                  '`isdir` method, please use a higher version or dev branch '
                  'instead.'))
 
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         return self._client.contains(filepath) or self._client.isdir(filepath)
 
@@ -237,7 +239,7 @@ class PetrelBackend(BaseStorageBackend):
                 ('Current version of Petrel has not supported the `isdir` '
                  'method, please use a higher version or dev branch instead.'))
 
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         return self._client.isdir(filepath)
 
@@ -256,7 +258,7 @@ class PetrelBackend(BaseStorageBackend):
                 ('Current version of Petrel has not supported the `contains` '
                  'method, please use a higher version or dev branch instead.'))
 
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
@@ -268,16 +270,15 @@ class PetrelBackend(BaseStorageBackend):
             filepath (str or Path): Path to be concatenated.
 
         Returns:
-            str: The result of concatenation.
+            str: The result after concatenation.
         """
-        formatted_paths = [self._format_path(self._map_path(str(filepath)))]
+        formatted_paths = [self._format_path(self._map_path(filepath))]
         for path in filepaths:
-            formatted_paths.append(
-                self._format_path(self._map_path(str(path))))
+            formatted_paths.append(self._format_path(self._map_path(path)))
         return '/'.join(formatted_paths)
 
     @contextmanager
-    def get_local_path(self, filepath: str) -> Iterable[str]:
+    def get_local_path(self, filepath: Union[str, Path]) -> Iterable[str]:
         """Download a file from ``filepath`` and return a temporary path.
 
         ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
@@ -285,7 +286,7 @@ class PetrelBackend(BaseStorageBackend):
         ``with`` statement, the temporary path will be released.
 
         Args:
-            filepath (str): Download a file from ``filepath``.
+            filepath (str | Path): Download a file from ``filepath``.
 
         Examples:
             >>> client = PetrelBackend()
@@ -297,7 +298,7 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: Only yield one temporary path.
         """
-        filepath = self._map_path(str(filepath))
+        filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
         assert self.isfile(filepath)
         try:
@@ -329,7 +330,7 @@ class PetrelBackend(BaseStorageBackend):
             suffix '/' which is consistent with other backends.
 
         Args:
-            dir_path (str | obj:`Path`): Path of the directory.
+            dir_path (str | Path): Path of the directory.
             list_dir (bool): List the directories. Default: True.
             list_file (bool): List the path of files. Default: True.
             suffix (str or tuple[str], optional):  File suffix
@@ -345,7 +346,7 @@ class PetrelBackend(BaseStorageBackend):
                 ('Current version of Petrel has not supported the `list` '
                  'method, please use a higher version or dev branch instead.'))
 
-        dir_path = self._map_path(str(dir_path))
+        dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
         if list_dir and suffix is not None:
             raise TypeError('`suffix` should be None when `list_dir` is True')
@@ -591,7 +592,8 @@ class HardDiskBackend(BaseStorageBackend):
         return osp.join(filepath, *filepaths)
 
     @contextmanager
-    def get_local_path(self, filepath: str) -> Iterable[str]:
+    def get_local_path(
+            self, filepath: Union[str, Path]) -> Iterable[Union[str, Path]]:
         """Only for unified API and do nothing."""
         yield filepath
 
@@ -608,7 +610,7 @@ class HardDiskBackend(BaseStorageBackend):
             :meth:`list_dir_or_file` returns the path relative to ``dir_path``.
 
         Args:
-            dir_path (str | obj:`Path`): Path of the directory.
+            dir_path (str | Path): Path of the directory.
             list_dir (bool): List the directories. Default: True.
             list_file (bool): List the path of files. Default: True.
             suffix (str or tuple[str], optional):  File suffix
@@ -1082,7 +1084,7 @@ class FileClient:
             :meth:`list_dir_or_file` returns the path relative to ``dir_path``.
 
         Args:
-            dir_path (str | obj:`Path`): Path of the directory.
+            dir_path (str | Path): Path of the directory.
             list_dir (bool): List the directories. Default: True.
             list_file (bool): List the path of files. Default: True.
             suffix (str or tuple[str], optional):  File suffix
