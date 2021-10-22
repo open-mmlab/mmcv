@@ -346,6 +346,16 @@ class TestFileClient:
             petrel_backend.put_text('petrel', petrel_path)
             mock_put.assert_called_once_with(petrel_path, b'petrel')
 
+        # test `_ensure_methods`
+        with pytest.raises(NotImplementedError):
+            petrel_backend.client._ensure_methods('unimplemented_method')
+        with pytest.raises(NotImplementedError):
+            # `contains` is implemented but `unimplemented_method` not
+            petrel_backend.client._ensure_methods(
+                ['contains', 'unimplemented_method'])
+        petrel_backend.client._ensure_methods('contains')
+        petrel_backend.client._ensure_methods(['contains', 'delete'])
+
         # test `remove`
         with patch.object(petrel_backend.client._client,
                           'delete') as mock_delete:

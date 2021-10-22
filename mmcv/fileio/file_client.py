@@ -6,11 +6,13 @@ import re
 import tempfile
 import warnings
 from abc import ABCMeta, abstractmethod
+from collections.abc import Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Iterator, Optional, Tuple, Union
 from urllib.request import urlopen
 
+from mmcv.utils.misc import is_seq_of
 from mmcv.utils.path import is_filepath
 
 
@@ -188,16 +190,33 @@ class PetrelBackend(BaseStorageBackend):
         """
         self.put(bytes(obj, encoding=encoding), filepath)
 
+    def _ensure_methods(self, method_names: Union[str, Sequence]):
+        """Ensure that methods have been implemented before called.
+
+        Args:
+            method_names (str | Sequence): The name of method or the list of
+                name of method.
+        """
+        if isinstance(method_names, str):
+            method_names = [method_names]
+        else:
+            assert is_seq_of(method_names, str)
+
+        for method_name in method_names:
+            if not (hasattr(self._client, method_name)
+                    and callable(getattr(self._client, method_name))):
+                raise NotImplementedError(
+                    ('Current version of Petrel Python SDK has not supported '
+                     f'the `{method_name}` method, please use a higher version'
+                     ' or dev branch instead.'))
+
     def remove(self, filepath: Union[str, Path]) -> None:
         """Remove a file.
 
         Args:
             filepath (str or Path): Path to be removed.
         """
-        if not hasattr(self._client, 'delete'):
-            NotImplementedError(
-                ('Current version of Petrel has not supported the `delete` '
-                 'method, please use a higher version or dev branch instead.'))
+        self._ensure_methods('delete')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -212,12 +231,7 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
-        if not (hasattr(self._client, 'delete')
-                and hasattr(self._client, 'isdir')):
-            NotImplementedError(
-                ('Current version of Petrel has not supported the `contains` '
-                 '`isdir` method, please use a higher version or dev branch '
-                 'instead.'))
+        self._ensure_methods(['contains', 'isdir'])
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -234,10 +248,7 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
-        if not hasattr(self._client, 'isdir'):
-            NotImplementedError(
-                ('Current version of Petrel has not supported the `isdir` '
-                 'method, please use a higher version or dev branch instead.'))
+        self._ensure_methods('isdir')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -253,10 +264,7 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
-        if not hasattr(self._client, 'contains'):
-            NotImplementedError(
-                ('Current version of Petrel has not supported the `contains` '
-                 'method, please use a higher version or dev branch instead.'))
+        self._ensure_methods('contains')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -341,10 +349,7 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
-        if not hasattr(self._client, 'list'):
-            NotImplementedError(
-                ('Current version of Petrel has not supported the `list` '
-                 'method, please use a higher version or dev branch instead.'))
+        self._ensure_methods('list')
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
