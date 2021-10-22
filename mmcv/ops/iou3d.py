@@ -47,6 +47,7 @@ def nms_bev(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     Returns:
         torch.Tensor: Indexes after NMS.
     """
+    assert boxes.size(1) == 5, 'Input boxes shape should be [N, 5]'
     order = scores.sort(0, descending=True)[1]
 
     if pre_max_size is not None:
@@ -74,6 +75,7 @@ def nms_normal_bev(boxes, scores, thresh):
     Returns:
         torch.Tensor: Remaining indices with scores in descending order.
     """
+    assert boxes.shape[1] == 5, 'Input boxes shape should be [N, 5]'
     order = scores.sort(0, descending=True)[1]
 
     boxes = boxes[order].contiguous()
