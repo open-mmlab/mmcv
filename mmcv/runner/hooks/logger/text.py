@@ -42,7 +42,7 @@ class TextLoggerHook(LoggerHook):
             ``out_suffix`` will be copied to ``out_dir``.
             Default: ('.log.json', '.log', '.py').
             `New in version 1.3.16.`
-        keep_log (bool, optional): Whether to keep local log when
+        keep_local (bool, optional): Whether to keep local log when
             :attr:`out_dir` is specified. If False, the local log will be
             removed. Default: True.
             `New in version 1.3.16.`
@@ -60,7 +60,7 @@ class TextLoggerHook(LoggerHook):
                  interval_exp_name=1000,
                  out_dir=None,
                  out_suffix=('.log.json', '.log', '.py'),
-                 keep_log=True,
+                 keep_local=True,
                  file_client_args=None):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
                                              by_epoch)
@@ -80,7 +80,7 @@ class TextLoggerHook(LoggerHook):
                             'string, but got {out_dir}')
         self.out_suffix = out_suffix
 
-        self.keep_log = keep_log
+        self.keep_local = keep_local
         self.file_client_args = file_client_args
         if self.out_dir is not None:
             self.file_client = FileClient.infer_client(file_client_args,
@@ -243,5 +243,5 @@ class TextLoggerHook(LoggerHook):
                 with open(local_filepath, 'r') as f:
                     self.file_client.put_text(f.read(), out_filepath)
 
-                if not self.keep_log:
+                if not self.keep_local:
                     os.remove(local_filepath)
