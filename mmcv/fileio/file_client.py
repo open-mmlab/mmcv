@@ -192,6 +192,11 @@ class PetrelBackend(BaseStorageBackend):
         Args:
             filepath (str or Path): Path to be removed.
         """
+        if not hasattr(self._client, 'delete'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `delete` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         self._client.delete(filepath)
@@ -205,6 +210,13 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
+        if not (hasattr(self._client, 'delete')
+                and hasattr(self._client, 'isdir')):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `contains` '
+                 '`isdir` method, please use a higher version or dev branch '
+                 'instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath) or self._client.isdir(filepath)
@@ -220,6 +232,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
+        if not hasattr(self._client, 'isdir'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `isdir` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.isdir(filepath)
@@ -234,6 +251,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
+        if not hasattr(self._client, 'contains'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `contains` '
+                 'method, please use a higher version or dev branch instead.'))
+
         filepath = self._map_path(str(filepath))
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
@@ -318,6 +340,11 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
+        if not hasattr(self._client, 'list'):
+            NotImplementedError(
+                ('Current version of Petrel has not supported the `list` '
+                 'method, please use a higher version or dev branch instead.'))
+
         dir_path = self._map_path(str(dir_path))
         dir_path = self._format_path(dir_path)
         if list_dir and suffix is not None:

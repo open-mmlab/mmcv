@@ -167,3 +167,81 @@ Use `dict_from_file` to load the dict from `s3://bucket-name/b.txt`.
 >>> mmcv.dict_from_file('s3://bucket-name/b.txt', key_type=int)
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
 ```
+
+### Load and dump checkpoints
+
+#### Load checkpoints from disk or save to disk
+
+We can read the checkpoints from disk or save to disk in the following way.
+
+```python
+import torch
+
+filepath1 = '/path/of/your/checkpoint1.pth'
+filepath2 = '/path/of/your/checkpoint2.pth'
+# read from filepath1
+checkpoint = torch.load(filepath1)
+# save to filepath2
+torch.save(checkpoint, filepath2)
+```
+
+MMCV provides many backends. `HardDiskBackend` is one of them and we can use it to read or save checkpoints.
+
+```python
+import io
+from mmcv.fileio.file_client import HardDiskBackend
+
+disk_backend = HardDiskBackend()
+with io.BytesIO(disk_backend.get(filepath1)) as buffer:
+    checkpoint = torch.load(buffer)
+with io.BytesIO() as buffer:
+    torch.save(checkpoint, f)
+    disk_backend.put(f.getvalue(), filepath2)
+```
+
+If we want to implement an interface which automatically select the corresponding
+backend based on the file path, we can use the `FileClient`.
+For example, we want to implement two methods for reading checkpoints as well as saving checkpoints,
+which need to support different types of file paths, either disk paths, network paths or other paths.
+
+```python
+from mmcv.fileio.file_client import FileClient
+
+def load_checkpoint(path):
+    file_client = FileClient.infer(uri=path)
+    with io.BytesIO(file_client.get(path)) as buffer:
+        checkpoint = torch.load(buffer)
+    return checkpoint
+
+def save_checkpoint(checkpoint, path):
+    with io.BytesIO() as buffer:
+        torch.save(checkpoint, buffer)
+        file_client.put(buffer.getvalue(), path)
+
+file_client = FileClient.infer_client(uri=filepath1)
+checkpoint = load_checkpoint(filepath1)
+save_checkpoint(checkpoint, filepath2)
+```
+
+#### Load checkpoints from the Internet
+
+```{note}
+Currently, it only supports reading checkpoints from the Internet, and does not support saving checkpoints to the Internet.
+```
+
+```python
+import io
+import torch
+from mmcv.fileio.file_client import HTTPBackend, FileClient
+
+filepath = 'http://path/of/your/checkpoint.pth'
+checkpoint = torch.utils.model_zoo.load_url(filepath)
+
+http_backend = HTTPBackend()
+with io.BytesIO(http_backend.get(filepath)) as buffer:
+    checkpoint = torch.load(buffer)
+
+file_client = FileClient.infer_client(uri=filepath)
+with io.BytesIO(file_client.get(filepath)) as buffer:
+    checkpoint = torch.load(buffer)
+```

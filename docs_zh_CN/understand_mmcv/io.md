@@ -122,7 +122,7 @@ e
 ['/mnt/a', '/mnt/b', '/mnt/c', '/mnt/d', '/mnt/e']
 ```
 
-同样， `b.txt` 也是文本文件，一共有3行内容。
+同样， `b.txt` 也是文本文件，一共有3行内容
 
 ```
 1 cat
@@ -141,7 +141,7 @@ e
 
 #### 从其他后端读取
 
-使用 `list_from_file` 读取 `s3://bucket-name/a.txt` 。
+使用 `list_from_file` 读取 `s3://bucket-name/a.txt`
 
 ```python
 >>> mmcv.list_from_file('s3://bucket-name/a.txt')
@@ -161,4 +161,78 @@ e
 {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 >>> mmcv.dict_from_file('s3://bucket-name/b.txt', key_type=int)
 {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
+```
+
+### 读取和保存权重文件
+#### 从硬盘读取权重文件或者将权重文件保存至硬盘
+
+我们可以通过下面的方式从磁盘读取权重文件或者将权重文件保存至磁盘
+
+```python
+import torch
+
+filepath1 = '/path/of/your/checkpoint1.pth'
+filepath2 = '/path/of/your/checkpoint2.pth'
+# 从 filepath1 读取权重文件
+checkpoint = torch.load(filepath1)
+# 将权重文件保存至 filepath2
+torch.save(checkpoint, filepath2)
+```
+
+MMCV 提供了很多后端，`HardDiskBackend` 是其中一个，我们可以通过它来读取或者保存权重文件。
+```python
+import io
+from mmcv.fileio.file_client import HardDiskBackend
+
+disk_backend = HardDiskBackend()
+with io.BytesIO(disk_backend.get(filepath1)) as buffer:
+    checkpoint = torch.load(buffer)
+with io.BytesIO() as buffer:
+    torch.save(checkpoint, f)
+    disk_backend.put(f.getvalue(), filepath2)
+```
+
+如果我们想在接口中实现根据文件路径自动选择对应的后端，我们可以使用 `FileClient`。
+例如，我们想实现两个方法，分别是读取权重以及保存权重，它们需支持不同类型的文件路径，可以是磁盘路径，也可以是网络路径或者其他路径。
+
+```python
+from mmcv.fileio.file_client import FileClient
+
+def load_checkpoint(path):
+    file_client = FileClient.infer(uri=path)
+    with io.BytesIO(file_client.get(path)) as buffer:
+        checkpoint = torch.load(buffer)
+    return checkpoint
+
+def save_checkpoint(checkpoint, path):
+    with io.BytesIO() as buffer:
+        torch.save(checkpoint, buffer)
+        file_client.put(buffer.getvalue(), path)
+
+file_client = FileClient.infer_client(uri=filepath1)
+checkpoint = load_checkpoint(filepath1)
+save_checkpoint(checkpoint, filepath2)
+```
+
+#### 从网络远端读取权重文件
+
+```{note}
+目前只支持从网络远端读取权重文件，暂不支持将权重文件写入网络远端
+```
+
+```python
+import io
+import torch
+from mmcv.fileio.file_client import HTTPBackend, FileClient
+
+filepath = 'http://path/of/your/checkpoint.pth'
+checkpoint = torch.utils.model_zoo.load_url(filepath)
+
+http_backend = HTTPBackend()
+with io.BytesIO(http_backend.get(filepath)) as buffer:
+    checkpoint = torch.load(buffer)
+
+file_client = FileClient.infer_client(uri=filepath)
+with io.BytesIO(file_client.get(filepath)) as buffer:
+    checkpoint = torch.load(buffer)
 ```
