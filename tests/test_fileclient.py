@@ -89,11 +89,9 @@ class MockPetrelClient:
     def list(self, dir_path):
         for entry in os.scandir(dir_path):
             if not entry.name.startswith('.') and entry.is_file():
-                path = entry.path.replace(os.sep, '/')
-                yield path
+                yield entry.name
             elif osp.isdir(entry.path):
-                path = entry.path.replace(os.sep, '/')
-                yield path + '/'
+                yield entry.name + '/'
 
 
 class MockMemcachedClient:
@@ -346,15 +344,17 @@ class TestFileClient:
             petrel_backend.put_text('petrel', petrel_path)
             mock_put.assert_called_once_with(petrel_path, b'petrel')
 
-        # test `_ensure_methods`
+        # test `_ensure_method_implemented`
         with pytest.raises(NotImplementedError):
-            petrel_backend.client._ensure_methods('unimplemented_method')
+            petrel_backend.client._ensure_method_implemented(
+                'unimplemented_method')
         with pytest.raises(NotImplementedError):
             # `contains` is implemented but `unimplemented_method` not
-            petrel_backend.client._ensure_methods(
+            petrel_backend.client._ensure_method_implemented(
                 ['contains', 'unimplemented_method'])
-        petrel_backend.client._ensure_methods('contains')
-        petrel_backend.client._ensure_methods(['contains', 'delete'])
+        petrel_backend.client._ensure_method_implemented('contains')
+        petrel_backend.client._ensure_method_implemented(
+            ['contains', 'delete'])
 
         # test `remove`
         with patch.object(petrel_backend.client._client,
@@ -385,6 +385,8 @@ class TestFileClient:
 
         # test `concat_paths`
         assert petrel_backend.concat_paths(petrel_dir, 'file') == \
+            f'{petrel_dir}/file'
+        assert petrel_backend.concat_paths(f'{petrel_dir}/', 'file') == \
             f'{petrel_dir}/file'
         assert petrel_backend.concat_paths(petrel_dir, 'dir', 'file') == \
             f'{petrel_dir}/dir/file'
@@ -421,7 +423,8 @@ class TestFileClient:
                     tmp_dir, list_file=False)) == set(['dir1', 'dir2'])
             with pytest.raises(
                     TypeError,
-                    match='`suffix` should be None when `list_dir` is True'):
+                    match=('`list_dir` should be False when `suffix` is not '
+                           'None')):
                 # Exception is raised among the `list_dir_or_file` of client,
                 # so we need to invode the client to trigger the exception
                 petrel_backend.client.list_dir_or_file(
