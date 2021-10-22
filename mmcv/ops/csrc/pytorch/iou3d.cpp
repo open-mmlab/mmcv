@@ -134,25 +134,18 @@ int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh) {
 
     const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
-    unsigned long long *mask_data = NULL;
-    CHECK_ERROR(
-        cudaMalloc((void **)&mask_data,
-                   boxes_num * col_blocks * sizeof(unsigned long long)));
+    Tensor mask =
+        at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
+    unsigned long long *mask_data =
+        (unsigned long long *)mask.data_ptr<int64_t>();
     iou3d_nms_forward_cuda(boxes, mask_data, boxes_num, nms_overlap_thresh);
 
-    // unsigned long long mask_cpu[boxes_num * col_blocks];
-    // unsigned long long *mask_cpu = new unsigned long long [boxes_num *
-    // col_blocks];
-    std::vector<unsigned long long> mask_cpu(boxes_num * col_blocks);
+    at::Tensor mask_cpu = mask.to(at::kCPU);
+    unsigned long long *mask_host =
+        (unsigned long long *)mask_cpu.data_ptr<int64_t>();
 
-    // printf("boxes_num=%d, col_blocks=%d\n", boxes_num, col_blocks);
-    CHECK_ERROR(cudaMemcpy(&mask_cpu[0], mask_data,
-                           boxes_num * col_blocks * sizeof(unsigned long long),
-                           cudaMemcpyDeviceToHost));
-
-    cudaFree(mask_data);
-
-    unsigned long long *remv_cpu = new unsigned long long[col_blocks]();
+    std::vector<unsigned long long> remv_cpu(col_blocks);
+    memset(&remv_cpu[0], 0, sizeof(unsigned long long) * col_blocks);
 
     int num_to_keep = 0;
 
@@ -162,13 +155,13 @@ int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh) {
 
       if (!(remv_cpu[nblock] & (1ULL << inblock))) {
         keep_data[num_to_keep++] = i;
-        unsigned long long *p = &mask_cpu[0] + i * col_blocks;
+        unsigned long long *p = &mask_host[0] + i * col_blocks;
         for (int j = nblock; j < col_blocks; j++) {
           remv_cpu[j] |= p[j];
         }
       }
     }
-    delete[] remv_cpu;
+
     if (cudaSuccess != cudaGetLastError()) printf("Error!\n");
 
     return num_to_keep;
@@ -196,26 +189,19 @@ int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
 
     const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
-    unsigned long long *mask_data = NULL;
-    CHECK_ERROR(
-        cudaMalloc((void **)&mask_data,
-                   boxes_num * col_blocks * sizeof(unsigned long long)));
+    Tensor mask =
+        at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
+    unsigned long long *mask_data =
+        (unsigned long long *)mask.data_ptr<int64_t>();
     iou3d_nms_normal_forward_cuda(boxes, mask_data, boxes_num,
                                   nms_overlap_thresh);
 
-    // unsigned long long mask_cpu[boxes_num * col_blocks];
-    // unsigned long long *mask_cpu = new unsigned long long [boxes_num *
-    // col_blocks];
-    std::vector<unsigned long long> mask_cpu(boxes_num * col_blocks);
+    at::Tensor mask_cpu = mask.to(at::kCPU);
+    unsigned long long *mask_host =
+        (unsigned long long *)mask_cpu.data_ptr<int64_t>();
 
-    CHECK_ERROR(cudaMemcpy(&mask_cpu[0], mask_data,
-                           boxes_num * col_blocks * sizeof(unsigned long long),
-                           cudaMemcpyDeviceToHost));
-
-    cudaFree(mask_data);
-
-    unsigned long long *remv_cpu = new unsigned long long[col_blocks]();
-
+    std::vector<unsigned long long> remv_cpu(col_blocks);
+    memset(&remv_cpu[0], 0, sizeof(unsigned long long) * col_blocks);
     int num_to_keep = 0;
 
     for (int i = 0; i < boxes_num; i++) {
@@ -224,13 +210,13 @@ int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
 
       if (!(remv_cpu[nblock] & (1ULL << inblock))) {
         keep_data[num_to_keep++] = i;
-        unsigned long long *p = &mask_cpu[0] + i * col_blocks;
+        unsigned long long *p = &mask_host[0] + i * col_blocks;
         for (int j = nblock; j < col_blocks; j++) {
           remv_cpu[j] |= p[j];
         }
       }
     }
-    delete[] remv_cpu;
+
     if (cudaSuccess != cudaGetLastError()) printf("Error!\n");
 
     return num_to_keep;
