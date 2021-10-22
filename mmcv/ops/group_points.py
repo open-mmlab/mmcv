@@ -185,8 +185,8 @@ class GroupingOperation(Function):
         Returns:
             Tensor: (B, C, npoint, nsample) Grouped features.
         """
-        assert features.is_contiguous()
-        assert indices.is_contiguous()
+        features = features.contiguous()
+        indices = indices.contiguous()
 
         B, nfeatures, nsample = indices.size()
         _, C, N = features.size()
