@@ -16,6 +16,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - FurthestPointSample
 - FurthestPointSampleWithDist
 - GeneralizedAttention
+- GroupPoints
 - KNN
 - MaskedConv
 - NMS
