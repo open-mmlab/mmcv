@@ -65,6 +65,14 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
                               int pooled_width, float spatial_scale,
                               int sampling_ratio, float gamma);
 
+void group_points_forward(int b, int c, int n, int npoints, int nsample,
+                          Tensor points_tensor, Tensor idx_tensor,
+                          Tensor out_tensor);
+
+void group_points_backward(int b, int c, int n, int npoints, int nsample,
+                           Tensor grad_out_tensor, Tensor idx_tensor,
+                           Tensor grad_points_tensor);
+
 void roipoint_pool3d_forward(Tensor xyz, Tensor boxes3d, Tensor pts_feature,
                              Tensor pooled_features, Tensor pooled_empty_flag);
 
@@ -453,6 +461,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("group_points_forward", &group_points_forward, "group_points_forward",
+        py::arg("b"), py::arg("c"), py::arg("n"), py::arg("npoints"),
+        py::arg("nsample"), py::arg("points_tensor"), py::arg("idx_tensor"),
+        py::arg("out_tensor"));
+  m.def("group_points_backward", &group_points_backward,
+        "group_points_backward", py::arg("b"), py::arg("c"), py::arg("n"),
+        py::arg("npoints"), py::arg("nsample"), py::arg("grad_out_tensor"),
+        py::arg("idx_tensor"), py::arg("grad_points_tensor"));
+  m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
+        py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
+        py::arg("dist2_tensor"));
   m.def("iou3d_boxes_overlap_bev_forward", &iou3d_boxes_overlap_bev_forward,
         "iou3d_boxes_overlap_bev_forward", py::arg("boxes_a"),
         py::arg("boxes_b"), py::arg("ans_overlap"));
