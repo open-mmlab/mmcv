@@ -362,3 +362,16 @@ def is_method_overridden(method, base_class, derived_class):
     base_method = getattr(base_class, method)
     derived_method = getattr(derived_class, method)
     return derived_method != base_method
+
+
+def has_method(obj: object, method: str) -> bool:
+    """Check whether the object has a method.
+
+    Args:
+        method (str): The method name to check.
+        obj (object): The object to check.
+
+    Returns:
+        bool: True if the object has the method else False.
+    """
+    return hasattr(obj, method) and callable(getattr(obj, method))
