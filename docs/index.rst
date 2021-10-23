@@ -4,7 +4,7 @@ Welcome to MMCV's documentation!
 You can switch between Chinese and English documents in the lower-left corner of the layout.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Get Started
 
    get_started/introduction.md
@@ -12,7 +12,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    get_started/build.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Understand MMCV
 
    understand_mmcv/config.md
@@ -26,7 +26,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    understand_mmcv/utils.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Deployment
 
    deployment/onnx.md
@@ -36,26 +36,26 @@ You can switch between Chinese and English documents in the lower-left corner of
    deployment/tensorrt_custom_ops.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Compatibility
 
    compatibility.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: FAQ
 
    faq.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Community
 
    community/contributing.md
    community/pr.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API Reference
 
    api.rst

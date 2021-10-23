@@ -105,6 +105,16 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
 
 void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
                  Tensor dist2_tensor, int b, int n, int m, int nsample);
+void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                     Tensor ans_overlap);
+
+void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                 Tensor ans_iou);
+
+int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh);
+
+int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
+                             float nms_overlap_thresh);
 
 void furthest_point_sampling_forward(Tensor points_tensor, Tensor temp_tensor,
                                      Tensor idx_tensor, int b, int n, int m);
@@ -262,6 +272,30 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int pooled_width, float spatial_scale,
                                 int sample_num, bool aligned, bool clockwise);
 
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const std::string &reduce_type);
+
+void dynamic_point_to_voxel_backward(torch::Tensor &grad_feats,
+                                     const torch::Tensor &grad_reduced_feats,
+                                     const torch::Tensor &feats,
+                                     const torch::Tensor &reduced_feats,
+                                     const torch::Tensor &coors_idx,
+                                     const torch::Tensor &reduce_count,
+                                     const std::string &reduce_type);
+
+int hard_voxelize_forward(const at::Tensor &points, at::Tensor &voxels,
+                          at::Tensor &coors, at::Tensor &num_points_per_voxel,
+                          const std::vector<float> voxel_size,
+                          const std::vector<float> coors_range,
+                          const int max_points, const int max_voxels,
+                          const int NDim);
+
+void dynamic_voxelize_forward(const at::Tensor &points, at::Tensor &coors,
+                              const std::vector<float> voxel_size,
+                              const std::vector<float> coors_range,
+                              const int NDim);
+
 void border_align_forward(const Tensor &input, const Tensor &boxes,
                           Tensor output, Tensor argmax_idx,
                           const int pool_size);
@@ -269,6 +303,22 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
 void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size);
+
+void points_in_boxes_cpu_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                 Tensor pts_indices_tensor);
+
+void points_in_boxes_part_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                  Tensor box_idx_of_points_tensor);
+
+void points_in_boxes_all_forward(Tensor boxes_tensor, Tensor pts_tensor,
+                                 Tensor box_idx_of_points_tensor);
+
+void roiaware_pool3d_forward(Tensor rois, Tensor pts, Tensor pts_feature,
+                             Tensor argmax, Tensor pts_idx_of_voxels,
+                             Tensor pooled_features, int pool_method);
+
+void roiaware_pool3d_backward(Tensor pts_idx_of_voxels, Tensor argmax,
+                              Tensor grad_out, Tensor grad_in, int pool_method);
 
 void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,
                          int kW, int patchH, int patchW, int padH, int padW,
@@ -400,6 +450,17 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("bbox_overlaps", &bbox_overlaps, "bbox_overlaps", py::arg("bboxes1"),
         py::arg("bboxes2"), py::arg("ious"), py::arg("mode"),
         py::arg("aligned"), py::arg("offset"));
+  m.def("iou3d_boxes_overlap_bev_forward", &iou3d_boxes_overlap_bev_forward,
+        "iou3d_boxes_overlap_bev_forward", py::arg("boxes_a"),
+        py::arg("boxes_b"), py::arg("ans_overlap"));
+  m.def("iou3d_boxes_iou_bev_forward", &iou3d_boxes_iou_bev_forward,
+        "iou3d_boxes_iou_bev_forward", py::arg("boxes_a"), py::arg("boxes_b"),
+        py::arg("ans_iou"));
+  m.def("iou3d_nms_forward", &iou3d_nms_forward, "iou3d_nms_forward",
+        py::arg("boxes"), py::arg("keep"), py::arg("nms_overlap_thresh"));
+  m.def("iou3d_nms_normal_forward", &iou3d_nms_normal_forward,
+        "iou3d_nms_normal_forward", py::arg("boxes"), py::arg("keep"),
+        py::arg("nms_overlap_thresh"));
   m.def("furthest_point_sampling_forward", &furthest_point_sampling_forward,
         "furthest_point_sampling_forward", py::arg("points_tensor"),
         py::arg("temp_tensor"), py::arg("idx_tensor"), py::arg("b"),
@@ -538,6 +599,22 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
+  m.def("dynamic_point_to_voxel_forward", &dynamic_point_to_voxel_forward,
+        "dynamic_point_to_voxel_forward", py::arg("feats"), py::arg("coors"),
+        py::arg("reduce_type"));
+  m.def("dynamic_point_to_voxel_backward", &dynamic_point_to_voxel_backward,
+        "dynamic_point_to_voxel_backward", py::arg("grad_feats"),
+        py::arg("grad_reduced_feats"), py::arg("feats"),
+        py::arg("reduced_feats"), py::arg("coors_idx"), py::arg("reduce_count"),
+        py::arg("reduce_type"));
+  m.def("hard_voxelize_forward", &hard_voxelize_forward,
+        "hard_voxelize_forward", py::arg("points"), py::arg("voxels"),
+        py::arg("coors"), py::arg("num_points_per_voxel"),
+        py::arg("voxel_size"), py::arg("coors_range"), py::arg("max_points"),
+        py::arg("max_voxels"), py::arg("NDim"));
+  m.def("dynamic_voxelize_forward", &dynamic_voxelize_forward,
+        "dynamic_voxelize_forward", py::arg("points"), py::arg("coors"),
+        py::arg("voxel_size"), py::arg("coors_range"), py::arg("NDim"));
   m.def("ms_deform_attn_forward", &ms_deform_attn_forward,
         "forward function of multi-scale deformable attention",
         py::arg("value"), py::arg("value_spatial_shapes"),
@@ -570,4 +647,21 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("padW"), py::arg("dilationH"), py::arg("dilationW"),
         py::arg("dilation_patchH"), py::arg("dilation_patchW"), py::arg("dH"),
         py::arg("dW"));
+  m.def("points_in_boxes_cpu_forward", &points_in_boxes_cpu_forward,
+        "points_in_boxes_cpu_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("pts_indices_tensor"));
+  m.def("points_in_boxes_part_forward", &points_in_boxes_part_forward,
+        "points_in_boxes_part_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("box_idx_of_points_tensor"));
+  m.def("points_in_boxes_all_forward", &points_in_boxes_all_forward,
+        "points_in_boxes_all_forward", py::arg("boxes_tensor"),
+        py::arg("pts_tensor"), py::arg("box_idx_of_points_tensor"));
+  m.def("roiaware_pool3d_forward", &roiaware_pool3d_forward,
+        "roiaware_pool3d_forward", py::arg("rois"), py::arg("pts"),
+        py::arg("pts_feature"), py::arg("argmax"), py::arg("pts_idx_of_voxels"),
+        py::arg("pooled_features"), py::arg("pool_method"));
+  m.def("roiaware_pool3d_backward", &roiaware_pool3d_backward,
+        "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
+        py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
+        py::arg("pool_method"));
 }

@@ -4,7 +4,7 @@
 您可以在页面左下角切换中英文文档。
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 介绍与安装
 
    get_started/introduction.md
@@ -12,7 +12,7 @@
    get_started/build.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 深入理解 MMCV
 
    understand_mmcv/config.md
@@ -26,7 +26,7 @@
    understand_mmcv/utils.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 部署
 
    deployment/onnx.md
@@ -36,26 +36,26 @@
    deployment/tensorrt_custom_ops.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 兼容性
 
    compatibility.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 常见问题
 
    faq.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 社区
 
    community/contributing.md
    community/pr.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API 文档
 
    api.rst
