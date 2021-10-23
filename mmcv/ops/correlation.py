@@ -39,10 +39,22 @@ class CorrelationFunction(Function):
 
         output = input1.new_zeros(output_size)
 
-        ext_module.correlation_forward(input1, input2, output, kH, kW,
-                                       patch_size, patch_size, padH, padW,
-                                       dilationH, dilationW, dilation_patchH,
-                                       dilation_patchW, dH, dW)
+        ext_module.correlation_forward(
+            input1,
+            input2,
+            output,
+            kH=kH,
+            kW=kW,
+            patchH=patch_size,
+            patchW=patch_size,
+            padH=padH,
+            padW=padW,
+            dilationH=dilationH,
+            dilationW=dilationW,
+            dilation_patchH=dilation_patchH,
+            dilation_patchW=dilation_patchW,
+            dH=dH,
+            dW=dW)
 
         return output
 
@@ -60,11 +72,24 @@ class CorrelationFunction(Function):
         grad_input1 = torch.zeros_like(input1)
         grad_input2 = torch.zeros_like(input2)
 
-        ext_module.correlation_backward(grad_output, input1, input2,
-                                        grad_input1, grad_input2, kH, kW,
-                                        patch_size, patch_size, padH, padW,
-                                        dilationH, dilationW, dilation_patchH,
-                                        dilation_patchW, dH, dW)
+        ext_module.correlation_backward(
+            grad_output,
+            input1,
+            input2,
+            grad_input1,
+            grad_input2,
+            kH=kH,
+            kW=kW,
+            patchH=patch_size,
+            patchW=patch_size,
+            padH=padH,
+            padW=padW,
+            dilationH=dilationH,
+            dilationW=dilationW,
+            dilation_patchH=dilation_patchH,
+            dilation_patchW=dilation_patchW,
+            dH=dH,
+            dW=dW)
         return grad_input1, grad_input2, None, None, None, None, None, None
 
     @staticmethod
@@ -121,8 +146,8 @@ class Correlation(nn.Module):
     where :math:`\star` is the valid 2d sliding window convolution operator,
     and :math:`\mathcal{S}` means shifting the input features (auto-complete
     zero marginal), and :math:`dx, dy` are shifting distance, :math:`dx, dy \in
-    [-\text{max_displacement} \times \text{dilation_patch},
-    \text{max_displacement} \times \text{dilation_patch}]`.
+    [-\text{max\_displacement} \times \text{dilation\_patch},
+    \text{max\_displacement} \times \text{dilation\_patch}]`.
 
     Args:
         kernel_size (int): The size of sliding window i.e. local neighborhood
