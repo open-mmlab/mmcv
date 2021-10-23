@@ -6,13 +6,12 @@ import re
 import tempfile
 import warnings
 from abc import ABCMeta, abstractmethod
-from collections.abc import Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Iterator, Optional, Tuple, Union
 from urllib.request import urlopen
 
-from mmcv.utils.misc import is_seq_of
+from mmcv.utils.misc import has_method
 from mmcv.utils.path import is_filepath
 
 
@@ -190,33 +189,17 @@ class PetrelBackend(BaseStorageBackend):
         """
         self.put(bytes(obj, encoding=encoding), filepath)
 
-    def _ensure_method_implemented(self, method_names: Union[str, Sequence]):
-        """Ensure that methods have been implemented before called.
-
-        Args:
-            method_names (str | Sequence): The name of method or the list of
-                name of method.
-        """
-        if isinstance(method_names, str):
-            method_names = [method_names]
-        else:
-            assert is_seq_of(method_names, str)
-
-        for method_name in method_names:
-            if not (hasattr(self._client, method_name)
-                    and callable(getattr(self._client, method_name))):
-                raise NotImplementedError(
-                    ('Current version of Petrel Python SDK has not supported '
-                     f'the `{method_name}` method, please use a higher version'
-                     ' or dev branch instead.'))
-
     def remove(self, filepath: Union[str, Path]) -> None:
         """Remove a file.
 
         Args:
             filepath (str or Path): Path to be removed.
         """
-        self._ensure_method_implemented('delete')
+        if not has_method(self._client, 'delete'):
+            raise NotImplementedError(
+                ('Current version of Petrel Python SDK has not supported '
+                 'the `delete` method, please use a higher version or dev'
+                 ' branch instead.'))
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -231,7 +214,12 @@ class PetrelBackend(BaseStorageBackend):
         Returns:
             bool: Return ``True`` if ``filepath`` exists, ``False`` otherwise.
         """
-        self._ensure_method_implemented(['contains', 'isdir'])
+        if not (has_method(self._client, 'contains')
+                and has_method(self._client, 'isdir')):
+            raise NotImplementedError(
+                ('Current version of Petrel Python SDK has not supported '
+                 'the `contains` and `isdir` methods, please use a higher'
+                 'version or dev branch instead.'))
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -248,7 +236,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a directory,
                 ``False`` otherwise.
         """
-        self._ensure_method_implemented('isdir')
+        if not has_method(self._client, 'isdir'):
+            raise NotImplementedError(
+                ('Current version of Petrel Python SDK has not supported '
+                 'the `isdir` method, please use a higher version or dev'
+                 ' branch instead.'))
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -264,7 +256,11 @@ class PetrelBackend(BaseStorageBackend):
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
                 otherwise.
         """
-        self._ensure_method_implemented('contains')
+        if not has_method(self._client, 'contains'):
+            raise NotImplementedError(
+                ('Current version of Petrel Python SDK has not supported '
+                 'the `contains` method, please use a higher version or '
+                 'dev branch instead.'))
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -352,7 +348,11 @@ class PetrelBackend(BaseStorageBackend):
         Yields:
             Iterable[str]: A relative path to ``dir_path``.
         """
-        self._ensure_method_implemented('list')
+        if not has_method(self._client, 'list'):
+            raise NotImplementedError(
+                ('Current version of Petrel Python SDK has not supported '
+                 'the `list` method, please use a higher version or dev'
+                 ' branch instead.'))
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)

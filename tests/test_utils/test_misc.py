@@ -2,6 +2,7 @@
 import pytest
 
 import mmcv
+from mmcv.utils.misc import has_method
 
 
 def test_to_ntuple():
@@ -190,3 +191,18 @@ def test_is_method_overridden():
     base_instance = Base()
     with pytest.raises(AssertionError):
         mmcv.is_method_overridden('foo1', base_instance, sub_instance)
+
+
+def test_has_method():
+
+    class Foo:
+
+        def __init__(self, name):
+            self.name = name
+
+        def print_name(self):
+            print(self.name)
+
+    foo = Foo('foo')
+    assert not has_method(foo, 'name')
+    assert has_method(foo, 'print_name')

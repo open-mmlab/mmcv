@@ -3,6 +3,7 @@ import os.path as osp
 import sys
 import tempfile
 from contextlib import contextmanager
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -10,6 +11,7 @@ import pytest
 
 import mmcv
 from mmcv import BaseStorageBackend, FileClient
+from mmcv.utils import has_method
 
 sys.modules['ceph'] = MagicMock()
 sys.modules['petrel_client'] = MagicMock()
@@ -50,6 +52,16 @@ def build_temporary_directory():
         text4 = dir3 / 'text4.txt'
         text4.open('w').write('text4')
         yield tmp_dir
+
+
+@contextmanager
+def delete_and_reset_method(obj, method):
+    method_obj = deepcopy(getattr(type(obj), method))
+    try:
+        delattr(type(obj), method)
+        yield
+    finally:
+        setattr(type(obj), method, method_obj)
 
 
 class MockS3Client:
@@ -344,25 +356,32 @@ class TestFileClient:
             petrel_backend.put_text('petrel', petrel_path)
             mock_put.assert_called_once_with(petrel_path, b'petrel')
 
-        # test `_ensure_method_implemented`
-        with pytest.raises(NotImplementedError):
-            petrel_backend.client._ensure_method_implemented(
-                'unimplemented_method')
-        with pytest.raises(NotImplementedError):
-            # `contains` is implemented but `unimplemented_method` not
-            petrel_backend.client._ensure_method_implemented(
-                ['contains', 'unimplemented_method'])
-        petrel_backend.client._ensure_method_implemented('contains')
-        petrel_backend.client._ensure_method_implemented(
-            ['contains', 'delete'])
-
         # test `remove`
+        assert has_method(petrel_backend.client._client, 'delete')
+        # raise Exception if `delete` is not implemented
+        with delete_and_reset_method(petrel_backend.client._client, 'delete'):
+            assert not has_method(petrel_backend.client._client, 'delete')
+            with pytest.raises(NotImplementedError):
+                petrel_backend.remove(petrel_path)
+
         with patch.object(petrel_backend.client._client,
                           'delete') as mock_delete:
             petrel_backend.remove(petrel_path)
             mock_delete.assert_called_once_with(petrel_path)
 
         # test `exists`
+        assert has_method(petrel_backend.client._client, 'contains')
+        assert has_method(petrel_backend.client._client, 'isdir')
+        # raise Exception if `delete` is not implemented
+        with delete_and_reset_method(petrel_backend.client._client,
+                                     'contains'), delete_and_reset_method(
+                                         petrel_backend.client._client,
+                                         'isdir'):
+            assert not has_method(petrel_backend.client._client, 'contains')
+            assert not has_method(petrel_backend.client._client, 'isdir')
+            with pytest.raises(NotImplementedError):
+                petrel_backend.exists(petrel_path)
+
         with patch.object(
                 petrel_backend.client._client, 'contains',
                 return_value=True) as mock_contains:
@@ -370,6 +389,12 @@ class TestFileClient:
             mock_contains.assert_called_once_with(petrel_path)
 
         # test `isdir`
+        assert has_method(petrel_backend.client._client, 'isdir')
+        with delete_and_reset_method(petrel_backend.client._client, 'isdir'):
+            assert not has_method(petrel_backend.client._client, 'isdir')
+            with pytest.raises(NotImplementedError):
+                petrel_backend.isdir(petrel_path)
+
         with patch.object(
                 petrel_backend.client._client, 'isdir',
                 return_value=True) as mock_isdir:
@@ -377,6 +402,13 @@ class TestFileClient:
             mock_isdir.assert_called_once_with(petrel_dir)
 
         # test `isfile`
+        assert has_method(petrel_backend.client._client, 'contains')
+        with delete_and_reset_method(petrel_backend.client._client,
+                                     'contains'):
+            assert not has_method(petrel_backend.client._client, 'contains')
+            with pytest.raises(NotImplementedError):
+                petrel_backend.isfile(petrel_path)
+
         with patch.object(
                 petrel_backend.client._client, 'contains',
                 return_value=True) as mock_contains:
@@ -404,6 +436,12 @@ class TestFileClient:
             mock_contains.assert_called_once_with(petrel_path)
 
         # test `list_dir_or_file`
+        assert has_method(petrel_backend.client._client, 'list')
+        with delete_and_reset_method(petrel_backend.client._client, 'list'):
+            assert not has_method(petrel_backend.client._client, 'list')
+            with pytest.raises(NotImplementedError):
+                list(petrel_backend.list_dir_or_file(petrel_dir))
+
         with build_temporary_directory() as tmp_dir:
             # 1. list directories and files
             assert set(petrel_backend.list_dir_or_file(tmp_dir)) == set(
