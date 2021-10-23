@@ -2,6 +2,7 @@
 import pytest
 
 import mmcv
+from mmcv import deprecated_api_warning
 from mmcv.utils.misc import has_method
 
 
@@ -206,3 +207,19 @@ def test_has_method():
     foo = Foo('foo')
     assert not has_method(foo, 'name')
     assert has_method(foo, 'print_name')
+
+
+def test_deprecated_api_warning():
+
+    @deprecated_api_warning(name_dict=dict(old_key='new_key'))
+    def dummy_func(new_key=1):
+        return new_key
+
+    # replace `old_key` to `new_key`
+    assert dummy_func(old_key=2) == 2
+
+    # The expected behavior is to replace the
+    # deprecated key `old_key` to `new_key`,
+    # but got them in the arguments at the same time
+    with pytest.raises(AssertionError):
+        dummy_func(old_key=1, new_key=2)
