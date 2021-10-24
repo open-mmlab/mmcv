@@ -28,7 +28,7 @@ class BaseStorageBackend(metaclass=ABCMeta):
     _allow_symlink = False
 
     @property
-    def backend_name(self):
+    def name(self):
         return self.__class__.__name__
 
     @property
@@ -820,8 +820,8 @@ class FileClient:
         return _instance
 
     @property
-    def backend_name(self):
-        return self.client.backend_name
+    def name(self):
+        return self.client.name
 
     @property
     def allow_symlink(self):

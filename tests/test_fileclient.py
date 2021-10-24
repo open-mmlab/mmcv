@@ -132,8 +132,8 @@ class TestFileClient:
     def test_disk_backend(self):
         disk_backend = FileClient('disk')
 
-        # test `backend_name` attribute
-        assert disk_backend.backend_name == 'HardDiskBackend'
+        # test `name` attribute
+        assert disk_backend.name == 'HardDiskBackend'
         # test `allow_symlink` attribute
         assert disk_backend.allow_symlink
         # test `get`
@@ -686,17 +686,17 @@ class TestFileClient:
         # HardDiskBackend
         file_client_args = {'backend': 'disk'}
         client = FileClient.infer_client(file_client_args)
-        assert client.backend_name == 'HardDiskBackend'
+        assert client.name == 'HardDiskBackend'
         client = FileClient.infer_client(uri=self.img_path)
-        assert client.backend_name == 'HardDiskBackend'
+        assert client.name == 'HardDiskBackend'
 
         # PetrelBackend
         file_client_args = {'backend': 'petrel'}
         client = FileClient.infer_client(file_client_args)
-        assert client.backend_name == 'PetrelBackend'
+        assert client.name == 'PetrelBackend'
         uri = 's3://user_data'
         client = FileClient.infer_client(uri=uri)
-        assert client.backend_name == 'PetrelBackend'
+        assert client.name == 'PetrelBackend'
 
     def test_register_backend(self):
 

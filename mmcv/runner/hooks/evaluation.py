@@ -214,9 +214,8 @@ class EvalHook(Hook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
             runner.logger.info(
-                (f'use {self.file_client.backend_name} to save the best '
-                 'checkpoint and the best checkpoint will be saved to '
-                 f'{self.out_dir}'))
+                (f'the best checkpoint will be saved to {self.out_dir} by '
+                 f'{self.file_client.name}'))
 
         if self.save_best is not None:
             if runner.meta is None:

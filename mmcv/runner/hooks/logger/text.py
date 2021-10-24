@@ -97,9 +97,8 @@ class TextLoggerHook(LoggerHook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
             runner.logger.info(
-                (f'use {self.file_client.backend_name} to save logs after the '
-                 'training process and the logs will be saved to '
-                 f'{self.out_dir}'))
+                (f'Text logs will be saved to {self.out_dir} by '
+                 f'{self.file_client.name} after the training process.'))
 
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
@@ -245,6 +244,10 @@ class TextLoggerHook(LoggerHook):
                     self.out_dir, filename)
                 with open(local_filepath, 'r') as f:
                     self.file_client.put_text(f.read(), out_filepath)
+
+                runner.logger.info(
+                    (f'the file {local_filepath} has been uploaded to '
+                     f'{out_filepath}.'))
 
                 if not self.keep_local:
                     os.remove(local_filepath)
