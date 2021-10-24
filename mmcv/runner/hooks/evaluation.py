@@ -214,7 +214,7 @@ class EvalHook(Hook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
             runner.logger.info(
-                (f'the best checkpoint will be saved to {self.out_dir} by '
+                (f'The best checkpoint will be saved to {self.out_dir} by '
                  f'{self.file_client.name}'))
 
         if self.save_best is not None:
@@ -333,7 +333,7 @@ class EvalHook(Hook):
                     self.best_ckpt_path):
                 self.file_client.remove(self.best_ckpt_path)
                 runner.logger.info(
-                    (f'the previous best checkpoint {self.best_ckpt_path} was '
+                    (f'The previous best checkpoint {self.best_ckpt_path} was '
                      'removed'))
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'

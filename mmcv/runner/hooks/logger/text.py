@@ -246,7 +246,7 @@ class TextLoggerHook(LoggerHook):
                     self.file_client.put_text(f.read(), out_filepath)
 
                 runner.logger.info(
-                    (f'the file {local_filepath} has been uploaded to '
+                    (f'The file {local_filepath} has been uploaded to '
                      f'{out_filepath}.'))
 
                 if not self.keep_local:
