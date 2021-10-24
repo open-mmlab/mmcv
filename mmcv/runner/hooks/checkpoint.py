@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+import warnings
 
 from mmcv.fileio import FileClient
 from ..dist_utils import allreduce_params, master_only
@@ -80,15 +81,25 @@ class CheckpointHook(Hook):
         # `runner.work_dir`
         if self.out_dir != runner.work_dir:
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-            self.out_dir = self.file_client.concat_paths(
-                self.out_dir, basename)
+            self.out_dir = self.file_client.join_path(self.out_dir, basename)
 
-        runner.logger.info(f'checkpoints will be saved to {self.out_dir}')
+        runner.logger.info(
+            (f'use {self.file_client.backend_name} to save checkpoints and '
+             f'checkpoints will be saved to {self.out_dir}'))
 
-        # disable the create_symlink option when the backend is not
-        # HardDiskBackend
-        if self.file_client.backend_name != 'disk':
-            self.args['create_symlink'] = False
+        # disable the create_symlink option because some file backends do not
+        # allow to create a symlink
+        if 'create_symlink' in self.args:
+            if self.args[
+                    'create_symlink'] and not self.file_client.allow_symlink:
+                self.args['create_symlink'] = False
+                warnings.warn((
+                    '`create_symlink` is set to `True` by user but the '
+                    f'{self.file_client.backend_name} does not allow to create'
+                    'a symlink so the `create_symlink` is forced to convert to'
+                    ' `False`'))
+        else:
+            self.args['create_symlink'] = self.file_client.allow_symlink
 
     def after_train_epoch(self, runner):
         if not self.by_epoch:
@@ -119,9 +130,8 @@ class CheckpointHook(Hook):
                 cur_ckpt_filename = self.args.get(
                     'filename_tmpl', 'iter_{}.pth').format(runner.iter + 1)
             runner.meta.setdefault('hook_msgs', dict())
-            runner.meta['hook_msgs'][
-                'last_ckpt'] = self.file_client.concat_paths(
-                    self.out_dir, cur_ckpt_filename)
+            runner.meta['hook_msgs']['last_ckpt'] = self.file_client.join_path(
+                self.out_dir, cur_ckpt_filename)
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
             if self.by_epoch:
@@ -135,7 +145,7 @@ class CheckpointHook(Hook):
                 -self.interval)
             filename_tmpl = self.args.get('filename_tmpl', name)
             for _step in redundant_ckpts:
-                ckpt_path = self.file_client.concat_paths(
+                ckpt_path = self.file_client.join_path(
                     self.out_dir, filename_tmpl.format(_step))
                 if self.file_client.isfile(ckpt_path):
                     self.file_client.remove(ckpt_path)

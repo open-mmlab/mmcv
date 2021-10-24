@@ -7,7 +7,6 @@ class BaseFileHandler(metaclass=ABCMeta):
     # str-like object or bytes-like object. Pickle only processes bytes-like
     # objects but json only processes str-like object. If it is str-like
     # object, `StringIO` will be used to process the buffer.
-
     str_like = True
 
     @abstractmethod

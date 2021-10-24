@@ -132,6 +132,10 @@ class TestFileClient:
     def test_disk_backend(self):
         disk_backend = FileClient('disk')
 
+        # test `backend_name` attribute
+        assert disk_backend.backend_name == 'HardDiskBackend'
+        # test `allow_symlink` attribute
+        assert disk_backend.allow_symlink
         # test `get`
         # input path is Path object
         img_bytes = disk_backend.get(self.img_path)
@@ -157,11 +161,19 @@ class TestFileClient:
             filepath1 = Path(tmp_dir) / 'test.jpg'
             disk_backend.put(b'disk', filepath1)
             assert filepath1.open('rb').read() == b'disk'
+            # test the `mkdir_or_exist` behavior in `put`
+            _filepath1 = Path(tmp_dir) / 'not_existed_dir1' / 'test.jpg'
+            disk_backend.put(b'disk', _filepath1)
+            assert _filepath1.open('rb').read() == b'disk'
 
             # test `put_text`
             filepath2 = Path(tmp_dir) / 'test.txt'
             disk_backend.put_text('disk', filepath2)
             assert filepath2.open('r').read() == 'disk'
+            # test the `mkdir_or_exist` behavior in `put_text`
+            _filepath2 = Path(tmp_dir) / 'not_existed_dir2' / 'test.txt'
+            disk_backend.put_text('disk', _filepath2)
+            assert _filepath2.open('r').read() == 'disk'
 
             # test `isfile`
             assert disk_backend.isfile(filepath2)
@@ -179,11 +191,11 @@ class TestFileClient:
                 assert str(filepath1) == path
             assert osp.isfile(filepath1)
 
-        # test `concat_paths`
+        # test `join_path`
         disk_dir = '/path/of/your/directory'
-        assert disk_backend.concat_paths(disk_dir, 'file') == \
+        assert disk_backend.join_path(disk_dir, 'file') == \
             osp.join(disk_dir, 'file')
-        assert disk_backend.concat_paths(disk_dir, 'dir', 'file') == \
+        assert disk_backend.join_path(disk_dir, 'dir', 'file') == \
             osp.join(disk_dir, 'dir', 'file')
 
         # test `list_dir_or_file`
@@ -268,6 +280,9 @@ class TestFileClient:
     def test_ceph_backend(self):
         ceph_backend = FileClient('ceph')
 
+        # test `allow_symlink` attribute
+        assert not ceph_backend.allow_symlink
+
         # input path is Path object
         with pytest.raises(NotImplementedError):
             ceph_backend.get_text(self.text_path)
@@ -304,6 +319,9 @@ class TestFileClient:
                                                 (None, 's3')])
     def test_petrel_backend(self, backend, prefix):
         petrel_backend = FileClient(backend=backend, prefix=prefix)
+
+        # test `allow_symlink` attribute
+        assert not petrel_backend.allow_symlink
 
         # input path is Path object
         img_bytes = petrel_backend.get(self.img_path)
@@ -415,12 +433,12 @@ class TestFileClient:
             assert petrel_backend.isfile(petrel_path)
             mock_contains.assert_called_once_with(petrel_path)
 
-        # test `concat_paths`
-        assert petrel_backend.concat_paths(petrel_dir, 'file') == \
+        # test `join_path`
+        assert petrel_backend.join_path(petrel_dir, 'file') == \
             f'{petrel_dir}/file'
-        assert petrel_backend.concat_paths(f'{petrel_dir}/', 'file') == \
+        assert petrel_backend.join_path(f'{petrel_dir}/', 'file') == \
             f'{petrel_dir}/file'
-        assert petrel_backend.concat_paths(petrel_dir, 'dir', 'file') == \
+        assert petrel_backend.join_path(petrel_dir, 'dir', 'file') == \
             f'{petrel_dir}/dir/file'
 
         # test `get_local_path`
@@ -528,6 +546,9 @@ class TestFileClient:
         mc_cfg = dict(server_list_cfg='', client_cfg='', sys_path=None)
         mc_backend = FileClient('memcached', **mc_cfg)
 
+        # test `allow_symlink` attribute
+        assert not mc_backend.allow_symlink
+
         # input path is Path object
         with pytest.raises(NotImplementedError):
             mc_backend.get_text(self.text_path)
@@ -549,6 +570,9 @@ class TestFileClient:
 
         # db_path is Path object
         lmdb_backend = FileClient('lmdb', db_path=lmdb_path)
+
+        # test `allow_symlink` attribute
+        assert not lmdb_backend.allow_symlink
 
         with pytest.raises(NotImplementedError):
             lmdb_backend.get_text(self.text_path)
@@ -573,6 +597,9 @@ class TestFileClient:
             'master/tests/data/color.jpg'
         text_url = 'https://raw.githubusercontent.com/open-mmlab/mmcv/' \
             'master/tests/data/filelist.txt'
+
+        # test `allow_symlink` attribute
+        assert not http_backend.allow_symlink
 
         # input is path or Path object
         with pytest.raises(Exception):
@@ -659,17 +686,17 @@ class TestFileClient:
         # HardDiskBackend
         file_client_args = {'backend': 'disk'}
         client = FileClient.infer_client(file_client_args)
-        assert client.backend_name == 'disk'
+        assert client.backend_name == 'HardDiskBackend'
         client = FileClient.infer_client(uri=self.img_path)
-        assert client.backend_name == 'disk'
+        assert client.backend_name == 'HardDiskBackend'
 
         # PetrelBackend
         file_client_args = {'backend': 'petrel'}
         client = FileClient.infer_client(file_client_args)
-        assert client.backend_name == 'petrel'
+        assert client.backend_name == 'PetrelBackend'
         uri = 's3://user_data'
         client = FileClient.infer_client(uri=uri)
-        assert client.backend_name == 'petrel'
+        assert client.backend_name == 'PetrelBackend'
 
     def test_register_backend(self):
 

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Iterable, Iterator, Optional, Tuple, Union
 from urllib.request import urlopen
 
+import mmcv
 from mmcv.utils.misc import has_method
 from mmcv.utils.path import is_filepath
 
@@ -22,6 +23,17 @@ class BaseStorageBackend(metaclass=ABCMeta):
     ``get()`` reads the file as a byte stream and ``get_text()`` reads the file
     as texts.
     """
+
+    # a flag to indicate whether the backend can create a symlink for a file
+    _allow_symlink = False
+
+    @property
+    def backend_name(self):
+        return self.__class__.__name__
+
+    @property
+    def allow_symlink(self):
+        return self._allow_symlink
 
     @abstractmethod
     def get(self, filepath):
@@ -266,8 +278,8 @@ class PetrelBackend(BaseStorageBackend):
         filepath = self._format_path(filepath)
         return self._client.contains(filepath)
 
-    def concat_paths(self, filepath: Union[str, Path],
-                     *filepaths: Union[str, Path]) -> str:
+    def join_path(self, filepath: Union[str, Path],
+                  *filepaths: Union[str, Path]) -> str:
         """Concatenate all file paths.
 
         Args:
@@ -377,7 +389,7 @@ class PetrelBackend(BaseStorageBackend):
                 # is a directory, because `self.isdir` relies on
                 # `self._client.list`
                 if path.endswith('/'):  # a directory path
-                    next_dir_path = self.concat_paths(dir_path, path)
+                    next_dir_path = self.join_path(dir_path, path)
                     if list_dir:
                         # get the relative path and exclude the last
                         # character '/'
@@ -388,7 +400,7 @@ class PetrelBackend(BaseStorageBackend):
                                                      list_file, suffix,
                                                      recursive)
                 else:  # a file path
-                    absolute_path = self.concat_paths(dir_path, path)
+                    absolute_path = self.join_path(dir_path, path)
                     rel_path = absolute_path[len(root):]
                     if (suffix is None
                             or rel_path.endswith(suffix)) and list_file:
@@ -491,6 +503,8 @@ class LmdbBackend(BaseStorageBackend):
 class HardDiskBackend(BaseStorageBackend):
     """Raw hard disks storage backend."""
 
+    _allow_symlink = True
+
     def get(self, filepath: Union[str, Path]) -> bytes:
         """Read data from a given ``filepath`` with 'rb' mode.
 
@@ -524,10 +538,15 @@ class HardDiskBackend(BaseStorageBackend):
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
         """Write data to a given ``filepath`` with 'wb' mode.
 
+        Note:
+            ``put`` will create a directory if the directory of ``filepath``
+            does not exist.
+
         Args:
             obj (bytes): Data to be written.
             filepath (str or Path): Path to write data.
         """
+        mmcv.mkdir_or_exist(osp.dirname(filepath))
         with open(filepath, 'wb') as f:
             f.write(obj)
 
@@ -537,12 +556,17 @@ class HardDiskBackend(BaseStorageBackend):
                  encoding: str = 'utf-8') -> None:
         """Write data to a given ``filepath`` with 'w' mode.
 
+        Note:
+            ``put_text`` will create a directory if the directory of
+            ``filepath`` does not exist.
+
         Args:
             obj (str): Data to be written.
             filepath (str or Path): Path to write data.
             encoding (str): The encoding format used to open the ``filepath``.
                 Default: 'utf-8'.
         """
+        mmcv.mkdir_or_exist(osp.dirname(filepath))
         with open(filepath, 'w', encoding=encoding) as f:
             f.write(obj)
 
@@ -590,8 +614,8 @@ class HardDiskBackend(BaseStorageBackend):
         """
         return osp.isfile(filepath)
 
-    def concat_paths(self, filepath: Union[str, Path],
-                     *filepaths: Union[str, Path]) -> str:
+    def join_path(self, filepath: Union[str, Path],
+                  *filepaths: Union[str, Path]) -> str:
         """Concatenate all file paths.
 
         Join one or more filepath components intelligently. The return value
@@ -788,17 +812,20 @@ class FileClient:
             _instance = super().__new__(cls)
             if backend is not None:
                 _instance.client = cls._backends[backend](**kwargs)
-                _instance.backend_name = backend
             else:
                 _instance.client = cls._prefix_to_backends[prefix](**kwargs)
-                # infer the backend name according to the prefix
-                for backend_name, backend_cls in cls._backends.items():
-                    if isinstance(_instance.client, backend_cls):
-                        _instance.backend_name = backend_name
-                        break
+
             cls._instances[arg_key] = _instance
 
         return _instance
+
+    @property
+    def backend_name(self):
+        return self.client.backend_name
+
+    @property
+    def allow_symlink(self):
+        return self.client.allow_symlink
 
     @staticmethod
     def parse_uri_prefix(uri: Union[str, Path]) -> Optional[str]:
@@ -980,6 +1007,10 @@ class FileClient:
     def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
         """Write data to a given ``filepath`` with 'wb' mode.
 
+        Note:
+            ``put`` should create a directory if the directory of ``filepath``
+            does not exist.
+
         Args:
             obj (bytes): Data to be written.
             filepath (str or Path): Path to write data.
@@ -988,6 +1019,10 @@ class FileClient:
 
     def put_text(self, obj: str, filepath: Union[str, Path]) -> None:
         """Write data to a given ``filepath`` with 'w' mode.
+
+        Note:
+            ``put_text`` should create a directory if the directory of
+            ``filepath`` does not exist.
 
         Args:
             obj (str): Data to be written.
@@ -1041,8 +1076,8 @@ class FileClient:
         """
         return self.client.isfile(filepath)
 
-    def concat_paths(self, filepath: Union[str, Path],
-                     *filepaths: Union[str, Path]) -> str:
+    def join_path(self, filepath: Union[str, Path],
+                  *filepaths: Union[str, Path]) -> str:
         """Concatenate all file paths.
 
         Join one or more filepath components intelligently. The return value
@@ -1054,7 +1089,7 @@ class FileClient:
         Returns:
             str: The result of concatenation.
         """
-        return self.client.concat_paths(filepath, *filepaths)
+        return self.client.join_path(filepath, *filepaths)
 
     @contextmanager
     def get_local_path(self, filepath: Union[str, Path]) -> Iterable[str]:

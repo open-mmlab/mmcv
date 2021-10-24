@@ -95,8 +95,11 @@ class TextLoggerHook(LoggerHook):
             # The final `self.out_dir` is the concatenation of `self.out_dir`
             # and the last level directory of `runner.work_dir`
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
-            self.out_dir = self.file_client.concat_paths(
-                self.out_dir, basename)
+            self.out_dir = self.file_client.join_path(self.out_dir, basename)
+            runner.logger.info(
+                (f'use {self.file_client.backend_name} to save logs after the '
+                 'training process and the logs will be saved to '
+                 f'{self.out_dir}'))
 
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
@@ -238,10 +241,13 @@ class TextLoggerHook(LoggerHook):
         if self.out_dir is not None:
             for filename in scandir(runner.work_dir, self.out_suffix, True):
                 local_filepath = osp.join(runner.work_dir, filename)
-                out_filepath = self.file_client.concat_paths(
+                out_filepath = self.file_client.join_path(
                     self.out_dir, filename)
                 with open(local_filepath, 'r') as f:
                     self.file_client.put_text(f.read(), out_filepath)
 
                 if not self.keep_local:
                     os.remove(local_filepath)
+                    runner.logger.info(
+                        (f'{local_filepath} was removed due to the '
+                         '`self.keep_local=False`'))
