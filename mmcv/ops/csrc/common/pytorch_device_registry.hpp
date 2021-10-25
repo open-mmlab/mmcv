@@ -66,9 +66,7 @@ template <typename T, typename... Args,
                            bool> = true>
 std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device,
                                                   int index, T&& t,
-                                                  Args&&... args) {
-  return CheckDeviceConsistency(device, index + 1, std::forward<Args>(args)...);
-}
+                                                  Args&&... args);
 
 template <typename T, typename... Args,
           std::enable_if_t<std::is_same<std::decay_t<T>, at::Tensor>::value,
@@ -82,6 +80,15 @@ std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device0,
   }
   return CheckDeviceConsistency(device0, index + 1,
                                 std::forward<Args>(args)...);
+}
+
+template <
+    typename T, typename... Args,
+    std::enable_if_t<!std::is_same<std::decay_t<T>, at::Tensor>::value, bool>>
+std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device,
+                                                  int index, T&& t,
+                                                  Args&&... args) {
+  return CheckDeviceConsistency(device, index + 1, std::forward<Args>(args)...);
 }
 
 // dispatch
