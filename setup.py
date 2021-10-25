@@ -223,7 +223,7 @@ def get_extensions():
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
-        extra_compile_args = {'cxx': []}
+        extra_compile_args = {'cxx': ['-std=c++14']}
         include_dirs = []
 
         is_rocm_pytorch = False
