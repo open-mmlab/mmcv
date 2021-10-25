@@ -304,7 +304,7 @@ Read [Deformable Convolutional Networks](https://arxiv.org/pdf/1703.06211.pdf) f
 <dt><tt>input</tt>: T</dt>
 <dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the number of channels, inH and inW are the height and width of the data.</dd>
 <dt><tt>offset</tt>: T</dt>
-<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
+<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW are the height and width of weight, outH and outW is the height and width of offset and output.</dd>
 <dt><tt>weight</tt>: T</dt>
 <dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
 </dl>
@@ -339,22 +339,22 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 ### Inputs
 
 <dl>
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>feature</tt>: T</dt>
 <dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the number of channels, inH and inW are the height and width of the data.</dd>
-<dt><tt>inputs[1]</tt>: T</dt>
-<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
-<dt><tt>inputs[2]</tt>: T</dt>
-<dd>Input mask; 4-D tensor of shape (N, deformable_group* kH* kW, outH, outW), where kH and kW is the height and width of weight, outH and outW is the height and width of offset and output.</dd>
-<dt><tt>inputs[3]</tt>: T</dt>
+<dt><tt>offset</tt>: T</dt>
+<dd>Input offset; 4-D tensor of shape (N, deformable_group* 2* kH* kW, outH, outW), where kH and kW are the height and width of weight, outH and outW are the height and width of offset and output.</dd>
+<dt><tt>mask</tt>: T</dt>
+<dd>Input mask; 4-D tensor of shape (N, deformable_group* kH* kW, outH, outW), where kH and kW are the height and width of weight, outH and outW are the height and width of offset and output.</dd>
+<dt><tt>weight]</tt>: T</dt>
 <dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
-<dt><tt>inputs[4]</tt>: T, optional</dt>
+<dt><tt>bias</tt>: T, optional</dt>
 <dd>Input bias; 1-D tensor of shape (output_channel).</dd>
 </dl>
 
 ### Outputs
 
 <dl>
-<dt><tt>outputs[0]</tt>: T</dt>
+<dt><tt>output</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
@@ -492,16 +492,16 @@ Note this definition is slightly different with [onnx: NonMaxSuppression](https:
 ### Inputs
 
 <dl>
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>boxes</tt>: T</dt>
 <dd>Input boxes. 3-D tensor of shape (num_batches, spatial_dimension, 4).</dd>
-<dt><tt>inputs[1]</tt>: T</dt>
+<dt><tt>scores</tt>: T</dt>
 <dd>Input scores. 3-D tensor of shape (num_batches, num_classes, spatial_dimension).</dd>
 </dl>
 
 ### Outputs
 
 <dl>
-<dt><tt>outputs[0]</tt>: tensor(int32, Linear)</dt>
+<dt><tt>indices</tt>: tensor(int32, Linear)</dt>
 <dd>Selected indices. 2-D tensor of shape (num_selected_indices, 3) as [[batch_index, class_index, box_index], ...].</dd>
 <dd>num_selected_indices=num_batches* num_classes* min(max_output_boxes_per_class, spatial_dimension).</dd>
 <dd>All invalid indices will be filled with -1.</dd>
@@ -610,7 +610,7 @@ Check [torch.nn.functional.grid_sample](https://pytorch.org/docs/stable/generate
 <dt><tt>input</tt>: T</dt>
 <dd>Input feature; 4-D tensor of shape (N, C, inH, inW), where N is the batch size, C is the numbers of channels, inH and inW are the height and width of the data.</dd>
 <dt><tt>grid</tt>: T</dt>
-<dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW is the height and width of offset and output. </dd>
+<dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW are the height and width of offset and output. </dd>
 </dl>
 
 ### Outputs
