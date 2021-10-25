@@ -8,6 +8,15 @@
 #include <map>
 #include <type_traits>
 
+inline std::string GetDeviceStr(const at::Device& device) {
+  std::string str = DeviceTypeName(device.type(), true);
+  if (device.has_index()) {
+    str.push_back(':');
+    str.append(std::to_string(device.index()));
+  }
+  return str;
+}
+
 // Registry
 template <typename F, F f>
 class DeviceRegistry;
@@ -98,16 +107,16 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
   auto device = GetFirstTensorDevice(std::forward<Args>(args)...);
   auto inconsist =
       CheckDeviceConsistency(device, 0, std::forward<Args>(args)...);
-  if (inconsist.first < sizeof...(Args)) {
+  if (inconsist.first < int(sizeof...(Args))) {
     fprintf(stderr, "%s: at param %d, inconsistent device: %s vs %s\n", name,
-            inconsist.first, inconsist.second.str().c_str(),
-            device.str().c_str());
+            inconsist.first, GetDeviceStr(inconsist.second).c_str(),
+            GetDeviceStr(device).c_str());
     std::abort();
   }
   auto f_ptr = registry.Find(device.type());
   if (!f_ptr) {
     fprintf(stderr, "%s: implementation for device %s not found\n", name,
-            device.str().c_str());
+            GetDeviceStr(device).c_str());
     std::abort();
   }
   return f_ptr(std::forward<Args>(args)...);

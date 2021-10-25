@@ -267,6 +267,9 @@ def get_extensions():
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
 
+        if 'nvcc' in extra_compile_args:
+            extra_compile_args['nvcc'] += ['-std=c++14']
+
         ext_ops = extension(
             name=ext_name,
             sources=op_files,
