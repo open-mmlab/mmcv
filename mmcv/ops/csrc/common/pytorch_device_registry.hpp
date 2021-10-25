@@ -107,18 +107,13 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
   auto device = GetFirstTensorDevice(std::forward<Args>(args)...);
   auto inconsist =
       CheckDeviceConsistency(device, 0, std::forward<Args>(args)...);
-  if (inconsist.first < int(sizeof...(Args))) {
-    fprintf(stderr, "%s: at param %d, inconsistent device: %s vs %s\n", name,
-            inconsist.first, GetDeviceStr(inconsist.second).c_str(),
-            GetDeviceStr(device).c_str());
-    std::abort();
-  }
+  TORCH_CHECK(inconsist.first >= int(sizeof...(Args)), name, ": at param ",
+              inconsist.first,
+              ", inconsistent device: ", GetDeviceStr(inconsist.second).c_str(),
+              " vs ", GetDeviceStr(device).c_str(), "\n")
   auto f_ptr = registry.Find(device.type());
-  if (!f_ptr) {
-    fprintf(stderr, "%s: implementation for device %s not found\n", name,
-            GetDeviceStr(device).c_str());
-    std::abort();
-  }
+  TORCH_CHECK(f_ptr != nullptr, name, ": implementation for device ",
+              GetDeviceStr(device).c_str(), " not found.\n")
   return f_ptr(std::forward<Args>(args)...);
 }
 
