@@ -1,5 +1,6 @@
 import json
 import os.path as osp
+import sys
 import tempfile
 import unittest.mock as mock
 from collections import OrderedDict
@@ -11,11 +12,15 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 
+from mmcv.fileio.file_client import PetrelBackend
 from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner import EvalHook as BaseEvalHook
 from mmcv.runner import IterBasedRunner
 from mmcv.utils import get_logger, scandir
+
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 
 
 class ExampleDataset(Dataset):
@@ -236,7 +241,7 @@ def test_eval_hook():
         assert osp.exists(ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == -3
 
-    # Test the EvalHook when resume happend
+    # Test the EvalHook when resume happened
     data_loader = DataLoader(EvalDataset())
     eval_hook = EvalHook(data_loader, save_best='acc')
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -297,6 +302,34 @@ def test_eval_hook():
         assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
         assert osp.exists(ckpt_path)
         assert runner.meta['hook_msgs']['best_score'] == -3
+
+    # test EvalHook with specified `out_dir`
+    loader = DataLoader(EvalDataset())
+    model = Model()
+    data_loader = DataLoader(EvalDataset())
+    out_dir = 's3://user/data'
+    eval_hook = EvalHook(
+        data_loader, interval=1, save_best='auto', out_dir=out_dir)
+
+    with patch.object(PetrelBackend, 'put') as mock_put, \
+         patch.object(PetrelBackend, 'remove') as mock_remove, \
+         patch.object(PetrelBackend, 'isfile') as mock_isfile, \
+         tempfile.TemporaryDirectory() as tmpdir:
+        logger = get_logger('test_eval')
+        runner = EpochBasedRunner(model=model, work_dir=tmpdir, logger=logger)
+        runner.register_checkpoint_hook(dict(interval=1))
+        runner.register_hook(eval_hook)
+        runner.run([loader], [('train', 1)], 8)
+
+        basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+        ckpt_path = f'{out_dir}/{basename}/best_acc_epoch_4.pth'
+
+        assert runner.meta['hook_msgs']['best_ckpt'] == ckpt_path
+        assert runner.meta['hook_msgs']['best_score'] == 7
+
+    assert mock_put.call_count == 3
+    assert mock_remove.call_count == 2
+    assert mock_isfile.call_count == 2
 
 
 @patch('mmcv.engine.single_gpu_test', MagicMock)

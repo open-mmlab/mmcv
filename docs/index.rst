@@ -5,15 +5,60 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 2
+   :caption: Get Started
 
-   get_started.rst
-   understand_mmcv.rst
-   deployment.rst
+   get_started/introduction.md
+   get_started/installation.md
+   get_started/build.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Understand MMCV
+
+   understand_mmcv/config.md
+   understand_mmcv/registry.md
+   understand_mmcv/runner.md
+   understand_mmcv/io.md
+   understand_mmcv/data_process.md
+   understand_mmcv/visualization.md
+   understand_mmcv/cnn.md
+   understand_mmcv/ops.md
+   understand_mmcv/utils.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Deployment
+
+   deployment/onnx.md
+   deployment/onnxruntime_op.md
+   deployment/onnxruntime_custom_ops.md
+   deployment/tensorrt_plugin.md
+   deployment/tensorrt_custom_ops.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Compatibility
+
    compatibility.md
-   faq.md
-   community.rst
-   api.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: FAQ
+
+   faq.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Community
+
+   community/contributing.md
+   community/pr.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api.rst
 
 Indices and tables
 ==================

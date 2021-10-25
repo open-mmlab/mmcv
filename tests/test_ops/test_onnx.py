@@ -103,6 +103,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_bilinear_grid_sample(align_corners):
     from mmcv.ops.point_sample import bilinear_grid_sample
+
     # only support pytorch >= 1.5.0
     if version.parse(torch.__version__) < version.parse('1.5.0'):
         pytest.skip('Only support PyTorch >= 1.5.0')
@@ -245,8 +246,7 @@ def test_roialign():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
     try:
-        from mmcv.ops import roi_align
-        from mmcv.ops import get_onnxruntime_op_path
+        from mmcv.ops import get_onnxruntime_op_path, roi_align
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align op is not successfully compiled')
 
@@ -318,8 +318,7 @@ def test_roialign_rotated():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
     try:
-        from mmcv.ops import roi_align_rotated
-        from mmcv.ops import get_onnxruntime_op_path
+        from mmcv.ops import get_onnxruntime_op_path, roi_align_rotated
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align_aligned op is not successfully compiled')
 
@@ -648,8 +647,7 @@ def test_roll(shifts_dims_pair):
     reason='modulated_deform_conv2d only supports in GPU')
 def test_modulated_deform_conv2d():
     try:
-        from mmcv.ops import ModulatedDeformConv2d
-        from mmcv.ops import get_onnxruntime_op_path
+        from mmcv.ops import ModulatedDeformConv2d, get_onnxruntime_op_path
     except (ImportError, ModuleNotFoundError):
         pytest.skip('modulated_deform_conv op is not successfully compiled')
 
@@ -730,3 +728,85 @@ def test_modulated_deform_conv2d():
             pytorch_output = model(input, offset, mask).cpu()
         # allclose
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
+
+
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots',
+    reason='onnx is not supported in parrots directly')
+def test_deform_conv2d(threshold=1e-3):
+    try:
+        from mmcv.ops import DeformConv2d, get_onnxruntime_op_path
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('deform_conv op is not successfully compiled')
+
+    ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
+    # deform conv config
+    # modulated deform conv config
+    in_channels = 1
+    out_channels = 64
+    stride = 1
+    padding = 0
+    dilation = 1
+    groups = 1
+    deform_groups = 1
+    kernel_size = 2
+    input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
+    offset_weight = [[[0.1, 0.4, 0.6, 0.1]], [[0.3, 0.2, 0.1, 0.3]],
+                     [[0.5, 0.5, 0.2, 0.8]], [[0.8, 0.3, 0.9, 0.1]],
+                     [[0.3, 0.1, 0.2, 0.5]], [[0.3, 0.7, 0.5, 0.3]],
+                     [[0.6, 0.2, 0.5, 0.3]], [[0.4, 0.1, 0.8, 0.4]]]
+    offset_bias = [0.7, 0.1, 0.8, 0.5, 0.6, 0.5, 0.4, 0.7]
+    deform_weight = [[[0.4, 0.2, 0.1, 0.9]]]
+
+    x = torch.tensor(input)
+    conv_offset = nn.Conv2d(
+        in_channels=in_channels,
+        out_channels=deform_groups * 2 * kernel_size * kernel_size,
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        bias=True)
+
+    conv_offset.weight.data = torch.nn.Parameter(
+        torch.Tensor(offset_weight).reshape(8, 1, 2, 2))
+    conv_offset.bias.data = torch.nn.Parameter(
+        torch.Tensor(offset_bias).reshape(8))
+
+    offset = conv_offset(x)
+
+    model = DeformConv2d(in_channels, out_channels, kernel_size, stride,
+                         padding, dilation, groups, deform_groups)
+
+    model.weight.data = torch.nn.Parameter(
+        torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
+
+    with torch.no_grad():
+        torch.onnx.export(
+            model, (x, offset),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=['input', 'offset'],
+            opset_version=11)
+
+    session_options = rt.SessionOptions()
+    if os.path.exists(ort_custom_op_path):
+        session_options.register_custom_ops_library(ort_custom_op_path)
+
+    # compute onnx_output
+    sess = rt.InferenceSession(onnx_file, session_options)
+    onnx_output = sess.run(
+        None, {
+            'input': x.cpu().detach().numpy(),
+            'offset': offset.cpu().detach().numpy(),
+        })[0]
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_output = model(x, offset).cpu()
+    # allclose
+    assert np.allclose(pytorch_output, onnx_output, atol=1e-3)

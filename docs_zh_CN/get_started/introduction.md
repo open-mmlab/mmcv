@@ -1,9 +1,5 @@
 ## 介绍 MMCV
 
-<div align="center">
-    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
-</div>
-
 MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目，例如：
 
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱

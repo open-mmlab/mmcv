@@ -15,7 +15,7 @@ try:
     # If PyTorch version >= 1.6.0, torch.cuda.amp.autocast would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
     # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
-    # manually, so the behavior may not be consistant with real amp.
+    # manually, so the behavior may not be consistent with real amp.
     from torch.cuda.amp import autocast
 except ImportError:
     pass
