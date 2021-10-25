@@ -176,9 +176,26 @@ def _test_tinshift_allclose(dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, 1e-3)
 
 
+def _test_tinshift_assert(dtype):
+    try:
+        from mmcv.ops import tin_shift
+    except ModuleNotFoundError:
+        pytest.skip('TinShift op is not successfully compiled')
+
+    inputs = [torch.rand(2, 3, 4, 2), torch.rand(2, 3, 4, 2)]
+    shifts = [torch.rand(2, 3), torch.rand(2, 5)]
+
+    for x, shift in zip(inputs, shifts):
+        x = x.cuda()
+        shift = shift.cuda()
+        with pytest.raises(AssertionError):
+            tin_shift(x, shift)
+
+
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_tinshift(dtype):
     _test_tinshift_allclose(dtype=dtype)
     _test_tinshift_gradcheck(dtype=dtype)
+    _test_tinshift_assert(dtype=dtype)
