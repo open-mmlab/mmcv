@@ -35,7 +35,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    deployment/tensorrt_plugin.md
    deployment/tensorrt_custom_ops.md
    deployment/mmcv_ops_definition.md
-   
+
 .. toctree::
    :maxdepth: 2
    :caption: Compatibility
