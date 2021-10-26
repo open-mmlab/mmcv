@@ -134,7 +134,7 @@ def _test_tinshift_gradcheck(dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
-        pytest.skip('TinShift op is not successfully compiled')
+        pytest.skip('TINShift op is not successfully compiled')
 
     if dtype == torch.half:
         pytest.skip('"add_cpu/sub_cpu" not implemented for Half')
@@ -156,7 +156,7 @@ def _test_tinshift_allclose(dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
-        pytest.skip('TinShift op is not successfully compiled')
+        pytest.skip('TINShift op is not successfully compiled')
 
     for shift, output, grad in zip(shifts, outputs, grads):
         np_input = np.array(inputs)
@@ -180,7 +180,7 @@ def _test_tinshift_assert(dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
-        pytest.skip('TinShift op is not successfully compiled')
+        pytest.skip('TINShift op is not successfully compiled')
 
     inputs = [torch.rand(2, 3, 4, 2), torch.rand(2, 3, 4, 2)]
     shifts = [torch.rand(2, 3), torch.rand(2, 5)]
@@ -188,7 +188,7 @@ def _test_tinshift_assert(dtype):
     for x, shift in zip(inputs, shifts):
         x = x.cuda()
         shift = shift.cuda()
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             tin_shift(x, shift)
 
 
