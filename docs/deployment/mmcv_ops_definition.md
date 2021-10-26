@@ -1,8 +1,6 @@
 # Definition of custom operators in MMCV
 
 ---
-version: v0.0.1
-author: maningsheng
 
 <!-- TOC -->
 - [Definition of custom operators in MMCV](#definition-of-custom-operators-in-mmcv)
