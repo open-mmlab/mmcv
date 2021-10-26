@@ -37,6 +37,31 @@ inline cnrtDataType_t getCnrtDataType(parrots::ValueType vt) {
   }
 }
 
+inline int itemsize(parrots::ValueType vt) {
+  switch (vt.prim()) {
+    case Prim::Float16:
+      return 2;
+    case Prim::Float32:
+      return 4;
+    case Prim::Int16:
+      return 2;
+    case Prim::Int32:
+      return 4;
+    case Prim::Int64:
+      return 8;
+    case Prim::Int8:
+      return 1;
+    case Prim::Uint8:
+      return 1;
+    case Prim::Bool:
+      return 1;
+    default:
+      PARROTS_NOTSUPPORTED << "Unsupported data type for CNRT: " << vt.name();
+  }
+}
+
+inline int itemsize(const DArrayLite& x) { return itemsize(x.elemType()); }
+
 inline int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
   int ordinal = -1;
   cnrtGetDevice(&ordinal);
@@ -44,8 +69,6 @@ inline int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
   cnrtDeviceGetAttribute(&value, attr, ordinal);
   return value;
 }
-
-inline int itemsize(const DArrayLite& x) { return x.nbytes() / x.size(); }
 
 #endif  // PARROTS_USE_CAMB
 

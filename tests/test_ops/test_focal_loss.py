@@ -139,9 +139,15 @@ class Testfocalloss(object):
 
             floss = SigmoidFocalLoss(gamma, alpha)
             if _USING_PARROTS:
-                # gradcheck(floss, (x, y),
-                #           no_grads=[y])
-                pass
+                if _USING_PARROTS_CAMB:
+                    output = floss(x, y)
+                    output.backward()
+                    np_x_grad = np.array(sigmoid_outputs[inputs.index(case)][1])
+                    assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
+                else:
+                    # gradcheck(floss, (x, y),
+                    #           no_grads=[y])
+                    pass
             else:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 

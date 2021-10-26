@@ -29,7 +29,9 @@ void getDealNAndThresholdC(const int compute_data_bytes,
    */
   const int nram_split_num = 5;
   const int nram_split_pingpong = 2;
-  const int max_nram_size = getDeviceAttr(cnrtAttrNramSizePerMcore);
+  // const int max_nram_size = getDeviceAttr(cnrtAttrNramSizePerMcore);
+  const int max_nram_size = MAX_NRAM_SIZE;
+
   int32_t compute_align_size = NFU_ALIGN_SIZE;
   if (is_half) {
     compute_align_size += NFU_ALIGN_SIZE;
@@ -79,7 +81,8 @@ void getDealNAndThresholdC(const int compute_data_bytes,
 }
 
 void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                                    cnrtQueue_t queue, cnrtDataType_t d_type,
+                                    cnrtQueue_t queue,
+                                    const cnrtDataType_t d_type,
                                     const void* input, const void* target,
                                     const void* weight, const float gamma,
                                     const float alpha, const int32_t dim_n,
@@ -90,8 +93,6 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
     CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
     const DArrayLite& weight, DArrayLite& output, const float gamma,
     const float alpha) {
-  bool has_weight = false;
-
   // params check
   PARROTS_CHECKARGS(gamma >= 0)
       << "gamma should be greater than or equal to 0. "
@@ -112,6 +113,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
          "type is "
       << input.elemType() << ", output type is " << output.elemType() << ".";
 
+  bool has_weight = false;
   // check weight
   if (weight.size() > 0) {
     PARROTS_CHECKARGS(weight.elemType() == input.elemType())
@@ -158,7 +160,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
   // get ptr of tensors
   auto input_ptr = input.data();
   auto target_ptr = target.data();
-  auto weight_ptr = weight.data();
+  auto weight_ptr = has_weight ? weight.data() : nullptr;
   auto* output_ptr = output.data();
 
   // get dtype of input
@@ -185,6 +187,7 @@ void sigmoid_focal_loss_backward_camb_parrots(
   const auto& weight = ins[2];
 
   auto& grad_input = outs[0];
+
   SigmoidFocalLossBackwardMLUKernelLauncher(ctx, input, target, weight,
                                             grad_input, gamma, alpha);
 }
