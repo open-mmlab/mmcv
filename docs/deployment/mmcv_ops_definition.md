@@ -214,7 +214,6 @@ Read [CCNet: Criss-Cross Attention for SemanticSegmentation](https://arxiv.org/p
 
 - T:tensor(float32)
 
-
 ## MMCVCAMap
 
 ### Description
