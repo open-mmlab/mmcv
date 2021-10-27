@@ -1,7 +1,5 @@
-// Copyright (c) 2021, SenseTime.
-
-#ifndef PARROTS_CAMB_UTILS
-#define PARROTS_CAMB_UTILS
+#ifndef PARROTS_MLU_HELPER
+#define PARROTS_MLU_HELPER
 
 #include <parrots/extension.hpp>
 
@@ -9,7 +7,7 @@
 
 #include <cnrt.h>
 
-#include "mlu_utils.h"
+#include "common_mlu_helper.hpp"
 
 using parrots::DArrayLite;
 using parrots::Prim;
@@ -72,4 +70,4 @@ inline int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
 
 #endif  // PARROTS_USE_CAMB
 
-#endif  // !PARROTS_CAMB_UTILS
+#endif  // !PARROTS_MLU_HELPER

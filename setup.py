@@ -199,8 +199,8 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         if use_camb:
             op_files +=\
-                glob.glob('./mmcv/ops/csrc/parrots/camb/kernel/*.mlu') +\
-                glob.glob('./mmcv/ops/csrc/parrots/camb/*.cpp')
+                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') +\
+                glob.glob('./mmcv/ops/csrc/parrots/mlu/*.cpp')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
