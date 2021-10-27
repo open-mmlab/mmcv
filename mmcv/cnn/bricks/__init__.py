@@ -5,6 +5,7 @@ from .conv import build_conv_layer
 from .conv2d_adaptive_padding import Conv2dAdaptivePadding
 from .conv_module import ConvModule
 from .conv_ws import ConvAWS2d, ConvWS2d, conv_ws_2d
+from .crf import ConditionalRandomField
 from .depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from .drop import Dropout, DropPath
 from .generalized_attention import GeneralizedAttention
@@ -31,5 +32,6 @@ __all__ = [
     'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale', 'ConvAWS2d', 'ConvWS2d',
     'conv_ws_2d', 'DepthwiseSeparableConvModule', 'Swish', 'Linear',
     'Conv2dAdaptivePadding', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d',
-    'ConvTranspose3d', 'MaxPool3d', 'Conv3d', 'Dropout', 'DropPath'
+    'ConvTranspose3d', 'MaxPool3d', 'Conv3d', 'Dropout', 'DropPath',
+    'ConditionalRandomField'
 ]
