@@ -158,7 +158,7 @@ Read [CARAFE: Content-Aware ReAssembly of FEatures](https://arxiv.org/abs/1905.0
 | ------- | --------------- | -------------------------------------------------------------- |
 | `int`   | `kernel_size`        | reassemble kernel size, should be odd integer|
 | `int`   | `group_size`        | reassemble group size |
-| `int`   | `scale_factor`        | upsample ratio(>=1) |
+| `float`   | `scale_factor`        | upsample ratio(>=1) |
 
 ### Inputs
 
