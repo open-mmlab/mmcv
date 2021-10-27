@@ -44,7 +44,7 @@ class PaviLoggerHook(LoggerHook):
 
         if not self.init_kwargs:
             self.init_kwargs = dict()
-        self.init_kwargs['task'] = self.run_name
+        self.init_kwargs['name'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
         if runner.meta is not None:
             if 'config_dict' in runner.meta:
@@ -112,3 +112,7 @@ class PaviLoggerHook(LoggerHook):
             image = data[self.img_key][0:1].to(device)
             with torch.no_grad():
                 self.writer.add_graph(_model, image)
+
+    def __del__(self):
+        if hasattr(self, 'writer'):
+            self.writer.close()
