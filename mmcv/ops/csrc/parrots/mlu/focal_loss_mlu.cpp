@@ -4,6 +4,22 @@
 
 using namespace parrots;
 
+void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+                                   cnrtQueue_t queue, cnrtDataType_t d_type,
+                                   const void* input, const void* target,
+                                   const void* weight, const int32_t N,
+                                   const int32_t C, const float alpha,
+                                   const float gamma, void* output);
+
+void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
+                                    cnrtQueue_t queue,
+                                    const cnrtDataType_t d_type,
+                                    const void* input, const void* target,
+                                    const void* weight, const float gamma,
+                                    const float alpha, const int32_t dim_n,
+                                    const int32_t deal_n, const int32_t dim_c,
+                                    void* output);
+
 namespace sigmoid_forward {
 
 // policy function
@@ -40,13 +56,6 @@ static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
       seg_num > core_num ? cluster_num : (seg_num + core_dim - 1) / core_dim;
   k_dim->z = 1;
 }
-
-void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                                   cnrtQueue_t queue, cnrtDataType_t d_type,
-                                   const void* input, const void* target,
-                                   const void* weight, const int32_t N,
-                                   const int32_t C, const float alpha,
-                                   const float gamma, void* output);
 
 void sigmoidFocalLossForwardMLUKernelLauncher(
     CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
@@ -228,15 +237,6 @@ void getDealNAndThresholdC(const int compute_data_bytes,
        nram_split_pingpong);
   *threshold_c_ptr = threshold_c;
 }
-
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                                    cnrtQueue_t queue,
-                                    const cnrtDataType_t d_type,
-                                    const void* input, const void* target,
-                                    const void* weight, const float gamma,
-                                    const float alpha, const int32_t dim_n,
-                                    const int32_t deal_n, const int32_t dim_c,
-                                    void* output);
 
 void SigmoidFocalLossBackwardMLUKernelLauncher(
     CambContext& ctx, const DArrayLite& input, const DArrayLite& target,
