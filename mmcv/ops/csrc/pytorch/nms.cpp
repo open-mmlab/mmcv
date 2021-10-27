@@ -10,6 +10,15 @@ Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 }
 #endif
 
+#ifdef MMCV_WITH_MLU
+Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
+                            int offset);
+
+Tensor nms_mlu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+  return NMSMLUKernelLauncher(boxes, scores, iou_threshold, offset);
+}
+#endif
+
 Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
@@ -69,6 +78,12 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
     return nms_cuda(boxes, scores, iou_threshold, offset);
 #else
     AT_ERROR("nms is not compiled with GPU support");
+#endif
+#ifdef MMCV_WITH_MLU
+  } else if (boxes.device().type() == at::kMLU) {
+    CHECK_MLU_INPUT(boxes);
+    CHECK_MLU_INPUT(scores);
+    return nms_mlu(boxes, scores, iou_threshold, offset);
 #endif
   } else {
     CHECK_CPU_INPUT(boxes);
