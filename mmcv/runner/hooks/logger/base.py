@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import numbers
 from abc import ABCMeta, abstractmethod
 
+import numbers
 import numpy as np
 import torch
 

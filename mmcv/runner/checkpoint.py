@@ -1,17 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import io
 import os
 import os.path as osp
+import warnings
+
+import io
 import pkgutil
 import re
 import time
-import warnings
+import torch
+import torchvision
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-
-import torch
-import torchvision
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
@@ -681,8 +681,7 @@ def save_checkpoint(model,
                 'file_client_args should be "None" if filename starts with'
                 f'"pavi://", but got {file_client_args}')
         try:
-            from pavi import modelcloud
-            from pavi import exception
+            from pavi import exception, modelcloud
         except ImportError:
             raise ImportError(
                 'Please install pavi to load checkpoint from modelcloud.')

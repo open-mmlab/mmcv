@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import argparse
 import warnings
+
+import argparse
 
 
 def parse_args():

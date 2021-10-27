@@ -1,8 +1,7 @@
-from unittest.mock import patch
-
 import pytest
 import torch
 import torch.nn as nn
+from unittest.mock import patch
 
 from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                              Linear, MaxPool2d, MaxPool3d)

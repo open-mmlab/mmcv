@@ -1,11 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+<<<<<<< HEAD
 import sys
 import tempfile
 from unittest.mock import MagicMock, patch
+=======
+>>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 
 import pytest
+import tempfile
 
 import mmcv
 from mmcv.fileio.file_client import HTTPBackend, PetrelBackend

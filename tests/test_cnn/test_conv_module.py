@@ -1,9 +1,9 @@
 import warnings
-from unittest.mock import patch
 
 import pytest
 import torch
 import torch.nn as nn
+from unittest.mock import patch
 
 from mmcv.cnn.bricks import CONV_LAYERS, ConvModule, HSigmoid, HSwish
 

@@ -1,13 +1,23 @@
+<<<<<<< HEAD
 import sys
 from collections import OrderedDict
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
+=======
+>>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 import pytest
+import sys
 import torch
 import torch.nn as nn
+<<<<<<< HEAD
 import torch.optim as optim
+=======
+from collections import OrderedDict
+from tempfile import TemporaryDirectory
+>>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 from torch.nn.parallel import DataParallel
+from unittest.mock import MagicMock
 
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
@@ -196,8 +206,9 @@ def test_load_checkpoint_with_prefix():
 
 def test_load_checkpoint():
     import os
-    import tempfile
+
     import re
+    import tempfile
 
     class PrefixModel(nn.Module):
 
@@ -228,6 +239,7 @@ def test_load_checkpoint():
 
 def test_load_checkpoint_metadata():
     import os
+
     import tempfile
 
     from mmcv.runner import load_checkpoint, save_checkpoint
@@ -331,9 +343,11 @@ def test_load_classes_name():
 
 
 def test_checkpoint_loader():
-    from mmcv.runner import _load_checkpoint, save_checkpoint, CheckpointLoader
-    import tempfile
     import os
+
+    import tempfile
+
+    from mmcv.runner import CheckpointLoader, _load_checkpoint, save_checkpoint
     checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
     model = Model()
     save_checkpoint(model, checkpoint_path)

@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+import warnings
+
 import platform
 import shutil
 import time
-import warnings
-
 import torch
 
 import mmcv

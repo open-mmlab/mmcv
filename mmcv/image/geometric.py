@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import numbers
-
 import cv2
+import numbers
 import numpy as np
 
 from ..utils import to_2tuple

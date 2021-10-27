@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import tempfile
-from pathlib import Path
-from unittest.mock import patch
 
 import cv2
 import numpy as np
 import pytest
+import tempfile
 from numpy.testing import assert_allclose, assert_array_equal
+from pathlib import Path
+from unittest.mock import patch
 
 import mmcv
 

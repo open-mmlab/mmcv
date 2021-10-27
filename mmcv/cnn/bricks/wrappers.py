@@ -6,7 +6,6 @@ are mainly used in mask heads like fcn_mask_head and maskiou_heads since mask
 heads are trained on only positive RoIs.
 """
 import math
-
 import torch
 import torch.nn as nn
 from torch.nn.modules.utils import _pair, _triple

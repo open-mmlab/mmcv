@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from collections.abc import Mapping, Sequence
-
 import torch
 import torch.nn.functional as F
+from collections.abc import Mapping, Sequence
 from torch.utils.data.dataloader import default_collate
 
 from .data_container import DataContainer

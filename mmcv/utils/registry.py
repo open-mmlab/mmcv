@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import inspect
 import warnings
+
+import inspect
 from functools import partial
 
 from .misc import is_seq_of

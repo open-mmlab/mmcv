@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import argparse
-import json
 import os
 import os.path as osp
+
+import argparse
+import json
+import pytest
 import shutil
 import tempfile
-from pathlib import Path
-
-import pytest
 import yaml
+from pathlib import Path
 
 from mmcv import Config, DictAction, dump, load
 

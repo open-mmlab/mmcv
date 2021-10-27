@@ -1,13 +1,15 @@
+<<<<<<< HEAD
 import os
 import os.path as osp
+=======
+import pytest
+>>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 import sys
 import tempfile
 from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 import mmcv
 from mmcv import BaseStorageBackend, FileClient

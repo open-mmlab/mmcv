@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import random
-from tempfile import TemporaryDirectory
-
 import numpy as np
 import pytest
+import random
 import torch
 from scipy import stats
+from tempfile import TemporaryDirectory
 from torch import nn
 
 from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
