@@ -119,16 +119,17 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
 
 // helper macro
 
-#define REGISTRY(key) DeviceRegistry<decltype(&(key)), key>::instance()
+#define DEVICE_REGISTRY(key) DeviceRegistry<decltype(&(key)), key>::instance()
 
-#define REGISTER(key, device, value)                \
-  struct key##_##device##_registerer {              \
-    key##_##device##_registerer() {                 \
-      REGISTRY(key).Register(at::k##device, value); \
-    }                                               \
-  };                                                \
+#define REGISTER_DEVICE_IMPL(key, device, value)           \
+  struct key##_##device##_registerer {                     \
+    key##_##device##_registerer() {                        \
+      DEVICE_REGISTRY(key).Register(at::k##device, value); \
+    }                                                      \
+  };                                                       \
   static key##_##device##_registerer _##key##_##device##_registerer;
 
-#define DISPATCH(key, ...) Dispatch(REGISTRY(key), #key, __VA_ARGS__)
+#define DISPATCH_DEVICE_IMPL(key, ...) \
+  Dispatch(DEVICE_REGISTRY(key), #key, __VA_ARGS__)
 
 #endif  // PYTORCH_DEVICE_REGISTRY

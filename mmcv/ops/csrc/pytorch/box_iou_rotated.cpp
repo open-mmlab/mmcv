@@ -6,7 +6,8 @@
 
 void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned) {
-  DISPATCH(box_iou_rotated_impl, boxes1, boxes2, ious, mode_flag, aligned);
+  DISPATCH_DEVICE_IMPL(box_iou_rotated_impl, boxes1, boxes2, ious, mode_flag,
+                       aligned);
 }
 
 // Interface for Python

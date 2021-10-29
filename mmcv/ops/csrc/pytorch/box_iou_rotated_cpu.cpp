@@ -35,4 +35,4 @@ void box_iou_rotated_cpu(const Tensor boxes1, const Tensor boxes2, Tensor ious,
 
 void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned);
-REGISTER(box_iou_rotated_impl, CPU, box_iou_rotated_cpu);
+REGISTER_DEVICE_IMPL(box_iou_rotated_impl, CPU, box_iou_rotated_cpu);

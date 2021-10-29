@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 template <typename T>
 T deformable_im2col_bilinear_cpu(const T *input, const int data_width,
@@ -375,3 +376,33 @@ void deformable_col2im_coord_cpu(
             height_col, width_col, grad_offset_);
       }));
 }
+
+void deformable_im2col_impl(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col);
+
+void deformable_col2im_impl(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im);
+
+void deformable_col2im_coord_impl(
+    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
+    const int height, const int width, const int ksize_h, const int ksize_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const int parallel_imgs,
+    const int deformable_group, Tensor grad_offset);
+
+REGISTER_DEVICE_IMPL(deformable_im2col_impl, CPU, deformable_im2col_cpu);
+REGISTER_DEVICE_IMPL(deformable_col2im_impl, CPU, deformable_col2im_cpu);
+REGISTER_DEVICE_IMPL(deformable_col2im_coord_impl, CPU,
+                     deformable_col2im_coord_cpu);

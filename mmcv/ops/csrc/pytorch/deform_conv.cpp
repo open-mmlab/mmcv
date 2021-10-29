@@ -1,57 +1,46 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
+void deformable_im2col_impl(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col) {
+  DISPATCH_DEVICE_IMPL(deformable_im2col_impl, data_im, data_offset, channels,
+                       height, width, ksize_h, ksize_w, pad_h, pad_w, stride_h,
+                       stride_w, dilation_h, dilation_w, parallel_imgs,
+                       deformable_group, data_col);
+}
 
-void deformable_im2col(Tensor data_im, Tensor data_offset, const int channels,
-                       const int height, const int width, const int ksize_h,
-                       const int ksize_w, const int pad_h, const int pad_w,
-                       const int stride_h, const int stride_w,
-                       const int dilation_h, const int dilation_w,
-                       const int parallel_imgs, const int deformable_group,
-                       Tensor data_col);
+void deformable_col2im_impl(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im) {
+  DISPATCH_DEVICE_IMPL(deformable_col2im_impl, data_col, data_offset, channels,
+                       height, width, ksize_h, ksize_w, pad_h, pad_w, stride_h,
+                       stride_w, dilation_h, dilation_w, parallel_imgs,
+                       deformable_group, grad_im);
+}
 
-void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
-                       const int height, const int width, const int ksize_h,
-                       const int ksize_w, const int pad_h, const int pad_w,
-                       const int stride_h, const int stride_w,
-                       const int dilation_h, const int dilation_w,
-                       const int parallel_imgs, const int deformable_group,
-                       Tensor grad_im);
-
-void deformable_col2im_coord(
+void deformable_col2im_coord_impl(
     Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
     const int height, const int width, const int ksize_h, const int ksize_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w, const int parallel_imgs,
-    const int deformable_group, Tensor grad_offset);
-
-#endif
-
-void deformable_im2col_cpu(Tensor data_im, Tensor data_offset,
-                           const int channels, const int height,
-                           const int width, const int ksize_h,
-                           const int ksize_w, const int pad_h, const int pad_w,
-                           const int stride_h, const int stride_w,
-                           const int dilation_h, const int dilation_w,
-                           const int parallel_imgs, const int deformable_group,
-                           Tensor data_col);
-
-void deformable_col2im_cpu(Tensor data_col, Tensor data_offset,
-                           const int channels, const int height,
-                           const int width, const int ksize_h,
-                           const int ksize_w, const int pad_h, const int pad_w,
-                           const int stride_h, const int stride_w,
-                           const int dilation_h, const int dilation_w,
-                           const int parallel_imgs, const int deformable_group,
-                           Tensor grad_im);
-
-void deformable_col2im_coord_cpu(
-    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
-    const int height, const int width, const int ksize_h, const int ksize_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w, const int parallel_imgs,
-    const int deformable_group, Tensor grad_offset);
+    const int deformable_group, Tensor grad_offset) {
+  DISPATCH_DEVICE_IMPL(deformable_col2im_coord_impl, data_col, data_im,
+                       data_offset, channels, height, width, ksize_h, ksize_w,
+                       pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
+                       parallel_imgs, deformable_group, grad_offset);
+}
 
 void deform_conv_shape_check(at::Tensor input, at::Tensor offset,
                              at::Tensor *gradOutput, at::Tensor weight, int kH,
@@ -227,17 +216,9 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
        output_buffer.size(2), output_buffer.size(3)});
 
   for (int elt = 0; elt < batchSize / im2col_step; elt++) {
-    if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-      deformable_im2col(input[elt], offset[elt], nInputPlane, inputHeight,
-                        inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                        dilationW, im2col_step, deformable_group, columns);
-#endif
-    } else {
-      deformable_im2col_cpu(input[elt], offset[elt], nInputPlane, inputHeight,
-                            inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                            dilationW, im2col_step, deformable_group, columns);
-    }
+    deformable_im2col_impl(input[elt], offset[elt], nInputPlane, inputHeight,
+                           inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
+                           dilationW, im2col_step, deformable_group, columns);
 
     columns = columns.view({group, columns.size(0) / group, columns.size(1)});
     weight = weight.view({group, weight.size(0) / group, weight.size(1),
@@ -373,29 +354,15 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
         {gradOutput.size(0), gradOutput.size(1) * gradOutput.size(2),
          gradOutput.size(3), gradOutput.size(4), gradOutput.size(5)});
 
-    if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-      deformable_col2im_coord(columns, input[elt], offset[elt], nInputPlane,
-                              inputHeight, inputWidth, kH, kW, padH, padW, dH,
-                              dW, dilationH, dilationW, im2col_step,
-                              deformable_group, gradOffset[elt]);
+    deformable_col2im_coord_impl(columns, input[elt], offset[elt], nInputPlane,
+                                 inputHeight, inputWidth, kH, kW, padH, padW,
+                                 dH, dW, dilationH, dilationW, im2col_step,
+                                 deformable_group, gradOffset[elt]);
 
-      deformable_col2im(columns, offset[elt], nInputPlane, inputHeight,
-                        inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                        dilationW, im2col_step, deformable_group,
-                        gradInput[elt]);
-#endif
-    } else {
-      deformable_col2im_coord_cpu(columns, input[elt], offset[elt], nInputPlane,
-                                  inputHeight, inputWidth, kH, kW, padH, padW,
-                                  dH, dW, dilationH, dilationW, im2col_step,
-                                  deformable_group, gradOffset[elt]);
-
-      deformable_col2im_cpu(columns, offset[elt], nInputPlane, inputHeight,
-                            inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                            dilationW, im2col_step, deformable_group,
-                            gradInput[elt]);
-    }
+    deformable_col2im_impl(columns, offset[elt], nInputPlane, inputHeight,
+                           inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
+                           dilationW, im2col_step, deformable_group,
+                           gradInput[elt]);
 
     weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
                           weight.size(3), weight.size(4)});
@@ -508,17 +475,9 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
                    deformable_group * 2 * kH * kW, outputHeight, outputWidth});
 
   for (int elt = 0; elt < batchSize / im2col_step; elt++) {
-    if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-      deformable_im2col(input[elt], offset[elt], nInputPlane, inputHeight,
-                        inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                        dilationW, im2col_step, deformable_group, columns);
-#endif
-    } else {
-      deformable_im2col_cpu(input[elt], offset[elt], nInputPlane, inputHeight,
-                            inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
-                            dilationW, im2col_step, deformable_group, columns);
-    }
+    deformable_im2col_impl(input[elt], offset[elt], nInputPlane, inputHeight,
+                           inputWidth, kH, kW, padH, padW, dH, dW, dilationH,
+                           dilationW, im2col_step, deformable_group, columns);
 
     // divide into group
     gradOutputBuffer = gradOutputBuffer.view(

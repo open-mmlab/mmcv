@@ -1,14 +1,16 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "deform_conv_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
-void deformable_im2col(Tensor data_im, Tensor data_offset, const int channels,
-                       const int height, const int width, const int ksize_h,
-                       const int ksize_w, const int pad_h, const int pad_w,
-                       const int stride_h, const int stride_w,
-                       const int dilation_h, const int dilation_w,
-                       const int parallel_imgs, const int deformable_group,
-                       Tensor data_col) {
+void deformable_im2col_cuda(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col) {
   // num_axes should be smaller than block size
   // todo: check parallel_imgs is correctly passed in
   int height_col =
@@ -35,13 +37,14 @@ void deformable_im2col(Tensor data_im, Tensor data_offset, const int channels,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
-                       const int height, const int width, const int ksize_h,
-                       const int ksize_w, const int pad_h, const int pad_w,
-                       const int stride_h, const int stride_w,
-                       const int dilation_h, const int dilation_w,
-                       const int parallel_imgs, const int deformable_group,
-                       Tensor grad_im) {
+void deformable_col2im_cuda(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im) {
   // todo: make sure parallel_imgs is passed in correctly
   int height_col =
       (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
@@ -68,7 +71,7 @@ void deformable_col2im(Tensor data_col, Tensor data_offset, const int channels,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void deformable_col2im_coord(
+void deformable_col2im_coord_cuda(
     Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
     const int height, const int width, const int ksize_h, const int ksize_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
@@ -101,3 +104,33 @@ void deformable_col2im_coord(
       }));
   AT_CUDA_CHECK(cudaGetLastError());
 }
+
+void deformable_im2col_impl(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col);
+
+void deformable_col2im_impl(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im);
+
+void deformable_col2im_coord_impl(
+    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
+    const int height, const int width, const int ksize_h, const int ksize_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const int parallel_imgs,
+    const int deformable_group, Tensor grad_offset);
+
+REGISTER_DEVICE_IMPL(deformable_im2col_impl, CUDA, deformable_im2col_cuda);
+REGISTER_DEVICE_IMPL(deformable_col2im_impl, CUDA, deformable_col2im_cuda);
+REGISTER_DEVICE_IMPL(deformable_col2im_coord_impl, CUDA,
+                     deformable_col2im_coord_cuda);

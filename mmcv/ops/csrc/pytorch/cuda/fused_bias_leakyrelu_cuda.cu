@@ -6,14 +6,8 @@
 // To view a copy of this license, visit
 // https://nvlabs.github.io/stylegan2/license.html
 
-#include <ATen/ATen.h>
-#include <ATen/AccumulateType.h>
-#include <ATen/cuda/CUDAContext.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <torch/types.h>
-
-#include <ATen/cuda/CUDAApplyUtils.cuh>
+#include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 template <typename scalar_t>
 static __global__ void fused_bias_act_kernel(
@@ -107,3 +101,10 @@ torch::Tensor fused_bias_leakyrelu_op(const torch::Tensor& input,
 
   return y;
 }
+
+torch::Tensor fused_bias_leakyrelu_op_impl(const torch::Tensor& input,
+                                           const torch::Tensor& bias,
+                                           const torch::Tensor& refer, int act,
+                                           int grad, float alpha, float scale);
+REGISTER_DEVICE_IMPL(fused_bias_leakyrelu_op_impl, CUDA,
+                     fused_bias_leakyrelu_op);
