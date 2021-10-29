@@ -100,6 +100,10 @@ class PaviLoggerHook(LoggerHook):
                     snapshot_file_path=ckpt_path,
                     iteration=iteration)
 
+        # flush the buffer and send a task ending signal to Pavi
+        if hasattr(self, 'writer'):
+            self.writer.close()
+
     @master_only
     def before_epoch(self, runner):
         if runner.epoch == 0 and self.add_graph:
@@ -112,7 +116,3 @@ class PaviLoggerHook(LoggerHook):
             image = data[self.img_key][0:1].to(device)
             with torch.no_grad():
                 self.writer.add_graph(_model, image)
-
-    def __del__(self):
-        if hasattr(self, 'writer'):
-            self.writer.close()
