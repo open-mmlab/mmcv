@@ -1,10 +1,10 @@
 import logging
 import os
-
 import platform
-import pytest
 import tempfile
 from unittest.mock import patch
+
+import pytest
 
 from mmcv import get_logger, print_log
 

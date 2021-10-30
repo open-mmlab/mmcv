@@ -1,7 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
-from unittest.mock import MagicMock, patch
 
 from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
                            MMDistributedDataParallel, is_module_wrapper)

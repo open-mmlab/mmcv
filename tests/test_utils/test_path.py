@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+from pathlib import Path
 
 import pytest
-from pathlib import Path
 
 import mmcv
 

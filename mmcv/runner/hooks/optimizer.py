@@ -2,6 +2,7 @@
 import copy
 from collections import defaultdict
 from itertools import chain
+
 from torch.nn.utils import clip_grad
 
 from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version

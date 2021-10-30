@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-
 import copy
 import math
+import warnings
+
 import numpy as np
 import torch
 import torch.nn as nn

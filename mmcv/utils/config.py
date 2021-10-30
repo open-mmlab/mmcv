@@ -1,19 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-import os.path as osp
-import warnings
-
 import ast
 import copy
+import os
+import os.path as osp
 import platform
 import shutil
 import sys
 import tempfile
 import uuid
-from addict import Dict
+import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
+
+from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
 from .misc import import_modules_from_strings

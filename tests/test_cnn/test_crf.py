@@ -1,4 +1,5 @@
 import itertools
+
 import torch
 
 from mmcv.cnn.bricks import ConditionalRandomField

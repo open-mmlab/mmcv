@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import glob
 import os
 
-import glob
 import torch
 
 if torch.__version__ == 'parrots':

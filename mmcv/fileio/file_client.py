@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-<<<<<<< HEAD
 import inspect
 import os
 import os.path as osp
@@ -10,11 +9,6 @@ from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Iterator, Optional, Tuple, Union
-=======
-from abc import ABCMeta, abstractmethod
-
-import inspect
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 from urllib.request import urlopen
 
 import mmcv

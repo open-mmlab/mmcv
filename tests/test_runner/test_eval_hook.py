@@ -1,23 +1,16 @@
+import json
 import os.path as osp
-<<<<<<< HEAD
 import sys
 import tempfile
 import unittest.mock as mock
 from collections import OrderedDict
 from unittest.mock import MagicMock, patch
-=======
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 
-import json
 import pytest
-import tempfile
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import unittest.mock as mock
-from collections import OrderedDict
 from torch.utils.data import DataLoader, Dataset
-from unittest.mock import MagicMock, patch
 
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.runner import DistEvalHook as BaseDistEvalHook

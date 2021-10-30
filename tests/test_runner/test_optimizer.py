@@ -1,10 +1,10 @@
+import sys
 import warnings
+from unittest.mock import MagicMock
 
 import pytest
-import sys
 import torch
 import torch.nn as nn
-from unittest.mock import MagicMock
 
 from mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
 from mmcv.runner.optimizer import build_optimizer, build_optimizer_constructor

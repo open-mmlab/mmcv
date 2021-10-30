@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-
 import ctypes
 import glob
+import os
 
 
 def get_tensorrt_op_path():

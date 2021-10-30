@@ -2,12 +2,12 @@
 """This file holding some environment constant for sharing by other files."""
 
 import os.path as osp
-
-import cv2
 import subprocess
 import sys
-import torch
 from collections import defaultdict
+
+import cv2
+import torch
 
 import mmcv
 from .parrots_wrapper import get_build_config

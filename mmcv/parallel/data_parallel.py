@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from itertools import chain
+
 from torch.nn.parallel import DataParallel
 
 from .scatter_gather import scatter_kwargs

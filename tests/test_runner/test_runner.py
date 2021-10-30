@@ -2,12 +2,12 @@
 import logging
 import os
 import os.path as osp
-
 import platform
-import pytest
 import random
 import string
 import tempfile
+
+import pytest
 import torch
 import torch.nn as nn
 

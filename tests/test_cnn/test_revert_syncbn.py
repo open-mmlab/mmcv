@@ -1,7 +1,7 @@
 import os
+import platform
 
 import numpy as np
-import platform
 import pytest
 import torch
 import torch.distributed as dist

@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Modified from https://github.com/kmkurn/pytorch-crf/blob/master/torchcrf
+from typing import List, Optional
+
 import torch
 import torch.nn as nn
-from typing import List, Optional
 
 
 class ConditionalRandomField(nn.Module):
@@ -47,6 +48,7 @@ class ConditionalRandomField(nn.Module):
 
     def reset_parameters(self) -> None:
         """Initialize the transition parameters.
+
         The parameters will be initialized randomly from a uniform distribution
         between -0.1 and 0.1.
         """
@@ -64,8 +66,9 @@ class ConditionalRandomField(nn.Module):
         mask: Optional[torch.ByteTensor] = None,
         reduction: str = 'sum',
     ) -> torch.Tensor:
-        """Compute the conditional log likelihood of
-        a sequence of tags given emission scores.
+        """Compute the conditional log likelihood of a sequence of tags given
+        emission scores.
+
         Args:
             emissions (`~torch.Tensor`): Emission score tensor of size
                 ``(seq_length, batch_size, num_tags)``

@@ -1,15 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-<<<<<<< HEAD
 import datetime
 import os
-=======
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 import os.path as osp
+from collections import OrderedDict
 
-import datetime
 import torch
 import torch.distributed as dist
-from collections import OrderedDict
 
 import mmcv
 from mmcv.fileio.file_client import FileClient

@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import io
 import os.path as osp
+from pathlib import Path
 
 import cv2
-import io
 import numpy as np
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
-from pathlib import Path
 
 from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
 

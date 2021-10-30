@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import tempfile
 
 import cv2
 import numpy as np
 import pytest
-import tempfile
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import mmcv

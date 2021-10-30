@@ -33,10 +33,10 @@ __all__ = [
     'GeneralizedAttention', 'ACTIVATION_LAYERS', 'CONV_LAYERS', 'NORM_LAYERS',
     'PADDING_LAYERS', 'UPSAMPLE_LAYERS', 'PLUGIN_LAYERS', 'Scale',
     'get_model_complexity_info', 'conv_ws_2d', 'ConvAWS2d', 'ConvWS2d',
-    'ConditionalRandomField',
-    'fuse_conv_bn', 'DepthwiseSeparableConvModule', 'Linear', 'Conv2d',
-    'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d', 'MaxPool3d', 'Conv3d',
-    'initialize', 'INITIALIZERS', 'ConstantInit', 'XavierInit', 'NormalInit',
-    'TruncNormalInit', 'UniformInit', 'KaimingInit', 'PretrainedInit',
-    'Caffe2XavierInit', 'MODELS', 'build_model_from_cfg'
+    'ConditionalRandomField', 'fuse_conv_bn', 'DepthwiseSeparableConvModule',
+    'Linear', 'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d',
+    'MaxPool3d', 'Conv3d', 'initialize', 'INITIALIZERS', 'ConstantInit',
+    'XavierInit', 'NormalInit', 'TruncNormalInit', 'UniformInit',
+    'KaimingInit', 'PretrainedInit', 'Caffe2XavierInit', 'MODELS',
+    'build_model_from_cfg'
 ]

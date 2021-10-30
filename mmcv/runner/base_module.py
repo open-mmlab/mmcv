@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import warnings
 from abc import ABCMeta
+from collections import defaultdict
 from logging import FileHandler
 
-import copy
 import torch.nn as nn
-from collections import defaultdict
 
 from mmcv.runner.dist_utils import master_only
 from mmcv.utils.logging import get_logger, logger_initialized, print_log

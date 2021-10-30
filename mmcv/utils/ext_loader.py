@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-import warnings
-
 import importlib
+import os
 import pkgutil
-import torch
+import warnings
 from collections import namedtuple
+
+import torch
 
 if torch.__version__ != 'parrots':
 

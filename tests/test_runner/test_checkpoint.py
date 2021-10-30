@@ -1,23 +1,13 @@
-<<<<<<< HEAD
 import sys
 from collections import OrderedDict
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
-=======
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 import pytest
-import sys
 import torch
 import torch.nn as nn
-<<<<<<< HEAD
 import torch.optim as optim
-=======
-from collections import OrderedDict
-from tempfile import TemporaryDirectory
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 from torch.nn.parallel import DataParallel
-from unittest.mock import MagicMock
 
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS

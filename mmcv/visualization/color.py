@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import numpy as np
 from enum import Enum
+
+import numpy as np
 
 from mmcv.utils import is_str
 

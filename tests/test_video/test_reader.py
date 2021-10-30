@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-
-import pytest
 import shutil
 import tempfile
 from collections import OrderedDict
+
+import pytest
 
 import mmcv
 

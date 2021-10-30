@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-import warnings
-
-import numpy as np
 import random
 import sys
 import time
-import torch
+import warnings
 from getpass import getuser
 from socket import gethostname
+
+import numpy as np
+import torch
 
 import mmcv
 

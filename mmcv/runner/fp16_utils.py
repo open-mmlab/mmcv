@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-
 import functools
+import warnings
+from collections import abc
+from inspect import getfullargspec
+
 import numpy as np
 import torch
 import torch.nn as nn
-from collections import abc
-from inspect import getfullargspec
 
 from mmcv.utils import TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads

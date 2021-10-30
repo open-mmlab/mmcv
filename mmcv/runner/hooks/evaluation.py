@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import warnings
+from math import inf
 
 import torch.distributed as dist
-from math import inf
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 

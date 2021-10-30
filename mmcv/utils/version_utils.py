@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
+import subprocess
 import warnings
 
-import subprocess
 from packaging.version import parse
 
 

@@ -39,13 +39,11 @@ else:
     from .env import collect_env
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
-    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
-                                  CUDAExtension, DataLoader, PoolDataLoader,
-                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
-                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
-                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
-                                  _InstanceNorm, _MaxPoolNd, get_build_config,
-                                  is_rocm_pytorch)
+    from .parrots_wrapper import (
+        TORCH_VERSION, BuildExtension, CppExtension, CUDAExtension, DataLoader,
+        PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
+        _AvgPoolNd, _BatchNorm, _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+        _InstanceNorm, _MaxPoolNd, get_build_config, is_rocm_pytorch)
     from .registry import Registry, build_from_cfg
     from .trace import is_jit_tracing
     __all__ = [

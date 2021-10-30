@@ -6,25 +6,19 @@ CommandLine:
 """
 import logging
 import os.path as osp
-
 import platform
-import pytest
 import random
 import re
 import shutil
 import sys
 import tempfile
-<<<<<<< HEAD
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-=======
->>>>>>> aaf59ccf1f43ec9a3aab377567d88a2ef7a1d657
 import torch
 import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
-from unittest.mock import MagicMock, call
 
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
