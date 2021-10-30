@@ -37,9 +37,9 @@ class ThreeNN(Function):
         dist2 = torch.cuda.FloatTensor(B, N, 3)
         idx = torch.cuda.IntTensor(B, N, 3)
 
-        ext_module.three_nn_forward(B, N, m, target, source, dist2, idx)
-
-        ctx.mark_non_differentiable(idx)
+        ext_module.three_nn_forward(target, source, dist2, idx, b=B, n=N, m=m)
+        if torch.__version__ != 'parrots':
+            ctx.mark_non_differentiable(idx)
 
         return torch.sqrt(dist2), idx
 

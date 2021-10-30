@@ -3,6 +3,11 @@ from abc import ABCMeta, abstractmethod
 
 
 class BaseFileHandler(metaclass=ABCMeta):
+    # `str_like` is a flag to indicate whether the type of file object is
+    # str-like object or bytes-like object. Pickle only processes bytes-like
+    # objects but json only processes str-like object. If it is str-like
+    # object, `StringIO` will be used to process the buffer.
+    str_like = True
 
     @abstractmethod
     def load_from_fileobj(self, file, **kwargs):

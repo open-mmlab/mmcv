@@ -61,10 +61,12 @@ class KNN(Function):
         idx = center_xyz.new_zeros((B, npoint, k)).int()
         dist2 = center_xyz.new_zeros((B, npoint, k)).float()
 
-        ext_module.knn_forward(B, N, npoint, k, xyz, center_xyz, idx, dist2)
+        ext_module.knn_forward(
+            xyz, center_xyz, idx, dist2, b=B, n=N, m=npoint, nsample=k)
         # idx shape to [B, k, npoint]
         idx = idx.transpose(2, 1).contiguous()
-        ctx.mark_non_differentiable(idx)
+        if torch.__version__ != 'parrots':
+            ctx.mark_non_differentiable(idx)
         return idx
 
     @staticmethod

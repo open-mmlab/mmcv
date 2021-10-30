@@ -16,6 +16,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - FurthestPointSample
 - FurthestPointSampleWithDist
 - GeneralizedAttention
+- GroupPoints
 - KNN
 - MaskedConv
 - NMS
@@ -23,6 +24,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - RoIPointPool3d
 - RoIPool
 - RoIAlign
+- RoIAwarePool3d
 - SimpleRoIAlign
 - SigmoidFocalLoss
 - SoftmaxFocalLoss
