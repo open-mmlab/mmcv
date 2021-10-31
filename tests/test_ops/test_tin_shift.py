@@ -188,6 +188,8 @@ def _test_tinshift_assert(dtype):
     for x, shift in zip(inputs, shifts):
         x = x.cuda()
         shift = shift.cuda()
+
+        # A ValueError should be raise if ops get inputs with wrong shapes.
         with pytest.raises(ValueError):
             tin_shift(x, shift)
 
