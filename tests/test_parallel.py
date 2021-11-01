@@ -6,6 +6,7 @@ from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
                            MMDistributedDataParallel, is_module_wrapper)
+from mmcv.parallel.collate import collate
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
@@ -64,3 +65,8 @@ def test_is_module_wrapper():
 
     module_wraper = ModuleWrapper(model)
     assert is_module_wrapper(module_wraper)
+
+
+def test_collate():
+    batch = ['imgs', 'label', 'filename']
+    assert batch == collate(batch, samples_per_gpu=1)
