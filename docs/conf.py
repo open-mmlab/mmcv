@@ -111,8 +111,12 @@ html_theme_options = {
         },
         {
             'name':
-            'Projects',
+            'Docs',
             'children': [
+                {
+                    'name': 'MMCV',
+                    'url': 'https://github.com/open-mmlab/mmcv',
+                },
                 {
                     'name': 'MMAction2',
                     'url': 'https://github.com/open-mmlab/mmaction2',
