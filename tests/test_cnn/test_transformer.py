@@ -1,3 +1,5 @@
+import copy
+
 import pytest
 import torch
 
@@ -5,6 +7,7 @@ from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
                                          MultiheadAttention,
                                          TransformerLayerSequence)
+from mmcv.runner import ModuleList
 
 
 def test_multiheadattention():
@@ -90,6 +93,28 @@ def test_ffn():
     torch.allclose(
         ffn(input_tensor, identity=residual).sum(),
         ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='Cuda not available')
+def test_basetransformerlayer_cuda():
+    # To test if the BaseTransformerLayer's behaviour remains
+    # consistent after being deepcopied
+    operation_order = ('self_attn', 'ffn')
+    baselayer = BaseTransformerLayer(
+        operation_order=operation_order,
+        batch_first=True,
+        attn_cfgs=dict(
+            type='MultiheadAttention',
+            embed_dims=256,
+            num_heads=8,
+        ),
+    )
+    baselayers = ModuleList([copy.deepcopy(baselayer) for _ in range(2)])
+    baselayers.to('cuda')
+    x = torch.rand(2, 10, 256).cuda()
+    for m in baselayers:
+        x = m(x)
+        assert x.shape == torch.Size([2, 10, 256])
 
 
 def test_basetransformerlayer():

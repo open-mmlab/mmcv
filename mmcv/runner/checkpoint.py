@@ -322,7 +322,7 @@ def load_from_pavi(filename, map_location=None):
 
 
 @CheckpointLoader.register_scheme(prefixes='s3://')
-def load_from_ceph(filename, map_location=None, backend='ceph'):
+def load_from_ceph(filename, map_location=None, backend='petrel'):
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -330,20 +330,35 @@ def load_from_ceph(filename, map_location=None, backend='ceph'):
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
-        backend (str): The storage backend type. Options are "disk", "ceph",
-            "memcached" and "lmdb". Default: 'ceph'
+        backend (str, optional): The storage backend type. Options are 'ceph',
+            'petrel'. Default: 'petrel'.
+
+    .. warning::
+        :class:`mmcv.fileio.file_client.CephBackend` will be deprecated,
+        please use :class:`mmcv.fileio.file_client.PetrelBackend` instead.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-
-    allowed_backends = ['ceph']
+    allowed_backends = ['ceph', 'petrel']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
 
-    fileclient = FileClient(backend=backend)
-    buffer = io.BytesIO(fileclient.get(filename))
-    checkpoint = torch.load(buffer, map_location=map_location)
+    if backend == 'ceph':
+        warnings.warn(
+            'CephBackend will be deprecated, please use PetrelBackend instead')
+
+    # CephClient and PetrelBackend have the same prefix 's3://' and the latter
+    # will be chosen as default. If PetrelBackend can not be instantiated
+    # successfully, the CephClient will be chosen.
+    try:
+        file_client = FileClient(backend=backend)
+    except ImportError:
+        allowed_backends.remove(backend)
+        file_client = FileClient(backend=allowed_backends[0])
+
+    with io.BytesIO(file_client.get(filename)) as buffer:
+        checkpoint = torch.load(buffer, map_location=map_location)
     return checkpoint
 
 
@@ -505,7 +520,6 @@ def load_checkpoint(model,
             pair of the regular expression operations. Default: strip
             the prefix 'module.' by [(r'^module\\.', '')].
 
-
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
@@ -615,7 +629,11 @@ def get_state_dict(module, destination=None, prefix='', keep_vars=False):
     return destination
 
 
-def save_checkpoint(model, filename, optimizer=None, meta=None):
+def save_checkpoint(model,
+                    filename,
+                    optimizer=None,
+                    meta=None,
+                    file_client_args=None):
     """Save checkpoint to file.
 
     The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
@@ -626,6 +644,10 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         filename (str): Checkpoint filename.
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+            `New in version 1.3.16.`
     """
     if meta is None:
         meta = {}
@@ -653,6 +675,10 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
             checkpoint['optimizer'][name] = optim.state_dict()
 
     if filename.startswith('pavi://'):
+        if file_client_args is not None:
+            raise ValueError(
+                'file_client_args should be "None" if filename starts with'
+                f'"pavi://", but got {file_client_args}')
         try:
             from pavi import modelcloud
             from pavi import exception
@@ -673,8 +699,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
                 f.flush()
             model.create_file(checkpoint_file, name=model_name)
     else:
-        mmcv.mkdir_or_exist(osp.dirname(filename))
-        # immediately flush buffer
-        with open(filename, 'wb') as f:
+        file_client = FileClient.infer_client(file_client_args, filename)
+        with io.BytesIO() as f:
             torch.save(checkpoint, f)
-            f.flush()
+            file_client.put(f.getvalue(), filename)
