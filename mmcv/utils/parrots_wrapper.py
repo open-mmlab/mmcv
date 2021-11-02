@@ -6,6 +6,17 @@ import torch
 TORCH_VERSION = torch.__version__
 
 
+def is_camb_parrots() -> bool:
+    is_camb = False
+    if TORCH_VERSION == 'parrots':
+        try:
+            from parrots.base import use_camb
+            is_camb = use_camb
+        except ImportError:
+            pass
+    return is_camb
+
+
 def is_rocm_pytorch() -> bool:
     is_rocm = False
     if TORCH_VERSION != 'parrots':

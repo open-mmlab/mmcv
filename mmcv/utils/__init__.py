@@ -2,7 +2,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
-                   has_method, import_modules_from_strings, is_list_of,
+                   import_modules_from_strings, is_list_of,
                    is_method_overridden, is_seq_of, is_str, is_tuple_of,
                    iter_cast, list_cast, requires_executable, requires_package,
                    slice_list, to_1tuple, to_2tuple, to_3tuple, to_4tuple,
@@ -33,7 +33,7 @@ except ImportError:
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
         'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple',
-        'is_method_overridden', 'has_method'
+        'is_method_overridden'
     ]
 else:
     from .env import collect_env
@@ -43,7 +43,8 @@ else:
         TORCH_VERSION, BuildExtension, CppExtension, CUDAExtension, DataLoader,
         PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
         _AvgPoolNd, _BatchNorm, _ConvNd, _ConvTransposeMixin, _InstanceNorm,
-        _MaxPoolNd, get_build_config, is_rocm_pytorch, _get_cuda_home)
+        _MaxPoolNd, get_build_config, is_rocm_pytorch, _get_cuda_home,
+        is_camb_parrots)
     from .registry import Registry, build_from_cfg
     from .trace import is_jit_tracing
     __all__ = [
@@ -65,5 +66,5 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'has_method'
+        '_get_cuda_home'
     ]
