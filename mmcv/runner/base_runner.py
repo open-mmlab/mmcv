@@ -334,8 +334,6 @@ class BaseRunner(metaclass=ABCMeta):
                         map_location='cpu',
                         strict=False,
                         revise_keys=[(r'^module.', '')]):
-
-        self.logger.info('load checkpoint from %s', filename)
         return load_checkpoint(
             self.model,
             filename,
