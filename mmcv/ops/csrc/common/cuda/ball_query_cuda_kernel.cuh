@@ -10,8 +10,6 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 template <typename T>
 __global__ void ball_query_forward_cuda_kernel(int b, int n, int m,
                                                float min_radius,

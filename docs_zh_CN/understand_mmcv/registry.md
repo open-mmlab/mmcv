@@ -41,7 +41,7 @@ class Converter1(object):
         self.a = a
         self.b = b
 ```
-使用注册器管理模块的关键步骤是，将实现的模块到注册到注册表 `CONVERTERS` 中。通过 `@CONVERTERS.register_module()` 装饰所实现的模块，字符串和类之间的映射就可以由 `CONVERTERS` 构建和维护，如下所示：
+使用注册器管理模块的关键步骤是，将实现的模块注册到注册表 `CONVERTERS` 中。通过 `@CONVERTERS.register_module()` 装饰所实现的模块，字符串和类之间的映射就可以由 `CONVERTERS` 构建和维护，如下所示：
 
 通过这种方式，就可以通过 `CONVERTERS` 建立字符串与类之间的映射，如下所示：
 
@@ -84,7 +84,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
 该功能类似于默认的`build_from_cfg`。在大多数情况下，默认就足够了。
 ```
 
-`build_model_from_cfg`也实现了在`nn.Sequentail`中构建PyTorch模块，你可以直接使用它们现。
+`build_model_from_cfg`也实现了在`nn.Sequentail`中构建PyTorch模块，你可以直接使用它们。
 
 ### 注册器层结构
 
