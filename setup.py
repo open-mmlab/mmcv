@@ -200,6 +200,7 @@ def get_extensions():
         if use_camb:
             op_files +=\
                 glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') +\
+                glob.glob('./mmcv/ops/csrc/parrots/*cpu.cpp') +\
                 glob.glob('./mmcv/ops/csrc/parrots/mlu/*.cpp')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
@@ -209,8 +210,8 @@ def get_extensions():
         extra_compile_args = {
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
-            'cncc': [mlu_args] if mlu_args else ['-v', '-fPIC', '--shared',
-                                                 '--bang-mlu-arch=MLU290'],
+            'cncc': [mlu_args] if mlu_args else
+            ['-v', '-fPIC', '--shared', '--bang-mlu-arch=MLU290'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             if use_cuda:
