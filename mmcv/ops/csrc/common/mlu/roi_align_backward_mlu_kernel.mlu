@@ -1,0 +1,246 @@
+#include "common_mlu_helper.hpp"
+
+#define ROIALIGNBP_MAX_NRAM_SIZE (MAX_NRAM_SIZE + 120 * 1024)
+
+#define DIM_BOX 5
+#define BLOCK_INPUT_OUTPUT 2
+__nram__ char buffer[ROIALIGNBP_MAX_NRAM_SIZE];
+
+__mlu_func__ void bilinearInterpolateGradient(int height,
+                                              int width,
+                                              float y,
+                                              float x,
+                                              float *w1,
+                                              float *w2,
+                                              float *w3,
+                                              float *w4,
+                                              int *x_low,
+                                              int *x_high,
+                                              int *y_low,
+                                              int *y_high) {
+  if (y < -1.0 || y > height || x < -1.0 || x > width) {
+    *w1 = 0.0, *w2 = 0.0, *w3 = 0.0, *w4 = 0.0;
+    *x_low = -1, *x_high = -1, *y_low = -1, *y_high = -1;
+    return;
+  }
+  if (y <= 0)
+    y = 0;
+  if (x <= 0)
+    x = 0;
+  *y_low = (int)y;
+  *x_low = (int)x;
+  if (*y_low >= height - 1) {
+    *y_high = height - 1, *y_low = height - 1;
+    y = (float)(*y_low);
+  } else {
+    *y_high = *y_low + 1;
+  }
+  if (*x_low >= width - 1) {
+    *x_high = width - 1, *x_low = width - 1;
+    x = (float)(*x_low);
+  } else {
+    *x_high = *x_low + 1;
+  }
+  float ly = y - *y_low, lx = x - *x_low;
+  float hy = 1.0 - ly, hx = 1.0 - lx;
+  *w1 = hy * hx, *w2 = hy * lx, *w3 = ly * hx, *w4 = ly * lx;
+  return;
+}
+
+template <typename T>
+__mlu_func__ void unionRoiAlignBp(T *grads,
+                                  T *boxes,
+                                  T *grads_image,
+                                  int boxes_num,
+                                  int hi,
+                                  int wi,
+                                  int c,
+                                  int no,
+                                  int ho,
+                                  int wo,
+                                  float spatial_scale,
+                                  int sampling_ratio,
+                                  bool aligned) {
+  int c_align = PAD_UP(c, NFU_ALIGN_SIZE / sizeof(T));
+  int deal_this_core =
+      boxes_num / taskDim + (int)(taskId < boxes_num % taskDim);
+  for (int i = 0; i < deal_this_core; ++i) {
+    int box_id = i * taskDim + taskId;
+    T *box = boxes + box_id * DIM_BOX;
+    T *grads_offset = grads + box_id * hi * wi * c;
+    int image_id = (int)box[0];
+    T *image_offset = grads_image + image_id * ho * wo * c;
+
+    float offset = aligned ? 0.5 : 0.0;
+    float x1 = box[1] * spatial_scale - offset;
+    float y1 = box[2] * spatial_scale - offset;
+    float x2 = box[3] * spatial_scale - offset;
+    float y2 = box[4] * spatial_scale - offset;
+    float roi_width = x2 - x1;
+    float roi_height = y2 - y1;
+    if (!aligned) {
+      roi_width = (roi_width > 1.0) ? roi_width : 1.0;
+      roi_height = (roi_height > 1.0) ? roi_height : 1.0;
+    }
+    float bin_size_h = roi_height / hi;
+    float bin_size_w = roi_width / wi;
+
+    int roi_grid_h =
+        (sampling_ratio > 0) ? sampling_ratio : std::ceil(roi_height / hi);
+    int roi_grid_w =
+        (sampling_ratio > 0) ? sampling_ratio : std::ceil(roi_width / wi);
+    const int count = roi_grid_h * roi_grid_w;
+    if (c_align * sizeof(T) * BLOCK_INPUT_OUTPUT <= ROIALIGNBP_MAX_NRAM_SIZE) {
+      for (int ih = 0; ih < hi; ++ih) {
+        for (int iw = 0; iw < wi; ++iw) {
+          T *grads_ = grads_offset + ih * wi * c + iw * c;
+          for (int iy = 0; iy < roi_grid_h; ++iy) {
+            const float y =
+                y1 + ih * bin_size_h + (iy + 0.5) * bin_size_h / roi_grid_h;
+            for (int ix = 0; ix < roi_grid_w; ++ix) {
+              const float x =
+                  x1 + iw * bin_size_w + (ix + 0.5) * bin_size_w / roi_grid_w;
+              float w1, w2, w3, w4;
+              int x_low, x_high, y_low, y_high;
+              bilinearInterpolateGradient(ho, wo, y, x, &w1, &w2, &w3, &w4, &x_low,
+                                          &x_high, &y_low, &y_high);
+              if (x_low >= 0 && y_low >= 0) {
+                __memcpy(buffer, grads_, c * sizeof(T), GDRAM2NRAM);
+                __bang_mul_const((T *)buffer + c_align, (T *)buffer,
+                                 (T)(w1 / count), c_align);
+                __bang_atomic_add((T *)buffer + c_align,
+                                  image_offset + y_low * wo * c + x_low * c,
+                                  (T *)buffer + c_align, c);
+                __bang_mul_const((T *)buffer + c_align, (T *)buffer,
+                                 (T)(w2 / count), c_align);
+                __bang_atomic_add((T *)buffer + c_align,
+                                  image_offset + y_low * wo * c + x_high * c,
+                                  (T *)buffer + c_align, c);
+                __bang_mul_const((T *)buffer + c_align, (T *)buffer,
+                                 (T)(w3 / count), c_align);
+                __bang_atomic_add((T *)buffer + c_align,
+                                  image_offset + y_high * wo * c + x_low * c,
+                                  (T *)buffer + c_align, c);
+                __bang_mul_const((T *)buffer + c_align, (T *)buffer,
+                                 (T)(w4 / count), c_align);
+                __bang_atomic_add((T *)buffer + c_align,
+                                  image_offset + y_high * wo * c + x_high * c,
+                                  (T *)buffer + c_align, c);
+              }  // x_low && y_low
+            }    // ix
+          }      // iy
+        }        // iw
+      }          // ih
+    } else {
+      for (int ih = 0; ih < hi; ++ih) {
+        for (int iw = 0; iw < wi; ++iw) {
+          T *grads_ = grads_offset + ih * wi * c + iw * c;
+          for (int iy = 0; iy < roi_grid_h; ++iy) {
+            const float y =
+                y1 + ih * bin_size_h + (iy + 0.5) * bin_size_h / roi_grid_h;
+            for (int ix = 0; ix < roi_grid_w; ++ix) {
+              const float x =
+                  x1 + iw * bin_size_w + (ix + 0.5) * bin_size_w / roi_grid_w;
+              float w1, w2, w3, w4;
+              int x_low, x_high, y_low, y_high;
+              bilinearInterpolateGradient(ho, wo, y, x, &w1, &w2, &w3, &w4, &x_low,
+                                          &x_high, &y_low, &y_high);
+              if (x_low >= 0 && y_low >= 0) {
+                int deal_once =
+                    PAD_DOWN(ROIALIGNBP_MAX_NRAM_SIZE / BLOCK_INPUT_OUTPUT,
+                             NFU_ALIGN_SIZE) / sizeof(T);
+                int c_repeat = c / deal_once + (int)(c % deal_once != 0);
+                for (int i = 0; i < c_repeat; ++i) {
+                  int deal_c = deal_once;
+                  int align_c = deal_once;
+                  if (i == c_repeat - 1) {
+                    deal_c = c - i * deal_once;
+                    align_c = c_align - i * deal_once;
+                  }
+                  __memcpy(buffer, grads_ + i * deal_once, deal_c * sizeof(T),
+                           GDRAM2NRAM);
+                  __bang_mul_const((T *)buffer + align_c, (T *)buffer,
+                                   (T)(w1 / count), align_c);
+                  __bang_atomic_add((T *)buffer + align_c,
+                      image_offset + y_low * wo * c + x_low * c + i * deal_once,
+                      (T *)buffer + align_c, deal_c);
+                  __bang_mul_const((T *)buffer + align_c, (T *)buffer,
+                                   (T)(w2 / count), align_c);
+                  __bang_atomic_add((T *)buffer + align_c,
+                                    image_offset + y_low * wo * c + x_high * c +
+                                        i * deal_once,
+                                    (T *)buffer + align_c, deal_c);
+                  __bang_mul_const((T *)buffer + align_c, (T *)buffer,
+                                   (T)(w3 / count), align_c);
+                  __bang_atomic_add((T *)buffer + align_c,
+                                    image_offset + y_high * wo * c + x_low * c +
+                                        i * deal_once,
+                                    (T *)buffer + align_c, deal_c);
+                  __bang_mul_const((T *)buffer + align_c, (T *)buffer,
+                                   (T)(w4 / count), align_c);
+                  __bang_atomic_add((T *)buffer + align_c,
+                                    image_offset + y_high * wo * c +
+                                        x_high * c + i * deal_once,
+                                    (T *)buffer + align_c, deal_c);
+                }  // for c_repeat
+              }    // x_low >= 0 && y_low >= 0
+            }      // ix
+          }        // iy
+        }          // iw
+      }            // ih
+    }              // if c
+  }                // i
+}
+
+__mlu_global__ void MLUUnion1KernelRoiAlignBackward(void *grads,
+                                                    void *boxes,
+                                                    void *grads_image,
+                                                    cnrtDataType_t dtype,
+                                                    int boxes_num,
+                                                    int hi,
+                                                    int wi,
+                                                    int c,
+                                                    int no,
+                                                    int ho,
+                                                    int wo,
+                                                    float spatial_scale,
+                                                    int sampling_ratio,
+                                                    bool aligned) {
+  // make sure that memcore is not used
+  if (coreId == 0x80) {
+    return;
+  }
+  switch (dtype) {
+    case CNRT_FLOAT16: {
+      unionRoiAlignBp((half *)grads, (half *)boxes, (half *)grads_image, boxes_num, hi, wi, c, no, ho,
+                      wo, spatial_scale, sampling_ratio, aligned);
+    }; break;
+    case CNRT_FLOAT32: {
+      unionRoiAlignBp((float *)grads, (float *)boxes, (float *)grads_image, boxes_num, hi, wi, c, no, ho,
+                      wo, spatial_scale, sampling_ratio, aligned);
+    }; break;
+    default: { return; }
+  }
+}
+
+void KernelRoiAlignBackward(cnrtDim3_t k_dim,
+                            cnrtFunctionType_t k_type,
+                            cnrtQueue_t queue,
+                            cnrtDataType_t dtype,
+                            void *grads,
+                            void *boxes,
+                            void *grads_image,
+                            int boxes_num,
+                            int hi,
+                            int wi,
+                            int c,
+                            int no,
+                            int ho,
+                            int wo,
+                            float spatial_scale,
+                            int sampling_ratio,
+                            bool aligned) {
+  MLUUnion1KernelRoiAlignBackward<<<k_dim, k_type, queue>>>(
+      grads, boxes, grads_image, dtype, boxes_num, hi, wi, c, no, ho, wo,
+      spatial_scale, sampling_ratio, aligned);
+}

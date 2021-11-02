@@ -1,0 +1,344 @@
+#include "common_mlu_helper.hpp"
+
+#define ALIGN_SIZE 64
+#define MAX_ELEMENTS_FLOAT (50 * 1024)
+#define MAX_ELEMENTS_HALF (100 * 1024)
+#define BUFFER_SIZE (MAX_NRAM_SIZE * 480 / 512)
+#define ROI_OFFSET 5
+#define SAMPLING_NUM 4
+
+template <typename T>
+__mlu_func__ void roialignForwardKernel(T *input,
+                                        T *rois,
+                                        T *output,
+                                        T *nram_buffer,
+                                        const bool aligned,
+                                        const int channels,
+                                        const int pooled_height,
+                                        const int pooled_width,
+                                        const int input_height,
+                                        const int input_width,
+                                        const int sampling_ratio,
+                                        const float spatial_scale,
+                                        const int num_rois,
+                                        const int max_elements) {
+  /*
+   * NRAM partition
+   *  |----------------------NRAM------ -----------------|
+   *  |                                                  |
+   *  |                     output                       |
+   *  |--------------------------------------------------|
+   *  |                                                  |
+   *  |                     input                        |
+   *  |                                                  |
+   *  |--------------------------------------------------|
+   *  |           rois(batch_id, x1, y1, x2, y2)         |
+   *  |--------------------------------------------------|
+   *
+   * channel data will loop inside of input_nram, when channel * size(T) >
+   * input_nram
+  */
+
+  int channel_align = PAD_UP(channels, ALIGN_SIZE);
+  int height = 0;
+  int width = 0;
+  int samp_channel_align = channel_align * SAMPLING_NUM;
+  int samp_channel = channels * SAMPLING_NUM;
+
+  // multi-core params
+  int inter_num = num_rois / taskDim;
+  int rem_num = num_rois % taskDim;
+  int offset_length;
+  int task_length;
+  int max_size = max_elements >> 1;
+
+  // the length dealt by every core and the offset of taskid
+  if (taskId < rem_num) {
+    task_length = inter_num + 1;
+    offset_length = taskId * (inter_num + 1);
+  } else {
+    task_length = inter_num;
+    offset_length = rem_num * (inter_num + 1) + (taskId - rem_num) * inter_num;
+  }
+
+  // nram data ptr
+  T *nram_out = nram_buffer;
+  T *nram_in = nram_out + max_size;
+  T *nram_rois = nram_in + max_elements;
+
+  int pooled_size = pooled_height * pooled_width;
+  // output and roi data ptr
+  T *top_data = output + offset_length * pooled_size * channels;
+  T *task_rois = rois + offset_length * ROI_OFFSET;
+
+  for (int roi_id = 0; roi_id < task_length; roi_id++) {
+    // For each roi, find the corresponding feature map which it belongs,
+    // and compute the scaling_factor to map it to that feature map.
+    height = input_height;
+    width = input_width;
+    T spatial_scale_temp = (T)spatial_scale;
+    T offset = aligned ? (T)0.5 : (T)0;
+
+    T *roi_id_tmp = task_rois + roi_id * ROI_OFFSET;
+    __bang_write_zero(nram_rois, ALIGN_SIZE);
+    __memcpy((void *)nram_rois, (void *)roi_id_tmp, ROI_OFFSET * sizeof(T),
+             GDRAM2NRAM);
+
+    int batch_id = nram_rois[0];
+    T roi_0 = nram_rois[1];
+    T roi_1 = nram_rois[2];
+    T roi_2 = nram_rois[3];
+    T roi_3 = nram_rois[4];
+
+    T roi_xmin = roi_0 < roi_2 ? roi_0 : roi_2;
+    T roi_ymin = roi_1 < roi_3 ? roi_1 : roi_3;
+    T roi_xmax = roi_0 > roi_2 ? roi_0 : roi_2;
+    T roi_ymax = roi_1 > roi_3 ? roi_1 : roi_3;
+
+    roi_xmin = roi_xmin * spatial_scale_temp - offset;
+    roi_ymin = roi_ymin * spatial_scale_temp - offset;
+    roi_xmax = roi_xmax * spatial_scale_temp - offset;
+    roi_ymax = roi_ymax * spatial_scale_temp - offset;
+
+    float roi_width = roi_xmax - roi_xmin;
+    float roi_height = roi_ymax - roi_ymin;
+
+    if (!aligned) {
+      // Force malformed ROIs to be 1x1
+      roi_width = roi_width > 1 ? roi_width : 1.0;
+      roi_height = roi_height > 1 ? roi_height : 1.0;
+    }
+
+    float bin_size_h = (float)roi_height / pooled_height;
+    float bin_size_w = (float)roi_width / pooled_width;
+
+    // input data ptr
+    T *offset_bottom_data = input + batch_id * channels * width * height;
+    T *tmp_sum = nram_out;
+    __bang_write_zero(nram_out, max_size);
+
+    // We use roi_bin_grid to sample the grid, and perform average pooling
+    // inside a bin. When the grid is empty, then output zeros.
+    int roi_bin_grid_h =
+        (sampling_ratio > 0) ? sampling_ratio : __float2int_up(bin_size_h);
+    int roi_bin_grid_w =
+        (sampling_ratio > 0) ? sampling_ratio : __float2int_up(bin_size_w);
+    float count = roi_bin_grid_h * roi_bin_grid_w;
+    float zero_sign_tmp = 1.0f / count;
+
+    for (int ph = 0; ph < pooled_height; ph++) {
+      float y_pre = roi_ymin + ph * bin_size_h;  // ymin in each grid
+      for (int pw = 0; pw < pooled_width; pw++) {
+        float x_pre = roi_xmin + pw * bin_size_w;  // xmin in each grid
+        // Bilinear interpolatation
+        if (samp_channel_align < max_elements) {
+          // One aligned channel data can be computed at one time
+          for (int iy = 0; iy < roi_bin_grid_h; iy++) {
+            float y = (y_pre + ((iy + 0.5) * bin_size_h) / (roi_bin_grid_h))
+                <= 0 ? 0 : (y_pre + ((iy + 0.5) * bin_size_h) /
+                (roi_bin_grid_h));  // center_point y
+            int y_a = __float2int_dn(y) * (int)(y >= 0);
+            int y_b = height - 1;
+            // deal with cases that inverse elements are out of feature map
+            // boundary
+            int y_low = y_a < y_b ? y_a : y_b;
+            int y_high = y_low + (int)(y_low < height - 1);
+            T ly = y - y_low;
+            T hy = 1.0 - ly;
+            for (int ix = 0; ix < roi_bin_grid_w; ix++) {
+              float x = (x_pre + ((ix + 0.5) * bin_size_w) / (roi_bin_grid_w))
+                  <= 0 ? 0 : (x_pre + ((ix + 0.5) * bin_size_w) /
+                  (roi_bin_grid_w));  // center_point x
+              T zero_sign =
+                  (T)(x >= -1.0 && x <= width && y >= -1.0 && y <= height) *
+                  zero_sign_tmp;
+              int x_a = __float2int_dn(x) * (int)(x >= 0);
+              int x_b = width - 1;
+              int x_low = x_a < x_b ? x_a : x_b;
+              int x_high = x_low + (int)(x_low < width - 1);
+              T lx = x - x_low;
+              T hx = 1.0 - lx;
+
+              // bilinear interpolate compute
+              T w1 = hy * hx * zero_sign;
+              T w2 = hy * lx * zero_sign;
+              T w3 = ly * hx * zero_sign;
+              T w4 = ly * lx * zero_sign;
+
+              int cpy_len = (x_high - x_low) * channels;
+              int cpy_size = channels * sizeof(T);
+
+              int offset1 = (y_low * width + x_low) * channels;
+              int offset2 = (y_high * width + x_low) * channels;
+
+              T *tmp1 = offset_bottom_data + offset1;
+              T *tmp2 = offset_bottom_data + offset2;
+
+              T *tmp_cyc1 = nram_in;
+              T *tmp_cyc2 = nram_in + channel_align;
+              T *tmp_cyc3 = nram_in + channel_align * 2;
+              T *tmp_cyc4 = nram_in + channel_align * 3;
+              // load gdram to nram
+              __memcpy_async(tmp_cyc1, tmp1, cpy_size, GDRAM2NRAM);
+              __memcpy_async(tmp_cyc2, tmp1 + cpy_len, cpy_size, GDRAM2NRAM);
+              __memcpy_async(tmp_cyc3, tmp2, cpy_size, GDRAM2NRAM);
+              __memcpy_async(tmp_cyc4, tmp2 + cpy_len, cpy_size, GDRAM2NRAM);
+              // roialign_forward compute
+              __bang_mul_const(tmp_cyc1, tmp_cyc1, w1, channel_align);
+              __bang_mul_const(tmp_cyc2, tmp_cyc2, w2, channel_align);
+              __bang_mul_const(tmp_cyc3, tmp_cyc3, w3, channel_align);
+              __bang_mul_const(tmp_cyc4, tmp_cyc4, w4, channel_align);
+              __bang_sumpool(nram_in, nram_in, channel_align, 1, SAMPLING_NUM,
+                             1, SAMPLING_NUM, 1, 1);
+              __bang_add(tmp_sum, tmp_sum, nram_in, channel_align);
+            }
+          }
+        } else {
+          // One aligned channel data cannot be computed at one time
+          int cyc_num = samp_channel / max_elements +
+                        (int)(samp_channel % max_elements != 0);
+          int cyc_channel = max_elements / SAMPLING_NUM;
+          for (int i = 0; i < cyc_num; ++i) {
+            int real_channel =
+                (i == cyc_num - 1) ? channels - i * cyc_channel : cyc_channel;
+            int align_channel =
+                (i == cyc_num - 1) ? PAD_UP((channel_align - i * cyc_channel),
+                ALIGN_SIZE) : cyc_channel;
+            for (int iy = 0; iy < roi_bin_grid_h; iy++) {
+              float y =
+                  (y_pre + ((iy + 0.5) * bin_size_h) / (roi_bin_grid_h)) <= 0
+                  ? 0 : (y_pre + ((iy + 0.5) * bin_size_h) /
+                  (roi_bin_grid_h));  // center_point y
+              int y_a = __float2int_dn(y) * (int)(y >= 0);
+              int y_b = height - 1;
+              int y_low = y_a < y_b ? y_a : y_b;
+              int y_high = y_low + (int)(y_low < height - 1);
+              T ly = y - y_low;
+              T hy = 1.0 - ly;
+              for (int ix = 0; ix < roi_bin_grid_w; ix++) {
+                float x =
+                    (x_pre + ((ix + 0.5) * bin_size_w) / (roi_bin_grid_w)) <= 0
+                    ? 0 : (x_pre + ((ix + 0.5) * bin_size_w) /
+                    (roi_bin_grid_w));  // center_point x
+
+                T zero_sign =
+                    (T)(x >= -1.0 && x <= width && y >= -1.0 && y <= height) *
+                    zero_sign_tmp;
+
+                int x_a = __float2int_dn(x) * (int)(x >= 0);
+                int x_b = width - 1;
+                int x_low = x_a < x_b ? x_a : x_b;
+                int x_high = x_low + (int)(x_low < width - 1);
+                T lx = x - x_low;
+                T hx = 1.0 - lx;
+
+                T w1 = hy * hx * zero_sign;
+                T w2 = hy * lx * zero_sign;
+                T w3 = ly * hx * zero_sign;
+                T w4 = ly * lx * zero_sign;
+
+                // load
+                int cpy_len = (x_high - x_low) * channels;
+
+                int offset1 = (y_low * width + x_low) * channels;
+                int offset2 = (y_high * width + x_low) * channels;
+
+                T *tmp1 = offset_bottom_data + offset1 + cyc_channel * i;
+                T *tmp2 = offset_bottom_data + offset2 + cyc_channel * i;
+
+                T *tmp_cyc1 = nram_in;
+                T *tmp_cyc2 = nram_in + cyc_channel;
+                T *tmp_cyc3 = nram_in + cyc_channel * 2;
+                T *tmp_cyc4 = nram_in + cyc_channel * 3;
+                __memcpy_async(tmp_cyc1, tmp1, align_channel * sizeof(T),
+                               GDRAM2NRAM);
+                __memcpy_async(tmp_cyc2, tmp1 + cpy_len,
+                               align_channel * sizeof(T), GDRAM2NRAM);
+                __memcpy_async(tmp_cyc3, tmp2, align_channel * sizeof(T),
+                               GDRAM2NRAM);
+                __memcpy_async(tmp_cyc4, tmp2 + cpy_len,
+                               align_channel * sizeof(T), GDRAM2NRAM);
+                __bang_mul_const(tmp_cyc1, tmp_cyc1, w1, align_channel);
+                __bang_mul_const(tmp_cyc2, tmp_cyc2, w2, align_channel);
+                __bang_mul_const(tmp_cyc3, tmp_cyc3, w3, align_channel);
+                __bang_mul_const(tmp_cyc4, tmp_cyc4, w4, align_channel);
+                __bang_sumpool(nram_in, nram_in, cyc_channel, 1, SAMPLING_NUM,
+                               1, SAMPLING_NUM, 1, 1);
+                __bang_add(tmp_sum, tmp_sum, nram_in, align_channel);
+              }
+            }
+            __memcpy(top_data + cyc_channel * i, tmp_sum,
+                     real_channel * sizeof(T), NRAM2GDRAM);
+            __bang_write_zero(nram_out, max_size);
+          }
+        }
+        // copy output data to ddr when channel num is not aligned with
+        // align_size
+        if (samp_channel_align < max_elements) {
+          __memcpy(top_data, nram_out, channels * sizeof(T), NRAM2GDRAM);
+          __bang_write_zero(nram_out, max_size);
+        }
+        top_data += channels;
+      }  // loop for pw
+    }    // loop for ph
+  }  // loop for num_roi
+  __sync_cluster();
+}
+
+__mlu_global__ void MLUUnion1KernelRoialign(const void *input,
+                                            const void *rois,
+                                            const int channels,
+                                            const bool aligned,
+				            const int pooled_height,
+                                            const int pooled_width,
+                                            const int input_height,
+                                            const int input_width,
+                                            const int sampling_ratio,
+                                            const float spatial_scale,
+                                            const int num_rois,
+                                            const cnrtDataType_t data_type,
+                                            void *output) {
+  __nram__ uint8_t nram_buffer_[BUFFER_SIZE];
+  int max_elements =
+      (data_type == CNRT_FLOAT32) ? MAX_ELEMENTS_FLOAT : MAX_ELEMENTS_HALF;
+  switch (data_type) {
+    case CNRT_FLOAT16: {
+      half *nram_buffer = (half *)nram_buffer_;
+      roialignForwardKernel(
+          (half *)input, (half *)rois, (half *)output, (half *)nram_buffer,
+          aligned, channels, pooled_height, pooled_width, input_height,
+          input_width, sampling_ratio, spatial_scale, num_rois, max_elements);
+    }; break;
+    case CNRT_FLOAT32: {
+      float *nram_buffer = (float *)nram_buffer_;
+      roialignForwardKernel(
+          (float *)input, (float *)rois, (float *)output, (float *)nram_buffer,
+          aligned, channels, pooled_height, pooled_width, input_height,
+          input_width, sampling_ratio, spatial_scale, num_rois, max_elements);
+    }; break;
+    default:
+      break;
+  }
+  return;
+}
+
+void KernelRoiAlign(cnrtDim3_t k_dim,
+                    cnrtFunctionType_t k_type,
+                    cnrtQueue_t queue,
+                    const cnrtDataType_t d_type,
+                    const void *input,
+                    const void *rois,
+                    const int channels,
+                    const bool aligned,
+                    const int pooled_height,
+                    const int pooled_width,
+                    const int input_height,
+                    const int input_width,
+                    const int sampling_ratio,
+                    const float spatial_scale,
+                    const int num_rois,
+                    void *output) {
+  MLUUnion1KernelRoialign<<<k_dim, k_type, queue>>>(
+      input, rois, channels, aligned, pooled_height, pooled_width, input_height,
+      input_width, sampling_ratio, spatial_scale, num_rois, d_type, output);
+}
