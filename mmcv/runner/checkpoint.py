@@ -240,7 +240,8 @@ class CheckpointLoader:
 
         checkpoint_loader = cls._get_checkpoint_loader(filename)
         class_name = checkpoint_loader.__name__
-        mmcv.print_log(f'Use {class_name} loader', logger)
+        mmcv.print_log(
+            f'load checkpoint from {class_name[10:]} path: {filename}', logger)
         return checkpoint_loader(filename, map_location)
 
 
