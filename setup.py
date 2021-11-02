@@ -274,7 +274,7 @@ def get_extensions():
                     extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
                     op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
                     op_files += glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp')
-                    op_files += glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.mlu')
+                    op_files += glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
                     extension = MLUExtension
                     include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
                 else:

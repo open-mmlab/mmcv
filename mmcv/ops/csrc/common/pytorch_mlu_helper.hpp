@@ -14,7 +14,6 @@
 
 #ifdef MMCV_WITH_MLU
 #include "aten.h"
-#include "../pytorch/mlu/bang_internal.h"
 
 #define NFU_ALIGN_SIZE 128
 
