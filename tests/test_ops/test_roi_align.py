@@ -3,8 +3,14 @@ import pytest
 import torch
 
 _USING_PARROTS = True
+_USING_PARROTS_CAMB = False
 try:
     from parrots.autograd import gradcheck
+    try:
+        from parrots.base import use_camb
+        _USING_PARROTS_CAMB = use_camb
+    except ImportError:
+        pass
 except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
@@ -99,5 +105,9 @@ def _test_roialign_allclose(device, dtype):
 def test_roialign(device, dtype):
     # check double only
     if dtype is torch.double:
+        if _USING_PARROTS_CAMB and device == 'cuda':
+            return
         _test_roialign_gradcheck(device=device, dtype=dtype)
+    if dtype is torch.half and device == 'cpu' and _USING_PARROTS_CAMB:
+        return
     _test_roialign_allclose(device=device, dtype=dtype)

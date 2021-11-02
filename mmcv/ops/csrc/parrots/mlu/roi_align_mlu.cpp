@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include<parrots_mlu_helper.hpp>
 #include <parrots/compute/aten.hpp>
-
+#include <parrots/darray/darraymath.hpp>
+#include <parrots_mlu_helper.hpp>
 using namespace parrots;
 
 #define USE_CPU_ROI_ALIGN
@@ -78,7 +78,7 @@ void roi_align_backward_cpu_parrots(HostContext& ctx, const SSElement& attr,
                               sampling_ratio, pool_mode, aligned);
 }
 
-#endif // USE_CPU_ROI_ALIGN
+#endif  // USE_CPU_ROI_ALIGN
 
 #ifdef PARROTS_USE_CAMB
 
@@ -107,7 +107,7 @@ static void policyFunc(cnrtQueue_t queue, cnrtDim3_t* k_dim,
   *k_type = CNRT_FUNC_TYPE_UNION1;
 }
 
-void ROIAlignForwardMLUKernelLauncher(CambContext& ctx,const DArrayLite& input,
+void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
                                       const DArrayLite& rois,
                                       DArrayLite& output, DArrayLite& argmax_y,
                                       DArrayLite& argmax_x, int aligned_height,
@@ -132,14 +132,14 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx,const DArrayLite& input,
   auto channels = input.dim(1);
   int height = input.dim(2);
   int width = input.dim(3);
-  if (output.size() == 0) {
-    output = ctx.createDArrayLite(input.spec().withShape(
-        DArrayShape(num_rois, channels, aligned_height, aligned_width)));
-  }
+  // auto memformat = input.spec().probableMemoryFormat();
+  auto mem_format = MemoryFormat::ChannelsLast;
 
-  DArrayLite output_tmp = output.view(input.spec().withShape(
-        DArrayShape(num_rois, channels, aligned_height, aligned_width),
-        parrots::MemoryFormat::ChannelsLast));
+  DArrayLite output_tmp = ctx.createDArrayLite(input.spec().withShape(
+      DArrayShape(num_rois, channels, aligned_height, aligned_width),
+      mem_format));
+  DArrayLite output_tmp1 = ctx.createDArrayLite(input.spec().withShape(
+      DArrayShape(num_rois, channels, aligned_height, aligned_width)));
 
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
 
@@ -148,10 +148,14 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx,const DArrayLite& input,
   policyFunc(queue, &k_dim, &k_type);
   cnrtDataType_t data_type = getCnrtDataType(input.elemType());
 
+  KernelRoiAlign(k_dim, k_type, queue, data_type, input.data(), rois.data(),
+                 channels, aligned, aligned_height, aligned_width, height,
+                 width, sampling_ratio, spatial_scale, num_rois,
+                 output_tmp.data());
+  output = ctx.cloneDArrayLite(output_tmp);
 
-  KernelRoiAlign(k_dim, k_type, queue, data_type, input.data(), rois.data(), channels, aligned,
-                 aligned_height, aligned_width, height, width, sampling_ratio,
-                 spatial_scale, num_rois, output_tmp.data());
+  cnrtSyncQueue(queue);
+  // output = output_tmp;
 }
 
 void KernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
@@ -186,9 +190,9 @@ void roi_align_forward_camb_parrots(CambContext& ctx, const SSElement& attr,
   auto& output = outs[0];
   auto& argmax_y = outs[1];
   auto& argmax_x = outs[2];
-  ROIAlignForwardMLUKernelLauncher(ctx,
-      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
-      spatial_scale, sampling_ratio, pool_mode, aligned);
+  ROIAlignForwardMLUKernelLauncher(ctx, input, rois, output, argmax_y, argmax_x,
+                                   aligned_height, aligned_width, spatial_scale,
+                                   sampling_ratio, pool_mode, aligned);
 }
 
 }  //  namespace roi_align_forward
@@ -205,18 +209,11 @@ static int nearestPower2(int x) {
   return x;
 }
 
-void ROIAlignBackwardMLUKernelLauncher(CambContext& ctx,
-                                       const DArrayLite& grad,
-                                       const DArrayLite&  rois,
-                                       const DArrayLite&  argmax_y,
-                                       const DArrayLite&  argmax_x,
-                                       DArrayLite& grad_input,
-                                       int aligned_height,
-                                       int aligned_width,
-                                       float spatial_scale,
-                                       int sampling_ratio,
-                                       int pool_mode,
-                                       bool aligned) {
+void ROIAlignBackwardMLUKernelLauncher(
+    CambContext& ctx, const DArrayLite& grad, const DArrayLite& rois,
+    const DArrayLite& argmax_y, const DArrayLite& argmax_x,
+    DArrayLite& grad_input, int aligned_height, int aligned_width,
+    float spatial_scale, int sampling_ratio, int pool_mode, bool aligned) {
   // params check
   PARROTS_CHECKARGS(grad.elemType() == Prim::Float16 ||
                     grad.elemType() == Prim::Float32)
@@ -243,10 +240,9 @@ void ROIAlignBackwardMLUKernelLauncher(CambContext& ctx,
   int no = grad_input.dim(0);
   int ho = grad_input.dim(2);
   int wo = grad_input.dim(3);
-
-  DArrayLite grad_input_ = grad_input.view(grad_input.spec().withShape(
-        DArrayShape(batch_size, channels, height, width),
-        parrots::MemoryFormat::ChannelsLast));
+  auto mem_format = MemoryFormat::ChannelsLast;
+  DArrayLite grad_input_ = ctx.createDArrayLite(grad_input.spec().withShape(
+      DArrayShape(batch_size, channels, height, width), mem_format));
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
   int need_core = nearestPower2(boxes_num);
@@ -258,15 +254,11 @@ void ROIAlignBackwardMLUKernelLauncher(CambContext& ctx,
   cnrtDataType_t k_dtype = getCnrtDataType(grad.elemType());
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
 
-  KernelRoiAlignBackward(k_dim, k_type, queue, k_dtype, const_cast<void*>(grad.data()),
-                         const_cast<void*>(rois.data()), grad_input_.data(), boxes_num, hi,
-                         wi, c, no, ho, wo, spatial_scale, sampling_ratio,
-                         aligned);
-
-  /*
-
-  grad_input.copy_(grad_input_);
-  */
+  KernelRoiAlignBackward(
+      k_dim, k_type, queue, k_dtype, const_cast<void*>(grad.data()),
+      const_cast<void*>(rois.data()), grad_input_.data(), boxes_num, hi, wi, c,
+      no, ho, wo, spatial_scale, sampling_ratio, aligned);
+  grad_input = ctx.cloneDArrayLite(grad_input_);
 }
 
 void roi_align_backward_camb_parrots(CambContext& ctx, const SSElement& attr,
@@ -298,7 +290,7 @@ void roi_align_backward_camb_parrots(CambContext& ctx, const SSElement& attr,
 
 }  //  namespace roi_align_backward
 
-#endif //  PARROTS_USE_CAMB
+#endif  //  PARROTS_USE_CAMB
 
 PARROTS_EXTENSION_REGISTER(roi_align_forward)
     .attr("aligned_height")
