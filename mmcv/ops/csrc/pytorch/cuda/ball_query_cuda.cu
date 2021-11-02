@@ -21,8 +21,8 @@ void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
   at::cuda::CUDAGuard device_guard(new_xyz.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(m, THREADS_PER_BLOCK),
-              b);  // blockIdx.x(col), blockIdx.y(row)
+  // blockIdx.x(col), blockIdx.y(row)
+  dim3 blocks(DIVUP(m, THREADS_PER_BLOCK), b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
