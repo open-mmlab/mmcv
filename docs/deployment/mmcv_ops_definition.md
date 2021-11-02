@@ -1,7 +1,5 @@
 # Definition of custom operators in MMCV
 
----
-
 <!-- TOC -->
 - [Definition of custom operators in MMCV](#definition-of-custom-operators-in-mmcv)
   - [MMCVBorderAlign](#mmcvborderalign)
