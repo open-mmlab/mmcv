@@ -48,7 +48,7 @@ to install ``mmcv-full==1.3.9`` with ``CUDA 11.1`` and ``PyTorch 1.9.0``, use th
 pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
-```{tip}
+```{note}
 mmcv-full is only compiled on PyTorch 1.x.0 because the compatibility
 usually holds between 1.x.0 and 1.x.1. If your PyTorch version is 1.x.1, you
 can install mmcv-full compiled with PyTorch 1.x.0 and it usually works well.
@@ -141,6 +141,10 @@ For more details, please refer the the following tables.
     </tr>
   </tbody>
 </table>
+
+```{note}
+The pre-built packages provided above do not include all versions of mmcv-full, we can click on the corresponding links to see the supported versions. For example, if you click [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html), you can see that `cu102-torch1.8.0` only provides 1.3.0 and above versions of mmcv-full.
+```
 
 Another way is to compile locally by running
 

@@ -174,6 +174,8 @@ For more details, please refer the the following tables.
   </tbody>
 </table>
 
+**Note**: The pre-built packages provided above do not include all versions of mmcv-full, we can click on the corresponding links to see the supported versions. For example, if you click [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html), you can see that `cu102-torch1.8.0` only provides 1.3.0 and above versions of mmcv-full.
+
 Another way is to compile locally by running
 
 ```python
