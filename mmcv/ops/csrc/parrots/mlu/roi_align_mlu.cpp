@@ -138,8 +138,6 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
   DArrayLite output_tmp = ctx.createDArrayLite(input.spec().withShape(
       DArrayShape(num_rois, channels, aligned_height, aligned_width),
       mem_format));
-  DArrayLite output_tmp1 = ctx.createDArrayLite(input.spec().withShape(
-      DArrayShape(num_rois, channels, aligned_height, aligned_width)));
 
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
 
