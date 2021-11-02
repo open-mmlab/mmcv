@@ -5,7 +5,9 @@ MMCV 有两个版本：
 - **mmcv-full**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。注意完整版本可能需要更长时间来编译。
 - **mmcv**: 精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
 
-**注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果CUDA可用，强烈推荐安装mmcv-full`。
+```{warning}
+请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果CUDA可用，强烈推荐安装mmcv-full`。
+```
 
 a. 安装完整版
 
@@ -27,7 +29,7 @@ pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
-```{tip}
+```{note}
 PyTorch 在 1.x.0 和 1.x.1 之间通常是兼容的，故 mmcv-full 只提供 1.x.0 的编译包。如果你
 的 PyTorch 版本是 1.x.1，你可以放心地安装在 1.x.0 版本编译的 mmcv-full。例如，如果你的
 PyTorch 版本是 1.8.1、CUDA 版本是 11.1，你可以使用以下命令安装 mmcv-full。
@@ -135,6 +137,10 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
     </tr>
   </tbody>
 </table>
+
+```{note}
+以上提供的预编译包并不囊括所有的 mmcv-full 版本，我们可以点击对应链接查看支持的版本。例如，点击 [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html)，可以看到 `cu102-torch1.8.0` 只提供了 1.3.0 及以上的 mmcv-full 版本。
+```
 
 除了使用预编译包之外，另一种方式是在本地进行编译，直接运行下述命令
 

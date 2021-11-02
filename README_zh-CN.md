@@ -171,6 +171,8 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
   </tbody>
 </table>
 
+**注意**：以上提供的预编译包并不囊括所有的 mmcv-full 版本，我们可以点击对应链接查看支持的版本。例如，点击 [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html)，可以看到 `cu102-torch1.8.0` 只提供了 1.3.0 及以上的 mmcv-full 版本。
+
 除了使用预编译包之外，另一种方式是在本地进行编译，直接运行下述命令
 
 ```python
