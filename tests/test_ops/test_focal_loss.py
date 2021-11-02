@@ -2,8 +2,15 @@ import numpy as np
 import torch
 
 _USING_PARROTS = True
+_USING_PARROTS_CAMB = False
 try:
     from parrots.autograd import gradcheck
+    try:
+        from parrots.base import use_camb
+        _USING_PARROTS_CAMB = use_camb
+    except ImportError:
+        pass
+
 except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
@@ -38,6 +45,8 @@ class Testfocalloss(object):
     def _test_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
+        if _USING_PARROTS_CAMB:
+            return
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
         gamma = 2.0
@@ -67,9 +76,17 @@ class Testfocalloss(object):
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
+            if _USING_PARROTS_CAMB:
+                if dtype == torch.half:
+                    return
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).cuda().type(dtype)
+                y = torch.from_numpy(np_y).int().cuda()
+            else:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                y = torch.from_numpy(np_y).cuda().long()
+
             x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
 
             loss = sigmoid_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
@@ -79,6 +96,8 @@ class Testfocalloss(object):
 
     def _test_grad_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
+            return
+        if _USING_PARROTS_CAMB:
             return
         from mmcv.ops import SoftmaxFocalLoss
         alpha = 0.25
@@ -109,15 +128,29 @@ class Testfocalloss(object):
             np_x = np.array(case[0])
             np_y = np.array(case[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
+            if _USING_PARROTS_CAMB:
+                if dtype == torch.half:
+                    return
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).cuda().type(dtype)
+                y = torch.from_numpy(np_y).int().cuda()
+            else:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                y = torch.from_numpy(np_y).cuda().long()
             x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
 
             floss = SigmoidFocalLoss(gamma, alpha)
             if _USING_PARROTS:
-                # gradcheck(floss, (x, y),
-                #           no_grads=[y])
-                pass
+                if _USING_PARROTS_CAMB:
+                    output = floss(x, y)
+                    output.backward()
+                    np_x_grad = np.array(
+                        sigmoid_outputs[inputs.index(case)][1])
+                    assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
+                else:
+                    # gradcheck(floss, (x, y),
+                    #           no_grads=[y])
+                    pass
             else:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
