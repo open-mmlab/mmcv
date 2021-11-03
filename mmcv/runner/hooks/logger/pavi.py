@@ -101,8 +101,7 @@ class PaviLoggerHook(LoggerHook):
                     iteration=iteration)
 
         # flush the buffer and send a task ending signal to Pavi
-        if hasattr(self, 'writer'):
-            self.writer.close()
+        self.writer.close()
 
     @master_only
     def before_epoch(self, runner):
