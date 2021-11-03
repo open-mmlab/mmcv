@@ -14,7 +14,7 @@ try:
         try:
             if torch.is_mlu_available():
                 from torch_mlu.utils.cpp_extension import BuildExtension
-        except ModuleNotFoundError:
+        except AttributeError:
             from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     cmd_class = {'build_ext': BuildExtension}
@@ -280,7 +280,7 @@ def get_extensions():
                         os.path.abspath('./mmcv/ops/csrc/common'))
                 else:
                     print("Cambricon Catch is not available!")
-            except ModuleNotFoundError:
+            except AttributeError:
                 print(f'Compiling {ext_name} without CUDA')
                 op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
                 extension = CppExtension
