@@ -7,6 +7,7 @@ from typing import List, Optional
 
 class ConditionalRandomField(nn.Module):
     """Conditional random field.
+
     This module implements a conditional random field [LMP01]_.
     The forward computation of this class computes the
     log likelihood of the given sequence of tags and
@@ -47,9 +48,11 @@ class ConditionalRandomField(nn.Module):
 
     def reset_parameters(self) -> None:
         """Initialize the transition parameters.
+        
         The parameters will be initialized randomly from a uniform distribution
         between -0.1 and 0.1.
         """
+
         nn.init.uniform_(self.start_transitions, -0.1, 0.1)
         nn.init.uniform_(self.end_transitions, -0.1, 0.1)
         nn.init.uniform_(self.transitions, -0.1, 0.1)
@@ -66,6 +69,7 @@ class ConditionalRandomField(nn.Module):
     ) -> torch.Tensor:
         """Compute the conditional log likelihood of
         a sequence of tags given emission scores.
+        
         Args:
             emissions (`~torch.Tensor`): Emission score tensor of size
                 ``(seq_length, batch_size, num_tags)``
