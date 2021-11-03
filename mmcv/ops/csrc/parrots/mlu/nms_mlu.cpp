@@ -1,83 +1,200 @@
-#include "parrots_mlu_helper.hpp"
+#include <parrots/compute/aten.hpp>
+#include <parrots_mlu_helper.hpp>
+#include <type_traits>
 
-#ifdef PARROTS_USE_CAMB
+using namespace parrots;
 
-Tensor NMSMLUKernelLauncher(Tensor boxes,
-                            Tensor scores,
-                            float iou_threshold,
-                            int offset) {
-  // dimension parameters check
-  TORCH_CHECK(boxes.dim() == 2, "boxes should be a 2d tensor, got ",
-              boxes.dim(), "D");
-  TORCH_CHECK(boxes.size(1) == 4,
-              "boxes should have 4 elements in dimension 1, got ",
-              boxes.size(1));
-  TORCH_CHECK(scores.dim() == 1, "scores should be a 1d tensor, got ",
-              scores.dim(), "D");
+#define USE_CPU_NMS
 
-  // data type check
-  TORCH_CHECK(boxes.scalar_type() == scores.scalar_type(),
-              "boxes should have the same type as scores");
-  TORCH_CHECK(
-      boxes.scalar_type() == at::kFloat || boxes.scalar_type() == at::kHalf,
-      "data type of boxes should be Float or Half, got ", boxes.scalar_type());
+template <typename T>
+void nms_parrots(T& ctx, const SSElement& attr,
+                 const OperatorBase::in_list_t& ins,
+                 OperatorBase::out_list_t& outs) {}
 
+#ifdef USE_CPU_NMS
+
+using at::Tensor;
+
+Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
+  auto x1_t = boxes.select(1, 0).contiguous();
+  auto y1_t = boxes.select(1, 1).contiguous();
+  auto x2_t = boxes.select(1, 2).contiguous();
+  auto y2_t = boxes.select(1, 3).contiguous();
 
-  int input_num_boxes = boxes.size(0);
-  int input_stride = boxes.size(1);
-  int max_output_boxes = boxes.size(0);
+  Tensor areas_t = (x2_t - x1_t + offset) * (y2_t - y1_t + offset);
+
+  auto order_t = std::get<1>(scores.sort(0, /* descending=*/true));
+
+  auto nboxes = boxes.size(0);
+  Tensor select_t = at::ones({nboxes}, boxes.options().dtype(at::kBool));
+
+  auto select = select_t.data_ptr<bool>();
+  auto order = order_t.data_ptr<int64_t>();
+  auto x1 = x1_t.data_ptr<float>();
+  auto y1 = y1_t.data_ptr<float>();
+  auto x2 = x2_t.data_ptr<float>();
+  auto y2 = y2_t.data_ptr<float>();
+  auto areas = areas_t.data_ptr<float>();
+
+  for (int64_t _i = 0; _i < nboxes; _i++) {
+    if (select[_i] == false) continue;
+    auto i = order[_i];
+    auto ix1 = x1[i];
+    auto iy1 = y1[i];
+    auto ix2 = x2[i];
+    auto iy2 = y2[i];
+    auto iarea = areas[i];
+
+    for (int64_t _j = _i + 1; _j < nboxes; _j++) {
+      if (select[_j] == false) continue;
+      auto j = order[_j];
+      auto xx1 = std::max(ix1, x1[j]);
+      auto yy1 = std::max(iy1, y1[j]);
+      auto xx2 = std::min(ix2, x2[j]);
+      auto yy2 = std::min(iy2, y2[j]);
+
+      auto w = std::max(0.f, xx2 - xx1 + offset);
+      auto h = std::max(0.f, yy2 - yy1 + offset);
+      auto inter = w * h;
+      auto ovr = inter / (iarea + areas[j] - inter);
+      if (ovr > iou_threshold) select[_j] = false;
+    }
+  }
+  return order_t.masked_select(select_t);
+}
+
+template <>
+void nms_parrots<HostContext>(HostContext& ctx, const SSElement& attr,
+                              const OperatorBase::in_list_t& ins,
+                              OperatorBase::out_list_t& outs) {
+  float iou_threshold;
+  int offset;
+  SSAttrs(attr)
+      .get("iou_threshold", iou_threshold)
+      .get("offset", offset)
+      .done();
+
+  at::Tensor boxes, scores;
+  boxes = buildATensor(ctx, ins[0]);
+  scores = buildATensor(ctx, ins[1]);
+  auto out = nms_cpu(boxes, scores, iou_threshold, offset);
+  updateDArray(ctx, out, outs[0]);
+  return;
+}
+
+#endif  // USE_CPU_NMS
+
+#ifdef PARROTS_USE_CAMB
+
+void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+               const cnrtDataType_t data_type_input, const void* boxes_ptr,
+               const void* scores_ptr, const int input_num_boxes,
+               const int input_stride, const int max_output_boxes,
+               const float iou_threshold, const float offset,
+               void* workspace_ptr, void* output_size_ptr, void* output_ptr);
+
+void NMSMLUKernelLauncher(CambContext& ctx, const DArrayLite& boxes,
+                          const DArrayLite& scores, DArrayLite& output,
+                          const float iou_threshold, const int offset) {
+  if (boxes.size() == 0) {
+    output = ctx.createDArrayLite(boxes.spec().withElemType(Prim::Int32));
+    return;
+  }
+  // dimension parameters check
+  PARROTS_CHECKARGS(boxes.ndims() == 2)
+      << "boxes should be a 2d tensor, got " << boxes.ndims() << "D";
+  PARROTS_CHECKARGS(boxes.dim(1) == 4)
+      << "boxes should have 4 elements in dimension 1, got " << boxes.dim(1);
+  PARROTS_CHECKARGS(scores.ndims() == 1)
+      << "scores should be a 1d tensor, got " << scores.ndims() << "D";
+  // data type check
+  PARROTS_CHECKARGS(boxes.elemType() == Prim::Float32 ||
+                    boxes.elemType() == Prim::Float16)
+      << "data type of boxes should be Float or Half, got " << boxes.elemType();
+  PARROTS_CHECKARGS(boxes.elemType() == scores.elemType())
+      << "boxes should have the same type as scores";
+
+  int input_num_boxes = boxes.dim(0);
+  int input_stride = boxes.dim(1);
+  int max_output_boxes = boxes.dim(0);
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
-  int core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  int core_dim = getDeviceAttr(cnrtAttrMcorePerCluster);
   uint32_t dim_x = core_dim;
   cnrtDim3_t k_dim = {dim_x, 1, 1};
-  cnrtDataType_t data_type_input = torch_mlu::toCnrtDtype(boxes.dtype());
+  cnrtDataType_t data_type_input = getCnrtDataType(boxes.elemType());
 
-  auto output = at::empty({max_output_boxes}, boxes.options().dtype(at::kLong));
-  auto output_size = at::empty({1}, scores.options().dtype(at::kInt));
+  DArrayLite output_tmp =
+      ctx.createDArrayLite(boxes.spec()
+                               .withElemType(Prim::Int32)
+                               .withShape(DArrayShape(max_output_boxes)));
+  DArrayLite output_size = ctx.createDArrayLite(
+      scores.spec().withElemType(Prim::Int32).withShape(DArrayShape(1)));
 
   // workspace
   size_t space_size = 0;
-  if (boxes.scalar_type() == at::kHalf) {
+  if (boxes.elemType() == Prim::Float16) {
     space_size = input_num_boxes * sizeof(int16_t);
   } else {
     space_size = input_num_boxes * sizeof(float);
   }
-  auto workspace = at::empty(space_size, boxes.options().dtype(at::kByte));
+  auto workspace = ctx.createDArrayLite(DArraySpec::bytes(space_size));
 
   // get compute queue
-  auto queue = torch_mlu::getCurQueue();
-
-  auto boxes_impl = torch_mlu::getMluTensorImpl(boxes);
-  auto boxes_ptr = boxes_impl->cnnlMalloc();
-  auto scores_impl = torch_mlu::getMluTensorImpl(scores);
-  auto scores_ptr = scores_impl->cnnlMalloc();
-  auto workspace_impl = torch_mlu::getMluTensorImpl(workspace);
-  auto workspace_ptr = workspace_impl->cnnlMalloc();
-  auto output_impl = torch_mlu::getMluTensorImpl(output);
-  auto output_ptr = output_impl->cnnlMalloc();
-  auto output_size_impl = torch_mlu::getMluTensorImpl(output_size);
-  auto output_size_ptr = output_size_impl->cnnlMalloc();
+  auto queue = getStreamNative<CambDevice>(ctx.getStream());
 
   switch (k_type) {
     default: {
-      TORCH_CHECK(false, "[nms_mlu]:Failed to choose kernel to launch");
+      PARROTS_CHECKARGS(false) << "[nms_mlu]:Failed to choose kernel to launch";
     }
     case CNRT_FUNC_TYPE_BLOCK:
     case CNRT_FUNC_TYPE_UNION1: {
-      CNLOG(INFO) << "Launch Kernel MLUUnion1 or Block NMS<<<Union"
-                  << k_type / core_dim << ", " << k_dim.x << ", " << k_dim.y
-                  << ", " << k_dim.z << ">>>";
-      KernelNms(k_dim, k_type, queue, data_type_input, boxes_ptr, scores_ptr,
-                input_num_boxes, input_stride, max_output_boxes, iou_threshold,
-                offset, workspace_ptr, output_size_ptr, output_ptr);
+      KernelNms(k_dim, k_type, queue, data_type_input, boxes.data(),
+                scores.data(), input_num_boxes, input_stride, max_output_boxes,
+                iou_threshold, offset, workspace.data(), output_size.data(),
+                output_tmp.data());
     }; break;
   }
 
-  int output_num = *static_cast<int *>(output_size.cpu().data_ptr());
-  return output.slice(0, 0, output_num);
+  int output_num = 0;
+  PARROTS_CALLCNRT(cnrtMemcpyAsync(&output_num, output_size.data(), sizeof(int),
+                                   queue, cnrtMemcpyDevToHost));
+
+  PARROTS_CALLCNRT(cnrtSyncQueue(queue));
+  output = ctx.createDArrayLite(boxes.spec()
+                                    .withElemType(Prim::Int32)
+                                    .withShape(DArrayShape(output_num)));
+  PARROTS_CALLCNRT(cnrtMemcpyAsync(output.data(), output_tmp.data(),
+                                   output.nbytes(), queue, cnrtMemcpyDevToDev));
 }
 
+template <>
+void nms_parrots<CambContext>(CambContext& ctx, const SSElement& attr,
+                              const OperatorBase::in_list_t& ins,
+                              OperatorBase::out_list_t& outs) {
+  float iou_threshold;
+  int offset;
+  SSAttrs(attr)
+      .get("iou_threshold", iou_threshold)
+      .get("offset", offset)
+      .done();
+  const auto& boxes = ins[0];
+  const auto& scores = ins[1];
+  auto& out = outs[0];
+  NMSMLUKernelLauncher(ctx, boxes, scores, out, iou_threshold, offset);
+  return;
+}
+#endif  //  PARROTS_USE_CAMB
+
+PARROTS_EXTENSION_REGISTER(nms)
+    .attr("iou_threshold")
+    .attr("offset")
+    .input(2)
+    .output(1)
+    .apply(nms_parrots<HostContext>)
+#ifdef PARROTS_USE_CAMB
+    .apply(nms_parrots<CambContext>)
 #endif
+    .done();
