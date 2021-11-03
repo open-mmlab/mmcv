@@ -255,7 +255,7 @@ def load_from_local(filename, map_location):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    filename = osp.abspath(filename) if not osp.isabs(filename) else filename
+    filename = osp.expanduser(filename)
     if not osp.isfile(filename):
         raise IOError(f'{filename} is not a checkpoint file')
     checkpoint = torch.load(filename, map_location=map_location)

@@ -13,7 +13,8 @@ from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
-                                    load_from_pavi, save_checkpoint)
+                                    load_from_local, load_from_pavi,
+                                    save_checkpoint)
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -430,3 +431,15 @@ def test_save_checkpoint(tmp_path):
         save_checkpoint(
             model, filename, file_client_args={'backend': 'petrel'})
     mock_method.assert_called()
+
+
+def test_load_from_local():
+    import os
+    home_path = os.path.expanduser('~')
+    checkpoint_path = os.path.join(home_path, 'checkpoint.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_from_local('~/checkpoint.pth', map_location=None)
+    assert_tensor_equal(checkpoint['state_dict']['block.conv.weight'],
+                        model.block.conv.weight)
+    os.remove(checkpoint_path)
