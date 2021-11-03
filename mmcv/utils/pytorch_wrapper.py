@@ -3,6 +3,7 @@ import torch
 
 TORCH_VERSION = torch.__version__
 
+
 def is_cuda() -> bool:
     return torch.cuda.is_available()
 
@@ -14,4 +15,3 @@ def is_mlu() -> bool:
         except AttributeError:
             return False
     return False
-
