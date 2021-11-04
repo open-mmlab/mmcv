@@ -34,6 +34,18 @@ gt_offset_bias_grad = [1.44, -0.72, 0., 0., -0.10, -0.08, -0.54, -0.54],
 gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 
 
+def cat2batch(batch_size=1, *args):
+    trans_list = []
+    for sample in args:
+        sample = torch.tensor(sample)
+        _list = []
+        for i in range(batch_size):
+            _list.append(sample)
+        _batch = np.concatenate(_list)
+        trans_list.append(_batch)
+    return tuple(trans_list)
+
+
 class TestDeformconv(object):
 
     def _test_deformconv(self,
@@ -45,9 +57,18 @@ class TestDeformconv(object):
         from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
-        x = torch.tensor(input, device=device, dtype=dtype)
+        batch_size = 80
+        _input, _gt_out, _gt_x_grad = cat2batch(batch_size, input, gt_out,
+                                                gt_x_grad)
+        x = torch.tensor(_input, device=device, dtype=dtype)
         x.requires_grad = True
-        model = DeformConv2dPack(c_in, c_out, 2, stride=1, padding=0)
+        model = DeformConv2dPack(
+            in_channels=c_in,
+            out_channels=c_out,
+            kernel_size=2,
+            stride=1,
+            padding=0,
+            im2col_step=batch_size // 5)
         model.conv_offset.weight.data = torch.nn.Parameter(
             torch.Tensor(offset_weight).reshape(8, 1, 2, 2))
         model.conv_offset.bias.data = torch.nn.Parameter(
@@ -61,15 +82,18 @@ class TestDeformconv(object):
         out = model(x)
         out.backward(torch.ones_like(out))
 
-        assert np.allclose(out.data.detach().cpu().numpy(), gt_out, threshold)
-        assert np.allclose(x.grad.detach().cpu().numpy(), gt_x_grad, threshold)
+        assert np.allclose(out.data.detach().cpu().numpy(), _gt_out, threshold)
+        assert np.allclose(x.grad.detach().cpu().numpy(), _gt_x_grad,
+                           threshold)
         assert np.allclose(
-            model.conv_offset.weight.grad.detach().cpu().numpy(),
+            model.conv_offset.weight.grad.detach().cpu().numpy() / batch_size,
             gt_offset_weight_grad, threshold)
-        assert np.allclose(model.conv_offset.bias.grad.detach().cpu().numpy(),
-                           gt_offset_bias_grad, threshold)
-        assert np.allclose(model.weight.grad.detach().cpu().numpy(),
-                           gt_deform_weight_grad, threshold)
+        assert np.allclose(
+            model.conv_offset.bias.grad.detach().cpu().numpy() / batch_size,
+            gt_offset_bias_grad, threshold)
+        assert np.allclose(
+            model.weight.grad.detach().cpu().numpy() / batch_size,
+            gt_deform_weight_grad, threshold)
 
         from mmcv.ops import DeformConv2d
 
@@ -102,9 +126,18 @@ class TestDeformconv(object):
         from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
-        x = torch.Tensor(input).cuda().type(input_dtype)
+        batch_size = 80
+        _input, _gt_out, _gt_x_grad = cat2batch(batch_size, input, gt_out,
+                                                gt_x_grad)
+        x = torch.Tensor(_input).cuda().type(input_dtype)
         x.requires_grad = True
-        model = DeformConv2dPack(c_in, c_out, 2, stride=1, padding=0)
+        model = DeformConv2dPack(
+            in_channels=c_in,
+            out_channels=c_out,
+            kernel_size=2,
+            stride=1,
+            padding=0,
+            im2col_step=batch_size // 5)
         model.conv_offset.weight.data = torch.nn.Parameter(
             torch.Tensor(offset_weight).reshape(8, 1, 2, 2))
         model.conv_offset.bias.data = torch.nn.Parameter(
@@ -119,12 +152,14 @@ class TestDeformconv(object):
         assert np.allclose(out.data.detach().cpu().numpy(), gt_out, threshold)
         assert np.allclose(x.grad.detach().cpu().numpy(), gt_x_grad, threshold)
         assert np.allclose(
-            model.conv_offset.weight.grad.detach().cpu().numpy(),
+            model.conv_offset.weight.grad.detach().cpu().numpy() / batch_size,
             gt_offset_weight_grad, threshold)
-        assert np.allclose(model.conv_offset.bias.grad.detach().cpu().numpy(),
-                           gt_offset_bias_grad, threshold)
-        assert np.allclose(model.weight.grad.detach().cpu().numpy(),
-                           gt_deform_weight_grad, threshold)
+        assert np.allclose(
+            model.conv_offset.bias.grad.detach().cpu().numpy() / batch_size,
+            gt_offset_bias_grad, threshold)
+        assert np.allclose(
+            model.weight.grad.detach().cpu().numpy() / batch_size,
+            gt_deform_weight_grad, threshold)
 
         from mmcv.ops import DeformConv2d
 

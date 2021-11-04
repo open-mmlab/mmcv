@@ -224,7 +224,8 @@ class DeformConv2d(nn.Module):
                  dilation: Union[int, Tuple[int, ...]] = 1,
                  groups: int = 1,
                  deform_groups: int = 1,
-                 bias: bool = False) -> None:
+                 bias: bool = False,
+                 im2col_step: int = 32) -> None:
         super(DeformConv2d, self).__init__()
 
         assert not bias, \
@@ -243,6 +244,7 @@ class DeformConv2d(nn.Module):
         self.dilation = _pair(dilation)
         self.groups = groups
         self.deform_groups = deform_groups
+        self.im2col_step = im2col_step
         # enable compatibility with nn.Conv2d
         self.transposed = False
         self.output_padding = _single(0)
@@ -293,7 +295,8 @@ class DeformConv2d(nn.Module):
             offset = F.pad(offset, (0, pad_w, 0, pad_h), 'constant', 0)
             offset = offset.contiguous()
         out = deform_conv2d(x, offset, self.weight, self.stride, self.padding,
-                            self.dilation, self.groups, self.deform_groups)
+                            self.dilation, self.groups, self.deform_groups,
+                            False, self.im2col_step)
         if input_pad:
             out = out[:, :, :out.size(2) - pad_h, :out.size(3) -
                       pad_w].contiguous()
@@ -361,7 +364,8 @@ class DeformConv2dPack(DeformConv2d):
     def forward(self, x):
         offset = self.conv_offset(x)
         return deform_conv2d(x, offset, self.weight, self.stride, self.padding,
-                             self.dilation, self.groups, self.deform_groups)
+                             self.dilation, self.groups, self.deform_groups,
+                             False, self.im2col_step)
 
     def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
                               missing_keys, unexpected_keys, error_msgs):
