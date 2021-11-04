@@ -111,11 +111,15 @@ html_theme_options = {
         },
         {
             'name':
-            '算法库',
+            '文档',
             'children': [
                 {
+                    'name': 'MMCV',
+                    'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
+                },
+                {
                     'name': 'MMAction2',
-                    'url': 'https://github.com/open-mmlab/mmaction2',
+                    'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMClassification',
@@ -123,35 +127,38 @@ html_theme_options = {
                 },
                 {
                     'name': 'MMDetection',
-                    'url': 'https://github.com/open-mmlab/mmdetection',
+                    'url':
+                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection3D',
-                    'url': 'https://github.com/open-mmlab/mmdetection3d',
+                    'url':
+                    'https://mmdetection3d.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMEditing',
-                    'url': 'https://github.com/open-mmlab/mmediting',
+                    'url': 'https://mmediting.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMGeneration',
-                    'url': 'https://github.com/open-mmlab/mmgeneration',
+                    'url': 'https://mmgeneration.readthedocs.io/en/latest/',
                 },
                 {
                     'name': 'MMOCR',
-                    'url': 'https://github.com/open-mmlab/mmocr',
+                    'url': 'https://mmocr.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMPose',
-                    'url': 'https://github.com/open-mmlab/mmpose',
+                    'url': 'https://mmpose.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMSegmentation',
-                    'url': 'https://github.com/open-mmlab/mmsegmentation',
+                    'url':
+                    'https://mmsegmentation.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMTracking',
-                    'url': 'https://github.com/open-mmlab/mmtracking',
+                    'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
                 },
             ]
         },
