@@ -68,14 +68,15 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
 
 void sigmoid_focal_loss_forward_mlu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
-  SigmoidFocalLossForwardMLUKernelLauncher(input, target, weight, output,
-                                            gamma, alpha);
+  SigmoidFocalLossForwardMLUKernelLauncher(input, target, weight, output, gamma,
+                                           alpha);
 }
 
-void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target,
-                                     Tensor weight, Tensor grad_input,
-                                     float gamma, float alpha) {
-  SigmoidFocalLossBackwardMLUKernelLauncher(input, target, weight, grad_input, gamma, alpha);
+void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target, Tensor weight,
+                                     Tensor grad_input, float gamma,
+                                     float alpha) {
+  SigmoidFocalLossBackwardMLUKernelLauncher(input, target, weight, grad_input,
+                                            gamma, alpha);
 }
 #endif
 
@@ -94,11 +95,10 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
     AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
 #endif
 #ifdef MMCV_WITH_MLU
-  } else if (input.device().type() == at::kMLU ){
+  } else if (input.device().type() == at::kMLU) {
     CHECK_MLU(input);
     CHECK_MLU(target);
-    sigmoid_focal_loss_forward_mlu(input, target, weight, output, gamma,
-                                   alpha);
+    sigmoid_focal_loss_forward_mlu(input, target, weight, output, gamma, alpha);
 #endif
   } else {
     AT_ERROR("SigmoidFocalLoss is not implemented on CPU");
@@ -120,7 +120,7 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
     AT_ERROR("SigmoidFocalLoss is not compiled with GPU support");
 #endif
 #ifdef MMCV_WITH_MLU
-  } else if (input.device().type() == at::kMLU ){
+  } else if (input.device().type() == at::kMLU) {
     CHECK_MLU(input);
     CHECK_MLU(target);
     CHECK_MLU(weight);

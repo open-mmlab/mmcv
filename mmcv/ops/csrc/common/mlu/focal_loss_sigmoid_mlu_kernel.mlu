@@ -20,9 +20,7 @@ __nram__ char nram_buffer[MAX_NRAM_SIZE];
 
 namespace forward {
 template <typename T>
-__mlu_func__ void loadInput(char *nram_input,
-                            T *dram_input,
-                            const int32_t size,
+__mlu_func__ void loadInput(char *nram_input, T *dram_input, const int32_t size,
                             const int32_t dst_stride = 0,
                             const int32_t src_stride = 0,
                             const int32_t count = 1) {
@@ -31,10 +29,8 @@ __mlu_func__ void loadInput(char *nram_input,
 }
 
 template <typename T>
-__mlu_func__ void storeOutput(T *dram_output,
-                              char *nram_output,
-                              const int32_t size,
-                              const int32_t dst_stride = 0,
+__mlu_func__ void storeOutput(T *dram_output, char *nram_output,
+                              const int32_t size, const int32_t dst_stride = 0,
                               const int32_t src_stride = 0,
                               const int32_t count = 1) {
   __memcpy_async(dram_output, nram_output, size, NRAM2GDRAM, dst_stride,
@@ -42,19 +38,11 @@ __mlu_func__ void storeOutput(T *dram_output,
 }
 
 template <typename T>
-__mlu_func__ void compute(T *input,
-                          const int32_t *target,
-                          const T *weight,
-                          const int32_t has_weight,
-                          const int32_t deal_num,
-                          const int32_t n_seg,
-                          const int32_t C,
-                          float alpha,
-                          float gamma,
-                          T *scalar_temp,
-                          T *tensor_max,
-                          T *tensor_temp,
-                          T *output) {
+__mlu_func__ void compute(T *input, const int32_t *target, const T *weight,
+                          const int32_t has_weight, const int32_t deal_num,
+                          const int32_t n_seg, const int32_t C, float alpha,
+                          float gamma, T *scalar_temp, T *tensor_max,
+                          T *tensor_temp, T *output) {
   const int32_t scalar_elem_num = NFU_ALIGN_SIZE / sizeof(T);
 
   // 0. n_max = max(0, x)
@@ -127,14 +115,10 @@ __mlu_func__ void compute(T *input,
 }
 
 template <typename T>
-__mlu_func__ void focalLossSigmoidForwardBlock(const T *input,
-                                               const int32_t *target,
-                                               const T *weight,
-                                               const int32_t row_num,
-                                               const int32_t C,
-                                               const float alpha,
-                                               const float gamma,
-                                               T *output) {
+__mlu_func__ void focalLossSigmoidForwardBlock(
+    const T *input, const int32_t *target, const T *weight,
+    const int32_t row_num, const int32_t C, const float alpha,
+    const float gamma, T *output) {
   /*
    * NRAM partition
    *  |-----------------------------------------------------------------------|
@@ -300,14 +284,9 @@ __mlu_func__ void focalLossSigmoidForwardBlock(const T *input,
 }
 
 template <typename T>
-__mlu_global__ void MLUUnion1KernelFocalLossSigmoidForward(const void *input,
-                                                           const void *target,
-                                                           const void *weight,
-                                                           const int32_t N,
-                                                           const int32_t C,
-                                                           const float alpha,
-                                                           const float gamma,
-                                                           void *output) {
+__mlu_global__ void MLUUnion1KernelFocalLossSigmoidForward(
+    const void *input, const void *target, const void *weight, const int32_t N,
+    const int32_t C, const float alpha, const float gamma, void *output) {
   const int32_t n_seg = N / taskDim + (taskId == taskDim - 1) * (N % taskDim);
   const T *input_offset = (T *)input + N / taskDim * taskId * C;
   const int32_t *target_offset = (int32_t *)target + N / taskDim * taskId;
@@ -321,14 +300,10 @@ __mlu_global__ void MLUUnion1KernelFocalLossSigmoidForward(const void *input,
 
 namespace backward {
 template <typename T>
-__mlu_func__ void loadInput(char *nram_input,
-                            char *nram_target,
-                            const T *gdram_input,
-                            const int32_t *gdram_target,
-                            const int32_t deal_n,
-                            const int32_t total_c,
-                            const bool pingping_flag,
-                            const bool has_weight,
+__mlu_func__ void loadInput(char *nram_input, char *nram_target,
+                            const T *gdram_input, const int32_t *gdram_target,
+                            const int32_t deal_n, const int32_t total_c,
+                            const bool pingping_flag, const bool has_weight,
                             const int32_t nram_offset,
                             const int32_t gdram_offset) {
   if (pingping_flag == PONG) {
@@ -366,8 +341,7 @@ __mlu_func__ void loadInput(char *nram_input,
 }
 
 template <typename T>
-__mlu_func__ void sigmoid(T *dst_data,
-                          const T *src_data,
+__mlu_func__ void sigmoid(T *dst_data, const T *src_data,
                           const int32_t elem_count) {
   __bang_mul_const(dst_data, (T *)src_data, T(-1), elem_count);
   __bang_active_exphp(dst_data, dst_data, elem_count);
@@ -376,20 +350,13 @@ __mlu_func__ void sigmoid(T *dst_data,
 }
 
 template <typename T>
-__mlu_func__ void coreCompute(char *nram_input,
-                              const T *nram_weight,
-                              const float *nram_flt_min,
-                              char *nram_pt,
-                              char *nram_alpha_t,
-                              char *nram_temp,
-                              char *nram_target,
-                              const float *nram_gamma,
-                              char *nram_output,
-                              const float alpha,
-                              const int32_t compute_num,
-                              const int32_t deal_n,
-                              const int32_t total_c,
-                              const bool pingpong_flag,
+__mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
+                              const float *nram_flt_min, char *nram_pt,
+                              char *nram_alpha_t, char *nram_temp,
+                              char *nram_target, const float *nram_gamma,
+                              char *nram_output, const float alpha,
+                              const int32_t compute_num, const int32_t deal_n,
+                              const int32_t total_c, const bool pingpong_flag,
                               const int32_t nram_offset,
                               const bool has_weight) {
   if (pingpong_flag == PONG) {
@@ -422,8 +389,7 @@ __mlu_func__ void coreCompute(char *nram_input,
   const int32_t nfu_align_num = NFU_ALIGN_SIZE / sizeof(float);
   for (int n = 0; n < deal_n; n++) {
     const int32_t target_value = ((int32_t *)nram_target)[n];
-    if (target_value >= total_c || target_value < 0)
-      continue;
+    if (target_value >= total_c || target_value < 0) continue;
     int32_t c_offset = 0;
     if (has_weight) {
       int32_t c_align_num = nfu_align_num;
@@ -496,12 +462,9 @@ __mlu_func__ void coreCompute(char *nram_input,
 }
 
 template <typename T>
-__mlu_func__ void storeOutput(T *gdram_output,
-                              const char *nram_output,
-                              const int32_t deal_n,
-                              const int32_t total_c,
-                              const bool pingpong_flag,
-                              const bool has_weight,
+__mlu_func__ void storeOutput(T *gdram_output, const char *nram_output,
+                              const int32_t deal_n, const int32_t total_c,
+                              const bool pingpong_flag, const bool has_weight,
                               const int32_t nram_offset,
                               const int32_t gdram_offset) {
   if (pingpong_flag == PONG) {
@@ -521,15 +484,10 @@ __mlu_func__ void storeOutput(T *gdram_output,
 }
 
 template <typename T>
-__mlu_func__ void focalLossSigmoidBackwardBlock(const T *input,
-                                                const int32_t *target,
-                                                const T *weight,
-                                                const float gamma,
-                                                const float alpha,
-                                                const int32_t total_n,
-                                                const int32_t deal_n,
-                                                const int32_t total_c,
-                                                T *output) {
+__mlu_func__ void focalLossSigmoidBackwardBlock(
+    const T *input, const int32_t *target, const T *weight, const float gamma,
+    const float alpha, const int32_t total_n, const int32_t deal_n,
+    const int32_t total_c, T *output) {
   // params per time slice
   int32_t deal_num = deal_n * total_c;
   int32_t deal_size = deal_num * sizeof(float);
@@ -713,8 +671,7 @@ __mlu_func__ void focalLossSigmoidBackwardBlock(const T *input,
 
   // process the remaining data which N remainder per core is less than deal_n
   int32_t rem_for_all = total_num - num_per_core * taskDim;
-  if (rem_for_all == 0)
-    return;
+  if (rem_for_all == 0) return;
   int32_t rem_n_for_all = rem_for_all / total_c;
   int32_t rem_n_per_core = (rem_n_for_all + taskDim - 1) / taskDim;
   int32_t rem_num_per_core = rem_n_per_core * total_c;
@@ -753,8 +710,7 @@ __mlu_func__ void focalLossSigmoidBackwardBlock(const T *input,
     storeOutput(base_addr_output, nram_output, rem_n_per_core, total_c, PING,
                 has_weight, ping_pong_offset, taskId * rem_num_per_core);
   } else if (taskId == rem_core_num) {
-    if (rem_num_for_last == 0)
-      return;
+    if (rem_num_for_last == 0) return;
     loadInput(nram_input, nram_target, base_addr_input, base_addr_target,
               rem_n_for_last, total_c, PING, has_weight, ping_pong_offset,
               taskId * rem_num_per_core);
@@ -773,33 +729,22 @@ __mlu_func__ void focalLossSigmoidBackwardBlock(const T *input,
 
 template <typename T>
 __mlu_global__ void MLUUnion1KernelFocalLossSigmoidBackward(
-    const void *input,
-    const void *target,
-    const void *weight,
-    const float gamma,
-    const float alpha,
-    const int32_t total_n,
-    const int32_t deal_n,
-    const int32_t total_c,
-    void *output) {
+    const void *input, const void *target, const void *weight,
+    const float gamma, const float alpha, const int32_t total_n,
+    const int32_t deal_n, const int32_t total_c, void *output) {
   focalLossSigmoidBackwardBlock((T *)input, (int32_t *)target, (T *)weight,
                                 gamma, alpha, total_n, deal_n, total_c,
                                 (T *)output);
 }
 }  // namespace backward
 
-void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim,
-                                   cnrtFunctionType_t k_type,
+void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                    cnrtQueue_t queue,
                                    const cnrtDataType_t d_type,
-                                   const void *input,
-                                   const void *target,
-                                   const void *weight,
-                                   const int32_t N,
-                                   const int32_t C,
-                                   const float alpha,
-                                   const float gamma,
-                                   void *output) {
+                                   const void *input, const void *target,
+                                   const void *weight, const int32_t N,
+                                   const int32_t C, const float alpha,
+                                   const float gamma, void *output) {
   if (d_type == CNRT_FLOAT16) {
     forward::MLUUnion1KernelFocalLossSigmoidForward<
         half><<<k_dim, k_type, queue>>>(input, target, weight, N, C, alpha,
@@ -811,18 +756,13 @@ void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim,
   }
 }
 
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim,
-                                    cnrtFunctionType_t k_type,
+void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                     cnrtQueue_t queue,
                                     const cnrtDataType_t d_type,
-                                    const void *input,
-                                    const void *target,
-                                    const void *weight,
-                                    const float gamma,
-                                    const float alpha,
-                                    const int32_t dim_n,
-                                    const int32_t deal_n,
-                                    const int32_t dim_c,
+                                    const void *input, const void *target,
+                                    const void *weight, const float gamma,
+                                    const float alpha, const int32_t dim_n,
+                                    const int32_t deal_n, const int32_t dim_c,
                                     void *output) {
   if (d_type == CNRT_FLOAT16) {
     backward::MLUUnion1KernelFocalLossSigmoidBackward<

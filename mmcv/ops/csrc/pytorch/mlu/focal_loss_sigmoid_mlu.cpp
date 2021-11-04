@@ -14,37 +14,25 @@
 
 #include "pytorch_mlu_helper.hpp"
 
-void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim,
-                                   cnrtFunctionType_t k_type,
+void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                    cnrtQueue_t queue,
                                    const cnrtDataType_t d_type,
-                                   const void *input,
-                                   const void *target,
-                                   const void *weight,
-                                   const int32_t N,
-                                   const int32_t C,
-                                   const float alpha,
-                                   const float gamma,
-                                   void *output);
+                                   const void *input, const void *target,
+                                   const void *weight, const int32_t N,
+                                   const int32_t C, const float alpha,
+                                   const float gamma, void *output);
 
-void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim,
-                                    cnrtFunctionType_t k_type,
+void KernelFocalLossSigmoidBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                     cnrtQueue_t queue,
                                     const cnrtDataType_t d_type,
-                                    const void *input,
-                                    const void *target,
-                                    const void *weight,
-                                    const float gamma,
-                                    const float alpha,
-                                    const int32_t dim_n,
-                                    const int32_t deal_n,
-                                    const int32_t dim_c,
+                                    const void *input, const void *target,
+                                    const void *weight, const float gamma,
+                                    const float alpha, const int32_t dim_n,
+                                    const int32_t deal_n, const int32_t dim_c,
                                     void *output);
 // Policy Function for Forward
-static void policyFuncForward(cnrtDim3_t *k_dim,
-                              cnrtFunctionType_t *k_type,
-                              const Tensor &input,
-                              const Tensor &target,
+static void policyFuncForward(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
+                              const Tensor &input, const Tensor &target,
                               const Tensor &weight) {
   auto N = input.size(0);
   auto C = input.size(1);
@@ -86,10 +74,8 @@ static void policyFuncBackward(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type) {
   k_dim->z = 1;
 }
 
-void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
-                                              Tensor target,
-                                              Tensor weight,
-                                              Tensor output,
+void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input, Tensor target,
+                                              Tensor weight, Tensor output,
                                               const float gamma,
                                               const float alpha) {
   // params check
@@ -177,12 +163,9 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input,
 }
 
 void getDealNAndThresholdC(const int compute_data_bytes,
-                           const int target_data_bytes,
-                           const int total_c,
-                           int *deal_n_ptr,
-                           int *threshold_c_ptr,
-                           const bool has_weight,
-                           const bool is_half) {
+                           const int target_data_bytes, const int total_c,
+                           int *deal_n_ptr, int *threshold_c_ptr,
+                           const bool has_weight, const bool is_half) {
   /* NRAM partition:
    *
    * |-----------------ping pong--------------------|
@@ -241,10 +224,8 @@ void getDealNAndThresholdC(const int compute_data_bytes,
   *threshold_c_ptr = threshold_c;
 }
 
-void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input,
-                                               Tensor target,
-                                               Tensor weight,
-                                               Tensor output,
+void SigmoidFocalLossBackwardMLUKernelLauncher(Tensor input, Tensor target,
+                                               Tensor weight, Tensor output,
                                                const float gamma,
                                                const float alpha) {
   // params check
