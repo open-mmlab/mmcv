@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import torch
+
 from mmcv.utils import is_cuda, is_mlu
 
 _USING_PARROTS = True
@@ -129,21 +130,27 @@ class Testfocalloss(object):
 
     @pytest.mark.parametrize('device', [
         pytest.param(
-            'cuda', marks=pytest.mark.skipif(
+            'cuda',
+            marks=pytest.mark.skipif(
                 not is_cuda(), reason='requires CUDA support')),
         pytest.param(
-            'mlu', marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))])
+            'mlu',
+            marks=pytest.mark.skipif(
+                not is_mlu(), reason='requires MLU support'))
+    ])
     def test_sigmoid_float(self, device):
         self._test_sigmoid(device=device, dtype=torch.float)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
-            'cuda', marks=pytest.mark.skipif(
+            'cuda',
+            marks=pytest.mark.skipif(
                 not is_cuda(), reason='requires CUDA support')),
         pytest.param(
-            'mlu', marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))])
+            'mlu',
+            marks=pytest.mark.skipif(
+                not is_mlu(), reason='requires MLU support'))
+    ])
     def test_sigmoid_half(self, device):
         self._test_sigmoid(device, dtype=torch.half)
 

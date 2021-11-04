@@ -279,7 +279,7 @@ def get_extensions():
                     include_dirs.append(
                         os.path.abspath('./mmcv/ops/csrc/common'))
                 else:
-                    print("Cambricon Catch is not available!")
+                    print('Cambricon Catch is not available!')
             except AttributeError:
                 print(f'Compiling {ext_name} without CUDA')
                 op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
