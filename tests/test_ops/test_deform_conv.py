@@ -34,18 +34,6 @@ gt_offset_bias_grad = [1.44, -0.72, 0., 0., -0.10, -0.08, -0.54, -0.54],
 gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 
 
-def cat2batch(batch_size=1, *args):
-    trans_list = []
-    for sample in args:
-        sample = torch.tensor(sample)
-        _list = []
-        for i in range(batch_size):
-            _list.append(sample)
-        _batch = np.concatenate(_list)
-        trans_list.append(_batch)
-    return tuple(trans_list)
-
-
 class TestDeformconv(object):
 
     def _test_deformconv(self,
@@ -58,8 +46,9 @@ class TestDeformconv(object):
         c_in = 1
         c_out = 1
         batch_size = 80
-        _input, _gt_out, _gt_x_grad = cat2batch(batch_size, input, gt_out,
-                                                gt_x_grad)
+        _input = np.repeat(input, batch_size, axis=0)
+        _gt_out = np.repeat(gt_out, batch_size, axis=0)
+        _gt_x_grad = np.repeat(gt_x_grad, batch_size, axis=0)
         x = torch.tensor(_input, device=device, dtype=dtype)
         x.requires_grad = True
         model = DeformConv2dPack(
@@ -86,8 +75,11 @@ class TestDeformconv(object):
         assert np.allclose(x.grad.detach().cpu().numpy(), _gt_x_grad,
                            threshold)
         assert np.allclose(
+            # the batch size of the input is increased which results in
+            # a larger gradient so we need to divide by the batch_size
             model.conv_offset.weight.grad.detach().cpu().numpy() / batch_size,
-            gt_offset_weight_grad, threshold)
+            gt_offset_weight_grad,
+            threshold)
         assert np.allclose(
             model.conv_offset.bias.grad.detach().cpu().numpy() / batch_size,
             gt_offset_bias_grad, threshold)
@@ -127,8 +119,9 @@ class TestDeformconv(object):
         c_in = 1
         c_out = 1
         batch_size = 80
-        _input, _gt_out, _gt_x_grad = cat2batch(batch_size, input, gt_out,
-                                                gt_x_grad)
+        _input = np.repeat(input, batch_size, axis=0)
+        _gt_out = np.repeat(gt_out, batch_size, axis=0)
+        _gt_x_grad = np.repeat(gt_x_grad, batch_size, axis=0)
         x = torch.Tensor(_input).cuda().type(input_dtype)
         x.requires_grad = True
         model = DeformConv2dPack(
@@ -149,8 +142,9 @@ class TestDeformconv(object):
         out = model(x)
         out.backward(torch.ones_like(out))
 
-        assert np.allclose(out.data.detach().cpu().numpy(), gt_out, threshold)
-        assert np.allclose(x.grad.detach().cpu().numpy(), gt_x_grad, threshold)
+        assert np.allclose(out.data.detach().cpu().numpy(), _gt_out, threshold)
+        assert np.allclose(x.grad.detach().cpu().numpy(), _gt_x_grad,
+                           threshold)
         assert np.allclose(
             model.conv_offset.weight.grad.detach().cpu().numpy() / batch_size,
             gt_offset_weight_grad, threshold)
@@ -190,3 +184,10 @@ class TestDeformconv(object):
             with autocast(enabled=True):
                 self._test_amp_deformconv(torch.float, 1e-1)
                 self._test_amp_deformconv(torch.half, 1e-1)
+
+
+# if __name__ == "__main__":
+#     _gt_out = np.repeat(gt_out, 80, axis=0)
+#     print(_gt_out.shape)
+# #     testdc = TestDeformconv()
+# #     testdc.test_deformconv()
