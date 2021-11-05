@@ -278,12 +278,7 @@ def load_from_http(filename, map_location=None, model_dir=None):
         dict or OrderedDict: The loaded checkpoint.
     """
     rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
-    # If LOCAL_RANK is set before ddp is initialized, the if condition
-    # 'if dist.is_available() and dist.is_initialized()' in get_dist_info will
-    # fail and lead to world_size = 1 while rank > 0 for non-master processes.
-    # Thus, check if either rank == 0 or world_size == 1 here.
-    if rank == 0 or world_size == 1:
+    if rank == 0:
         checkpoint = model_zoo.load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
