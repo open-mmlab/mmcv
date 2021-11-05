@@ -130,8 +130,9 @@ def test_eval_hook():
         data_loader = DataLoader(test_dataset)
         EvalHook(data_loader, save_best='auto', rule='unsupport')
 
-    with pytest.raises(AssertionError):
-        # eval_res returned by `dataset.evaluate()` should not be a null dict
+    # if eval_res is an empty dict, print a warning information
+    with pytest.warns(UserWarning) as record_warnings:
+
         class _EvalDataset(ExampleDataset):
 
             def evaluate(self, results, logger=None):
@@ -139,10 +140,20 @@ def test_eval_hook():
 
         test_dataset = _EvalDataset()
         data_loader = DataLoader(test_dataset)
-        eval_hook = EvalHook(data_loader)
+        eval_hook = EvalHook(data_loader, save_best='auto')
         runner = _build_epoch_runner()
         runner.register_hook(eval_hook)
         runner.run([data_loader], [('train', 1)], 1)
+    # Since there will be many warnings thrown, we just need to check if the
+    # expected exceptions are thrown
+    expected_message = ('Since `eval_res` is an empty dict, the behavior to '
+                        'save the best checkpoint will be skipped in this '
+                        'evaluation.')
+    for warning in record_warnings:
+        if str(warning.message) == expected_message:
+            break
+    else:
+        assert False
 
     test_dataset = ExampleDataset()
     loader = DataLoader(test_dataset)
