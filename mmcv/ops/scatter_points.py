@@ -88,9 +88,10 @@ class DynamicScatter(nn.Module):
                 multi-dim voxel index) of each points.
 
         Returns:
-            voxel_feats (torch.Tensor): Reduced features, input features that
-                shares the same voxel coordinates are reduced to one row.
-            voxel_coors (torch.Tensor): Voxel coordinates.
+            tuple[torch.Tensor]: A tuple contains two elements. The first one
+            is the reduced features which are reduced from input features that
+            share the same voxel coordinates are reduced to one row.
+            The second is voxel coordinates.
         """
         reduce = 'mean' if self.average_points else 'max'
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
@@ -104,9 +105,10 @@ class DynamicScatter(nn.Module):
                 multi-dim voxel index) of each points.
 
         Returns:
-            voxel_feats (torch.Tensor): Reduced features, input features that
-                shares the same voxel coordinates are reduced to one row.
-            voxel_coors (torch.Tensor): Voxel coordinates.
+            tuple[torch.Tensor]: A tuple contains two elements. The first one
+            is the reduced features which are reduced from input features that
+            share the same voxel coordinates are reduced to one row.
+            The second is voxel coordinates.
         """
         if coors.size(-1) == 3:
             return self.forward_single(points, coors)

@@ -26,8 +26,8 @@ class ThreeNN(Function):
                 to find the nearest neighbors of points in target set.
 
         Returns:
-            Tensor: shape (B, N, 3), L2 distance of each point in target
-                set to their corresponding nearest neighbors.
+            Tensor: shape (B, N, 3), L2 distance of each point in target set to
+            their corresponding nearest neighbors.
         """
         target = target.contiguous()
         source = source.contiguous()

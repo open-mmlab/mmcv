@@ -8,6 +8,7 @@ ext_module = ext_loader.load_ext('_ext', ['knn_forward'])
 
 class KNN(Function):
     r"""KNN (CUDA) based on heap data structure.
+
     Modified from `PAConv <https://github.com/CVMI-Lab/PAConv/tree/main/
     scene_seg/lib/pointops/src/knnquery_heap>`_.
 
@@ -34,8 +35,8 @@ class KNN(Function):
                 Default: False.
 
         Returns:
-            Tensor: (B, k, npoint) tensor with the indices of
-                the features that form k-nearest neighbours.
+            Tensor: (B, k, npoint) tensor with the indices of the features that
+            form k-nearest neighbours.
         """
         assert (k > 0) & (k < 100), 'k should be in range(0, 100)'
 

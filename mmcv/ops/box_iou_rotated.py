@@ -25,7 +25,8 @@ def box_iou_rotated(bboxes1, bboxes2, mode='iou', aligned=False):
             foreground).
 
     Returns:
-        ious(Tensor): shape (N, M) if aligned == False else shape (N,)
+        torch.Tensor: Return the ious betweens boxes. If ``aligned`` is
+        ``False``, the shape of ious is (N, M) else (N,).
     """
     assert mode in ['iou', 'iof']
     mode_dict = {'iou': 0, 'iof': 1}

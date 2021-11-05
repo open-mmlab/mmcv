@@ -22,6 +22,7 @@ def bilinear_grid_sample(im, grid, align_corners=False):
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+
     Returns:
         torch.Tensor: A tensor with sampled points, shape (N, C, Hg, Wg)
     """
@@ -93,8 +94,10 @@ def is_in_onnx_export_without_custom_ops():
 
 def normalize(grid):
     """Normalize input grid from [-1, 1] to [0, 1]
+
     Args:
         grid (Tensor): The grid to be normalize, range [-1, 1].
+
     Returns:
         Tensor: Normalized grid, range [0, 1].
     """
@@ -104,8 +107,10 @@ def normalize(grid):
 
 def denormalize(grid):
     """Denormalize input grid from range [0, 1] to [-1, 1]
+
     Args:
         grid (Tensor): The grid to be denormalize, range [0, 1].
+
     Returns:
         Tensor: Denormalized grid, range [-1, 1].
     """
@@ -123,8 +128,8 @@ def generate_grid(num_grid, size, device):
         device (torch.device): Desired device of returned tensor.
 
     Returns:
-        (torch.Tensor): A tensor of shape (num_grid, size[0]*size[1], 2) that
-            contains coordinates for the regular grids.
+        torch.Tensor: A tensor of shape (num_grid, size[0]*size[1], 2) that
+        contains coordinates for the regular grids.
     """
 
     affine_trans = torch.tensor([[[1., 0., 0.], [0., 1., 0.]]], device=device)
@@ -171,6 +176,7 @@ def get_shape_from_feature_map(x):
 
     Args:
         x (torch.Tensor): Input tensor, shape (N, C, H, W)
+
     Returns:
         torch.Tensor: Spatial resolution (width, height), shape (1, 1, 2)
     """
@@ -194,8 +200,8 @@ def abs_img_point_to_rel_img_point(abs_img_points, img, spatial_scale=1.):
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
-        Tensor: Image based relative point coordinates for sampling,
-            shape (N, P, 2)
+        Tensor: Image based relative point coordinates for sampling, shape
+        (N, P, 2).
     """
 
     assert (isinstance(img, tuple) and len(img) == 2) or \
@@ -228,8 +234,8 @@ def rel_roi_point_to_rel_img_point(rois,
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
-        Tensor: Image based relative point coordinates for sampling,
-            shape (N, P, 2)
+        Tensor: Image based relative point coordinates for sampling, shape
+        (N, P, 2).
     """
 
     abs_img_point = rel_roi_point_to_abs_img_point(rois, rel_roi_points)
@@ -252,7 +258,7 @@ def point_sample(input, points, align_corners=False, **kwargs):
 
     Returns:
         Tensor: Features of `point` on `input`, shape (N, C, P) or
-            (N, C, Hgrid, Wgrid).
+        (N, C, Hgrid, Wgrid).
     """
 
     add_dim = False

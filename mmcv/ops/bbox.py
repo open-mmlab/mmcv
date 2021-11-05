@@ -19,7 +19,8 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
             foreground).
 
     Returns:
-        ious(Tensor): shape (m, n) if aligned == False else shape (m, 1)
+        torch.Tensor: Return the ious betweens boxes. If ``aligned`` is
+        ``False``, the shape of ious is (m, n) else (m, 1).
 
     Example:
         >>> bboxes1 = torch.FloatTensor([

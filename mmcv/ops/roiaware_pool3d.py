@@ -43,7 +43,8 @@ class RoIAwarePool3d(nn.Module):
             pts_feature (torch.Tensor): [npoints, C], features of input points.
 
         Returns:
-            pooled_features (torch.Tensor): [N, out_x, out_y, out_z, C]
+            torch.Tensor: Pooled features whose shapre is
+            [N, out_x, out_y, out_z, C].
         """
 
         return RoIAwarePool3dFunction.apply(rois, pts, pts_feature,
@@ -70,8 +71,8 @@ class RoIAwarePool3dFunction(Function):
                 pool).
 
         Returns:
-            pooled_features (torch.Tensor): [N, out_x, out_y, out_z, C], output
-                pooled features.
+            torch.Tensor: Pooled features whose shape is
+            [N, out_x, out_y, out_z, C].
         """
 
         if isinstance(out_size, int):

@@ -25,9 +25,9 @@ def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
             kernel and pixel in one instance.
 
     Returns:
-        pixel_assignment (List[List[float]]): The instance coordinate list.
-            Each element consists of averaged confidence, pixel number, and
-            coordinates (x_i, y_i for all pixels) in order.
+        List[List[float]]: The instance coordinate list. Each element consists
+        of averaged confidence, pixel number, and coordinates
+        (x_i, y_i for all pixels) in order.
     """
     assert isinstance(score, (torch.Tensor, np.ndarray))
     assert isinstance(mask, (torch.Tensor, np.ndarray))
