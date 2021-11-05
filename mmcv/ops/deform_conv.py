@@ -211,8 +211,9 @@ class DeformConv2d(nn.Module):
         bias (bool): If True, adds a learnable bias to the output.
             Default: False.
         im2col_step(int): Number of samples processed by the im2col_cuda_kernel
-        per call. refer to https://github.com/open-mmlab/mmcv/issues/985
-
+        per call. If batch_size > im2col_step, batch_size % im2col_step == 0.
+        Solved from https://github.com/open-mmlab/mmcv/issues/985.
+            Default: 32.
     """
 
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},

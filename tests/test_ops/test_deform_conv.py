@@ -182,7 +182,9 @@ class TestDeformconv(object):
         self._test_deformconv(torch.double)
         self._test_deformconv(torch.float)
         self._test_deformconv(torch.half, threshold=1e-1)
+        # test batch_size < im2col_step
         self._test_deformconv(torch.float, batch_size=1, im2col_step=2)
+        # test bach_size % im2col_step != 0
         with pytest.raises(
                 AssertionError, match='im2col step must divide batchsize'):
             self._test_deformconv(torch.float, batch_size=10, im2col_step=3)
