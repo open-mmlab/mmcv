@@ -210,6 +210,8 @@ class DeformConv2d(nn.Module):
         deform_groups (int): Number of deformable group partitions.
         bias (bool): If True, adds a learnable bias to the output.
             Default: False.
+        im2col_step(int): Number of samples processed by the im2col_cuda_kernel
+        per call. refer to https://github.com/open-mmlab/mmcv/issues/985
 
     """
 

@@ -39,7 +39,9 @@ class TestDeformconv(object):
     def _test_deformconv(self,
                          dtype=torch.float,
                          threshold=1e-3,
-                         device='cuda'):
+                         device='cuda',
+                         batch_size=10,
+                         im2col_step=2):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
         from mmcv.ops import DeformConv2dPack
@@ -57,7 +59,7 @@ class TestDeformconv(object):
             kernel_size=2,
             stride=1,
             padding=0,
-            im2col_step=batch_size // 5)
+            im2col_step=im2col_step)
         model.conv_offset.weight.data = torch.nn.Parameter(
             torch.Tensor(offset_weight).reshape(8, 1, 2, 2))
         model.conv_offset.bias.data = torch.nn.Parameter(
@@ -102,7 +104,11 @@ class TestDeformconv(object):
         with pytest.raises(AssertionError):
             model = DeformConv2d(3, 4, 3, groups=3)
 
-    def _test_amp_deformconv(self, input_dtype, threshold=1e-3):
+    def _test_amp_deformconv(self,
+                             input_dtype,
+                             threshold=1e-3,
+                             batch_size=10,
+                             im2col_step=2):
         """The function to test amp released on pytorch 1.6.0.
 
         The type of input data might be torch.float or torch.half,
@@ -118,7 +124,6 @@ class TestDeformconv(object):
         from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
-        batch_size = 10
         repeated_input = np.repeat(input, batch_size, axis=0)
         repeated_gt_out = np.repeat(gt_out, batch_size, axis=0)
         repeated_gt_x_grad = np.repeat(gt_x_grad, batch_size, axis=0)
@@ -130,7 +135,7 @@ class TestDeformconv(object):
             kernel_size=2,
             stride=1,
             padding=0,
-            im2col_step=batch_size // 5)
+            im2col_step=im2col_step)
         model.conv_offset.weight.data = torch.nn.Parameter(
             torch.Tensor(offset_weight).reshape(8, 1, 2, 2))
         model.conv_offset.bias.data = torch.nn.Parameter(
@@ -177,6 +182,10 @@ class TestDeformconv(object):
         self._test_deformconv(torch.double)
         self._test_deformconv(torch.float)
         self._test_deformconv(torch.half, threshold=1e-1)
+        self._test_deformconv(torch.float, batch_size=1, im2col_step=2)
+        with pytest.raises(
+                AssertionError, match='im2col step must divide batchsize'):
+            self._test_deformconv(torch.float, batch_size=10, im2col_step=3)
 
         # test amp when torch version >= '1.6.0', the type of
         # input data for deformconv might be torch.float or torch.half
