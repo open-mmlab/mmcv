@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #pragma once
+
 #include <cuda_runtime_api.h>
 
 #include <algorithm>

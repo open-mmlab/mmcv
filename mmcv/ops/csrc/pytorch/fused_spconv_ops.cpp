@@ -41,20 +41,8 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
       indicePairMaxSizeIter - indicePairNumCpu.data_ptr<int>();
   int indicePairMaxSize = *indicePairMaxSizeIter;
 
-  /*if (_subM){
-    std::vector<int> indicePairNumVec(indicePairNumCpu.data_ptr<int>(),
-  indicePairNumCpu.data_ptr<int>() + kernelVolume);
-    indicePairNumVec.erase(indicePairNumVec.begin() + indicePairMaxOffset);
-
-    auto indicePairVecMaxSizeIter = std::max_element(
-        indicePairNumVec.begin(), indicePairNumVec.end());
-    indicePairMaxSize = *indicePairVecMaxSizeIter;
-  }*/
-
   auto options =
       torch::TensorOptions().dtype(features.dtype()).device(features.device());
-  // auto indicePairOptions =
-  //     torch::TensorOptions().dtype(torch::kInt64).device(indicePairs.device());
 
   torch::Tensor output =
       torch::zeros({numActOut, numOutPlanes}, options).copy_(bias);
@@ -75,7 +63,6 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
     if (nHot <= 0 || (subM && i == indicePairMaxOffset)) {
       continue;
     }
-    // auto timer = spconv::CudaContextTimer<>();
     auto outputBufferBlob = torch::from_blob(outputBuffer.data_ptr<T>(),
                                              {nHot, numOutPlanes}, options);
     auto inputBufferBlob = torch::from_blob(inputBuffer.data_ptr<T>(),
@@ -100,9 +87,7 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
       {nHot}, indicePairOptions); torch::index_select_out(inputBufferBlob,
       features, 0, indicePairBlob);*/
     }
-    // totalGatherTime += timer.report() / 1000.0;
     torch::mm_out(outputBufferBlob, inputBufferBlob, filters[i]);
-    // totalGEMMTime += timer.report() / 1000.0;
 
     if (device == torch::kCPU) {
       functor::SparseScatterAddFunctor<tv::CPU, T, int> scatterFtor;
@@ -118,10 +103,7 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
                   nHot, true);
       TV_CHECK_CUDA_ERR();
     }
-    // totalSAddTime += timer.report() / 1000.0;
   }
-  // std::cout << "gather time " << totalGatherTime << std::endl;
-  // std::cout << "gemm time " << totalGEMMTime << std::endl;
-  // std::cout << "scatteradd time " << totalSAddTime << std::endl;
+
   return output;
 }
