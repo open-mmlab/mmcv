@@ -75,12 +75,11 @@ class TestDeformconv(object):
                            threshold)
         assert np.allclose(x.grad.detach().cpu().numpy(), repeated_gt_x_grad,
                            threshold)
+        # the batch size of the input is increased which results in
+        # a larger gradient so we need to divide by the batch_size
         assert np.allclose(
-            # the batch size of the input is increased which results in
-            # a larger gradient so we need to divide by the batch_size
             model.conv_offset.weight.grad.detach().cpu().numpy() / batch_size,
-            gt_offset_weight_grad,
-            threshold)
+            gt_offset_weight_grad, threshold)
         assert np.allclose(
             model.conv_offset.bias.grad.detach().cpu().numpy() / batch_size,
             gt_offset_bias_grad, threshold)
