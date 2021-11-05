@@ -45,8 +45,6 @@ class Testfocalloss(object):
     def _test_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
-        if _USING_PARROTS_CAMB:
-            return
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
         gamma = 2.0
@@ -77,9 +75,8 @@ class Testfocalloss(object):
             np_x_grad = np.array(output[1])
 
             if _USING_PARROTS_CAMB:
-                if dtype == torch.half:
-                    return
-                x = torch.from_numpy(np_x.astype(np.float32)).cuda().type(dtype)
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).cuda().type(dtype)
                 y = torch.from_numpy(np_y).int().cuda()
             else:
                 x = torch.from_numpy(np_x).cuda().type(dtype)
@@ -95,8 +92,6 @@ class Testfocalloss(object):
 
     def _test_grad_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():
-            return
-        if _USING_PARROTS_CAMB:
             return
         from mmcv.ops import SoftmaxFocalLoss
         alpha = 0.25
@@ -128,9 +123,8 @@ class Testfocalloss(object):
             np_y = np.array(case[1])
 
             if _USING_PARROTS_CAMB:
-                if dtype == torch.half:
-                    return
-                x = torch.from_numpy(np_x.astype(np.float32)).cuda().type(dtype)
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).cuda().type(dtype)
                 y = torch.from_numpy(np_y).int().cuda()
             else:
                 x = torch.from_numpy(np_x).cuda().type(dtype)
@@ -142,7 +136,8 @@ class Testfocalloss(object):
                 if _USING_PARROTS_CAMB:
                     output = floss(x, y)
                     output.backward()
-                    np_x_grad = np.array(sigmoid_outputs[inputs.index(case)][1])
+                    np_x_grad = np.array(
+                        sigmoid_outputs[inputs.index(case)][1])
                     assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
                 else:
                     # gradcheck(floss, (x, y),
