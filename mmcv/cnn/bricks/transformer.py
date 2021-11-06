@@ -102,27 +102,6 @@ class MultiheadAttention(BaseModule):
 
         self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop,
                                           **kwargs)
-        if self.batch_first:
-
-            def _bnc_to_nbc(forward):
-                """Because the dataflow('key', 'query', 'value') of
-                ``torch.nn.MultiheadAttention`` is (num_query, batch,
-                embed_dims), We should adjust the shape of dataflow from
-                batch_first (batch, num_query, embed_dims) to num_query_first
-                (num_query ,batch, embed_dims), and recover ``attn_output``
-                from num_query_first to batch_first."""
-
-                def forward_wrapper(**kwargs):
-                    convert_keys = ('key', 'query', 'value')
-                    for key in kwargs.keys():
-                        if key in convert_keys:
-                            kwargs[key] = kwargs[key].transpose(0, 1)
-                    attn_output, attn_output_weights = forward(**kwargs)
-                    return attn_output.transpose(0, 1), attn_output_weights
-
-                return forward_wrapper
-
-            self.attn.forward = _bnc_to_nbc(self.attn.forward)
 
         self.proj_drop = nn.Dropout(proj_drop)
         self.dropout_layer = build_dropout(
@@ -199,12 +178,26 @@ class MultiheadAttention(BaseModule):
         if key_pos is not None:
             key = key + key_pos
 
+        # Because the dataflow('key', 'query', 'value') of
+        # ``torch.nn.MultiheadAttention`` is (num_query, batch,
+        # embed_dims), We should adjust the shape of dataflow from
+        # batch_first (batch, num_query, embed_dims) to num_query_first
+        # (num_query ,batch, embed_dims), and recover ``attn_output``
+        # from num_query_first to batch_first.
+        if self.batch_first:
+            query = query.transpose(0, 1)
+            key = key.transpose(0, 1)
+            value = value.transpose(0, 1)
+
         out = self.attn(
             query=query,
             key=key,
             value=value,
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask)[0]
+
+        if self.batch_first:
+            out = out.transpose(0, 1)
 
         return identity + self.dropout_layer(self.proj_drop(out))
 

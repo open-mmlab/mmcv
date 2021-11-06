@@ -66,7 +66,7 @@ to install the latest ``mmcv-full`` with ``CUDA 11.1`` and ``PyTorch 1.9.0``, us
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
-Note: mmcv-full is only compiled on PyTorch 1.x.0 because the compatibility usually holds between 1.x.0 and 1.x.1. If your PyTorch version is 1.x.1, you can install mmcv-full compiled with PyTorch 1.x.0 and it usually works well. For example, if your PyTorch version is 1.8.1 and CUDA version is 11.1, you can use the following command to install mmcv-full.
+**Note**: mmcv-full is only compiled on PyTorch 1.x.0 because the compatibility usually holds between 1.x.0 and 1.x.1. If your PyTorch version is 1.x.1, you can install mmcv-full compiled with PyTorch 1.x.0 and it usually works well. For example, if your PyTorch version is 1.8.1 and CUDA version is 11.1, you can use the following command to install mmcv-full.
 
 ```shell
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
@@ -96,16 +96,18 @@ For more details, please refer the the following tables.
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="100">torch 1.9</th>
-      <th valign="bottom" align="left" width="100">torch 1.8</th>
-      <th valign="bottom" align="left" width="100">torch 1.7</th>
-      <th valign="bottom" align="left" width="100">torch 1.6</th>
-      <th valign="bottom" align="left" width="100">torch 1.5</th>
-      <th valign="bottom" align="left" width="100">torch 1.4</th>
-      <th valign="bottom" align="left" width="100">torch 1.3</th>
+      <th valign="bottom" align="left" width="120">torch1.10</th>
+      <th valign="bottom" align="left" width="100">torch1.9</th>
+      <th valign="bottom" align="left" width="100">torch1.8</th>
+      <th valign="bottom" align="left" width="100">torch1.7</th>
+      <th valign="bottom" align="left" width="100">torch1.6</th>
+      <th valign="bottom" align="left" width="100">torch1.5</th>
+      <th valign="bottom" align="left" width="100">torch1.4</th>
+      <th valign="bottom" align="left" width="100">torch1.3</th>
     </tr>
     <tr>
       <td align="left">11.1</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"> </td>
@@ -118,6 +120,7 @@ For more details, please refer the the following tables.
       <td align="left">11.0</td>
       <td align="left"> </td>
       <td align="left"> </td>
+      <td align="left"> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"> </td>
       <td align="left"> </td>
@@ -126,6 +129,7 @@ For more details, please refer the the following tables.
     </tr>
     <tr>
       <td align="left">10.2</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.10.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.0/index.html</code></pre> </details> </td>
@@ -136,6 +140,7 @@ For more details, please refer the the following tables.
     </tr>
     <tr>
       <td align="left">10.1</td>
+      <td align="left"> </td>
       <td align="left"> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html</code></pre> </details> </td>
@@ -148,6 +153,7 @@ For more details, please refer the the following tables.
       <td align="left">9.2</td>
       <td align="left"> </td>
       <td align="left"> </td>
+      <td align="left"> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.7.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.6.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.5.0/index.html</code></pre> </details> </td>
@@ -156,6 +162,7 @@ For more details, please refer the the following tables.
     </tr>
     <tr>
       <td align="left">cpu</td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.10.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.7.0/index.html</code></pre> </details> </td>
@@ -166,6 +173,8 @@ For more details, please refer the the following tables.
     </tr>
   </tbody>
 </table>
+
+**Note**: The pre-built packages provided above do not include all versions of mmcv-full, we can click on the corresponding links to see the supported versions. For example, if you click [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html), you can see that `cu102-torch1.8.0` only provides 1.3.0 and above versions of mmcv-full.
 
 Another way is to compile locally by running
 
