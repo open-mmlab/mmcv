@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "ms_deform_attn_cuda_kernel.cuh"
+#include "pytorch_device_registry.hpp"
 
 template <typename scalar_t>
 void ms_deformable_im2col_cuda(cudaStream_t stream, const scalar_t *data_value,
@@ -232,14 +233,12 @@ at::Tensor ms_deform_attn_cuda_forward(const at::Tensor &value,
   AT_ASSERTM(attn_weight.is_contiguous(),
              "attn_weight tensor has to be contiguous");
 
-  AT_ASSERTM(value.type().is_cuda(), "value must be a CUDA tensor");
-  AT_ASSERTM(spatial_shapes.type().is_cuda(),
-             "spatial_shapes must be a CUDA tensor");
-  AT_ASSERTM(level_start_index.type().is_cuda(),
+  AT_ASSERTM(value.is_cuda(), "value must be a CUDA tensor");
+  AT_ASSERTM(spatial_shapes.is_cuda(), "spatial_shapes must be a CUDA tensor");
+  AT_ASSERTM(level_start_index.is_cuda(),
              "level_start_index must be a CUDA tensor");
-  AT_ASSERTM(sampling_loc.type().is_cuda(),
-             "sampling_loc must be a CUDA tensor");
-  AT_ASSERTM(attn_weight.type().is_cuda(), "attn_weight must be a CUDA tensor");
+  AT_ASSERTM(sampling_loc.is_cuda(), "sampling_loc must be a CUDA tensor");
+  AT_ASSERTM(attn_weight.is_cuda(), "attn_weight must be a CUDA tensor");
 
   const int batch = value.size(0);
   const int spatial_size = value.size(1);
@@ -268,17 +267,18 @@ at::Tensor ms_deform_attn_cuda_forward(const at::Tensor &value,
   for (int n = 0; n < batch / im2col_step_; ++n) {
     auto columns = output_n.select(0, n);
     AT_DISPATCH_FLOATING_TYPES(
-        value.type(), "ms_deform_attn_forward_cuda", ([&] {
+        value.scalar_type(), "ms_deform_attn_forward_cuda", ([&] {
           ms_deformable_im2col_cuda(
               at::cuda::getCurrentCUDAStream(),
-              value.data<scalar_t>() + n * im2col_step_ * per_value_size,
-              spatial_shapes.data<int64_t>(), level_start_index.data<int64_t>(),
-              sampling_loc.data<scalar_t>() +
+              value.data_ptr<scalar_t>() + n * im2col_step_ * per_value_size,
+              spatial_shapes.data_ptr<int64_t>(),
+              level_start_index.data_ptr<int64_t>(),
+              sampling_loc.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_sample_loc_size,
-              attn_weight.data<scalar_t>() +
+              attn_weight.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_attn_weight_size,
               batch_n, spatial_size, num_heads, channels, num_levels, num_query,
-              num_point, columns.data<scalar_t>());
+              num_point, columns.data_ptr<scalar_t>());
         }));
   }
 
@@ -305,15 +305,13 @@ void ms_deform_attn_cuda_backward(
   AT_ASSERTM(grad_output.is_contiguous(),
              "grad_output tensor has to be contiguous");
 
-  AT_ASSERTM(value.type().is_cuda(), "value must be a CUDA tensor");
-  AT_ASSERTM(spatial_shapes.type().is_cuda(),
-             "spatial_shapes must be a CUDA tensor");
-  AT_ASSERTM(level_start_index.type().is_cuda(),
+  AT_ASSERTM(value.is_cuda(), "value must be a CUDA tensor");
+  AT_ASSERTM(spatial_shapes.is_cuda(), "spatial_shapes must be a CUDA tensor");
+  AT_ASSERTM(level_start_index.is_cuda(),
              "level_start_index must be a CUDA tensor");
-  AT_ASSERTM(sampling_loc.type().is_cuda(),
-             "sampling_loc must be a CUDA tensor");
-  AT_ASSERTM(attn_weight.type().is_cuda(), "attn_weight must be a CUDA tensor");
-  AT_ASSERTM(grad_output.type().is_cuda(), "grad_output must be a CUDA tensor");
+  AT_ASSERTM(sampling_loc.is_cuda(), "sampling_loc must be a CUDA tensor");
+  AT_ASSERTM(attn_weight.is_cuda(), "attn_weight must be a CUDA tensor");
+  AT_ASSERTM(grad_output.is_cuda(), "grad_output must be a CUDA tensor");
 
   const int batch = value.size(0);
   const int spatial_size = value.size(1);
@@ -340,22 +338,43 @@ void ms_deform_attn_cuda_backward(
   for (int n = 0; n < batch / im2col_step_; ++n) {
     auto grad_output_g = grad_output_n.select(0, n);
     AT_DISPATCH_FLOATING_TYPES(
-        value.type(), "ms_deform_attn_backward_cuda", ([&] {
+        value.scalar_type(), "ms_deform_attn_backward_cuda", ([&] {
           ms_deformable_col2im_cuda(
-              at::cuda::getCurrentCUDAStream(), grad_output_g.data<scalar_t>(),
-              value.data<scalar_t>() + n * im2col_step_ * per_value_size,
-              spatial_shapes.data<int64_t>(), level_start_index.data<int64_t>(),
-              sampling_loc.data<scalar_t>() +
+              at::cuda::getCurrentCUDAStream(),
+              grad_output_g.data_ptr<scalar_t>(),
+              value.data_ptr<scalar_t>() + n * im2col_step_ * per_value_size,
+              spatial_shapes.data_ptr<int64_t>(),
+              level_start_index.data_ptr<int64_t>(),
+              sampling_loc.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_sample_loc_size,
-              attn_weight.data<scalar_t>() +
+              attn_weight.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_attn_weight_size,
               batch_n, spatial_size, num_heads, channels, num_levels, num_query,
               num_point,
-              grad_value.data<scalar_t>() + n * im2col_step_ * per_value_size,
-              grad_sampling_loc.data<scalar_t>() +
+              grad_value.data_ptr<scalar_t>() +
+                  n * im2col_step_ * per_value_size,
+              grad_sampling_loc.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_sample_loc_size,
-              grad_attn_weight.data<scalar_t>() +
+              grad_attn_weight.data_ptr<scalar_t>() +
                   n * im2col_step_ * per_attn_weight_size);
         }));
   }
 }
+
+Tensor ms_deform_attn_impl_forward(const Tensor &value,
+                                   const Tensor &spatial_shapes,
+                                   const Tensor &level_start_index,
+                                   const Tensor &sampling_loc,
+                                   const Tensor &attn_weight,
+                                   const int im2col_step);
+
+void ms_deform_attn_impl_backward(
+    const Tensor &value, const Tensor &spatial_shapes,
+    const Tensor &level_start_index, const Tensor &sampling_loc,
+    const Tensor &attn_weight, const Tensor &grad_output, Tensor &grad_value,
+    Tensor &grad_sampling_loc, Tensor &grad_attn_weight, const int im2col_step);
+
+REGISTER_DEVICE_IMPL(ms_deform_attn_impl_forward, CUDA,
+                     ms_deform_attn_cuda_forward);
+REGISTER_DEVICE_IMPL(ms_deform_attn_impl_backward, CUDA,
+                     ms_deform_attn_cuda_backward);

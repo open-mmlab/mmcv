@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 #include "roi_pool_cuda_kernel.cuh"
 
 void ROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
@@ -48,3 +49,26 @@ void ROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
+
+void roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax, int pooled_height, int pooled_width,
+                           float spatial_scale) {
+  ROIPoolForwardCUDAKernelLauncher(input, rois, output, argmax, pooled_height,
+                                   pooled_width, spatial_scale);
+}
+
+void roi_pool_backward_cuda(Tensor grad_output, Tensor rois, Tensor argmax,
+                            Tensor grad_input, int pooled_height,
+                            int pooled_width, float spatial_scale) {
+  ROIPoolBackwardCUDAKernelLauncher(grad_output, rois, argmax, grad_input,
+                                    pooled_height, pooled_width, spatial_scale);
+}
+
+void roi_pool_forward_impl(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax, int pooled_height, int pooled_width,
+                           float spatial_scale);
+void roi_pool_backward_impl(Tensor grad_output, Tensor rois, Tensor argmax,
+                            Tensor grad_input, int pooled_height,
+                            int pooled_width, float spatial_scale);
+REGISTER_DEVICE_IMPL(roi_pool_forward_impl, CUDA, roi_pool_forward_cuda);
+REGISTER_DEVICE_IMPL(roi_pool_backward_impl, CUDA, roi_pool_backward_cuda);

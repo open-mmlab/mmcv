@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 #include "three_nn_cuda_kernel.cuh"
 
 void ThreeNNForwardCUDAKernelLauncher(int b, int n, int m, const Tensor unknown,
@@ -33,3 +34,12 @@ void ThreeNNForwardCUDAKernelLauncher(int b, int n, int m, const Tensor unknown,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
+
+void three_nn_forward_cuda(int b, int n, int m, const Tensor unknown,
+                           const Tensor known, Tensor dist2, Tensor idx) {
+  ThreeNNForwardCUDAKernelLauncher(b, n, m, unknown, known, dist2, idx);
+};
+
+void three_nn_forward_impl(int b, int n, int m, const Tensor unknown,
+                           const Tensor known, Tensor dist2, Tensor idx);
+REGISTER_DEVICE_IMPL(three_nn_forward_impl, CUDA, three_nn_forward_cuda);

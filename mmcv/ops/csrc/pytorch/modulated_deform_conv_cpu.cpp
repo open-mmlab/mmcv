@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 template <typename T>
 T dmcn_im2col_bilinear_cpu(const T *input, const int data_width,
@@ -322,7 +323,7 @@ void modulated_deformable_im2col_cpu(
     const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
     const int batch_size, const int channels, const int height_im,
     const int width_im, const int height_col, const int width_col,
-    const int kernel_h, const int kenerl_w, const int pad_h, const int pad_w,
+    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
     const int stride_h, const int stride_w, const int dilation_h,
     const int dilation_w, const int deformable_group, Tensor data_col) {
   // num_axes should be smaller than block size
@@ -338,7 +339,7 @@ void modulated_deformable_im2col_cpu(
 
         modulated_deformable_im2col_cpu_kernel(
             num_kernels, data_im_, data_offset_, data_mask_, height_im,
-            width_im, kernel_h, kenerl_w, pad_h, pad_w, stride_h, stride_w,
+            width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, batch_size,
             channels, deformable_group, height_col, width_col, data_col_);
       }));
@@ -401,3 +402,35 @@ void modulated_deformable_col2im_coord_cpu(
             height_col, width_col, grad_offset_, grad_mask_);
       }));
 }
+
+void modulated_deformable_im2col_impl(
+    const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
+    const int batch_size, const int channels, const int height_im,
+    const int width_im, const int height_col, const int width_col,
+    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w, const int dilation_h,
+    const int dilation_w, const int deformable_group, Tensor data_col);
+
+void modulated_deformable_col2im_impl(
+    const Tensor data_col, const Tensor data_offset, const Tensor data_mask,
+    const int batch_size, const int channels, const int height_im,
+    const int width_im, const int height_col, const int width_col,
+    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w, const int dilation_h,
+    const int dilation_w, const int deformable_group, Tensor grad_im);
+
+void modulated_deformable_col2im_coord_impl(
+    const Tensor data_col, const Tensor data_im, const Tensor data_offset,
+    const Tensor data_mask, const int batch_size, const int channels,
+    const int height_im, const int width_im, const int height_col,
+    const int width_col, const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const int deformable_group,
+    Tensor grad_offset, Tensor grad_mask);
+
+REGISTER_DEVICE_IMPL(modulated_deformable_im2col_impl, CPU,
+                     modulated_deformable_im2col_cpu);
+REGISTER_DEVICE_IMPL(modulated_deformable_col2im_impl, CPU,
+                     modulated_deformable_col2im_cpu);
+REGISTER_DEVICE_IMPL(modulated_deformable_col2im_coord_impl, CPU,
+                     modulated_deformable_col2im_coord_cpu);

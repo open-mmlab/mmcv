@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 #include "tin_shift_cuda_kernel.cuh"
 
 void TINShiftForwardCUDAKernelLauncher(Tensor input, Tensor shift,
@@ -52,3 +53,18 @@ void TINShiftBackwardCUDAKernelLauncher(Tensor grad_output, Tensor shift,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
+
+void tin_shift_forward_cuda(Tensor input, Tensor shift, Tensor output) {
+  TINShiftForwardCUDAKernelLauncher(input, shift, output);
+}
+
+void tin_shift_backward_cuda(Tensor grad_output, Tensor shift,
+                             Tensor grad_input) {
+  TINShiftBackwardCUDAKernelLauncher(grad_output, shift, grad_input);
+}
+
+void tin_shift_forward_impl(Tensor input, Tensor shift, Tensor output);
+void tin_shift_backward_impl(Tensor grad_output, Tensor shift,
+                             Tensor grad_input);
+REGISTER_DEVICE_IMPL(tin_shift_forward_impl, CUDA, tin_shift_forward_cuda);
+REGISTER_DEVICE_IMPL(tin_shift_backward_impl, CUDA, tin_shift_backward_cuda);

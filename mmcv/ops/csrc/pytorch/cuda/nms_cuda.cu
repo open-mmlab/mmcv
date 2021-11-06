@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "nms_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset) {
@@ -51,3 +52,10 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   AT_CUDA_CHECK(cudaGetLastError());
   return order_t.masked_select(keep_t.to(at::kCUDA));
 }
+
+Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+  return NMSCUDAKernelLauncher(boxes, scores, iou_threshold, offset);
+}
+
+Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset);
+REGISTER_DEVICE_IMPL(nms_impl, CUDA, nms_cuda);

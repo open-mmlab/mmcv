@@ -9,6 +9,7 @@
 
 #include "psamask_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 void PSAMaskForwardCUDAKernelLauncher(const int psa_type, const Tensor input,
                                       Tensor output, const int num_,
@@ -61,3 +62,37 @@ void PSAMaskBackwardCUDAKernelLauncher(
                   grad_input.data_ptr<scalar_t>());
         });
 }
+
+void psamask_forward_cuda(const int psa_type, const Tensor input, Tensor output,
+                          const int num_, const int h_feature,
+                          const int w_feature, const int h_mask,
+                          const int w_mask, const int half_h_mask,
+                          const int half_w_mask) {
+  PSAMaskForwardCUDAKernelLauncher(psa_type, input, output, num_, h_feature,
+                                   w_feature, h_mask, w_mask, half_h_mask,
+                                   half_w_mask);
+}
+
+void psamask_backward_cuda(const int psa_type, const Tensor grad_output,
+                           Tensor grad_input, const int num_,
+                           const int h_feature, const int w_feature,
+                           const int h_mask, const int w_mask,
+                           const int half_h_mask, const int half_w_mask) {
+  PSAMaskBackwardCUDAKernelLauncher(psa_type, grad_output, grad_input, num_,
+                                    h_feature, w_feature, h_mask, w_mask,
+                                    half_h_mask, half_w_mask);
+}
+
+void psamask_forward_impl(const int psa_type, const Tensor input, Tensor output,
+                          const int num_, const int h_feature,
+                          const int w_feature, const int h_mask,
+                          const int w_mask, const int half_h_mask,
+                          const int half_w_mask);
+
+void psamask_backward_impl(const int psa_type, const Tensor grad_output,
+                           Tensor grad_input, const int num_,
+                           const int h_feature, const int w_feature,
+                           const int h_mask, const int w_mask,
+                           const int half_h_mask, const int half_w_mask);
+REGISTER_DEVICE_IMPL(psamask_forward_impl, CUDA, psamask_forward_cuda);
+REGISTER_DEVICE_IMPL(psamask_backward_impl, CUDA, psamask_backward_cuda);

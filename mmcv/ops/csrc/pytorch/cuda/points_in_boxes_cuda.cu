@@ -7,6 +7,7 @@
 
 #include "points_in_boxes_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 void PointsInBoxesPartForwardCUDAKernelLauncher(int batch_size, int boxes_num,
                                                 int pts_num, const Tensor boxes,
@@ -60,3 +61,33 @@ void PointsInBoxesAllForwardCUDAKernelLauncher(int batch_size, int boxes_num,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
+
+void points_in_boxes_part_forward_cuda(int batch_size, int boxes_num,
+                                       int pts_num, const Tensor boxes,
+                                       const Tensor pts,
+                                       Tensor box_idx_of_points) {
+  PointsInBoxesPartForwardCUDAKernelLauncher(batch_size, boxes_num, pts_num,
+                                             boxes, pts, box_idx_of_points);
+};
+
+void points_in_boxes_all_forward_cuda(int batch_size, int boxes_num,
+                                      int pts_num, const Tensor boxes,
+                                      const Tensor pts,
+                                      Tensor box_idx_of_points) {
+  PointsInBoxesAllForwardCUDAKernelLauncher(batch_size, boxes_num, pts_num,
+                                            boxes, pts, box_idx_of_points);
+};
+
+void points_in_boxes_part_forward_impl(int batch_size, int boxes_num,
+                                       int pts_num, const Tensor boxes,
+                                       const Tensor pts,
+                                       Tensor box_idx_of_points);
+
+void points_in_boxes_all_forward_impl(int batch_size, int boxes_num,
+                                      int pts_num, const Tensor boxes,
+                                      const Tensor pts,
+                                      Tensor box_idx_of_points);
+REGISTER_DEVICE_IMPL(points_in_boxes_part_forward_impl, CUDA,
+                     points_in_boxes_part_forward_cuda);
+REGISTER_DEVICE_IMPL(points_in_boxes_all_forward_impl, CUDA,
+                     points_in_boxes_all_forward_cuda);

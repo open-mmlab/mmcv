@@ -2,6 +2,7 @@
 // It is modified from https://github.com/WenmuZhou/PAN.pytorch
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 std::vector<std::vector<float>> estimate_confidence(int32_t* label,
                                                     float* score, int label_num,
@@ -27,7 +28,7 @@ std::vector<std::vector<float>> estimate_confidence(int32_t* label,
       }
     }
   }
-  for (int l = 0; l < point_vector.size(); l++)
+  for (size_t l = 0; l < point_vector.size(); l++)
     if (point_vector[l][1] > 0) {
       point_vector[l][0] /= point_vector[l][1];
     }
@@ -117,6 +118,18 @@ std::vector<std::vector<float>> pixel_group_cpu(
   return estimate_confidence(ptr_text_label, ptr_score, kernel_region_num,
                              height, width);
 }
+std::vector<std::vector<float>> pixel_group_impl(
+    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+    Tensor kernel_contour, int kernel_region_num, float dis_threshold);
+REGISTER_DEVICE_IMPL(pixel_group_impl, CPU, pixel_group_cpu);
+
+std::vector<std::vector<float>> pixel_group_impl(
+    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+    Tensor kernel_contour, int kernel_region_num, float dis_threshold) {
+  return DISPATCH_DEVICE_IMPL(pixel_group_impl, score, mask, embedding,
+                              kernel_label, kernel_contour, kernel_region_num,
+                              dis_threshold);
+}
 
 std::vector<std::vector<float>> pixel_group(
     Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
@@ -127,11 +140,6 @@ std::vector<std::vector<float>> pixel_group(
   kernel_label = kernel_label.contiguous();
   kernel_contour = kernel_contour.contiguous();
 
-  CHECK_CPU_INPUT(score);
-  CHECK_CPU_INPUT(mask);
-  CHECK_CPU_INPUT(embedding);
-  CHECK_CPU_INPUT(kernel_label);
-  CHECK_CPU_INPUT(kernel_contour);
-  return pixel_group_cpu(score, mask, embedding, kernel_label, kernel_contour,
-                         kernel_region_num, distance_threshold);
+  return pixel_group_impl(score, mask, embedding, kernel_label, kernel_contour,
+                          kernel_region_num, distance_threshold);
 }

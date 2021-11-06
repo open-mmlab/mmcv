@@ -1,14 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
-
-#ifdef MMCV_WITH_CUDA
-Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
-                             int offset);
-
-Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
-  return NMSCUDAKernelLauncher(boxes, scores, iou_threshold, offset);
-}
-#endif
+#include "pytorch_device_registry.hpp"
 
 Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.numel() == 0) {
@@ -61,20 +53,13 @@ Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   return order_t.masked_select(select_t);
 }
 
+Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+  return DISPATCH_DEVICE_IMPL(nms_impl, boxes, scores, iou_threshold, offset);
+}
+REGISTER_DEVICE_IMPL(nms_impl, CPU, nms_cpu);
+
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
-  if (boxes.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(boxes);
-    CHECK_CUDA_INPUT(scores);
-    return nms_cuda(boxes, scores, iou_threshold, offset);
-#else
-    AT_ERROR("nms is not compiled with GPU support");
-#endif
-  } else {
-    CHECK_CPU_INPUT(boxes);
-    CHECK_CPU_INPUT(scores);
-    return nms_cpu(boxes, scores, iou_threshold, offset);
-  }
+  return nms_impl(boxes, scores, iou_threshold, offset);
 }
 
 Tensor softnms_cpu(Tensor boxes, Tensor scores, Tensor dets,
@@ -181,14 +166,18 @@ Tensor softnms_cpu(Tensor boxes, Tensor scores, Tensor dets,
   return inds_t.slice(0, 0, nboxes);
 }
 
+Tensor softnms_impl(Tensor boxes, Tensor scores, Tensor dets,
+                    float iou_threshold, float sigma, float min_score,
+                    int method, int offset) {
+  return DISPATCH_DEVICE_IMPL(softnms_impl, boxes, scores, dets, iou_threshold,
+                              sigma, min_score, method, offset);
+}
+REGISTER_DEVICE_IMPL(softnms_impl, CPU, softnms_cpu);
+
 Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
                float sigma, float min_score, int method, int offset) {
-  if (boxes.device().is_cuda()) {
-    AT_ERROR("softnms is not implemented on GPU");
-  } else {
-    return softnms_cpu(boxes, scores, dets, iou_threshold, sigma, min_score,
-                       method, offset);
-  }
+  return softnms_impl(boxes, scores, dets, iou_threshold, sigma, min_score,
+                      method, offset);
 }
 
 std::vector<std::vector<int> > nms_match_cpu(Tensor dets, float iou_threshold) {
@@ -247,15 +236,17 @@ std::vector<std::vector<int> > nms_match_cpu(Tensor dets, float iou_threshold) {
     }
     matched.push_back(v_i);
   }
-  for (int i = 0; i < keep.size(); i++)
+  for (size_t i = 0; i < keep.size(); i++)
     matched[i].insert(matched[i].begin(), keep[i]);
   return matched;
 }
 
+std::vector<std::vector<int> > nms_match_impl(Tensor dets,
+                                              float iou_threshold) {
+  return DISPATCH_DEVICE_IMPL(nms_match_impl, dets, iou_threshold);
+}
+REGISTER_DEVICE_IMPL(nms_match_impl, CPU, nms_match_cpu);
+
 std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold) {
-  if (dets.device().is_cuda()) {
-    AT_ERROR("nms_match is not implemented on GPU");
-  } else {
-    return nms_match_cpu(dets, iou_threshold);
-  }
+  return nms_match_impl(dets, iou_threshold);
 }
