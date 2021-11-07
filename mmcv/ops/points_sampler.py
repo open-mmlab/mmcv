@@ -95,7 +95,7 @@ class PointsSampler(nn.Module):
             points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
             features (Tensor): (B, C, N) Descriptors of the features.
 
-        Return：
+        Return:
             Tensor: (B, npoint, sample_num) Indices of sampled points.
         """
         indices = []
@@ -166,7 +166,7 @@ class FSSampler(nn.Module):
         super().__init__()
 
     def forward(self, points, features, npoint):
-        """Sampling points with FS_Sampling."""
+        r"""Sampling points with FS\_Sampling."""
         assert features is not None, \
             'feature input to FS_Sampler should not be None'
         ffps_sampler = FFPSSampler()
