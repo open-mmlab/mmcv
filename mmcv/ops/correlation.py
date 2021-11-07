@@ -118,20 +118,20 @@ class Correlation(nn.Module):
 
     There are two batched tensors with shape :math:`(N, C, H, W)`,
     and the correlation output's shape is
-    :math:`(N, \text{max_displacement} \times 2+1,
-    \text{max_displacement} \times 2+1,
+    :math:`(N, \text{max\_displacement} \times 2+1,
+    \text{max\_displacement} \times 2+1,
     H_{out}, W_{out})`
 
     where
 
     .. math::
         H_{out} = \left\lfloor\frac{H_{in}  + 2 \times \text{padding} -
-                \text{dilation} \times (\text{kernel_size} - 1) - 1}
+                \text{dilation} \times (\text{kernel\_size} - 1) - 1}
                 {\text{stride}} + 1\right\rfloor
 
     .. math::
         W_{out} = \left\lfloor\frac{W_{in}  + 2 \times \text{padding} -
-            \text{dilation} \times (\text{kernel_size} - 1) - 1}
+            \text{dilation} \times (\text{kernel\_size} - 1) - 1}
             {\text{stride}} + 1\right\rfloor
 
     the correlation item :math:`(N_i, dy, dx)` is formed by taking the sliding
