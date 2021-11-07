@@ -166,7 +166,7 @@ class FSSampler(nn.Module):
         super().__init__()
 
     def forward(self, points, features, npoint):
-        r"""Sampling points with FS\_Sampling."""
+        """Sampling points with FS_Sampling."""
         assert features is not None, \
             'feature input to FS_Sampler should not be None'
         ffps_sampler = FFPSSampler()
