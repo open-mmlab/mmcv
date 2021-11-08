@@ -95,7 +95,7 @@ class PointsSampler(nn.Module):
             points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
             features (Tensor): (B, C, N) Descriptors of the features.
 
-        Returns：
+        Returns:
             Tensor: (B, npoint, sample_num) Indices of sampled points.
         """
         indices = []
