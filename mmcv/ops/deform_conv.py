@@ -117,8 +117,8 @@ class DeformConv2dFunction(Function):
         grad_input = grad_offset = grad_weight = None
 
         cur_im2col_step = min(ctx.im2col_step, input.size(0))
-        assert (input.size(0) %
-                cur_im2col_step) == 0, 'im2col step must divide batchsize'
+        assert (input.size(0) % cur_im2col_step
+                ) == 0, 'batch size must be divisible by im2col_step'
 
         grad_output = grad_output.contiguous()
         if ctx.needs_input_grad[0] or ctx.needs_input_grad[1]:
@@ -197,6 +197,13 @@ class DeformConv2d(nn.Module):
     `Deformable Convolutional Networks
     <https://arxiv.org/pdf/1703.06211.pdf>`_
 
+    Note:
+        The argument ``im2col_step`` was added in version 1.3.17, which means
+        number of samples processed by the ``im2col_cuda_kernel`` per call.
+        It enables users to define ``batch_size`` and ``im2col_step`` more
+        flexibly. Solved this issue
+        <https://github.com/open-mmlab/mmcv/issues/1440>_.
+
     Args:
         in_channels (int): Number of channels in the input image.
         out_channels (int): Number of channels produced by the convolution.
@@ -210,11 +217,13 @@ class DeformConv2d(nn.Module):
         deform_groups (int): Number of deformable group partitions.
         bias (bool): If True, adds a learnable bias to the output.
             Default: False.
-        im2col_step(int): Number of samples processed by the im2col_cuda_kernel
-        per call. It will work when batch_size > im2col_step, but batch_size
-        must be divisible by im2col_step. Solved this issue
-        <https://github.com/open-mmlab/mmcv/issues/985>.
+        im2col_step (int): Number of samples processed by the
+        im2col_cuda_kernel per call. It will work when
+        batch_size > im2col_step, but batch_size must be divisible by
+        im2col_step. Solved this issue
+        <https://github.com/open-mmlab/mmcv/issues/1440>_.
             Default: 32.
+            `New in version 1.3.17.`
     """
 
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},
