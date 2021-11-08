@@ -201,8 +201,8 @@ class DeformConv2d(nn.Module):
         The argument ``im2col_step`` was added in version 1.3.17, which means
         number of samples processed by the ``im2col_cuda_kernel`` per call.
         It enables users to define ``batch_size`` and ``im2col_step`` more
-        flexibly. Solved this issue
-        <https://github.com/open-mmlab/mmcv/issues/1440>_.
+        flexibly.Solved this `issue
+        <https://github.com/open-mmlab/mmcv/issues/1440>`_.
 
     Args:
         in_channels (int): Number of channels in the input image.
@@ -220,8 +220,8 @@ class DeformConv2d(nn.Module):
         im2col_step (int): Number of samples processed by the
             im2col_cuda_kernel per call. It will work when
             batch_size > im2col_step, but batch_size must be divisible by
-            im2col_step. Solved this issue
-            <https://github.com/open-mmlab/mmcv/issues/1440>_.
+            im2col_step.Solved this `issue
+            <https://github.com/open-mmlab/mmcv/issues/1440>`_.
             Default: 32.
             `New in version 1.3.17.`
     """
