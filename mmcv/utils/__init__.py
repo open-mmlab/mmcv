@@ -45,6 +45,7 @@ else:
         _AvgPoolNd, _BatchNorm, _ConvNd, _ConvTransposeMixin, _InstanceNorm,
         _MaxPoolNd, get_build_config, is_rocm_pytorch, _get_cuda_home,
         is_camb_parrots)
+    from .pytorch_wrapper import is_cuda, is_mlu
     from .registry import Registry, build_from_cfg
     from .trace import is_jit_tracing
     __all__ = [

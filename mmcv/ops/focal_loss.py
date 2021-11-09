@@ -34,9 +34,10 @@ class SigmoidFocalLossFunction(Function):
                 weight=None,
                 reduction='mean'):
         if is_camb_parrots:
-            assert isinstance(target, (torch.IntTensor, torch.cuda.IntTensor))
+            assert isinstance(target, (torch.LongTensor, torch.cuda.IntTensor))
         else:
-            assert isinstance(target, (torch.LongTensor, torch.cuda.LongTensor))
+            assert isinstance(target,
+                              (torch.LongTensor, torch.cuda.LongTensor))
 
         assert input.dim() == 2
         assert target.dim() == 1
