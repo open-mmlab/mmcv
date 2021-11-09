@@ -123,12 +123,12 @@ html_theme_options = {
                 },
                 {
                     'name': 'MMClassification',
-                    'url': 'https://github.com/open-mmlab/mmclassification',
+                    'url':
+                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection',
-                    'url':
-                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
+                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection3D',
