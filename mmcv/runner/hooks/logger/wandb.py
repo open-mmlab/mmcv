@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
 import shutil
 
 from ...dist_utils import master_only
@@ -46,7 +47,20 @@ class WandbLoggerHook(LoggerHook):
         
         if self.config_path is not None:
             shutil.copy2(self.config_path, self.wandb.run.dir)
-
+            if os.path.isdir(self.config_path):
+                for path, _, _ in os.walk(self.wandb.run.dir):
+                    self.wandb.save(
+                        glob_str=path + "/*",
+                        base_path=self.wandb.run.dir,
+                        policy="now"
+                    )
+            else:
+                self.wandb.save(
+                    glob_str=self.wandb.run.dir + "/*",
+                    base_path=self.wandb.run.dir,
+                    policy="now"
+                )
+    
     @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
