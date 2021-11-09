@@ -27,7 +27,7 @@ class DvcliveLoggerHook(LoggerHook):
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
         kwargs:
-            Arguments for instantiating `Live_`
+            Arguments for instantiating `Live`_
 
     .. _dvclive:
         https://dvc.org/doc/dvclive
