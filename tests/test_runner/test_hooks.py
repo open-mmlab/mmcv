@@ -1121,6 +1121,11 @@ def test_wandb_hook():
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
+    hook.wandb.save.assert_called_with(
+        glob_str=hook.wandb.run.dir + "/*",
+        base_path=hook.wandb.run.dir,
+        policy="now"
+    )
     hook.wandb.log.assert_called_with({
         'learning_rate': 0.02,
         'momentum': 0.95

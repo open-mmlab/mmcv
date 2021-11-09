@@ -19,8 +19,21 @@ class WandbLoggerHook(LoggerHook):
                  by_epoch=True,
                  with_step=True,
                  config_path=None):
+        
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
+        
+        """
+        Args:
+            
+            with_step (bool): whether making a log in each step or not.
+                        Default: True.
+            config_path (str, optional): The path of final config of each experiment.
+                        It can be either a path of final config file or a directory of 
+                        config files. The config is uploaded to wandb server if it is
+                        not None. Default: None.
+        """
+        
         self.import_wandb()
         self.init_kwargs = init_kwargs
         self.commit = commit
