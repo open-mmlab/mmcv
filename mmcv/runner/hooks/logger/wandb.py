@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
+import shutil
 
 from ...dist_utils import master_only
 from ..hook import HOOKS
@@ -45,7 +45,7 @@ class WandbLoggerHook(LoggerHook):
             self.wandb.init()
         
         if self.config_path is not None:
-            os.system(f"cp -r {self.config_path} {self.wandb.run.dir}")
+            shutil.copy2(self.config_path, self.wandb.run.dir)
 
     @master_only
     def log(self, runner):
