@@ -73,8 +73,8 @@ class Testfocalloss(object):
                     np.float32)).cuda().type(dtype)
                 y = torch.from_numpy(np_y).int().cuda()
             else:
-                x = torch.from_numpy(np_x).cuda().type(dtype)
-                y = torch.from_numpy(np_y).cuda().long()
+                x = torch.from_numpy(np_x).to(device).type(dtype)
+                y = torch.from_numpy(np_y).to(device).long()
 
             x.requires_grad_()
 
