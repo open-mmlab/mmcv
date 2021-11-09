@@ -15,8 +15,6 @@
 
 #include <ATen/cuda/CUDAApplyUtils.cuh>
 
-#include "pytorch_device_registry.hpp"
-
 static __host__ __device__ __forceinline__ int floor_div(int a, int b) {
   int c = a / b;
 
@@ -370,9 +368,3 @@ torch::Tensor upfirdn2d_op(const torch::Tensor &input,
 
   return out;
 }
-
-torch::Tensor upfirdn2d_op_impl(const torch::Tensor &input,
-                                const torch::Tensor &kernel, int up_x, int up_y,
-                                int down_x, int down_y, int pad_x0, int pad_x1,
-                                int pad_y0, int pad_y1);
-REGISTER_DEVICE_IMPL(upfirdn2d_op_impl, CUDA, upfirdn2d_op);

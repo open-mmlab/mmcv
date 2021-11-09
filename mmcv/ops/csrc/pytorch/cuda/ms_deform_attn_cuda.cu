@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "ms_deform_attn_cuda_kernel.cuh"
-#include "pytorch_device_registry.hpp"
 
 template <typename scalar_t>
 void ms_deformable_im2col_cuda(cudaStream_t stream, const scalar_t *data_value,
@@ -360,21 +359,3 @@ void ms_deform_attn_cuda_backward(
         }));
   }
 }
-
-Tensor ms_deform_attn_impl_forward(const Tensor &value,
-                                   const Tensor &spatial_shapes,
-                                   const Tensor &level_start_index,
-                                   const Tensor &sampling_loc,
-                                   const Tensor &attn_weight,
-                                   const int im2col_step);
-
-void ms_deform_attn_impl_backward(
-    const Tensor &value, const Tensor &spatial_shapes,
-    const Tensor &level_start_index, const Tensor &sampling_loc,
-    const Tensor &attn_weight, const Tensor &grad_output, Tensor &grad_value,
-    Tensor &grad_sampling_loc, Tensor &grad_attn_weight, const int im2col_step);
-
-REGISTER_DEVICE_IMPL(ms_deform_attn_impl_forward, CUDA,
-                     ms_deform_attn_cuda_forward);
-REGISTER_DEVICE_IMPL(ms_deform_attn_impl_backward, CUDA,
-                     ms_deform_attn_cuda_backward);

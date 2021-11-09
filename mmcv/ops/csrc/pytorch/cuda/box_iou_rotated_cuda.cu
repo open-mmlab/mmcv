@@ -3,7 +3,6 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated_cuda.cu
 #include "box_iou_rotated_cuda.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned) {
@@ -24,7 +23,3 @@ void box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
           mode_flag, aligned);
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
-                          const int mode_flag, const bool aligned);
-REGISTER_DEVICE_IMPL(box_iou_rotated_impl, CUDA, box_iou_rotated_cuda);

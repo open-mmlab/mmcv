@@ -6,7 +6,6 @@
 
 #include "group_points_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void GroupPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                           int nsample, const Tensor points,
@@ -60,30 +59,3 @@ void GroupPointsBackwardCUDAKernelLauncher(int b, int c, int n, int npoints,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void group_points_forward_cuda(int b, int c, int n, int npoints, int nsample,
-                               const Tensor points, const Tensor idx,
-                               Tensor out) {
-  GroupPointsForwardCUDAKernelLauncher(b, c, n, npoints, nsample, points, idx,
-                                       out);
-};
-
-void group_points_backward_cuda(int b, int c, int n, int npoints, int nsample,
-                                const Tensor grad_out, const Tensor idx,
-                                Tensor grad_points) {
-  GroupPointsBackwardCUDAKernelLauncher(b, c, n, npoints, nsample, grad_out,
-                                        idx, grad_points);
-};
-
-void group_points_forward_impl(int b, int c, int n, int npoints, int nsample,
-                               const Tensor points, const Tensor idx,
-                               Tensor out);
-
-void group_points_backward_impl(int b, int c, int n, int npoints, int nsample,
-                                const Tensor grad_out, const Tensor idx,
-                                Tensor grad_points);
-
-REGISTER_DEVICE_IMPL(group_points_forward_impl, CUDA,
-                     group_points_forward_cuda);
-REGISTER_DEVICE_IMPL(group_points_backward_impl, CUDA,
-                     group_points_backward_cuda);

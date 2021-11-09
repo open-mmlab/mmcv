@@ -7,7 +7,6 @@
 
 #include "knn_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
                                   const Tensor xyz, const Tensor new_xyz,
@@ -33,12 +32,3 @@ void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void knn_forward_cuda(int b, int n, int m, int nsample, const Tensor xyz,
-                      const Tensor new_xyz, Tensor idx, Tensor dist2) {
-  KNNForwardCUDAKernelLauncher(b, n, m, nsample, xyz, new_xyz, idx, dist2);
-}
-
-void knn_forward_impl(int b, int n, int m, int nsample, const Tensor xyz,
-                      const Tensor new_xyz, Tensor idx, Tensor dist2);
-REGISTER_DEVICE_IMPL(knn_forward_impl, CUDA, knn_forward_cuda);

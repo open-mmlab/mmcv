@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "carafe_naive_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void CARAFENAIVEForwardCUDAKernelLauncher(const Tensor features,
                                           const Tensor masks, Tensor output,
@@ -51,32 +50,3 @@ void CARAFENAIVEBackwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void carafe_naive_forward_cuda(Tensor features, Tensor masks, Tensor output,
-                               int kernel_size, int group_size,
-                               int scale_factor) {
-  CARAFENAIVEForwardCUDAKernelLauncher(features, masks, output, kernel_size,
-                                       group_size, scale_factor);
-}
-
-void carafe_naive_backward_cuda(Tensor top_grad, Tensor features, Tensor masks,
-                                Tensor bottom_grad, Tensor mask_grad,
-                                int kernel_size, int group_size,
-                                int scale_factor) {
-  CARAFENAIVEBackwardCUDAKernelLauncher(top_grad, features, masks, bottom_grad,
-                                        mask_grad, kernel_size, group_size,
-                                        scale_factor);
-}
-void carafe_naive_forward_impl(Tensor features, Tensor masks, Tensor output,
-                               int kernel_size, int group_size,
-                               int scale_factor);
-
-void carafe_naive_backward_impl(Tensor top_grad, Tensor features, Tensor masks,
-                                Tensor bottom_grad, Tensor mask_grad,
-                                int kernel_size, int group_size,
-                                int scale_factor);
-
-REGISTER_DEVICE_IMPL(carafe_naive_forward_impl, CUDA,
-                     carafe_naive_forward_cuda);
-REGISTER_DEVICE_IMPL(carafe_naive_backward_impl, CUDA,
-                     carafe_naive_backward_cuda);

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "voxelization_cuda_kernel.cuh"
 
 int HardVoxelizeForwardCUDAKernelLauncher(
@@ -187,40 +186,3 @@ void DynamicVoxelizeForwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-int hard_voxelize_forward_cuda(const at::Tensor &points, at::Tensor &voxels,
-                               at::Tensor &coors,
-                               at::Tensor &num_points_per_voxel,
-                               const std::vector<float> voxel_size,
-                               const std::vector<float> coors_range,
-                               const int max_points, const int max_voxels,
-                               const int NDim) {
-  return HardVoxelizeForwardCUDAKernelLauncher(
-      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
-      max_points, max_voxels, NDim);
-};
-
-void dynamic_voxelize_forward_cuda(const at::Tensor &points, at::Tensor &coors,
-                                   const std::vector<float> voxel_size,
-                                   const std::vector<float> coors_range,
-                                   const int NDim) {
-  DynamicVoxelizeForwardCUDAKernelLauncher(points, coors, voxel_size,
-                                           coors_range, NDim);
-};
-
-int hard_voxelize_forward_impl(const at::Tensor &points, at::Tensor &voxels,
-                               at::Tensor &coors,
-                               at::Tensor &num_points_per_voxel,
-                               const std::vector<float> voxel_size,
-                               const std::vector<float> coors_range,
-                               const int max_points, const int max_voxels,
-                               const int NDim);
-
-void dynamic_voxelize_forward_impl(const at::Tensor &points, at::Tensor &coors,
-                                   const std::vector<float> voxel_size,
-                                   const std::vector<float> coors_range,
-                                   const int NDim);
-REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
-                     hard_voxelize_forward_cuda);
-REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
-                     dynamic_voxelize_forward_cuda);

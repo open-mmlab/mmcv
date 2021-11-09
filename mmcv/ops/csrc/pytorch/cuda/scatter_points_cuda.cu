@@ -4,7 +4,6 @@
 #include <torch/types.h>
 
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "scatter_points_cuda_kernel.cuh"
 
 std::vector<at::Tensor> DynamicPointToVoxelForwardCUDAKernelLauncher(
@@ -126,35 +125,3 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
     AT_CUDA_CHECK(cudaGetLastError());
   }
 }
-
-std::vector<torch::Tensor> dynamic_point_to_voxel_forward_cuda(
-    const torch::Tensor &feats, const torch::Tensor &coors,
-    const reduce_t reduce_type) {
-  return DynamicPointToVoxelForwardCUDAKernelLauncher(feats, coors,
-                                                      reduce_type);
-};
-
-void dynamic_point_to_voxel_backward_cuda(
-    torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
-    const torch::Tensor &feats, const torch::Tensor &reduced_feats,
-    const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
-    const reduce_t reduce_type) {
-  DynamicPointToVoxelBackwardCUDAKernelLauncher(grad_feats, grad_reduced_feats,
-                                                feats, reduced_feats, coors_idx,
-                                                reduce_count, reduce_type);
-};
-
-std::vector<torch::Tensor> dynamic_point_to_voxel_forward_impl(
-    const torch::Tensor &feats, const torch::Tensor &coors,
-    const reduce_t reduce_type);
-
-void dynamic_point_to_voxel_backward_impl(
-    torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
-    const torch::Tensor &feats, const torch::Tensor &reduced_feats,
-    const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
-    const reduce_t reduce_type);
-
-REGISTER_DEVICE_IMPL(dynamic_point_to_voxel_forward_impl, CUDA,
-                     dynamic_point_to_voxel_forward_cuda);
-REGISTER_DEVICE_IMPL(dynamic_point_to_voxel_backward_impl, CUDA,
-                     dynamic_point_to_voxel_backward_cuda);

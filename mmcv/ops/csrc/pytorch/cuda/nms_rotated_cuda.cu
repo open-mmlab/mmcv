@@ -3,7 +3,6 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/nms_rotated/nms_rotated_cuda.cu
 #include "nms_rotated_cuda.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 Tensor nms_rotated_cuda(const Tensor dets, const Tensor scores,
                         const Tensor order_t, const Tensor dets_sorted,

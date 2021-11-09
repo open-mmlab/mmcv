@@ -3,7 +3,6 @@
 
 #include "gather_points_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void GatherPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                            const Tensor points,
@@ -57,29 +56,3 @@ void GatherPointsBackwardCUDAKernelLauncher(int b, int c, int n, int npoints,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void gather_points_forward_cuda(int b, int c, int n, int npoints,
-                                const Tensor points, const Tensor idx,
-                                Tensor out) {
-  GatherPointsForwardCUDAKernelLauncher(b, c, n, npoints, points, idx, out);
-};
-
-void gather_points_backward_cuda(int b, int c, int n, int npoints,
-                                 const Tensor grad_out, const Tensor idx,
-                                 Tensor grad_points) {
-  GatherPointsBackwardCUDAKernelLauncher(b, c, n, npoints, grad_out, idx,
-                                         grad_points);
-};
-
-void gather_points_forward_impl(int b, int c, int n, int npoints,
-                                const Tensor points, const Tensor idx,
-                                Tensor out);
-
-void gather_points_backward_impl(int b, int c, int n, int npoints,
-                                 const Tensor grad_out, const Tensor idx,
-                                 Tensor grad_points);
-
-REGISTER_DEVICE_IMPL(gather_points_forward_impl, CUDA,
-                     gather_points_forward_cuda);
-REGISTER_DEVICE_IMPL(gather_points_backward_impl, CUDA,
-                     gather_points_backward_cuda);

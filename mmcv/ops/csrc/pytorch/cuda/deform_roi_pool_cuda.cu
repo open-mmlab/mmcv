@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "deform_roi_pool_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
                                             Tensor offset, Tensor output,
@@ -54,40 +53,3 @@ void DeformRoIPoolBackwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void deform_roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor offset,
-                                  Tensor output, int pooled_height,
-                                  int pooled_width, float spatial_scale,
-                                  int sampling_ratio, float gamma) {
-  DeformRoIPoolForwardCUDAKernelLauncher(input, rois, offset, output,
-                                         pooled_height, pooled_width,
-                                         spatial_scale, sampling_ratio, gamma);
-}
-
-void deform_roi_pool_backward_cuda(Tensor grad_output, Tensor input,
-                                   Tensor rois, Tensor offset,
-                                   Tensor grad_input, Tensor grad_offset,
-                                   int pooled_height, int pooled_width,
-                                   float spatial_scale, int sampling_ratio,
-                                   float gamma) {
-  DeformRoIPoolBackwardCUDAKernelLauncher(
-      grad_output, input, rois, offset, grad_input, grad_offset, pooled_height,
-      pooled_width, spatial_scale, sampling_ratio, gamma);
-}
-
-void deform_roi_pool_forward_impl(Tensor input, Tensor rois, Tensor offset,
-                                  Tensor output, int pooled_height,
-                                  int pooled_width, float spatial_scale,
-                                  int sampling_ratio, float gamma);
-
-void deform_roi_pool_backward_impl(Tensor grad_output, Tensor input,
-                                   Tensor rois, Tensor offset,
-                                   Tensor grad_input, Tensor grad_offset,
-                                   int pooled_height, int pooled_width,
-                                   float spatial_scale, int sampling_ratio,
-                                   float gamma);
-
-REGISTER_DEVICE_IMPL(deform_roi_pool_forward_impl, CUDA,
-                     deform_roi_pool_forward_cuda);
-REGISTER_DEVICE_IMPL(deform_roi_pool_backward_impl, CUDA,
-                     deform_roi_pool_backward_cuda);

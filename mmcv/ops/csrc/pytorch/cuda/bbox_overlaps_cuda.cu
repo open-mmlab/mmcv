@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "bbox_overlaps_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,
@@ -22,12 +21,3 @@ void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
       }));
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
-                        const int mode, const bool aligned, const int offset) {
-  BBoxOverlapsCUDAKernelLauncher(bboxes1, bboxes2, ious, mode, aligned, offset);
-}
-
-void bbox_overlaps_impl(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
-                        const int mode, const bool aligned, const int offset);
-REGISTER_DEVICE_IMPL(bbox_overlaps_impl, CUDA, bbox_overlaps_cuda);

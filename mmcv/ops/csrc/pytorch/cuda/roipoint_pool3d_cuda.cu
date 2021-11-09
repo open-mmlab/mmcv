@@ -10,7 +10,6 @@ All Rights Reserved 2018.
 #include <stdio.h>
 
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "roipoint_pool3d_cuda_kernel.cuh"
 
 void RoIPointPool3dForwardCUDAKernelLauncher(
@@ -59,23 +58,3 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
             pooled_empty_flag.data_ptr<int>());
       });
 }
-
-void roipoint_pool3d_forward_cuda(int batch_size, int pts_num, int boxes_num,
-                                  int feature_in_len, int sampled_pts_num,
-                                  const Tensor xyz, const Tensor boxes3d,
-                                  const Tensor pts_feature,
-                                  Tensor pooled_features,
-                                  Tensor pooled_empty_flag) {
-  RoIPointPool3dForwardCUDAKernelLauncher(
-      batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num, xyz,
-      boxes3d, pts_feature, pooled_features, pooled_empty_flag);
-};
-
-void roipoint_pool3d_forward_impl(int batch_size, int pts_num, int boxes_num,
-                                  int feature_in_len, int sampled_pts_num,
-                                  const Tensor xyz, const Tensor boxes3d,
-                                  const Tensor pts_feature,
-                                  Tensor pooled_features,
-                                  Tensor pooled_empty_flag);
-REGISTER_DEVICE_IMPL(roipoint_pool3d_forward_impl, CUDA,
-                     roipoint_pool3d_forward_cuda);

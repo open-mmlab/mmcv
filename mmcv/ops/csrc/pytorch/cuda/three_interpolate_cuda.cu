@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "three_interpolate_cuda_kernel.cuh"
 
 void ThreeInterpolateForwardCUDAKernelLauncher(int b, int c, int m, int n,
@@ -65,29 +64,3 @@ void ThreeInterpolateBackwardCUDAKernelLauncher(int b, int c, int n, int m,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void three_interpolate_forward_cuda(int b, int c, int m, int n,
-                                    const Tensor points, const Tensor idx,
-                                    const Tensor weight, Tensor out) {
-  ThreeInterpolateForwardCUDAKernelLauncher(b, c, m, n, points, idx, weight,
-                                            out);
-};
-
-void three_interpolate_backward_cuda(int b, int c, int n, int m,
-                                     const Tensor grad_out, const Tensor idx,
-                                     const Tensor weight, Tensor grad_points) {
-  ThreeInterpolateBackwardCUDAKernelLauncher(b, c, n, m, grad_out, idx, weight,
-                                             grad_points);
-};
-
-void three_interpolate_forward_impl(int b, int c, int m, int n,
-                                    const Tensor points, const Tensor idx,
-                                    const Tensor weight, Tensor out);
-
-void three_interpolate_backward_impl(int b, int c, int n, int m,
-                                     const Tensor grad_out, const Tensor idx,
-                                     const Tensor weight, Tensor grad_points);
-REGISTER_DEVICE_IMPL(three_interpolate_forward_impl, CUDA,
-                     three_interpolate_forward_cuda);
-REGISTER_DEVICE_IMPL(three_interpolate_backward_impl, CUDA,
-                     three_interpolate_backward_cuda);

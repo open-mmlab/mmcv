@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "carafe_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
@@ -179,35 +178,3 @@ void CARAFEBackwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void carafe_forward_cuda(Tensor features, Tensor masks, Tensor rfeatures,
-                         Tensor routput, Tensor rmasks, Tensor output,
-                         int kernel_size, int group_size, int scale_factor) {
-  CARAFEForwardCUDAKernelLauncher(features, masks, rfeatures, routput, rmasks,
-                                  output, kernel_size, group_size,
-                                  scale_factor);
-}
-
-void carafe_backward_cuda(Tensor top_grad, Tensor rfeatures, Tensor masks,
-                          Tensor rtop_grad, Tensor rbottom_grad_hs,
-                          Tensor rbottom_grad, Tensor rmask_grad,
-                          Tensor bottom_grad, Tensor mask_grad, int kernel_size,
-                          int group_size, int scale_factor) {
-  CARAFEBackwardCUDAKernelLauncher(top_grad, rfeatures, masks, rtop_grad,
-                                   rbottom_grad_hs, rbottom_grad, rmask_grad,
-                                   bottom_grad, mask_grad, kernel_size,
-                                   group_size, scale_factor);
-}
-
-void carafe_forward_impl(Tensor features, Tensor masks, Tensor rfeatures,
-                         Tensor routput, Tensor rmasks, Tensor output,
-                         int kernel_size, int group_size, int scale_factor);
-
-void carafe_backward_impl(Tensor top_grad, Tensor rfeatures, Tensor masks,
-                          Tensor rtop_grad, Tensor rbottom_grad_hs,
-                          Tensor rbottom_grad, Tensor rmask_grad,
-                          Tensor bottom_grad, Tensor mask_grad, int kernel_size,
-                          int group_size, int scale_factor);
-
-REGISTER_DEVICE_IMPL(carafe_forward_impl, CUDA, carafe_forward_cuda);
-REGISTER_DEVICE_IMPL(carafe_backward_impl, CUDA, carafe_backward_cuda);

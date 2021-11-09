@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "roiaware_pool3d_cuda_kernel.cuh"
 
 void RoiawarePool3dForwardCUDAKernelLauncher(
@@ -117,45 +116,3 @@ void RoiawarePool3dBackwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void roiaware_pool3d_forward_cuda(int boxes_num, int pts_num, int channels,
-                                  int max_pts_each_voxel, int out_x, int out_y,
-                                  int out_z, const Tensor rois,
-                                  const Tensor pts, const Tensor pts_feature,
-                                  Tensor argmax, Tensor pts_idx_of_voxels,
-                                  Tensor pooled_features, int pool_method) {
-  RoiawarePool3dForwardCUDAKernelLauncher(
-      boxes_num, pts_num, channels, max_pts_each_voxel, out_x, out_y, out_z,
-      rois, pts, pts_feature, argmax, pts_idx_of_voxels, pooled_features,
-      pool_method);
-};
-
-void roiaware_pool3d_backward_cuda(int boxes_num, int out_x, int out_y,
-                                   int out_z, int channels,
-                                   int max_pts_each_voxel,
-                                   const Tensor pts_idx_of_voxels,
-                                   const Tensor argmax, const Tensor grad_out,
-                                   Tensor grad_in, int pool_method) {
-  RoiawarePool3dBackwardCUDAKernelLauncher(
-      boxes_num, out_x, out_y, out_z, channels, max_pts_each_voxel,
-      pts_idx_of_voxels, argmax, grad_out, grad_in, pool_method);
-};
-
-void roiaware_pool3d_forward_impl(int boxes_num, int pts_num, int channels,
-                                  int max_pts_each_voxel, int out_x, int out_y,
-                                  int out_z, const Tensor rois,
-                                  const Tensor pts, const Tensor pts_feature,
-                                  Tensor argmax, Tensor pts_idx_of_voxels,
-                                  Tensor pooled_features, int pool_method);
-
-void roiaware_pool3d_backward_impl(int boxes_num, int out_x, int out_y,
-                                   int out_z, int channels,
-                                   int max_pts_each_voxel,
-                                   const Tensor pts_idx_of_voxels,
-                                   const Tensor argmax, const Tensor grad_out,
-                                   Tensor grad_in, int pool_method);
-
-REGISTER_DEVICE_IMPL(roiaware_pool3d_forward_impl, CUDA,
-                     roiaware_pool3d_forward_cuda);
-REGISTER_DEVICE_IMPL(roiaware_pool3d_backward_impl, CUDA,
-                     roiaware_pool3d_backward_cuda);

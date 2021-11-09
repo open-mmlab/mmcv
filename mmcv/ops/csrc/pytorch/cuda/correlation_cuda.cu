@@ -5,7 +5,6 @@
 
 #include "correlation_cuda.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
                                           Tensor output, int kH, int kW,
@@ -92,42 +91,3 @@ void CorrelationBackwardCUDAKernelLauncher(
         }
       }));
 }
-
-void correlation_forward_cuda(Tensor input1, Tensor input2, Tensor output,
-                              int kH, int kW, int patchH, int patchW, int padH,
-                              int padW, int dilationH, int dilationW,
-                              int dilation_patchH, int dilation_patchW, int dH,
-                              int dW) {
-  CorrelationForwardCUDAKernelLauncher(
-      input1, input2, output, kH, kW, patchH, patchW, padH, padW, dilationH,
-      dilationW, dilation_patchH, dilation_patchW, dH, dW);
-}
-
-void correlation_backward_cuda(Tensor grad_output, Tensor input1, Tensor input2,
-                               Tensor grad_input1, Tensor grad_input2, int kH,
-                               int kW, int patchH, int patchW, int padH,
-                               int padW, int dilationH, int dilationW,
-                               int dilation_patchH, int dilation_patchW, int dH,
-                               int dW) {
-  CorrelationBackwardCUDAKernelLauncher(
-      grad_output, input1, input2, grad_input1, grad_input2, kH, kW, patchH,
-      patchW, padH, padW, dilationH, dilationW, dilation_patchH,
-      dilation_patchW, dH, dW);
-}
-
-void correlation_forward_impl(Tensor input1, Tensor input2, Tensor output,
-                              int kH, int kW, int patchH, int patchW, int padH,
-                              int padW, int dilationH, int dilationW,
-                              int dilation_patchH, int dilation_patchW, int dH,
-                              int dW);
-
-void correlation_backward_impl(Tensor grad_output, Tensor input1, Tensor input2,
-                               Tensor grad_input1, Tensor grad_input2, int kH,
-                               int kW, int patchH, int patchW, int padH,
-                               int padW, int dilationH, int dilationW,
-                               int dilation_patchH, int dilation_patchW, int dH,
-                               int dW);
-
-REGISTER_DEVICE_IMPL(correlation_forward_impl, CUDA, correlation_forward_cuda);
-REGISTER_DEVICE_IMPL(correlation_backward_impl, CUDA,
-                     correlation_backward_cuda);

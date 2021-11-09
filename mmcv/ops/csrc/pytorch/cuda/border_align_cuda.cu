@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "border_align_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void BorderAlignForwardCUDAKernelLauncher(const Tensor &input,
                                           const Tensor &boxes, Tensor output,
@@ -67,30 +66,3 @@ void BorderAlignBackwardCUDAKernelLauncher(const Tensor &grad_output,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void border_align_forward_cuda(const Tensor &input, const Tensor &boxes,
-                               Tensor output, Tensor argmax_idx,
-                               const int pool_size) {
-  BorderAlignForwardCUDAKernelLauncher(input, boxes, output, argmax_idx,
-                                       pool_size);
-}
-
-void border_align_backward_cuda(const Tensor &grad_output, const Tensor &boxes,
-                                const Tensor &argmax_idx, Tensor grad_input,
-                                const int pool_size) {
-  BorderAlignBackwardCUDAKernelLauncher(grad_output, boxes, argmax_idx,
-                                        grad_input, pool_size);
-}
-
-void border_align_forward_impl(const Tensor &input, const Tensor &boxes,
-                               Tensor output, Tensor argmax_idx,
-                               const int pool_size);
-
-void border_align_backward_impl(const Tensor &grad_output, const Tensor &boxes,
-                                const Tensor &argmax_idx, Tensor grad_input,
-                                const int pool_size);
-
-REGISTER_DEVICE_IMPL(border_align_forward_impl, CUDA,
-                     border_align_forward_cuda);
-REGISTER_DEVICE_IMPL(border_align_backward_impl, CUDA,
-                     border_align_backward_cuda);

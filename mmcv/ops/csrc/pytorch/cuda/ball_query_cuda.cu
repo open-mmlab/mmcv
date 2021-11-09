@@ -8,7 +8,6 @@
 
 #include "ball_query_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 
 void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
                                         float max_radius, int nsample,
@@ -37,17 +36,3 @@ void BallQueryForwardCUDAKernelLauncher(int b, int n, int m, float min_radius,
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void ball_query_forward_cuda(int b, int n, int m, float min_radius,
-                             float max_radius, int nsample,
-                             const Tensor new_xyz, const Tensor xyz,
-                             Tensor idx) {
-  BallQueryForwardCUDAKernelLauncher(b, n, m, min_radius, max_radius, nsample,
-                                     new_xyz, xyz, idx);
-};
-
-void ball_query_forward_impl(int b, int n, int m, float min_radius,
-                             float max_radius, int nsample,
-                             const Tensor new_xyz, const Tensor xyz,
-                             Tensor idx);
-REGISTER_DEVICE_IMPL(ball_query_forward_impl, CUDA, ball_query_forward_cuda);

@@ -1,6 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cuda_helper.hpp"
-#include "pytorch_device_registry.hpp"
 #include "roi_align_rotated_cuda_kernel.cuh"
 
 void ROIAlignRotatedForwardCUDAKernelLauncher(
@@ -44,60 +43,3 @@ void ROIAlignRotatedBackwardCUDAKernelLauncher(
       }));
   AT_CUDA_CHECK(cudaGetLastError());
 }
-
-void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
-                                    int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
-                                    bool aligned, bool clockwise) {
-  // Number of ROIs
-  int num_rois = rois.size(0);
-  int size_rois = rois.size(1);
-
-  if (size_rois != 6) {
-    AT_ERROR("wrong roi size");
-  }
-
-  int num_channels = features.size(1);
-  int data_height = features.size(2);
-  int data_width = features.size(3);
-  ROIAlignRotatedForwardCUDAKernelLauncher(
-      features, rois, spatial_scale, sample_ratio, aligned, clockwise,
-      num_channels, data_height, data_width, num_rois, aligned_height,
-      aligned_width, output);
-}
-
-void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
-                                     Tensor bottom_grad, int aligned_height,
-                                     int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
-                                     bool clockwise) {
-  // Number of ROIs
-  int num_rois = rois.size(0);
-  int size_rois = rois.size(1);
-  if (size_rois != 6) {
-    AT_ERROR("wrong roi size");
-  }
-
-  int num_channels = bottom_grad.size(1);
-  int data_height = bottom_grad.size(2);
-  int data_width = bottom_grad.size(3);
-  ROIAlignRotatedBackwardCUDAKernelLauncher(
-      top_grad, rois, spatial_scale, sample_ratio, aligned, clockwise,
-      num_channels, data_height, data_width, num_rois, aligned_height,
-      aligned_width, bottom_grad);
-}
-
-void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
-                                    int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
-                                    bool aligned, bool clockwise);
-
-void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
-                                     Tensor bottom_grad, int aligned_height,
-                                     int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
-                                     bool clockwise);
-REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CUDA,
-                     roi_align_rotated_forward_cuda);
-REGISTER_DEVICE_IMPL(roi_align_rotated_backward_impl, CUDA,
-                     roi_align_rotated_backward_cuda);
