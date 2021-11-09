@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
+
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -14,13 +16,15 @@ class WandbLoggerHook(LoggerHook):
                  reset_flag=False,
                  commit=True,
                  by_epoch=True,
-                 with_step=True):
+                 with_step=True,
+                 config_path=None):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
         self.commit = commit
         self.with_step = with_step
+        self.config_path = config_path
 
     def import_wandb(self):
         try:
@@ -39,6 +43,9 @@ class WandbLoggerHook(LoggerHook):
             self.wandb.init(**self.init_kwargs)
         else:
             self.wandb.init()
+        
+        if self.config_path is not None:
+            os.system(f"cp -r {self.config_path} {self.wandb.run.dir}")
 
     @master_only
     def log(self, runner):
