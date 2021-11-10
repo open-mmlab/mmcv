@@ -215,7 +215,7 @@ def get_extensions():
             'nvcc': [cuda_args] if cuda_args else [],
             'cxx': [],
             'cncc': [mlu_args] if mlu_args else
-            ['-v', '-fPIC', '--shared', '--bang-mlu-arch=MLU290'],
+            ['-v', '-fPIC', '--shared', '--bang-mlu-arch=MLU290', '-O3'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             if use_cuda:
