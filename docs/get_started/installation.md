@@ -129,7 +129,7 @@ For more details, please refer the the following tables.
 </table>
 
 ```{note}
-The pre-built packages provided above do not include all versions of mmcv-full, we can click on the corresponding links to see the supported versions. For example, if you click [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html), you can see that `cu102-torch1.8.0` only provides 1.3.0 and above versions of mmcv-full. In addition, We no longer provide `mmcv-full` packages compiled under lower versions of `PyTorch`, but for your convenience, you can find them in [previous versions](./previous_versions.md)
+The pre-built packages provided above do not include all versions of mmcv-full, you can click on the corresponding links to see the supported versions. For example, if you click [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html), you can see that `cu102-torch1.8.0` only provides 1.3.0 and above versions of mmcv-full. In addition, We no longer provide `mmcv-full` pre-built packages compiled with `PyTorch 1.3 & 1.4` since v1.3.17. You can find previous versions that compiled with PyTorch 1.3 & 1.4 [here](./docs/get_started/previous_versions.md). The compatibility is still ensured in our CI, but we will discard the support of PyTorch 1.3 & 1.4 next year.
 ```
 
 Another way is to compile locally by running
