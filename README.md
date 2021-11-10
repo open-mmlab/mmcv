@@ -49,7 +49,7 @@ a. Install the full version.
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/).
 
-We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building.
+We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building. In addition, after finishing the installation, you can run the [verify_installation.py](scripts/verify_installation.py) to verify mmcv-full whether it has been installed successfully.
 
 i. Install the latest version.
 
