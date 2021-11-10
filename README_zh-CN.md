@@ -48,7 +48,7 @@ a. 安装完整版
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。
 
-我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [verify_installation.py](scripts/verify_installation.py) 脚本来验证 mmcv-full 是否安装成功。
+我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [check_installation.py](scripts/check_installation.py) 脚本来检查 mmcv-full 是否安装成功。
 
 i. 安装最新版本
 

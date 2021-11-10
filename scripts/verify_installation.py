@@ -4,8 +4,8 @@ import torch
 from mmcv.ops import box_iou_rotated
 
 
-def verify_installation():
-    """Verify mmcv-full whether it has been installed successfully."""
+def check_installation():
+    """Check whether mmcv-full has been installed successfully."""
     np_boxes1 = np.asarray(
         [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
          [7.0, 7.0, 8.0, 8.0, 0.4]],
@@ -46,4 +46,4 @@ def verify_installation():
 
 
 if __name__ == '__main__':
-    verify_installation()
+    check_installation()
