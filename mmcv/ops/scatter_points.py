@@ -25,10 +25,11 @@ class _DynamicScatter(Function):
                 'mean'. Default: 'max'.
 
         Returns:
-            voxel_feats (torch.Tensor): [M, C]. Reduced features, input
-                features that shares the same voxel coordinates are reduced to
-                one row.
-            voxel_coors (torch.Tensor): [M, ndim]. Voxel coordinates.
+            tuple[torch.Tensor]: A tuple contains two elements. The first one
+            is the reduced features whose shape is [M, C] and which are reduced
+            from input features that share the same voxel coordinates are
+            reduced to one row. The second is voxel coordinates whose shape is
+            [M, ndim].
         """
         results = ext_module.dynamic_point_to_voxel_forward(
             feats, coors, reduce_type)

@@ -14,13 +14,13 @@ def box_iou_rotated(bboxes1, bboxes2, mode='iou', aligned=False):
     of bboxes1 and bboxes2, otherwise the ious between each aligned pair of
     bboxes1 and bboxes2.
 
-    Arguments:
-        boxes1 (Tensor): rotated bboxes 1. \
-            It has shape (N, 5), indicating (x, y, w, h, theta) for each row.
-            Note that theta is in radian.
-        boxes2 (Tensor): rotated bboxes 2. \
-            It has shape (M, 5), indicating (x, y, w, h, theta) for each row.
-            Note that theta is in radian.
+    Args:
+        boxes1 (torch.Tensor): rotated bboxes 1. It has shape (N, 5),
+            indicating (x, y, w, h, theta) for each row. Note that theta is in
+            radian.
+        boxes2 (torch.Tensor): rotated bboxes 2. It has shape (M, 5),
+            indicating (x, y, w, h, theta) for each row. Note that theta is in
+            radian.
         mode (str): "iou" (intersection over union) or iof (intersection over
             foreground).
 

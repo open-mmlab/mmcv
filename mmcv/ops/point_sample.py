@@ -96,10 +96,10 @@ def normalize(grid):
     """Normalize input grid from [-1, 1] to [0, 1]
 
     Args:
-        grid (Tensor): The grid to be normalize, range [-1, 1].
+        grid (torch.Tensor): The grid to be normalize, range [-1, 1].
 
     Returns:
-        Tensor: Normalized grid, range [0, 1].
+        torch.Tensor: Normalized grid, range [0, 1].
     """
 
     return (grid + 1.0) / 2.0
@@ -109,10 +109,10 @@ def denormalize(grid):
     """Denormalize input grid from range [0, 1] to [-1, 1]
 
     Args:
-        grid (Tensor): The grid to be denormalize, range [0, 1].
+        grid (torch.Tensor): The grid to be denormalize, range [0, 1].
 
     Returns:
-        Tensor: Denormalized grid, range [-1, 1].
+        torch.Tensor: Denormalized grid, range [-1, 1].
     """
 
     return grid * 2.0 - 1.0
@@ -124,7 +124,7 @@ def generate_grid(num_grid, size, device):
 
     Args:
         num_grid (int): The number of grids to sample, one for each region.
-        size (tuple(int, int)): The side size of the regular grid.
+        size (tuple[int, int]): The side size of the regular grid.
         device (torch.device): Desired device of returned tensor.
 
     Returns:
@@ -144,11 +144,11 @@ def rel_roi_point_to_abs_img_point(rois, rel_roi_points):
     point coordinates.
 
     Args:
-        rois (Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
-        rel_roi_points (Tensor): Point coordinates inside RoI, relative to
-            RoI, location, range (0, 1), shape (N, P, 2)
+        rois (torch.Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
+        rel_roi_points (torch.Tensor): Point coordinates inside RoI, relative
+            to RoI, location, range (0, 1), shape (N, P, 2)
     Returns:
-        Tensor: Image based absolute point coordinates, shape (N, P, 2)
+        torch.Tensor: Image based absolute point coordinates, shape (N, P, 2)
     """
 
     with torch.no_grad():
@@ -194,9 +194,9 @@ def abs_img_point_to_rel_img_point(abs_img_points, img, spatial_scale=1.):
     coordinates for sampling.
 
     Args:
-        abs_img_points (Tensor): Image based absolute point coordinates,
+        abs_img_points (torch.Tensor): Image based absolute point coordinates,
             shape (N, P, 2)
-        img (tuple/Tensor): (height, width) of image or feature map.
+        img (tuple or torch.Tensor): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
@@ -227,15 +227,15 @@ def rel_roi_point_to_rel_img_point(rois,
     point coordinates.
 
     Args:
-        rois (Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
-        rel_roi_points (Tensor): Point coordinates inside RoI, relative to
-            RoI, location, range (0, 1), shape (N, P, 2)
-        img (tuple/Tensor): (height, width) of image or feature map.
+        rois (torch.Tensor): RoIs or BBoxes, shape (N, 4) or (N, 5)
+        rel_roi_points (torch.Tensor): Point coordinates inside RoI, relative
+            to RoI, location, range (0, 1), shape (N, P, 2)
+        img (tuple or torch.Tensor): (height, width) of image or feature map.
         spatial_scale (float): Scale points by this factor. Default: 1.
 
     Returns:
-        Tensor: Image based relative point coordinates for sampling, shape
-        (N, P, 2).
+        torch.Tensor: Image based relative point coordinates for sampling,
+        shape (N, P, 2).
     """
 
     abs_img_point = rel_roi_point_to_abs_img_point(rois, rel_roi_points)
@@ -251,13 +251,14 @@ def point_sample(input, points, align_corners=False, **kwargs):
     lie inside ``[0, 1] x [0, 1]`` square.
 
     Args:
-        input (Tensor): Feature map, shape (N, C, H, W).
-        points (Tensor): Image based absolute point coordinates (normalized),
-            range [0, 1] x [0, 1], shape (N, P, 2) or (N, Hgrid, Wgrid, 2).
+        input (torch.Tensor): Feature map, shape (N, C, H, W).
+        points (torch.Tensor): Image based absolute point coordinates
+            (normalized), range [0, 1] x [0, 1], shape (N, P, 2) or
+            (N, Hgrid, Wgrid, 2).
         align_corners (bool): Whether align_corners. Default: False
 
     Returns:
-        Tensor: Features of `point` on `input`, shape (N, C, P) or
+        torch.Tensor: Features of `point` on `input`, shape (N, C, P) or
         (N, C, Hgrid, Wgrid).
     """
 

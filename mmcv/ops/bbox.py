@@ -12,9 +12,10 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
     bboxes1 and bboxes2.
 
     Args:
-        bboxes1 (Tensor): shape (m, 4) in <x1, y1, x2, y2> format or empty.
-        bboxes2 (Tensor): shape (n, 4) in <x1, y1, x2, y2> format or empty.
-            If aligned is ``True``, then m and n must be equal.
+        bboxes1 (torch.Tensor): shape (m, 4) in <x1, y1, x2, y2> format or
+            empty.
+        bboxes2 (torch.Tensor): shape (n, 4) in <x1, y1, x2, y2> format or
+            empty. If aligned is ``True``, then m and n must be equal.
         mode (str): "iou" (intersection over union) or iof (intersection over
             foreground).
 

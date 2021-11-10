@@ -67,12 +67,14 @@ class QueryAndGroup(nn.Module):
     def forward(self, points_xyz, center_xyz, features=None):
         """
         Args:
-            points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            center_xyz (Tensor): (B, npoint, 3) coordinates of the centriods.
-            features (Tensor): (B, C, N) Descriptors of the features.
+            points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
+                features.
+            center_xyz (torch.Tensor): (B, npoint, 3) coordinates of the
+                centriods.
+            features (torch.Tensor): (B, C, N) Descriptors of the features.
 
         Returns:
-            Tensor: (B, 3 + C, npoint, sample_num) Grouped feature.
+            torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped feature.
         """
         # if self.max_radius is None, we will perform kNN instead of ball query
         # idx is of shape [B, npoint, sample_num]

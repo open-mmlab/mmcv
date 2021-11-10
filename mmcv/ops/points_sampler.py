@@ -12,13 +12,13 @@ def calc_square_dist(point_feat_a, point_feat_b, norm=True):
     """Calculating square distance between a and b.
 
     Args:
-        point_feat_a (Tensor): (B, N, C) Feature vector of each point.
-        point_feat_b (Tensor): (B, M, C) Feature vector of each point.
-        norm (Bool, optional): Whether to normalize the distance.
+        point_feat_a (torch.Tensor): (B, N, C) Feature vector of each point.
+        point_feat_b (torch.Tensor): (B, M, C) Feature vector of each point.
+        norm (bool, optional): Whether to normalize the distance.
             Default: True.
 
     Returns:
-        Tensor: (B, N, M) Distance between each pair points.
+        torch.Tensor: (B, N, M) Distance between each pair points.
     """
     num_channel = point_feat_a.shape[-1]
     # [bs, n, 1]
@@ -92,11 +92,12 @@ class PointsSampler(nn.Module):
     def forward(self, points_xyz, features):
         """
         Args:
-            points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            features (Tensor): (B, C, N) Descriptors of the features.
+            points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
+                features.
+            features (torch.Tensor): (B, C, N) Descriptors of the features.
 
         Returns:
-            Tensor: (B, npoint, sample_num) Indices of sampled points.
+            torch.Tensor: (B, npoint, sample_num) Indices of sampled points.
         """
         indices = []
         last_fps_end_index = 0

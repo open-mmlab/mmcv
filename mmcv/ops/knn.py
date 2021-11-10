@@ -24,10 +24,10 @@ class KNN(Function):
         """
         Args:
             k (int): number of nearest neighbors.
-            xyz (Tensor): (B, N, 3) if transposed == False, else (B, 3, N).
-                xyz coordinates of the features.
-            center_xyz (Tensor, optional): (B, npoint, 3) if transposed ==
-                False, else (B, 3, npoint). centers of the knn query.
+            xyz (torch.Tensor): (B, N, 3) if transposed == False, else
+                (B, 3, N). xyz coordinates of the features.
+            center_xyz (torch.Tensor, optional): (B, npoint, 3) if transposed
+                is False, else (B, 3, npoint). centers of the knn query.
                 Default: None.
             transposed (bool, optional): whether the input tensors are
                 transposed. Should not explicitly use this keyword when
@@ -35,8 +35,8 @@ class KNN(Function):
                 Default: False.
 
         Returns:
-            Tensor: (B, k, npoint) tensor with the indices of the features that
-            form k-nearest neighbours.
+            torch.Tensor: (B, k, npoint) tensor with the indices of the
+            features that form k-nearest neighbours.
         """
         assert (k > 0) & (k < 100), 'k should be in range(0, 100)'
 

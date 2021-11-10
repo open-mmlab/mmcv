@@ -43,7 +43,7 @@ class RoIAwarePool3d(nn.Module):
             pts_feature (torch.Tensor): [npoints, C], features of input points.
 
         Returns:
-            torch.Tensor: Pooled features whose shapre is
+            torch.Tensor: Pooled features whose shape is
             [N, out_x, out_y, out_z, C].
         """
 

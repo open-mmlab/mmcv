@@ -61,8 +61,9 @@ class TINShift(nn.Module):
         """Perform temporal interlace shift.
 
         Args:
-            input (Tensor): Feature map with shape [N, num_segments, C, H * W].
-            shift (Tensor): Shift tensor with shape [N, num_segments].
+            input (torch.Tensor): Feature map with shape
+                [N, num_segments, C, H * W].
+            shift (torch.Tensor): Shift tensor with shape [N, num_segments].
 
         Returns:
             Feature map after temporal interlace shift.

@@ -13,9 +13,9 @@ def contour_expand(kernel_mask, internal_kernel_label, min_kernel_area,
     instances.
 
     Args:
-        kernel_mask (np.array or Tensor): The instance kernel mask with
+        kernel_mask (np.array or torch.Tensor): The instance kernel mask with
             size hxw.
-        internal_kernel_label (np.array or Tensor): The instance internal
+        internal_kernel_label (np.array or torch.Tensor): The instance internal
             kernel label with size hxw.
         min_kernel_area (int): The minimum kernel area.
         kernel_num (int): The instance kernel number.

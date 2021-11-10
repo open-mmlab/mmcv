@@ -98,7 +98,7 @@ class BorderAlign(nn.Module):
             boxes: Boxes with shape [N,H*W,4]. Coordinate format (x1,y1,x2,y2).
 
         Returns:
-            Tensor: Pooled features with shape [N,C,H*W,4]. The order is
+            torch.Tensor: Pooled features with shape [N,C,H*W,4]. The order is
             (top,left,bottom,right) for the last dimension.
         """
         return border_align(input, boxes, self.pool_size)
