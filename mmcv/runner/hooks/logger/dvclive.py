@@ -38,7 +38,7 @@ class DvcliveLoggerHook(LoggerHook):
 
     def __init__(self,
                  model_file=None,
-                 interval=1,
+                 interval=10,
                  ignore_last=True,
                  reset_flag=False,
                  by_epoch=True,
