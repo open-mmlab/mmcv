@@ -169,7 +169,7 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
       if (input_memformat == MemoryFormat::Contiguous) {
         output = ctx.createDArrayLite(output_tmp);
       } else {
-        output = ctx.createDArrayLite(output_tmp);
+        output = output_tmp;
       }
     } else {
       copy(ctx, output, output_tmp);
@@ -289,7 +289,7 @@ void ROIAlignBackwardMLUKernelLauncher(
       c, no, ho, wo, spatial_scale, sampling_ratio, aligned);
   if (grad_input_.size() > 0) {
     if (grad_input.size() <= 0) {
-      if (grad.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
+      if (grad.spec().probableMemoryFormat() == MemoryFormat::Contiguous) {
         grad_input = ctx.createDArrayLite(grad_input_);
       } else {
         grad_input = grad_input_;
