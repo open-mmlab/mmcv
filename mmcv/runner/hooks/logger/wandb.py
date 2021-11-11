@@ -63,15 +63,15 @@ class WandbLoggerHook(LoggerHook):
             if os.path.isdir(self.config_path):
                 for path, _, _ in os.walk(self.wandb.run.dir):
                     self.wandb.save(
-                        glob_str=path + "/*",
+                        glob_str=path + '/*',
                         base_path=self.wandb.run.dir,
-                        policy="now"
+                        policy='now'
                     )
             else:
                 self.wandb.save(
-                    glob_str=self.wandb.run.dir + "/*",
+                    glob_str=self.wandb.run.dir + '/*',
                     base_path=self.wandb.run.dir,
-                    policy="now"
+                    policy='now'
                 )
     
     @master_only

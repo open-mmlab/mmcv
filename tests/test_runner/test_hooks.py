@@ -1118,14 +1118,17 @@ def test_wandb_hook():
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
-    shutil.rmtree(runner.work_dir)
-
+    
     hook.wandb.init.assert_called_with()
+    
+    hook.wandb.run.dir = runner.work_dir
     hook.wandb.save.assert_called_with(
-        glob_str=hook.wandb.run.dir + "/*",
+        glob_str=hook.wandb.run.dir + '/*',
         base_path=hook.wandb.run.dir,
-        policy="now"
+        policy='now'
     )
+    shutil.rmtree(runner.work_dir)
+    
     hook.wandb.log.assert_called_with({
         'learning_rate': 0.02,
         'momentum': 0.95
