@@ -1,4 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved
+#include <iostream>
 #include <parrots/compute/aten.hpp>
 #include <parrots/darray/darraymath.hpp>
 #include <parrots/foundation/darrayutil.hpp>
@@ -123,12 +124,17 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
       << "rois should be a 2d tensor, got " << rois.ndims() << "D";
   PARROTS_CHECKARGS(pool_mode == 1)
       << "pool_mode only suppurts 'avg' currently";
+  PARROTS_CHECKARGS(output.size() > 0) << "output should not be empty";
+
+#if 1
+  std::cout << "input:" << input.spec() << "\nrois:" << rois.spec()
+            << "\noutputs:" << output.spec() << std::endl;
+#endif
 
   const auto num_rois = rois.dim(0);
   const auto channels = input.dim(1);
   const int height = input.dim(2);
   const int width = input.dim(3);
-  const auto mem_format = MemoryFormat::ChannelsLast;
 
   const DArrayLite* input_ptr = &input;
   const DArrayLite* output_ptr = &output;
@@ -141,8 +147,7 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
     copy(ctx, input_tmp, input);
     input_ptr = &input_tmp;
   }
-  if (output.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast ||
-      output.size() <= 0) {
+  if (output.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
     output_tmp = ctx.createDArrayLite(
         input.spec()
             .withShape(
@@ -164,17 +169,11 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
                  rois.data(), channels, aligned, aligned_height, aligned_width,
                  height, width, sampling_ratio, spatial_scale, num_rois,
                  (void*)output_ptr->data());
+#if 1
   if (output_tmp.size() > 0) {
-    if (output.size() <= 0) {
-      if (input_memformat == MemoryFormat::Contiguous) {
-        output = ctx.createDArrayLite(output_tmp);
-      } else {
-        output = output_tmp;
-      }
-    } else {
-      copy(ctx, output, output_tmp);
-    }
+    copy(ctx, output, output_tmp);
   }
+#endif
 }
 
 void roi_align_forward_camb_parrots(CambContext& ctx, const SSElement& attr,
@@ -236,6 +235,7 @@ void ROIAlignBackwardMLUKernelLauncher(
       << "rois should be a 2D tensor, got " << rois.ndims() << "D";
   PARROTS_CHECKARGS(pool_mode == 1)
       << "pool_mode only suppurts 'avg' currently";
+  PARROTS_CHECKARGS(grad_input.size() > 0) << "grad_input should not be empty";
 
   const int batch_size = grad_input.dim(0);
   const int channels = grad_input.dim(1);
@@ -262,16 +262,14 @@ void ROIAlignBackwardMLUKernelLauncher(
 
   DArrayLite* grad_input_ptr = &grad_input;
   DArrayLite grad_input_;
-  if (grad.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast ||
-      grad_input.size() <= 0) {
+  if (grad.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
     grad_input_ = ctx.createDArrayLite(grad_input.spec().withShape(
         DArrayShape(batch_size, channels, height, width),
         MemoryFormat::ChannelsLast));
     grad_input_ptr = &grad_input_;
+    PARROTS_CALLCNRT(
+        cnrtMemset(grad_input_ptr->data(), 0, grad_input_ptr->nbytes()));
   }
-
-  PARROTS_CALLCNRT(
-      cnrtMemset(grad_input_ptr->data(), 0, grad_input_ptr->nbytes()));
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
   int need_core = nearestPower2(boxes_num);
