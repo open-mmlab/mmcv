@@ -141,8 +141,8 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
     copy(ctx, input_tmp, input);
     input_ptr = &input_tmp;
   }
-  if (output.size() <= 0 || input_memformat != MemoryFormat::ChannelsLast ||
-      output.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
+  if (output.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast ||
+      output.size() <= 0) {
     output_tmp = ctx.createDArrayLite(
         input.spec()
             .withShape(
@@ -165,7 +165,15 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
                  height, width, sampling_ratio, spatial_scale, num_rois,
                  (void*)output_ptr->data());
   if (output_tmp.size() > 0) {
-    output = ctx.createDArrayLite(output_tmp);
+    if (output.size() <= 0) {
+      if (input_memformat == MemoryFormat::Contiguous) {
+        output = ctx.createDArrayLite(output_tmp);
+      } else {
+        output = ctx.cloneDArrayLite(output_tmp);
+      }
+    } else {
+      copy(ctx, output, output_tmp);
+    }
   }
 }
 
