@@ -1121,7 +1121,7 @@ def test_wandb_hook():
     
     hook.wandb.init.assert_called_with()
     
-    hook.wandb.run.dir = runner.work_dir
+    hook.wandb.run.dir.return_value = runner.work_dir
     hook.wandb.save.assert_called_with(
         glob_str=hook.wandb.run.dir + '/*',
         base_path=hook.wandb.run.dir,
