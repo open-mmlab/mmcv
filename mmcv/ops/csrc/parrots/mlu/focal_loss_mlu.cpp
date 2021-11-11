@@ -1,3 +1,5 @@
+#include <parrots/darray/darraymath.hpp>
+
 #include "parrots_mlu_helper.hpp"
 
 #ifdef PARROTS_USE_CAMB
@@ -35,9 +37,7 @@ static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
   const int split_pipeline_num = 6;
   auto scalar_size = NFU_ALIGN_SIZE;
   auto weight_size = c_align_size;
-  const int target_data_width = target.elemType() == Prim::Int64
-                                    ? itemsize(target) / 2
-                                    : itemsize(target);
+  const int target_data_width = itemsize(Prim::Int32);
 
   // n_seg * c_align_size * split_pipeline_num + n_seg * target.itemsize() *
   // split_target_num
@@ -71,8 +71,9 @@ void sigmoidFocalLossForwardMLUKernelLauncher(
       << "Data type of input should be Float or Half. But now input type is "
       << input.elemType() << ".";
 
-  PARROTS_CHECKARGS(target.elemType() == Prim::Int32)
-      << "target type should be int 32. But now target type is "
+  PARROTS_CHECKARGS(target.elemType() == Prim::Int32 ||
+                    target.elemType() == Prim::Int64)
+      << "target type should be int32 or int64. But now target type is "
       << target.elemType() << ".";
 
   PARROTS_CHECKARGS(output.elemType() == input.elemType())
@@ -87,16 +88,22 @@ void sigmoidFocalLossForwardMLUKernelLauncher(
            "input type is "
         << input.elemType() << ", weight type is " << weight.elemType() << ".";
   }
-  // check C
+
+  const DArrayLite* target_ptr = &target;
+  DArrayLite target_tmp;
+  if (target.elemType() == Prim::Int64) {
+    target_tmp = ctx.createDArrayLite(target.spec().withElemType(Prim::Int32));
+    cast(ctx, target, target_tmp);
+    target_ptr = &target_tmp;
+  }
+
   auto nram_size = getDeviceAttr(cnrtAttrNramSizePerMcore);
   auto input_N = input.dim(0);
   auto input_C = input.dim(1);
   auto split_target_num = 2;
   int split_pipeline_num = 6;
   const int has_weight = (int)(weight.size() > 0);
-  const int target_data_width = target.elemType() == Prim::Int64
-                                    ? itemsize(target) / 2
-                                    : itemsize(target);
+  const int target_data_width = itemsize(target_ptr->elemType());
   // target supports only INT on MLU device
   // while it keeps LONG on host side, so target.itemsize()/2
   auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE -
@@ -108,7 +115,7 @@ void sigmoidFocalLossForwardMLUKernelLauncher(
       << "input.size(1) should be in the range of [0, " << threshold_C
       << "], but now input.dim(1) is " << input_C << ".";
 
-  if (input.size() == 0 || target.size() == 0 || output.size() == 0) {
+  if (input.size() == 0 || target_ptr->size() == 0 || output.size() == 0) {
     // return if zero-element
     return;
   }
@@ -116,22 +123,19 @@ void sigmoidFocalLossForwardMLUKernelLauncher(
   // calculate task dimension
   cnrtDim3_t k_dim;
   cnrtFunctionType_t k_type = CNRT_FUNC_TYPE_UNION1;
-  policyFunc(&k_dim, &k_type, input, target, weight);
+  policyFunc(&k_dim, &k_type, input, *target_ptr, weight);
   auto core_dim = getDeviceAttr(cnrtAttrMcorePerCluster);
 
   // get compute queue
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
-  auto input_ptr = input.data();
-  auto target_ptr = target.data();
   auto weight_ptr = weight.size() > 0 ? weight.data() : nullptr;
-  auto output_ptr = output.data();
   // get dtype of input
   cnrtDataType_t d_type = getCnrtDataType(input.elemType());
 
   // launch kernel
-  KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input_ptr,
-                                target_ptr, weight_ptr, input_N, input_C, alpha,
-                                gamma, output_ptr);
+  KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input.data(),
+                                target_ptr->data(), weight_ptr, input_N,
+                                input_C, alpha, gamma, output.data());
 }
 
 void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
@@ -253,8 +257,9 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
       << "Data type of input should be Float or Half. But now input type is "
       << input.elemType() << ".";
 
-  PARROTS_CHECKARGS(target.elemType() == Prim::Int32)
-      << "target type should be int 32. But now target type is "
+  PARROTS_CHECKARGS(target.elemType() == Prim::Int32 ||
+                    target.elemType() == Prim::Int64)
+      << "target type should be int 32 or int64. But now target type is "
       << target.elemType() << ".";
 
   PARROTS_CHECKARGS(output.elemType() == input.elemType())
@@ -271,12 +276,19 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
         << input.elemType() << ", weight type is " << weight.elemType() << ".";
     has_weight = true;
   }
+  const DArrayLite* target_ptr = &target;
+  DArrayLite target_tmp;
+  if (target.elemType() == Prim::Int64) {
+    target_tmp = ctx.createDArrayLite(target.spec().withElemType(Prim::Int32));
+    cast(ctx, target, target_tmp);
+    target_ptr = &target_tmp;
+  }
 
   auto dim_c = input.dim(1);
   const int compute_data_bytes = sizeof(float);
   // target only supports INT on MLU device,
   // while it keeps LONG on host side, so target.itemsize() / 2.
-  const int target_data_bytes = itemsize(target);
+  const int target_data_bytes = itemsize(target_ptr->elemType());
 
   int deal_n = 0;
   int threshold_c = 0;
@@ -293,7 +305,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
       << "input.dim(1) should be in the range of [0, " << threshold_c
       << "], but now input.dim(1) is " << dim_c << ".";
 
-  if (input.size() == 0 || target.size() == 0 || output.size() == 0) {
+  if (input.size() == 0 || target_ptr->size() == 0 || output.size() == 0) {
     // return if zero-element
     return;
   }
@@ -307,10 +319,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
 
   // get ptr of tensors
-  auto input_ptr = input.data();
-  auto target_ptr = target.data();
   auto weight_ptr = has_weight ? weight.data() : nullptr;
-  auto* output_ptr = output.data();
 
   // get dtype of input
   cnrtDataType_t d_type = getCnrtDataType(input.elemType());
@@ -318,9 +327,9 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
   auto dim_n = input.dim(0);
 
   // launch kernel
-  KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input_ptr,
-                                 target_ptr, weight_ptr, gamma, alpha, dim_n,
-                                 deal_n, dim_c, output_ptr);
+  KernelFocalLossSigmoidBackward(k_dim, k_type, queue, d_type, input.data(),
+                                 target_ptr->data(), weight_ptr, gamma, alpha,
+                                 dim_n, deal_n, dim_c, output.data());
 }
 
 void sigmoid_focal_loss_backward_camb_parrots(

@@ -70,8 +70,8 @@ class Testfocalloss(object):
 
             if is_camb_parrots:
                 x = torch.from_numpy(np_x.astype(
-                    np.float32)).cuda().type(dtype)
-                y = torch.from_numpy(np_y).int().cuda()
+                    np.float32)).to(device).type(dtype)
+                y = torch.from_numpy(np_y).long().to(device)
             else:
                 x = torch.from_numpy(np_x).to(device).type(dtype)
                 y = torch.from_numpy(np_y).to(device).long()
