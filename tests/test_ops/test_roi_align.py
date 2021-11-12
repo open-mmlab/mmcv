@@ -141,21 +141,14 @@ def test_roialign(device, dtype):
         if is_camb_parrots and device == 'cuda':
             return
         _test_roialign_gradcheck(device=device, dtype=dtype)
-    if dtype is torch.half and device == 'cpu' and is_camb_parrots:
+    if dtype is torch.half and is_camb_parrots:
         return
     _test_roialign_allclose(device=device, dtype=dtype)
 
 
 @pytest.mark.parametrize('device', ['cuda'])
-@pytest.mark.parametrize('dtype', [torch.float, torch.half])
-@pytest.mark.skipif(not is_camb_parrots,
-                    'only test nhwc layout for parrots-mlu')
+@pytest.mark.parametrize('dtype', [torch.float])
+@pytest.mark.skipif(
+    not is_camb_parrots, reason='only test nhwc layout for parrots-mlu')
 def test_roialign_nhwc(device, dtype):
-    # check double only
-    if dtype is torch.double:
-        if is_camb_parrots and device == 'cuda':
-            return
-        _test_roialign_gradcheck(device=device, dtype=dtype)
-    if dtype is torch.half and device == 'cpu' and is_camb_parrots:
-        return
-    _test_roialign_allclose(device=device, dtype=dtype)
+    _test_roialign_allclose_nhwc(device=device, dtype=dtype)
