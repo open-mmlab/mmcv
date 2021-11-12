@@ -1,5 +1,4 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include <iostream>
 #include <parrots/compute/aten.hpp>
 #include <parrots/darray/darraymath.hpp>
 #include <parrots/foundation/darrayutil.hpp>
@@ -125,11 +124,6 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
   PARROTS_CHECKARGS(pool_mode == 1)
       << "pool_mode only suppurts 'avg' currently";
   PARROTS_CHECKARGS(output.size() > 0) << "output should not be empty";
-
-#if 1
-  std::cout << "input:" << input.spec() << "\nrois:" << rois.spec()
-            << "\noutputs:" << output.spec() << std::endl;
-#endif
 
   const auto num_rois = rois.dim(0);
   const auto channels = input.dim(1);
