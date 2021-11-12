@@ -14,6 +14,7 @@ class ConditionalRandomField(nn.Module):
     emission score tensor. This class also has `~CRF.decode` method which finds
     the best tag sequence given an emission
     score tensor using `Viterbi algorithm`_.
+    
     Args:
         num_tags: Number of tags.
         batch_first: Whether the first dimension
