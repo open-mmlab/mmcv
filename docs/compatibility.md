@@ -1,3 +1,75 @@
+## master
+
+Some ops have different implementations on different devices. Lots of macros and type checks are performed which make the codes hard to maintenance. For example:
+
+```c++
+  if (input.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(input);
+    CHECK_CUDA_INPUT(rois);
+    CHECK_CUDA_INPUT(output);
+    CHECK_CUDA_INPUT(argmax_y);
+    CHECK_CUDA_INPUT(argmax_x);
+
+    roi_align_forward_cuda(input, rois, output, argmax_y, argmax_x,
+                           aligned_height, aligned_width, spatial_scale,
+                           sampling_ratio, pool_mode, aligned);
+#else
+    AT_ERROR("RoIAlign is not compiled with GPU support");
+#endif
+  } else {
+    CHECK_CPU_INPUT(input);
+    CHECK_CPU_INPUT(rois);
+    CHECK_CPU_INPUT(output);
+    CHECK_CPU_INPUT(argmax_y);
+    CHECK_CPU_INPUT(argmax_x);
+    roi_align_forward_cpu(input, rois, output, argmax_y, argmax_x,
+                          aligned_height, aligned_width, spatial_scale,
+                          sampling_ratio, pool_mode, aligned);
+  }
+```
+
+Registry and dispatcher are added to manage these implementations.
+
+```c++
+
+void ROIAlignForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                       Tensor argmax_y, Tensor argmax_x,
+                                       int aligned_height, int aligned_width,
+                                       float spatial_scale, int sampling_ratio,
+                                       int pool_mode, bool aligned);
+
+void roi_align_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
+  ROIAlignForwardCUDAKernelLauncher(
+      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
+      spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+
+// register cuda implementation
+void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned);
+
+// roi_align.cpp
+// use the dispatcher to invoke different implementation depends on device type of input tensors.
+void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
+  DISPATCH_DEVICE_IMPL(roi_align_forward_impl, input, rois, output, argmax_y,
+                       argmax_x, aligned_height, aligned_width, spatial_scale,
+                       sampling_ratio, pool_mode, aligned);
+}
+
+```
+
 ### v1.3.11
 
 In order to flexibly support more backends and hardwares like `NVIDIA GPUs` and `AMD GPUs`, the directory of `mmcv/ops/csrc` is refactored. Note that this refactoring will not affect the usage in API. For related information, please refer to [PR1206](https://github.com/open-mmlab/mmcv/pull/1206).
