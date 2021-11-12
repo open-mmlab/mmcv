@@ -14,20 +14,22 @@ class ConditionalRandomField(nn.Module):
     emission score tensor. This class also has `~CRF.decode` method which finds
     the best tag sequence given an emission
     score tensor using `Viterbi algorithm`_.
-    
+
     Args:
-        num_tags: Number of tags.
-        batch_first: Whether the first dimension
-        corresponds to the size of a minibatch.
+        num_tags(int): Number of tags.
+        batch_first(bool): Whether the first dimension
+        corresponds to the size of a minibatch. Default: False.
+
     Attributes:
-        start_transitions (`~torch.nn.Parameter`):
+        start_transitions (torch.nn.Parameter):
             Start transition score tensor of size
             ``(num_tags,)``.
-        end_transitions (`~torch.nn.Parameter`):
+        end_transitions (torch.nn.Parameter):
             End transition score tensor of size
             ``(num_tags,)``.
-        transitions (`~torch.nn.Parameter`): Transition score tensor of size
+        transitions (torch.nn.Parameter): Transition score tensor of size
             ``(num_tags, num_tags)``.
+
     .. [LMP01] Lafferty, J., McCallum, A., Pereira, F. (2001).
        "Conditional random fields: Probabilistic models for segmenting and
        labeling sequence data". *Proc. 18th International Conf. on Machine
@@ -72,14 +74,14 @@ class ConditionalRandomField(nn.Module):
         emission scores.
 
         Args:
-            emissions (`~torch.Tensor`): Emission score tensor of size
+            emissions (torch.Tensor): Emission score tensor of size
                 ``(seq_length, batch_size, num_tags)``
                 if ``batch_first`` is ``False``,
                 ``(batch_size, seq_length, num_tags)`` otherwise.
-            tags (`~torch.LongTensor`): Sequence of tags tensor of size
+            tags (torch.LongTensor): Sequence of tags tensor of size
                 ``(seq_length, batch_size)`` if ``batch_first`` is ``False``,
                 ``(batch_size, seq_length)`` otherwise.
-            mask (`~torch.ByteTensor`): Mask tensor of size
+            mask (torch.ByteTensor): Mask tensor of size
             ``(seq_length, batch_size)``
                 if ``batch_first`` is ``False``,
                 ``(batch_size, seq_length)`` otherwise.
@@ -90,8 +92,9 @@ class ConditionalRandomField(nn.Module):
                 ``mean``: the output will be
                 averaged over batches. ``token_mean``:
                 the output will be averaged over tokens.
+
         Returns:
-            `~torch.Tensor`: The log likelihood.
+            torch.Tensor: The log likelihood.
             This will have size ``(batch_size,)`` if
             reduction is ``none``, ``()`` otherwise.
         """
@@ -112,16 +115,16 @@ class ConditionalRandomField(nn.Module):
         # shape: (batch_size,)
         denominator = self._compute_normalizer(emissions, mask)
         # shape: (batch_size,)
-        llh = numerator - denominator
+        likelihood = numerator - denominator
 
         if reduction == 'none':
-            return llh
+            return likelihood
         if reduction == 'sum':
-            return llh.sum()
+            return likelihood.sum()
         if reduction == 'mean':
-            return llh.mean()
+            return likelihood.mean()
         assert reduction == 'token_mean'
-        return llh.sum() / mask.type_as(emissions).sum()
+        return likelihood.sum() / mask.type_as(emissions).sum()
 
     def decode(self,
                emissions: torch.Tensor,
