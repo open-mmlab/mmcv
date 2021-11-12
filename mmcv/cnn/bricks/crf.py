@@ -48,9 +48,9 @@ class ConditionalRandomField(nn.Module):
 
     def reset_parameters(self) -> None:
         """Initialize the transition parameters.
-        
-        The parameters will be initialized randomly from a uniform distribution
-        between -0.1 and 0.1.
+
+        The parameters will be initialized randomly from a uniform
+        distribution between -0.1 and 0.1.
         """
 
         nn.init.uniform_(self.start_transitions, -0.1, 0.1)
@@ -67,9 +67,9 @@ class ConditionalRandomField(nn.Module):
         mask: Optional[torch.ByteTensor] = None,
         reduction: str = 'sum',
     ) -> torch.Tensor:
-        """Compute the conditional log likelihood of
-        a sequence of tags given emission scores.
-        
+        """Compute the conditional log likelihood of a sequence of tags given
+        emission scores.
+
         Args:
             emissions (`~torch.Tensor`): Emission score tensor of size
                 ``(seq_length, batch_size, num_tags)``
