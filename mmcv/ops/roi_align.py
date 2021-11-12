@@ -81,12 +81,11 @@ class RoIAlignFunction(Function):
 
         output_shape = (rois.size(0), input.size(1), ctx.output_size[0],
                         ctx.output_size[1])
+        output = input.new_zeros(output_shape)
         if is_camb_parrots and input.is_cuda:
             ctx.input_memory_format = input.probable_memory_format()
-            output = input.new_zeros(output_shape).contiguous(
-                ctx.input_memory_format)
-        else:
-            output = input.new_zeros(output_shape)
+            output = output.contiguous(ctx.input_memory_format)
+
         if ctx.pool_mode == 0:
             argmax_y = input.new_zeros(output_shape)
             argmax_x = input.new_zeros(output_shape)
