@@ -1,5 +1,5 @@
 test_half=$1
-echo "test_half: "  $1
+echo "test_half: " $1
 
 pytest test_focal_loss.py::Testfocalloss::test_sigmoid_float -s
 pytest test_focal_loss.py::Testfocalloss::test_grad_sigmoid_float -s
