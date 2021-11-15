@@ -1,8 +1,12 @@
 import glob
 import os
 import re
+import sys
+from pathlib import Path
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
+
+from mmcv.utils import get_cuda, get_gcc, get_git_hash
 
 EXT_TYPE = ''
 try:
@@ -17,6 +21,25 @@ try:
 except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
+
+
+def add_version_info():
+    mmcv_root = Path(__file__).parent
+    version_path = mmcv_root / 'mmcv' / 'version.py'
+    gcc_version = get_gcc()
+    cuda_version = get_cuda()
+    git_hash = get_git_hash()
+    torch_version = torch.__version__
+    with open(version_path, 'a') as f:
+        f.write(f'\n'
+                f"gcc_version = '{gcc_version}'\n"
+                f"cuda_version = '{cuda_version}'\n"
+                f"torch_version = '{torch_version}'\n"
+                f"git_version = '{git_hash}'\n")
+
+
+if 'egg_info' not in sys.argv:
+    add_version_info()
 
 
 def choose_requirement(primary, secondary):
