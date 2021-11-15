@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+from ..utils import ext_loader, is_camb_parrots
 
 ext_module = ext_loader.load_ext('_ext', [
     'sigmoid_focal_loss_forward', 'sigmoid_focal_loss_backward',
@@ -33,9 +33,13 @@ class SigmoidFocalLossFunction(Function):
                 alpha=0.25,
                 weight=None,
                 reduction='mean'):
+        if is_camb_parrots:
+            assert isinstance(target, (torch.LongTensor, torch.cuda.IntTensor,
+                                       torch.cuda.LongTensor))
+        else:
+            assert isinstance(target,
+                              (torch.LongTensor, torch.cuda.LongTensor))
 
-        assert isinstance(
-            target, (torch.Tensor, torch.LongTensor, torch.cuda.LongTensor))
         assert input.dim() == 2
         assert target.dim() == 1
         assert input.size(0) == target.size(0)

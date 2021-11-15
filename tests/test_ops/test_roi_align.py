@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import is_camb_parrots
+
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -94,10 +96,59 @@ def _test_roialign_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
+def _test_roialign_allclose_nhwc(device, dtype):
+    if not torch.cuda.is_available() and device == 'cuda':
+        pytest.skip('test requires GPU')
+    try:
+        from mmcv.ops import roi_align
+    except ModuleNotFoundError:
+        pytest.skip('test requires compilation')
+    pool_h = 2
+    pool_w = 2
+    spatial_scale = 1.0
+    sampling_ratio = 2
+
+    for case, output in zip(inputs, outputs):
+        np_input = np.array(case[0])
+        np_rois = np.array(case[1])
+        np_output = np.array(output[0])
+        np_grad = np.array(output[1])
+
+        x = torch.tensor(
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        rois = torch.tensor(np_rois, dtype=dtype, device=device)
+
+        output = roi_align(
+            x.contiguous(torch.channels_last), rois, (pool_h, pool_w),
+            spatial_scale, sampling_ratio, 'avg', True)
+        output.backward(
+            torch.ones_like(output).contiguous(torch.channels_last))
+        assert np.allclose(
+            output.contiguous().data.type(torch.float).cpu().numpy(),
+            np_output,
+            atol=1e-3)
+        assert np.allclose(
+            x.grad.contiguous().data.type(torch.float).cpu().numpy(),
+            np_grad,
+            atol=1e-3)
+
+
 @pytest.mark.parametrize('device', ['cuda', 'cpu'])
 @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_roialign(device, dtype):
     # check double only
     if dtype is torch.double:
+        if is_camb_parrots and device == 'cuda':
+            return
         _test_roialign_gradcheck(device=device, dtype=dtype)
+    if dtype is torch.half and is_camb_parrots:
+        return
     _test_roialign_allclose(device=device, dtype=dtype)
+
+
+@pytest.mark.parametrize('device', ['cuda'])
+@pytest.mark.parametrize('dtype', [torch.float])
+@pytest.mark.skipif(
+    not is_camb_parrots, reason='only test nhwc layout for parrots-mlu')
+def test_roialign_nhwc(device, dtype):
+    _test_roialign_allclose_nhwc(device=device, dtype=dtype)

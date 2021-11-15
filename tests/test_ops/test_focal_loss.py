@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import is_cuda, is_mlu
+from mmcv.utils import is_camb_parrots, is_cuda, is_mlu
 
 _USING_PARROTS = True
 try:
@@ -68,9 +68,15 @@ class Testfocalloss(object):
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).to(device).type(dtype)
+            if is_camb_parrots:
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).to(device).type(dtype)
+                y = torch.from_numpy(np_y).long().to(device)
+            else:
+                x = torch.from_numpy(np_x).to(device).type(dtype)
+                y = torch.from_numpy(np_y).to(device).long()
+
             x.requires_grad_()
-            y = torch.from_numpy(np_y).to(device).long()
 
             loss = sigmoid_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
@@ -110,15 +116,27 @@ class Testfocalloss(object):
             np_x = np.array(case[0])
             np_y = np.array(case[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
+            if is_camb_parrots:
+                x = torch.from_numpy(np_x.astype(
+                    np.float32)).cuda().type(dtype)
+                y = torch.from_numpy(np_y).int().cuda()
+            else:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                y = torch.from_numpy(np_y).cuda().long()
             x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
 
             floss = SigmoidFocalLoss(gamma, alpha)
             if _USING_PARROTS:
-                # gradcheck(floss, (x, y),
-                #           no_grads=[y])
-                pass
+                if is_camb_parrots:
+                    output = floss(x, y)
+                    output.backward()
+                    np_x_grad = np.array(
+                        sigmoid_outputs[inputs.index(case)][1])
+                    assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
+                else:
+                    # gradcheck(floss, (x, y),
+                    #           no_grads=[y])
+                    pass
             else:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 

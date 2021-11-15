@@ -5,7 +5,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import deprecated_api_warning, ext_loader
+from ..utils import deprecated_api_warning, ext_loader, is_camb_parrots
 
 ext_module = ext_loader.load_ext('_ext',
                                  ['roi_align_forward', 'roi_align_backward'])
@@ -82,6 +82,10 @@ class RoIAlignFunction(Function):
         output_shape = (rois.size(0), input.size(1), ctx.output_size[0],
                         ctx.output_size[1])
         output = input.new_zeros(output_shape)
+        if is_camb_parrots and input.is_cuda:
+            ctx.input_memory_format = input.probable_memory_format()
+            output = output.contiguous(ctx.input_memory_format)
+
         if ctx.pool_mode == 0:
             argmax_y = input.new_zeros(output_shape)
             argmax_x = input.new_zeros(output_shape)
@@ -111,7 +115,11 @@ class RoIAlignFunction(Function):
         rois, argmax_y, argmax_x = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
         # complex head architecture may cause grad_output uncontiguous.
-        grad_output = grad_output.contiguous()
+        if is_camb_parrots and grad_output.is_cuda:
+            grad_input = grad_input.contiguous(ctx.input_memory_format)
+        else:
+            grad_output = grad_output.contiguous()
+
         ext_module.roi_align_backward(
             grad_output,
             rois,
