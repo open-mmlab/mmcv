@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Modified from
-https://github1s.com/pytorch/pytorch/blob/v1.3.1/tools/setup_helpers."""
+https://github.com/pytorch/pytorch/blob/v1.3.1/tools/setup_helpers."""
 import ctypes.util
 import glob
 import os
