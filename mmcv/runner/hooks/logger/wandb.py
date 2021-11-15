@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import shutil
+from distutils.dir_util import copy_tree
 
 from ...dist_utils import master_only
 from ..hook import HOOKS
@@ -59,20 +60,26 @@ class WandbLoggerHook(LoggerHook):
             self.wandb.init()
         
         if self.config_path is not None:
-            shutil.copy2(self.config_path, self.wandb.run.dir)
             if os.path.isdir(self.config_path):
-                for path, _, _ in os.walk(self.wandb.run.dir):
+                copy_tree(self.config_path, self.wandb.run.dir)
+                for path_under_wandb, _, _ in os.walk(self.wandb.run.dir):
                     self.wandb.save(
-                        glob_str=path + '/*',
+                        glob_str=os.path.join(path_under_wandb,'/*'),
                         base_path=self.wandb.run.dir,
                         policy='now'
                     )
             else:
-                self.wandb.save(
-                    glob_str=self.wandb.run.dir + '/*',
-                    base_path=self.wandb.run.dir,
-                    policy='now'
-                )
+                if os.path.isfile(self.config_path):
+                    shutil.copy2(self.config_path, self.wandb.run.dir)
+                    self.wandb.save(
+                        glob_str=os.path.join(self.wandb.run.dir,'/*'),
+                        base_path=self.wandb.run.dir,
+                        policy='now'
+                    )
+                else:
+                    raise FileNotFoundError(
+                        "No such file or directory: " + self.config_path
+                    )
     
     @master_only
     def log(self, runner):
