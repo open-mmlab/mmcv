@@ -1,6 +1,6 @@
 ## master
 
-Some ops have different implementations on different devices. Lots of macros and type checks are performed which make the codes hard to maintenance. For example:
+Some ops have different implementations on different devices. Lots of macros and type checks are performed which make the codes hard to maintain. For example:
 
 ```c++
   if (input.device().is_cuda()) {
@@ -57,7 +57,7 @@ void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
                             int pool_mode, bool aligned);
 
 // roi_align.cpp
-// use the dispatcher to invoke different implementation depends on device type of input tensors.
+// use the dispatcher to invoke different implementation depending on device type of input tensors.
 void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
                             Tensor argmax_y, Tensor argmax_x,
                             int aligned_height, int aligned_width,

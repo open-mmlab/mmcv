@@ -66,8 +66,8 @@ at::Device GetFirstTensorDevice(T&& t, Args&&... args) {
 // check device consistency
 
 inline std::pair<int, at::Device> CheckDeviceConsistency(
-    const at::Device& device0, int index) {
-  return {index, device0};
+    const at::Device& device, int index) {
+  return {index, device};
 }
 
 template <typename T, typename... Args,
@@ -80,15 +80,15 @@ std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device,
 template <typename T, typename... Args,
           std::enable_if_t<std::is_same<std::decay_t<T>, at::Tensor>::value,
                            bool> = true>
-std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device0,
+std::pair<int, at::Device> CheckDeviceConsistency(const at::Device& device,
                                                   int index, T&& t,
                                                   Args&&... args) {
-  auto device1 = std::forward<T>(t).device();
-  if (device1.type() != device0.type() || device1.index() != device0.index()) {
-    return {index, device1};
+  auto new_device = std::forward<T>(t).device();
+  if (new_device.type() != device.type() ||
+      new_device.index() != device.index()) {
+    return {index, new_device};
   }
-  return CheckDeviceConsistency(device0, index + 1,
-                                std::forward<Args>(args)...);
+  return CheckDeviceConsistency(device, index + 1, std::forward<Args>(args)...);
 }
 
 template <
