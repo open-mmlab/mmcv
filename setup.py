@@ -189,7 +189,10 @@ def add_version_info():
     gcc_version = get_gcc()
     cuda_version = get_cuda()
     git_hash = get_git_hash()
-    torch_version = torch.__version__
+    if EXT_TYPE:
+        torch_version = torch.__version__
+    else:
+        torch_version = None
     with open(version_path, 'a') as f:
         f.write(f'\n'
                 f"gcc_version = '{gcc_version}'\n"
