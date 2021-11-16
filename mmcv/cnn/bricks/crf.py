@@ -11,14 +11,15 @@ class ConditionalRandomField(nn.Module):
     This module implements a conditional random field [LMP01]_.
     The forward computation of this class computes the
     log likelihood of the given sequence of tags and
-    emission score tensor. This class also has `~CRF.decode` method which finds
-    the best tag sequence given an emission
+    emission score tensor.
+    This class also has:meth:`ConditionalRandomField.decode`
+    method which finds the best tag sequence given an emission
     score tensor using `Viterbi algorithm`_.
 
     Args:
         num_tags(int): Number of tags.
-        batch_first(bool): Whether the first dimension
-        corresponds to the size of a minibatch. Default: False.
+        batch_first(bool): Whether the first dimension corresponds
+        to the size of a minibatch. Default: False.
 
     Attributes:
         start_transitions (torch.nn.Parameter):
@@ -82,7 +83,7 @@ class ConditionalRandomField(nn.Module):
                 ``(seq_length, batch_size)`` if ``batch_first`` is ``False``,
                 ``(batch_size, seq_length)`` otherwise.
             mask (torch.ByteTensor): Mask tensor of size
-            ``(seq_length, batch_size)``
+                ``(seq_length, batch_size)``
                 if ``batch_first`` is ``False``,
                 ``(batch_size, seq_length)`` otherwise.
             reduction: Specifies  the reduction to apply to the output:
