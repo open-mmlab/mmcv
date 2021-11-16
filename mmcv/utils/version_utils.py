@@ -11,9 +11,11 @@ def digit_version(version_str: str, length: int = 4):
 
     This method is usually used for comparing two versions. For pre-release
     versions: alpha < beta < rc.
+
     Args:
         version_str (str): The version string.
         length (int): The maximum number of version levels. Default: 4.
+
     Returns:
         tuple[int]: The version info in digits (integers).
     """
@@ -69,6 +71,7 @@ def get_git_hash(fallback='unknown', digits=None):
             unavailable. Defaults to 'unknown'.
         digits (int, optional): kept digits of the hash. Defaults to None,
             meaning all digits are kept.
+
     Returns:
         str: Git commit hash.
     """
