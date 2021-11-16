@@ -38,6 +38,7 @@ def single_gpu_test(model, data_loader):
         batch_size = len(result)
         for _ in range(batch_size):
             prog_bar.update()
+    prog_bar.file.write('\n')
     return results
 
 
@@ -79,6 +80,7 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
                 batch_size_all = len(dataset) - prog_bar.completed
             for _ in range(batch_size_all):
                 prog_bar.update()
+    prog_bar.file.write('\n')
 
     # collect results from all ranks
     if gpu_collect:
