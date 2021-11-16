@@ -64,7 +64,7 @@ class WandbLoggerHook(LoggerHook):
                 copy_tree(self.config_path, self.wandb.run.dir)
                 for path_under_wandb, _, _ in os.walk(self.wandb.run.dir):
                     self.wandb.save(
-                        glob_str=os.path.join(path_under_wandb,'/*'),
+                        glob_str=os.path.join(path_under_wandb,'*'),
                         base_path=self.wandb.run.dir,
                         policy='now'
                     )
@@ -72,7 +72,7 @@ class WandbLoggerHook(LoggerHook):
                 if os.path.isfile(self.config_path):
                     shutil.copy2(self.config_path, self.wandb.run.dir)
                     self.wandb.save(
-                        glob_str=os.path.join(self.wandb.run.dir,'/*'),
+                        glob_str=os.path.join(self.wandb.run.dir,'*'),
                         base_path=self.wandb.run.dir,
                         policy='now'
                     )
