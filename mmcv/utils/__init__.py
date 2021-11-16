@@ -16,7 +16,7 @@ from .testing import (assert_attrs_equal, assert_dict_contains_subset,
                       assert_keys_equal, assert_params_all_zeros,
                       check_python_script)
 from .timer import Timer, TimerError, check_time
-from .version_utils import digit_version, get_cuda, get_gcc, get_git_hash
+from .version_utils import digit_version, get_git_hash
 
 try:
     import torch
@@ -29,11 +29,11 @@ except ImportError:
         'mkdir_or_exist', 'symlink', 'scandir', 'ProgressBar',
         'track_progress', 'track_iter_progress', 'track_parallel_progress',
         'Timer', 'TimerError', 'check_time', 'deprecated_api_warning',
-        'digit_version', 'get_git_hash', 'get_gcc', 'get_cuda',
-        'import_modules_from_strings', 'assert_dict_contains_subset',
-        'assert_attrs_equal', 'assert_dict_has_keys', 'assert_keys_equal',
-        'check_python_script', 'to_1tuple', 'to_2tuple', 'to_3tuple',
-        'to_4tuple', 'to_ntuple', 'is_method_overridden', 'has_method'
+        'digit_version', 'get_git_hash', 'import_modules_from_strings',
+        'assert_dict_contains_subset', 'assert_attrs_equal',
+        'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
+        'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple',
+        'is_method_overridden', 'has_method'
     ]
 else:
     from .env import collect_env
@@ -59,8 +59,8 @@ else:
         '_ConvNd', '_ConvTransposeMixin', '_InstanceNorm', '_MaxPoolNd',
         'get_build_config', 'BuildExtension', 'CppExtension', 'CUDAExtension',
         'DataLoader', 'PoolDataLoader', 'TORCH_VERSION',
-        'deprecated_api_warning', 'digit_version', 'get_git_hash', 'get_gcc',
-        'get_cuda', 'import_modules_from_strings', 'jit', 'skip_no_elena',
+        'deprecated_api_warning', 'digit_version', 'get_git_hash',
+        'import_modules_from_strings', 'jit', 'skip_no_elena',
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
