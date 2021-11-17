@@ -9,6 +9,11 @@
 
 #include "common_mlu_helper.hpp"
 
+#ifndef CAMB_BENCHMARK_OP()
+#define CAMB_BENCHMARK_OP() \
+  {}
+#endif  // !CAMB_BENCHMARK_OP
+
 using parrots::DArrayLite;
 using parrots::Prim;
 
