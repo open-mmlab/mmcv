@@ -1,4 +1,4 @@
-## master
+### v1.3.18
 
 Some ops have different implementations on different devices. Lots of macros and type checks are performed which make the codes hard to maintain. For example:
 
@@ -55,6 +55,7 @@ void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
                             int aligned_height, int aligned_width,
                             float spatial_scale, int sampling_ratio,
                             int pool_mode, bool aligned);
+REGISTER_DEVICE_IMPL(roi_align_forward_impl, CUDA, roi_align_forward_cuda);
 
 // roi_align.cpp
 // use the dispatcher to invoke different implementation depending on device type of input tensors.
