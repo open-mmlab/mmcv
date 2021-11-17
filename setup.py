@@ -191,6 +191,8 @@ def add_version_info():
     git_hash = get_git_hash()
     if EXT_TYPE:
         torch_version = torch.__version__
+        if '+' in torch_version:  # eg. 1.8.1+cu111 -> 1.8.1
+            torch_version = torch_version.split('+')[0]
     else:
         torch_version = None
     with open(version_path, 'a') as f:
@@ -198,7 +200,7 @@ def add_version_info():
                 f"gcc_version = '{gcc_version}'\n"
                 f"cuda_version = '{cuda_version}'\n"
                 f"torch_version = '{torch_version}'\n"
-                f"git_version = '{git_hash}'\n")
+                f"commit_id = '{git_hash}'\n")
 
 
 if 'egg_info' not in sys.argv:

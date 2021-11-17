@@ -43,7 +43,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
@@ -77,7 +77,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
@@ -116,7 +116,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
@@ -157,7 +157,7 @@ jobs:
             torchvision: 0.9.0+cu101
     steps:
       - name: Install Git
-      - run: apt-get update && apt-get install -y git
+        run: apt-get update && apt-get install -y git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -185,7 +185,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && python -m pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests and generate coverage report
         run: |
           python -m pip install -r requirements/test.txt
@@ -227,7 +227,7 @@ jobs:
             torchvision: 0.10.0+cu102
     steps:
       - name: Install Git
-      - run: apt-get update && apt-get install -y git
+        run: apt-get update && apt-get install -y git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -245,7 +245,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && python -m pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests and generate coverage report
         run: |
           python -m pip install -r requirements/test.txt
@@ -277,7 +277,7 @@ jobs:
       - name: Build and install
         run: pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
@@ -306,7 +306,7 @@ jobs:
       - name: Build and install
         run: pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
@@ -350,7 +350,7 @@ jobs:
           rm -rf .eggs
           CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
       - name: Validate the installation
-        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.git_version}', sep='\n')"
+        run: python -c "import mmcv; print(f'GCC {mmcv.version.gcc_version}', f'CUDA {mmcv.version.cuda_version}', f'PyTorch {mmcv.version.torch_version}', f'Git {mmcv.version.commit_id}', sep='\n')"
       - name: Run unittests
         run: |
           pip install -r requirements/test.txt
