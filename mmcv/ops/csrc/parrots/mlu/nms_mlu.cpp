@@ -19,6 +19,7 @@ template <>
 void nms_parrots<HostContext>(HostContext& ctx, const SSElement& attr,
                               const OperatorBase::in_list_t& ins,
                               OperatorBase::out_list_t& outs) {
+  CAMB_BENCHMARK_OP();
   float iou_threshold;
   int offset;
   SSAttrs(attr)

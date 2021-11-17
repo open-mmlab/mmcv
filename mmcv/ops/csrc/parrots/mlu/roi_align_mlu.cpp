@@ -173,6 +173,7 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
 void roi_align_forward_camb_parrots(CambContext& ctx, const SSElement& attr,
                                     const OperatorBase::in_list_t& ins,
                                     OperatorBase::out_list_t& outs) {
+  CAMB_BENCHMARK_OP();
   int aligned_height;
   int aligned_width;
   float spatial_scale;
@@ -295,6 +296,7 @@ void ROIAlignBackwardMLUKernelLauncher(
 void roi_align_backward_camb_parrots(CambContext& ctx, const SSElement& attr,
                                      const OperatorBase::in_list_t& ins,
                                      OperatorBase::out_list_t& outs) {
+  CAMB_BENCHMARK_OP();
   int aligned_height;
   int aligned_width;
   float spatial_scale;

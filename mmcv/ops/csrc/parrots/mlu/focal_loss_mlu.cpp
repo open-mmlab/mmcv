@@ -142,6 +142,7 @@ void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
                                              const SSElement& attr,
                                              const OperatorBase::in_list_t& ins,
                                              OperatorBase::out_list_t& outs) {
+  CAMB_BENCHMARK_OP();
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
@@ -335,6 +336,7 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
 void sigmoid_focal_loss_backward_camb_parrots(
     CambContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
     OperatorBase::out_list_t& outs) {
+  CAMB_BENCHMARK_OP();
   float gamma;
   float alpha;
   SSAttrs(attr).get<float>("gamma", gamma).get<float>("alpha", alpha).done();
