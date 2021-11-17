@@ -1,6 +1,6 @@
 ### v1.3.18
 
-Some ops have different implementations on different devices. Lots of macros and type checks are performed which make the codes hard to maintain. For example:
+Some ops have different implementations on different devices. Lots of macros and type checks are scattered in several files, which makes the code hard to maintain. For example:
 
 ```c++
   if (input.device().is_cuda()) {
