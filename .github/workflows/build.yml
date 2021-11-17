@@ -157,7 +157,10 @@ jobs:
             torchvision: 0.9.0+cu101
     steps:
       - name: Install Git
-        run: apt-get update && apt-get install -y git
+        run: |
+          add-apt-repository ppa:git-core/ppa
+          apt update
+          apt install git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -227,7 +230,10 @@ jobs:
             torchvision: 0.10.0+cu102
     steps:
       - name: Install Git
-        run: apt-get update && apt-get install -y git
+        run: |
+          add-apt-repository ppa:git-core/ppa
+          apt update
+          apt install git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
