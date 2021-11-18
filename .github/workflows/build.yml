@@ -158,9 +158,9 @@ jobs:
     steps:
       - name: Install Git
         run: |
-          add-apt-repository ppa:git-core/ppa
-          apt update
-          apt install git
+          apt-get update && apt-get install -y software-properties-common
+          add-apt-repository -y ppa:git-core/ppa
+          apt-get install -y git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -231,9 +231,9 @@ jobs:
     steps:
       - name: Install Git
         run: |
-          add-apt-repository ppa:git-core/ppa
-          apt update
-          apt install git
+          apt-get update && apt-get install -y software-properties-common
+          add-apt-repository -y ppa:git-core/ppa
+          apt-get install -y git
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
