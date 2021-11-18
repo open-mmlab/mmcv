@@ -25,17 +25,15 @@ template <typename Ret, typename... Args, Ret (*f)(Args...)>
 class DeviceRegistry<Ret (*)(Args...), f> {
  public:
   using FunctionType = Ret (*)(Args...);
+  static const int MAX_DEVICE_TYPES =
+      int8_t(at::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES);
 
   void Register(at::DeviceType device, FunctionType function) {
-    entries_.insert({device, function});
+    funcs_[int8_t(device)] = function;
   }
 
   FunctionType Find(at::DeviceType device) const {
-    auto it = entries_.find(device);
-    if (it != entries_.end()) {
-      return it->second;
-    }
-    return nullptr;
+    return funcs_[int8_t(device)];
   }
 
   static DeviceRegistry& instance() {
@@ -44,8 +42,12 @@ class DeviceRegistry<Ret (*)(Args...), f> {
   }
 
  private:
-  DeviceRegistry() = default;
-  std::map<at::DeviceType, FunctionType> entries_;
+  DeviceRegistry() {
+    for (size_t i = 0; i < MAX_DEVICE_TYPES; ++i) {
+      funcs_[i] = nullptr;
+    }
+  };
+  FunctionType funcs_[MAX_DEVICE_TYPES];
 };
 
 // get device of first tensor param
