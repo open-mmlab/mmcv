@@ -54,7 +54,7 @@ class MMDataParallel(DataParallel):
         assert len(self.device_ids) == 1, \
             ('MMDataParallel only supports single GPU training, if you need to'
              ' train with multiple GPUs, please use MMDistributedDataParallel'
-             'instead.')
+             ' instead.')
 
         for t in chain(self.module.parameters(), self.module.buffers()):
             if t.device != self.src_device_obj:
