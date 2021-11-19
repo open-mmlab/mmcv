@@ -1,8 +1,8 @@
-## TensorRT Plugins for custom operators in MMCV (Experimental)
+## TensorRT Plugins
 
 <!-- TOC -->
 
-- [TensorRT Plugins for custom operators in MMCV (Experimental)](#tensorrt-plugins-for-custom-operators-in-mmcv-experimental)
+- [TensorRT Plugins](#tensorrt-plugins)
   - [Introduction](#introduction)
   - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
   - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)
@@ -162,6 +162,8 @@ Below are the main steps:
    Check [here](https://github.com/open-mmlab/mmcv/blob/master/tests/test_ops/test_tensorrt.py) for examples.
 
 #### Reminders
+
+- *Please note that this feature is experimental and may change fast. Strongly suggest users always try with the latest master branch.*
 
 - Some of the [custom ops](https://mmcv.readthedocs.io/en/latest/ops.html) in `mmcv` have their cuda implementations, which could be referred.
 

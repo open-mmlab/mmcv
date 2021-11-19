@@ -1,4 +1,4 @@
-## Custom operators for ONNX Runtime in MMCV
+## ONNX Runtime custom operators
 
 ### Introduction of ONNX Runtime
 
@@ -87,6 +87,8 @@ onnx_results = sess.run(None, {'input' : input_data})
 ### How to add a new custom operator for ONNX Runtime in MMCV
 
 #### Reminder
+
+- *Please note that this feature is experimental and may change fast. Strongly suggest users always try with the latest master branch.*
 
 - The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
 - The custom operator should be able to be exported to ONNX.
