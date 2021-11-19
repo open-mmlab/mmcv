@@ -118,7 +118,8 @@ class LrUpdaterHook(Hook):
                 self.base_lr.update({k: _base_lr})
         else:
             for group in runner.optimizer.param_groups:
-                group.setdefault('initial_lr', group['lr'])
+                # group.setdefault('initial_lr', group['lr'])
+                group['initial_lr'] = group['lr']
             self.base_lr = [
                 group['initial_lr'] for group in runner.optimizer.param_groups
             ]
