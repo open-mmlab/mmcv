@@ -1,6 +1,7 @@
 import ctypes.util
 import glob
 import os
+import os.path as osp
 import platform
 import re
 import subprocess
@@ -25,8 +26,8 @@ except ModuleNotFoundError:
 
 
 def add_version_info():
-    """Modified from
-    https://github.com/pytorch/pytorch/blob/v1.3.1/tools/setup_helpers."""
+    # Modified from
+    # https://github.com/pytorch/pytorch/blob/v1.3.1/tools/setup_helpers.
     IS_WINDOWS = (platform.system() == 'Windows')
     IS_DARWIN = (platform.system() == 'Darwin')
     IS_LINUX = (platform.system() == 'Linux')
@@ -45,21 +46,20 @@ def add_version_info():
     def which(thefile):
         path = os.environ.get('PATH', os.defpath).split(os.pathsep)
         for d in path:
-            fname = os.path.join(d, thefile)
+            fname = osp.join(d, thefile)
             fnames = [fname]
             if sys.platform == 'win32':
                 exts = os.environ.get('PATHEXT', '').split(os.pathsep)
                 fnames += [fname + ext for ext in exts]
             for name in fnames:
-                if os.access(name,
-                             os.F_OK | os.X_OK) and not os.path.isdir(name):
+                if os.access(name, os.F_OK | os.X_OK) and not osp.isdir(name):
                     return name
         return None
 
     def find_nvcc():
         nvcc = which('nvcc')
         if nvcc is not None:
-            return os.path.dirname(nvcc)
+            return osp.dirname(nvcc)
         else:
             return None
 
@@ -67,19 +67,19 @@ def add_version_info():
         if cuda_home is None:
             return None
         if IS_WINDOWS:
-            candidate_names = [os.path.basename(cuda_home)]
+            candidate_names = [osp.basename(cuda_home)]
         else:
             # get CUDA lib folder
             cuda_lib_dirs = ['lib64', 'lib']
             for lib_dir in cuda_lib_dirs:
-                cuda_lib_path = os.path.join(cuda_home, lib_dir)
-                if os.path.exists(cuda_lib_path):
+                cuda_lib_path = osp.join(cuda_home, lib_dir)
+                if osp.exists(cuda_lib_path):
                     break
             # get a list of candidates for the version number
             # which are files containing cudart
             candidate_names = list(
-                glob.glob(os.path.join(cuda_lib_path, '*cudart*')))
-            candidate_names = [os.path.basename(c) for c in candidate_names]
+                glob.glob(osp.join(cuda_lib_path, '*cudart*')))
+            candidate_names = [osp.basename(c) for c in candidate_names]
             # if we didn't find any cudart, ask nvcc
             if len(candidate_names) == 0:
                 proc = subprocess.Popen(['nvcc', '--version'],
@@ -115,18 +115,18 @@ def add_version_info():
                 CUDA_HOME = os.getenv('CUDA_PATH', '').replace('\\', '/')
                 if CUDA_HOME == '' and len(WINDOWS_HOME) > 0:
                     CUDA_HOME = WINDOWS_HOME[0].replace('\\', '/')
-            if not os.path.exists(CUDA_HOME):
+            if not osp.exists(CUDA_HOME):
                 # We use nvcc path on Linux and cudart path on macOS
                 if IS_LINUX or IS_WINDOWS:
                     cuda_path = find_nvcc()
                 else:
                     cudart_path = ctypes.util.find_library('cudart')
                     if cudart_path is not None:
-                        cuda_path = os.path.dirname(cudart_path)
+                        cuda_path = osp.dirname(cudart_path)
                     else:
                         cuda_path = None
                 if cuda_path is not None:
-                    CUDA_HOME = os.path.dirname(cuda_path)
+                    CUDA_HOME = osp.dirname(cuda_path)
                 else:
                     CUDA_HOME = None
             cuda_version = find_cuda_version(CUDA_HOME)
@@ -188,7 +188,7 @@ def add_version_info():
     version_path = mmcv_root / 'mmcv' / 'version.py'
     gcc_version = get_gcc()
     cuda_version = get_cuda()
-    git_hash = get_git_hash()
+    git_hash = get_git_hash(digits=7)
     if EXT_TYPE:
         torch_version = torch.__version__
         if '+' in torch_version:  # eg. 1.8.1+cu111 -> 1.8.1
@@ -203,6 +203,9 @@ def add_version_info():
                 f"commit_id = '{git_hash}'\n")
 
 
+# `pip install -e .` will run setup.py twice, first is
+# `python setup.py egg_info`, second is `python setup.py develop`,
+# we want to add version info only when `python setup.py develop`.
 if 'egg_info' not in sys.argv:
     add_version_info()
 
@@ -329,18 +332,18 @@ def get_extensions():
         include_dirs = []
         tensorrt_path = os.getenv('TENSORRT_DIR', '0')
         tensorrt_lib_path = glob.glob(
-            os.path.join(tensorrt_path, 'targets', '*', 'lib'))[0]
+            osp.join(tensorrt_path, 'targets', '*', 'lib'))[0]
         library_dirs += [tensorrt_lib_path]
         libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
         libraries += ['cudart']
         define_macros = []
         extra_compile_args = {'cxx': []}
 
-        include_path = os.path.abspath('./mmcv/ops/csrc/common/cuda')
-        include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
+        include_path = osp.abspath('./mmcv/ops/csrc/common/cuda')
+        include_trt_path = osp.abspath('./mmcv/ops/csrc/tensorrt')
         include_dirs.append(include_path)
         include_dirs.append(include_trt_path)
-        include_dirs.append(os.path.join(tensorrt_path, 'include'))
+        include_dirs.append(osp.join(tensorrt_path, 'include'))
         include_dirs += include_paths(cuda=True)
 
         op_files = glob.glob('./mmcv/ops/csrc/tensorrt/plugins/*')
@@ -374,8 +377,8 @@ def get_extensions():
         include_dirs = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
-        include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
-        include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+        include_dirs.append(osp.abspath('./mmcv/ops/csrc/common'))
+        include_dirs.append(osp.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args] if cuda_args else [],
@@ -439,7 +442,7 @@ def get_extensions():
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
             extension = CUDAExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
+            include_dirs.append(osp.abspath('./mmcv/ops/csrc/common/hip'))
         elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
@@ -447,13 +450,13 @@ def get_extensions():
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu')
             extension = CUDAExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+            include_dirs.append(osp.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(osp.abspath('./mmcv/ops/csrc/common/cuda'))
         else:
             print(f'Compiling {ext_name} without CUDA')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
             extension = CppExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(osp.abspath('./mmcv/ops/csrc/common'))
 
         ext_ops = extension(
             name=ext_name,
@@ -471,14 +474,14 @@ def get_extensions():
         libraries = []
         include_dirs = []
         ort_path = os.getenv('ONNXRUNTIME_DIR', '0')
-        library_dirs += [os.path.join(ort_path, 'lib')]
+        library_dirs += [osp.join(ort_path, 'lib')]
         libraries.append('onnxruntime')
         define_macros = []
         extra_compile_args = {'cxx': []}
 
-        include_path = os.path.abspath('./mmcv/ops/csrc/onnxruntime')
+        include_path = osp.abspath('./mmcv/ops/csrc/onnxruntime')
         include_dirs.append(include_path)
-        include_dirs.append(os.path.join(ort_path, 'include'))
+        include_dirs.append(osp.join(ort_path, 'include'))
 
         op_files = glob.glob('./mmcv/ops/csrc/onnxruntime/cpu/*')
         if onnxruntime.get_device() == 'GPU' or os.getenv('FORCE_CUDA',
