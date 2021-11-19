@@ -27,18 +27,17 @@ def single_gpu_test(model, data_loader):
     model.eval()
     results = []
     dataset = data_loader.dataset
-    prog_bar = mmcv.ProgressBar(len(dataset))
-    for data in data_loader:
-        with torch.no_grad():
-            result = model(return_loss=False, **data)
-        results.extend(result)
+    with mmcv.ProgressBar(len(dataset)) as pb:
+        for data in data_loader:
+            with torch.no_grad():
+                result = model(return_loss=False, **data)
+            results.extend(result)
 
-        # Assume result has the same length of batch_size
-        # refer to https://github.com/open-mmlab/mmcv/issues/985
-        batch_size = len(result)
-        for _ in range(batch_size):
-            prog_bar.update()
-    prog_bar.file.write('\n')
+            # Assume result has the same length of batch_size
+            # refer to https://github.com/open-mmlab/mmcv/issues/985
+            batch_size = len(result)
+            for _ in range(batch_size):
+                pb.update()
     return results
 
 
@@ -65,22 +64,20 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     results = []
     dataset = data_loader.dataset
     rank, world_size = get_dist_info()
-    if rank == 0:
-        prog_bar = mmcv.ProgressBar(len(dataset))
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
     for i, data in enumerate(data_loader):
         with torch.no_grad():
             result = model(return_loss=False, **data)
         results.extend(result)
-
-        if rank == 0:
-            batch_size = len(result)
-            batch_size_all = batch_size * world_size
-            if batch_size_all + prog_bar.completed > len(dataset):
-                batch_size_all = len(dataset) - prog_bar.completed
-            for _ in range(batch_size_all):
-                prog_bar.update()
-    prog_bar.file.write('\n')
+    if rank == 0:
+        with mmcv.ProgressBar(len(dataset)) as pb:
+            for result in results:
+                batch_size = len(result)
+                batch_size_all = batch_size * world_size
+                if batch_size_all + pb.completed > len(dataset):
+                    batch_size_all = len(dataset) - pb.completed
+                for _ in range(batch_size_all):
+                    pb.update()
 
     # collect results from all ranks
     if gpu_collect:
