@@ -13,13 +13,12 @@ from tempfile import TemporaryDirectory
 import torch
 import torchvision
 from torch.optim import Optimizer
-from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import mkdir_or_exist
+from ..utils import load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -281,12 +280,12 @@ def load_from_http(filename, map_location=None, model_dir=None):
     rank, world_size = get_dist_info()
     rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(
+        checkpoint = load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(
+            checkpoint = load_url(
                 filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
