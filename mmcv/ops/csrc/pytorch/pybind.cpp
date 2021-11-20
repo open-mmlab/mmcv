@@ -239,29 +239,37 @@ void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
 
-std::vector<torch::Tensor> get_indice_pairs_forward<2>(
-    Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-    std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-    std::vector<int64_t> stride, std::vector<int64_t> padding,
-    std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-    int64_t _subM, int64_t _transpose);
+// std::vector<torch::Tensor> get_indice_pairs_forward<2>(
+//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
+//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
+//     std::vector<int64_t> stride, std::vector<int64_t> padding,
+//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
+//     int64_t _subM, int64_t _transpose);
 
-std::vector<torch::Tensor> get_indice_pairs_forward<3>(
-    Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-    std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-    std::vector<int64_t> stride, std::vector<int64_t> padding,
-    std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-    int64_t _subM, int64_t _transpose);
+// std::vector<torch::Tensor> get_indice_pairs_forward<3>(
+//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
+//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
+//     std::vector<int64_t> stride, std::vector<int64_t> padding,
+//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
+//     int64_t _subM, int64_t _transpose);
 
-std::vector<torch::Tensor> get_indice_pairs_forward<4>(
-    Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-    std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-    std::vector<int64_t> stride, std::vector<int64_t> padding,
-    std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-    int64_t _subM, int64_t _transpose);
+// std::vector<torch::Tensor> get_indice_pairs_forward<4>(
+//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
+//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
+//     std::vector<int64_t> stride, std::vector<int64_t> padding,
+//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
+//     int64_t _subM, int64_t _transpose);
 
 template <unsigned NDim>
-std::vector<Tensor> get_indice_pairs_grid_forward(
+std::vector<torch::Tensor> get_indice_pairs_forward(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template <unsigned NDim>
+std::vector<Tensor> get_indice_pairs_backward(
     Tensor indices, Tensor gridOut, int64_t batchSize,
     std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
     std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
@@ -638,15 +646,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("kernelSize"), py::arg("stride"), py::arg("padding"),
         py::arg("dilation"), py::arg("outPadding"), py::arg("_subM"),
         py::arg("_transpose"));
-  m.def("get_indice_pairs_grid_2d_forward", &get_indice_pairs_grid_forward<2>,
-        "get_indice_pairs_grid_2d_forward", py::arg("indices"),
-        py::arg("gridOut"), py::arg("batchSize"), py::arg("outSpatialShape"),
+  m.def("get_indice_pairs_2d_backward", &get_indice_pairs_backward<2>,
+        "get_indice_pairs_2d_backward", py::arg("indices"), py::arg("gridOut"),
+        py::arg("batchSize"), py::arg("outSpatialShape"),
         py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
         py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
         py::arg("_subM"), py::arg("_transpose"));
-  m.def("get_indice_pairs_grid_3d_forward", &get_indice_pairs_grid_forward<3>,
-        "get_indice_pairs_grid_3d_forward", py::arg("indices"),
-        py::arg("gridOut"), py::arg("batchSize"), py::arg("outSpatialShape"),
+  m.def("get_indice_pairs_3d_backward", &get_indice_pairs_backward<3>,
+        "get_indice_pairs_3d_backward", py::arg("indices"), py::arg("gridOut"),
+        py::arg("batchSize"), py::arg("outSpatialShape"),
         py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
         py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
         py::arg("_subM"), py::arg("_transpose"));

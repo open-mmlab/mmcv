@@ -12,45 +12,65 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cuda_runtime_api.h>
-#include <spconv/spconv/maxpool.h>
-#include <spconv/torch_utils.h>
-#include <spconv/utility/timer.h>
-#include <torch/script.h>
+// #include <cuda_runtime_api.h>
+// #include <spconv/spconv/maxpool.h>
+// #include <spconv/torch_utils.h>
+// #include <torch/script.h>
 
 #include "pytorch_cpp_helper.hpp"
+
+#ifdef MMCV_WITH_CUDA
+template <typename T>
+torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
+                                                     torch::Tensor indicePairs,
+                                                     torch::Tensor indiceNum,
+                                                     int64_t numAct);
+
+template <typename T>
+torch::Tensor indice_maxpool_forward_cuda(torch::Tensor features,
+                                          torch::Tensor indicePairs,
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct) {
+  return IndiceMaxpoolForwardCUDAKernelLauncher<T>(features, indicePairs,
+                                                   indiceNum, numAct);
+};
+
+template <typename T>
+torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
+                                                      torch::Tensor outFeatures,
+                                                      torch::Tensor outGrad,
+                                                      torch::Tensor indicePairs,
+                                                      torch::Tensor indiceNum);
+
+template <typename T>
+torch::Tensor indice_maxpool_backward_cuda(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum) {
+  return IndiceMaxpoolBackwardCUDAKernelLauncher<T>(
+      features, outFeatures, outGrad, indicePairs, indiceNum);
+};
+#endif
 
 template <typename T>
 torch::Tensor indice_maxpool_forward(torch::Tensor features,
                                      torch::Tensor indicePairs,
                                      torch::Tensor indiceNum, int64_t numAct) {
-  auto device = features.device().type();
-  auto kernelVolume = indicePairs.size(0);
-  auto numInPlanes = features.size(1);
-  auto indicePairNumCpu = indiceNum.to({torch::kCPU});
-  auto options =
-      torch::TensorOptions().dtype(features.dtype()).device(features.device());
-  torch::Tensor output = torch::zeros({numAct, numInPlanes}, options);
-  double totalTime = 0;
-  for (int i = 0; i < kernelVolume; ++i) {
-    auto nHot = indicePairNumCpu.data_ptr<int>()[i];
-    if (nHot <= 0) {
-      continue;
-    }
-    if (device == torch::kCPU) {
-      functor::SparseMaxPoolForwardFunctor<tv::CPU, T, int> forwardFtor;
-      forwardFtor(tv::CPU(), tv::torch2tv<T>(output),
-                  tv::torch2tv<const T>(features),
-                  tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-    } else {
-      functor::SparseMaxPoolForwardFunctor<tv::GPU, T, int> forwardFtor;
-      forwardFtor(tv::TorchGPU(), tv::torch2tv<T>(output),
-                  tv::torch2tv<const T>(features),
-                  tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-      TV_CHECK_CUDA_ERR();
-    }
+  if (features.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(features);
+    CHECK_CUDA_INPUT(indicePairs);
+    CHECK_CUDA_INPUT(indiceNum);
+
+    return indice_maxpool_forward_cuda<T>(features, indicePairs, indiceNum,
+                                          numAct);
+#else
+    AT_ERROR("indice_maxpool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("indice_maxpool is not implemented on CPU");
   }
-  return output;
 }
 
 template <typename T>
@@ -59,32 +79,20 @@ torch::Tensor indice_maxpool_backward(torch::Tensor features,
                                       torch::Tensor outGrad,
                                       torch::Tensor indicePairs,
                                       torch::Tensor indiceNum) {
-  auto device = features.device().type();
-  auto numInPlanes = features.size(1);
-  auto indicePairNumCpu = indiceNum.to({torch::kCPU});
-  auto options =
-      torch::TensorOptions().dtype(features.dtype()).device(features.device());
-  torch::Tensor inputGrad = torch::zeros(features.sizes(), options);
-  auto kernelVolume = indicePairs.size(0);
-  for (int i = 0; i < kernelVolume; ++i) {
-    auto nHot = indicePairNumCpu.data_ptr<int>()[i];
-    if (nHot <= 0) {
-      continue;
-    }
-    if (device == torch::kCPU) {
-      functor::SparseMaxPoolBackwardFunctor<tv::CPU, T, int> backwardFtor;
-      backwardFtor(tv::CPU(), tv::torch2tv<const T>(outFeatures),
-                   tv::torch2tv<const T>(features),
-                   tv::torch2tv<const T>(outGrad), tv::torch2tv<T>(inputGrad),
-                   tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-    } else {
-      functor::SparseMaxPoolBackwardFunctor<tv::GPU, T, int> backwardFtor;
-      backwardFtor(tv::TorchGPU(), tv::torch2tv<const T>(outFeatures),
-                   tv::torch2tv<const T>(features),
-                   tv::torch2tv<const T>(outGrad), tv::torch2tv<T>(inputGrad),
-                   tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-      TV_CHECK_CUDA_ERR();
-    }
+  if (features.device().is_cuda()) {
+#ifdef MMCV_WITH_CUDA
+    CHECK_CUDA_INPUT(features);
+    CHECK_CUDA_INPUT(outFeatures);
+    CHECK_CUDA_INPUT(outGrad);
+    CHECK_CUDA_INPUT(indicePairs);
+    CHECK_CUDA_INPUT(indiceNum);
+
+    return indice_maxpool_backward_cuda<T>(features, outFeatures, outGrad,
+                                           indicePairs, indiceNum);
+#else
+    AT_ERROR("indice_maxpool is not compiled with GPU support");
+#endif
+  } else {
+    AT_ERROR("indice_maxpool is not implemented on CPU");
   }
-  return inputGrad;
 }

@@ -18,7 +18,14 @@
 #include <spconv/tensorview/tensorview.h>
 #include <torch/script.h>
 
+#include "pytorch_cuda_helper.hpp"
+
 namespace tv {
+struct GPU {
+  GPU(cudaStream_t s = 0) : mStream(s) {}
+  virtual cudaStream_t getStream() const { return mStream; }
+  cudaStream_t mStream = 0;
+};
 
 struct TorchGPU : public tv::GPU {
   virtual cudaStream_t getStream() const override {

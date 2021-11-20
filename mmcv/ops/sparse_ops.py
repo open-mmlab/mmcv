@@ -18,8 +18,8 @@ from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
     'get_indice_pairs_2d_forward', 'get_indice_pairs_3d_forward',
-    'get_indice_pairs_4d_forward', 'get_indice_pairs_grid_2d_forward',
-    'get_indice_pairs_grid_3d_forward', 'indice_conv_fp32_forward',
+    'get_indice_pairs_4d_forward', 'get_indice_pairs_2d_backward',
+    'get_indice_pairs_3d_backward', 'indice_conv_fp32_forward',
     'indice_conv_half_forward', 'fused_indice_conv_half_forward',
     'fused_indice_conv_fp32_forward', 'indice_conv_fp32_backward',
     'indice_conv_half_backward', 'indice_maxpool_fp32_forward',
@@ -105,9 +105,9 @@ def get_indice_pairs(indices,
                                      int(transpose))
     else:
         if ndim == 2:
-            get_indice_pairs_func = ext_module.get_indice_pairs_grid_2d_forward
+            get_indice_pairs_func = ext_module.get_indice_pairs_2d_backward
         elif ndim == 3:
-            get_indice_pairs_func = ext_module.get_indice_pairs_grid_3d_forward
+            get_indice_pairs_func = ext_module.get_indice_pairs_3d_backward
         else:
             raise NotImplementedError
         return get_indice_pairs_func(indices, grid, batch_size, out_shape,

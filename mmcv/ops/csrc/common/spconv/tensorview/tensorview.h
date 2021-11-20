@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include <cuda_runtime_api.h>
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -24,6 +22,8 @@
 #include <sstream>
 #include <type_traits>
 #include <vector>
+
+#include "pytorch_cpp_helper.hpp"
 
 namespace tv {
 
@@ -101,11 +101,14 @@ void sstream_print(SStream &ss, T val, TArgs... args) {
     }                                                          \
   }
 
-struct GPU {
-  GPU(cudaStream_t s = 0) : mStream(s) {}
-  virtual cudaStream_t getStream() const { return mStream; }
-  cudaStream_t mStream = 0;
-};
+// #ifdef MMCV_WITH_CUDA
+// struct GPU {
+//   GPU(cudaStream_t s = 0) : mStream(s) {}
+//   virtual cudaStream_t getStream() const { return mStream; }
+//   cudaStream_t mStream = 0;
+// };
+// #endif
+
 struct CPU {};
 
 #define TV_MAX_DIM 6

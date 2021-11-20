@@ -19,7 +19,7 @@
 #include <spconv/tensorview/helper_kernel.cu.h>
 #include <spconv/tensorview/helper_launch.h>
 #include <spconv/tensorview/tensorview.h>
-#include <spconv/utility/timer.h>
+#include <spconv/torch_utils.h>
 
 #include <chrono>
 #include <limits>
