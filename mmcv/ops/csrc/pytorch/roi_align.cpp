@@ -36,6 +36,40 @@ void roi_align_backward_cuda(Tensor grad_output, Tensor rois, Tensor argmax_y,
 }
 #endif
 
+#ifdef MMCV_WITH_MLU
+void ROIAlignForwardMLUKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                      Tensor argmax_y, Tensor argmax_x,
+                                      int aligned_height, int aligned_width,
+                                      float spatial_scale, int sampling_ratio,
+                                      int pool_mode, bool aligned);
+
+void ROIAlignBackwardMLUKernelLauncher(Tensor grad_output, Tensor rois,
+                                       Tensor argmax_y, Tensor argmax_x,
+                                       Tensor grad_input, int aligned_height,
+                                       int aligned_width, float spatial_scale,
+                                       int sampling_ratio, int pool_mode,
+                                       bool aligned);
+
+void roi_align_forward_mlu(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax_y, Tensor argmax_x, int aligned_height,
+                           int aligned_width, float spatial_scale,
+                           int sampling_ratio, int pool_mode, bool aligned) {
+  ROIAlignForwardMLUKernelLauncher(input, rois, output, argmax_y, argmax_x,
+                                   aligned_height, aligned_width, spatial_scale,
+                                   sampling_ratio, pool_mode, aligned);
+}
+
+void roi_align_backward_mlu(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                            Tensor argmax_x, Tensor grad_input,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
+  ROIAlignBackwardMLUKernelLauncher(
+      grad_output, rois, argmax_y, argmax_x, grad_input, aligned_height,
+      aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+#endif
+
 void ROIAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,
                                 Tensor argmax_y, Tensor argmax_x,
                                 int aligned_height, int aligned_width,
@@ -86,6 +120,18 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
 #else
     AT_ERROR("RoIAlign is not compiled with GPU support");
 #endif
+#ifdef MMCV_WITH_MLU
+  } else if (input.device().type() == at::kMLU) {
+    CHECK_MLU(input);
+    CHECK_MLU(rois);
+    CHECK_MLU(output);
+    CHECK_MLU(argmax_y);
+    CHECK_MLU(argmax_x);
+
+    roi_align_forward_mlu(input, rois, output, argmax_y, argmax_x,
+                          aligned_height, aligned_width, spatial_scale,
+                          sampling_ratio, pool_mode, aligned);
+#endif
   } else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(rois);
@@ -115,6 +161,18 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                             sampling_ratio, pool_mode, aligned);
 #else
     AT_ERROR("RoIAlign is not compiled with GPU support");
+#endif
+#ifdef MMCV_WITH_MLU
+  } else if (grad_output.device().type() == at::kMLU) {
+    CHECK_MLU(grad_output);
+    CHECK_MLU(rois);
+    CHECK_MLU(argmax_y);
+    CHECK_MLU(argmax_x);
+    CHECK_MLU(grad_input);
+
+    roi_align_backward_mlu(grad_output, rois, argmax_y, argmax_x, grad_input,
+                           aligned_height, aligned_width, spatial_scale,
+                           sampling_ratio, pool_mode, aligned);
 #endif
   } else {
     CHECK_CPU_INPUT(grad_output);
