@@ -1,4 +1,4 @@
-## Introduction of onnx module in MMCV (Experimental)
+## Introduction of onnx module
 
 ### register_extra_symbolics
 
@@ -13,6 +13,10 @@ from mmcv.onnx import register_extra_symbolics
 opset_version = 11
 register_extra_symbolics(opset_version)
 ```
+
+#### Reminder
+
+- *Please note that this feature is experimental and may change fast.*
 
 #### FAQs
 
