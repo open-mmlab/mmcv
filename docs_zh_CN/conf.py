@@ -103,7 +103,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -116,6 +115,10 @@ html_theme_options = {
                 {
                     'name': 'MMCV',
                     'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MIM',
+                    'url': 'https://openmim.readthedocs.io/en/latest/'
                 },
                 {
                     'name': 'MMAction2',
@@ -160,6 +163,10 @@ html_theme_options = {
                     'name': 'MMTracking',
                     'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
                 },
+                {
+                    'name': 'MMFlow',
+                    'url': 'https://mmflow.readthedocs.io/en/latest/',
+                },
             ]
         },
         {
@@ -167,7 +174,7 @@ html_theme_options = {
             'OpenMMLab',
             'children': [
                 {
-                    'name': '官网',
+                    'name': '主页',
                     'url': 'https://openmmlab.com/'
                 },
                 {
