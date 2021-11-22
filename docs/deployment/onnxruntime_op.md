@@ -16,14 +16,14 @@
 ### List of operators for ONNX Runtime supported in MMCV
 
 | Operator                                               | CPU | GPU | MMCV Releases |
-|--------------------------------------------------------|-----|-----|---------------|
-| [SoftNMS](onnxruntime_custom_ops.md#softnms)           | Y   | N   | 1.2.3         |
-| [RoIAlign](onnxruntime_custom_ops.md#roialign)         | Y   | N   | 1.2.5         |
-| [NMS](onnxruntime_custom_ops.md#nms)                   | Y   | N   | 1.2.7         |
-| [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) | Y   | N   | 1.3.1         |
-| [CornerPool](onnxruntime_custom_ops.md#cornerpool)     | Y   | N   | 1.3.4         |
-| [cummax](onnxruntime_custom_ops.md#cummax)             | Y   | N   | 1.3.4        |
-| [cummin](onnxruntime_custom_ops.md#cummin)             | Y   | N   | 1.3.4        |
+|:-------------------------------------------------------|:---:|:---:|:-------------:|
+| [SoftNMS](onnxruntime_custom_ops.md#softnms)           |  Y  |  N  |     1.2.3     |
+| [RoIAlign](onnxruntime_custom_ops.md#roialign)         |  Y  |  N  |     1.2.5     |
+| [NMS](onnxruntime_custom_ops.md#nms)                   |  Y  |  N  |     1.2.7     |
+| [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) |  Y  |  N  |     1.3.1     |
+| [CornerPool](onnxruntime_custom_ops.md#cornerpool)     |  Y  |  N  |     1.3.4     |
+| [cummax](onnxruntime_custom_ops.md#cummax)             |  Y  |  N  |     1.3.4     |
+| [cummin](onnxruntime_custom_ops.md#cummin)             |  Y  |  N  |     1.3.4     |
 
 ### How to build custom operators for ONNX Runtime
 
