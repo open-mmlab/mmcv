@@ -44,10 +44,12 @@ jobs:
           command: python3 -m pip install psutil
       - run:
           name: Build and install
+          environment:
+            MMCV_WITH_OPS: 1
           command: |
             rm -rf .eggs
             python3 setup.py check -m -s
-            MMCV_WITH_OPS=1 python3 -m pip install -e .
+            python3 -m pip install -e .
       - run:
           name: Install dependencies of unit test
           command: python3 -m pip install -r requirements/test.txt
