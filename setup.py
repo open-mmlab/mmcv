@@ -191,8 +191,12 @@ def add_version_info():
     git_hash = get_git_hash(digits=7)
     if EXT_TYPE:
         torch_version = torch.__version__
-        if '+' in torch_version:  # eg. 1.8.1+cu111 -> 1.8.1
-            torch_version = torch_version.split('+')[0]
+        if '+' not in torch_version:  # eg. 1.8.1 -> 1.8.1+cu111
+            if torch.cuda.is_available():
+                torch_version += '+cu'
+                torch_version += (torch.version.cuda).replace('.', '')
+            else:
+                torch_version += '+cpu'
     else:
         torch_version = None
     with open(version_path, 'a') as f:
