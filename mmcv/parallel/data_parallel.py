@@ -19,7 +19,8 @@ class MMDataParallel(DataParallel):
         MMDataParallel only supports single GPU training, if you need to
         train with multiple GPUs, please use MMDistributedDataParallel
         instead. If you have multiple GPUs and you just want to use
-        MMDataParallel, you can set ``MMDataParallel(model, device_ids=[0])``.
+        MMDataParallel, you can set the ``CUDA_VISIBLE_DEVICES=0`` or
+        ``MMDataParallel(model, device_ids=[0])``.
 
     Args:
         module (:class:`nn.Module`): Module to be encapsulated.
