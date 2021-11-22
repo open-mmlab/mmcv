@@ -149,7 +149,10 @@ def get_deprecated_model_names():
 
 
 def _process_mmcls_checkpoint(checkpoint):
-    state_dict = checkpoint['state_dict']
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         if k.startswith('backbone.'):
