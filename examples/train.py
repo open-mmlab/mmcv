@@ -44,7 +44,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         # only use gpu:0 to train
         # Solved issue https://github.com/open-mmlab/mmcv/issues/1470
-        model = MMDataParallel(model.cuda(), [0])
+        model = MMDataParallel(model.cuda(), device_ids=[0])
 
     # dataset and dataloader
     transform = transforms.Compose([
