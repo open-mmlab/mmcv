@@ -19,6 +19,9 @@ using namespace at;
 #define CHECK_CUDA_INPUT(x) \
   CHECK_CUDA(x);            \
   CHECK_CONTIGUOUS(x)
+#define CHECK_MLU_INPUT(x) \
+  CHECK_MLU(x);            \
+  CHECK_CONTIGUOUS(x)
 #define CHECK_CPU_INPUT(x) \
   CHECK_CPU(x);            \
   CHECK_CONTIGUOUS(x)
