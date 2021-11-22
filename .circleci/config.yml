@@ -36,7 +36,9 @@ jobs:
             sudo apt-get install -y ffmpeg libturbojpeg ninja-build
       - run:
           name: Install dependencies for compiling onnx when python=3.9
-          command: python3 -m pip install protobuf && apt-get -y install libprotobuf-dev protobuf-compiler cmake
+          command: |
+            python3 -m pip install protobuf
+            sudo apt-get -y install libprotobuf-dev protobuf-compiler cmake
       - run:
           name: Install psutil
           command: python3 -m pip install psutil
