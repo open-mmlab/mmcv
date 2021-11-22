@@ -49,6 +49,9 @@ jobs:
             python3 setup.py check -m -s
             MMCV_WITH_OPS=1 python3 -m pip install -e .
       - run:
+          name: Install dependencies of unit test
+          command: python3 -m pip install -r requirements/test.txt
+      - run:
           name: Run unittests and generate coverage report
           command: |
             coverage run --branch --source mmcv -m pytest tests/
