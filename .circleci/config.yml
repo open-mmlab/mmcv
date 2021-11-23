@@ -21,6 +21,7 @@ jobs:
       - run:
           name: Install Python-dev
           command: |
+            which python
             ls /usr/bin
             python3.7 --version
       - run:
