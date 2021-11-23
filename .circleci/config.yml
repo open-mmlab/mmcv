@@ -6,13 +6,13 @@ jobs:
       # https://circleci.com/developer/images/image/cimg/python
       python:
         type: string
-        default: "3.7.4"
+        default: "3.7.0"
       torch:
         type: string
       torchvision:
         type: string
     docker:
-      - image: cimg/python:<< parameters.python >>
+      - image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run:
@@ -20,6 +20,17 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y ffmpeg libturbojpeg ninja-build
+      - run:
+          # https://github.com/pytorch/vision/issues/2921
+          name: Install dependency of torchvision when using pyenv
+          command: sudo apt-get install -y liblzma-dev
+      - run:
+          # need to re-install python3.7 due to the issue https://github.com/pytorch/vision/issues/2921
+          name: Select Python
+          command: |
+            pyenv uninstall -f << parameters.python >>
+            pyenv install << parameters.python >>
+            pyenv global << parameters.python >>
       - run:
           name: Upgrade pip
           command: |
