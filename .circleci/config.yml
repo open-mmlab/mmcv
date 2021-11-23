@@ -4,20 +4,15 @@ jobs:
     environment:
       PYTHON_VERSION: "3.9"
     machine:
-      image: ubuntu-1604:202104-01
+      image: ubuntu-1604-cuda-10.1:201909-23
     resource_class: gpu.nvidia.small
     steps:
       - checkout
       - run:
-          name: Setup CUDA
+          name: Print relative CUDA information
           command: |
-            wget https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda-repo-ubuntu1604-10-1-local-10.1.105-418.39_1.0-1_amd64.deb
-            sudo dpkg -i cuda-repo-ubuntu1604-10-1-local-10.1.105-418.39_1.0-1_amd64.deb
-            ls /var
-            sudo apt-key add /var/cuda-repo-10-1-local-10.1.105-418.39/7fa2af80.pub
-            sudo apt-get update
-            sudo apt-get install cuda
             nvidia-smi
+            nvcc --version
       - run:
           name: Add python3.9 source
           command: |
