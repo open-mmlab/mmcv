@@ -42,7 +42,9 @@ class Model(nn.Module):
 if __name__ == '__main__':
     model = Model()
     if torch.cuda.is_available():
-        model = MMDataParallel(model.cuda())
+        # only use gpu:0 to train
+        # Solved issue https://github.com/open-mmlab/mmcv/issues/1470
+        model = MMDataParallel(model.cuda(), device_ids=[0])
 
     # dataset and dataloader
     transform = transforms.Compose([

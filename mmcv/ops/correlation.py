@@ -117,22 +117,20 @@ class Correlation(nn.Module):
     This correlation operator works for optical flow correlation computation.
 
     There are two batched tensors with shape :math:`(N, C, H, W)`,
-    and the correlation output's shape is
-    :math:`(N, \text{max_displacement} \times 2+1,
-    \text{max_displacement} \times 2+1,
-    H_{out}, W_{out})`
+    and the correlation output's shape is :math:`(N, max\_displacement \times
+    2 + 1, max\_displacement * 2 + 1, H_{out}, W_{out})`
 
     where
 
     .. math::
-        H_{out} = \left\lfloor\frac{H_{in}  + 2 \times \text{padding} -
-                \text{dilation} \times (\text{kernel_size} - 1) - 1}
-                {\text{stride}} + 1\right\rfloor
+        H_{out} = \left\lfloor\frac{H_{in}  + 2 \times padding -
+            dilation \times (kernel\_size - 1) - 1}
+            {stride} + 1\right\rfloor
 
     .. math::
-        W_{out} = \left\lfloor\frac{W_{in}  + 2 \times \text{padding} -
-            \text{dilation} \times (\text{kernel_size} - 1) - 1}
-            {\text{stride}} + 1\right\rfloor
+        W_{out} = \left\lfloor\frac{W_{in}  + 2 \times padding - dilation
+            \times (kernel\_size - 1) - 1}
+            {stride} + 1\right\rfloor
 
     the correlation item :math:`(N_i, dy, dx)` is formed by taking the sliding
     window convolution between input1 and shifted input2,
@@ -146,8 +144,8 @@ class Correlation(nn.Module):
     where :math:`\star` is the valid 2d sliding window convolution operator,
     and :math:`\mathcal{S}` means shifting the input features (auto-complete
     zero marginal), and :math:`dx, dy` are shifting distance, :math:`dx, dy \in
-    [-\text{max\_displacement} \times \text{dilation\_patch},
-    \text{max\_displacement} \times \text{dilation\_patch}]`.
+    [-max\_displacement \times dilation\_patch, max\_displacement \times
+    dilation\_patch]`.
 
     Args:
         kernel_size (int): The size of sliding window i.e. local neighborhood

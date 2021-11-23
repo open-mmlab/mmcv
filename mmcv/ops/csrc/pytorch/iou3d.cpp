@@ -62,7 +62,8 @@ void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
   iou3d_boxes_iou_bev_forward_impl(num_a, boxes_a, num_b, boxes_b, ans_iou);
 }
 
-int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh) {
+void iou3d_nms_forward(Tensor boxes, Tensor keep, Tensor keep_num,
+                       float nms_overlap_thresh) {
   // params boxes: (N, 5) [x1, y1, x2, y2, ry]
   // params keep: (N)
   CHECK_CONTIGUOUS(boxes);
@@ -70,6 +71,7 @@ int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh) {
 
   int boxes_num = boxes.size(0);
   int64_t *keep_data = keep.data_ptr<int64_t>();
+  int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
 
   const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
@@ -99,13 +101,12 @@ int iou3d_nms_forward(Tensor boxes, Tensor keep, float nms_overlap_thresh) {
         remv_cpu[j] |= p[j];
       }
     }
+    *keep_num_data = num_to_keep;
   }
-
-  return num_to_keep;
 }
 
-int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
-                             float nms_overlap_thresh) {
+void iou3d_nms_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
+                              float nms_overlap_thresh) {
   // params boxes: (N, 5) [x1, y1, x2, y2, ry]
   // params keep: (N)
 
@@ -114,6 +115,7 @@ int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
 
   int boxes_num = boxes.size(0);
   int64_t *keep_data = keep.data_ptr<int64_t>();
+  int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
 
   const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
@@ -145,5 +147,5 @@ int iou3d_nms_normal_forward(Tensor boxes, Tensor keep,
     }
   }
 
-  return num_to_keep;
+  *keep_num_data = num_to_keep;
 }

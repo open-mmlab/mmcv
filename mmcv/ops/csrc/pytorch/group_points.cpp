@@ -19,16 +19,16 @@ void group_points_backward_impl(int b, int c, int n, int npoints, int nsample,
                        grad_out, idx, grad_points);
 }
 
-void group_points_forward(int b, int c, int n, int npoints, int nsample,
-                          Tensor points_tensor, Tensor idx_tensor,
-                          Tensor out_tensor) {
-  group_points_forward_impl(b, c, n, npoints, nsample, points_tensor,
-                            idx_tensor, out_tensor);
+void group_points_forward(Tensor points_tensor, Tensor idx_tensor,
+                          Tensor out_tensor, int b, int c, int n, int npoints,
+                          int nsample) {
+  DISPATCH_DEVICE_IMPL(group_points_forward_impl, b, c, n, npoints, nsample,
+                       points_tensor, idx_tensor, out_tensor);
 }
 
-void group_points_backward(int b, int c, int n, int npoints, int nsample,
-                           Tensor grad_out_tensor, Tensor idx_tensor,
-                           Tensor grad_points_tensor) {
+void group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                           Tensor grad_points_tensor, int b, int c, int n,
+                           int npoints, int nsample) {
   group_points_backward_impl(b, c, n, npoints, nsample, grad_out_tensor,
                              idx_tensor, grad_points_tensor);
 }
