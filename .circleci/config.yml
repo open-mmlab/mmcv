@@ -12,6 +12,8 @@ jobs:
           name: Print relative CUDA information
           command: |
             nvidia-smi
+            ls /usr/local
+            which nvcc
             nvcc --version
       - run:
           name: Add python3.9 source
