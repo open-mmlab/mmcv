@@ -19,18 +19,14 @@ jobs:
             nvidia-smi
             nvcc --version
       - run:
-          name: Install Python-dev
-          command: |
-            which python
-            ls /opt/circleci/.pyenv/shims/
-            python --version
-            python3.7.0 --version
+          name: Select python3.7
+          command: pyenv global python3.7.0
       - run:
           name: Upgrade pip
-          command: python3.7.0 -m pip install pip --upgrade
+          command: python -m pip install pip --upgrade
       - run:
           name: Install PyTorch
-          command: python3.7 -m pip install torch==1.8.0+cu102 torchvision==0.9.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
+          command: python -m pip install torch==1.8.0+cu102 torchvision==0.9.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install system dependencies
           command: |
@@ -38,22 +34,22 @@ jobs:
             sudo apt-get install -y ffmpeg libturbojpeg ninja-build
       - run:
           name: Install psutil
-          command: python3.7 -m pip install psutil
+          command: python -m pip install psutil
       - run:
           name: Build and install
           command: |
             rm -rf .eggs
-            python3.7 setup.py check -m -s
-            python3.7 -m pip install -e .
+            python setup.py check -m -s
+            python -m pip install -e .
           environment:
             MMCV_WITH_OPS: 1
       - run:
           name: Install dependencies of unit test
-          command: python3.7 -m pip install -r requirements/test.txt
+          command: python -m pip install -r requirements/test.txt
       - run:
           name: Run unittests and generate coverage report
           command: |
-            python3.7 -m pytest tests/
+            python -m pytest tests/
 workflows:
   unit_tests:
     jobs:
