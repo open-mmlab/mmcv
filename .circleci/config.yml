@@ -1,4 +1,4 @@
-version: 2.1
+vversion: 2.1
 jobs:
   build_cpu:
     parameters:
@@ -13,6 +13,7 @@ jobs:
         type: string
     machine:
       image: ubuntu-2004:202010-01
+    resource_class: xlarge
     steps:
       - checkout
       - run:
@@ -61,7 +62,7 @@ jobs:
 
   build_cu102:
     machine:
-      image: ubuntu-1604-cuda-10.2:202012-01
+      image: ubuntu-1604-cuda-10.1:201909-23
     resource_class: gpu.nvidia.small
     steps:
       - checkout
