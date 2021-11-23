@@ -1,4 +1,4 @@
-vversion: 2.1
+version: 2.1
 jobs:
   build_cpu:
     parameters:
