@@ -22,8 +22,8 @@ jobs:
           name: Install Python-dev
           command: |
             which python
-            ls /usr/bin
-            python3.7 --version
+            ls /opt/circleci/.pyenv/shims/
+            python --version
       - run:
           name: Upgrade pip
           command: python3.7 -m pip install pip --upgrade
