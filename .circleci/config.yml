@@ -66,9 +66,7 @@ jobs:
       - run:
           name: Run unittests and generate coverage report
           command: |
-            coverage run --branch --source mmcv -m pytest tests/
-            coverage xml
-            coverage report -m
+            pytest tests/
 workflows:
   unit_tests:
     jobs:
