@@ -11,8 +11,9 @@ jobs:
       - run:
           name: Setup CUDA
           command: |
-            sudo dpkg -i cuda-repo-ubuntu1604_10.1.105-1_amd64.deb
-            sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+            wget https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda-repo-ubuntu1604-10-1-local-10.1.105-418.39_1.0-1_amd64.deb
+            sudo dpkg -i cuda-repo-ubuntu1604-10-1-local-10.1.105-418.39_1.0-1_amd64.deb
+            sudo apt-key add /var/cuda-repo-10.1/7fa2af80.pub
             sudo apt-get update
             sudo apt-get install cuda
             nvidia-smi
