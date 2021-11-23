@@ -26,7 +26,7 @@ jobs:
             python -m pip install pip --upgrade
       - run:
           name: Install PyTorch
-          command: python -m pip install torch==<< parameters.torch >> torchvision==<< parameters.torchvision >> -f https://download.pytorch.org/whl/torch_stable.html
+          command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install psutil
           command: python -m pip install psutil
@@ -47,9 +47,9 @@ jobs:
           command: |
             python -m pytest tests/
 
-  build_cu101:
+  build_cu102:
     machine:
-      image: ubuntu-1604-cuda-10.1:201909-23
+      image: ubuntu-1604-cuda-10.2:202012-01
     resource_class: gpu.nvidia.small
     steps:
       - checkout
@@ -136,7 +136,7 @@ workflows:
           torch: 1.9.0
           torchvision: 0.10.0
           python: "3.9.0"
-      - build_cu101:
+      - build_cu102:
           requires:
             - build_cpu_th1.6
             - build_cpu_th1.7
