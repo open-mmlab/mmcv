@@ -13,7 +13,7 @@ jobs:
         type: string
     machine:
       image: ubuntu-2004:202010-01
-    resource_class: xlarge
+    resource_class: large
     steps:
       - checkout
       - run:
