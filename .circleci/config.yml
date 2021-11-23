@@ -24,9 +24,10 @@ jobs:
             which python
             ls /opt/circleci/.pyenv/shims/
             python --version
+            python3.7.0 --version
       - run:
           name: Upgrade pip
-          command: python3.7 -m pip install pip --upgrade
+          command: python3.7.0 -m pip install pip --upgrade
       - run:
           name: Install PyTorch
           command: python3.7 -m pip install torch==1.8.0+cu102 torchvision==0.9.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
