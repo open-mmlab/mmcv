@@ -20,19 +20,14 @@ jobs:
             nvcc --version
       - run:
           name: Select python3.7
-          command: |
-            pyenv global 3.7.0
-            python -V
-            python3 -V
+          command: pyenv global 3.7.0
       - run:
           name: Upgrade pip
           command: |
-            python -V
-            python3 -V
             python -m pip install pip --upgrade
       - run:
           name: Install PyTorch
-          command: pip install torch==1.8.0+cu102 torchvision==0.9.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
+          command: python pip install torch==1.10.0+cu102 torchvision==0.11.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install system dependencies
           command: |
