@@ -7,15 +7,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Update PATH and Define Environment Variable at Runtime
+          name: Set CUDA environment
           command: |
             echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> $BASH_ENV
             echo 'export PATH=/usr/local/cuda/bin:$PATH' >> $BASH_ENV
             echo 'export CUDA_HOME=/usr/local/cuda' >> $BASH_ENV
             source $BASH_ENV
-      - run:
-          name: Print relative CUDA information
-          command: |
             nvidia-smi
             nvcc --version
       - run:
@@ -25,7 +22,10 @@ jobs:
             sudo apt-get install -y ffmpeg libturbojpeg ninja-build liblzma-dev
       - run:
           name: Select python3.7
-          command: pyenv global 3.7.0
+          command: |
+            pyenv uninstall 3.7.0
+            pyenv install 3.7.0
+            pyenv global 3.7.0
       - run:
           name: Upgrade pip
           command: |
