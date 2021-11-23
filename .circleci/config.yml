@@ -1,5 +1,52 @@
 version: 2.1
 jobs:
+  build_cpu:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+        default: "3.7.4"
+      torch:
+        type: string
+      torchvision:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg libturbojpeg ninja-build
+      - run:
+          name: Upgrade pip
+          command: |
+            python -m pip install pip --upgrade
+      - run:
+          name: Install PyTorch
+          command: python -m pip install torch==<< parameters.torch >> torchvision==<< parameters.torchvision >> -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install psutil
+          command: python -m pip install psutil
+      - run:
+          name: Build and install
+          command: |
+            rm -rf .eggs
+            python setup.py check -m -s
+            python -m pip install -e .
+          environment:
+            MMCV_WITH_OPS: 1
+      - run:
+          name: Install dependencies of unit test
+          command: |
+            python -m pip install -r requirements/test.txt
+      - run:
+          name: Run unittests and generate coverage report
+          command: |
+            python -m pytest tests/
+
   build_cu101:
     machine:
       image: ubuntu-1604-cuda-10.1:201909-23
@@ -50,7 +97,7 @@ jobs:
           environment:
             MMCV_WITH_OPS: 1
       - run:
-          name: Install dependencies of unit test
+          name: Install dependencies for unit test
           command: |
             python -m pip install -r requirements/test.txt
             wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -62,7 +109,37 @@ jobs:
           name: Run unittests and generate coverage report
           command: |
             python -m pytest tests/
+
 workflows:
   unit_tests:
     jobs:
-      - build_cu101
+      - build_cpu:
+          name: build_cpu_th1.6
+          torch: 1.6.0
+          torchvision: 0.7.0
+      - build_cpu:
+          name: build_cpu_th1.7
+          torch: 1.7.0
+          torchvision: 0.8.1
+      - build_cpu:
+          name: build_cpu_th1.8_py3.9
+          torch: 1.8.0
+          torchvision: 0.9.0
+          python: "3.9.0"
+      - build_cpu:
+          name: build_cpu_th1.9_py3.8
+          torch: 1.9.0
+          torchvision: 0.10.0
+          python: "3.8.0"
+      - build_cpu:
+          name: build_cpu_th1.9_py3.9
+          torch: 1.9.0
+          torchvision: 0.10.0
+          python: "3.9.0"
+      - build_cu101:
+          requires:
+            - build_cpu_th1.6
+            - build_cpu_th1.7
+            - build_cpu_th1.8_py3.9
+            - build_cpu_th1.9_py3.8
+            - build_cpu_th1.9_py3.9
