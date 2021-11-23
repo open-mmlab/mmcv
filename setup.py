@@ -223,7 +223,7 @@ def get_extensions():
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
-        extra_compile_args = {'cxx': []}
+        extra_compile_args = {'cxx': ['-std=c++14']}
         include_dirs = []
 
         is_rocm_pytorch = False
@@ -249,7 +249,8 @@ def get_extensions():
             define_macros += [('HIP_DIFF', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*') \
+                + glob.glob('./mmcv/ops/csrc/pytorch/cpu/hip/*')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
         elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
@@ -257,15 +258,21 @@ def get_extensions():
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu')
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         else:
             print(f'Compiling {ext_name} without CUDA')
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+
+        if 'nvcc' in extra_compile_args:
+            extra_compile_args['nvcc'] += ['-std=c++14']
 
         ext_ops = extension(
             name=ext_name,

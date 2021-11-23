@@ -6,7 +6,7 @@ void modulated_deformable_im2col_cuda(
     const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
     const int batch_size, const int channels, const int height_im,
     const int width_im, const int height_col, const int width_col,
-    const int kernel_h, const int kenerl_w, const int pad_h, const int pad_w,
+    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
     const int stride_h, const int stride_w, const int dilation_h,
     const int dilation_w, const int deformable_group, Tensor data_col) {
   // num_axes should be smaller than block size
@@ -24,7 +24,7 @@ void modulated_deformable_im2col_cuda(
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
             at::cuda::getCurrentCUDAStream()>>>(
             num_kernels, data_im_, data_offset_, data_mask_, height_im,
-            width_im, kernel_h, kenerl_w, pad_h, pad_w, stride_h, stride_w,
+            width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, batch_size,
             channels, deformable_group, height_col, width_col, data_col_);
       }));
