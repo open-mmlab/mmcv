@@ -20,7 +20,9 @@ jobs:
             nvcc --version
       - run:
           name: Install Python-dev
-          command: python3.7 --version
+          command: |
+            ls /usr/bin
+            python3.7 --version
       - run:
           name: Upgrade pip
           command: python3.7 -m pip install pip --upgrade
