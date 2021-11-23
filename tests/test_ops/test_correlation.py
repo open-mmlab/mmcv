@@ -17,7 +17,7 @@ def assert_equal_tensor(tensor_a, tensor_b):
     assert tensor_a.eq(tensor_b).all()
 
 
-class TestCorrelation:
+class TestCorrelation(object):
 
     def _test_correlation(self, dtype=torch.float):
 
@@ -37,7 +37,6 @@ class TestCorrelation:
 
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason='requires CUDA support')
-    def test_correlation(self):
-        self._test_correlation(torch.float)
-        self._test_correlation(torch.double)
-        self._test_correlation(torch.half)
+    @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
+    def test_correlation(self, dtype):
+        self._test_correlation(dtype=dtype)
