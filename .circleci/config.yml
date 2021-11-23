@@ -19,11 +19,16 @@ jobs:
           name: Install system dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y ffmpeg libturbojpeg ninja-build liblzma-dev
+            sudo apt-get install -y ffmpeg libturbojpeg ninja-build
       - run:
+          # https://github.com/pytorch/vision/issues/2921
+          name: Install dependency of torchvision when using pyenv
+          command: sudo apt-get install -y liblzma-dev
+      - run:
+          # need to re-install python3.7 due to the issue https://github.com/pytorch/vision/issues/2921
           name: Select python3.7
           command: |
-            pyenv uninstall 3.7.0
+            pyenv uninstall -y 3.7.0
             pyenv install 3.7.0
             pyenv global 3.7.0
       - run:
