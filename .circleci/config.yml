@@ -13,8 +13,7 @@ jobs:
           command: |
             nvidia-smi
             ls /usr/local
-            which nvcc
-            nvcc --version
+            /usr/local/cuda/bin/nvcc --version
       - run:
           name: Add python3.9 source
           command: |
