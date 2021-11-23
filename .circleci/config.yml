@@ -1,19 +1,23 @@
 version: 2.1
 jobs:
   build_cu101:
-    environment:
-      PYTHON_VERSION: "3.9"
     machine:
       image: ubuntu-1604-cuda-10.1:201909-23
     resource_class: gpu.nvidia.small
     steps:
       - checkout
       - run:
+          name: Update PATH and Define Environment Variable at Runtime
+          command: |
+            echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> $BASH_ENV
+            echo 'export PATH=/usr/local/cuda/bin:$PATH' >> $BASH_ENV
+            echo 'export CUDA_HOME=/usr/local/cuda' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
           name: Print relative CUDA information
           command: |
             nvidia-smi
-            ls /usr/local
-            /usr/local/cuda/bin/nvcc --version
+            nvcc --version
       - run:
           name: Install Python-dev
           # command: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python${{matrix.python-version}}-dev
@@ -25,17 +29,12 @@ jobs:
           command: python3.7 -m pip install pip --upgrade
       - run:
           name: Install PyTorch
-          command: python3.7 -m pip install torch==1.8.0+cu101 torchvision==0.9.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
+          command: python3.7 -m pip install torch==1.8.0+cu102 torchvision==0.9.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install system dependencies
           command: |
             sudo apt-get update
             sudo apt-get install -y ffmpeg libturbojpeg ninja-build
-      - run:
-          name: Install dependencies for compiling onnx when python=3.9
-          command: |
-            python3.7 -m pip install protobuf
-            sudo apt-get -y install libprotobuf-dev protobuf-compiler cmake
       - run:
           name: Install psutil
           command: python3.7 -m pip install psutil
