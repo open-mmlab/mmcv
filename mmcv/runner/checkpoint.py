@@ -152,6 +152,8 @@ def _process_mmcls_checkpoint(checkpoint):
     if 'state_dict' in checkpoint:
         state_dict = checkpoint['state_dict']
     else:
+        # Some checkpoints converted from 3rd-party repo don't
+        # have the "state_dict" key.
         state_dict = checkpoint
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
