@@ -20,7 +20,7 @@ jobs:
             nvcc --version
       - run:
           name: Select python3.7
-          command: pyenv global python3.7.0
+          command: pyenv global 3.7.0
       - run:
           name: Upgrade pip
           command: python -m pip install pip --upgrade
