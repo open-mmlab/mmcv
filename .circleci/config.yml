@@ -20,10 +20,7 @@ jobs:
             nvcc --version
       - run:
           name: Install Python-dev
-          # command: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python${{matrix.python-version}}-dev
-          command: |
-            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y python3.7
-            python3.7 --version
+          command: python3.7 --version
       - run:
           name: Upgrade pip
           command: python3.7 -m pip install pip --upgrade
