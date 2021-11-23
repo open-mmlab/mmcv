@@ -28,7 +28,7 @@ jobs:
           # need to re-install python3.7 due to the issue https://github.com/pytorch/vision/issues/2921
           name: Select python3.7
           command: |
-            pyenv uninstall -y 3.7.0
+            pyenv uninstall -f 3.7.0
             pyenv install 3.7.0
             pyenv global 3.7.0
       - run:
