@@ -19,6 +19,11 @@ jobs:
             nvidia-smi
             nvcc --version
       - run:
+          name: Install system dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg libturbojpeg ninja-build liblzma-dev
+      - run:
           name: Select python3.7
           command: pyenv global 3.7.0
       - run:
@@ -28,12 +33,6 @@ jobs:
       - run:
           name: Install PyTorch
           command: python -m pip install torch==1.10.0+cu102 torchvision==0.11.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
-      - run:
-          name: Install system dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y ffmpeg libturbojpeg ninja-build liblzma-dev
-            python -m pip install backports.lzma
       - run:
           name: Install psutil
           command: python -m pip install psutil
