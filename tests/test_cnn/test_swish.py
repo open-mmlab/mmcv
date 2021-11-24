@@ -1,5 +1,5 @@
 import torch
-from torch.nn.functional import sigmoid
+from torch import sigmoid
 
 from mmcv.cnn.bricks import Swish
 
