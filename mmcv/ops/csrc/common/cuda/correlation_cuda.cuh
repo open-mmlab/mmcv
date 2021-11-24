@@ -14,7 +14,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <torch/types.h>
+#include <torch/extension.h>
 
 #include <iostream>
 #include <vector>

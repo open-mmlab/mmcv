@@ -13,7 +13,7 @@ a. 安装完整版
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。
 
-我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。
+我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
 
 i. 安装最新版本
 
@@ -66,6 +66,15 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
       <th valign="bottom" align="left" style="min-width: 100px">torch 1.7</th>
       <th valign="bottom" align="left" style="min-width: 100px">torch 1.6</th>
       <th valign="bottom" align="left" style="min-width: 100px">torch 1.5</th>
+    </tr>
+    <tr>
+      <td align="left">11.3</td>
+      <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
+      <td align="left"></code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
     </tr>
     <tr>
       <td align="left">11.1</td>
