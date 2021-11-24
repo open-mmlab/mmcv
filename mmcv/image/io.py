@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import io
 import os.path as osp
+import warnings
 from pathlib import Path
 
 import cv2
@@ -8,7 +9,8 @@ import numpy as np
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
 
-from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
+from mmcv.fileio import FileClient
+from mmcv.utils import is_str
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
@@ -137,8 +139,15 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
     return array
 
 
-def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
+def imread(img_or_path,
+           flag='color',
+           channel_order='bgr',
+           backend=None,
+           file_client_args=None):
     """Read an image.
+
+    Note:
+        In v1.3.17 and later, add `file_client_args` parameters.
 
     Args:
         img_or_path (ndarray or str or Path): Either a numpy array or str or
@@ -157,44 +166,27 @@ def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.
     """
 
-    if backend is None:
-        backend = imread_backend
-    if backend not in supported_backends:
-        raise ValueError(f'backend: {backend} is not supported. Supported '
-                         "backends are 'cv2', 'turbojpeg', 'pillow'")
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
-        check_file_exist(img_or_path,
-                         f'img file does not exist: {img_or_path}')
-        if backend == 'turbojpeg':
-            with open(img_or_path, 'rb') as in_file:
-                img = jpeg.decode(in_file.read(),
-                                  _jpegflag(flag, channel_order))
-                if img.shape[-1] == 1:
-                    img = img[:, :, 0]
-            return img
-        elif backend == 'pillow':
-            img = Image.open(img_or_path)
-            img = _pillow2array(img, flag, channel_order)
-            return img
-        elif backend == 'tifffile':
-            img = tifffile.imread(img_or_path)
-            return img
-        else:
-            flag = imread_flags[flag] if is_str(flag) else flag
-            img = cv2.imread(img_or_path, flag)
-            if flag == IMREAD_COLOR and channel_order == 'rgb':
-                cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
-            return img
+        file_client = FileClient.infer_client(file_client_args, img_or_path)
+        # TODO Some file_backends is not supporting to exists function.
+        if hasattr(file_client.client,
+                   'exists') and not file_client.exists(img_or_path):
+            raise FileNotFoundError(f'img file does not exist: {img_or_path}')
+        img_bytes = file_client.get(img_or_path)
+        return imfrombytes(img_bytes, flag, channel_order, backend)
     else:
         raise TypeError('"img" must be a numpy array or a str or '
                         'a pathlib.Path object')
@@ -218,17 +210,22 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
     if backend is None:
         backend = imread_backend
     if backend not in supported_backends:
-        raise ValueError(f'backend: {backend} is not supported. Supported '
-                         "backends are 'cv2', 'turbojpeg', 'pillow'")
+        raise ValueError(
+            f'backend: {backend} is not supported. Supported '
+            "backends are 'cv2', 'turbojpeg', 'pillow', 'tifffile'")
     if backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
     elif backend == 'pillow':
-        buff = io.BytesIO(content)
-        img = Image.open(buff)
-        img = _pillow2array(img, flag, channel_order)
+        with io.BytesIO(content) as buff:
+            img = Image.open(buff)
+            img = _pillow2array(img, flag, channel_order)
+        return img
+    elif backend == 'tifffile':
+        with io.BytesIO(content) as buff:
+            img = tifffile.imread(buff)
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)
@@ -239,8 +236,15 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         return img
 
 
-def imwrite(img, file_path, params=None, auto_mkdir=True):
+def imwrite(img,
+            file_path,
+            params=None,
+            auto_mkdir=True,
+            file_client_args=None):
     """Write image to file.
+
+    Note:
+        In v1.3.17 and later, add `file_client_args` parameters.
 
     Args:
         img (ndarray): Image array to be written.
@@ -248,11 +252,28 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
 
     Returns:
         bool: Successful or not.
     """
-    if auto_mkdir:
-        dir_name = osp.abspath(osp.dirname(file_path))
-        mkdir_or_exist(dir_name)
-    return cv2.imwrite(file_path, img, params)
+    assert is_str(file_path)
+    file_client = FileClient.infer_client(file_client_args, file_path)
+    if not hasattr(file_client.client, 'put'):
+        raise AttributeError(
+            f"{file_client.name} doesn't contain the `put` method")
+    try:
+        img_ext = osp.splitext(file_path)[-1]
+        _, img_buff = cv2.imencode(img_ext, img, params)
+        if not auto_mkdir and file_client.name == 'HardDiskBackend':
+            dir_name = osp.abspath(osp.dirname(file_path))
+            if not osp.exists(dir_name):
+                raise FileNotFoundError(
+                    f'`auto_mkdir` is False and `{dir_name}` is not found')
+        file_client.put(img_buff, file_path)
+    except Exception as e:
+        warnings.warn(f"'{file_path}' writing failed, msg is '{e}'")
+        return False
+    return True

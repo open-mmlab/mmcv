@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import cv2
 import numpy as np
@@ -11,6 +12,10 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 import mmcv
+from mmcv.fileio.file_client import HTTPBackend, PetrelBackend
+
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 
 
 class TestIO:
@@ -41,6 +46,7 @@ class TestIO:
         # backend cv2
         mmcv.use_backend('cv2')
 
+        # HardDiskBackend
         img_cv2_color_bgr = mmcv.imread(self.img_path)
         assert img_cv2_color_bgr.shape == (300, 400, 3)
         img_cv2_color_rgb = mmcv.imread(self.img_path, channel_order='rgb')
@@ -68,6 +74,37 @@ class TestIO:
         assert img_cv2_unchanged.shape == (300, 400)
         with pytest.raises(TypeError):
             mmcv.imread(1)
+
+        # PetrelBackend
+        img_cv2_color_bgr = mmcv.imread(self.img_path)
+        with patch.object(
+                PetrelBackend, 'get',
+                return_value=img_cv2_color_bgr) as mock_method:
+            filename = 's3://path/of/your/file'
+            img_cv2_color_bgr_petrel = mmcv.imread(filename, backend='cv2')
+            img_cv2_color_bgr_petrel_with_args = mmcv.imread(
+                filename,
+                backend='cv2',
+                file_client_args={'backend': 'petrel'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_petrel,
+                               img_cv2_color_bgr_petrel_with_args)
+
+        # HTTPBackend
+        img_cv2_color_bgr = mmcv.imread(self.img_path)
+        with patch.object(
+                HTTPBackend, 'get',
+                return_value=img_cv2_color_bgr) as mock_method:
+            filename = 'http://path/of/your/file'
+            img_cv2_color_bgr_http = mmcv.imread(filename, backend='cv2')
+            img_cv2_color_bgr_http_with_args = mmcv.imread(
+                filename, backend='cv2', file_client_args={'backend': 'http'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_http,
+                               img_cv2_color_bgr_http_with_args)
+
+        with pytest.raises(FileNotFoundError):
+            mmcv.imread('/not/exists/' + self.img_path)
 
         # test arg backend pillow
         img_pil_gray_alpha = mmcv.imread(
@@ -314,6 +351,9 @@ class TestIO:
         ret = mmcv.imwrite(
             img, './non_exist_path/mmcv_test.jpg', auto_mkdir=False)
         assert ret is False
+
+        with pytest.raises(AttributeError):
+            mmcv.imwrite(img, 'http://path/to/file')
 
     @patch('mmcv.image.io.TurboJPEG', None)
     def test_no_turbojpeg(self):
