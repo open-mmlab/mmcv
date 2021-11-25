@@ -1,7 +1,7 @@
 #ifndef PYTORCH_DEVICE_REGISTRY_H
 #define PYTORCH_DEVICE_REGISTRY_H
 
-#include <torch/extension.h>
+#include <torch/types.h>
 
 #include <cassert>
 #include <functional>
