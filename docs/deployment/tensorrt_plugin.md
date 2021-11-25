@@ -1,8 +1,8 @@
-## Introduction of TensorRT Plugins
+## TensorRT Deployment
 
 <!-- TOC -->
 
-- [Introduction of TensorRT Plugins](#introduction-of-tensorrt-plugins)
+- [TensorRT Deployment](#tensorrt-deployment)
   - [Introduction](#introduction)
   - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
   - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)
@@ -163,7 +163,7 @@ Below are the main steps:
 
 #### Reminders
 
-- *Please note that this feature is experimental and may change fast. Strongly suggest users always try with the latest master branch.*
+- *Please note that this feature is experimental and may change in the future. Strongly suggest users always try with the latest master branch.*
 
 - Some of the [custom ops](https://mmcv.readthedocs.io/en/latest/ops.html) in `mmcv` have their cuda implementations, which could be referred.
 

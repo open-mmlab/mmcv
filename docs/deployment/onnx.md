@@ -1,4 +1,4 @@
-## Introduction of onnx module
+## Introduction of mmcv.onnx module
 
 ### register_extra_symbolics
 
@@ -16,7 +16,7 @@ register_extra_symbolics(opset_version)
 
 #### Reminder
 
-- *Please note that this feature is experimental and may change fast.*
+- *Please note that this feature is experimental and may change in the future.*
 
 #### FAQs
 

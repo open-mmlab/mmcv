@@ -1,9 +1,9 @@
-# Operator Schemas
+# MMCV Operators
 
 To make custom operators in MMCV more standard, precise definitions of each operator are listed in this document.
 
 <!-- TOC -->
-- [Operator Schemas](#operator-schemas)
+- [MMCV Operators](#mmcv-operators)
   - [MMCVBorderAlign](#mmcvborderalign)
     - [Description](#description)
     - [Parameters](#parameters)
