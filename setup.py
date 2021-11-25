@@ -10,6 +10,8 @@ from pathlib import Path
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
+from mmcv.utils import get_git_hash
+
 EXT_TYPE = ''
 try:
     import torch
@@ -143,47 +145,6 @@ def add_version_info():
         else:
             return None
 
-    def _minimal_ext_cmd(cmd):
-        # construct minimal environment
-        env = {}
-        for k in ['SYSTEMROOT', 'PATH', 'HOME']:
-            v = os.environ.get(k)
-            if v is not None:
-                env[k] = v
-        # LANGUAGE is used on win32
-        env['LANGUAGE'] = 'C'
-        env['LANG'] = 'C'
-        env['LC_ALL'] = 'C'
-        out = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
-        return out
-
-    def get_git_hash(fallback='unknown', digits=None):
-        """Get the git hash of the current repo.
-
-        Args:
-            fallback (str, optional): The fallback string when git hash is
-                unavailable. Defaults to 'unknown'.
-            digits (int, optional): kept digits of the hash. Defaults to None,
-                meaning all digits are kept.
-
-        Returns:
-            str: Git commit hash.
-        """
-
-        if digits is not None and not isinstance(digits, int):
-            raise TypeError('digits must be None or an integer')
-
-        try:
-            out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
-            sha = out.strip().decode('ascii')
-            if digits is not None:
-                sha = sha[:digits]
-        except OSError:
-            sha = fallback
-
-        return sha
-
     mmcv_root = Path(__file__).parent
     version_path = mmcv_root / 'mmcv' / 'version.py'
     gcc_version = get_gcc()
@@ -199,9 +160,15 @@ def add_version_info():
                 torch_version += '+cpu'
     else:
         torch_version = None
-    with open(version_path, 'a') as f:
-        f.write(f'\n'
-                f"gcc_version = '{gcc_version}'\n"
+    with open(version_path, 'r+') as f:
+        lines = f.readlines()
+        last_line = lines[-1]
+        if '__all__' not in last_line:
+            lines = lines[:-4]
+        f.seek(0, 0)
+        for line in lines:
+            f.write(line)
+        f.write(f"gcc_version = '{gcc_version}'\n"
                 f"cuda_version = '{cuda_version}'\n"
                 f"torch_version = '{torch_version}'\n"
                 f"commit_id = '{git_hash}'\n")
