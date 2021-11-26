@@ -102,6 +102,14 @@ jobs:
           name: Install psutil
           command: python -m pip install psutil
       - run:
+          name: Download onnxruntime
+          command: |
+            wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+            tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+            echo 'export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1' >> $BASH_ENV
+            echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
           name: Build and install
           command: |
             rm -rf .eggs
@@ -109,15 +117,11 @@ jobs:
             python -m pip install -e .
           environment:
             MMCV_WITH_OPS: 1
+            MMCV_WITH_ORT: 1
       - run:
           name: Install dependencies for unit test
           command: |
             python -m pip install -r requirements/test.txt
-            wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-            tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-            echo 'export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1' >> $BASH_ENV
-            echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> $BASH_ENV
-            source $BASH_ENV
       - run:
           name: Run unittests and generate coverage report
           command: |
@@ -139,8 +143,4 @@ workflows:
           torch: 1.9.0
           torchvision: 0.10.0
           python: "3.8.0"
-      - build_cu102:
-          requires:
-            - build_cpu_th1.6
-            - build_cpu_th1.7
-            - build_cpu_th1.9_py3.8
+      - build_cu102
