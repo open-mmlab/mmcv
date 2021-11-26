@@ -102,7 +102,7 @@ jobs:
           name: Install psutil
           command: python -m pip install psutil
       - run:
-          name: Download onnxruntime
+          name: Download onnxruntime library and install onnxruntime
           command: |
             wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
             tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
