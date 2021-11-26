@@ -182,6 +182,8 @@ def imread(img_or_path,
     elif is_str(img_or_path):
         file_client = FileClient.infer_client(file_client_args, img_or_path)
         # TODO Some file_backends is not supporting to exists function.
+        # If you want to use petrel_client, you must ensure that
+        # the version >= v2.2.0.
         if hasattr(file_client.client,
                    'exists') and not file_client.exists(img_or_path):
             raise FileNotFoundError(f'img file does not exist: {img_or_path}')
@@ -267,12 +269,14 @@ def imwrite(img,
     try:
         img_ext = osp.splitext(file_path)[-1]
         _, img_buff = cv2.imencode(img_ext, img, params)
+        # The HardDiskBackend automatically mkdir by default,it needs to be
+        # judged individually
         if not auto_mkdir and file_client.name == 'HardDiskBackend':
             dir_name = osp.abspath(osp.dirname(file_path))
             if not osp.exists(dir_name):
                 raise FileNotFoundError(
                     f'`auto_mkdir` is False and `{dir_name}` is not found')
-        file_client.put(img_buff, file_path)
+        file_client.put(img_buff.tobytes(), file_path)
     except Exception as e:
         warnings.warn(f"'{file_path}' writing failed, msg is '{e}'")
         return False
