@@ -41,14 +41,11 @@ class cacheable_method:
         cache_enabled = getattr(instance, '_cache_enabled', False)
 
         if cache_enabled:
-            # Initialize cache and usage counter for cacheable methods
-            # of the transform. Specifically, `_cache` is a dict to store the
-            # output of cacheable methods; `_cache_usage_counter` is a counter
-            # of the usage time of each cached result.
+            # Initialize the cache of the transform instances. The flag
+            # `cache_enabled` is set by contextmanagers like
+            # `cache_random_params`.
             if not hasattr(instance, '_cache'):
                 setattr(instance, '_cache', {})
-            if not hasattr(instance, '_cache_usage_counter'):
-                setattr(instance, '_cache_usage_counter', defaultdict(int))
 
             if name not in instance._cache:
                 instance._cache[name] = self.func(instance, *args, **kwargs)
@@ -59,8 +56,6 @@ class cacheable_method:
             # Clear cache
             if hasattr(instance, '_cache'):
                 del instance._cache
-            if hasattr(instance, '_cache_usage_counter'):
-                del instance._cache_usage_counter
             # Return function output
             return self.func(instance, *args, **kwargs)
 
@@ -73,11 +68,49 @@ class cacheable_method:
 @contextmanager
 def cache_random_params(transforms: Union[BaseTransform, Iterable]):
 
+    # key2method stores the original methods that are replaced by the wrapped
+    # ones. These method will be restituted when exiting the context.
+    key2method = dict()
+
+    # key2counter stores the usage number of each cacheable_method. This is
+    # used to check that any cacheable_method is invoked once during processing
+    # on data sample.
+    key2counter = defaultdict(dict)
+
+    def _add_counter(obj, method_name):
+        method = getattr(obj, method_name)
+        key = f'{id(obj)}.{method_name}'
+        key2method[key] = method
+        
+        @functools.wraps(method)
+        def wrapped(*args, **kwargs):
+            key2counter[key] += 1
+            return method(*args, **kwargs)
+        
+        return wrapped
+
     def _cache_start(t: BaseTransform):
         setattr(t, '_cache_enabled', True)
+        if hasattr(t, '_cacheable_methods'):
+            setattr(t, 'transform', _add_counter(t, 'transform'))
+            for name in t._cacheable_methods:
+                setattr(t, name, _add_counter(t, name))
 
     def _cache_end(t: BaseTransform):
         del t._cache_enabled
+        if hasattr(t, '_cacheable_methods'):
+            key_transform = f'{id(t)}.transform'
+            for name in t._cacheable_methods:
+                key = f'{id(t)}.{name}'
+                if key2counter[key] != key2counter[key_transform]:
+                    raise RuntimeError(
+                        'The cacheable method should be called once and only'
+                        f'once during processing one data sample. {t} got'
+                        f'unmatched number of {key2counter[key]} ({name}) vs'
+                        f'{key2counter[key_transform]} (data samples)')
+                
+                setattr(t, name, key2method(key))
+            setattr(t, 'transform', key2method[key_transform])
 
     def _apply(t: Union[BaseTransform, Iterable],
                func: Callable[[BaseTransform], None]):
@@ -88,34 +121,8 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
             for _t in t:
                 _apply(_t, func)
 
-    class _RepetitiveCacheChecker():
-        """Checker to check that each cacheable method has been called exactly
-        once during processing one data sample."""
-
-        def __init__(self, transforms):
-            self.transforms = weakref.ref(transforms)
-
-        def _cached_only_once(self, transform):
-            if hasattr(transform, '_cacheable_methods'):
-                if not hasattr(transform, '_cache_usage_counter'):
-                    raise ValueError(
-                        f'Cache is not enabled for {transform.__class__}')
-                for name in transform._cacheable_methods:
-                    if name not in transform._cache_usage_counter:
-                        raise ValueError(
-                            f'The method {name} of {transform.__class__} has '
-                            'not been cached yet!')
-                    count = transform._cache_usage_counter[name]
-                    if count != 1:
-                        raise ValueError(
-                            f'The method {name} of {transform.__class__} has '
-                            'been called more than once!')
-
-        def check(self):
-            _apply(self.transforms, self._cached_only_once)
-
     try:
         _apply(transforms, _cache_start)
-        yield _RepetitiveCacheChecker(transforms)
+        yield
     finally:
         _apply(transforms, _cache_end)
