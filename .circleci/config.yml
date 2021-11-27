@@ -1,5 +1,30 @@
 version: 2.1
 jobs:
+  lint:
+    docker:
+      - image: cimg/python:3.7.4
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-add-repository ppa:brightbox/ruby-ng -y
+            sudo apt-get update
+            sudo apt-get install -y ruby2.7
+      - run:
+          name: Install pre-commit hook
+          command: |
+            pip install pre-commit
+            pre-commit install
+      - run:
+          name: Linting
+          command: pre-commit run --all-files
+      - run:
+          name: Check docstring coverage
+          command: |
+            pip install interrogate
+            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 50 mmcv
+
   build_cpu:
     parameters:
       # The python version must match available image tags in
@@ -59,7 +84,9 @@ jobs:
       - run:
           name: Run unittests and generate coverage report
           command: |
-            python -m pytest tests/
+            python -m coverage run --branch --source mmocr -m pytest tests/
+            python -m coverage xml
+            python -m coverage report -m
 
   build_cu102:
     machine:
@@ -134,14 +161,21 @@ jobs:
       - run:
           name: Run unittests and generate coverage report
           command: |
-            python -m pytest tests/
+            python -m coverage run --branch --source mmcv -m pytest tests/
+            python -m coverage xml
+            python -m coverage report -m
 
 workflows:
   unit_tests:
     jobs:
+      - lint
       - build_cpu:
-          name: build_cpu_th1.9_py3.8
+          name: build_py3.8_pt1.9_cpu
           torch: 1.9.0
           torchvision: 0.10.0
           python: "3.8.0"
-      - build_cu102
+          requires:
+            - lint
+      - build_cu102:
+          requires:
+            - build_py3.8_pt1.9_cpu
