@@ -76,6 +76,9 @@ jobs:
             nvidia-smi
             nvcc --version
       - run:
+          name: GCC version
+          command: gcc --version
+      - run:
           name: Install system dependencies
           command: |
             sudo apt-get update
