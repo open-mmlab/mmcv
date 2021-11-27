@@ -63,7 +63,7 @@ jobs:
 
   build_cu102:
     machine:
-      image: ubuntu-2004-cuda-11.2:202103-01
+      image: ubuntu-1604-cuda-10.1:201909-23
     resource_class: gpu.nvidia.small
     steps:
       - checkout
@@ -76,15 +76,18 @@ jobs:
             source $BASH_ENV
             nvidia-smi
             nvcc --version
-      - run:
-          name: GCC version
-          command: gcc --version
+            gcc --version
       - run:
           name: Install system dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y ffmpeg libturbojpeg ninja-build
+            sudo apt-get install -y libturbojpeg ninja-build
+            # the default version of ffmpeg is 2.8.7, which should be upgraded to 4+
+            sudo add-apt-repository ppa:jonathonf/ffmpeg-4
+            sudo apt-get update
+            sudo apt-get install ffmpeg
             ffmpeg -version
+            sudo add-apt-repository --remove ppa:jonathonf/ffmpeg-4
       - run:
           # https://github.com/pytorch/vision/issues/2921
           name: Install dependency of torchvision when using pyenv
@@ -102,7 +105,7 @@ jobs:
             python -m pip install pip --upgrade
       - run:
           name: Install PyTorch
-          command: python -m pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+          command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install psutil
           command: python -m pip install psutil
