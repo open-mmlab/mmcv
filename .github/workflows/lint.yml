@@ -2,9 +2,6 @@ name: build
 
 on: [push, pull_request]
 
-env:
-  MMCV_WITH_OPS: 1
-
 jobs:
   lint:
     runs-on: ubuntu-18.04
