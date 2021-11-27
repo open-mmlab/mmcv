@@ -9,10 +9,10 @@ void ROIAlignRotatedForwardCUDAKernelLauncher(
     const int pooled_height, const int pooled_width, at::Tensor output) {
   const int output_size = num_rois * pooled_height * pooled_width * channels;
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.type(), "ROIAlignRotatedLaucherForward", ([&] {
-        const scalar_t *bottom_data = features.data<scalar_t>();
-        const scalar_t *rois_data = rois.data<scalar_t>();
-        scalar_t *top_data = output.data<scalar_t>();
+      features.scalar_type(), "ROIAlignRotatedLaucherForward", ([&] {
+        const scalar_t *bottom_data = features.data_ptr<scalar_t>();
+        const scalar_t *rois_data = rois.data_ptr<scalar_t>();
+        scalar_t *top_data = output.data_ptr<scalar_t>();
 
         roi_align_rotated_forward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
@@ -31,10 +31,10 @@ void ROIAlignRotatedBackwardCUDAKernelLauncher(
     const int pooled_height, const int pooled_width, at::Tensor bottom_grad) {
   const int output_size = num_rois * pooled_height * pooled_width * channels;
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      top_grad.type(), "ROIAlignLaucherBackward", ([&] {
-        const scalar_t *top_diff = top_grad.data<scalar_t>();
-        const scalar_t *rois_data = rois.data<scalar_t>();
-        scalar_t *bottom_diff = bottom_grad.data<scalar_t>();
+      top_grad.scalar_type(), "ROIAlignLaucherBackward", ([&] {
+        const scalar_t *top_diff = top_grad.data_ptr<scalar_t>();
+        const scalar_t *rois_data = rois.data_ptr<scalar_t>();
+        scalar_t *bottom_diff = bottom_grad.data_ptr<scalar_t>();
         roi_align_rotated_backward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
                 output_size, top_diff, rois_data, spatial_scale, sample_num,

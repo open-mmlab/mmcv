@@ -10,16 +10,20 @@
 
 MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目，例如：
 
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
-- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
-- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
-- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱
-- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab 新一代视频理解工具箱
+- [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
+- [MIM](https://github.com/open-mmlab/mim): OpenMMLab 项目、算法、模型的统一入口
+- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱与测试基准
+- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 检测工具箱与测试基准
+- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用3D目标检测平台
+- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱与测试基准
+- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab 新一代视频理解工具箱与测试基准
 - [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab 一体化视频目标感知平台
-- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab 姿态估计工具箱
+- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab 姿态估计工具箱与测试基准
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab 图像视频编辑工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
-- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 新一代生成模型工具箱
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
 
 MMCV 提供了如下众多功能：
 
@@ -48,7 +52,7 @@ a. 安装完整版
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。
 
-我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。
+我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [check_installation.py](.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
 
 i. 安装最新版本
 
@@ -99,6 +103,15 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
       <th valign="bottom" align="left" width="100">torch1.7</th>
       <th valign="bottom" align="left" width="100">torch1.6</th>
       <th valign="bottom" align="left" width="100">torch1.5</th>
+    </tr>
+    <tr>
+      <td align="left">11.3</td>
+      <td align="left"><details><summary> 安装 </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
+      <td align="left"></code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
     </tr>
     <tr>
       <td align="left">11.1</td>
