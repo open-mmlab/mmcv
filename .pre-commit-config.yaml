@@ -52,3 +52,7 @@ repos:
   #       entry: clang-format -style=google -i
   #       language: system
   #       files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)$
+  - repo: ../mmprecommit
+    rev: 5064cedc282b5f3f16b9bb928cedf586eac5bb14
+    hooks:
+      - id: check-model-index
