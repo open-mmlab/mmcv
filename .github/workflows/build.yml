@@ -2,20 +2,22 @@ name: build
 
 on:
   push:
-    paths:
-      - '!README.md'
-      - '!README_zh-CN.md'
-      - '!docs/**'
-      - '!docs_zh-CN/**'
-      - '!examples/**'
+    paths-ignore:
+      - 'README.md'
+      - 'README_zh-CN.md'
+      - 'docs/**'
+      - 'docs_zh-CN/**'
+      - 'examples/**'
+      - '.dev_scripts/**'
 
   pull_request:
-    paths:
-      - '!README.md'
-      - '!README_zh-CN.md'
-      - '!docs/**'
-      - '!docs_zh-CN/**'
-      - '!examples/**'
+    paths-ignore:
+      - 'README.md'
+      - 'README_zh-CN.md'
+      - 'docs/**'
+      - 'docs_zh-CN/**'
+      - 'examples/**'
+      - '.dev_scripts/**'
 
 env:
   MMCV_WITH_OPS: 1
