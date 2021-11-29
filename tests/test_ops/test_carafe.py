@@ -5,6 +5,8 @@ from torch.autograd import gradcheck
 from mmcv.ops import CARAFE, CARAFENaive
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 class TestCarafe(object):
 
     def setup_class(self):
@@ -17,8 +19,6 @@ class TestCarafe(object):
 
     @pytest.mark.parametrize('mode', ['naive', 'plain'])
     def test_carafe_naive_gradcheck(self, mode):
-        if not torch.cuda.is_available():
-            return
         gradcheck(
             self._CARAFE[mode](5, 4, 2), (self.feat, self.mask),
             atol=1e-4,
