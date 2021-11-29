@@ -5,9 +5,9 @@ from contextlib import nullcontext
 from typing import Any, Callable, Optional, Union
 
 import numpy as np
-from mmpose.datasets_v2.pipelines.base import BaseTransform
 
 import mmcv
+from .base import BaseTransform
 from .builder import TRANSFORMS
 from .utils import cache_random_params
 

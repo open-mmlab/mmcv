@@ -3,6 +3,7 @@
 from .arraymisc import *
 from .fileio import *
 from .image import *
+from .transforms import *
 from .utils import *
 from .version import *
 from .video import *

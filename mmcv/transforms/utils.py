@@ -50,7 +50,6 @@ class cacheable_method:
             if name not in instance._cache:
                 instance._cache[name] = self.func(instance, *args, **kwargs)
             # Return the cached value
-            instance._cache_usage_counter[name] += 1
             return instance._cache[name]
         else:
             # Clear cache
@@ -75,7 +74,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
     # key2counter stores the usage number of each cacheable_method. This is
     # used to check that any cacheable_method is invoked once during processing
     # on data sample.
-    key2counter = defaultdict(dict)
+    key2counter = defaultdict(int)
 
     def _add_counter(obj, method_name):
         method = getattr(obj, method_name)
@@ -89,15 +88,21 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
 
         return wrapped
 
-    def _cache_start(t: BaseTransform):
+    def _start_cache(t: BaseTransform):
+        # Set cache enabled flag
         setattr(t, '_cache_enabled', True)
+
+        # Store the original method and init the counter
         if hasattr(t, '_cacheable_methods'):
             setattr(t, 'transform', _add_counter(t, 'transform'))
             for name in t._cacheable_methods:
                 setattr(t, name, _add_counter(t, name))
 
-    def _cache_end(t: BaseTransform):
+    def _end_cache(t: BaseTransform):
+        # Remove cache enabled flag
         del t._cache_enabled
+
+        # Restore the original method
         if hasattr(t, '_cacheable_methods'):
             key_transform = f'{id(t)}.transform'
             for name in t._cacheable_methods:
@@ -108,8 +113,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
                         f'once during processing one data sample. {t} got'
                         f'unmatched number of {key2counter[key]} ({name}) vs'
                         f'{key2counter[key_transform]} (data samples)')
-
-                setattr(t, name, key2method(key))
+                setattr(t, name, key2method[key])
             setattr(t, 'transform', key2method[key_transform])
 
     def _apply(t: Union[BaseTransform, Iterable],
@@ -122,7 +126,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
                 _apply(_t, func)
 
     try:
-        _apply(transforms, _cache_start)
+        _apply(transforms, _start_cache)
         yield
     finally:
-        _apply(transforms, _cache_end)
+        _apply(transforms, _end_cache)
