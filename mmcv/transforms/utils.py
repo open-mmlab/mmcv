@@ -81,12 +81,12 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
         method = getattr(obj, method_name)
         key = f'{id(obj)}.{method_name}'
         key2method[key] = method
-        
+
         @functools.wraps(method)
         def wrapped(*args, **kwargs):
             key2counter[key] += 1
             return method(*args, **kwargs)
-        
+
         return wrapped
 
     def _cache_start(t: BaseTransform):
@@ -108,7 +108,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
                         f'once during processing one data sample. {t} got'
                         f'unmatched number of {key2counter[key]} ({name}) vs'
                         f'{key2counter[key_transform]} (data samples)')
-                
+
                 setattr(t, name, key2method(key))
             setattr(t, 'transform', key2method[key_transform])
 
