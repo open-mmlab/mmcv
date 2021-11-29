@@ -132,6 +132,10 @@ class Remap(BaseTransform):
                 return data.get(m, NotInResults)
 
         collected = _remap(data, input_mapping)
+        collected = {
+            k: v
+            for k, v in collected.items() if v is not NotInResults
+        }
 
         # Retain unmapped items
         inputs = data.copy()
