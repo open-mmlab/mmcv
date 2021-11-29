@@ -119,11 +119,11 @@ void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
 void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,
                                  Tensor ans_iou);
 
-int iou3d_nms_forward(Tensor boxes, Tensor keep, Tensor keep_num,
-                      float nms_overlap_thresh);
+void iou3d_nms_forward(Tensor boxes, Tensor keep, Tensor keep_num,
+                       float nms_overlap_thresh);
 
-int iou3d_nms_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
-                             float nms_overlap_thresh);
+void iou3d_nms_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
+                              float nms_overlap_thresh);
 
 void furthest_point_sampling_forward(Tensor points_tensor, Tensor temp_tensor,
                                      Tensor idx_tensor, int b, int n, int m);
