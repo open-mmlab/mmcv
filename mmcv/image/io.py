@@ -147,7 +147,7 @@ def imread(img_or_path,
     """Read an image.
 
     Note:
-        In v1.3.19 and later, add `file_client_args` parameters.
+        In v1.4.1 and later, add `file_client_args` parameters.
 
     Args:
         img_or_path (ndarray or str or Path): Either a numpy array or str or
@@ -266,7 +266,7 @@ def imwrite(img,
     """Write image to file.
 
     Note:
-        In v1.3.19 and later, add `file_client_args` parameters.
+        In v1.4.1 and later, add `file_client_args` parameters.
 
     Args:
         img (ndarray): Image array to be written.
