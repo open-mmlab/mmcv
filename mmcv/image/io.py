@@ -147,7 +147,7 @@ def imread(img_or_path,
     """Read an image.
 
     Note:
-        In v1.3.17 and later, add `file_client_args` parameters.
+        In v1.3.19 and later, add `file_client_args` parameters.
 
     Args:
         img_or_path (ndarray or str or Path): Either a numpy array or str or
@@ -172,6 +172,23 @@ def imread(img_or_path,
 
     Returns:
         ndarray: Loaded image array.
+
+    Examples:
+        >>> import mmcv
+        >>> img_path = '/path/to/img.jpg'
+        >>> img = mmcv.imread(img_path)
+        >>> img = mmcv.imread(img_path, flag='color', channel_order='rgb',
+        ...     backend='cv2')
+        >>> img = mmcv.imread(img_path, flag='color', channel_order='bgr',
+        ...     backend='pillow')
+        >>> s3_img_path = 's3://bucket/img.jpg'
+        >>> img = mmcv.imread(s3_img_path)
+        >>> img = mmcv.imread(s3_img_path, file_client_args={
+        ...     'backend': 'petrel'})
+        >>> http_img_path = 'http://path/to/img.jpg'
+        >>> img = mmcv.imread(http_img_path)
+        >>> img = mmcv.imread(http_img_path, file_client_args={
+        ...     'backend': 'http'})
     """
 
     if isinstance(img_or_path, Path):
@@ -181,12 +198,6 @@ def imread(img_or_path,
         return img_or_path
     elif is_str(img_or_path):
         file_client = FileClient.infer_client(file_client_args, img_or_path)
-        # TODO Some file_backends is not supporting to exists function.
-        # If you want to use petrel_client, you must ensure that
-        # the version >= v2.2.0.
-        if hasattr(file_client.client,
-                   'exists') and not file_client.exists(img_or_path):
-            raise FileNotFoundError(f'img file does not exist: {img_or_path}')
         img_bytes = file_client.get(img_or_path)
         return imfrombytes(img_bytes, flag, channel_order, backend)
     else:
@@ -201,12 +212,21 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
         backend (str | None): The image decoding backend type. Options are
-            `cv2`, `pillow`, `turbojpeg`, `None`. If backend is None, the
-            global imread_backend specified by ``mmcv.use_backend()`` will be
-            used. Default: None.
+            `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`. If backend is
+            None, the global imread_backend specified by ``mmcv.use_backend()``
+            will be used. Default: None.
 
     Returns:
         ndarray: Loaded image array.
+
+    Examples:
+        >>> img_path = '/path/to/img.jpg'
+        >>> with open(img_path, 'rb') as f:
+        >>>     img_buff = f.read()
+        >>> img = mmcv.imfrombytes(img_buff)
+        >>> img = mmcv.imfrombytes(img_buff, flag='color', channel_order='rgb')
+        >>> img = mmcv.imfrombytes(img_buff, backend='pillow')
+        >>> img = mmcv.imfrombytes(img_buff, backend='cv2')
     """
 
     if backend is None:
@@ -246,7 +266,7 @@ def imwrite(img,
     """Write image to file.
 
     Note:
-        In v1.3.17 and later, add `file_client_args` parameters.
+        In v1.3.19 and later, add `file_client_args` parameters.
 
     Args:
         img (ndarray): Image array to be written.
@@ -260,6 +280,12 @@ def imwrite(img,
 
     Returns:
         bool: Successful or not.
+
+    Examples:
+        >>> ret = mmcv.imwrite(img, '/path/to/img.jpg')
+        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg')
+        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', file_client_args={
+        ...     'backend': 'petrel'})
     """
     assert is_str(file_path)
     file_client = FileClient.infer_client(file_client_args, file_path)
