@@ -1,6 +1,10 @@
 #ifndef PYTORCH_DEVICE_REGISTRY_H
 #define PYTORCH_DEVICE_REGISTRY_H
 
+// Using <torch/extension.h> is recommended in the official documentation in
+// https://pytorch.org/tutorials/advanced/cpp_extension.html#writing-the-c-op.
+// However, we use <torch/types.h> for compatibility with CUDA 9.0
+// Read https://github.com/pytorch/extension-cpp/issues/35 for more details.
 #include <torch/types.h>
 
 #include <cassert>
