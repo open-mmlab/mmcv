@@ -87,8 +87,8 @@ class DeformConv2dFunction(Function):
         ctx.bufs_ = [input.new_empty(0), input.new_empty(0)]  # columns, ones
 
         cur_im2col_step = min(ctx.im2col_step, input.size(0))
-        assert (input.size(0) %
-                cur_im2col_step) == 0, 'im2col step must divide batchsize'
+        assert (input.size(0) % cur_im2col_step
+                ) == 0, 'batch size must be divisible by im2col_step'
         ext_module.deform_conv_forward(
             input,
             weight,
