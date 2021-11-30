@@ -26,7 +26,9 @@ class OptimizerHook(Hook):
         grad_clip (dict): A config dict to control the clip_grad.
             Default: None.
         detect_anomalous_params (bool):  Detect anomalous parameters
-            of the model. Such as
+            of the model which is not included in
+            the computational graph with `loss` as the root.
+            There are two cases
 
                 - Parameters were not used during
                   forward pass.
@@ -49,10 +51,8 @@ class OptimizerHook(Hook):
     def after_train_iter(self, runner):
         runner.optimizer.zero_grad()
         if self.detect_anomalous_params:
-            self.find_unused_parameters(runner.outputs['loss'], runner)
+            self.detect_anomalous_parameters(runner.outputs['loss'], runner)
         runner.outputs['loss'].backward()
-        if self.detect_anomalous_params:
-            self.find_nograd_parameters(runner)
 
         if self.grad_clip is not None:
             grad_norm = self.clip_grads(runner.model.parameters())
@@ -62,15 +62,7 @@ class OptimizerHook(Hook):
                                          runner.outputs['num_samples'])
         runner.optimizer.step()
 
-    def find_nograd_parameters(self, runner):
-        logger = runner.logger
-        for n, p in runner.model.named_parameters():
-            if p.requires_grad and p.grad is None:
-                logger.info(f'{n} with shape {p.size()} does '
-                            f'not produce loss, which '
-                            f'will cause dead lock in DDP \n')
-
-    def find_unused_parameters(self, loss, runner):
+    def detect_anomalous_parameters(self, loss, runner):
         logger = runner.logger
         parameters_in_graph = set()
         visited = set()
@@ -92,11 +84,8 @@ class OptimizerHook(Hook):
         traverse(loss.grad_fn)
         for n, p in runner.model.named_parameters():
             if p not in parameters_in_graph and p.requires_grad:
-                logger.info(f'{n} with shape {p.size()} does not '
-                            f'be used in forward pass, if you are '
-                            f'sure there is no problem, you can set '
-                            f'`find_unused_parameters` '
-                            f'in `DistributedDataParallel` \n')
+                logger.info(f'{n} with shape {p.size()} is not '
+                            f'in the computational graph \n')
 
 
 @HOOKS.register_module()
