@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.ops import box_iou_rotated
+
 
 class TestBoxIoURotated(object):
 
@@ -47,7 +49,6 @@ class TestBoxIoURotated(object):
     @pytest.mark.parametrize('mode', ['iou', 'iof'])
     @pytest.mark.parametrize('aligned', [False, True])
     def test_box_iou_rotated(self, device, mode, aligned):
-        from mmcv.ops import box_iou_rotated
         boxes1 = torch.from_numpy(self.np_boxes1)
         boxes2 = torch.from_numpy(self.np_boxes2)
         if device == 'cuda':

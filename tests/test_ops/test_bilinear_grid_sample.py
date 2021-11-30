@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+
+from mmcv.ops.point_sample import bilinear_grid_sample
 
 
 class TestBilinearGridSample(object):
@@ -12,11 +13,10 @@ class TestBilinearGridSample(object):
                                    align_corners=False,
                                    multiplier=1,
                                    precision=1e-3):
-        from mmcv.ops.point_sample import bilinear_grid_sample
-
         input = torch.rand(1, 1, 20, 20, dtype=dtype)
         grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
-        grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+        grid = F.affine_grid(
+            grid, (1, 1, 15, 15), align_corners=align_corners).type_as(input)
         grid *= multiplier
 
         out = bilinear_grid_sample(input, grid, align_corners=align_corners)

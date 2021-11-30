@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 
@@ -31,7 +32,6 @@ class TestFPS(object):
         idx = furthest_point_sample_with_dist(xyz_square_dist, 3)
         assert torch.all(idx == self.expected_idx)
 
-        import numpy as np
         fps_idx = np.load('tests/data/for_3d_ops/fps_idx.npy')
         features_for_fps_distance = np.load(
             'tests/data/for_3d_ops/features_for_fps_distance.npy')

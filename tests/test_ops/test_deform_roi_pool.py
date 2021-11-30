@@ -49,10 +49,10 @@ class TestDeformRoIPool(object):
             'modulated': ModulatedDeformRoIPoolPack
         }
 
+    @pytest.mark.skipif(
+        not torch.cuda.is_available(), reason='requires CUDA support')
     @pytest.mark.parametrize('mode', ['plain', 'modulated'])
     def test_deform_roi_pool_gradcheck(self, mode):
-        if not torch.cuda.is_available():
-            return
         for case in inputs:
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
