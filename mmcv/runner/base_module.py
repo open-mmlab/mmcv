@@ -193,3 +193,17 @@ class ModuleList(BaseModule, nn.ModuleList):
     def __init__(self, modules=None, init_cfg=None):
         BaseModule.__init__(self, init_cfg)
         nn.ModuleList.__init__(self, modules)
+        
+        
+class ModuleDict(BaseModule, nn.ModuleDict):
+    """ModuleDict in openmmlab.
+
+    Args:
+        modules (dict, optional): an dict of modules to add.
+        init_cfg (dict, optional): Initialization config dict.
+    """
+    
+    def __init__(self, modules=None, init_cfg=None):
+        BaseModule.__init__(self, init_cfg)
+        nn.ModuleDict.__init__(self, modules)
+        
