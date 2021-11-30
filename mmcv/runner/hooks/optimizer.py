@@ -24,6 +24,7 @@ class OptimizerHook(Hook):
 
     Args:
         grad_clip (dict): A config dict to control the clip_grad.
+            Default: None.
         detect_anomalous_params (bool):  Detect anomalous parameters
             of the model. Such as
 
@@ -31,9 +32,10 @@ class OptimizerHook(Hook):
                   forward pass.
                 - Parameters were not used to produce
                   loss.
+            Default: False.
     """
 
-    def __init__(self, grad_clip=None, detect_anomalous_params=True):
+    def __init__(self, grad_clip=None, detect_anomalous_params=False):
 
         self.grad_clip = grad_clip
         self.detect_anomalous_params = detect_anomalous_params
@@ -92,9 +94,9 @@ class OptimizerHook(Hook):
             if p not in parameters_in_graph and p.requires_grad:
                 logger.info(f'{n} with shape {p.size()} does not '
                             f'be used in forward pass, if you are '
-                            f'sure there is no problem, you can set'
+                            f'sure there is no problem, you can set '
                             f'`find_unused_parameters` '
-                            f"in `DistributedDataParallel`  ' \n")
+                            f'in `DistributedDataParallel` \n')
 
 
 @HOOKS.register_module()
