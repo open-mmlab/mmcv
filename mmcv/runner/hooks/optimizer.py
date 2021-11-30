@@ -20,9 +20,23 @@ except ImportError:
 
 @HOOKS.register_module()
 class OptimizerHook(Hook):
+    """A hook contains custom operations for the optimizer.
 
-    def __init__(self, grad_clip=None):
+    Args:
+        grad_clip (dict): A config dict to control the clip_grad.
+        detect_anomalous_params (bool):  Detect anomalous parameters
+            of the model. Such as
+
+                - Parameters were not used during
+                  forward pass.
+                - Parameters were not used to produce
+                  loss.
+    """
+
+    def __init__(self, grad_clip=None, detect_anomalous_params=True):
+
         self.grad_clip = grad_clip
+        self.detect_anomalous_params = detect_anomalous_params
 
     def clip_grads(self, params):
         params = list(
@@ -32,7 +46,12 @@ class OptimizerHook(Hook):
 
     def after_train_iter(self, runner):
         runner.optimizer.zero_grad()
+        if self.detect_anomalous_params:
+            self.find_unused_parameters(runner.outputs['loss'], runner)
         runner.outputs['loss'].backward()
+        if self.detect_anomalous_params:
+            self.find_nograd_parameters(runner)
+
         if self.grad_clip is not None:
             grad_norm = self.clip_grads(runner.model.parameters())
             if grad_norm is not None:
@@ -40,6 +59,42 @@ class OptimizerHook(Hook):
                 runner.log_buffer.update({'grad_norm': float(grad_norm)},
                                          runner.outputs['num_samples'])
         runner.optimizer.step()
+
+    def find_nograd_parameters(self, runner):
+        logger = runner.logger
+        for n, p in runner.model.named_parameters():
+            if p.requires_grad and p.grad is None:
+                logger.info(f'{n} with shape {p.size()} does '
+                            f'not produce loss, which '
+                            f'will cause dead lock in DDP \n')
+
+    def find_unused_parameters(self, loss, runner):
+        logger = runner.logger
+        parameters_in_graph = set()
+        visited = set()
+
+        def traverse(op):
+            if op not in visited:
+                visited.add(op)
+            else:
+                return
+            if hasattr(op, 'variable'):
+                parameters_in_graph.add(op.variable)
+            if op is not None:
+                parents = op.next_functions
+                if parents is not None:
+                    for parent in parents:
+                        op = parent[0]
+                        traverse(op)
+
+        traverse(loss.grad_fn)
+        for n, p in runner.model.named_parameters():
+            if p not in parameters_in_graph and p.requires_grad:
+                logger.info(f'{n} with shape {p.size()} does not '
+                            f'be used in forward pass, if you are '
+                            f'sure there is no problem, you can set'
+                            f'`find_unused_parameters` '
+                            f"in `DistributedDataParallel`  ' \n")
 
 
 @HOOKS.register_module()
