@@ -65,13 +65,16 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     dataset = data_loader.dataset
     rank, world_size = get_dist_info()
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
-    for i, data in enumerate(data_loader):
-        with torch.no_grad():
-            result = model(return_loss=False, **data)
-        results.extend(result)
-    if rank == 0:
-        with mmcv.ProgressBar(len(dataset)) as pb:
-            for result in results:
+    # The test and progress bar are coupled, so we instantiate progress bar
+    # for all process. But we hope progress bar only displays on the master
+    # process, so we use `start=(rank == 0)`.
+    with mmcv.ProgressBar(len(dataset), start=(rank == 0)) as pb:
+        for i, data in enumerate(data_loader):
+            with torch.no_grad():
+                result = model(return_loss=False, **data)
+            results.extend(result)
+
+            if rank == 0:
                 batch_size = len(result)
                 batch_size_all = batch_size * world_size
                 if batch_size_all + pb.completed > len(dataset):
