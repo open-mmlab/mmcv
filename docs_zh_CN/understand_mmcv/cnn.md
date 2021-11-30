@@ -362,7 +362,7 @@ conv = ConvModule(
     `Sequential` 继承自 `BaseModule` 和 `torch.nn.Sequential`
 
     `ModuleList` 继承自 `BaseModule` 和 `torch.nn.ModuleList`
-    
+
     `ModuleDict` 继承自 `BaseModule` 和 `torch.nn.ModuleDict`
 
     `````python

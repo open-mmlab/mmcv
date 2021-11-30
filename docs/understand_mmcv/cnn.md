@@ -373,7 +373,7 @@ Let us introduce the usage of `initialize` in detail.
     `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
 
     `ModuleList` is inherited from `BaseModule` and `torch.nn.ModuleList`.
-    
+
     `ModuleDict` is inherited from `BaseModule` and `torch.nn.ModuleDict`.
 
     `````python
