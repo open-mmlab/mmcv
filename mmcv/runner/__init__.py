@@ -42,6 +42,6 @@ __all__ = [
     'SyncBuffersHook', 'EMAHook', 'build_runner', 'RUNNERS', 'allreduce_grads',
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
-    'ModuleList', 'GradientCumulativeOptimizerHook',
+    'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
     'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor'
 ]
