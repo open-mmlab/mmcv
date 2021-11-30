@@ -82,10 +82,11 @@ jobs:
             python -m coverage run --branch --source mmcv -m pytest tests/
             python -m coverage xml
             python -m coverage report -m
+
   build_cu102:
     machine:
       image: ubuntu-1604-cuda-10.1:201909-23  # the actual version of cuda is 10.2
-    resource_class: gpu.nvidia.medium
+    resource_class: gpu.nvidia.small
     steps:
       - checkout
       - run:
