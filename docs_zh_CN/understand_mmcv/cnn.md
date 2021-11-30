@@ -355,17 +355,19 @@ conv = ConvModule(
     initialize(model, init_cfg)
     ```
 
-4. 初始化继承自BaseModule、Sequential、ModuleList的模型
+4. 初始化继承自BaseModule、Sequential、ModuleList、ModuleDict的模型
 
     `BaseModule` 继承自 `torch.nn.Module`, 它们之间唯一的不同是 `BaseModule` 实现了 `init_weight`
 
     `Sequential` 继承自 `BaseModule` 和 `torch.nn.Sequential`
 
     `ModuleList` 继承自 `BaseModule` 和 `torch.nn.ModuleList`
+    
+    `ModuleDict` 继承自 `BaseModule` 和 `torch.nn.ModuleDict`
 
     `````python
     import torch.nn as nn
-    from mmcv.runner import BaseModule, Sequential, ModuleList
+    from mmcv.runner import BaseModule, Sequential, ModuleList, ModuleDict
 
     class FooConv1d(BaseModule):
 
