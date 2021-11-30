@@ -366,17 +366,19 @@ Let us introduce the usage of `initialize` in detail.
     initialize(model, init_cfg)
     ```
 
-4. Initialize model inherited from BaseModule, Sequential, ModuleList
+4. Initialize model inherited from BaseModule, Sequential, ModuleList, ModuleDict
 
     `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
 
     `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
 
     `ModuleList` is inherited from `BaseModule` and `torch.nn.ModuleList`.
+    
+    `ModuleDict` is inherited from `BaseModule` and `torch.nn.ModuleDict`.
 
     `````python
     import torch.nn as nn
-    from mmcv.runner import BaseModule, Sequential, ModuleList
+    from mmcv.runner import BaseModule, Sequential, ModuleList, ModuleDict
 
     class FooConv1d(BaseModule):
 
