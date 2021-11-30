@@ -67,19 +67,20 @@ class OptimizerHook(Hook):
         parameters_in_graph = set()
         visited = set()
 
-        def traverse(op):
-            if op not in visited:
-                visited.add(op)
+        def traverse(grad_fn):
+            if grad_fn is None:
+                return
+            if grad_fn not in visited:
+                visited.add(grad_fn)
             else:
                 return
-            if hasattr(op, 'variable'):
-                parameters_in_graph.add(op.variable)
-            if op is not None:
-                parents = op.next_functions
-                if parents is not None:
-                    for parent in parents:
-                        op = parent[0]
-                        traverse(op)
+            if hasattr(grad_fn, 'variable'):
+                parameters_in_graph.add(grad_fn.variable)
+            parents = grad_fn.next_functions
+            if parents is not None:
+                for parent in parents:
+                    grad_fn = parent[0]
+                    traverse(grad_fn)
 
         traverse(loss.grad_fn)
         for n, p in runner.model.named_parameters():
