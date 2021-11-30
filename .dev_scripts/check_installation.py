@@ -20,13 +20,16 @@ def check_installation():
 
     # test mmcv-full with CPU ops
     box_iou_rotated(boxes1, boxes2)
+    print('CPU ops were compiled successfully.')
 
     # test mmcv-full with both CPU and CUDA ops
     if torch.cuda.is_available():
         boxes1 = boxes1.cuda()
         boxes2 = boxes2.cuda()
-
         box_iou_rotated(boxes1, boxes2)
+        print('CUDA ops were compiled successfully.')
+    else:
+        print('No CUDA runtime is found, skipping the checking of CUDA ops.')
 
 
 if __name__ == '__main__':
@@ -37,4 +40,5 @@ if __name__ == '__main__':
     env_info_dict = collect_env()
     env_info = '\n'.join([(f'{k}: {v}') for k, v in env_info_dict.items()])
     dash_line = '-' * 60 + '\n'
-    print('Environment info:\n' + dash_line + env_info + '\n' + dash_line)
+    print('Environment information:')
+    print(dash_line + env_info + '\n' + dash_line)
