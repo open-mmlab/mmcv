@@ -229,7 +229,7 @@ class Config:
             if 'reference' in deprecation_info:
                 warning_msg += ' More information can be found at ' \
                     f'{deprecation_info["reference"]}'
-            warnings.warn(warning_msg)
+            warnings.warn(warning_msg, DeprecationWarning)
 
         cfg_text = filename + '\n'
         with open(filename, 'r', encoding='utf-8') as f:

@@ -197,7 +197,7 @@ class FusedBiasLeakyReLU(nn.Module):
     the variance of the feature map or gradients unchanged, they also adopt a
     scale similarly with Kaiming initialization. However, since the
     :math:`1+{alpha}^2` is too small, we can just ignore it. Therefore, the
-    final scale is just :math:`\sqrt{2}`. Of course, you may change it with # noqa: W605, E501
+    final scale is just :math:`\\sqrt{2}`. Of course, you may change it with # noqa: W605, E501
     your own scale.
 
     TODO: Implement the CPU version.
@@ -232,7 +232,7 @@ def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
     the variance of the feature map or gradients unchanged, they also adopt a
     scale similarly with Kaiming initialization. However, since the
     :math:`1+{alpha}^2` is too small, we can just ignore it. Therefore, the
-    final scale is just :math:`\sqrt{2}`. Of course, you may change it with # noqa: W605, E501
+    final scale is just :math:`\\sqrt{2}`. Of course, you may change it with # noqa: W605, E501
     your own scale.
 
     Args:
