@@ -227,10 +227,10 @@ def get_extensions():
 
         # Before PyTorch1.8.0, when compiling CUDA code, `cxx` is a
         # required key passed to PyTorch. Even if there is no flag passed
-        # to cxx, user also need to pass an empty list to PyTorch.
-        # Since PyTorch1.8.0, it has a default value so user do no need
+        # to cxx, users also need to pass an empty list to PyTorch.
+        # Since PyTorch1.8.0, it has a default value so users do not need
         # to pass an empty list anymore.
-        # More datails at https://github.com/pytorch/pytorch/pull/45956
+        # More details at https://github.com/pytorch/pytorch/pull/45956
         extra_compile_args = {'cxx': []}
 
         # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
