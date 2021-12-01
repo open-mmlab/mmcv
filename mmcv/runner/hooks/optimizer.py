@@ -26,7 +26,7 @@ class OptimizerHook(Hook):
         grad_clip (dict): A config dict to control the clip_grad.
             Default: None.
         detect_anomalous_params (bool):  Detect anomalous parameters
-            of the model which is not included in
+            of the model which are not included in
             the computational graph with `loss` as the root.
             There are two cases
 
