@@ -88,7 +88,7 @@ def test_optimizerhook():
         def __init__(self):
             self.msg = ''
 
-        def info(self, msg):
+        def log(self, msg=None, **kwargs):
             self.msg += msg
 
     dummy_runner.logger = DummyLogger()

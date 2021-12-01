@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import logging
 from collections import defaultdict
 from itertools import chain
 
@@ -83,8 +84,10 @@ class OptimizerHook(Hook):
         traverse(loss.grad_fn)
         for n, p in runner.model.named_parameters():
             if p not in parameters_in_graph and p.requires_grad:
-                logger.info(f'{n} with shape {p.size()} is not '
-                            f'in the computational graph \n')
+                logger.log(
+                    level=logging.ERROR,
+                    msg=f'{n} with shape {p.size()} is not '
+                    f'in the computational graph \n')
 
 
 @HOOKS.register_module()
