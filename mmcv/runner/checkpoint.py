@@ -336,7 +336,7 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
         backend (str, optional): The storage backend type. Options are 'ceph',
-            'petrel'. Default: 'petrel'.
+            'petrel', 'aws'. Default: 'petrel'.
 
     .. warning::
         :class:`mmcv.fileio.file_client.CephBackend` will be deprecated,
@@ -345,7 +345,7 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    allowed_backends = ['ceph', 'petrel']
+    allowed_backends = ['ceph', 'petrel', 'aws']
     if backend not in allowed_backends:
         raise ValueError(f'Load from Backend {backend} is not supported.')
 
@@ -353,14 +353,12 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         warnings.warn(
             'CephBackend will be deprecated, please use PetrelBackend instead')
 
-    # CephClient and PetrelBackend have the same prefix 's3://' and the latter
-    # will be chosen as default. If PetrelBackend can not be instantiated
-    # successfully, the CephClient will be chosen.
     try:
+        # Use the default backend first
         file_client = FileClient(backend=backend)
     except ImportError:
-        allowed_backends.remove(backend)
-        file_client = FileClient(backend=allowed_backends[0])
+        # Use the prefix to auto select the installed client.
+        file_client = FileClient(prefix='s3')
 
     with io.BytesIO(file_client.get(filename)) as buffer:
         checkpoint = torch.load(buffer, map_location=map_location)
@@ -685,8 +683,7 @@ def save_checkpoint(model,
                 'file_client_args should be "None" if filename starts with'
                 f'"pavi://", but got {file_client_args}')
         try:
-            from pavi import modelcloud
-            from pavi import exception
+            from pavi import exception, modelcloud
         except ImportError:
             raise ImportError(
                 'Please install pavi to load checkpoint from modelcloud.')
