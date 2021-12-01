@@ -228,7 +228,7 @@ class PatchEmbed(BaseModule):
             input_size = to_2tuple(input_size)
             # `init_out_size` would be used outside to
             # calculate the num_patches
-            # when `use_abs_pos_embed` outside
+            # e.g. when `use_abs_pos_embed` outside
             self.init_input_size = input_size
             if self.adap_padding:
                 pad_h, pad_w = self.adap_padding.get_pad_shape(input_size)
@@ -275,7 +275,8 @@ class PatchMerging(BaseModule):
     """Merge patch feature map.
 
     This layer groups feature map by kernel_size, and applies norm and linear
-    layers to the grouped feature map. Our implementation uses `nn.Unfold` to
+    layers to the grouped feature map ((used in SwinTransformer)).
+    Our implementation uses `nn.Unfold` to
     merge patch, which is about 25% faster than original implementation.
     Instead, we need to modify pretrained models for compatibility.
 
@@ -374,15 +375,15 @@ class PatchMerging(BaseModule):
         assert L == H * W, 'input feature has wrong size'
 
         x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
-        # Use nn.Unfold to merge patch. About 25% faster than original method,
-        # but need to modify pretrained model for compatibility
 
         if self.adap_padding:
             x = self.adap_padding(x)
             H, W = x.shape[-2:]
 
-        x = self.sampler(x)
+        # Use nn.Unfold to merge patch. About 25% faster than original method,
+        # but need to modify pretrained model for compatibility
         # if kernel_size=2 and stride=2, x should has shape (B, 4*C, H/2*W/2)
+        x = self.sampler(x)
 
         out_h = (H + 2 * self.sampler.padding[0] - self.sampler.dilation[0] *
                  (self.sampler.kernel_size[0] - 1) -
