@@ -289,51 +289,60 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     Returns:
         tuple: kept dets and indice.
     """
-    nms_cfg_ = nms_cfg.copy()
-    class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
-    if class_agnostic:
-        boxes_for_nms = boxes
+    # skip nms when nms_cfg is None
+    if nms_cfg is not None:
+        nms_cfg_ = nms_cfg.copy()
+        class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
+        if class_agnostic:
+            boxes_for_nms = boxes
+        else:
+            max_coordinate = boxes.max()
+            offsets = idxs.to(boxes) * (
+                max_coordinate + torch.tensor(1).to(boxes))
+            boxes_for_nms = boxes + offsets[:, None]
+
+        nms_type = nms_cfg_.pop('type', 'nms')
+        nms_op = eval(nms_type)
+
+        split_thr = nms_cfg_.pop('split_thr', 10000)
+        # Won't split to multiple nms nodes when exporting to onnx
+        if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export(
+        ):
+            dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
+            boxes = boxes[keep]
+            # -1 indexing works abnormal in TensorRT
+            # This assumes `dets` has 5 dimensions where
+            # the last dimension is score.
+            # TODO: more elegant way to handle the dimension issue.
+            # Some type of nms would reweight the score, such as SoftNMS
+            scores = dets[:, 4]
+        else:
+            max_num = nms_cfg_.pop('max_num', -1)
+            total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
+            # Some type of nms would reweight the score, such as SoftNMS
+            scores_after_nms = scores.new_zeros(scores.size())
+            for id in torch.unique(idxs):
+                mask = (idxs == id).nonzero(as_tuple=False).view(-1)
+                dets, keep = nms_op(boxes_for_nms[mask], scores[mask],
+                                    **nms_cfg_)
+                total_mask[mask[keep]] = True
+                scores_after_nms[mask[keep]] = dets[:, -1]
+            keep = total_mask.nonzero(as_tuple=False).view(-1)
+
+            scores, inds = scores_after_nms[keep].sort(descending=True)
+            keep = keep[inds]
+            boxes = boxes[keep]
+
+            if max_num > 0:
+                keep = keep[:max_num]
+                boxes = boxes[:max_num]
+                scores = scores[:max_num]
+
+        return torch.cat([boxes, scores[:, None]], -1), keep
     else:
-        max_coordinate = boxes.max()
-        offsets = idxs.to(boxes) * (max_coordinate + torch.tensor(1).to(boxes))
-        boxes_for_nms = boxes + offsets[:, None]
-
-    nms_type = nms_cfg_.pop('type', 'nms')
-    nms_op = eval(nms_type)
-
-    split_thr = nms_cfg_.pop('split_thr', 10000)
-    # Won't split to multiple nms nodes when exporting to onnx
-    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
-        dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
-        boxes = boxes[keep]
-        # -1 indexing works abnormal in TensorRT
-        # This assumes `dets` has 5 dimensions where
-        # the last dimension is score.
-        # TODO: more elegant way to handle the dimension issue.
-        # Some type of nms would reweight the score, such as SoftNMS
-        scores = dets[:, 4]
-    else:
-        max_num = nms_cfg_.pop('max_num', -1)
-        total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
-        # Some type of nms would reweight the score, such as SoftNMS
-        scores_after_nms = scores.new_zeros(scores.size())
-        for id in torch.unique(idxs):
-            mask = (idxs == id).nonzero(as_tuple=False).view(-1)
-            dets, keep = nms_op(boxes_for_nms[mask], scores[mask], **nms_cfg_)
-            total_mask[mask[keep]] = True
-            scores_after_nms[mask[keep]] = dets[:, -1]
-        keep = total_mask.nonzero(as_tuple=False).view(-1)
-
-        scores, inds = scores_after_nms[keep].sort(descending=True)
-        keep = keep[inds]
-        boxes = boxes[keep]
-
-        if max_num > 0:
-            keep = keep[:max_num]
-            boxes = boxes[:max_num]
-            scores = scores[:max_num]
-
-    return torch.cat([boxes, scores[:, None]], -1), keep
+        scores, inds = scores.sort(descending=True)
+        boxes = boxes[inds]
+        return torch.cat([boxes, scores[:, None]], -1), inds
 
 
 def nms_match(dets, iou_threshold):
