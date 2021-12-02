@@ -496,6 +496,49 @@ Let us introduce the usage of `initialize` in detail.
     #          [[2., 2., 2.],
     #           [2., 2., 2.],
     #           [2., 2., 2.]]]], requires_grad=True)
+
+    # ModuleDict
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    modeldict = ModuleDict(dict(model1=model1, model2=model2))
+    modeldict.init_weights()
+    # modeldict['model1'].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modeldict['model2'].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
+
+    # inner init_cfg has higher priority
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+    modeldict = ModuleDict(dict(model1=model1, model2=model2), init_cfg=init_cfg)
+    modeldict.init_weights()
+    # modeldict['model1'].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modeldict['model2'].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
     `````
 
 ### Model Zoo
