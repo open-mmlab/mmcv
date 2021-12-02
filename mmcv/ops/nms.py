@@ -290,7 +290,11 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         tuple: kept dets and indice.
     """
     # skip nms when nms_cfg is None
-    if nms_cfg is not None:
+    if nms_cfg is None:
+        scores, inds = scores.sort(descending=True)
+        boxes = boxes[inds]
+        return torch.cat([boxes, scores[:, None]], -1), inds
+    else:
         nms_cfg_ = nms_cfg.copy()
         class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
         if class_agnostic:
@@ -339,10 +343,6 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
                 scores = scores[:max_num]
 
         return torch.cat([boxes, scores[:, None]], -1), keep
-    else:
-        scores, inds = scores.sort(descending=True)
-        boxes = boxes[inds]
-        return torch.cat([boxes, scores[:, None]], -1), inds
 
 
 def nms_match(dets, iou_threshold):
