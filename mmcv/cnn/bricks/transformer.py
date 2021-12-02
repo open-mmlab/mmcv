@@ -275,7 +275,7 @@ class PatchMerging(BaseModule):
     """Merge patch feature map.
 
     This layer groups feature map by kernel_size, and applies norm and linear
-    layers to the grouped feature map ((used in SwinTransformer)).
+    layers to the grouped feature map ((used in Swin Transformer)).
     Our implementation uses `nn.Unfold` to
     merge patch, which is about 25% faster than original implementation.
     Instead, we need to modify pretrained models for compatibility.
