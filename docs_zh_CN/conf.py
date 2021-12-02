@@ -103,7 +103,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -111,47 +110,66 @@ html_theme_options = {
         },
         {
             'name':
-            '算法库',
+            '文档',
             'children': [
                 {
+                    'name': 'MMCV',
+                    'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MIM',
+                    'url': 'https://openmim.readthedocs.io/en/latest/'
+                },
+                {
                     'name': 'MMAction2',
-                    'url': 'https://github.com/open-mmlab/mmaction2',
+                    'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMClassification',
-                    'url': 'https://github.com/open-mmlab/mmclassification',
+                    'url':
+                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection',
-                    'url': 'https://github.com/open-mmlab/mmdetection',
+                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection3D',
-                    'url': 'https://github.com/open-mmlab/mmdetection3d',
+                    'url':
+                    'https://mmdetection3d.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMEditing',
-                    'url': 'https://github.com/open-mmlab/mmediting',
+                    'url': 'https://mmediting.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMGeneration',
-                    'url': 'https://github.com/open-mmlab/mmgeneration',
+                    'url': 'https://mmgeneration.readthedocs.io/en/latest/',
                 },
                 {
                     'name': 'MMOCR',
-                    'url': 'https://github.com/open-mmlab/mmocr',
+                    'url': 'https://mmocr.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMPose',
-                    'url': 'https://github.com/open-mmlab/mmpose',
+                    'url': 'https://mmpose.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMSegmentation',
-                    'url': 'https://github.com/open-mmlab/mmsegmentation',
+                    'url':
+                    'https://mmsegmentation.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMTracking',
-                    'url': 'https://github.com/open-mmlab/mmtracking',
+                    'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMFlow',
+                    'url': 'https://mmflow.readthedocs.io/en/latest/',
+                },
+                {
+                    'name': 'MMFewShot',
+                    'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
                 },
             ]
         },
@@ -160,7 +178,7 @@ html_theme_options = {
             'OpenMMLab',
             'children': [
                 {
-                    'name': '官网',
+                    'name': '主页',
                     'url': 'https://openmmlab.com/'
                 },
                 {

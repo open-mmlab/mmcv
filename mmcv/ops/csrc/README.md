@@ -12,6 +12,7 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── parrots_cuda_helper.hpp
 │   ├── pytorch_cpp_helper.hpp
 │   ├── pytorch_cuda_helper.hpp
+│   ├── pytorch_device_registry.hpp
 │   └── cuda
 │       ├── common_cuda_helper.hpp
 │       ├── parrots_cudawarpfunction.cuh
@@ -37,9 +38,12 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── pybind.cpp
 │   ├── ...
 │   ├── ops.cpp
-│   └── cuda
+│   ├── cuda
+│   │   ├── ...
+│   │   └── ops_cuda.cu
+│   └── cpu
 │       ├── ...
-│       └── ops_cuda.cu
+│       └── ops.cpp
 └── tensorrt
     ├── trt_cuda_helper.cuh
     ├── trt_plugin_helper.hpp
@@ -64,6 +68,7 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 - `parrots`: **Parrots** is a deep learning frame for model training and inference. Parrots custom ops are placed in this directory.
 - `pytorch`: **PyTorch** custom ops are supported by binding C++ to Python with **pybind11**. The ops implementation and binding codes are placed in this directory.
   - `cuda`: This directory contains cuda kernel launchers, which feed memory pointers of tensor to the cuda kernel in `common/cuda`. The launchers provide c++ interface of cuda implementation of corresponding custom ops.
+  - `cpu`: This directory contain cpu implementations of corresponding custom ops.
 - `tensorrt`: **TensorRT** support for custom ops.
   - `plugins`: This directory contains the implementation of the supported custom ops. Some ops might also use shared cuda kernel in `common/cuda`.
 
@@ -102,42 +107,38 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
     }
     ```
 
-2. Add ops implementation in `pytorch` directory. Select different implementations according to device type.
+2. Register implementation for different devices.
 
     ```c++
-    // src/pytorch/new_ops.cpp
-    #ifdef MMCV_WITH_CUDA
+    // src/pytorch/cuda/cudabind.cpp
+    ...
+
     Tensor new_ops_forward_cuda(Tensor input, Tensor output, ...){
         // implement cuda forward here
         // use `NewOpsForwardCUDAKernelLauncher` here
     }
-    #else
+    // declare interface here.
+    Tensor new_ops_forward_impl(Tensor input, Tensor output, ...);
+    // register the implementation for given device (CUDA here).
+    REGISTER_DEVICE_IMPL(new_ops_forward_impl, CUDA, new_ops_forward_cuda);
+    ```
 
-    Tensor new_ops_forward_cpu(Tensor input, Tensor output, ...){
-        // implement cpu forward here
+3. Add ops implementation in `pytorch` directory. Select different implementations according to device type.
+
+    ```c++
+    // src/pytorch/new_ops.cpp
+    Tensor new_ops_forward_impl(Tensor input, Tensor output, ...){
+        // dispatch the implementation according to the device type of input.
+        DISPATCH_DEVICE_IMPL(new_ops_forward_impl, input, output, ...);
     }
-
     ...
 
     Tensor new_ops_forward(Tensor input, Tensor output, ...){
-        // select implementation by input device type
-        if (boxes.device().is_cuda()) {
-        #ifdef MMCV_WITH_CUDA
-            CHECK_CUDA_INPUT(input);
-            CHECK_CUDA_INPUT(output);
-            return new_ops_forward_cuda(input, output, ...);
-        #else
-            AT_ERROR("new ops is not compiled with GPU support");
-        #endif
-        } else {
-            CHECK_CPU_INPUT(input);
-            CHECK_CPU_INPUT(output);
-            return new_ops_forward_cpu(input, output, ...);
-        }
+        return new_ops_forward_impl(input, output, ...);
     }
     ```
 
-3. Binding the implementation in `pytorch/pybind.cpp`
+4. Binding the implementation in `pytorch/pybind.cpp`
 
     ```c++
     // src/pytorch/pybind.cpp
@@ -156,7 +157,7 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 
     ```
 
-4. Build MMCV again. Enjoy new ops in python
+5. Build MMCV again. Enjoy new ops in python
 
     ```python
     from ..utils import ext_loader

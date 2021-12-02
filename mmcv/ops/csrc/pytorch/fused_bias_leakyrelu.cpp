@@ -100,25 +100,20 @@ THE POSSIBILITY OF SUCH DAMAGES.
 */
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
-torch::Tensor fused_bias_leakyrelu_op(const torch::Tensor& input,
-                                      const torch::Tensor& bias,
-                                      const torch::Tensor& refer, int act,
-                                      int grad, float alpha, float scale);
-
-#endif
+torch::Tensor fused_bias_leakyrelu_op_impl(const torch::Tensor& input,
+                                           const torch::Tensor& bias,
+                                           const torch::Tensor& refer, int act,
+                                           int grad, float alpha, float scale) {
+  return DISPATCH_DEVICE_IMPL(fused_bias_leakyrelu_op_impl, input, bias, refer,
+                              act, grad, alpha, scale);
+}
 
 torch::Tensor fused_bias_leakyrelu(const torch::Tensor& input,
                                    const torch::Tensor& bias,
                                    const torch::Tensor& refer, int act,
                                    int grad, float alpha, float scale) {
-#ifdef MMCV_WITH_CUDA
-  CHECK_CUDA(input);
-  CHECK_CUDA(bias);
-
-  return fused_bias_leakyrelu_op(input, bias, refer, act, grad, alpha, scale);
-#else
-  AT_ERROR("Fused bias leakyrelu is not compiled with GPU support");
-#endif
+  return fused_bias_leakyrelu_op_impl(input, bias, refer, act, grad, alpha,
+                                      scale);
 }

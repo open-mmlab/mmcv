@@ -7,8 +7,8 @@
 void box_iou_rotated_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned) {
   using scalar_t = float;
-  AT_ASSERTM(boxes1.type().is_cuda(), "boxes1 must be a CUDA tensor");
-  AT_ASSERTM(boxes2.type().is_cuda(), "boxes2 must be a CUDA tensor");
+  AT_ASSERTM(boxes1.is_cuda(), "boxes1 must be a CUDA tensor");
+  AT_ASSERTM(boxes2.is_cuda(), "boxes2 must be a CUDA tensor");
 
   int output_size = ious.numel();
   int num_boxes1 = boxes1.size(0);

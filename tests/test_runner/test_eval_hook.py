@@ -126,9 +126,34 @@ def test_eval_hook():
 
     with pytest.raises(KeyError):
         # rule must be in keys of rule_map
-        test_dataset = Model()
+        test_dataset = ExampleDataset()
         data_loader = DataLoader(test_dataset)
         EvalHook(data_loader, save_best='auto', rule='unsupport')
+
+    # if eval_res is an empty dict, print a warning information
+    with pytest.warns(UserWarning) as record_warnings:
+
+        class _EvalDataset(ExampleDataset):
+
+            def evaluate(self, results, logger=None):
+                return {}
+
+        test_dataset = _EvalDataset()
+        data_loader = DataLoader(test_dataset)
+        eval_hook = EvalHook(data_loader, save_best='auto')
+        runner = _build_epoch_runner()
+        runner.register_hook(eval_hook)
+        runner.run([data_loader], [('train', 1)], 1)
+    # Since there will be many warnings thrown, we just need to check if the
+    # expected exceptions are thrown
+    expected_message = ('Since `eval_res` is an empty dict, the behavior to '
+                        'save the best checkpoint will be skipped in this '
+                        'evaluation.')
+    for warning in record_warnings:
+        if str(warning.message) == expected_message:
+            break
+    else:
+        assert False
 
     test_dataset = ExampleDataset()
     loader = DataLoader(test_dataset)
@@ -450,7 +475,7 @@ def test_logger(runner, by_epoch, eval_hook_priority):
 
         path = osp.join(tmpdir, next(scandir(tmpdir, '.json')))
         with open(path) as fr:
-            fr.readline()  # skip first line which is hook_msg
+            fr.readline()  # skip the first line which is `hook_msg`
             train_log = json.loads(fr.readline())
             assert train_log['mode'] == 'train' and 'time' in train_log
             val_log = json.loads(fr.readline())

@@ -44,7 +44,7 @@ class PaviLoggerHook(LoggerHook):
 
         if not self.init_kwargs:
             self.init_kwargs = dict()
-        self.init_kwargs['task'] = self.run_name
+        self.init_kwargs['name'] = self.run_name
         self.init_kwargs['model'] = runner._model_name
         if runner.meta is not None:
             if 'config_dict' in runner.meta:
@@ -99,6 +99,9 @@ class PaviLoggerHook(LoggerHook):
                     tag=self.run_name,
                     snapshot_file_path=ckpt_path,
                     iteration=iteration)
+
+        # flush the buffer and send a task ending signal to Pavi
+        self.writer.close()
 
     @master_only
     def before_epoch(self, runner):
