@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 import tempfile
+from contextlib import contextmanager
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -20,7 +21,7 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.fileio.file_client import PetrelBackend
+from mmcv.fileio.file_client import FileClient, PetrelBackend
 from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          Fp16OptimizerHook,
                          GradientCumulativeFp16OptimizerHook,
@@ -35,8 +36,16 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
+
+@contextmanager
+def package_mock(*package_name):
+    try:
+        for name in package_name:
+            sys.modules[name] = MagicMock()
+        yield
+    finally:
+        for name in package_name:
+            del sys.modules[name]
 
 
 def test_checkpoint_hook(tmp_path):
@@ -57,9 +66,11 @@ def test_checkpoint_hook(tmp_path):
     runner = _build_demo_runner('EpochBasedRunner', max_epochs=4)
     runner.meta = dict()
     out_dir = 's3://user/data'
-    with patch.object(PetrelBackend, 'put') as mock_put, \
+    with package_mock('petrel_client', 'petrel_client.client'), \
+         patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile:
+        FileClient._instances = {}
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=True, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
@@ -88,9 +99,11 @@ def test_checkpoint_hook(tmp_path):
         'IterBasedRunner', max_iters=4, max_epochs=None)
     runner.meta = dict()
     out_dir = 's3://user/data'
-    with patch.object(PetrelBackend, 'put') as mock_put, \
+    with package_mock('petrel_client', 'petrel_client.client'), \
+         patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile:
+        FileClient._instances = {}
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=False, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)

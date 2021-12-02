@@ -13,11 +13,6 @@ import mmcv
 from mmcv import BaseStorageBackend, FileClient
 from mmcv.utils import has_method
 
-sys.modules['ceph'] = MagicMock()
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
-sys.modules['mc'] = MagicMock()
-
 
 @contextmanager
 def build_temporary_directory():
@@ -124,6 +119,21 @@ class TestFileClient:
         cls.img_path = cls.test_data_dir / 'color.jpg'
         cls.img_shape = (300, 400, 3)
         cls.text_path = cls.test_data_dir / 'filelist.txt'
+        # mock some uninstalled packages
+        sys.modules['ceph'] = MagicMock()
+        sys.modules['petrel_client'] = MagicMock()
+        sys.modules['petrel_client.client'] = MagicMock()
+        sys.modules['mc'] = MagicMock()
+
+    @classmethod
+    def teardown_class(cls):
+        # delete mocked packages, avoid to influence other unittest
+        del sys.modules['ceph']
+        del sys.modules['petrel_client']
+        del sys.modules['petrel_client.client']
+        del sys.modules['mc']
+        # clean instances avoid to influence other unittest
+        FileClient._instances = {}
 
     def test_error(self):
         with pytest.raises(ValueError):

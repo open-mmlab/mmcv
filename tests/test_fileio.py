@@ -13,12 +13,14 @@ from mmcv.fileio.file_client import AWSBackend, HTTPBackend, PetrelBackend
 
 
 @contextmanager
-def package_mock(package_name):
+def package_mock(*package_name):
     try:
-        sys.modules[package_name] = MagicMock()
+        for name in package_name:
+            sys.modules[name] = MagicMock()
         yield
     finally:
-        del sys.modules[package_name]
+        for name in package_name:
+            del sys.modules[name]
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):
@@ -36,9 +38,8 @@ def _test_handler(file_format, test_obj, str_checker, mode='r+'):
 
     # load/dump with filename from petrel
     method = 'put' if 'b' in mode else 'put_text'
-    with package_mock('petrel_client'), package_mock(
-            'petrel_client.client'), patch.object(
-                PetrelBackend, method, return_value=None) as mock_method:
+    with package_mock('petrel_client', 'petrel_client.client'), patch.object(
+            PetrelBackend, method, return_value=None) as mock_method:
         filename = 's3://path/of/your/file'
         mmcv.dump(test_obj, filename, file_format=file_format)
     mock_method.assert_called()
@@ -175,9 +176,8 @@ def test_list_from_file():
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
 
     # get list from petrel
-    with package_mock('petrel_client'), package_mock(
-            'petrel_client.client'), patch.object(
-                PetrelBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
+    with package_mock('petrel_client', 'petrel_client.client'), patch.object(
+            PetrelBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         filelist = mmcv.list_from_file(
@@ -190,9 +190,8 @@ def test_list_from_file():
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
 
     # get list from aws
-    with package_mock('boto3'), package_mock(
-            'botocore.exceptions'), patch.object(
-                AWSBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
+    with package_mock('boto3', 'botocore.exceptions'), patch.object(
+            AWSBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         filelist = mmcv.list_from_file(
@@ -227,11 +226,9 @@ def test_dict_from_file():
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 
     # get dict from petrel
-    with package_mock('petrel_client'), package_mock(
-            'petrel_client.client'), patch.object(
-                PetrelBackend,
-                'get_text',
-                return_value='1 cat\n2 dog cow\n3 panda'):
+    with package_mock('petrel_client', 'petrel_client.client'), patch.object(
+            PetrelBackend, 'get_text',
+            return_value='1 cat\n2 dog cow\n3 panda'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         mapping = mmcv.dict_from_file(
@@ -244,11 +241,8 @@ def test_dict_from_file():
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 
     # get dict from aws
-    with package_mock('boto3'), package_mock(
-            'botocore.exceptions'), patch.object(
-                AWSBackend,
-                'get_text',
-                return_value='1 cat\n2 dog cow\n3 panda'):
+    with package_mock('boto3', 'botocore.exceptions'), patch.object(
+            AWSBackend, 'get_text', return_value='1 cat\n2 dog cow\n3 panda'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         mapping = mmcv.dict_from_file(
