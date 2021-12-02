@@ -1,26 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import sys
 import tempfile
-from contextlib import contextmanager
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+from tests.pytest_util import package_mock
 
 import mmcv
 from mmcv.fileio.file_client import AWSBackend, HTTPBackend, PetrelBackend
-
-
-@contextmanager
-def package_mock(*package_name):
-    try:
-        for name in package_name:
-            sys.modules[name] = MagicMock()
-        yield
-    finally:
-        for name in package_name:
-            del sys.modules[name]
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):
@@ -253,7 +241,3 @@ def test_dict_from_file():
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
         mapping = mmcv.dict_from_file(filename)
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
-
-
-if __name__ == '__main__':
-    test_dict_from_file()

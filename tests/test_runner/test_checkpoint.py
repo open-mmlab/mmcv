@@ -1,6 +1,5 @@
 import sys
 from collections import OrderedDict
-from contextlib import contextmanager
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
@@ -8,6 +7,7 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tests.pytest_util import package_mock
 from torch.nn.parallel import DataParallel
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -15,17 +15,6 @@ from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
                                     load_from_pavi, save_checkpoint)
-
-
-@contextmanager
-def package_mock(*package_name):
-    try:
-        for name in package_name:
-            sys.modules[name] = MagicMock()
-        yield
-    finally:
-        for name in package_name:
-            del sys.modules[name]
 
 
 @MODULE_WRAPPERS.register_module()

@@ -12,12 +12,12 @@ import re
 import shutil
 import sys
 import tempfile
-from contextlib import contextmanager
 from unittest.mock import MagicMock, call, patch
 
 import pytest
 import torch
 import torch.nn as nn
+from tests.pytest_util import package_mock
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
@@ -35,17 +35,6 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
-
-
-@contextmanager
-def package_mock(*package_name):
-    try:
-        for name in package_name:
-            sys.modules[name] = MagicMock()
-        yield
-    finally:
-        for name in package_name:
-            del sys.modules[name]
 
 
 def test_checkpoint_hook(tmp_path):

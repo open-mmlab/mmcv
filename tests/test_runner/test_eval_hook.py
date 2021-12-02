@@ -1,16 +1,15 @@
 import json
 import os.path as osp
-import sys
 import tempfile
 import unittest.mock as mock
 from collections import OrderedDict
-from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tests.pytest_util import package_mock
 from torch.utils.data import DataLoader, Dataset
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -19,20 +18,6 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner import EvalHook as BaseEvalHook
 from mmcv.runner import IterBasedRunner
 from mmcv.utils import get_logger, scandir
-
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
-
-
-@contextmanager
-def package_mock(*package_name):
-    try:
-        for name in package_name:
-            sys.modules[name] = MagicMock()
-        yield
-    finally:
-        for name in package_name:
-            del sys.modules[name]
 
 
 class ExampleDataset(Dataset):

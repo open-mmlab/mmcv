@@ -435,7 +435,8 @@ class AWSBackend(BaseStorageBackend):
             import boto3
             from botocore.exceptions import ClientError
         except ImportError:
-            raise ImportError('Please install boto3 to enable AWSBackend.')
+            raise ImportError('Please install boto3 to enable AWSBackend '
+                              'by "pip install boto3".')
 
         self._client = boto3.client('s3')
         assert isinstance(path_mapping, dict) or path_mapping is None
@@ -482,11 +483,11 @@ class AWSBackend(BaseStorageBackend):
         """
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
-        parse_res = self.parse_bucket.findall(filepath)
+        parse_res = self.parse_bucket.match(filepath)
         if not parse_res:
             raise ValueError(
                 f"The input path '{filepath}' format is incorrect.")
-        bucket, obj_name = parse_res[0]
+        bucket, obj_name = parse_res.groups()
         return bucket, obj_name
 
     def _check_bucket(self, bucket: str) -> bool:
@@ -724,11 +725,11 @@ class AWSBackend(BaseStorageBackend):
         dir_path = self._format_path(dir_path)
         # If dir_path not contain object name, use the ``_parse_path`` method
         # will cause an error. eg. dir_path = 's3://bucket'
-        res = re.findall('s3://(.+)', dir_path)
+        res = re.match('s3://(.+)', dir_path)
         if not res:
             raise ValueError(
                 f"The input dir_path '{dir_path}' format is error")
-        dir_path = res[0]
+        dir_path = res.groups()[0]
         split_dir_path = dir_path.split('/')
         bucket = split_dir_path[0]
         dir_path = '/'.join(
