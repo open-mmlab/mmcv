@@ -340,9 +340,9 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
         return torch.cat([boxes, scores[:, None]], -1), keep
     else:
-        keep = torch.arange(
-            len(scores), device=scores.device, dtype=torch.int64)
-        return torch.cat([boxes, scores[:, None]], -1), keep
+        scores, inds = scores.sort(descending=True)
+        boxes = boxes[inds]
+        return torch.cat([boxes, scores[:, None]], -1), inds
 
 
 def nms_match(dets, iou_threshold):
