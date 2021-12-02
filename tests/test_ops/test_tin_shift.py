@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.ops import tin_shift
+
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -131,11 +133,6 @@ grads = [
 
 
 def _test_tinshift_gradcheck(dtype):
-    try:
-        from mmcv.ops import tin_shift
-    except ModuleNotFoundError:
-        pytest.skip('TINShift op is not successfully compiled')
-
     if dtype == torch.half:
         pytest.skip('"add_cpu/sub_cpu" not implemented for Half')
 
@@ -153,11 +150,6 @@ def _test_tinshift_gradcheck(dtype):
 
 
 def _test_tinshift_allclose(dtype):
-    try:
-        from mmcv.ops import tin_shift
-    except ModuleNotFoundError:
-        pytest.skip('TINShift op is not successfully compiled')
-
     for shift, output, grad in zip(shifts, outputs, grads):
         np_input = np.array(inputs)
         np_shift = np.array(shift)
@@ -177,11 +169,6 @@ def _test_tinshift_allclose(dtype):
 
 
 def _test_tinshift_assert(dtype):
-    try:
-        from mmcv.ops import tin_shift
-    except ModuleNotFoundError:
-        pytest.skip('TINShift op is not successfully compiled')
-
     inputs = [torch.rand(2, 3, 4, 2), torch.rand(2, 3, 4, 2)]
     shifts = [torch.rand(2, 3), torch.rand(2, 5)]
 

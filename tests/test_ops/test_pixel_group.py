@@ -1,9 +1,10 @@
 import numpy as np
 import torch
 
+from mmcv.ops import pixel_group
+
 
 def test_pixel_group():
-    from mmcv.ops import pixel_group
     np_score = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

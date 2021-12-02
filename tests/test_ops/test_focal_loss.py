@@ -99,6 +99,6 @@ class Testfocalloss(object):
         self._test_softmax_and_sigmoid(mode=mode, dtype=dtype)
 
     @pytest.mark.parametrize('mode', ['softmax', 'sigmoid'])
-    @pytest.mark.parametrize('dtype', [torch.float, torch.half])
+    @pytest.mark.parametrize('dtype', [torch.float])
     def test_grad_softmax_and_sigmoid(self, mode, dtype):
         self._test_grad_softmax_and_sigmoid(mode=mode, dtype=dtype)

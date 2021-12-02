@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.ops import DeformConv2d, DeformConv2dPack
 from mmcv.utils import TORCH_VERSION, digit_version
 
 try:
@@ -60,7 +61,6 @@ class TestDeformconv(object):
         if amp and dtype != torch.float and dtype != torch.half:
             pytest.skip(
                 'test amp requires input type is torch.float or torch.half')
-        from mmcv.ops import DeformConv2dPack
         repeated_input = np.repeat(self.input, batch_size, axis=0)
         repeated_gt_out = np.repeat(self.gt_out, batch_size, axis=0)
         repeated_gt_x_grad = np.repeat(self.gt_x_grad, batch_size, axis=0)
@@ -104,8 +104,6 @@ class TestDeformconv(object):
             self.gt_deform_weight_grad, threshold)
 
     def test_deformconv2d(self):
-        from mmcv.ops import DeformConv2d
-
         # test bias
         model = DeformConv2d(1, 1, 2, stride=1, padding=0)
         assert not hasattr(model, 'bias')

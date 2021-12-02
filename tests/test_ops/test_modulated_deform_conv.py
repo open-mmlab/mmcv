@@ -4,6 +4,7 @@ import numpy
 import pytest
 import torch
 
+from mmcv.ops import ModulatedDeformConv2dPack
 from mmcv.utils import TORCH_VERSION, digit_version
 
 try:
@@ -38,10 +39,21 @@ dcn_offset_b_grad = [
 
 class TestMdconv(object):
 
-    def _test_mdconv(self, dtype=torch.float, device='cuda'):
+    def _test_mdconv(self, dtype=torch.float, device='cuda', amp=False):
+        """Except "plain" tests, the function also to test amp released on
+        pytorch 1.6.0.
+
+        The type of input data might be torch.float or torch.half, so we should
+        test mdconv in both cases. With amp, the data type of model will NOT be
+        set manually.
+        """
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
-        from mmcv.ops import ModulatedDeformConv2dPack
+        if amp and device != 'cuda':
+            pytest.skip('test amp requires cuda')
+        if amp and dtype != torch.float and dtype != torch.half:
+            pytest.skip(
+                'test amp requires input type is torch.float or torch.half')
         input = torch.tensor(input_t, dtype=dtype, device=device)
         input.requires_grad = True
 
@@ -56,46 +68,8 @@ class TestMdconv(object):
 
         if device == 'cuda':
             dcn.cuda()
-
-        dcn.weight.data.fill_(1.)
-        dcn.type(dtype)
-        output = dcn(input)
-        output.sum().backward()
-        assert numpy.allclose(output.cpu().detach().numpy(), output_t, 1e-2)
-        assert numpy.allclose(input.grad.cpu().detach().numpy(), input_grad,
-                              1e-2)
-        assert numpy.allclose(dcn.weight.grad.cpu().detach().numpy(),
-                              dcn_w_grad, 1e-2)
-        assert numpy.allclose(
-            dcn.conv_offset.weight.grad.cpu().detach().numpy(),
-            dcn_offset_w_grad, 1e-2)
-        assert numpy.allclose(dcn.conv_offset.bias.grad.cpu().detach().numpy(),
-                              dcn_offset_b_grad, 1e-2)
-
-    def _test_amp_mdconv(self, input_dtype=torch.float):
-        """The function to test amp released on pytorch 1.6.0.
-
-        The type of input data might be torch.float or torch.half,
-        so we should test mdconv in both cases. With amp, the data
-        type of model will NOT be set manually.
-
-        Args:
-            input_dtype: torch.float or torch.half.
-        """
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import ModulatedDeformConv2dPack
-        input = torch.tensor(input_t).cuda().type(input_dtype)
-        input.requires_grad = True
-
-        dcn = ModulatedDeformConv2dPack(
-            1,
-            1,
-            kernel_size=(2, 2),
-            stride=1,
-            padding=1,
-            deform_groups=1,
-            bias=False).cuda()
+        if not amp:
+            dcn.type(dtype)
         dcn.weight.data.fill_(1.)
         output = dcn(input)
         output.sum().backward()
@@ -122,5 +96,5 @@ class TestMdconv(object):
         if (TORCH_VERSION != 'parrots'
                 and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
             with autocast(enabled=True):
-                self._test_amp_mdconv(torch.float)
-                self._test_amp_mdconv(torch.half)
+                self._test_mdconv(torch.float)
+                self._test_mdconv(torch.half)

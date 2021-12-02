@@ -1,6 +1,9 @@
 import numpy as np
+import pytest
 import torch
 import torch.nn as nn
+
+from mmcv.ops import PSAMask
 
 
 class Loss(nn.Module):
@@ -14,12 +17,11 @@ class Loss(nn.Module):
         return torch.mean(input - target)
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 class TestPSAMask(object):
 
     def test_psa_mask_collect(self):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(
@@ -57,9 +59,6 @@ class TestPSAMask(object):
         assert test_output.shape == output_collect.shape
 
     def test_psa_mask_distribute(self):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(

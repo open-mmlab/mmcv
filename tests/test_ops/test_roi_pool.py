@@ -1,7 +1,10 @@
 import os
 
 import numpy as np
+import pytest
 import torch
+
+from mmcv.ops import RoIPool, roi_pool
 
 _USING_PARROTS = True
 try:
@@ -28,16 +31,16 @@ outputs = [([[[[1., 2.], [3., 4.]]]], [[[[1., 1.], [1., 1.]]]]),
                                                               1.]]]])]
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 class TestRoiPool(object):
 
-    def test_roipool_gradcheck(self):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import RoIPool
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
+    def setup_class(self):
+        self.pool_h = 2
+        self.pool_w = 2
+        self.spatial_scale = 1.0
 
+    def test_roipool_gradcheck(self):
         for case in inputs:
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
@@ -45,7 +48,7 @@ class TestRoiPool(object):
             x = torch.tensor(np_input, device='cuda', requires_grad=True)
             rois = torch.tensor(np_rois, device='cuda')
 
-            froipool = RoIPool((pool_h, pool_w), spatial_scale)
+            froipool = RoIPool((self.pool_h, self.pool_w), self.spatial_scale)
 
             if _USING_PARROTS:
                 pass
@@ -54,13 +57,6 @@ class TestRoiPool(object):
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, dtype=torch.float):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import roi_pool
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
-
         for case, output in zip(inputs, outputs):
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
@@ -71,12 +67,12 @@ class TestRoiPool(object):
                 np_input, dtype=dtype, device='cuda', requires_grad=True)
             rois = torch.tensor(np_rois, dtype=dtype, device='cuda')
 
-            output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
+            output = roi_pool(x, rois, (self.pool_h, self.pool_w),
+                              self.spatial_scale)
             output.backward(torch.ones_like(output))
             assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
             assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
 
-    def test_roipool_allclose(self):
-        self._test_roipool_allclose(torch.double)
-        self._test_roipool_allclose(torch.float)
-        self._test_roipool_allclose(torch.half)
+    @pytest.mark.parametrize('dtype', [torch.double, torch.float, torch.half])
+    def test_roipool_allclose(self, dtype):
+        self._test_roipool_allclose(dtype=dtype)
