@@ -199,7 +199,7 @@ class ModuleDict(BaseModule, nn.ModuleDict):
     """ModuleDict in openmmlab.
 
     Args:
-        modules (dict, optional): an dict of modules to add.
+        modules (dict, optional): a mapping (dictionary) of (string: module) or an iterable of key-value pairs of type (string, module).
         init_cfg (dict, optional): Initialization config dict.
     """
 
