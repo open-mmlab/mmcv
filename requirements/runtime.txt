@@ -1,5 +1,4 @@
 addict
-ninja
 numpy
 packaging
 Pillow
