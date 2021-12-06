@@ -41,9 +41,6 @@ class TestIO:
 
     @classmethod
     def teardown_class(cls):
-        # delete mocked packages, avoid to influence other unittest
-        del sys.modules['petrel_client']
-        del sys.modules['petrel_client.client']
         # clean instances avoid to influence other unittest
         mmcv.FileClient._instances = {}
 
