@@ -370,7 +370,7 @@ def nms_match(dets, iou_threshold):
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
     else:
-        return [np.array(m, dtype=np.int) for m in matched]
+        return [np.array(m, dtype=int) for m in matched]
 
 
 def nms_rotated(dets, scores, iou_threshold, labels=None):
