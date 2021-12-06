@@ -11,6 +11,7 @@ from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
 
 from mmcv.fileio import FileClient
 from mmcv.utils import is_str
+from mmcv.utils.misc import has_method
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
@@ -182,7 +183,9 @@ def imread(img_or_path,
         >>> img = mmcv.imread(img_path, flag='color', channel_order='bgr',
         ...     backend='pillow')
         >>> s3_img_path = 's3://bucket/img.jpg'
+        >>> # infer the file backend by the prefix s3
         >>> img = mmcv.imread(s3_img_path)
+        >>> # manually set the file backend petrel
         >>> img = mmcv.imread(s3_img_path, file_client_args={
         ...     'backend': 'petrel'})
         >>> http_img_path = 'http://path/to/img.jpg'
@@ -261,12 +264,16 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
 def imwrite(img,
             file_path,
             params=None,
-            auto_mkdir=True,
+            auto_mkdir=None,
             file_client_args=None):
     """Write image to file.
 
     Note:
         In v1.4.1 and later, add `file_client_args` parameters.
+
+    Warning:
+        The parameter `auto_mkdir` will be deprecated in the future and every
+        file clients will make directory automatically.
 
     Args:
         img (ndarray): Image array to be written.
@@ -282,26 +289,26 @@ def imwrite(img,
         bool: Successful or not.
 
     Examples:
+        >>> # write to hard disk client
         >>> ret = mmcv.imwrite(img, '/path/to/img.jpg')
+        >>> # infer the file backend by the prefix s3
         >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg')
+        >>> # manually set the file backend petrel
         >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', file_client_args={
         ...     'backend': 'petrel'})
     """
     assert is_str(file_path)
+    if auto_mkdir is not None:
+        warnings.warn(
+            'The parameter `auto_mkdir` will be deprecated in the future and '
+            'every file clients will make directory automatically.')
     file_client = FileClient.infer_client(file_client_args, file_path)
-    if not hasattr(file_client.client, 'put'):
+    if not has_method(file_client.client, 'put'):
         raise AttributeError(
             f"{file_client.name} doesn't contain the `put` method")
     try:
         img_ext = osp.splitext(file_path)[-1]
         _, img_buff = cv2.imencode(img_ext, img, params)
-        # The HardDiskBackend automatically mkdir by default,it needs to be
-        # judged individually
-        if not auto_mkdir and file_client.name == 'HardDiskBackend':
-            dir_name = osp.abspath(osp.dirname(file_path))
-            if not osp.exists(dir_name):
-                raise FileNotFoundError(
-                    f'`auto_mkdir` is False and `{dir_name}` is not found')
         file_client.put(img_buff.tobytes(), file_path)
     except Exception as e:
         warnings.warn(f"'{file_path}' writing failed, msg is '{e}'")
