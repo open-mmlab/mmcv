@@ -24,6 +24,7 @@ research projects as below:
 - [MMOCR](https://github.com/open-mmlab/mmocr): A Comprehensive Toolbox for Text Detection, Recognition and Understanding.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
 
 It provides the following functionalities.
 
@@ -52,7 +53,7 @@ a. Install the full version.
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/).
 
-We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building.
+We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building. In addition, you can run [check_installation.py](.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
 i. Install the latest version.
 
@@ -105,6 +106,15 @@ For more details, please refer the the following tables.
       <th valign="bottom" align="left" width="100">torch1.7</th>
       <th valign="bottom" align="left" width="100">torch1.6</th>
       <th valign="bottom" align="left" width="100">torch1.5</th>
+    </tr>
+    <tr>
+      <td align="left">11.3</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
+      <td align="left"></code></pre> </details> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
+      <td align="left"> </td>
     </tr>
     <tr>
       <td align="left">11.1</td>

@@ -29,12 +29,10 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 2
    :caption: Deployment
 
+   deployment/mmcv_ops_definition.md
    deployment/onnx.md
    deployment/onnxruntime_op.md
-   deployment/onnxruntime_custom_ops.md
    deployment/tensorrt_plugin.md
-   deployment/tensorrt_custom_ops.md
-   deployment/mmcv_ops_definition.md
 
 .. toctree::
    :maxdepth: 2
