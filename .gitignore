@@ -117,3 +117,5 @@ venv.bak/
 # datasets and logs and checkpoints
 data/
 work_dir/
+
+src/
