@@ -308,6 +308,9 @@ def imwrite(img,
             f"{file_client.name} doesn't contain the `put` method")
     try:
         img_ext = osp.splitext(file_path)[-1]
+        # Encode image according to image suffix.
+        # For example, if image path is '/path/your/img.jpg', the encode
+        # format is '.jpg'.
         _, img_buff = cv2.imencode(img_ext, img, params)
         file_client.put(img_buff.tobytes(), file_path)
     except Exception as e:
