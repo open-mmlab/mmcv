@@ -22,10 +22,11 @@ class ThreeInterpolate(Function):
         """
         Args:
             features (torch.Tensor): (B, C, M) Features descriptors to be
-                interpolated
-            indices (torch.Tensor): (B, n, 3) index three nearest neighbors
-                of the target features in features
-            weight (torch.Tensor): (B, n, 3) weights of interpolation
+                interpolated.
+            indices (torch.Tensor): (B, n, 3) indices of three nearest
+                neighbor features for the target features.
+            weight (torch.Tensor): (B, n, 3) weights of three nearest
+                neighbor features for the target features.
 
         Returns:
             torch.Tensor: (B, C, N) tensor of the interpolated features

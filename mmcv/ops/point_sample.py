@@ -197,7 +197,8 @@ def abs_img_point_to_rel_img_point(abs_img_points, img, spatial_scale=1.):
         abs_img_points (torch.Tensor): Image based absolute point coordinates,
             shape (N, P, 2)
         img (tuple or torch.Tensor): (height, width) of image or feature map.
-        spatial_scale (float): Scale points by this factor. Default: 1.
+        spatial_scale (float, optional): Scale points by this factor.
+            Default: 1.
 
     Returns:
         Tensor: Image based relative point coordinates for sampling, shape
@@ -231,7 +232,8 @@ def rel_roi_point_to_rel_img_point(rois,
         rel_roi_points (torch.Tensor): Point coordinates inside RoI, relative
             to RoI, location, range (0, 1), shape (N, P, 2)
         img (tuple or torch.Tensor): (height, width) of image or feature map.
-        spatial_scale (float): Scale points by this factor. Default: 1.
+        spatial_scale (float, optional): Scale points by this factor.
+            Default: 1.
 
     Returns:
         torch.Tensor: Image based relative point coordinates for sampling,
@@ -255,7 +257,8 @@ def point_sample(input, points, align_corners=False, **kwargs):
         points (torch.Tensor): Image based absolute point coordinates
             (normalized), range [0, 1] x [0, 1], shape (N, P, 2) or
             (N, Hgrid, Wgrid, 2).
-        align_corners (bool): Whether align_corners. Default: False
+        align_corners (bool, optional): Whether align_corners.
+            Default: False
 
     Returns:
         torch.Tensor: Features of `point` on `input`, shape (N, C, P) or

@@ -27,7 +27,7 @@ class ThreeNN(Function):
 
         Returns:
             torch.Tensor: shape (B, N, 3), L2 distance of each point in target
-            set to their corresponding nearest neighbors.
+            set to their corresponding top three nearest neighbors.
         """
         target = target.contiguous()
         source = source.contiguous()
