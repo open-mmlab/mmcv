@@ -10,7 +10,6 @@
 
 MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目，例如：
 
-- [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MIM](https://github.com/open-mmlab/mim): OpenMMLab 项目、算法、模型的统一入口
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱与测试基准
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 检测工具箱与测试基准
@@ -24,6 +23,7 @@ MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 新一代生成模型工具箱
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 人体参数化模型工具箱与测试基准
 
 MMCV 提供了如下众多功能：
 
@@ -97,12 +97,12 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="120">torch1.10</th>
-      <th valign="bottom" align="left" width="100">torch1.9</th>
-      <th valign="bottom" align="left" width="100">torch1.8</th>
-      <th valign="bottom" align="left" width="100">torch1.7</th>
-      <th valign="bottom" align="left" width="100">torch1.6</th>
-      <th valign="bottom" align="left" width="100">torch1.5</th>
+      <th valign="bottom" align="left" width="120">torch 1.10</th>
+      <th valign="bottom" align="left" width="120">torch 1.9</th>
+      <th valign="bottom" align="left" width="120">torch 1.8</th>
+      <th valign="bottom" align="left" width="120">torch 1.7</th>
+      <th valign="bottom" align="left" width="120">torch 1.6</th>
+      <th valign="bottom" align="left" width="120">torch 1.5</th>
     </tr>
     <tr>
       <td align="left">11.3</td>

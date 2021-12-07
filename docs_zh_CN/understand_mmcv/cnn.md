@@ -355,7 +355,7 @@ conv = ConvModule(
     initialize(model, init_cfg)
     ```
 
-4. 初始化继承自BaseModule、Sequential、ModuleList的模型
+4. 初始化继承自BaseModule、Sequential、ModuleList、ModuleDict的模型
 
     `BaseModule` 继承自 `torch.nn.Module`, 它们之间唯一的不同是 `BaseModule` 实现了 `init_weight`
 
@@ -363,9 +363,11 @@ conv = ConvModule(
 
     `ModuleList` 继承自 `BaseModule` 和 `torch.nn.ModuleList`
 
+    `ModuleDict` 继承自 `BaseModule` 和 `torch.nn.ModuleDict`
+
     `````python
     import torch.nn as nn
-    from mmcv.runner import BaseModule, Sequential, ModuleList
+    from mmcv.runner import BaseModule, Sequential, ModuleList, ModuleDict
 
     class FooConv1d(BaseModule):
 
@@ -475,6 +477,49 @@ conv = ConvModule(
     #         [0., 0., 0., 0.],
     #         [0., 0., 0., 0.]]], requires_grad=True)
     # modellist[1].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
+
+    # ModuleDict
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    modeldict = ModuleDict(dict(model1=model1, model2=model2))
+    modeldict.init_weights()
+    # modeldict['model1'].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modeldict['model2'].conv2d.weight
+    # Parameter containing:
+    # tensor([[[[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]],
+    #         ...,
+    #          [[2., 2., 2.],
+    #           [2., 2., 2.],
+    #           [2., 2., 2.]]]], requires_grad=True)
+
+    # inner init_cfg has higher priority
+    model1 = FooConv1d(init_cfg1)
+    model2 = FooConv2d(init_cfg2)
+    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+    modeldict = ModuleDict(dict(model1=model1, model2=model2), init_cfg=init_cfg)
+    modeldict.init_weights()
+    # modeldict['model1'].conv1d.weight
+    # Parameter containing:
+    # tensor([[[0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.],
+    #         [0., 0., 0., 0.]]], requires_grad=True)
+    # modeldict['model2'].conv2d.weight
     # Parameter containing:
     # tensor([[[[2., 2., 2.],
     #           [2., 2., 2.],
