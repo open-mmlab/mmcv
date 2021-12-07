@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import warnings
 from functools import partial
@@ -65,8 +66,9 @@ class Registry:
         >>>     pass
         >>> resnet = MODELS.build(dict(type='ResNet'))
 
-    Please refer to https://mmcv.readthedocs.io/en/latest/registry.html for
-    advanced useage.
+    Please refer to
+    https://mmcv.readthedocs.io/en/latest/understand_mmcv/registry.html for
+    advanced usage.
 
     Args:
         name (str): Registry name.

@@ -2,6 +2,10 @@ name: deploy
 
 on: push
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-n-publish:
     runs-on: ubuntu-18.04
@@ -12,6 +16,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build MMCV
         run: python setup.py sdist
       - name: Publish distribution to PyPI
@@ -28,6 +34,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
+      - name: Upgrade Setuptools
+        run: pip install setuptools --upgrade
       - name: Build MMCV with ops
         run: |
           sed -i "s/os.getenv('MMCV_WITH_OPS', '0')/os.getenv('MMCV_WITH_OPS', '1')/g" setup.py

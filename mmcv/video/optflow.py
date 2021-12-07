@@ -1,6 +1,7 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import cv2
 import numpy as np
 
 from mmcv.arraymisc import dequantize, quantize
@@ -198,3 +199,56 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
             'We only support interpolation modes of nearest and bilinear, '
             f'but got {interpolate_mode}.')
     return output.astype(img.dtype)
+
+
+def flow_from_bytes(content):
+    """Read dense optical flow from bytes.
+
+    .. note::
+        This load optical flow function works for FlyingChairs, FlyingThings3D,
+        Sintel, FlyingChairsOcc datasets, but cannot load the data from
+        ChairsSDHom.
+
+    Args:
+        content (bytes): Optical flow bytes got from files or other streams.
+
+    Returns:
+        ndarray: Loaded optical flow with the shape (H, W, 2).
+    """
+
+    # header in first 4 bytes
+    header = content[:4]
+    if header.decode('utf-8') != 'PIEH':
+        raise Exception('Flow file header does not contain PIEH')
+    # width in second 4 bytes
+    width = np.frombuffer(content[4:], np.int32, 1).squeeze()
+    # height in third 4 bytes
+    height = np.frombuffer(content[8:], np.int32, 1).squeeze()
+    # after first 12 bytes, all bytes are flow
+    flow = np.frombuffer(content[12:], np.float32, width * height * 2).reshape(
+        (height, width, 2))
+
+    return flow
+
+
+def sparse_flow_from_bytes(content):
+    """Read the optical flow in KITTI datasets from bytes.
+
+    This function is modified from RAFT load the `KITTI datasets
+    <https://github.com/princeton-vl/RAFT/blob/224320502d66c356d88e6c712f38129e60661e80/core/utils/frame_utils.py#L102>`_.
+
+    Args:
+        content (bytes): Optical flow bytes got from files or other streams.
+
+    Returns:
+        Tuple(ndarray, ndarray): Loaded optical flow with the shape (H, W, 2)
+            and flow valid mask with the shape (H, W).
+    """  # nopa
+
+    content = np.frombuffer(content, np.uint8)
+    flow = cv2.imdecode(content, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_COLOR)
+    flow = flow[:, :, ::-1].astype(np.float32)
+    # flow shape (H, W, 2) valid shape (H, W)
+    flow, valid = flow[:, :, :2], flow[:, :, 2]
+    flow = (flow - 2**15) / 64.0
+    return flow, valid

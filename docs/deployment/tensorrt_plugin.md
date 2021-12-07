@@ -1,8 +1,8 @@
-# TensorRT Plugins for custom operators in MMCV (Experimental)
+## TensorRT Deployment
 
 <!-- TOC -->
 
-- [TensorRT Plugins for custom operators in MMCV (Experimental)](#tensorrt-plugins-for-custom-operators-in-mmcv-experimental)
+- [TensorRT Deployment](#tensorrt-deployment)
   - [Introduction](#introduction)
   - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
   - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)
@@ -17,32 +17,32 @@
 
 <!-- TOC -->
 
-## Introduction
+### Introduction
 
 **NVIDIA TensorRT** is a software development kit(SDK) for high-performance inference of deep learning models. It includes a deep learning inference optimizer and runtime that delivers low latency and high-throughput for deep learning inference applications. Please check its [developer's website](https://developer.nvidia.com/tensorrt) for more information.
 To ease the deployment of trained models with custom operators from `mmcv.ops` using TensorRT, a series of TensorRT plugins are included in MMCV.
 
-## List of TensorRT plugins supported in MMCV
+### List of TensorRT plugins supported in MMCV
 
-|       ONNX Operator       |                                 TensorRT Plugin                                 | MMCV Releases |
-| :-----------------------: | :-----------------------------------------------------------------------------: | :-----------: |
-|       MMCVRoiAlign        |              [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)              |     1.2.6     |
-|         ScatterND         |                 [ScatterND](./tensorrt_custom_ops.md#scatternd)                 |     1.2.6     |
-|     NonMaxSuppression     |         [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)         |     1.3.0     |
-|     MMCVDeformConv2d      |          [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)          |     1.3.0     |
-|       grid_sampler        |              [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)              |     1.3.1     |
-|          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    |     1.3.5     |
-|          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    |     1.3.5     |
+| ONNX Operator             | TensorRT Plugin                                                                 | MMCV Releases |
+|:--------------------------|:--------------------------------------------------------------------------------|:-------------:|
+| MMCVRoiAlign              | [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)                           |     1.2.6     |
+| ScatterND                 | [ScatterND](./tensorrt_custom_ops.md#scatternd)                                 |     1.2.6     |
+| NonMaxSuppression         | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)                 |     1.3.0     |
+| MMCVDeformConv2d          | [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)                   |     1.3.0     |
+| grid_sampler              | [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)                           |     1.3.1     |
+| cummax                    | [cummax](./tensorrt_custom_ops.md#cummax)                                       |     1.3.5     |
+| cummin                    | [cummin](./tensorrt_custom_ops.md#cummin)                                       |     1.3.5     |
 | MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) |     1.3.5     |
-| MMCVModulatedDeformConv2d | [MMCVModulatedDeformConv2d](./tensorrt_custom_ops.md#mmcvmodulateddeformconv2d) |    master     |
+| MMCVModulatedDeformConv2d | [MMCVModulatedDeformConv2d](./tensorrt_custom_ops.md#mmcvmodulateddeformconv2d) |     1.3.8     |
 
 Notes
 
 - All plugins listed above are developed on TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0
 
-## How to build TensorRT plugins in MMCV
+### How to build TensorRT plugins in MMCV
 
-### Prerequisite
+#### Prerequisite
 
 - Clone repository
 
@@ -73,16 +73,16 @@ pip install $TENSORRT_DIR/onnx_graphsurgeon/onnx_graphsurgeon-0.2.6-py2.py3-none
 pip install $TENSORRT_DIR/graphsurgeon/graphsurgeon-0.4.5-py2.py3-none-any.whl
 ```
 
-For more detailed infomation of installing TensorRT using tar, please refer to [Nvidia' website](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-721/install-guide/index.html#installing-tar).
+For more detailed information of installing TensorRT using tar, please refer to [Nvidia' website](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-721/install-guide/index.html#installing-tar).
 
-### Build on Linux
+#### Build on Linux
 
 ```bash
-cd mmcv # to MMCV root directory
+cd mmcv ## to MMCV root directory
 MMCV_WITH_OPS=1 MMCV_WITH_TRT=1 pip install -e .
 ```
 
-## Create TensorRT engine and run inference in python
+### Create TensorRT engine and run inference in python
 
 Here is an example.
 
@@ -99,26 +99,26 @@ onnx_file = 'sample.onnx'
 trt_file = 'sample.trt'
 onnx_model = onnx.load(onnx_file)
 
-# Model input
+## Model input
 inputs = torch.rand(1, 3, 224, 224).cuda()
-# Model input shape info
+## Model input shape info
 opt_shape_dict = {
     'input': [list(inputs.shape),
               list(inputs.shape),
               list(inputs.shape)]
 }
 
-# Create TensorRT engine
+## Create TensorRT engine
 max_workspace_size = 1 << 30
 trt_engine = onnx2trt(
     onnx_model,
     opt_shape_dict,
     max_workspace_size=max_workspace_size)
 
-# Save TensorRT engine
+## Save TensorRT engine
 save_trt_engine(trt_engine, trt_file)
 
-# Run inference with TensorRT
+## Run inference with TensorRT
 trt_model = TRTWrapper(trt_file, ['input'], ['output'])
 
 with torch.no_grad():
@@ -127,9 +127,9 @@ with torch.no_grad():
 
 ```
 
-## How to add a TensorRT plugin for custom op in MMCV
+### How to add a TensorRT plugin for custom op in MMCV
 
-### Main procedures
+#### Main procedures
 
 Below are the main steps:
 
@@ -161,15 +161,17 @@ Below are the main steps:
 5. Add unit test into `tests/test_ops/test_tensorrt.py`
    Check [here](https://github.com/open-mmlab/mmcv/blob/master/tests/test_ops/test_tensorrt.py) for examples.
 
-### Reminders
+#### Reminders
+
+- *Please note that this feature is experimental and may change in the future. Strongly suggest users always try with the latest master branch.*
 
 - Some of the [custom ops](https://mmcv.readthedocs.io/en/latest/ops.html) in `mmcv` have their cuda implementations, which could be referred.
 
-## Known Issues
+### Known Issues
 
 - None
 
-## References
+### References
 
 - [Developer guide of Nvidia TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html)
 - [TensorRT Open Source Software](https://github.com/NVIDIA/TensorRT)

@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from pathlib import Path
 
@@ -27,7 +27,7 @@ def test_check_file_exist():
 
 def test_scandir():
     folder = osp.join(osp.dirname(osp.dirname(__file__)), 'data/for_scan')
-    filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json']
+    filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json', '3.TXT']
     assert set(mmcv.scandir(folder)) == set(filenames)
     assert set(mmcv.scandir(Path(folder))) == set(filenames)
     assert set(mmcv.scandir(folder, '.txt')) == set(
@@ -38,9 +38,12 @@ def test_scandir():
     ])
     assert set(mmcv.scandir(folder, '.png')) == set()
 
+    # path of sep is `\\` in windows but `/` in linux, so osp.join should be
+    # used to join string for compatibility
     filenames_recursive = [
-        'a.bin', '1.txt', '2.txt', '1.json', '2.json', 'sub/1.json',
-        'sub/1.txt', '.file'
+        'a.bin', '1.txt', '2.txt', '1.json', '2.json', '3.TXT',
+        osp.join('sub', '1.json'),
+        osp.join('sub', '1.txt'), '.file'
     ]
     # .file starts with '.' and is a file so it will not be scanned
     assert set(mmcv.scandir(folder, recursive=True)) == set(
@@ -51,6 +54,19 @@ def test_scandir():
         filename for filename in filenames_recursive
         if filename.endswith('.txt')
     ])
+    assert set(
+        mmcv.scandir(folder, '.TXT', recursive=True,
+                     case_sensitive=False)) == set([
+                         filename for filename in filenames_recursive
+                         if filename.endswith(('.txt', '.TXT'))
+                     ])
+    assert set(
+        mmcv.scandir(
+            folder, ('.TXT', '.JSON'), recursive=True,
+            case_sensitive=False)) == set([
+                filename for filename in filenames_recursive
+                if filename.endswith(('.txt', '.json', '.TXT'))
+            ])
     with pytest.raises(TypeError):
         list(mmcv.scandir(123))
     with pytest.raises(TypeError):

@@ -2,8 +2,9 @@
 
 All kinds of contributions are welcome, including but not limited to the following.
 
-- Fixes (typo, bugs)
-- New features and components
+- Fix typo or bugs
+- Add documentation or translate the documentation into other languages
+- Add new features and components
 
 ### Workflow
 
@@ -12,8 +13,9 @@ All kinds of contributions are welcome, including but not limited to the followi
 3. commit your changes
 4. create a PR
 
-Note: If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
-
+```{note}
+If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
+```
 ### Code style
 
 #### Python

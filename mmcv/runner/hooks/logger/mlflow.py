@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -28,7 +28,7 @@ class MlflowLoggerHook(LoggerHook):
             tags (dict of str: str, optional): Tags for the current run.
                 Default None.
                 If not None, set tags for the current run.
-            log_model (bool, optional): Wheter to log an MLflow artifact.
+            log_model (bool, optional): Whether to log an MLflow artifact.
                 Default True.
                 If True, log runner.model as an MLflow artifact
                 for the current run.

@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import collections.abc
 import functools
 import itertools
@@ -320,6 +320,16 @@ def deprecated_api_warning(name_dict, cls_name=None):
             if kwargs:
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in kwargs:
+
+                        assert dst_arg_name not in kwargs, (
+                            f'The expected behavior is to replace '
+                            f'the deprecated key `{src_arg_name}` to '
+                            f'new key `{dst_arg_name}`, but got them '
+                            f'in the arguments at the same time, which '
+                            f'is confusing. `{src_arg_name} will be '
+                            f'deprecated in the future, please '
+                            f'use `{dst_arg_name}` instead.')
+
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
                             f'`{func_name}`, please use "{dst_arg_name}" '
@@ -352,3 +362,16 @@ def is_method_overridden(method, base_class, derived_class):
     base_method = getattr(base_class, method)
     derived_method = getattr(derived_class, method)
     return derived_method != base_method
+
+
+def has_method(obj: object, method: str) -> bool:
+    """Check whether the object has a method.
+
+    Args:
+        method (str): The method name to check.
+        obj (object): The object to check.
+
+    Returns:
+        bool: True if the object has the method else False.
+    """
+    return hasattr(obj, method) and callable(getattr(obj, method))

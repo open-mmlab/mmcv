@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
 import cv2
@@ -88,7 +88,7 @@ class TestGeometric:
         assert resized_img.shape == (
             912, 810, 3) and h_scale == 912 / 300 and w_scale == 810 / 400
 
-        # one of size and scale_factor shuld be given
+        # one of size and scale_factor should be given
         with pytest.raises(ValueError):
             mmcv.imresize_to_multiple(
                 self.img, divisor=16, size=(1000, 600), scale_factor=2)

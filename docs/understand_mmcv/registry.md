@@ -9,7 +9,7 @@ In MMCV, registry can be regarded as a mapping that maps a class to a string.
 These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
 With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
 One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
-The API reference could be find [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
+The API reference could be found [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 
@@ -85,9 +85,11 @@ def build_converter(cfg, registry, *args, **kwargs):
 CONVERTERS = Registry('converter', build_func=build_converter)
 ```
 
-Note: in this example, we demonstrate how to use the `build_func` argument to customize the way to build a class instance.
+```{note}
+In this example, we demonstrate how to use the `build_func` argument to customize the way to build a class instance.
 The functionality is similar to the default `build_from_cfg`. In most cases, default one would be sufficient.
 `build_model_from_cfg` is also implemented to build PyTorch module in `nn.Sequentail`, you may directly use them instead of implementing by yourself.
+```
 
 ### Hierarchy Registry
 

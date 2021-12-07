@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .base import LoggerHook
 from .dvclive import DvcliveLoggerHook
 from .mlflow import MlflowLoggerHook

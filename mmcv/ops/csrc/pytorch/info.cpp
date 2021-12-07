@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 // modified from
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/vision.cpp
 #include "pytorch_cpp_helper.hpp"
@@ -24,7 +25,7 @@ std::string get_compiling_cuda_version() {
   printCudaStyleVersion(get_cudart_version());
   return oss.str();
 #else
-  return std::string("rocm not vailable");
+  return std::string("rocm not available");
 #endif
 #else
   return std::string("not available");

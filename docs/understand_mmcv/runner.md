@@ -58,7 +58,7 @@ while curr_iter < max_iters:
     for i, flow in enumerate(workflow):
         # mode(e.g. train) determines which function to run
         mode, iters = flow
-        # epoch_runner will be either self.train() or self.val()
+        # iter_runner will be either self.train() or self.val()
         iter_runner = getattr(self, mode)
         # execute the corresponding function
         for _ in range(iters):
@@ -92,7 +92,7 @@ We will walk you through the usage of runner with a classification task. The fol
 model=...
 # initialize optimizer, typically, we set: cfg.optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
 optimizer = build_optimizer(model, cfg.optimizer)
-# intialize the dataloader corresponding to the workflow(train/val)
+# initialize the dataloader corresponding to the workflow(train/val)
 data_loaders = [
         build_dataloader(
             ds,
@@ -119,15 +119,15 @@ runner = build_runner(
 **(3) Register training hooks and customized hooks.**
 
 ```python
-# register defalt hooks neccesary for traning
+# register default hooks necessary for training
 runner.register_training_hooks(
-    # configs of learning rate，it is typically set as:
+    # configs of learning rate, it is typically set as:
     # lr_config = dict(policy='step', step=[100, 150])
     cfg.lr_config,
     # configuration of optimizer, e.g. grad_clip
     optimizer_config,
     # configuration of saving checkpoints, it is typically set as:
-    # checkpoint_config = dict(interval=1)，saving checkpoints every epochs
+    # checkpoint_config = dict(interval=1), saving checkpoints every epochs
     cfg.checkpoint_config,
     # configuration of logs
     cfg.log_config,

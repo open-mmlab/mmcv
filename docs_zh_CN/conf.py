@@ -14,8 +14,8 @@
 import os
 import sys
 
-from m2r import MdInclude
-from recommonmark.transform import AutoStructify
+import pytorch_sphinx_theme
+from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -49,9 +49,10 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'recommonmark',
     'sphinx.ext.autosectionlabel',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'myst_parser',
+    'sphinx_copybutton',
 ]  # yapf: disable
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
@@ -91,18 +92,119 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_rtd_theme'
+html_theme = 'pytorch_sphinx_theme'
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'menu': [
+        {
+            'name': 'GitHub',
+            'url': 'https://github.com/open-mmlab/mmcv'
+        },
+        {
+            'name':
+            '文档',
+            'children': [
+                {
+                    'name': 'MMCV',
+                    'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MIM',
+                    'url': 'https://openmim.readthedocs.io/en/latest/'
+                },
+                {
+                    'name': 'MMAction2',
+                    'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMClassification',
+                    'url':
+                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMDetection',
+                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMDetection3D',
+                    'url':
+                    'https://mmdetection3d.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMEditing',
+                    'url': 'https://mmediting.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMGeneration',
+                    'url': 'https://mmgeneration.readthedocs.io/en/latest/',
+                },
+                {
+                    'name': 'MMOCR',
+                    'url': 'https://mmocr.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMPose',
+                    'url': 'https://mmpose.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMSegmentation',
+                    'url':
+                    'https://mmsegmentation.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMTracking',
+                    'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMFlow',
+                    'url': 'https://mmflow.readthedocs.io/en/latest/',
+                },
+                {
+                    'name': 'MMFewShot',
+                    'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMHuman3D',
+                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
+                },
+            ]
+        },
+        {
+            'name':
+            'OpenMMLab',
+            'children': [
+                {
+                    'name': '主页',
+                    'url': 'https://openmmlab.com/'
+                },
+                {
+                    'name': 'GitHub',
+                    'url': 'https://github.com/open-mmlab/'
+                },
+                {
+                    'name': '推特',
+                    'url': 'https://twitter.com/OpenMMLab'
+                },
+                {
+                    'name': '知乎',
+                    'url': 'https://zhihu.com/people/openmmlab'
+                },
+            ]
+        },
+    ]
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = ['css/readthedocs.css']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -143,7 +245,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcv.tex', 'mmcv Documentation', 'Kai Chen', 'manual'),
+    (master_doc, 'mmcv.tex', 'mmcv Documentation', 'MMCV Contributors',
+     'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
@@ -179,17 +282,11 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
+# set priority when building html
+StandaloneHTMLBuilder.supported_image_types = [
+    'image/svg+xml', 'image/gif', 'image/png', 'image/jpeg'
+]
 # -- Extension configuration -------------------------------------------------
-
-
-def setup(app):
-    app.add_config_value('no_underscore_emphasis', False, 'env')
-    app.add_config_value('m2r_parse_relative_links', False, 'env')
-    app.add_config_value('m2r_anonymous_references', False, 'env')
-    app.add_config_value('m2r_disable_inline_math', False, 'env')
-    app.add_directive('mdinclude', MdInclude)
-    app.add_config_value('recommonmark_config', {
-        'auto_toc_tree_section': 'Contents',
-        'enable_eval_rst': True,
-    }, True)
-    app.add_transform(AutoStructify)
+# Ignore >>> when copying code
+copybutton_prompt_text = r'>>> |\.\.\. '
+copybutton_prompt_is_regexp = True

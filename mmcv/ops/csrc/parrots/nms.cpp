@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA
@@ -54,7 +55,7 @@ Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
       auto h = std::max(0.f, yy2 - yy1 + offset);
       auto inter = w * h;
       auto ovr = inter / (iarea + areas[j] - inter);
-      if (ovr >= iou_threshold) select[_j] = false;
+      if (ovr > iou_threshold) select[_j] = false;
     }
   }
   return order_t.masked_select(select_t);

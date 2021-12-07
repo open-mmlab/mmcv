@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <cmath>
 
 #include "../ort_mmcv_utils.h"
@@ -248,7 +249,7 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
           int64_t ix_nearest = static_cast<int64_t>(std::nearbyint(ix));
           int64_t iy_nearest = static_cast<int64_t>(std::nearbyint(iy));
 
-          // assign nearest neighor pixel value to output pixel
+          // assign nearest neighbor pixel value to output pixel
           float *out_ptr_NCHW = out_ptr + n * out_sN + h * out_sH + w * out_sW;
           const float *inp_ptr_NC = inp_ptr_N;
           for (int64_t c = 0; c < C;
@@ -283,7 +284,7 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
                ++c, out_ptr_NCHW += out_sC, inp_ptr_NC += inp_sC) {
             float coefficients[4];
 
-            // Interpolate 4 values in the x directon
+            // Interpolate 4 values in the x direction
             for (int64_t i = 0; i < 4; ++i) {
               coefficients[i] = cubic_interp1d<float>(
                   get_value_bounded<float>(inp_ptr_NC, ix_nw - 1, iy_nw - 1 + i,

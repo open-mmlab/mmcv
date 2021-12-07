@@ -1,4 +1,3 @@
-import pytest
 import torch
 import torch.nn as nn
 
@@ -33,9 +32,10 @@ def test_sacconv():
         refer_out = refer_conv(x)
         assert deform_sac_out.shape == refer_out.shape
     else:
-        with pytest.raises(RuntimeError):
-            # deform conv is not implemented on cpu
-            deform_saconv(x)
+        deform_sac_out = deform_saconv(x)
+        refer_conv = nn.Conv2d(3, 5, kernel_size=3, padding=1)
+        refer_out = refer_conv(x)
+        assert deform_sac_out.shape == refer_out.shape
 
     # test with groups >= 2
     x = torch.rand(1, 4, 256, 256)

@@ -1,6 +1,8 @@
-# Copyright (c) Open-MMLab. All rights reserved.
-import os
+# Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+import warnings
 
+from mmcv.fileio import FileClient
 from ..dist_utils import allreduce_params, master_only
 from .hook import HOOKS, Hook
 
@@ -18,16 +20,32 @@ class CheckpointHook(Hook):
         save_optimizer (bool): Whether to save optimizer state_dict in the
             checkpoint. It is usually used for resuming experiments.
             Default: True.
-        out_dir (str, optional): The directory to save checkpoints. If not
-            specified, ``runner.work_dir`` will be used by default.
+        out_dir (str, optional): The root directory to save checkpoints. If not
+            specified, ``runner.work_dir`` will be used by default. If
+            specified, the ``out_dir`` will be the concatenation of ``out_dir``
+            and the last level directory of ``runner.work_dir``.
+            `Changed in version 1.3.16.`
         max_keep_ckpts (int, optional): The maximum checkpoints to keep.
             In some cases we want only the latest few checkpoints and would
             like to delete old ones to save the disk space.
             Default: -1, which means unlimited.
-        save_last (bool): Whether to force the last checkpoint to be saved
-            regardless of interval.
-        sync_buffer (bool): Whether to synchronize buffers in different
-            gpus. Default: False.
+        save_last (bool, optional): Whether to force the last checkpoint to be
+            saved regardless of interval. Default: True.
+        sync_buffer (bool, optional): Whether to synchronize buffers in
+            different gpus. Default: False.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+            `New in version 1.3.16.`
+
+    .. warning::
+        Before v1.3.16, the ``out_dir`` argument indicates the path where the
+        checkpoint is stored. However, since v1.3.16, ``out_dir`` indicates the
+        root directory and the final path to save checkpoint is the
+        concatenation of ``out_dir`` and the last level directory of
+        ``runner.work_dir``. Suppose the value of ``out_dir`` is "/path/of/A"
+        and the value of ``runner.work_dir`` is "/path/of/B", then the final
+        path will be "/path/of/A/B".
     """
 
     def __init__(self,
@@ -38,6 +56,7 @@ class CheckpointHook(Hook):
                  max_keep_ckpts=-1,
                  save_last=True,
                  sync_buffer=False,
+                 file_client_args=None,
                  **kwargs):
         self.interval = interval
         self.by_epoch = by_epoch
@@ -47,10 +66,38 @@ class CheckpointHook(Hook):
         self.save_last = save_last
         self.args = kwargs
         self.sync_buffer = sync_buffer
+        self.file_client_args = file_client_args
 
     def before_run(self, runner):
         if not self.out_dir:
             self.out_dir = runner.work_dir
+
+        self.file_client = FileClient.infer_client(self.file_client_args,
+                                                   self.out_dir)
+
+        # if `self.out_dir` is not equal to `runner.work_dir`, it means that
+        # `self.out_dir` is set so the final `self.out_dir` is the
+        # concatenation of `self.out_dir` and the last level directory of
+        # `runner.work_dir`
+        if self.out_dir != runner.work_dir:
+            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+            self.out_dir = self.file_client.join_path(self.out_dir, basename)
+
+        runner.logger.info((f'Checkpoints will be saved to {self.out_dir} by '
+                            f'{self.file_client.name}.'))
+
+        # disable the create_symlink option because some file backends do not
+        # allow to create a symlink
+        if 'create_symlink' in self.args:
+            if self.args[
+                    'create_symlink'] and not self.file_client.allow_symlink:
+                self.args['create_symlink'] = False
+                warnings.warn(
+                    ('create_symlink is set as True by the user but is changed'
+                     'to be False because creating symbolic link is not '
+                     f'allowed in {self.file_client.name}'))
+        else:
+            self.args['create_symlink'] = self.file_client.allow_symlink
 
     def after_train_epoch(self, runner):
         if not self.by_epoch:
@@ -81,7 +128,7 @@ class CheckpointHook(Hook):
                 cur_ckpt_filename = self.args.get(
                     'filename_tmpl', 'iter_{}.pth').format(runner.iter + 1)
             runner.meta.setdefault('hook_msgs', dict())
-            runner.meta['hook_msgs']['last_ckpt'] = os.path.join(
+            runner.meta['hook_msgs']['last_ckpt'] = self.file_client.join_path(
                 self.out_dir, cur_ckpt_filename)
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
@@ -96,10 +143,10 @@ class CheckpointHook(Hook):
                 -self.interval)
             filename_tmpl = self.args.get('filename_tmpl', name)
             for _step in redundant_ckpts:
-                ckpt_path = os.path.join(self.out_dir,
-                                         filename_tmpl.format(_step))
-                if os.path.exists(ckpt_path):
-                    os.remove(ckpt_path)
+                ckpt_path = self.file_client.join_path(
+                    self.out_dir, filename_tmpl.format(_step))
+                if self.file_client.isfile(ckpt_path):
+                    self.file_client.remove(ckpt_path)
                 else:
                     break
 

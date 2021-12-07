@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
 import torch
@@ -52,7 +53,7 @@ class DefaultOptimizerConstructor:
             offset layer in deformable convs, set ``dcn_offset_lr_mult``
             to the original ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
         2. If the option ``dcn_offset_lr_mult`` is used, the constructor will
-            apply it to all the DCN layers in the model. So be carefull when
+            apply it to all the DCN layers in the model. So be careful when
             the model contains multiple DCN layers in places other than
             backbone.
 

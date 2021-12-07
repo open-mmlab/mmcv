@@ -13,6 +13,43 @@ except ImportError:
     _USING_PARROTS = False
 
 
+@pytest.mark.parametrize('device_type', [
+    'cpu',
+    pytest.param(
+        'cuda:0',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support'))
+])
+def test_multiscale_deformable_attention(device_type):
+
+    with pytest.raises(ValueError):
+        # embed_dims must be divisible by num_heads,
+        MultiScaleDeformableAttention(
+            embed_dims=256,
+            num_heads=7,
+        )
+    device = torch.device(device_type)
+    msda = MultiScaleDeformableAttention(
+        embed_dims=3, num_levels=2, num_heads=3)
+    msda.init_weights()
+    num_query = 5
+    bs = 1
+    embed_dims = 3
+    query = torch.rand(num_query, bs, embed_dims).to(device)
+    key = torch.rand(num_query, bs, embed_dims).to(device)
+    spatial_shapes = torch.Tensor([[2, 2], [1, 1]]).long().to(device)
+    level_start_index = torch.Tensor([0, 4]).long().to(device)
+    reference_points = torch.rand(bs, num_query, 2, 2).to(device)
+    msda.to(device)
+    msda(
+        query,
+        key,
+        key,
+        reference_points=reference_points,
+        spatial_shapes=spatial_shapes,
+        level_start_index=level_start_index)
+
+
 def test_forward_multi_scale_deformable_attn_pytorch():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
@@ -114,7 +151,7 @@ def test_gradient_numerical(channels,
 
     N, M, _ = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
+    shapes = torch.as_tensor([(3, 2), (2, 1)], dtype=torch.long).cuda()
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum([(H * W).item() for H, W in shapes])
@@ -142,20 +179,3 @@ def test_gradient_numerical(channels,
         assert gradcheck(func, (value.double(), shapes, level_start_index,
                                 sampling_locations.double(),
                                 attention_weights.double(), im2col_step))
-
-
-def test_multiscale_deformable_attention():
-    with pytest.raises(ValueError):
-        # embed_dims must be divisible by num_heads,
-        MultiScaleDeformableAttention(
-            embed_dims=256,
-            num_heads=7,
-        )
-    with pytest.raises(ValueError):
-        # embed_dims must be divisible by num_heads,
-        MultiScaleDeformableAttention(
-            embed_dims=256,
-            num_heads=7,
-        )
-
-    MultiScaleDeformableAttention(embed_dims=256, num_heads=8)

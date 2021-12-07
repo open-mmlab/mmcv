@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 // modified from
 // https://github.com/pytorch/pytorch/blob/ec683299ebabf297a3504c76248d37be830e4342/aten/src/ATen/native/cuda/GridSampler.cuh
 // and
@@ -147,7 +148,7 @@ __global__ void grid_sampler_2d_kernel(
     const int n = index / (out_H * out_W);
     const int grid_offset = n * grid_sN + h * grid_sH + w * grid_sW;
 
-    // get the corresponding input x, y co-ordinates from grid
+    // get the corresponding input x, y coordinates from grid
     scalar_t ix = grid[grid_offset];
     scalar_t iy = grid[grid_offset + grid_sCoor];
 
@@ -196,7 +197,7 @@ __global__ void grid_sampler_2d_kernel(
       int ix_nearest = static_cast<int>(::round(ix));
       int iy_nearest = static_cast<int>(::round(iy));
 
-      // assign nearest neighor pixel value to output pixel
+      // assign nearest neighbor pixel value to output pixel
       auto inp_ptr_NC = input + n * inp_sN;
       auto out_ptr_NCHW = output + n * out_sN + h * out_sH + w * out_sW;
       for (int c = 0; c < C;
@@ -248,7 +249,7 @@ __global__ void grid_sampler_3d_kernel(
     const int grid_offset =
         n * grid_sN + d * grid_sD + h * grid_sH + w * grid_sW;
 
-    // get the corresponding input x, y, z co-ordinates from grid
+    // get the corresponding input x, y, z coordinates from grid
     scalar_t ix = grid[grid_offset];
     scalar_t iy = grid[grid_offset + grid_sCoor];
     scalar_t iz = grid[grid_offset + 2 * grid_sCoor];
@@ -366,7 +367,7 @@ __global__ void grid_sampler_3d_kernel(
       int iy_nearest = static_cast<int>(::round(iy));
       int iz_nearest = static_cast<int>(::round(iz));
 
-      // assign nearest neighor pixel value to output pixel
+      // assign nearest neighbor pixel value to output pixel
       auto inp_ptr_NC = input + n * inp_sN;
       auto out_ptr_NCDHW =
           output + n * out_sN + d * out_sD + h * out_sH + w * out_sW;

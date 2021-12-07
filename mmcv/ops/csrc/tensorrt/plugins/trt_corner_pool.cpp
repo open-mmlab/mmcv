@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_corner_pool.hpp"
 
 #include <assert.h>

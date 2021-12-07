@@ -1,6 +1,7 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .flops_counter import get_model_complexity_info
 from .fuse_conv_bn import fuse_conv_bn
+from .sync_bn import revert_sync_batchnorm
 from .weight_init import (INITIALIZERS, Caffe2XavierInit, ConstantInit,
                           KaimingInit, NormalInit, PretrainedInit,
                           TruncNormalInit, UniformInit, XavierInit,
@@ -14,5 +15,5 @@ __all__ = [
     'uniform_init', 'xavier_init', 'fuse_conv_bn', 'initialize',
     'INITIALIZERS', 'ConstantInit', 'XavierInit', 'NormalInit',
     'TruncNormalInit', 'UniformInit', 'KaimingInit', 'PretrainedInit',
-    'Caffe2XavierInit'
+    'Caffe2XavierInit', 'revert_sync_batchnorm'
 ]

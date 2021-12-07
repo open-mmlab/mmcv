@@ -1,4 +1,4 @@
-# TensorRT Custom Ops
+## TensorRT Custom Ops
 
 <!-- TOC -->
 
@@ -60,14 +60,14 @@
 
 <!-- TOC -->
 
-## MMCVRoIAlign
+### MMCVRoIAlign
 
-### Description
+#### Description
 
 Perform RoIAlign on output feature, used in bbox_head of most two stage
 detectors.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -78,7 +78,7 @@ detectors.
 | `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
 | `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -87,20 +87,20 @@ detectors.
 <dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of inputs[0].</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element output[0][r-1] is a pooled feature map corresponding to the r-th RoI inputs[1][r-1].<dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## ScatterND
+### ScatterND
 
-### Description
+#### Description
 
 ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape[-1] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
 
@@ -113,11 +113,11 @@ The `output` is calculated via the following equation:
       output[indices[idx]] = updates[idx]
 ```
 
-### Parameters
+#### Parameters
 
 None
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -130,24 +130,24 @@ None
 <dd>Tensor of rank q + r - indices_shape[-1] - 1.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Tensor of rank r >= 1.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear), tensor(int32, Linear)
 
-## NonMaxSuppression
+### NonMaxSuppression
 
-### Description
+#### Description
 
 Filter out boxes has high IoU overlap with previously selected boxes or low score. Output the indices of valid boxes. Indices of invalid boxes will be filled with -1.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter                    | Description                                                                                                                          |
 | ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -157,7 +157,7 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 | `float` | `score_threshold`            | The threshold for deciding when to remove boxes based on score.                                                                      |
 | `int`   | `offset`                     | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                                                |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -166,7 +166,7 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 <dd>Input scores. 3-D tensor of shape (num_batches, num_classes, spatial_dimension).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: tensor(int32, Linear)</dt>
@@ -175,17 +175,17 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 <dd>All invalid indices will be filled with -1.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## MMCVDeformConv2d
+### MMCVDeformConv2d
 
-### Description
+#### Description
 
 Perform Deformable Convolution on input feature, read [Deformable Convolutional Network](https://arxiv.org/abs/1703.06211) for detail.
 
-### Parameters
+#### Parameters
 
 | Type           | Parameter          | Description                                                                                                                       |
 | -------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -196,7 +196,7 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 | `int`          | `group`            | Split input into groups. `input_channel` should be divisible by the number of groups.                                             |
 | `int`          | `im2col_step`      | DeformableConv2d use im2col to compute convolution. im2col_step is used to split input and offset, reduce memory usage of column. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -207,24 +207,24 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 <dd>Input weight; 4-D tensor of shape (output_channel, input_channel, kH, kW).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## grid_sampler
+### grid_sampler
 
-### Description
+#### Description
 
 Perform sample from `input` with pixel locations from `grid`.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
 | ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -232,7 +232,7 @@ Perform sample from `input` with pixel locations from `grid`.
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -241,37 +241,37 @@ Perform sample from `input` with pixel locations from `grid`.
 <dd>Input offset; 4-D tensor of shape (N, outH, outW, 2), where outH and outW is the height and width of offset and output. </dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, C, outH, outW).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## cummax
+### cummax
 
-### Description
+#### Description
 
 Returns a namedtuple (`values`, `indices`) where `values` is the cumulative maximum of elements of `input` in the dimension `dim`. And `indices` is the index location of each maximum value found in the dimension `dim`.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter | Description                             |
 | ----- | --------- | --------------------------------------- |
 | `int` | `dim`     | The dimension to do the operation over. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
 <dd>The input tensor.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
@@ -280,30 +280,30 @@ Returns a namedtuple (`values`, `indices`) where `values` is the cumulative maxi
 <dd>Output indices.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## cummin
+### cummin
 
-### Description
+#### Description
 
 Returns a namedtuple (`values`, `indices`) where `values` is the cumulative minimum of elements of `input` in the dimension `dim`. And `indices` is the index location of each minimum value found in the dimension `dim`.
 
-### Parameters
+#### Parameters
 
 | Type  | Parameter | Description                             |
 | ----- | --------- | --------------------------------------- |
 | `int` | `dim`     | The dimension to do the operation over. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
 <dd>The input tensor.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
@@ -312,25 +312,25 @@ Returns a namedtuple (`values`, `indices`) where `values` is the cumulative mini
 <dd>Output indices.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## MMCVInstanceNormalization
+### MMCVInstanceNormalization
 
-### Description
+#### Description
 
 Carries out instance normalization as described in the paper https://arxiv.org/abs/1607.08022.
 
 y = scale * (x - mean) / sqrt(variance + epsilon) + B, where mean and variance are computed per instance per channel.
 
-### Parameters
+#### Parameters
 
 | Type    | Parameter | Description                                                          |
 | ------- | --------- | -------------------------------------------------------------------- |
 | `float` | `epsilon` | The epsilon value to use to avoid division by zero. Default is 1e-05 |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>input</tt>: T</dt>
@@ -341,24 +341,24 @@ y = scale * (x - mean) / sqrt(variance + epsilon) + B, where mean and variance a
 <dd>The input 1-dimensional bias tensor of size C.</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>output</tt>: T</dt>
 <dd>The output tensor of the same shape as input.</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)
 
-## MMCVModulatedDeformConv2d
+### MMCVModulatedDeformConv2d
 
-### Description
+#### Description
 
 Perform Modulated Deformable Convolution on input feature, read [Deformable ConvNets v2: More Deformable, Better Results](https://arxiv.org/abs/1811.11168?from=timeline) for detail.
 
-### Parameters
+#### Parameters
 
 | Type           | Parameter          | Description                                                                           |
 | -------------- | ------------------ | ------------------------------------------------------------------------------------- |
@@ -368,7 +368,7 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 | `int`          | `deformable_group` | Groups of deformable offset.                                                          |
 | `int`          | `group`            | Split input into groups. `input_channel` should be divisible by the number of groups. |
 
-### Inputs
+#### Inputs
 
 <dl>
 <dt><tt>inputs[0]</tt>: T</dt>
@@ -383,13 +383,13 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 <dd>Input weight; 1-D tensor of shape (output_channel).</dd>
 </dl>
 
-### Outputs
+#### Outputs
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
 </dl>
 
-### Type Constraints
+#### Type Constraints
 
 - T:tensor(float32, Linear)

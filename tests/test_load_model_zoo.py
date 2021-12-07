@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
 from unittest.mock import patch
@@ -73,8 +73,8 @@ def load(filepath, map_location=None):
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
 @patch('mmcv.runner.checkpoint.load_from_http', load_from_http)
+@patch('mmcv.runner.checkpoint.load_url', load_url)
 @patch('torch.load', load)
-@patch('torch.utils.model_zoo.load_url', load_url)
 def test_load_external_url():
     # test modelzoo://
     url = _load_checkpoint('modelzoo://resnet50')
@@ -128,7 +128,7 @@ def test_load_external_url():
     os.environ[ENV_MMCV_HOME] = mmcv_home
     url = _load_checkpoint('open-mmlab://train')
     assert url == 'url:https://localhost/train.pth'
-    with pytest.raises(IOError, match='train.pth is not a checkpoint ' 'file'):
+    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
         _load_checkpoint('open-mmlab://train_empty')
     url = _load_checkpoint('open-mmlab://test')
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'
@@ -140,7 +140,7 @@ def test_load_external_url():
     assert url == 'url:http://localhost/train.pth'
 
     # test local file
-    with pytest.raises(IOError, match='train.pth is not a checkpoint ' 'file'):
+    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
         _load_checkpoint('train.pth')
     url = _load_checkpoint(osp.join(_get_mmcv_home(), 'test.pth'))
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'

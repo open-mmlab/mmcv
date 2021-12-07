@@ -1,4 +1,4 @@
-import os
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import warnings
 from math import inf
@@ -7,8 +7,10 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
+from mmcv.fileio import FileClient
 from mmcv.utils import is_seq_of
 from .hook import Hook
+from .logger import LoggerHook
 
 
 class EvalHook(Hook):
@@ -27,7 +29,7 @@ class EvalHook(Hook):
         interval (int): Evaluation interval. Default: 1.
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
-            default: True.
+            Default: True.
         save_best (str, optional): If a metric is specified, it would measure
             the best checkpoint during evaluation. The information about best
             checkpoint would be saved in ``runner.meta['hook_msgs']`` to keep
@@ -36,7 +38,7 @@ class EvalHook(Hook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -47,11 +49,19 @@ class EvalHook(Hook):
             test function ``mmcv.engine.single_gpu_test`` will be used.
             (default: ``None``)
         greater_keys (List[str] | None, optional): Metric keys that will be
-            inferred by 'greater' comparison rule rule. If ``None``,
+            inferred by 'greater' comparison rule. If ``None``,
             _default_greater_keys will be used. (default: ``None``)
         less_keys (List[str] | None, optional): Metric keys that will be
             inferred by 'less' comparison rule. If ``None``, _default_less_keys
             will be used. (default: ``None``)
+        out_dir (str, optional): The root directory to save checkpoints. If not
+            specified, `runner.work_dir` will be used by default. If specified,
+            the `out_dir` will be the concatenation of `out_dir` and the last
+            level directory of `runner.work_dir`.
+            `New in version 1.3.16.`
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+            `New in version 1.3.16.`
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
@@ -82,6 +92,8 @@ class EvalHook(Hook):
                  test_fn=None,
                  greater_keys=None,
                  less_keys=None,
+                 out_dir=None,
+                 file_client_args=None,
                  **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError(f'dataloader must be a pytorch DataLoader, '
@@ -135,6 +147,9 @@ class EvalHook(Hook):
             self.best_ckpt_path = None
             self._init_rule(rule, self.save_best)
 
+        self.out_dir = out_dir
+        self.file_client_args = file_client_args
+
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
 
@@ -185,6 +200,23 @@ class EvalHook(Hook):
             self.compare_func = self.rule_map[self.rule]
 
     def before_run(self, runner):
+        if not self.out_dir:
+            self.out_dir = runner.work_dir
+
+        self.file_client = FileClient.infer_client(self.file_client_args,
+                                                   self.out_dir)
+
+        # if `self.out_dir` is not equal to `runner.work_dir`, it means that
+        # `self.out_dir` is set so the final `self.out_dir` is the
+        # concatenation of `self.out_dir` and the last level directory of
+        # `runner.work_dir`
+        if self.out_dir != runner.work_dir:
+            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+            self.out_dir = self.file_client.join_path(self.out_dir, basename)
+            runner.logger.info(
+                (f'The best checkpoint will be saved to {self.out_dir} by '
+                 f'{self.file_client.name}'))
+
         if self.save_best is not None:
             if runner.meta is None:
                 warnings.warn('runner.meta is None. Creating an empty one.')
@@ -211,23 +243,37 @@ class EvalHook(Hook):
 
     def after_train_iter(self, runner):
         """Called after every training iter to evaluate the results."""
-        if not self.by_epoch:
+        if not self.by_epoch and self._should_evaluate(runner):
+            # Because the priority of EvalHook is higher than LoggerHook, the
+            # training log and the evaluating log are mixed. Therefore,
+            # we need to dump the training log and clear it before evaluating
+            # log is generated. In addition, this problem will only appear in
+            # `IterBasedRunner` whose `self.by_epoch` is False, because
+            # `EpochBasedRunner` whose `self.by_epoch` is True calls
+            # `_do_evaluate` in `after_train_epoch` stage, and at this stage
+            # the training log has been printed, so it will not cause any
+            # problem. more details at
+            # https://github.com/open-mmlab/mmsegmentation/issues/694
+            for hook in runner._hooks:
+                if isinstance(hook, LoggerHook):
+                    hook.after_train_iter(runner)
+            runner.log_buffer.clear()
+
             self._do_evaluate(runner)
 
     def after_train_epoch(self, runner):
         """Called after every training epoch to evaluate the results."""
-        if self.by_epoch:
+        if self.by_epoch and self._should_evaluate(runner):
             self._do_evaluate(runner)
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
-        if not self._should_evaluate(runner):
-            return
-
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
-        if self.save_best:
+        # the key_score may be `None` so it needs to skip the action to save
+        # the best checkpoint
+        if self.save_best and key_score:
             self._save_ckpt(runner, key_score)
 
     def _should_evaluate(self, runner):
@@ -285,15 +331,20 @@ class EvalHook(Hook):
             best_score = key_score
             runner.meta['hook_msgs']['best_score'] = best_score
 
-            if self.best_ckpt_path and osp.isfile(self.best_ckpt_path):
-                os.remove(self.best_ckpt_path)
+            if self.best_ckpt_path and self.file_client.isfile(
+                    self.best_ckpt_path):
+                self.file_client.remove(self.best_ckpt_path)
+                runner.logger.info(
+                    (f'The previous best checkpoint {self.best_ckpt_path} was '
+                     'removed'))
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
-            self.best_ckpt_path = osp.join(runner.work_dir, best_ckpt_name)
+            self.best_ckpt_path = self.file_client.join_path(
+                self.out_dir, best_ckpt_name)
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
 
             runner.save_checkpoint(
-                runner.work_dir, best_ckpt_name, create_symlink=False)
+                self.out_dir, best_ckpt_name, create_symlink=False)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(
@@ -309,11 +360,22 @@ class EvalHook(Hook):
         """
         eval_res = self.dataloader.dataset.evaluate(
             results, logger=runner.logger, **self.eval_kwargs)
+
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
         runner.log_buffer.ready = True
 
         if self.save_best is not None:
+            # If the performance of model is pool, the `eval_res` may be an
+            # empty dict and it will raise exception when `self.save_best` is
+            # not None. More details at
+            # https://github.com/open-mmlab/mmdetection/issues/6265.
+            if not eval_res:
+                warnings.warn(
+                    'Since `eval_res` is an empty dict, the behavior to save '
+                    'the best checkpoint will be skipped in this evaluation.')
+                return None
+
             if self.key_indicator == 'auto':
                 # infer from eval_results
                 self._init_rule(self.rule, list(eval_res.keys())[0])
@@ -347,7 +409,7 @@ class DistEvalHook(EvalHook):
             on the test dataset. e.g., ``bbox_mAP``, ``segm_mAP`` for bbox
             detection and instance segmentation. ``AR@100`` for proposal
             recall. If ``save_best`` is ``auto``, the first key of the returned
-             ``OrderedDict`` result will be used. Default: None.
+            ``OrderedDict`` result will be used. Default: None.
         rule (str | None, optional): Comparison rule for best score. If set to
             None, it will infer a reasonable rule. Keys such as 'acc', 'top'
             .etc will be inferred by 'greater' rule. Keys contain 'loss' will
@@ -364,6 +426,12 @@ class DistEvalHook(EvalHook):
         broadcast_bn_buffer (bool): Whether to broadcast the
             buffer(running_mean and running_var) of rank 0 to other rank
             before evaluation. Default: True.
+        out_dir (str, optional): The root directory to save checkpoints. If not
+            specified, `runner.work_dir` will be used by default. If specified,
+            the `out_dir` will be the concatenation of `out_dir` and the last
+            level directory of `runner.work_dir`.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details. Default: None.
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
     """
@@ -381,6 +449,8 @@ class DistEvalHook(EvalHook):
                  broadcast_bn_buffer=True,
                  tmpdir=None,
                  gpu_collect=False,
+                 out_dir=None,
+                 file_client_args=None,
                  **eval_kwargs):
 
         if test_fn is None:
@@ -397,6 +467,8 @@ class DistEvalHook(EvalHook):
             test_fn=test_fn,
             greater_keys=greater_keys,
             less_keys=less_keys,
+            out_dir=out_dir,
+            file_client_args=file_client_args,
             **eval_kwargs)
 
         self.broadcast_bn_buffer = broadcast_bn_buffer
@@ -418,9 +490,6 @@ class DistEvalHook(EvalHook):
                     dist.broadcast(module.running_var, 0)
                     dist.broadcast(module.running_mean, 0)
 
-        if not self._should_evaluate(runner):
-            return
-
         tmpdir = self.tmpdir
         if tmpdir is None:
             tmpdir = osp.join(runner.work_dir, '.eval_hook')
@@ -434,6 +503,7 @@ class DistEvalHook(EvalHook):
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
-
-            if self.save_best:
+            # the key_score may be `None` so it needs to skip the action to
+            # save the best checkpoint
+            if self.save_best and key_score:
                 self._save_ckpt(runner, key_score)

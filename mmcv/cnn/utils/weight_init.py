@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
 import warnings
@@ -11,6 +11,38 @@ from torch import Tensor
 from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 
 INITIALIZERS = Registry('initializer')
+
+
+def update_init_info(module, init_info):
+    """Update the `_params_init_info` in the module if the value of parameters
+    are changed.
+
+    Args:
+        module (obj:`nn.Module`): The module of PyTorch with a user-defined
+            attribute `_params_init_info` which records the initialization
+            information.
+        init_info (str): The string that describes the initialization.
+    """
+    assert hasattr(
+        module,
+        '_params_init_info'), f'Can not find `_params_init_info` in {module}'
+    for name, param in module.named_parameters():
+
+        assert param in module._params_init_info, (
+            f'Find a new :obj:`Parameter` '
+            f'named `{name}` during executing the '
+            f'`init_weights` of '
+            f'`{module.__class__.__name__}`. '
+            f'Please do not add or '
+            f'replace parameters during executing '
+            f'the `init_weights`. ')
+
+        # The parameter has been changed during executing the
+        # `init_weights` of module
+        mean_value = param.data.mean()
+        if module._params_init_info[param]['tmp_mean_value'] != mean_value:
+            module._params_init_info[param]['init_info'] = init_info
+            module._params_init_info[param]['tmp_mean_value'] = mean_value
 
 
 def constant_init(module, val, bias=0):
@@ -122,6 +154,10 @@ class BaseInit(object):
             self.bias = bias
         self.layer = [layer] if isinstance(layer, str) else layer
 
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}, bias={self.bias}'
+        return info
+
 
 @INITIALIZERS.register_module(name='Constant')
 class ConstantInit(BaseInit):
@@ -152,6 +188,12 @@ class ConstantInit(BaseInit):
                     constant_init(m, self.val, self.bias)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: val={self.val}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Xavier')
@@ -189,6 +231,13 @@ class XavierInit(BaseInit):
                     xavier_init(m, self.gain, self.bias, self.distribution)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: gain={self.gain}, ' \
+               f'distribution={self.distribution}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Normal')
@@ -225,6 +274,13 @@ class NormalInit(BaseInit):
                     normal_init(m, self.mean, self.std, self.bias)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: mean={self.mean},' \
+               f' std={self.std}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='TruncNormal')
@@ -273,6 +329,13 @@ class TruncNormalInit(BaseInit):
                                       self.bias)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: a={self.a}, b={self.b},' \
+               f' mean={self.mean}, std={self.std}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Uniform')
@@ -309,11 +372,18 @@ class UniformInit(BaseInit):
                     uniform_init(m, self.a, self.b, self.bias)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: a={self.a},' \
+               f' b={self.b}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Kaiming')
 class KaimingInit(BaseInit):
-    r"""Initialize module paramters with the valuse according to the method
+    r"""Initialize module parameters with the values according to the method
     described in `Delving deep into rectifiers: Surpassing human-level
     performance on ImageNet classification - He, K. et al. (2015).
     <https://www.cv-foundation.org/openaccess/content_iccv_2015/
@@ -364,6 +434,14 @@ class KaimingInit(BaseInit):
                                  self.bias, self.distribution)
 
         module.apply(init)
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: a={self.a}, mode={self.mode}, ' \
+               f'nonlinearity={self.nonlinearity}, ' \
+               f'distribution ={self.distribution}, bias={self.bias}'
+        return info
 
 
 @INITIALIZERS.register_module(name='Caffe2Xavier')
@@ -422,6 +500,13 @@ class PretrainedInit(object):
                 self.prefix, self.checkpoint, map_location=self.map_location)
             load_state_dict(module, state_dict, strict=False, logger=logger)
 
+        if hasattr(module, '_params_init_info'):
+            update_init_info(module, init_info=self._get_init_info())
+
+    def _get_init_info(self):
+        info = f'{self.__class__.__name__}: load from {self.checkpoint}'
+        return info
+
 
 def _initialize(module, cfg, wholemodule=False):
     func = build_from_cfg(cfg, INITIALIZERS)
@@ -446,7 +531,7 @@ def _initialize_override(module, override, cfg):
         if name is None:
             raise ValueError('`override` must contain the key "name",'
                              f'but got {cp_override}')
-        # if override only has name kay, it means use args in init_cfg
+        # if override only has name key, it means use args in init_cfg
         if not cp_override:
             cp_override.update(cfg)
         # if override has name key and other args except type key, it will

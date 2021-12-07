@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 import os
 import pkgutil
@@ -33,6 +34,8 @@ else:
         'fused_bias_leakyrelu',
         'upfirdn2d',
         'ms_deform_attn_forward',
+        'pixel_group',
+        'contour_expand',
     ]
 
     def get_fake_func(name, e):

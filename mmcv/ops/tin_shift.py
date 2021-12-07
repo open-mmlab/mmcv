@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # Code reference from "Temporal Interlacing Network"
 # https://github.com/deepcs233/TIN/blob/master/cuda_shift/rtc_wrap.py
 # Hao Shao, Shengju Qian, Yu Liu
@@ -17,6 +18,11 @@ class TINShiftFunction(Function):
 
     @staticmethod
     def forward(ctx, input, shift):
+        C = input.size(2)
+        num_segments = shift.size(1)
+        if C // num_segments <= 0 or C % num_segments != 0:
+            raise ValueError('C should be a multiple of num_segments, '
+                             f'but got C={C} and num_segments={num_segments}.')
 
         ctx.save_for_backward(shift)
 

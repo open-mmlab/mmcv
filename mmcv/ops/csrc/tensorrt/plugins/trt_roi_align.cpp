@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_roi_align.hpp"
 
 #include <assert.h>

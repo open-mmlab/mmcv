@@ -18,7 +18,8 @@ mmcv.track_progress(func, tasks)
 ```
 
 The output is like the following.
-![progress](../_static/progress.gif)
+
+![progress](../_static/progress.*)
 
 There is another method `track_parallel_progress`, which wraps multiprocessing and
 progress visualization.
@@ -27,7 +28,7 @@ progress visualization.
 mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 ```
 
-![progress](../_static/parallel_progress.gif)
+![progress](../_static/parallel_progress.*)
 
 If you want to iterate or enumerate a list of items and track the progress, `track_iter_progress`
 is a good choice. It will display a progress bar to tell the progress and ETA.

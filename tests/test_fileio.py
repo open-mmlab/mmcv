@@ -1,11 +1,17 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import sys
 import tempfile
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 import mmcv
+from mmcv.fileio.file_client import HTTPBackend, PetrelBackend
+
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):
@@ -13,13 +19,20 @@ def _test_handler(file_format, test_obj, str_checker, mode='r+'):
     dump_str = mmcv.dump(test_obj, file_format=file_format)
     str_checker(dump_str)
 
-    # load/dump with filenames
+    # load/dump with filenames from disk
     tmp_filename = osp.join(tempfile.gettempdir(), 'mmcv_test_dump')
     mmcv.dump(test_obj, tmp_filename, file_format=file_format)
     assert osp.isfile(tmp_filename)
     load_obj = mmcv.load(tmp_filename, file_format=file_format)
     assert load_obj == test_obj
     os.remove(tmp_filename)
+
+    # load/dump with filename from petrel
+    method = 'put' if 'b' in mode else 'put_text'
+    with patch.object(PetrelBackend, method, return_value=None) as mock_method:
+        filename = 's3://path/of/your/file'
+        mmcv.dump(test_obj, filename, file_format=file_format)
+    mock_method.assert_called()
 
     # json load/dump with a file-like object
     with tempfile.NamedTemporaryFile(mode, delete=False) as f:
@@ -122,6 +135,7 @@ def test_register_handler():
 
 
 def test_list_from_file():
+    # get list from disk
     filename = osp.join(osp.dirname(__file__), 'data/filelist.txt')
     filelist = mmcv.list_from_file(filename)
     assert filelist == ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg']
@@ -134,10 +148,64 @@ def test_list_from_file():
     filelist = mmcv.list_from_file(filename, offset=3, max_num=3)
     assert filelist == ['4.jpg', '5.jpg']
 
+    # get list from http
+    with patch.object(
+            HTTPBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
+        filename = 'http://path/of/your/file'
+        filelist = mmcv.list_from_file(
+            filename, file_client_args={'backend': 'http'})
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+        filelist = mmcv.list_from_file(
+            filename, file_client_args={'prefix': 'http'})
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+        filelist = mmcv.list_from_file(filename)
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+
+    # get list from petrel
+    with patch.object(
+            PetrelBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
+        filename = 's3://path/of/your/file'
+        filelist = mmcv.list_from_file(
+            filename, file_client_args={'backend': 'petrel'})
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+        filelist = mmcv.list_from_file(
+            filename, file_client_args={'prefix': 's3'})
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+        filelist = mmcv.list_from_file(filename)
+        assert filelist == ['1.jpg', '2.jpg', '3.jpg']
+
 
 def test_dict_from_file():
+    # get dict from disk
     filename = osp.join(osp.dirname(__file__), 'data/mapping.txt')
     mapping = mmcv.dict_from_file(filename)
     assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
     mapping = mmcv.dict_from_file(filename, key_type=int)
     assert mapping == {1: 'cat', 2: ['dog', 'cow'], 3: 'panda'}
+
+    # get dict from http
+    with patch.object(
+            HTTPBackend, 'get_text', return_value='1 cat\n2 dog cow\n3 panda'):
+        filename = 'http://path/of/your/file'
+        mapping = mmcv.dict_from_file(
+            filename, file_client_args={'backend': 'http'})
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+        mapping = mmcv.dict_from_file(
+            filename, file_client_args={'prefix': 'http'})
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+        mapping = mmcv.dict_from_file(filename)
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+
+    # get dict from petrel
+    with patch.object(
+            PetrelBackend, 'get_text',
+            return_value='1 cat\n2 dog cow\n3 panda'):
+        filename = 's3://path/of/your/file'
+        mapping = mmcv.dict_from_file(
+            filename, file_client_args={'backend': 'petrel'})
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+        mapping = mmcv.dict_from_file(
+            filename, file_client_args={'prefix': 's3'})
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
+        mapping = mmcv.dict_from_file(filename)
+        assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}

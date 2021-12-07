@@ -1,5 +1,6 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import datetime
+import os
 import os.path as osp
 from collections import OrderedDict
 
@@ -7,6 +8,8 @@ import torch
 import torch.distributed as dist
 
 import mmcv
+from mmcv.fileio.file_client import FileClient
+from mmcv.utils import is_tuple_of, scandir
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -19,14 +22,34 @@ class TextLoggerHook(LoggerHook):
     saved in json file.
 
     Args:
-        by_epoch (bool): Whether EpochBasedRunner is used.
-        interval (int): Logging interval (every k iterations).
-        ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-        reset_flag (bool): Whether to clear the output buffer after logging.
-        interval_exp_name (int): Logging interval for experiment name. This
-            feature is to help users conveniently get the experiment
+        by_epoch (bool, optional): Whether EpochBasedRunner is used.
+            Default: True.
+        interval (int, optional): Logging interval (every k iterations).
+            Default: 10.
+        ignore_last (bool, optional): Ignore the log of last iterations in each
+            epoch if less than :attr:`interval`. Default: True.
+        reset_flag (bool, optional): Whether to clear the output buffer after
+            logging. Default: False.
+        interval_exp_name (int, optional): Logging interval for experiment
+            name. This feature is to help users conveniently get the experiment
             information from screen or log file. Default: 1000.
+        out_dir (str, optional): Logs are saved in ``runner.work_dir`` default.
+            If ``out_dir`` is specified, logs will be copied to a new directory
+            which is the concatenation of ``out_dir`` and the last level
+            directory of ``runner.work_dir``. Default: None.
+            `New in version 1.3.16.`
+        out_suffix (str or tuple[str], optional): Those filenames ending with
+            ``out_suffix`` will be copied to ``out_dir``.
+            Default: ('.log.json', '.log', '.py').
+            `New in version 1.3.16.`
+        keep_local (bool, optional): Whether to keep local log when
+            :attr:`out_dir` is specified. If False, the local log will be
+            removed. Default: True.
+            `New in version 1.3.16.`
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
+            `New in version 1.3.16.`
     """
 
     def __init__(self,
@@ -34,15 +57,49 @@ class TextLoggerHook(LoggerHook):
                  interval=10,
                  ignore_last=True,
                  reset_flag=False,
-                 interval_exp_name=1000):
+                 interval_exp_name=1000,
+                 out_dir=None,
+                 out_suffix=('.log.json', '.log', '.py'),
+                 keep_local=True,
+                 file_client_args=None):
         super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
                                              by_epoch)
         self.by_epoch = by_epoch
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
 
+        if out_dir is None and file_client_args is not None:
+            raise ValueError(
+                'file_client_args should be "None" when `out_dir` is not'
+                'specified.')
+        self.out_dir = out_dir
+
+        if not (out_dir is None or isinstance(out_dir, str)
+                or is_tuple_of(out_dir, str)):
+            raise TypeError('out_dir should be  "None" or string or tuple of '
+                            'string, but got {out_dir}')
+        self.out_suffix = out_suffix
+
+        self.keep_local = keep_local
+        self.file_client_args = file_client_args
+        if self.out_dir is not None:
+            self.file_client = FileClient.infer_client(file_client_args,
+                                                       self.out_dir)
+
     def before_run(self, runner):
         super(TextLoggerHook, self).before_run(runner)
+
+        if self.out_dir is not None:
+            self.file_client = FileClient.infer_client(self.file_client_args,
+                                                       self.out_dir)
+            # The final `self.out_dir` is the concatenation of `self.out_dir`
+            # and the last level directory of `runner.work_dir`
+            basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+            self.out_dir = self.file_client.join_path(self.out_dir, basename)
+            runner.logger.info(
+                (f'Text logs will be saved to {self.out_dir} by '
+                 f'{self.file_client.name} after the training process.'))
+
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
                                       f'{runner.timestamp}.log.json')
@@ -177,3 +234,23 @@ class TextLoggerHook(LoggerHook):
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
         return log_dict
+
+    def after_run(self, runner):
+        # copy or upload logs to self.out_dir
+        if self.out_dir is not None:
+            for filename in scandir(runner.work_dir, self.out_suffix, True):
+                local_filepath = osp.join(runner.work_dir, filename)
+                out_filepath = self.file_client.join_path(
+                    self.out_dir, filename)
+                with open(local_filepath, 'r') as f:
+                    self.file_client.put_text(f.read(), out_filepath)
+
+                runner.logger.info(
+                    (f'The file {local_filepath} has been uploaded to '
+                     f'{out_filepath}.'))
+
+                if not self.keep_local:
+                    os.remove(local_filepath)
+                    runner.logger.info(
+                        (f'{local_filepath} was removed due to the '
+                         '`self.keep_local=False`'))

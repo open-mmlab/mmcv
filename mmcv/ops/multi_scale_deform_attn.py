@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
 import warnings
 
@@ -152,10 +153,10 @@ def multi_scale_deformable_attn_pytorch(value, value_spatial_shapes,
 
 @ATTENTION.register_module()
 class MultiScaleDeformableAttention(BaseModule):
-    """An attention module used in Deformable-Detr. `Deformable DETR:
-    Deformable Transformers for End-to-End Object Detection.
+    """An attention module used in Deformable-Detr.
 
-      <https://arxiv.org/pdf/2010.04159.pdf>`_.
+    `Deformable DETR: Deformable Transformers for End-to-End Object Detection.
+    <https://arxiv.org/pdf/2010.04159.pdf>`_.
 
     Args:
         embed_dims (int): The embedding dimension of Attention.
@@ -340,14 +341,13 @@ class MultiScaleDeformableAttention(BaseModule):
             raise ValueError(
                 f'Last dim of reference_points must be'
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
-        if torch.cuda.is_available():
+        if torch.cuda.is_available() and value.is_cuda:
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
         else:
             output = multi_scale_deformable_attn_pytorch(
-                value, spatial_shapes, level_start_index, sampling_locations,
-                attention_weights, self.im2col_step)
+                value, spatial_shapes, sampling_locations, attention_weights)
 
         output = self.output_proj(output)
 

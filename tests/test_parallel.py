@@ -29,7 +29,7 @@ def test_is_module_wrapper():
             return self.conv(x)
 
     # _verify_model_across_ranks is added in torch1.9.0 so we should check
-    # wether _verify_model_across_ranks is the member of torch.distributed
+    # whether _verify_model_across_ranks is the member of torch.distributed
     # before mocking
     if hasattr(torch.distributed, '_verify_model_across_ranks'):
         torch.distributed._verify_model_across_ranks = mock

@@ -1,10 +1,12 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import pickle
 
 from .base import BaseFileHandler
 
 
 class PickleHandler(BaseFileHandler):
+
+    str_like = False
 
     def load_from_fileobj(self, file, **kwargs):
         return pickle.load(file, **kwargs)

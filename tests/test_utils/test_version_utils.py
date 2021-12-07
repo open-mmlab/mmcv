@@ -1,22 +1,42 @@
 from unittest.mock import patch
 
-from mmcv import digit_version, get_git_hash, parse_version_info
+import pytest
+
+from mmcv import get_git_hash, parse_version_info
+from mmcv.utils import digit_version
 
 
 def test_digit_version():
-    assert digit_version('0.2.16') == (0, 2, 16)
-    assert digit_version('1.2.3') == (1, 2, 3)
-    assert digit_version('1.2.3rc0') == (1, 2, 2, 0)
-    assert digit_version('1.2.3rc1') == (1, 2, 2, 1)
-    assert digit_version('1.0rc0') == (1, -1, 0)
+    assert digit_version('0.2.16') == (0, 2, 16, 0, 0, 0)
+    assert digit_version('1.2.3') == (1, 2, 3, 0, 0, 0)
+    assert digit_version('1.2.3rc0') == (1, 2, 3, 0, -1, 0)
+    assert digit_version('1.2.3rc1') == (1, 2, 3, 0, -1, 1)
+    assert digit_version('1.0rc0') == (1, 0, 0, 0, -1, 0)
+    assert digit_version('1.0') == digit_version('1.0.0')
+    assert digit_version('1.5.0+cuda90_cudnn7.6.3_lms') == digit_version('1.5')
+    assert digit_version('1.0.0dev') < digit_version('1.0.0a')
+    assert digit_version('1.0.0a') < digit_version('1.0.0a1')
+    assert digit_version('1.0.0a') < digit_version('1.0.0b')
+    assert digit_version('1.0.0b') < digit_version('1.0.0rc')
+    assert digit_version('1.0.0rc1') < digit_version('1.0.0')
+    assert digit_version('1.0.0') < digit_version('1.0.0post')
+    assert digit_version('1.0.0post') < digit_version('1.0.0post1')
+    assert digit_version('v1') == (1, 0, 0, 0, 0, 0)
+    assert digit_version('v1.1.5') == (1, 1, 5, 0, 0, 0)
+    with pytest.raises(AssertionError):
+        digit_version('a')
+    with pytest.raises(AssertionError):
+        digit_version('1x')
+    with pytest.raises(AssertionError):
+        digit_version('1.x')
 
 
 def test_parse_version_info():
-    assert parse_version_info('0.2.16') == (0, 2, 16)
-    assert parse_version_info('1.2.3') == (1, 2, 3)
-    assert parse_version_info('1.2.3rc0') == (1, 2, 3, 'rc0')
-    assert parse_version_info('1.2.3rc1') == (1, 2, 3, 'rc1')
-    assert parse_version_info('1.0rc0') == (1, 0, 'rc0')
+    assert parse_version_info('0.2.16') == (0, 2, 16, 0, 0, 0)
+    assert parse_version_info('1.2.3') == (1, 2, 3, 0, 0, 0)
+    assert parse_version_info('1.2.3rc0') == (1, 2, 3, 0, 'rc', 0)
+    assert parse_version_info('1.2.3rc1') == (1, 2, 3, 0, 'rc', 1)
+    assert parse_version_info('1.0rc0') == (1, 0, 0, 0, 'rc', 0)
 
 
 def _mock_cmd_success(cmd):

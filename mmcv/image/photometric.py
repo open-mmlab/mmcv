@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import cv2
 import numpy as np
 
@@ -157,6 +158,8 @@ def imequalize(img):
             lut = (np.cumsum(histo) + (step // 2)) // step
             # Shift lut, prepending with 0.
             lut = np.concatenate([[0], lut[:-1]], 0)
+            # handle potential integer overflow
+            lut[lut > 255] = 255
         # If step is zero, return the original image.
         # Otherwise, index from lut.
         return np.where(np.equal(step, 0), im, lut[im])
@@ -237,7 +240,7 @@ def auto_contrast(img, cutoff=0):
 
     This function maximize (normalize) image contrast by first removing cutoff
     percent of the lightest and darkest pixels from the histogram and remapping
-     the image so that the darkest pixel becomes black (0), and the lightest
+    the image so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
 
     Args:
@@ -298,7 +301,7 @@ def adjust_sharpness(img, factor=1., kernel=None):
     image and the degenerated mean image:
 
     .. math::
-    output = img * factor + degenerated * (1 - factor)
+        output = img * factor + degenerated * (1 - factor)
 
     Args:
         img (ndarray): Image to be sharpened. BGR order.
@@ -306,9 +309,9 @@ def adjust_sharpness(img, factor=1., kernel=None):
         kernel (np.ndarray, optional): Filter kernel to be applied on the img
             to obtain the degenerated img. Defaults to None.
 
-    Notes:
+    Note:
         No value sanity check is enforced on the kernel set by users. So with
-        an inappropriate kernel, the `adjust_sharpness` may fail to perform
+        an inappropriate kernel, the ``adjust_sharpness`` may fail to perform
         the function its name indicates but end up performing whatever
         transform determined by the kernel.
 
