@@ -45,8 +45,12 @@ class _Voxelization(Function):
         """
         if max_points == -1 or max_voxels == -1:
             coors = points.new_zeros(size=(points.size(0), 3), dtype=torch.int)
-            ext_module.dynamic_voxelize_forward(points, coors, voxel_size,
-                                                coors_range, 3)
+            ext_module.dynamic_voxelize_forward(
+                points,
+                torch.tensor(voxel_size, dtype=torch.float),
+                torch.tensor(coors_range, dtype=torch.float),
+                coors,
+                NDim=3)
             return coors
         else:
             voxels = points.new_zeros(
@@ -54,9 +58,18 @@ class _Voxelization(Function):
             coors = points.new_zeros(size=(max_voxels, 3), dtype=torch.int)
             num_points_per_voxel = points.new_zeros(
                 size=(max_voxels, ), dtype=torch.int)
-            voxel_num = ext_module.hard_voxelize_forward(
-                points, voxels, coors, num_points_per_voxel, voxel_size,
-                coors_range, max_points, max_voxels, 3)
+            voxel_num = torch.zeros(size=(), dtype=torch.long)
+            ext_module.hard_voxelize_forward(
+                points,
+                torch.tensor(voxel_size, dtype=torch.float),
+                torch.tensor(coors_range, dtype=torch.float),
+                voxels,
+                coors,
+                num_points_per_voxel,
+                voxel_num,
+                max_points=max_points,
+                max_voxels=max_voxels,
+                NDim=3)
             # select the valid voxels
             voxels_out = voxels[:voxel_num]
             coors_out = coors[:voxel_num]

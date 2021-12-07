@@ -15,6 +15,14 @@ class MMDataParallel(DataParallel):
       flexible control of input data during both GPU and CPU inference.
     - It implement two more APIs ``train_step()`` and ``val_step()``.
 
+    .. warning::
+        MMDataParallel only supports single GPU training, if you need to
+        train with multiple GPUs, please use MMDistributedDataParallel
+        instead. If you have multiple GPUs and you just want to use
+        MMDataParallel, you can set the environment variable
+        ``CUDA_VISIBLE_DEVICES=0`` or instantiate ``MMDataParallel`` with
+        ``device_ids=[0]``.
+
     Args:
         module (:class:`nn.Module`): Module to be encapsulated.
         device_ids (list[int]): Device IDS of modules to be scattered to.
@@ -54,7 +62,7 @@ class MMDataParallel(DataParallel):
         assert len(self.device_ids) == 1, \
             ('MMDataParallel only supports single GPU training, if you need to'
              ' train with multiple GPUs, please use MMDistributedDataParallel'
-             'instead.')
+             ' instead.')
 
         for t in chain(self.module.parameters(), self.module.buffers()):
             if t.device != self.src_device_obj:

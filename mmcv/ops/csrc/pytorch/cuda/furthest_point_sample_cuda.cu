@@ -14,8 +14,8 @@ inline int opt_n_threads(int work_size) {
 }
 
 void FurthestPointSamplingForwardCUDAKernelLauncher(int b, int n, int m,
-                                                    const float *dataset,
-                                                    float *temp, int *idxs) {
+                                                    const float* dataset,
+                                                    float* temp, int* idxs) {
   // dataset: (B, N, 3)
   // tmp: (B, N)
   // output:
@@ -79,7 +79,7 @@ void FurthestPointSamplingForwardCUDAKernelLauncher(int b, int n, int m,
 }
 
 void FurthestPointSamplingWithDistForwardCUDAKernelLauncher(
-    int b, int n, int m, const float *dataset, float *temp, int *idxs) {
+    int b, int n, int m, const float* dataset, float* temp, int* idxs) {
   // dataset: (B, N, N)
   // temp: (B, N)
   // output:

@@ -15,8 +15,6 @@ import os
 import sys
 
 import pytorch_sphinx_theme
-from m2r import MdInclude
-from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -103,7 +101,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -118,17 +115,21 @@ html_theme_options = {
                     'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
                 },
                 {
+                    'name': 'MIM',
+                    'url': 'https://openmim.readthedocs.io/en/latest/'
+                },
+                {
                     'name': 'MMAction2',
                     'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMClassification',
-                    'url': 'https://github.com/open-mmlab/mmclassification',
+                    'url':
+                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection',
-                    'url':
-                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
+                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
                 },
                 {
                     'name': 'MMDetection3D',
@@ -160,6 +161,18 @@ html_theme_options = {
                     'name': 'MMTracking',
                     'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
                 },
+                {
+                    'name': 'MMFlow',
+                    'url': 'https://mmflow.readthedocs.io/en/latest/',
+                },
+                {
+                    'name': 'MMFewShot',
+                    'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
+                },
+                {
+                    'name': 'MMHuman3D',
+                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
+                },
             ]
         },
         {
@@ -167,7 +180,7 @@ html_theme_options = {
             'OpenMMLab',
             'children': [
                 {
-                    'name': '官网',
+                    'name': '主页',
                     'url': 'https://openmmlab.com/'
                 },
                 {
@@ -277,16 +290,3 @@ StandaloneHTMLBuilder.supported_image_types = [
 # Ignore >>> when copying code
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
-
-
-def setup(app):
-    app.add_config_value('no_underscore_emphasis', False, 'env')
-    app.add_config_value('m2r_parse_relative_links', False, 'env')
-    app.add_config_value('m2r_anonymous_references', False, 'env')
-    app.add_config_value('m2r_disable_inline_math', False, 'env')
-    app.add_directive('mdinclude', MdInclude)
-    app.add_config_value('recommonmark_config', {
-        'auto_toc_tree_section': 'Contents',
-        'enable_eval_rst': True,
-    }, True)
-    app.add_transform(AutoStructify)
