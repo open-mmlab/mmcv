@@ -12,7 +12,11 @@ try:
         from parrots.utils.build_extension import BuildExtension
         EXT_TYPE = 'parrots'
     else:
-        from torch.utils.cpp_extension import BuildExtension
+        try:
+            if torch.is_mlu_available():
+                from torch_mlu.utils.cpp_extension import BuildExtension
+        except AttributeError:
+            from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
@@ -276,11 +280,27 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         else:
-            print(f'Compiling {ext_name} without CUDA')
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
-            extension = CppExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            try:
+                if torch.is_mlu_available():
+                    from torch_mlu.utils.cpp_extension import MLUExtension
+                    define_macros += [('MMCV_WITH_MLU', None)]
+                    mlu_args = os.getenv('MMCV_MLU_ARGS')
+                    extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
+                    op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+                    op_files += glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+                    op_files += glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp')
+                    op_files += glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
+                    extension = MLUExtension
+                    include_dirs.append(
+                        os.path.abspath('./mmcv/ops/csrc/common'))
+                else:
+                    print('Cambricon Catch is not available!')
+            except AttributeError:
+                print(f'Compiling {ext_name} without CUDA')
+                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                    glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+                extension = CppExtension
+                include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
 
         # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
         # c++14 features, the argument ['std=c++14'] must be added here.
