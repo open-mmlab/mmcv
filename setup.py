@@ -228,7 +228,15 @@ def get_extensions():
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
-        extra_compile_args = {}
+
+        # Before PyTorch1.8.0, when compiling CUDA code, `cxx` is a
+        # required key passed to PyTorch. Even if there is no flag passed
+        # to cxx, users also need to pass an empty list to PyTorch.
+        # Since PyTorch1.8.0, it has a default value so users do not need
+        # to pass an empty list anymore.
+        # More details at https://github.com/pytorch/pytorch/pull/45956
+        extra_compile_args = {'cxx': []}
+
         # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
         # c++14 features, the argument ['std=c++14'] must be added here.
         # However, in the windows environment, some standard libraries
