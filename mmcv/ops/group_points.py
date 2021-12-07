@@ -68,13 +68,15 @@ class QueryAndGroup(nn.Module):
         """
         Args:
             points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
-                features.
+                points.
             center_xyz (torch.Tensor): (B, npoint, 3) coordinates of the
                 centriods.
-            features (torch.Tensor): (B, C, N) Descriptors of the features.
+            features (torch.Tensor): (B, C, N) The features of grouped
+                points.
 
         Returns:
-            torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped feature.
+            torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
+                concatenated coordinates and features of points.
         """
         # if self.max_radius is None, we will perform kNN instead of ball query
         # idx is of shape [B, npoint, sample_num]

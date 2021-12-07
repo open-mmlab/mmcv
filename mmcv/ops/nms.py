@@ -131,8 +131,8 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
         max_num (int): maximum number of boxes after NMS.
 
     Returns:
-        tuple: kept dets (boxes and scores) and indice, which is always the
-        same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[49.1, 32.4, 51.0, 35.9],
@@ -200,8 +200,8 @@ def soft_nms(boxes,
         offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
 
     Returns:
-        tuple: kept dets (boxes and scores) and indice, which is always the
-        same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[4., 3., 5., 3.],

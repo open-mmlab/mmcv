@@ -36,12 +36,12 @@ class _Voxelization(Function):
                 Default: 20000.
 
         Returns:
-            tuple[torch.Tensor]: A tuple contains three elements. The first one
-            is the voxelization whose shape is [M, max_points, ndim]. The
-            voxelization only contain points and returned when
-            max_points != -1. The second is the coordinates with the shape of
-            [M, 3]. The last is the number of points per voxelization with the
-            shape of [M]. Only returned when max_points != -1.
+            tuple[torch.Tensor]: tuple[torch.Tensor]: A tuple contains three
+            elements. The first one is the output voxels with the shape of
+            [M, max_points, n_dim], which only contain points and returned
+            when max_points != -1. The second is the voxel coordinates with
+            shape of [M, 3]. The last is number of point per voxel with the
+            shape of [M], which only returned when max_points != -1.
         """
         if max_points == -1 or max_voxels == -1:
             coors = points.new_zeros(size=(points.size(0), 3), dtype=torch.int)

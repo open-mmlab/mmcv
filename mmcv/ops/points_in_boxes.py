@@ -18,8 +18,8 @@ def points_in_boxes_part(points, boxes):
             LiDAR/DEPTH coordinate, (x, y, z) is the bottom center
 
     Returns:
-        torch.Tensor: Return the box indies of points with the shape of
-        (B, M, T). Default background = 0.
+        torch.Tensor: Return the box indices of points with the shape of
+        (B, M). Default background = -1.
     """
     assert points.shape[0] == boxes.shape[0], \
         'Points and boxes should have the same batch size, ' \
@@ -68,7 +68,7 @@ def points_in_boxes_cpu(points, boxes):
             (x, y, z) is the bottom center.
 
     Returns:
-        torch.Tensor: Return the box indies of points with the shape of
+        torch.Tensor: Return the box indices of points with the shape of
         (B, M, T). Default background = 0.
     """
     assert points.shape[0] == boxes.shape[0], \
@@ -104,7 +104,7 @@ def points_in_boxes_all(points, boxes):
             (x, y, z) is the bottom center.
 
     Returns:
-        torch.Tensor: Return the box indies of points with the shape of
+        torch.Tensor: Return the box indices of points with the shape of
         (B, M, T). Default background = 0.
     """
     assert boxes.shape[0] == points.shape[0], \
