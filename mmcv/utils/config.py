@@ -25,6 +25,7 @@ else:
     import re
 
 BASE_KEY = '_base_'
+ENV_KEY = '_env_'
 DELETE_KEY = '_delete_'
 DEPRECATION_KEY = '_deprecation_'
 RESERVED_KEYS = ['filename', 'text', 'pretty_text']
@@ -125,6 +126,31 @@ class Config:
             tmp_config_file.write(config_file)
 
     @staticmethod
+    def _substitute_env_vars(filename, temp_config_name):
+        """Substitute env variable placehoders to number or string, depending
+        on whether it can be parsed as float."""
+        with open(filename, 'r', encoding='utf-8') as f:
+            # Setting encoding explicitly to resolve coding issue on windows
+            config_file = f.read()
+        regexp = r'\{\{\s*' + ENV_KEY + r'\.(\w+)\s*\}\}'
+        env_vars = set(re.findall(regexp, config_file))
+        for env_var in env_vars:
+            if env_var not in os.environ:
+                raise ValueError(
+                    f'The config requires environment variable `{env_var}`, '
+                    'but it is not found')
+            value = os.environ[env_var]
+            # wrap with "" if it is not a number
+            try:
+                float(value)
+            except ValueError:
+                value = '"' + value.replace('"', '\\"') + '"'
+            regexp = r'\{\{\s*' + ENV_KEY + r'\.' + env_var + r'\s*\}\}'
+            config_file = re.sub(regexp, value, config_file)
+        with open(temp_config_name, 'w', encoding='utf-8') as tmp_config_file:
+            tmp_config_file.write(config_file)
+
+    @staticmethod
     def _pre_substitute_base_vars(filename, temp_config_name):
         """Substitute base variable placehoders to string, so that parsing
         would work."""
@@ -176,7 +202,9 @@ class Config:
         return cfg
 
     @staticmethod
-    def _file2dict(filename, use_predefined_variables=True):
+    def _file2dict(filename,
+                   use_predefined_variables=True,
+                   use_environment_variables=True):
         filename = osp.abspath(osp.expanduser(filename))
         check_file_exist(filename)
         fileExtname = osp.splitext(filename)[1]
@@ -195,6 +223,10 @@ class Config:
                                                    temp_config_file.name)
             else:
                 shutil.copyfile(filename, temp_config_file.name)
+            # Substitute environment variables
+            if use_environment_variables:
+                Config._substitute_env_vars(temp_config_file.name,
+                                            temp_config_file.name)
             # Substitute base variables from placeholders to strings
             base_var_dict = Config._pre_substitute_base_vars(
                 temp_config_file.name, temp_config_file.name)
