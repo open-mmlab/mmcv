@@ -9,8 +9,8 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include "pytorch_mlu_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include "pytorch_mlu_helper.hpp"
 
 void KernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                     cnrtQueue_t queue, const cnrtDataType_t d_type,

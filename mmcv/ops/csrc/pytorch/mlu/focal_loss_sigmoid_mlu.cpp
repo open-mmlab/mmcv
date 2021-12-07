@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "pytorch_mlu_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include "pytorch_mlu_helper.hpp"
 
 void KernelFocalLossSigmoidForward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                                    cnrtQueue_t queue,
@@ -328,7 +328,6 @@ void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target, Tensor weight,
                                             gamma, alpha);
 }
 
-
 void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
                                      Tensor output, float gamma, float alpha);
 
@@ -336,5 +335,7 @@ void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target,
                                       Tensor weight, Tensor grad_input,
                                       float gamma, float alpha);
 
-REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, MLU, sigmoid_focal_loss_forward_mlu);
-REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, MLU, sigmoid_focal_loss_backward_mlu);
+REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, MLU,
+                     sigmoid_focal_loss_forward_mlu);
+REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, MLU,
+                     sigmoid_focal_loss_backward_mlu);
