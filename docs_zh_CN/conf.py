@@ -169,6 +169,10 @@ html_theme_options = {
                     'name': 'MMFewShot',
                     'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
                 },
+                {
+                    'name': 'MMHuman3D',
+                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
+                },
             ]
         },
         {

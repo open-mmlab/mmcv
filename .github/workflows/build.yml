@@ -6,7 +6,7 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'docs/**'
-      - 'docs_zh-CN/**'
+      - 'docs_zh_CN/**'
       - 'examples/**'
       - '.dev_scripts/**'
 
@@ -15,7 +15,7 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'docs/**'
-      - 'docs_zh-CN/**'
+      - 'docs_zh_CN/**'
       - 'examples/**'
       - '.dev_scripts/**'
 
