@@ -97,12 +97,12 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="120">torch1.10</th>
-      <th valign="bottom" align="left" width="120">torch1.9</th>
-      <th valign="bottom" align="left" width="120">torch1.8</th>
-      <th valign="bottom" align="left" width="120">torch1.7</th>
-      <th valign="bottom" align="left" width="120">torch1.6</th>
-      <th valign="bottom" align="left" width="120">torch1.5</th>
+      <th valign="bottom" align="left" width="120">torch 1.10</th>
+      <th valign="bottom" align="left" width="120">torch 1.9</th>
+      <th valign="bottom" align="left" width="120">torch 1.8</th>
+      <th valign="bottom" align="left" width="120">torch 1.7</th>
+      <th valign="bottom" align="left" width="120">torch 1.6</th>
+      <th valign="bottom" align="left" width="120">torch 1.5</th>
     </tr>
     <tr>
       <td align="left">11.3</td>
