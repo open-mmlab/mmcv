@@ -161,6 +161,8 @@ def get_extensions():
         define_macros += [('MMCV_WITH_TRT', None)]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+        # prevent cub/thrust conflict with other python library
+        # More context See issues #1454
         extra_compile_args['nvcc'] += ['-Xcompiler=-fno-gnu-unique']
         library_dirs += library_paths(cuda=True)
 
