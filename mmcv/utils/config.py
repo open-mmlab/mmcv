@@ -127,8 +127,7 @@ class Config:
 
     @staticmethod
     def _substitute_env_vars(filename, temp_config_name):
-        """Substitute env variable placehoders to number or string, depending
-        on whether it can be parsed as float."""
+        """Substitute env variable placehoders to string."""
         with open(filename, 'r', encoding='utf-8') as f:
             # Setting encoding explicitly to resolve coding issue on windows
             config_file = f.read()
@@ -140,11 +139,6 @@ class Config:
                     f'The config requires environment variable `{env_var}`, '
                     'but it is not found')
             value = os.environ[env_var]
-            # wrap with "" if it is not a number
-            try:
-                float(value)
-            except ValueError:
-                value = '"' + value.replace('"', '\\"') + '"'
             regexp = r'\{\{\s*' + ENV_KEY + r'\.' + env_var + r'\s*\}\}'
             config_file = re.sub(regexp, value, config_file)
         with open(temp_config_name, 'w', encoding='utf-8') as tmp_config_file:
