@@ -11,7 +11,6 @@ English | [简体中文](README_zh-CN.md)
 MMCV is a foundational library for computer vision research and supports many
 research projects as below:
 
-- [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM Installs OpenMMLab Packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
@@ -25,6 +24,7 @@ research projects as below:
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D human parametric model toolbox and benchmark.
 
 It provides the following functionalities.
 
@@ -100,12 +100,12 @@ For more details, please refer the the following tables.
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="120">torch1.10</th>
-      <th valign="bottom" align="left" width="100">torch1.9</th>
-      <th valign="bottom" align="left" width="100">torch1.8</th>
-      <th valign="bottom" align="left" width="100">torch1.7</th>
-      <th valign="bottom" align="left" width="100">torch1.6</th>
-      <th valign="bottom" align="left" width="100">torch1.5</th>
+      <th valign="bottom" align="left" width="120">torch 1.10</th>
+      <th valign="bottom" align="left" width="120">torch 1.9</th>
+      <th valign="bottom" align="left" width="120">torch 1.8</th>
+      <th valign="bottom" align="left" width="120">torch 1.7</th>
+      <th valign="bottom" align="left" width="120">torch 1.6</th>
+      <th valign="bottom" align="left" width="120">torch 1.5</th>
     </tr>
     <tr>
       <td align="left">11.3</td>
