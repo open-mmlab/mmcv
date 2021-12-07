@@ -10,8 +10,7 @@ from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
 
 from mmcv.fileio import FileClient
-from mmcv.utils import is_str
-from mmcv.utils.misc import has_method
+from mmcv.utils import is_filepath, is_str
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
@@ -280,7 +279,7 @@ def imwrite(img,
         file_path (str): Image file path.
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
-            whether to create it automatically.
+            whether to create it automatically. It will be deprecated.
         file_client_args (dict | None): Arguments to instantiate a
             FileClient. See :class:`mmcv.fileio.FileClient` for details.
             Default: None.
@@ -297,15 +296,13 @@ def imwrite(img,
         >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', file_client_args={
         ...     'backend': 'petrel'})
     """
-    assert is_str(file_path)
+    assert is_filepath(file_path)
+    file_path = str(file_path)
     if auto_mkdir is not None:
         warnings.warn(
             'The parameter `auto_mkdir` will be deprecated in the future and '
             'every file clients will make directory automatically.')
     file_client = FileClient.infer_client(file_client_args, file_path)
-    if not has_method(file_client.client, 'put'):
-        raise AttributeError(
-            f"{file_client.name} doesn't contain the `put` method")
     try:
         img_ext = osp.splitext(file_path)[-1]
         # Encode image according to image suffix.
@@ -313,7 +310,7 @@ def imwrite(img,
         # format is '.jpg'.
         _, img_buff = cv2.imencode(img_ext, img, params)
         file_client.put(img_buff.tobytes(), file_path)
-    except Exception as e:
-        warnings.warn(f"'{file_path}' writing failed, msg is '{e}'")
+    except Exception as error:
+        warnings.warn(error)
         return False
     return True

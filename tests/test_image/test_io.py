@@ -367,9 +367,6 @@ class TestIO:
             assert ret_with_args
             mock_method.assert_called()
 
-        with pytest.raises(AttributeError):
-            mmcv.imwrite(img, self.http_path)
-
     @patch('mmcv.image.io.TurboJPEG', None)
     def test_no_turbojpeg(self):
         with pytest.raises(ImportError):
