@@ -12,10 +12,10 @@ def points_in_boxes_part(points, boxes):
     """Find the box in which each point is (CUDA).
 
     Args:
-        points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate
+        points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate.
         boxes (torch.Tensor): [B, T, 7],
             num_valid_boxes <= T, [x, y, z, x_size, y_size, z_size, rz] in
-            LiDAR/DEPTH coordinate, (x, y, z) is the bottom center
+            LiDAR/DEPTH coordinate, (x, y, z) is the bottom center.
 
     Returns:
         torch.Tensor: Return the box indices of points with the shape of
