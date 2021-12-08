@@ -160,7 +160,7 @@ class PatchEmbed(BaseModule):
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: 16.
-        padding (int | tuple | string ): The padding length of
+        padding (int | tuple | string): The padding length of
             embedding conv. When it is a string, it means the mode
             of adaptive padding, support "same" and "corner" now.
             Default: "corner".
