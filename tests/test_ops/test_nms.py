@@ -182,3 +182,15 @@ class Testnms(object):
 
         assert torch.equal(keep, seq_keep)
         assert torch.equal(boxes, seq_boxes)
+
+        # test skip nms when `nms_cfg` is None
+
+        seq_boxes, seq_keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            None,
+            class_agnostic=False)
+        assert len(seq_keep) == len(results['boxes'])
+        # assert score is descending order
+        assert ((seq_boxes[:, -1][1:] - seq_boxes[:, -1][:-1]) < 0).all()
