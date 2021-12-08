@@ -24,7 +24,7 @@ class OptimizerHook(Hook):
     """A hook contains custom operations for the optimizer.
 
     Args:
-        grad_clip (dict): A config dict to control the clip_grad.
+        grad_clip (dict, optional): A config dict to control the clip_grad.
             Default: None.
         detect_anomalous_params (bool):  Detect anomalous parameters
             of the model which are not included in
@@ -39,7 +39,6 @@ class OptimizerHook(Hook):
     """
 
     def __init__(self, grad_clip=None, detect_anomalous_params=False):
-
         self.grad_clip = grad_clip
         self.detect_anomalous_params = detect_anomalous_params
 
