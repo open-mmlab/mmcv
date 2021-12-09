@@ -30,9 +30,9 @@ class RoIPointPool3d(nn.Module):
             boxes3d (B, M, 7), Input bounding boxes whose shape is (B, M, 7).
 
         Returns:
-            pooled_features (torch.Tensor): The output pooled features whose
-                shape is (B, M, 512, 3 + C).
-            pooled_empty_flag (torch.Tensor): Empty flag whose shape is (B, M).
+            tuple[torch.Tensor]: A tuple contains two elements. The first one
+            is the pooled features whose shape is (B, M, 512, 3 + C). The
+            second is an empty flag whose shape is (B, M).
         """
         return RoIPointPool3dFunction.apply(points, point_features, boxes3d,
                                             self.num_sampled_points)
@@ -52,9 +52,9 @@ class RoIPointPool3dFunction(Function):
                 Default: 512.
 
         Returns:
-            pooled_features (torch.Tensor): The output pooled features whose
-                shape is (B, M, 512, 3 + C).
-            pooled_empty_flag (torch.Tensor): Empty flag whose shape is (B, M).
+            tuple[torch.Tensor]: A tuple contains two elements. The first one
+            is the pooled features whose shape is (B, M, 512, 3 + C). The
+            second is an empty flag whose shape is (B, M).
         """
         assert len(points.shape) == 3 and points.shape[2] == 3
         batch_size, boxes_num, feature_len = points.shape[0], boxes3d.shape[

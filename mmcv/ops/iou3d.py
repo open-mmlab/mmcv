@@ -17,7 +17,7 @@ def boxes_iou_bev(boxes_a, boxes_b):
         boxes_b (torch.Tensor): Input boxes b with shape (N, 5).
 
     Returns:
-        ans_iou (torch.Tensor): IoU result with shape (M, N).
+        torch.Tensor: IoU result with shape (M, N).
     """
     ans_iou = boxes_a.new_zeros(
         torch.Size((boxes_a.shape[0], boxes_b.shape[0])))
