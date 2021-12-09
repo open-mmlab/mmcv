@@ -344,7 +344,7 @@ class Config:
                config str. Only py/yml/yaml/json type are supported now!
 
         Returns:
-            obj:`Config`: Config obj.
+            :obj:`Config`: Config obj.
         """
         if file_format not in ['.py', '.json', '.yaml', '.yml']:
             raise IOError('Only py/yml/yaml/json type are supported now!')
@@ -561,7 +561,7 @@ class Config:
             >>> assert cfg_dict == dict(
             ...     model=dict(backbone=dict(depth=50, with_cp=True)))
 
-            # Merge list element
+            >>> # Merge list element
             >>> cfg = Config(dict(pipeline=[
             ...     dict(type='LoadImage'), dict(type='LoadAnnotations')]))
             >>> options = dict(pipeline={'0': dict(type='SelfLoadImage')})

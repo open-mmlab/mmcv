@@ -83,6 +83,7 @@ def build_activation_layer(cfg):
 
     Args:
         cfg (dict): The activation layer config, which should contain:
+
             - type (str): Layer type.
             - layer args: Args needed to instantiate an activation layer.
 
