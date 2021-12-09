@@ -165,6 +165,8 @@ class IterBasedRunner(BaseRunner):
         # Raising warning when resuming models with different number of GPUs
         # since the optimizer status are relative with batch size
         # (#GPUs x bs/GPU)
+        # TODO Can also check the difference of config between checkpoint and
+        # current.
         if 'config' in checkpoint['meta']:
             config = mmcv.Config.fromstring(
                 checkpoint['meta']['config'], file_format='.py')
