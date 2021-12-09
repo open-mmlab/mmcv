@@ -246,7 +246,7 @@ class PetrelBackend(BaseStorageBackend):
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a directory,
-                ``False`` otherwise.
+            ``False`` otherwise.
         """
         if not has_method(self._client, 'isdir'):
             raise NotImplementedError(
@@ -266,7 +266,7 @@ class PetrelBackend(BaseStorageBackend):
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
-                otherwise.
+            otherwise.
         """
         if not has_method(self._client, 'contains'):
             raise NotImplementedError(
@@ -598,7 +598,7 @@ class HardDiskBackend(BaseStorageBackend):
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a directory,
-                ``False`` otherwise.
+            ``False`` otherwise.
         """
         return osp.isdir(filepath)
 
@@ -610,7 +610,7 @@ class HardDiskBackend(BaseStorageBackend):
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
-                otherwise.
+            otherwise.
         """
         return osp.isfile(filepath)
 
@@ -839,8 +839,8 @@ class FileClient:
             's3'
 
         Returns:
-            str | None: Return the prefix of uri if the uri contains '://'
-                else ``None``.
+            str | None: Return the prefix of uri if the uri contains '://' else
+            ``None``.
         """
         assert is_filepath(uri)
         uri = str(uri)
@@ -987,7 +987,7 @@ class FileClient:
 
         Returns:
             bytes | memoryview: Expected bytes object or a memory view of the
-                bytes object.
+            bytes object.
         """
         return self.client.get(filepath)
 
@@ -1060,7 +1060,7 @@ class FileClient:
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a directory,
-                ``False`` otherwise.
+            ``False`` otherwise.
         """
         return self.client.isdir(filepath)
 
