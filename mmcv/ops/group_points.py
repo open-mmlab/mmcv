@@ -76,7 +76,7 @@ class QueryAndGroup(nn.Module):
 
         Returns:
             torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
-                concatenated coordinates and features of points.
+            concatenated coordinates and features of points.
         """
         # if self.max_radius is None, we will perform kNN instead of ball query
         # idx is of shape [B, npoint, sample_num]

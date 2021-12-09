@@ -1072,7 +1072,7 @@ class FileClient:
 
         Returns:
             bool: Return ``True`` if ``filepath`` points to a file, ``False``
-                otherwise.
+            otherwise.
         """
         return self.client.isfile(filepath)
 

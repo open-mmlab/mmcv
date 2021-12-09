@@ -277,11 +277,11 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
             - iou_thr (float): IoU threshold used for NMS.
             - split_thr (float): threshold number of boxes. In some cases the
-                number of boxes is large (e.g., 200k). To avoid OOM during
-                training, the users could set `split_thr` to a small value.
-                If the number of boxes is greater than the threshold, it will
-                perform NMS on each group of boxes separately and sequentially.
-                Defaults to 10000.
+              number of boxes is large (e.g., 200k). To avoid OOM during
+              training, the users could set `split_thr` to a small value.
+              If the number of boxes is greater than the threshold, it will
+              perform NMS on each group of boxes separately and sequentially.
+              Defaults to 10000.
         class_agnostic (bool): if true, nms is class agnostic,
             i.e. IoU thresholding happens over all boxes,
             regardless of the predicted class.

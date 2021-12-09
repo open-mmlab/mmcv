@@ -48,15 +48,15 @@ def get_model_complexity_info(model,
 
     Supported layers are listed as below:
         - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
-        - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
-            ``nn.ReLU6``.
-        - Poolings: ``nn.MaxPool1d``, ``nn.MaxPool2d``, ``nn.MaxPool3d``,
-            ``nn.AvgPool1d``, ``nn.AvgPool2d``, ``nn.AvgPool3d``,
-            ``nn.AdaptiveMaxPool1d``, ``nn.AdaptiveMaxPool2d``,
-            ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``,
+        - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, \
+            ``nn.LeakyReLU``, ``nn.ReLU6``.
+        - Poolings: ``nn.MaxPool1d``, ``nn.MaxPool2d``, ``nn.MaxPool3d``, \
+            ``nn.AvgPool1d``, ``nn.AvgPool2d``, ``nn.AvgPool3d``, \
+            ``nn.AdaptiveMaxPool1d``, ``nn.AdaptiveMaxPool2d``, \
+            ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``, \
             ``nn.AdaptiveAvgPool2d``, ``nn.AdaptiveAvgPool3d``.
-        - BatchNorms: ``nn.BatchNorm1d``, ``nn.BatchNorm2d``,
-            ``nn.BatchNorm3d``, ``nn.GroupNorm``, ``nn.InstanceNorm1d``,
+        - BatchNorms: ``nn.BatchNorm1d``, ``nn.BatchNorm2d``, \
+            ``nn.BatchNorm3d``, ``nn.GroupNorm``, ``nn.InstanceNorm1d``, \
             ``InstanceNorm2d``, ``InstanceNorm3d``, ``nn.LayerNorm``.
         - Linear: ``nn.Linear``.
         - Deconvolution: ``nn.ConvTranspose2d``.
@@ -78,8 +78,8 @@ def get_model_complexity_info(model,
 
     Returns:
         tuple[float | str]: If ``as_strings`` is set to True, it will return
-            FLOPs and parameter counts in a string format. otherwise, it will
-            return those in a float number format.
+        FLOPs and parameter counts in a string format. otherwise, it will
+        return those in a float number format.
     """
     assert type(input_shape) is tuple
     assert len(input_shape) >= 1

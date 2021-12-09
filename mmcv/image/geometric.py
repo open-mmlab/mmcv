@@ -70,7 +70,7 @@ def imresize(img,
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
-            `resized_img`.
+        `resized_img`.
     """
     h, w = img.shape[:2]
     if backend is None:
@@ -130,7 +130,7 @@ def imresize_to_multiple(img,
 
     Returns:
         tuple | ndarray: (`resized_img`, `w_scale`, `h_scale`) or
-            `resized_img`.
+        `resized_img`.
     """
     h, w = img.shape[:2]
     if size is not None and scale_factor is not None:
@@ -175,7 +175,7 @@ def imresize_like(img,
 
     Returns:
         tuple or ndarray: (`resized_img`, `w_scale`, `h_scale`) or
-            `resized_img`.
+        `resized_img`.
     """
     h, w = dst_img.shape[:2]
     return imresize(img, (w, h), return_scale, interpolation, backend=backend)
@@ -461,16 +461,16 @@ def impad(img,
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Default: constant.
 
-            - constant: pads with a constant value, this value is specified
+            - constant: pads with a constant value, this value is specified \
                 with pad_val.
             - edge: pads with the last value at the edge of the image.
-            - reflect: pads with reflection of image without repeating the
-                last value on the edge. For example, padding [1, 2, 3, 4]
-                with 2 elements on both sides in reflect mode will result
+            - reflect: pads with reflection of image without repeating the \
+                last value on the edge. For example, padding [1, 2, 3, 4] \
+                with 2 elements on both sides in reflect mode will result \
                 in [3, 2, 1, 2, 3, 4, 3, 2].
-            - symmetric: pads with reflection of image repeating the last
-                value on the edge. For example, padding [1, 2, 3, 4] with
-                2 elements on both sides in symmetric mode will result in
+            - symmetric: pads with reflection of image repeating the last \
+                value on the edge. For example, padding [1, 2, 3, 4] with \
+                2 elements on both sides in symmetric mode will result in \
                 [2, 1, 1, 2, 3, 4, 4, 3]
 
     Returns:
