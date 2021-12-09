@@ -9,7 +9,7 @@ In MMCV, registry can be regarded as a mapping that maps a class to a string.
 These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
 With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
 One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
-The API reference could be find [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
+The API reference could be found [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
 
 To manage your modules in the codebase by `Registry`, there are three steps as below.
 

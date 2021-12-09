@@ -1,7 +1,9 @@
-# Definition of custom operators in MMCV
+# MMCV Operators
+
+To make custom operators in MMCV more standard, precise definitions of each operator are listed in this document.
 
 <!-- TOC -->
-- [Definition of custom operators in MMCV](#definition-of-custom-operators-in-mmcv)
+- [MMCV Operators](#mmcv-operators)
   - [MMCVBorderAlign](#mmcvborderalign)
     - [Description](#description)
     - [Parameters](#parameters)
@@ -80,25 +82,25 @@
     - [Inputs](#inputs-12)
     - [Outputs](#outputs-12)
     - [Type Constraints](#type-constraints-12)
-- [torch](#torch)
-  - [grid_sampler](#grid_sampler)
+  - [grid_sampler*](#grid_sampler)
     - [Description](#description-13)
     - [Parameters](#parameters-13)
     - [Inputs](#inputs-13)
     - [Outputs](#outputs-13)
     - [Type Constraints](#type-constraints-13)
-  - [cummax](#cummax)
+  - [cummax*](#cummax)
     - [Description](#description-14)
     - [Parameters](#parameters-14)
     - [Inputs](#inputs-14)
     - [Outputs](#outputs-14)
     - [Type Constraints](#type-constraints-14)
-  - [cummin](#cummin)
+  - [cummin*](#cummin)
     - [Description](#description-15)
     - [Parameters](#parameters-15)
     - [Inputs](#inputs-15)
     - [Outputs](#outputs-15)
     - [Type Constraints](#type-constraints-15)
+  - [Reminders](#reminders)
 <!-- TOC -->
 
 ## MMCVBorderAlign
@@ -118,9 +120,9 @@ Read [BorderDet: Border Feature for Dense Object Detection](ttps://arxiv.org/abs
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
-| `int`   | `pool_size`        | number of positions sampled over the boxes' borders(e.g. top, bottom, left, right). |
+| Type  | Parameter   | Description                                                                         |
+|-------|-------------|-------------------------------------------------------------------------------------|
+| `int` | `pool_size` | number of positions sampled over the boxes' borders(e.g. top, bottom, left, right). |
 
 ### Inputs
 
@@ -152,11 +154,11 @@ Read [CARAFE: Content-Aware ReAssembly of FEatures](https://arxiv.org/abs/1905.0
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
-| `int`   | `kernel_size`        | reassemble kernel size, should be odd integer|
-| `int`   | `group_size`        | reassemble group size |
-| `float`   | `scale_factor`        | upsample ratio(>=1) |
+| Type    | Parameter      | Description                                   |
+|---------|----------------|-----------------------------------------------|
+| `int`   | `kernel_size`  | reassemble kernel size, should be odd integer |
+| `int`   | `group_size`   | reassemble group size                         |
+| `float` | `scale_factor` | upsample ratio(>=1)                           |
 
 ### Inputs
 
@@ -187,8 +189,7 @@ Read [CCNet: Criss-Cross Attention for SemanticSegmentation](https://arxiv.org/p
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
+None
 
 ### Inputs
 
@@ -219,8 +220,7 @@ Read [CCNet: Criss-Cross Attention for SemanticSegmentation](https://arxiv.org/p
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
+None
 
 ### Inputs
 
@@ -251,9 +251,9 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `mode`          | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
+| Type  | Parameter | Description                                                      |
+|-------|-----------|------------------------------------------------------------------|
+| `int` | `mode`    | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
 
 ### Inputs
 
@@ -283,15 +283,15 @@ Read [Deformable Convolutional Networks](https://arxiv.org/pdf/1703.06211.pdf) f
 
 ### Parameters
 
-| Type           | Parameter          | Description                                                                           |
-| -------------- | ------------------ | ------------------------------------------------------------------------------------- |
-| `list of ints` | `stride`           | The stride of the convolving kernel, (sH, sW). Defaults to `(1, 1)`.                                        |
-| `list of ints` | `padding`          | Paddings on both sides of the input, (padH, padW).  Defaults to `(0, 0)`.                                   |
-| `list of ints` | `dilation`         | The spacing between kernel elements (dH, dW). Defaults to `(1, 1)`.                                      |
-| `int`          | `groups`            | Split input into groups. `input_channel` should be divisible by the number of groups. Defaults to `1`.|
-| `int`          | `deformable_groups` | Groups of deformable offset. Defaults to `1`.                                                         |
-| `int`          | `bias` | Whether to add a learnable bias to the output. `0` stands for `False` and `1` stands for `True`. Defaults to `0`.                                                          |
-| `int`          | `im2col_step` | Groups of deformable offset. Defaults to `32`.                                                         |
+| Type           | Parameter           | Description                                                                                                       |
+|----------------|---------------------|-------------------------------------------------------------------------------------------------------------------|
+| `list of ints` | `stride`            | The stride of the convolving kernel, (sH, sW). Defaults to `(1, 1)`.                                              |
+| `list of ints` | `padding`           | Paddings on both sides of the input, (padH, padW).  Defaults to `(0, 0)`.                                         |
+| `list of ints` | `dilation`          | The spacing between kernel elements (dH, dW). Defaults to `(1, 1)`.                                               |
+| `int`          | `groups`            | Split input into groups. `input_channel` should be divisible by the number of groups. Defaults to `1`.            |
+| `int`          | `deformable_groups` | Groups of deformable offset. Defaults to `1`.                                                                     |
+| `int`          | `bias`              | Whether to add a learnable bias to the output. `0` stands for `False` and `1` stands for `True`. Defaults to `0`. |
+| `int`          | `im2col_step`       | Groups of deformable offset. Defaults to `32`.                                                                    |
 
 ### Inputs
 
@@ -323,11 +323,11 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 
 ### Parameters
 
-| Type           | Parameter          | Description                                                                           |
-| -------------- | ------------------ | ------------------------------------------------------------------------------------- |
-| `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW)                                         |
-| `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW)                                     |
-| `list of ints` | `dilation`         | The spacing between kernel elements. (dH, dW)                                         |
+| Type           | Parameter           | Description                                                                           |
+|----------------|---------------------|---------------------------------------------------------------------------------------|
+| `list of ints` | `stride`            | The stride of the convolving kernel. (sH, sW)                                         |
+| `list of ints` | `padding`           | Paddings on both sides of the input. (padH, padW)                                     |
+| `list of ints` | `dilation`          | The spacing between kernel elements. (dH, dW)                                         |
 | `int`          | `deformable_groups` | Groups of deformable offset.                                                          |
 | `int`          | `groups`            | Split input into groups. `input_channel` should be divisible by the number of groups. |
 
@@ -365,13 +365,13 @@ Deformable roi pooling layer
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
+| Type    | Parameter        | Description                                                                                                   |
+|---------|------------------|---------------------------------------------------------------------------------------------------------------|
 | `int`   | `output_height`  | height of output roi                                                                                          |
 | `int`   | `output_width`   | width of output roi                                                                                           |
 | `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
 | `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
-| `float`   | `gamma`        | gamma |
+| `float` | `gamma`          | gamma                                                                                                         |
 
 ### Inputs
 
@@ -404,10 +404,10 @@ Read [Pixel Recurrent Neural Networks](https://arxiv.org/abs/1601.06759) for mor
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
-| `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW). **Only support stride=1 in mmcv**                                         |
-| `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW). Defaults to `(0, 0)`.                                     |
+| Type           | Parameter | Description                                                                      |
+|----------------|-----------|----------------------------------------------------------------------------------|
+| `list of ints` | `stride`  | The stride of the convolving kernel. (sH, sW). **Only support stride=1 in mmcv** |
+| `list of ints` | `padding` | Paddings on both sides of the input. (padH, padW). Defaults to `(0, 0)`.         |
 
 ### Inputs
 
@@ -443,10 +443,10 @@ Read [PSANet: Point-wise Spatial Attention Network for Scene Parsing](https://hs
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
-| `int`   | `psa_type`        | `0` means collect and `1` means `distribute` |
-| `list of ints`   | `mask_size`        | The size of mask |
+| Type           | Parameter   | Description                                  |
+|----------------|-------------|----------------------------------------------|
+| `int`          | `psa_type`  | `0` means collect and `1` means `distribute` |
+| `list of ints` | `mask_size` | The size of mask                             |
 
 ### Inputs
 
@@ -477,7 +477,7 @@ Note this definition is slightly different with [onnx: NonMaxSuppression](https:
 ### Parameters
 
 | Type    | Parameter                    | Description                                                                                                                          |
-| ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+|---------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | `int`   | `center_point_box`           | 0 - the box data is supplied as [y1, x1, y2, x2], 1-the box data is supplied as [x_center, y_center, width, height].                 |
 | `int`   | `max_output_boxes_per_class` | The maximum number of boxes to be selected per batch per class. Default to 0, number of output boxes equal to number of input boxes. |
 | `float` | `iou_threshold`              | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0.                     |
@@ -515,7 +515,7 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 ### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
+|---------|------------------|---------------------------------------------------------------------------------------------------------------|
 | `int`   | `output_height`  | height of output roi                                                                                          |
 | `int`   | `output_width`   | width of output roi                                                                                           |
 | `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
@@ -543,7 +543,6 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 
 - T:tensor(float32)
 
-
 ## MMCVRoIAlignRotated
 
 ### Description
@@ -552,15 +551,15 @@ Perform RoI align pooling for rotated proposals
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                    |
-| ------- | --------------- | -------------------------------------------------------------- |
+| Type    | Parameter        | Description                                                                                                   |
+|---------|------------------|---------------------------------------------------------------------------------------------------------------|
 | `int`   | `output_height`  | height of output roi                                                                                          |
 | `int`   | `output_width`   | width of output roi                                                                                           |
 | `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
 | `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
 | `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
 | `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
-| `int`   | `clockwise`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
+| `int`   | `clockwise`      | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
 
 ### Inputs
 
@@ -581,9 +580,7 @@ Perform RoI align pooling for rotated proposals
 
 - T:tensor(float32)
 
-# torch
-
-## grid_sampler
+## grid_sampler*
 
 ### Description
 
@@ -594,7 +591,7 @@ Check [torch.nn.functional.grid_sample](https://pytorch.org/docs/stable/generate
 ### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
-| ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `int` | `interpolation_mode` | Interpolation mode to calculate output values. (0: `bilinear` , 1: `nearest`)                                                                                                                                                                                                                   |
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
@@ -619,7 +616,7 @@ Check [torch.nn.functional.grid_sample](https://pytorch.org/docs/stable/generate
 
 - T:tensor(float32, Linear)
 
-## cummax
+## cummax*
 
 ### Description
 
@@ -627,9 +624,9 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum e
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `dim`           | the dimension to do the operation over                           |
+| Type  | Parameter | Description                            |
+|-------|-----------|----------------------------------------|
+| `int` | `dim`     | the dimension to do the operation over |
 
 ### Inputs
 
@@ -651,7 +648,7 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum e
 
 - T:tensor(float32)
 
-## cummin
+## cummin*
 
 ### Description
 
@@ -659,9 +656,9 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum e
 
 ### Parameters
 
-| Type    | Parameter       | Description                                                      |
-| ------- | --------------- | ---------------------------------------------------------------- |
-| `int`   | `dim`           | the dimension to do the operation over                           |
+| Type  | Parameter | Description                            |
+|-------|-----------|----------------------------------------|
+| `int` | `dim`     | the dimension to do the operation over |
 
 ### Inputs
 
@@ -682,3 +679,7 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum e
 ### Type Constraints
 
 - T:tensor(float32)
+
+## Reminders
+
+- Operators endwith `*` are defined in Torch and are included here for the conversion to ONNX.
