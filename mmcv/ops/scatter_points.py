@@ -25,10 +25,11 @@ class _DynamicScatter(Function):
                 'mean'. Default: 'max'.
 
         Returns:
-            voxel_feats (torch.Tensor): [M, C]. Reduced features, input
-                features that shares the same voxel coordinates are reduced to
-                one row.
-            voxel_coors (torch.Tensor): [M, ndim]. Voxel coordinates.
+            tuple[torch.Tensor]: tuple[torch.Tensor]: A tuple contains two
+            elements. The first one is the voxel features with shape [M, C]
+            which are respectively reduced from input features that share
+            the same voxel coordinates . The second is voxel coordinates
+            with shape [M, ndim].
         """
         results = ext_module.dynamic_point_to_voxel_forward(
             feats, coors, reduce_type)
@@ -88,9 +89,11 @@ class DynamicScatter(nn.Module):
                 multi-dim voxel index) of each points.
 
         Returns:
-            voxel_feats (torch.Tensor): Reduced features, input features that
-                shares the same voxel coordinates are reduced to one row.
-            voxel_coors (torch.Tensor): Voxel coordinates.
+            tuple[torch.Tensor]: tuple[torch.Tensor]: A tuple contains two
+            elements. The first one is the voxel features with shape [M, C]
+            which are respectively reduced from input features that share
+            the same voxel coordinates . The second is voxel coordinates
+            with shape [M, ndim].
         """
         reduce = 'mean' if self.average_points else 'max'
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
@@ -104,9 +107,11 @@ class DynamicScatter(nn.Module):
                 multi-dim voxel index) of each points.
 
         Returns:
-            voxel_feats (torch.Tensor): Reduced features, input features that
-                shares the same voxel coordinates are reduced to one row.
-            voxel_coors (torch.Tensor): Voxel coordinates.
+            tuple[torch.Tensor]:tuple[torch.Tensor]: A tuple contains two
+            elements. The first one is the voxel features with shape [M, C]
+            which are respectively reduced from input features that share
+            the same voxel coordinates . The second is voxel coordinates
+            with shape [M, ndim].
         """
         if coors.size(-1) == 3:
             return self.forward_single(points, coors)
