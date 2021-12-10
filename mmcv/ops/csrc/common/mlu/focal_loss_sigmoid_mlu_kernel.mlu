@@ -24,8 +24,21 @@ __mlu_func__ void loadInput(char *nram_input, T *dram_input, const int32_t size,
                             const int32_t dst_stride = 0,
                             const int32_t src_stride = 0,
                             const int32_t count = 1) {
-  __memcpy_async(nram_input, dram_input, size, GDRAM2NRAM, dst_stride,
-                 src_stride, count - 1);
+  if (dst_stride == src_stride) {
+    __memcpy_async(nram_input, dram_input, size * count, GDRAM2NRAM);
+  } else {
+    __memcpy_async(nram_input, dram_input, size, GDRAM2NRAM, dst_stride,
+                   src_stride, count - 1);
+  }
+}
+
+template <typename T>
+__mlu_func__ void loadWeight(char *nram_input, T *dram_input, const int32_t t,
+                             const int32_t c, const int32_t has_weight,
+                             const int32_t partition_nc) {
+  if (has_weight && partition_nc && t >= 0 && t < c) {
+    __memcpy_async(nram_input, (T *)dram_input + t, sizeof(T), GDRAM2NRAM);
+  }
 }
 
 template <typename T>
@@ -33,152 +46,117 @@ __mlu_func__ void storeOutput(T *dram_output, char *nram_output,
                               const int32_t size, const int32_t dst_stride = 0,
                               const int32_t src_stride = 0,
                               const int32_t count = 1) {
-  __memcpy_async(dram_output, nram_output, size, NRAM2GDRAM, dst_stride,
-                 src_stride, count - 1);
+  if (dst_stride == src_stride) {
+    __memcpy_async(dram_output, nram_output, size * count, NRAM2GDRAM);
+  } else {
+    __memcpy_async(dram_output, nram_output, size, NRAM2GDRAM, dst_stride,
+                   src_stride, count - 1);
+  }
 }
 
 template <typename T>
 __mlu_func__ void compute(T *input, const int32_t *target, const T *weight,
-                          const int32_t has_weight, const int32_t deal_num,
-                          const int32_t n_seg, const int32_t C, float alpha,
-                          float gamma, T *scalar_temp, T *tensor_max,
-                          T *tensor_temp, T *output) {
-  const int32_t scalar_elem_num = NFU_ALIGN_SIZE / sizeof(T);
+                          const int32_t has_weight, const int32_t partition_nc,
+                          const int32_t deal_num, const int32_t n_seg,
+                          const int32_t c, const int32_t c_seg,
+                          const int32_t c_start_index, const float alpha,
+                          const float gamma, T *compute_a, T *compute_b,
+                          T *output) {
+  // set params
+  const int32_t c_num =
+      has_weight ? PAD_UP(c_seg, NFU_ALIGN_SIZE / sizeof(T)) : c_seg;
+  const int32_t c_end_index = c_start_index + c_seg;
+  const int32_t half_epsilon = 0x0400;
+  const T epsilon_f =
+      sizeof(T) == sizeof(float) ? FLT_MIN : *((half *)&half_epsilon);
 
-  // 0. n_max = max(0, x)
-  __nramset((T *)tensor_max, deal_num, (T)0);
-  __bang_cycle_maxequal((T *)tensor_max, (T *)tensor_max, (T *)input, deal_num,
-                        deal_num);
-
-  // 1. ln(1+e^x) = ln(e^(-max) + e^(x-max)) + max
-  __nramset((T *)scalar_temp, scalar_elem_num, (T)-1);
-  __bang_cycle_mul((T *)tensor_temp, (T *)tensor_max, (T *)scalar_temp,
-                   deal_num, scalar_elem_num);
-  __bang_cycle_add((T *)output, (T *)input, (T *)tensor_temp, deal_num,
-                   deal_num);
-  __bang_active_exphp((T *)output, (T *)output, deal_num);
-  __bang_active_exphp((T *)tensor_temp, (T *)tensor_temp, deal_num);
-  __bang_cycle_add((T *)output, (T *)output, (T *)tensor_temp, deal_num,
-                   deal_num);
-  __bang_active_loghp((T *)output, (T *)output, deal_num);
-  __bang_cycle_add((T *)output, (T *)output, (T *)tensor_max, deal_num,
-                   deal_num);
-
-  // 2. temp = [1 + e^(-x)] ^ (-r)
-  __nramset((T *)scalar_temp, scalar_elem_num, (T)-1);
-  __bang_cycle_mul((T *)tensor_temp, (T *)input, (T *)scalar_temp, deal_num,
-                   scalar_elem_num);
-  __bang_active_exphp((T *)tensor_temp, (T *)tensor_temp, deal_num);
-
-  __nramset((T *)scalar_temp, scalar_elem_num, (T)1);
-  __bang_cycle_add((T *)tensor_temp, (T *)tensor_temp, (T *)scalar_temp,
-                   deal_num, scalar_elem_num);
-  __bang_active_loghp((T *)tensor_temp, (T *)tensor_temp, deal_num);
-
-  __nramset((T *)scalar_temp, scalar_elem_num, (T)(-gamma));
-  __bang_cycle_mul((T *)tensor_temp, (T *)tensor_temp, (T *)scalar_temp,
-                   deal_num, scalar_elem_num);
-  __bang_active_exphp((T *)tensor_temp, (T *)tensor_temp, deal_num);
-
-  // 3.1 output: target != j
-  __nramset((T *)scalar_temp, scalar_elem_num, (T)(1 - alpha));
-  __bang_cycle_mul((T *)output, (T *)output, (T *)scalar_temp, deal_num,
-                   scalar_elem_num);
-  __bang_cycle_mul((T *)output, (T *)output, (T *)tensor_temp, deal_num,
-                   deal_num);
-
-  // 3.2 output: target == j
-  const int32_t c_align_size = PAD_UP((sizeof(T) * C), NFU_ALIGN_SIZE);
+  // 0. alpha_t * p_t^r = alpha * (1 - p) ^ gamma  if t == c_i
+  //                    = (1 - alpha) * p ^ gamma  if t != c_i
+  __nramset((T *)output, deal_num, (T)(1 - alpha));
+  __bang_active_sigmoid((T *)compute_b, (T *)input, deal_num);
   for (int32_t i = 0; i < n_seg; ++i) {
-    const int32_t target_value = *((int32_t *)target + i);
-    if (target_value >= 0 && target_value < C) {
-      const int32_t offset = i * c_align_size + target_value * sizeof(T);
-      char *addr_input = (char *)input + offset;
-      char *addr_output = (char *)output + offset;
-      const float x = *(T *)addr_input;
-      const float p = 1. / (1. + exp(-x));
-      *(T *)addr_output = -alpha * pow(1. - p, gamma) * log(fmax(p, FLT_MIN));
+    const int32_t t = *((uint32_t *)target + i);
+    if (t >= c_start_index && t < c_end_index) {
+      const uint32_t index = i * c_num + t - c_start_index;
+      *((T *)input + index) = -1.0 * (*((T *)input + index));
+      *((T *)compute_b + index) = 1.0 - (*((T *)compute_b + index)) + epsilon_f;
+      *((T *)output + index) = alpha;
     }
   }
+  if (sizeof(T) == sizeof(half)) {
+    __bang_half2float((float *)compute_a, (half *)compute_b, deal_num);
+    __bang_active_loghp((float *)compute_a, (float *)compute_a, deal_num);
+    __bang_mul_const((float *)compute_a, (float *)compute_a, (float)gamma,
+                     deal_num);
+    __bang_active_exphp((float *)compute_a, (float *)compute_a, deal_num);
+    __bang_float2half_rd((half *)compute_a, (float *)compute_a, deal_num);
+  } else {
+    __bang_active_loghp((T *)compute_a, (T *)compute_b, deal_num);
+    __bang_mul_const((T *)compute_a, (T *)compute_a, (T)gamma, deal_num);
+    __bang_active_exphp((T *)compute_a, (T *)compute_a, deal_num);
+  }
+  __bang_mul((T *)output, (T *)compute_a, (T *)output, deal_num);
 
-  // with weight
-  if (has_weight > 0) {
-    int32_t row_num_elem = deal_num / n_seg;
+  // 1. max = max(0, -x)  if t == c_i
+  //        = max(0, x)   if t != c_i
+  __nramset((T *)compute_b, deal_num, (T)0);
+  __bang_maxequal((T *)compute_b, (T *)compute_b, (T *)input, deal_num);
+
+  // 2. -log(p_t) = ln(e^(-max)+ e^(-max-x) + max   if t == c_i
+  //              = ln(e^(-max)+ e^(-max+x) + max   if t != c_i
+  __bang_mul_const((T *)compute_a, (T *)compute_b, (T)-1.0, deal_num);
+  __bang_add((T *)input, (T *)compute_a, (T *)input, deal_num);
+
+  __bang_active_exphp((T *)compute_a, (T *)compute_a, deal_num);
+  __bang_active_exphp((T *)input, (T *)input, deal_num);
+  __bang_add((T *)compute_a, (T *)compute_a, (T *)input, deal_num);
+  __bang_active_loghp((T *)compute_a, (T *)compute_a, deal_num);
+  __bang_add((T *)input, (T *)compute_a, (T *)compute_b, deal_num);
+
+  // 3. output = alpha_t * p_t^r * [-log(p_t)]
+  __bang_mul((T *)output, (T *)output, (T *)input, deal_num);
+
+  // 4. with weight
+  if (has_weight) {
     for (int32_t i = 0; i < n_seg; ++i) {
-      const int32_t t = *((int32_t *)target + i);
-      __nramset((T *)scalar_temp, scalar_elem_num, *((T *)weight + t));
-      __bang_cycle_mul((T *)output + i * row_num_elem,
-                       (T *)output + i * row_num_elem, (T *)scalar_temp,
-                       row_num_elem, scalar_elem_num);
+      int32_t t = *((int32_t *)target + i);
+      if (t >= 0 && t < c) {
+        t = partition_nc ? 0 : t;
+        __bang_mul_const((T *)output + i * c_num, (T *)output + i * c_num,
+                         *((T *)weight + t), c_num);
+      }
     }
   }
 }
 
 template <typename T>
-__mlu_func__ void focalLossSigmoidForwardBlock(
+__mlu_func__ void startPipeline(
     const T *input, const int32_t *target, const T *weight,
-    const int32_t row_num, const int32_t C, const float alpha,
-    const float gamma, T *output) {
-  /*
-   * NRAM partition
-   *  |-----------------------------------------------------------------------|
-   *  |                                scalar                                 |
-   *  |-----------------------------------------------------------------------|
-   *  |                                weight                                 |
-   *  |------------------------------- COMPUTE -------------------------------|
-   *  |                                   |                                   |
-   *  |              computeA             |               computeB            |
-   *  |                                   |                                   |
-   *  |------------- PING ------------------------------- PONG ---------------|
-   *  |                                   |                                   |
-   *  |              input                |               input               |
-   *  |                                   |                                   |
-   *  |-----------------------------------|-----------------------------------|
-   *  |                                   |                                   |
-   *  |              output               |               output              |
-   *  |                                   |                                   |
-   *  |-----------------------------------|-----------------------------------|
-   *  |              target               |               target              |
-   *  |-----------------------------------|-----------------------------------|
-   *
-   * split_pipeline_num is 6: COMPUTE(computeA,computeB), PING(input,output),
-   *                          PONG(input,output).
-   * split_target_num is 2: PING(target), PONG(target).
-   */
-  const int32_t c_align = PAD_UP(C, NFU_ALIGN_SIZE / sizeof(T));
-  const int32_t c_align_size = c_align * sizeof(T);
-  const int32_t scalar_size = NFU_ALIGN_SIZE;
-  const int32_t weight_size = (weight != NULL) * c_align_size;
-  const int32_t split_pipeline_num = 6;
-  const int32_t split_target_num = 2;
+    char *nram_compute_a, char *nram_compute_b, char *nram_input,
+    char *nram_target, char *nram_weight, char *nram_output,
+    const int32_t has_weight, const int32_t partition_nc,
+    const int32_t pingpong_offset, const int32_t pingpong_weight_offset,
+    const int32_t c_offset_num, const int32_t n, const int32_t n_seg,
+    const int32_t c, const int32_t c_seg, const float alpha, const float gamma,
+    T *output) {
+  // with offset
+  input = (T *)((char *)input + c_offset_num * sizeof(T));
+  output = (T *)((char *)output + c_offset_num * sizeof(T));
 
-  const int32_t remain_size = MAX_NRAM_SIZE - scalar_size - weight_size;
-  const int32_t n_seg = remain_size / (split_pipeline_num * c_align_size +
-                                       split_target_num * sizeof(int32_t));
-  const int32_t deal_num = n_seg * c_align_size / sizeof(T);
-  const int32_t target_size = n_seg * sizeof(int32_t);
+  const int32_t c_seg_align_num = PAD_UP(c_seg, NFU_ALIGN_SIZE / sizeof(T));
+  const int32_t c_num = has_weight ? c_seg_align_num : c_seg;
+  const int32_t deal_num = PAD_UP(n_seg * c_num, NFU_ALIGN_SIZE / sizeof(T));
+  const int32_t load_size = c_seg * sizeof(T);
+  const int32_t dram_stride = c * sizeof(T);
+  const int32_t nram_stride = c_num * sizeof(T);
 
-  // nram scalar,weight
-  char *nram_scalar = (char *)nram_buffer;
-  char *nram_weight = (char *)nram_scalar + scalar_size;
-  if (weight_size > 0) {
-    loadInput<T>(nram_weight, (T *)weight, C * sizeof(T));
-    __asm__ volatile("sync;");
+  if (has_weight && !partition_nc) {
+    loadInput<T>(nram_weight, (T *)weight, load_size, nram_stride, dram_stride,
+                 1);
+    __asm__ volatile("sync;\n\t");
   }
-
-  // nram COMPUTE
-  const int32_t compute_size = 2 * c_align_size * n_seg;
-  char *nram_compute_a = (char *)nram_weight + weight_size;
-  char *nram_compute_b = (char *)nram_compute_a + c_align_size * n_seg;
-
-  // nram PING/PONG
-  const int32_t pingpong_offset = (remain_size - compute_size) / 2;
-  char *nram_input = (char *)nram_compute_a + 2 * c_align_size * n_seg;
-  char *nram_output = (char *)nram_compute_a + 3 * c_align_size * n_seg;
-  char *nram_target = (char *)nram_compute_a + 4 * c_align_size * n_seg;
-
-  const int32_t repeat = row_num / n_seg;
-  const int32_t remain = row_num % n_seg;
+  const int32_t repeat = n / n_seg;
+  const int32_t remain = n % n_seg;
 
   /*
    * Pipeline: The pipeline is processed in three stages: Load, Compute, Store.
@@ -206,80 +184,214 @@ __mlu_func__ void focalLossSigmoidForwardBlock(
 
   // diagram of PINGPONG: L0
   if (repeat > 0) {
-    loadInput<T>(nram_input, (T *)input, C * sizeof(T), c_align * sizeof(T),
-                 C * sizeof(T), n_seg);
-    loadInput<int32_t>(nram_target, (int32_t *)target, target_size);
-    __asm__ volatile("sync;");
+    loadInput<T>(nram_input, (T *)input, load_size, nram_stride, dram_stride,
+                 n_seg);
+    loadInput<int32_t>(nram_target, (int32_t *)target, n_seg * sizeof(int32_t));
+    loadWeight<T>(nram_weight, (T *)weight, *((int32_t *)target), c, has_weight,
+                  partition_nc);
+    __asm__ volatile("sync;\n\t");
   }
 
   // diagram of PINGPONG: C0 and L1
   if (repeat > 1) {
-    loadInput<T>(nram_input + pingpong_offset, (T *)input + C * n_seg,
-                 C * sizeof(T), c_align * sizeof(T), C * sizeof(T), n_seg);
-    loadInput<int32_t>(nram_target + pingpong_offset, (int32_t *)target + n_seg,
-                       target_size);
     compute((T *)nram_input, (int32_t *)nram_target, (T *)nram_weight,
-            weight_size, deal_num, n_seg, C, alpha, gamma, (T *)nram_scalar,
-            (T *)nram_compute_a, (T *)nram_compute_b, (T *)nram_output);
-    __asm__ volatile("sync;");
+            has_weight, partition_nc, deal_num, n_seg, c, c_seg, c_offset_num,
+            alpha, gamma, (T *)nram_compute_a, (T *)nram_compute_b,
+            (T *)nram_output);
+    loadInput<T>((char *)nram_input + pingpong_offset, (T *)input + c * n_seg,
+                 load_size, nram_stride, dram_stride, n_seg);
+    loadInput<int32_t>((char *)nram_target + pingpong_offset,
+                       (int32_t *)target + n_seg, n_seg * sizeof(int32_t));
+    loadWeight<T>((char *)nram_weight + pingpong_weight_offset, (T *)weight,
+                  *((int32_t *)target + n_seg), c, has_weight, partition_nc);
+    __asm__ volatile("sync;\n\t");
   }
 
   for (int32_t i = 0; i < repeat - 2; ++i) {
-    storeOutput<T>((T *)output + i * C * n_seg,
-                   nram_output + (i % 2) * pingpong_offset, C * sizeof(T),
-                   C * sizeof(T), c_align * sizeof(T), n_seg);
-    loadInput<T>(nram_input + (i % 2) * pingpong_offset,
-                 (T *)input + (i + 2) * C * n_seg, C * sizeof(T),
-                 c_align * sizeof(T), C * sizeof(T), n_seg);
-    loadInput<int32_t>(nram_target + (i % 2) * pingpong_offset,
-                       (int32_t *)target + (i + 2) * n_seg, target_size);
+    storeOutput<T>((T *)output + i * c * n_seg,
+                   nram_output + (i % 2) * pingpong_offset, load_size,
+                   dram_stride, nram_stride, n_seg);
+    loadInput<T>((char *)nram_input + (i % 2) * pingpong_offset,
+                 (T *)(input) + (i + 2) * c * n_seg, load_size, nram_stride,
+                 dram_stride, n_seg);
+    loadInput<int32_t>((char *)nram_target + (i % 2) * pingpong_offset,
+                       (int32_t *)target + (i + 2) * n_seg,
+                       n_seg * sizeof(int32_t));
+    loadWeight<T>((char *)nram_weight + (i % 2) * pingpong_weight_offset,
+                  (T *)weight, *((int32_t *)target + (i + 2) * n_seg), c,
+                  has_weight, partition_nc);
     compute((T *)(nram_input + ((i + 1) % 2) * pingpong_offset),
             (int32_t *)(nram_target + ((i + 1) % 2) * pingpong_offset),
-            (T *)nram_weight, weight_size, deal_num, n_seg, C, alpha, gamma,
-            (T *)nram_scalar, (T *)nram_compute_a, (T *)nram_compute_b,
+            (T *)(nram_weight +
+                  partition_nc * ((i + 1) % 2) * pingpong_weight_offset),
+            has_weight, partition_nc, deal_num, n_seg, c, c_seg, c_offset_num,
+            alpha, gamma, (T *)nram_compute_a, (T *)nram_compute_b,
             (T *)(nram_output + ((i + 1) % 2) * pingpong_offset));
-    __asm__ volatile("sync;");
+    __asm__ volatile("sync;\n\t");
   }
 
   if (repeat > 1) {
-    storeOutput<T>((T *)output + (repeat - 2) * C * n_seg,
-                   nram_output + (repeat % 2) * pingpong_offset, C * sizeof(T),
-                   C * sizeof(T), c_align * sizeof(T), n_seg);
+    storeOutput<T>((T *)output + (repeat - 2) * c * n_seg,
+                   (char *)nram_output + (repeat % 2) * pingpong_offset,
+                   load_size, dram_stride, nram_stride, n_seg);
   }
+
   if (remain > 0) {
-    loadInput<T>(nram_input + (repeat % 2) * pingpong_offset,
-                 (T *)input + repeat * C * n_seg, C * sizeof(T),
-                 c_align * sizeof(T), C * sizeof(T), remain);
-    loadInput<int32_t>(nram_target + (repeat % 2) * pingpong_offset,
+    loadInput<T>((char *)nram_input + (repeat % 2) * pingpong_offset,
+                 (T *)input + repeat * c * n_seg, load_size, nram_stride,
+                 dram_stride, remain);
+    loadInput<int32_t>((char *)nram_target + (repeat % 2) * pingpong_offset,
                        (int32_t *)target + repeat * n_seg,
                        remain * sizeof(int32_t));
+    loadWeight<T>((char *)nram_weight + (repeat % 2) * pingpong_weight_offset,
+                  (T *)weight, *((int32_t *)target + repeat * n_seg), c,
+                  has_weight, partition_nc);
   }
+
   if (repeat > 0) {
     compute((T *)(nram_input + ((repeat - 1) % 2) * pingpong_offset),
             (int32_t *)(nram_target + ((repeat - 1) % 2) * pingpong_offset),
-            (T *)nram_weight, weight_size, deal_num, n_seg, C, alpha, gamma,
-            (T *)nram_scalar, (T *)nram_compute_a, (T *)nram_compute_b,
+            (T *)(nram_weight +
+                  partition_nc * ((repeat - 1) % 2) * pingpong_weight_offset),
+            has_weight, partition_nc, deal_num, n_seg, c, c_seg, c_offset_num,
+            alpha, gamma, (T *)nram_compute_a, (T *)nram_compute_b,
             (T *)(nram_output + ((repeat - 1) % 2) * pingpong_offset));
   }
-  __asm__ volatile("sync;");
+  __asm__ volatile("sync;\n\t");
 
   if (repeat > 0) {
-    storeOutput<T>((T *)output + (repeat - 1) * C * n_seg,
-                   nram_output + ((repeat - 1) % 2) * pingpong_offset,
-                   C * sizeof(T), C * sizeof(T), c_align * sizeof(T), n_seg);
+    storeOutput<T>((T *)output + (repeat - 1) * c * n_seg,
+                   (char *)nram_output + ((repeat - 1) % 2) * pingpong_offset,
+                   load_size, dram_stride, nram_stride, n_seg);
   }
+
   if (remain > 0) {
-    int rem_deal_num = remain * c_align_size / sizeof(T);
+    int32_t rem_num = PAD_UP(remain * c_num, NFU_ALIGN_SIZE / sizeof(T));
     compute((T *)(nram_input + (repeat % 2) * pingpong_offset),
             (int32_t *)(nram_target + (repeat % 2) * pingpong_offset),
-            (T *)nram_weight, weight_size, rem_deal_num, remain, C, alpha,
-            gamma, (T *)nram_scalar, (T *)nram_compute_a, (T *)nram_compute_b,
+            (T *)(nram_weight +
+                  partition_nc * (repeat % 2) * pingpong_weight_offset),
+            has_weight, partition_nc, rem_num, remain, c, c_seg, c_offset_num,
+            alpha, gamma, (T *)nram_compute_a, (T *)nram_compute_b,
             (T *)(nram_output + (repeat % 2) * pingpong_offset));
-    __asm__ volatile("sync;");
+    __asm__ volatile("sync;\n\t");
 
-    storeOutput<T>((T *)output + repeat * C * n_seg,
-                   nram_output + (repeat % 2) * pingpong_offset, C * sizeof(T),
-                   C * sizeof(T), c_align * sizeof(T), remain);
+    storeOutput<T>((T *)output + repeat * c * n_seg,
+                   (char *)nram_output + (repeat % 2) * pingpong_offset,
+                   load_size, dram_stride, nram_stride, remain);
+  }
+  __asm__ volatile("sync;\n\t");
+}
+
+template <typename T>
+__mlu_func__ void focalLossSigmoidForwardBlock(
+    const T *input, const int32_t *target, const T *weight, const int32_t n,
+    const int32_t c, const float alpha, const float gamma, T *output) {
+  /*
+   * NRAM partition
+   *  |-----------------------------------------------------------------------|
+   *  |                                weight                                 |
+   *  |------------------------------- COMPUTE -------------------------------|
+   *  |                                   |                                   |
+   *  |              computeA             |               computeB            |
+   *  |                                   |                                   |
+   *  |------------- PING ------------------------------- PONG ---------------|
+   *  |                                   |                                   |
+   *  |              input                |               input               |
+   *  |                                   |                                   |
+   *  |-----------------------------------|-----------------------------------|
+   *  |                                   |                                   |
+   *  |              output               |               output              |
+   *  |                                   |                                   |
+   *  |-----------------------------------|-----------------------------------|
+   *  |              target               |               target              |
+   *  |-----------------------------------|-----------------------------------|
+   *
+   * split_pipeline_num is 6: COMPUTE(computeA,computeB), PING(input,output),
+   * PONG(input,output).
+   * split_target_num is 2: PING(target), PONG(target).
+   * weight is not NULL:
+   *   The nram-size of weight is equal to c_align_size when partition input-N.
+   *   The nram-size of weight is equal to NFU_ALIGN_SIZE when partition
+   * input-NC.
+  */
+
+  // calculate threshold of c
+  const int32_t split_pipeline_num = 6;
+  const int32_t split_target_num = 2;
+  const int32_t has_weight = weight != NULL;
+  const int32_t threshold_c =
+      PAD_DOWN((MAX_NRAM_SIZE - split_target_num * sizeof(int32_t)) /
+                   (split_pipeline_num + has_weight),
+               NFU_ALIGN_SIZE) /
+      sizeof(T);
+  const int32_t c_align = PAD_UP(c, NFU_ALIGN_SIZE / sizeof(T));
+  const int32_t c_align_size = c_align * sizeof(T);
+
+  if (c <= threshold_c) {
+    // partition inputN
+    int32_t c_num = c;
+    int32_t reservered_align_size =
+        (split_target_num + split_pipeline_num) * NFU_ALIGN_SIZE;
+    int32_t weight_size = 0;
+    if (has_weight) {
+      c_num = c_align;
+      reservered_align_size = split_target_num * NFU_ALIGN_SIZE;
+      weight_size = c_align_size;
+    }
+
+    const int32_t remain_size =
+        MAX_NRAM_SIZE - weight_size - reservered_align_size;
+    const int32_t n_seg =
+        remain_size / (split_pipeline_num * c_num * sizeof(T) +
+                       split_target_num * sizeof(int32_t));
+    const int32_t split_pipeline_size =
+        PAD_UP(c_num * n_seg * sizeof(T), NFU_ALIGN_SIZE);
+    const int32_t compute_size = 2 * split_pipeline_size;
+    const int32_t pingpong_offset = (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
+
+    char *nram_weight = (char *)nram_buffer;
+    char *nram_compute_a = nram_weight + has_weight * c_align_size;
+    char *nram_compute_b = nram_compute_a + split_pipeline_size;
+    char *nram_input = nram_compute_b + split_pipeline_size;
+    char *nram_output = nram_input + split_pipeline_size;
+    char *nram_target = nram_output + split_pipeline_size;
+
+    startPipeline<T>(input, target, weight, nram_compute_a, nram_compute_b,
+                     nram_input, nram_target, nram_weight, nram_output,
+                     has_weight, 0, pingpong_offset, 0, 0, n, n_seg, c, c,
+                     alpha, gamma, output);
+  } else {
+    // partition inputNC
+    const int32_t weight_size = has_weight * NFU_ALIGN_SIZE;
+    const int32_t remain_size = MAX_NRAM_SIZE - weight_size;
+    const int32_t split_pipeline_size = PAD_DOWN(
+        (remain_size - split_target_num * NFU_ALIGN_SIZE) / split_pipeline_num,
+        NFU_ALIGN_SIZE);
+    const int32_t c_seg = split_pipeline_size / sizeof(T);
+    const int32_t n_seg = 1;
+    const int32_t compute_size = 2 * split_pipeline_size;
+    const int32_t pingpong_offset = (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
+    const int32_t pingpong_weight_offset = weight_size / 2;
+
+    char *nram_weight = (char *)nram_buffer;
+    char *nram_compute_a = nram_weight + weight_size;
+    char *nram_compute_b = nram_compute_a + split_pipeline_size;
+    char *nram_input = nram_compute_b + split_pipeline_size;
+    char *nram_output = nram_input + split_pipeline_size;
+    char *nram_target = nram_output + split_pipeline_size;
+
+    const int32_t loop_num = (c + c_seg - 1) / c_seg;
+    const int32_t partition_nc = 1;
+    for (int32_t i = 0; i < loop_num; ++i) {
+      const int32_t c_index = i * c_seg;
+      const int32_t c_seg_curr = i == (loop_num - 1) ? c - c_index : c_seg;
+      startPipeline<T>(input, target, weight, nram_compute_a, nram_compute_b,
+                       nram_input, nram_target, nram_weight, nram_output,
+                       has_weight, partition_nc, pingpong_offset,
+                       pingpong_weight_offset, c_index, n, n_seg, c, c_seg_curr,
+                       alpha, gamma, output);
+    }
   }
 }
 
