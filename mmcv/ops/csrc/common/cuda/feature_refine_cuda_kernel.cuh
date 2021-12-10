@@ -13,20 +13,16 @@
 template <typename scalar_t>
 __global__ void feature_refine_forward_kernel(
     const int nthreads, const int points, const scalar_t* bottom_data,
-    const scalar_t* best_bboxes,  // of shape (n, h, w, 5)
-    const scalar_t spatial_scale, const int channels, const int height,
-    const int width, scalar_t* top_data) {
+    const scalar_t* best_bboxes, const scalar_t spatial_scale,
+    const int channels, const int height, const int width, scalar_t* top_data) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
-    // (n, c, h, w) is an element in the aligned output
     int w = index % width;
     int h = (index / width) % height;
     int c = (index / width / height) % channels;
-    int n = index / width / height /
-            channels;  // refers to the n^th image within a minibatch
+    int n = index / width / height / channels;
 
     const scalar_t* bbox_offset =
         best_bboxes + ((n * height + h) * width + w) * 5;
-    // for rbbox, there are 5 entries: [x_ctr, y_ctr, w, h, ang]
     scalar_t roi_y = bbox_offset[0] * spatial_scale;
     scalar_t roi_x = bbox_offset[1] * spatial_scale;
 
@@ -68,20 +64,17 @@ __global__ void feature_refine_forward_kernel(
 template <typename scalar_t>
 __global__ void feature_refine_backward_kernel(
     const int nthreads, const int points, const scalar_t* top_diff,
-    const scalar_t* best_bboxes,  // of shape (n, h, w, 5)
-    const scalar_t spatial_scale, const int channels, const int height,
-    const int width, scalar_t* bottom_diff) {
+    const scalar_t* best_bboxes, const scalar_t spatial_scale,
+    const int channels, const int height, const int width,
+    scalar_t* bottom_diff) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
-    // (n, c, h, w) is an element in the input diff
     int w = index % width;
     int h = (index / width) % height;
     int c = (index / width / height) % channels;
-    int n = index / width / height /
-            channels;  // refers to the n^th image within a minibatch
+    int n = index / width / height / channels;
 
     const scalar_t* bbox_offset =
         best_bboxes + ((n * height + h) * width + w) * 5;
-    // for rbbox, there are 5 entries: [x_ctr, y_ctr, w, h, ang]
     scalar_t roi_y = bbox_offset[0] * spatial_scale;
     scalar_t roi_x = bbox_offset[1] * spatial_scale;
 
