@@ -1389,15 +1389,14 @@ int feature_refine_backward_cuda(const Tensor top_grad,
                          Tensor bottom_grad);
 };
 
-int feature_refine_forward_impl(const Tensor features,
-                                 const Tensor best_bboxes,
-                                 const float spatial_scale, const int points,
-                                 Tensor output);
+int feature_refine_forward_impl(const Tensor features, const Tensor best_bboxes,
+                                const float spatial_scale, const int points,
+                                Tensor output);
 
 int feature_refine_backward_impl(const Tensor top_grad,
-                                  const Tensor best_bboxes,
-                                  const float spatial_scale, const int points,
-                                  Tensor bottom_grad);
+                                 const Tensor best_bboxes,
+                                 const float spatial_scale, const int points,
+                                 Tensor bottom_grad);
 
 REGISTER_DEVICE_IMPL(feature_refine_forward_impl, CUDA,
                      feature_refine_forward_cuda);
