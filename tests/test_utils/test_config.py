@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mmcv import Config, DictAction, dump, load
+from mmcv import Config, ConfigDict, DictAction, dump, load
 
 data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 
@@ -532,3 +532,17 @@ def test_deprecation():
         with pytest.warns(UserWarning):
             cfg = Config.fromfile(cfg_file)
         assert cfg.item1 == 'expected'
+
+
+def test_type():
+    # dict with delete
+    d1 = dict(model=dict(_delete_=True, backbone=dict(type='MobileNetV2')))
+    cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
+    cfg.merge_from_dict(d1)
+    assert type(cfg.model) == ConfigDict
+
+    # dict without delete
+    d2 = dict(model=dict(backbone=dict(type='MobileNetV2')))
+    cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
+    cfg.merge_from_dict(d2)
+    assert type(cfg.model) == ConfigDict

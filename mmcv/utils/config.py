@@ -310,16 +310,19 @@ class Config:
                 if len(b) <= k:
                     raise KeyError(f'Index {k} exceeds the length of list {b}')
                 b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
-            elif isinstance(v,
-                            dict) and k in b and not v.pop(DELETE_KEY, False):
-                allowed_types = (dict, list) if allow_list_keys else dict
-                if not isinstance(b[k], allowed_types):
-                    raise TypeError(
-                        f'{k}={v} in child config cannot inherit from base '
-                        f'because {k} is a dict in the child config but is of '
-                        f'type {type(b[k])} in base config. You may set '
-                        f'`{DELETE_KEY}=True` to ignore the base config')
-                b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
+            elif isinstance(v, dict):
+                if k in b and not v.pop(DELETE_KEY, False):
+                    allowed_types = (dict, list) if allow_list_keys else dict
+                    if not isinstance(b[k], allowed_types):
+                        raise TypeError(
+                            f'{k}={v} in child config cannot inherit from '
+                            f'base because {k} is a dict in the child config '
+                            f'but is of type {type(b[k])} in base config. '
+                            f'You may set `{DELETE_KEY}=True` to ignore the '
+                            f'base config.')
+                    b[k] = Config._merge_a_into_b(v, b[k], allow_list_keys)
+                else:
+                    b[k] = ConfigDict(v)
             else:
                 b[k] = v
         return b
