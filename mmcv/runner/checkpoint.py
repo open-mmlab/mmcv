@@ -220,11 +220,13 @@ class CheckpointLoader:
             path (str): checkpoint path
 
         Returns:
-            loader (function): checkpoint loader
+            callable: checkpoint loader
         """
-
         for p in cls._schemes:
-            if path.startswith(p):
+            # use regular match to handle some cases that where the prefix of
+            # loader has a prefix. For example, both 's3://path' and
+            # 'open-mmlab:s3://path' should return `load_from_ceph`
+            if re.match(p, path) is not None:
                 return cls._schemes[p]
 
     @classmethod
@@ -326,7 +328,7 @@ def load_from_pavi(filename, map_location=None):
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes='s3://')
+@CheckpointLoader.register_scheme(prefixes=r'(\S*\:)?s3://')
 def load_from_ceph(filename, map_location=None, backend='petrel'):
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
