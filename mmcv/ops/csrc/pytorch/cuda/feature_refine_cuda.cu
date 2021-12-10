@@ -4,10 +4,10 @@
 #include "feature_refine_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-int FRForwardLauncher(const torch::Tensor features,
-                      const torch::Tensor best_bboxes,  // of shape (n, h, w, 5)
+int FRForwardLauncher(const Tensor features,
+                      const Tensor best_bboxes,  // of shape (n, h, w, 5)
                       const float spatial_scale, const int points,
-                      torch::Tensor output) {
+                      Tensor output) {
   const int output_size = features.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features.scalar_type(), "FRForwardLaucherFun", ([&] {
@@ -24,10 +24,9 @@ int FRForwardLauncher(const torch::Tensor features,
   return 1;
 }
 
-int FRBackwardLauncher(const torch::Tensor top_grad,
-                       const torch::Tensor best_bboxes,
-                       const float spatial_scale, const int points,
-                       torch::Tensor bottom_grad) {
+int FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
+                       const float spatial_scale, cpiponst int points,
+                       Tensor bottom_grad) {
   const int output_size = top_grad.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       top_grad.scalar_type(), "FRBackwardLaucherFun", ([&] {
