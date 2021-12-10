@@ -4,9 +4,9 @@
 #include "feature_refine_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-void FRForwardLauncher(const Tensor features, const Tensor best_bboxes,
-                       const float spatial_scale, const int points,
-                       Tensor output) {
+int FRForwardLauncher(const Tensor features, const Tensor best_bboxes,
+                      const float spatial_scale, const int points,
+                      Tensor output) {
   const int output_size = features.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features.scalar_type(), "FRForwardLaucherFun", ([&] {
@@ -20,12 +20,12 @@ void FRForwardLauncher(const Tensor features, const Tensor best_bboxes,
                 scalar_t(spatial_scale), features.size(1), features.size(2),
                 features.size(3), top_data);
       }));
-  AT_CUDA_CHECK(cudaGetLastError());
+  return 1;
 }
 
-void FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
-                        const float spatial_scale, const int points,
-                        Tensor bottom_grad) {
+int FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
+                       const float spatial_scale, const int points,
+                       Tensor bottom_grad) {
   const int output_size = top_grad.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       top_grad.scalar_type(), "FRBackwardLaucherFun", ([&] {
@@ -39,5 +39,5 @@ void FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
                 scalar_t(spatial_scale), top_grad.size(1), top_grad.size(2),
                 top_grad.size(3), bottom_diff);
       }));
-  AT_CUDA_CHECK(cudaGetLastError());
+  return 1;
 }
