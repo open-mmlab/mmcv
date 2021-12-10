@@ -133,3 +133,4 @@ __global__ void feature_refine_backward_kernel(
     }
   }
 }
+#endif  // FEATURE_REFINE_CUDA_KERNEL_CUH
