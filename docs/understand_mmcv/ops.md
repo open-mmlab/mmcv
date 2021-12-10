@@ -13,6 +13,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - Deformable RoIPool
 - DynamicScatter
 - GatherPoints
+- FeatureRefine
 - FurthestPointSample
 - FurthestPointSampleWithDist
 - GeneralizedAttention
