@@ -1,9 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 // Modified from
 // https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection/blob/master/mmdet/ops/fr/src/feature_refine_kernel.cu
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "feature_refine_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
