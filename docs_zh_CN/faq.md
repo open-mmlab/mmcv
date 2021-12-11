@@ -44,15 +44,13 @@
 
     1. 检查 GCC 的版本，通常是因为 PyTorch 版本与 GCC 版本不匹配 （例如 GCC < 4.9 )，我们推荐用户使用 GCC 5.4，我们也不推荐使用 GCC 5.5， 因为有反馈 GCC 5.5 会导致 "segmentation fault" 并且切换到 GCC 5.4 就可以解决问题
 
-    2. 检查是否正确安装 CUDA 版本的 PyTorch
+    2. 检查是否正确安装 CUDA 版本的 PyTorc。输入以下命令并检查是否返回 True
 
         ```shell
         python -c 'import torch; print(torch.cuda.is_available())'
         ```
 
-        是否返回True。
-
-    3. 如果 `torch` 安装正确，那么检查 MMCV 是否安装成功
+    3. 如果 `torch` 安装成功，那么检查 MMCV 是否安装成功。输入以下命令，如果没有报错说明 mmcv-full 安装成。
 
         ```shell
         python -c 'import mmcv; import mmcv.ops'

@@ -52,21 +52,17 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
     1. Check you GCC version and use GCC 5.4. This usually caused by the incompatibility between PyTorch and the environment (e.g., GCC < 4.9 for PyTorch). We also recommend the users to avoid using GCC 5.5 because many feedbacks report that GCC 5.5 will cause "segmentation fault" and simply changing it to GCC 5.4 could solve the problem
 
-    2. Check whether PyTorch is correctly installed and could use CUDA op, e.g. type the following command in your terminal
+    2. Check whether PyTorch is correctly installed and could use CUDA op, e.g. type the following command in your terminal and see whether they could correctly output results
 
         ```shell
         python -c 'import torch; print(torch.cuda.is_available())'
         ```
 
-        And see whether they could correctly output results.
-
-    3. If PyTorch is correctly installed, check whether MMCV is correctly installed
+    3. If PyTorch is correctly installed, check whether MMCV is correctly installed. If MMCV is correctly installed, then there will be no issue of the command
 
         ```shell
         python -c 'import mmcv; import mmcv.ops'
         ```
-
-        If MMCV is correctly installed, then there will be no issue of the above two commands.
 
     4. If MMCV and PyTorch are correctly installed, you can use `ipdb` to set breakpoints or directly add `print` to debug and see which part leads the `segmentation fault`
 
