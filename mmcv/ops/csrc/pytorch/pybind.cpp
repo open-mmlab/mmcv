@@ -341,12 +341,12 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilation_patchW, int dH, int dW);
 
 void feature_refine_forward(const Tensor features, const Tensor best_bboxes,
-                            const float spatial_scale, const int points,
-                            Tensor output);
+                            Tensor output, const float spatial_scale,
+                            const int points);
 
 void feature_refine_backward(const Tensor top_grad, const Tensor best_bboxes,
-                             const float spatial_scale, const int points,
-                             Tensor bottom_grad);
+                             Tensor bottom_grad, const float spatial_scale,
+                             const int points);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -696,10 +696,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pool_method"));
   m.def("feature_refine_forward", &feature_refine_forward,
         "Feature Refine forward (CUDA)", py::arg("features"),
-        py::arg("best_bboxes"), py::arg("spatial_scale"), py::arg("points"),
-        py::arg("output"));
+        py::arg("best_bboxes"), py::arg("output"), py::arg("spatial_scale"),
+        py::arg("points"));
   m.def("feature_refine_backward", &feature_refine_backward,
         "Feature Refine backward (CUDA)", py::arg("top_grad"),
-        py::arg("best_bboxes"), py::arg("spatial_scale"), py::arg("points"),
-        py::arg("bottom_grad"));
+        py::arg("best_bboxes"), py::arg("bottom_grad"),
+        py::arg("spatial_scale"), py::arg("points"));
 }
