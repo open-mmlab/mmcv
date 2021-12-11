@@ -17,7 +17,7 @@ def boxes_iou_bev(boxes_a, boxes_b):
         boxes_b (torch.Tensor): Input boxes b with shape (N, 5).
 
     Returns:
-        ans_iou (torch.Tensor): IoU result with shape (M, N).
+        torch.Tensor: IoU result with shape (M, N).
     """
     ans_iou = boxes_a.new_zeros(
         torch.Size((boxes_a.shape[0], boxes_b.shape[0])))
@@ -55,7 +55,9 @@ def nms_bev(boxes, scores, thresh, pre_max_size=None, post_max_size=None):
     boxes = boxes[order].contiguous()
 
     keep = torch.zeros(boxes.size(0), dtype=torch.long)
-    num_out = ext_module.iou3d_nms_forward(boxes, keep, thresh)
+    num_out = torch.zeros(size=(), dtype=torch.long)
+    ext_module.iou3d_nms_forward(
+        boxes, keep, num_out, nms_overlap_thresh=thresh)
     keep = order[keep[:num_out].cuda(boxes.device)].contiguous()
     if post_max_size is not None:
         keep = keep[:post_max_size]
@@ -81,5 +83,7 @@ def nms_normal_bev(boxes, scores, thresh):
     boxes = boxes[order].contiguous()
 
     keep = torch.zeros(boxes.size(0), dtype=torch.long)
-    num_out = ext_module.iou3d_nms_normal_forward(boxes, keep, thresh)
+    num_out = torch.zeros(size=(), dtype=torch.long)
+    ext_module.iou3d_nms_normal_forward(
+        boxes, keep, num_out, nms_overlap_thresh=thresh)
     return order[keep[:num_out].cuda(boxes.device)].contiguous()

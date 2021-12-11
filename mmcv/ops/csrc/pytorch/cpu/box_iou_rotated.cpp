@@ -3,6 +3,7 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/box_iou_rotated/box_iou_rotated_cpu.cpp
 #include "box_iou_rotated_utils.hpp"
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 template <typename T>
 void box_iou_rotated_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
@@ -31,3 +32,7 @@ void box_iou_rotated_cpu(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                          const int mode_flag, const bool aligned) {
   box_iou_rotated_cpu_kernel<float>(boxes1, boxes2, ious, mode_flag, aligned);
 }
+
+void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
+                          const int mode_flag, const bool aligned);
+REGISTER_DEVICE_IMPL(box_iou_rotated_impl, CPU, box_iou_rotated_cpu);

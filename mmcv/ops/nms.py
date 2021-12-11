@@ -131,8 +131,8 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
         max_num (int): maximum number of boxes after NMS.
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[49.1, 32.4, 51.0, 35.9],
@@ -190,7 +190,7 @@ def soft_nms(boxes,
     The input can be either a torch tensor or numpy array.
     The returned type will always be the same as inputs.
 
-    Arguments:
+    Args:
         boxes (torch.Tensor or np.ndarray): boxes in shape (N, 4).
         scores (torch.Tensor or np.ndarray): scores in shape (N, ).
         iou_threshold (float): IoU threshold for NMS.
@@ -200,8 +200,8 @@ def soft_nms(boxes,
         offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[4., 3., 5., 3.],
@@ -258,15 +258,15 @@ def soft_nms(boxes,
 
 
 def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
-    """Performs non-maximum suppression in a batched fashion.
+    r"""Performs non-maximum suppression in a batched fashion.
 
-    Modified from https://github.com/pytorch/vision/blob
+    Modified from https://github.com/pytorch/vision/blob\
     /505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39.
     In order to perform NMS independently per class, we add an offset to all
     the boxes. The offset is dependent only on the class idx, and is large
     enough so that boxes from different classes do not overlap.
 
-    Arguments:
+    Args:
         boxes (torch.Tensor): boxes in shape (N, 4).
         scores (torch.Tensor): scores in shape (N, ).
         idxs (torch.Tensor): each index value correspond to a bbox cluster,
@@ -277,11 +277,11 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
             - iou_thr (float): IoU threshold used for NMS.
             - split_thr (float): threshold number of boxes. In some cases the
-                number of boxes is large (e.g., 200k). To avoid OOM during
-                training, the users could set `split_thr` to a small value.
-                If the number of boxes is greater than the threshold, it will
-                perform NMS on each group of boxes separately and sequentially.
-                Defaults to 10000.
+              number of boxes is large (e.g., 200k). To avoid OOM during
+              training, the users could set `split_thr` to a small value.
+              If the number of boxes is greater than the threshold, it will
+              perform NMS on each group of boxes separately and sequentially.
+              Defaults to 10000.
         class_agnostic (bool): if true, nms is class agnostic,
             i.e. IoU thresholding happens over all boxes,
             regardless of the predicted class.
@@ -343,14 +343,14 @@ def nms_match(dets, iou_threshold):
     record the indice of suppressed bbox and form a group with the indice of
     kept bbox. In each group, indice is sorted as score order.
 
-    Arguments:
+    Args:
         dets (torch.Tensor | np.ndarray): Det boxes with scores, shape (N, 5).
         iou_thr (float): IoU thresh for NMS.
 
     Returns:
-        List[torch.Tensor | np.ndarray]: The outer list corresponds different
-            matched group, the inner Tensor corresponds the indices for a group
-            in score order.
+        list[torch.Tensor | np.ndarray]: The outer list corresponds different
+        matched group, the inner Tensor corresponds the indices for a group
+        in score order.
     """
     if dets.shape[0] == 0:
         matched = []
@@ -381,15 +381,15 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     IoU greater than iou_threshold with another (higher scoring) rotated box.
 
     Args:
-        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to \
+        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to
             be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor): boxes' label in shape (N,).
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets(boxes and scores) and indice, which is always the
+        same data type as the input.
     """
     if dets.shape[0] == 0:
         return dets, None

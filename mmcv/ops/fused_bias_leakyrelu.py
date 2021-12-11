@@ -191,7 +191,8 @@ class FusedBiasLeakyReLU(nn.Module):
     """Fused bias leaky ReLU.
 
     This function is introduced in the StyleGAN2:
-    http://arxiv.org/abs/1912.04958
+    `Analyzing and Improving the Image Quality of StyleGAN
+    <http://arxiv.org/abs/1912.04958>`_
 
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a
@@ -226,7 +227,8 @@ def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
     """Fused bias leaky ReLU function.
 
     This function is introduced in the StyleGAN2:
-    http://arxiv.org/abs/1912.04958
+    `Analyzing and Improving the Image Quality of StyleGAN
+    <http://arxiv.org/abs/1912.04958>`_
 
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a

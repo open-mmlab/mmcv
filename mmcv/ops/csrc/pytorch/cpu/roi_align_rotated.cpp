@@ -5,6 +5,7 @@
 #include <ATen/TensorUtils.h>
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 // implementation taken from Caffe2
 template <typename T>
@@ -415,3 +416,43 @@ void ROIAlignRotatedBackwardCPULauncher(Tensor grad_output, Tensor rois,
             n_stride, c_stride, h_stride, w_stride);
       });
 }
+
+void roi_align_rotated_forward_cpu(Tensor input, Tensor rois, Tensor output,
+                                   int aligned_height, int aligned_width,
+                                   float spatial_scale, int sampling_ratio,
+                                   bool aligned, bool clockwise) {
+  ROIAlignRotatedForwardCPULauncher(input, rois, output, aligned_height,
+                                    aligned_width, spatial_scale,
+                                    sampling_ratio, aligned, clockwise);
+}
+
+void roi_align_rotated_backward_cpu(Tensor top_grad, Tensor rois,
+                                    Tensor bottom_grad, int aligned_height,
+                                    int aligned_width, float spatial_scale,
+                                    int sampling_ratio, bool aligned,
+                                    bool clockwise) {
+  // Number of ROIs
+  int num_rois = rois.size(0);
+  int size_rois = rois.size(1);
+  if (size_rois != 6) {
+    AT_ERROR("wrong roi size");
+  }
+  ROIAlignRotatedBackwardCPULauncher(
+      top_grad, rois, bottom_grad, aligned_height, aligned_width, spatial_scale,
+      sampling_ratio, aligned, clockwise);
+}
+
+void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
+                                    int aligned_height, int aligned_width,
+                                    float spatial_scale, int sample_ratio,
+                                    bool aligned, bool clockwise);
+
+void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
+                                     Tensor bottom_grad, int aligned_height,
+                                     int aligned_width, float spatial_scale,
+                                     int sample_ratio, bool aligned,
+                                     bool clockwise);
+REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CPU,
+                     roi_align_rotated_forward_cpu);
+REGISTER_DEVICE_IMPL(roi_align_rotated_backward_impl, CPU,
+                     roi_align_rotated_backward_cpu);
