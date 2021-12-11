@@ -26,15 +26,15 @@ repos:
       - id: double-quote-string-fixer
       - id: check-merge-conflict
       - id: fix-encoding-pragma
-        args: [ "--remove" ]
+        args: ["--remove"]
       - id: mixed-line-ending
-        args: [ "--fix=lf" ]
+        args: ["--fix=lf"]
   - repo: https://github.com/markdownlint/markdownlint
     rev: v0.11.0
     hooks:
       - id: markdownlint
-        args: [ "-r", "~MD002,~MD013,~MD029,~MD033,~MD034",
-                "-t", "allow_different_nesting" ]
+        args: ["-r", "~MD002,~MD013,~MD029,~MD033,~MD034",
+              "-t", "allow_different_nesting"]
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
@@ -43,12 +43,12 @@ repos:
     rev: v1.3.1
     hooks:
       - id: docformatter
-        args: [ "--in-place", "--wrap-descriptions", "79" ]
-  - repo: local
-    hooks:
-      - id: clang-format
-        name: clang-format
-        description: Format files with ClangFormat
-        entry: clang-format -style=google -i
-        language: system
-        files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)$
+        args: ["--in-place", "--wrap-descriptions", "79"]
+  # - repo: local
+  #   hooks:
+  #     - id: clang-format
+  #       name: clang-format
+  #       description: Format files with ClangFormat
+  #       entry: clang-format -style=google -i
+  #       language: system
+  #       files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|cuh|proto)$
