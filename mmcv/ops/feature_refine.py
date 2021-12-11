@@ -10,35 +10,59 @@ ext_module = ext_loader.load_ext(
 
 
 class FeatureRefineFunction(Function):
-    """Feature refine class."""
+    """Using the feature interpolation to obtain the position information
+    correspond to the refined rotate anchors and reconstruct the feature maps
+    by pixel-wise manner to achieve feature alignment.
+
+    The details were described in the paper
+    `R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating
+    Object <https://arxiv.org/abs/1908.05612>`.
+    """
 
     @staticmethod
     def forward(ctx, features, best_rbboxes, spatial_scale, points=1):
-        """Forward function."""
+        """
+        Args:
+            features (torch.Tensor): Input features with shape [N,C,H,W].
+            best_rbboxes (torch.Tensor): Refined rotate anchors with
+                shape [N,H,W,5]. Coordinate format (cx,cx,h,w,a).
+            spatial_scale (float): The scale of feature map size and
+                input image size.
+            points (int, optional): The number of sample points.
+                Defaults to 1.
+
+        Returns:
+            torch.Tensor: Refined features with shape [N,C,H,W].
+        """
         ctx.spatial_scale = spatial_scale
         ctx.points = points
         ctx.save_for_backward(best_rbboxes)
         assert points in [1, 5]
-        assert features.is_cuda
         output = torch.zeros_like(features)
-        ext_module.feature_refine_forward(features, best_rbboxes,
-                                          spatial_scale, points, output)
+        ext_module.feature_refine_forward(features, best_rbboxes, output,
+                                          spatial_scale, points)
         return output
 
     @staticmethod
     @once_differentiable
     def backward(ctx, grad_output):
-        """Backward function."""
+        """
+        Args:
+            grad_output (torch.Tensor): The gradiant of output features
+                with shape [N,C,H,W].
+
+        Returns:
+            torch.Tensor: The gradiant of input features with shape [N,C,H,W].
+        """
         best_rbboxes = ctx.saved_tensors[0]
         points = ctx.points
         spatial_scale = ctx.spatial_scale
-        assert grad_output.is_cuda
         grad_input = None
         if ctx.needs_input_grad[0]:
             grad_input = torch.zeros_like(grad_output)
             ext_module.feature_refine_backward(grad_output.contiguous(),
-                                               best_rbboxes, spatial_scale,
-                                               points, grad_input)
+                                               best_rbboxes, grad_input,
+                                               spatial_scale, points)
         return grad_input, None, None, None
 
 
