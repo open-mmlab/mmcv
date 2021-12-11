@@ -7,13 +7,13 @@
 
 - MMCV 和 MMDetection 的兼容性问题；"ConvWS is already registered in conv layer"
 
-    请按照上述说明为您的 MMDetection 版本安装正确版本的 MMCV。
+  请参考 [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation) 为您的 MMDetection 版本安装正确版本的 MMCV。
 
 - "No module named 'mmcv.ops'"; "No module named 'mmcv._ext'"
 
     1. 使用 `pip uninstall mmcv` 卸载您环境中的 mmcv
 
-    2. 按照上述说明安装 mmcv-full
+    2. 参考 [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) 或者 [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html) 安装 mmcv-full
 
 - "invalid device function" 或者 "no kernel image is available for execution"
 
@@ -42,9 +42,9 @@
 
 - "Segmentation fault"
 
-    1. 检查 GCC 的版本，通常是因为 PyTorch 版本与 GCC 版本不匹配 （例如 GCC < 4.9 )，我们推荐用户使用 GCC 5.4，我们也不推荐使用 GCC 5.5， 因为有反馈 GCC 5.5 会导致 "segmentation fault" 并且切换到 GCC 5.4 就可以解决问题。
+    1. 检查 GCC 的版本，通常是因为 PyTorch 版本与 GCC 版本不匹配 （例如 GCC < 4.9 )，我们推荐用户使用 GCC 5.4，我们也不推荐使用 GCC 5.5， 因为有反馈 GCC 5.5 会导致 "segmentation fault" 并且切换到 GCC 5.4 就可以解决问题
 
-    2. 检查是否正确安装了 CUDA 版本的 PyTorch 。
+    2. 检查是否正确安装 CUDA 版本的 PyTorch
 
         ```shell
         python -c 'import torch; print(torch.cuda.is_available())'
@@ -52,17 +52,39 @@
 
         是否返回True。
 
-    3. 如果 `torch` 的安装是正确的，检查是否正确编译了 MMCV。
+    3. 如果 `torch` 安装正确，那么检查 MMCV 是否安装成功
 
         ```shell
         python -c 'import mmcv; import mmcv.ops'
         ```
 
-    4. 如果 MMCV 与 PyTorch 都被正确安装了，则使用 `ipdb`, `pdb` 设置断点，直接查找哪一部分的代码导致了 `segmentation fault`。
+    4. 如果 MMCV 与 PyTorch 都安装成功了，则可以使用 `ipdb` 设置断点或者使用 `print` 函数，分析是哪一部分的代码导致了 `segmentation fault`
 
 - "libtorch_cuda_cu.so: cannot open shared object file"
 
-    `mmcv-full` 依赖 `libtorch_cuda_cu.so` 文件，但程序运行时没能找到该文件。我们可以检查该文件是否存在 `~/miniconda3/envs/{environment-name}/lib/python3.7/site-packages/torch/lib` 也可以直接重装 PyTorch。
+    `mmcv-full` 依赖 `libtorch_cuda_cu.so` 文件，但程序运行时没能找到该文件。我们可以检查该文件是否存在 `~/miniconda3/envs/{environment-name}/lib/python3.7/site-packages/torch/lib` 也可以尝试重装 PyTorch。
+
+- "fatal error C1189: #error:  -- unsupported Microsoft Visual Studio version!"
+
+  如果您在 Windows 上编译 mmcv-full 并且 CUDA 的版本是 9.2，您很可能会遇到这个问题 `"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.2\include\crt/host_config.h(133): fatal error C1189: #error:  -- unsupported Microsoft Visual Studio version! Only the versions 2012, 2013, 2015 and 2017 are supported!"`，您可以尝试使用低版本的 Microsoft Visual Studio，例如 vs2017。
+
+- "error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized"
+
+  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.5.0，您很可能会遇到这个问题 `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`。解决这个问题的方法是将 `torch/csrc/jit/api/module.h` 文件中所有 `static constexpr bool all_slots = false;` 替换为 `static bool all_slots = false;`。更多细节可以查看 https://github.com/pytorch/pytorch/issues/39394。
+
+- "error: a member with an in-class initializer must be const"
+
+  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.6.0，您很可能会遇到这个问题 `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. 解决这个问题的方法是将 `torch/include\torch/csrc/jit/api/module.h` 文件中的所有 `CONSTEXPR_EXCEPT_WIN_CUDA ` 替换为 `const`。更多细节可以查看 https://github.com/open-mmlab/mmcv/issues/575。
+
+- "error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized"
+
+  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.7.0，您很可能会遇到这个问题 `torch/include\torch/csrc/jit/ir/ir.h(1347): error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized`. 解决这个问题的方法是修改 PyTorch 中的几个文件：
+
+  - 删除 `torch/include\torch/csrc/jit/ir/ir.h` 文件中的 `static constexpr Symbol Kind = ::c10::prim::profile;` 和 `tatic constexpr Symbol Kind = ::c10::prim::profile_optional;`
+  - 将 `torch\include\pybind11\cast.h` 文件中的 `explicit operator type&() { return *(this->value); }` 替换为 `explicit operator type&() { return *((type*)this->value); }`
+  - 将 `torch/include\torch/csrc/jit/api/module.h` 文件中的 所有 `CONSTEXPR_EXCEPT_WIN_CUDA` 替换为 `const`
+
+  更多细节可以查看 https://github.com/pytorch/pytorch/pull/45956。
 
 ### 使用问题
 

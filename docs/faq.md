@@ -7,17 +7,17 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
 
-    Please install the correct version of MMCV for the version of your MMDetection following the instruction above.
+    Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation).
 
 - "No module named 'mmcv.ops'"; "No module named 'mmcv._ext'"
 
-    1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`.
+    1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`
 
-    2. Install mmcv-full following the instruction above.
+    2. Install mmcv-full following the [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) or [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html)
 
 - "invalid device function" or "no kernel image is available for execution"
 
-    1. Check the CUDA compute capability of you GPU.
+    1. Check the CUDA compute capability of you GPU
 
     2. Run `python mmdet/utils/collect_env.py` to check whether PyTorch, torchvision,
        and MMCV are built for the correct GPU architecture.
@@ -25,23 +25,23 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
        The compatibility issue could happen when  using old GPUS, e.g., Tesla K80 (3.7) on colab.
 
     3. Check whether the running environment is the same as that when mmcv/mmdet is compiled.
-       For example, you may compile mmcv using CUDA 10.0 bug run it on CUDA9.0   environments.
+       For example, you may compile mmcv using CUDA 10.0 bug run it on CUDA9.0   environments
 
 - "undefined symbol" or "cannot open xxx.so"
 
     1. If those symbols are CUDA/C++ symbols (e.g., libcudart.so or GLIBCXX), check
-       whether the CUDA/GCC runtimes are the same as those used for compiling mmcv.
+       whether the CUDA/GCC runtimes are the same as those used for compiling mmcv
 
     2. If those symbols are Pytorch symbols (e.g., symbols containing caffe, aten, and TH), check whether
-       the Pytorch version is the same as that used for compiling mmcv.
+       the Pytorch version is the same as that used for compiling mmcv
 
     3. Run `python mmdet/utils/collect_env.py` to check whether PyTorch, torchvision,
-       and MMCV are built by and running on the same environment.
+       and MMCV are built by and running on the same environment
 
 - "RuntimeError: CUDA error: invalid configuration argument"
 
     This error may be due to your poor GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/open-mmlab/mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
-    and recompile mmcv.
+    and recompile mmcv
 
 - "RuntimeError: nms is not compiled with GPU support"
 
@@ -50,9 +50,9 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - "Segmentation fault"
 
-    1. Check you GCC version and use GCC 5.4. This usually caused by the incompatibility between PyTorch and the environment (e.g., GCC < 4.9 for PyTorch). We also recommend the users to avoid using GCC 5.5 because many feedbacks report that GCC 5.5 will cause "segmentation fault" and simply changing it to GCC 5.4 could solve the problem.
+    1. Check you GCC version and use GCC 5.4. This usually caused by the incompatibility between PyTorch and the environment (e.g., GCC < 4.9 for PyTorch). We also recommend the users to avoid using GCC 5.5 because many feedbacks report that GCC 5.5 will cause "segmentation fault" and simply changing it to GCC 5.4 could solve the problem
 
-    2. Check whether PyTorch is correctly installed and could use CUDA op, e.g. type the following command in your terminal.
+    2. Check whether PyTorch is correctly installed and could use CUDA op, e.g. type the following command in your terminal
 
         ```shell
         python -c 'import torch; print(torch.cuda.is_available())'
@@ -60,7 +60,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
         And see whether they could correctly output results.
 
-    3. If Pytorch is correctly installed, check whether MMCV is correctly installed.
+    3. If PyTorch is correctly installed, check whether MMCV is correctly installed
 
         ```shell
         python -c 'import mmcv; import mmcv.ops'
@@ -68,20 +68,41 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
         If MMCV is correctly installed, then there will be no issue of the above two commands.
 
-    4. If MMCV and Pytorch is correctly installed, you man use `ipdb`, `pdb` to set breakpoints or directly add 'print' to debug and see which part leads the segmentation fault.
+    4. If MMCV and PyTorch are correctly installed, you can use `ipdb` to set breakpoints or directly add `print` to debug and see which part leads the `segmentation fault`
 
 - "libtorch_cuda_cu.so: cannot open shared object file"
 
-    `mmcv-full` depends on the share object but it can not be found. We can check whether the object exists in `~/miniconda3/envs/{environment-name}/lib/python3.7/site-packages/torch/lib` or directly re-install the PyTorch.
+    `mmcv-full` depends on the share object but it can not be found. We can check whether the object exists in `~/miniconda3/envs/{environment-name}/lib/python3.7/site-packages/torch/lib` or try to re-install the PyTorch.
 
+- "fatal error C1189: #error:  -- unsupported Microsoft Visual Studio version!"
+
+  If you are building mmcv-full on Windows and the version of CUDA is 9.2, you will probably encounter the error `"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.2\include\crt/host_config.h(133): fatal error C1189: #error:  -- unsupported Microsoft Visual Studio version! Only the versions 2012, 2013, 2015 and 2017 are supported!"`, in which case you can use a lower version of Microsoft Visual Studio like vs2017.
+
+- "error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized"
+
+  If your version of PyTorch is 1.5.0 and you are building mmcv-full on Windows, you will probably encounter the error `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`. The way to solve the error is to replace all the `static constexpr bool all_slots = false;` with `static bool all_slots = false;` at this file `https://github.com/pytorch/pytorch/blob/v1.5.0/torch/csrc/jit/api/module.h`. More details can be found at https://github.com/pytorch/pytorch/issues/39394.
+
+- "error: a member with an in-class initializer must be const"
+
+  If your version of PyTorch is 1.6.0 and you are building mmcv-full on Windows, you will probably encounter the error `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. The way to solve the error is to replace all the `CONSTEXPR_EXCEPT_WIN_CUDA ` with `const` at `torch/include\torch/csrc/jit/api/module.h`. More details can be found at https://github.com/open-mmlab/mmcv/issues/575.
+
+- "error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized"
+
+  If your version of PyTorch is 1.7.0 and you are building mmcv-full on Windows, you will probably encounter the error `torch/include\torch/csrc/jit/ir/ir.h(1347): error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized`. The way to solve the error needs to modify several local files of PyTorch:
+
+  - delete `static constexpr Symbol Kind = ::c10::prim::profile;` and `tatic constexpr Symbol Kind = ::c10::prim::profile_optional;` at `torch/include\torch/csrc/jit/ir/ir.h`
+  - replace `explicit operator type&() { return *(this->value); }` with `explicit operator type&() { return *((type*)this->value); }` at `torch\include\pybind11\cast.h`
+  - replace all the `CONSTEXPR_EXCEPT_WIN_CUDA` with `const` at `torch/include\torch/csrc/jit/api/module.h`
+
+  More details can be found at https://github.com/pytorch/pytorch/pull/45956.
 ### Usage
 
 - "RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one"
 
-    1. This error indicates that your module has parameters that were not used in producing loss. This phenomenon may be caused by running different branches in your code in DDP mode. More datails at https://github.com/pytorch/pytorch/issues/55582.
+    1. This error indicates that your module has parameters that were not used in producing loss. This phenomenon may be caused by running different branches in your code in DDP mode. More datails at https://github.com/pytorch/pytorch/issues/55582
 
-    2. You can set ` find_unused_parameters = True` in the config to solve the above problems or find those unused parameters manually.
+    2. You can set ` find_unused_parameters = True` in the config to solve the above problems or find those unused parameters manually
 
 - "RuntimeError: Trying to backward through the graph a second time"
 
-   `GradientCumulativeOptimizerHook` and `OptimizerHook` are both set which causing `loss.backward()` to be called twice so `RuntimeError` was raised. We can only use one of these. More datails at https://github.com/open-mmlab/mmcv/issues/1379.
+   `GradientCumulativeOptimizerHook` and `OptimizerHook` are both set which causes the `loss.backward()` to be called twice so `RuntimeError` was raised. We can only use one of these. More datails at https://github.com/open-mmlab/mmcv/issues/1379.
