@@ -7,7 +7,7 @@
 
 - "KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"
 
-    只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处地导入该文件，更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
+    只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件，更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
 
 - MMCV 和 MMDetection 的兼容性问题；"ConvWS is already registered in conv layer"
 
