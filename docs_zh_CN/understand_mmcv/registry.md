@@ -48,7 +48,9 @@ class Converter1(object):
 ```python
 'Converter1' -> <class 'Converter1'>
 ```
-
+```{note}
+只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处地导入该文件。更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
+```
 如果模块被成功注册了，你可以通过配置文件使用这个转换器（converter），如下所示：
 
 ```python

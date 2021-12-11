@@ -5,6 +5,11 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 ### Installation
 
+- "KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"
+
+    The registry mechanism will be triggered only when the file where the module is located is imported.
+    So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.
+
 - Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
 
     Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation).
