@@ -173,7 +173,12 @@ jobs:
       - checkout
       - run:
           name: Install PyTorch
-          command: python -m pip install torch==1.10.0+cpu torchvision==0.11.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+          command: python -m pip install torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install psutil and ninja
+          command: |
+            python -m pip install psutil
+            python -m pip install ninja
       - run:
           name: Build and install
           command: |
