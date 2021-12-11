@@ -163,7 +163,7 @@ jobs:
             python -m coverage run --branch --source mmcv -m pytest tests/
             python -m coverage xml
             python -m coverage report -m
-            
+
   build_windows:
     executor:
       name: win/default # executor type
