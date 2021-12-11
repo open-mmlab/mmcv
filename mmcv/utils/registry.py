@@ -59,6 +59,7 @@ class Registry:
     """A registry to map strings to classes.
 
     Registered object could be built from registry.
+
     Example:
         >>> MODELS = Registry('models')
         >>> @MODELS.register_module()
@@ -128,16 +129,15 @@ class Registry:
         The name of the package where registry is defined will be returned.
 
         Example:
-            # in mmdet/models/backbone/resnet.py
+            >>> # in mmdet/models/backbone/resnet.py
             >>> MODELS = Registry('models')
             >>> @MODELS.register_module()
             >>> class ResNet:
             >>>     pass
             The scope of ``ResNet`` will be ``mmdet``.
 
-
         Returns:
-            scope (str): The inferred scope name.
+            str: The inferred scope name.
         """
         # inspect.stack() trace where this function is called, the index-2
         # indicates the frame where `infer_scope()` is called
@@ -158,8 +158,8 @@ class Registry:
             None, 'ResNet'
 
         Return:
-            scope (str, None): The first scope.
-            key (str): The remaining key.
+            tuple[str | None, str]: The former element is the first scope of
+            the key, which can be ``None``. The latter is the remaining key.
         """
         split_index = key.find('.')
         if split_index != -1:

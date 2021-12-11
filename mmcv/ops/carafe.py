@@ -180,7 +180,8 @@ carafe = CARAFEFunction.apply
 class CARAFE(Module):
     """ CARAFE: Content-Aware ReAssembly of FEatures
 
-    Please refer to https://arxiv.org/abs/1905.02188 for more details.
+    Please refer to `CARAFE: Content-Aware ReAssembly of FEatures
+    <https://arxiv.org/abs/1905.02188>`_ for more details.
 
     Args:
         kernel_size (int): reassemble kernel size
@@ -211,8 +212,8 @@ class CARAFEPack(nn.Module):
     compressor 2) content encoder 3) CARAFE op.
 
     Official implementation of ICCV 2019 paper
-    CARAFE: Content-Aware ReAssembly of FEatures
-    Please refer to https://arxiv.org/abs/1905.02188 for more details.
+    `CARAFE: Content-Aware ReAssembly of FEatures
+    <https://arxiv.org/abs/1905.02188>`_.
 
     Args:
         channels (int): input feature channels

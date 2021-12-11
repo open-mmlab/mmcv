@@ -18,13 +18,12 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     functionality of parameter initialization. Compared with
     ``torch.nn.Module``, ``BaseModule`` mainly adds three attributes.
 
-        - ``init_cfg``: the config to control the initialization.
-        - ``init_weights``: The function of parameter
-            initialization and recording initialization
-            information.
-        - ``_params_init_info``: Used to track the parameter
-            initialization information. This attribute only
-            exists during executing the ``init_weights``.
+    - ``init_cfg``: the config to control the initialization.
+    - ``init_weights``: The function of parameter initialization and recording
+      initialization information.
+    - ``_params_init_info``: Used to track the parameter initialization
+      information. This attribute only exists during executing the
+      ``init_weights``.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.

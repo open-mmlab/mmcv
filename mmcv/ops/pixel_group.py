@@ -13,21 +13,22 @@ def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
     methods.
 
     Arguments:
-        score (np.array or Tensor): The foreground score with size hxw.
+        score (np.array or torch.Tensor): The foreground score with size hxw.
         mask (np.array or Tensor): The foreground mask with size hxw.
-        embedding (np.array or Tensor): The embedding with size hxwxc to
+        embedding (np.array or torch.Tensor): The embedding with size hxwxc to
             distinguish instances.
-        kernel_label (np.array or Tensor): The instance kernel index with
+        kernel_label (np.array or torch.Tensor): The instance kernel index with
             size hxw.
-        kernel_contour (np.array or Tensor): The kernel contour with size hxw.
+        kernel_contour (np.array or torch.Tensor): The kernel contour with
+            size hxw.
         kernel_region_num (int): The instance kernel region number.
         distance_threshold (float): The embedding distance threshold between
             kernel and pixel in one instance.
 
     Returns:
-        pixel_assignment (List[List[float]]): The instance coordinate list.
-            Each element consists of averaged confidence, pixel number, and
-            coordinates (x_i, y_i for all pixels) in order.
+        list[list[float]]: The instance coordinates and attributes list. Each
+        element consists of averaged confidence, pixel number, and coordinates
+        (x_i, y_i for all pixels) in order.
     """
     assert isinstance(score, (torch.Tensor, np.ndarray))
     assert isinstance(mask, (torch.Tensor, np.ndarray))

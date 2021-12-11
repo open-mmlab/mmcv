@@ -53,10 +53,11 @@ class CrissCrossAttention(nn.Module):
         """forward function of Criss-Cross Attention.
 
         Args:
-            x (Tensor): Input feature. \
-                shape (batch_size, in_channels, height, width)
+            x (torch.Tensor): Input feature with the shape of
+                (batch_size, in_channels, height, width).
+
         Returns:
-            Tensor: Output of the layer, with shape of \
+            torch.Tensor: Output of the layer, with the shape of
             (batch_size, in_channels, height, width)
         """
         B, C, H, W = x.size()
