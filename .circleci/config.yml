@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0 # The Windows orb give you everything you need to start using the Windows executor.
+
 jobs:
   lint:
     docker:
@@ -159,6 +163,40 @@ jobs:
             python -m coverage run --branch --source mmcv -m pytest tests/
             python -m coverage xml
             python -m coverage report -m
+            
+  build_windows:
+    executor:
+      name: win/default # executor type
+      size: "medium"
+    steps:
+      # Commands are run in a Windows virtual machine environment
+      - checkout
+      - run:
+          # python3.7 should be re-installed due to the issue https://github.com/pytorch/vision/issues/2921
+          name: Select python3.7
+          command: |
+            pyenv uninstall -f 3.7.0
+            pyenv install 3.7.0
+            pyenv global 3.7.0
+      - run:
+          name: Install PyTorch
+          command: python -m pip install torch==1.10.0+cpu torchvision==0.11.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Build and install
+          command: |
+            rm -rf .eggs
+            python setup.py check -m -s
+            python -m pip install -e .
+          no_output_timeout: 20m
+      - run:
+          name: Install dependencies of unit test
+          command: |
+            python -m pip install -r requirements/test.txt
+      - run:
+          name: Run unittests
+          command: |
+            pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py --ignore tests/test_image/test_io.py
+
 workflows:
   unit_tests:
     jobs:
@@ -173,3 +211,4 @@ workflows:
       - build_cu102:
           requires:
             - build_py3.8_pt1.9_cpu
+      - build_windows
