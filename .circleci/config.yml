@@ -177,10 +177,11 @@ jobs:
       - run:
           name: Build and install
           command: |
-            rm -rf .eggs
             python setup.py check -m -s
             python -m pip install -e .
           no_output_timeout: 20m
+          environment:
+            MMCV_WITH_OPS: 1
       - run:
           name: Install dependencies of unit test
           command: |
