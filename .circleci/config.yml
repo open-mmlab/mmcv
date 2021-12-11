@@ -172,13 +172,6 @@ jobs:
       # Commands are run in a Windows virtual machine environment
       - checkout
       - run:
-          # python3.7 should be re-installed due to the issue https://github.com/pytorch/vision/issues/2921
-          name: Select python3.7
-          command: |
-            pyenv uninstall -f 3.7.0
-            pyenv install 3.7.0
-            pyenv global 3.7.0
-      - run:
           name: Install PyTorch
           command: python -m pip install torch==1.10.0+cpu torchvision==0.11.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
