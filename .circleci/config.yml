@@ -214,4 +214,6 @@ workflows:
       - build_cu102:
           requires:
             - build_py3.8_pt1.9_cpu
-      - build_windows
+      - build_windows:
+          requires:
+            - build_py3.8_pt1.9_cpu
