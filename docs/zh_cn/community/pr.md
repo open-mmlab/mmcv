@@ -24,7 +24,7 @@
 + 当你第一次提 PR 时
 
   复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
-    ![avatar](../../docs/_static/community/1.png)
+    ![avatar](../../en/_static/community/1.png)
 
   克隆复刻的代码库到本地
 
@@ -73,14 +73,14 @@ git commit -m 'messages'
     ```
 
 + 创建一个`拉取请求`
-![avatar](../../docs/_static/community/2.png)
+![avatar](../../en/_static/community/2.png)
 
 + 修改`拉取请求`信息模板，描述修改原因和修改内容。还可以在 PR 描述中，手动关联到相关的`议题` (issue),（更多细节，请参考[官方文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)）。
 
 #### 5. 讨论并评审你的代码
 
 + 创建`拉取请求`时，可以关联给相关人员进行评审
-![avatar](../../docs/_static/community/3.png)
+![avatar](../../en/_static/community/3.png)
 
 + 根据评审人员的意见修改代码，并推送修改
 

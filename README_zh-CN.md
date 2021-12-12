@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/mmcv-logo.png" width="300"/>
+    <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/mmcv-logo.png" width="300"/>
 </div>
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/) [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv) [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions) [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv) [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
@@ -170,7 +170,7 @@ pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/t
   </tbody>
 </table>
 
-**注意**：以上提供的预编译包并不囊括所有的 mmcv-full 版本，你可以点击对应链接查看支持的版本。例如，点击 [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html)，可以看到 `cu102-torch1.8.0` 只提供了 1.3.0 及以上的 mmcv-full 版本。另外，从 `mmcv v1.3.17` 开始，我们不再提供`PyTorch 1.3 & 1.4` 对应的 mmcv-full 预编译包。你可以在 [这](./docs_zh_CN/get_started/previous_versions.md) 找到 `PyTorch 1.3 & 1.4` 对应的预编包。虽然我们不再提供 `PyTorch 1.3 & 1.4` 对应的预编译包，但是我们依然在 CI 中保证对它们的兼容持续到下一年。
+**注意**：以上提供的预编译包并不囊括所有的 mmcv-full 版本，你可以点击对应链接查看支持的版本。例如，点击 [cu102-torch1.8.0](https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html)，可以看到 `cu102-torch1.8.0` 只提供了 1.3.0 及以上的 mmcv-full 版本。另外，从 `mmcv v1.3.17` 开始，我们不再提供`PyTorch 1.3 & 1.4` 对应的 mmcv-full 预编译包。你可以在 [这](./docs/zh_cn/get_started/previous_versions.md) 找到 `PyTorch 1.3 & 1.4` 对应的预编包。虽然我们不再提供 `PyTorch 1.3 & 1.4` 对应的预编译包，但是我们依然在 CI 中保证对它们的兼容持续到下一年。
 
 除了使用预编译包之外，另一种方式是在本地进行编译，直接运行下述命令
 
@@ -188,7 +188,7 @@ pip install mmcv
 
 c. 安装完整版并且编译 onnxruntime 的自定义算子
 
-- 详细的指南请查看 [这里](docs/deployment/onnxruntime_op.md)。
+- 详细的指南请查看 [这里](docs/zh_cn/deployment/onnxruntime_op.md)。
 
 如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/get_started/build.html)。
 
@@ -208,7 +208,7 @@ c. 安装完整版并且编译 onnxruntime 的自定义算子
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=GJP18SjI)
 
 <div align="center">
-<img src="docs/_static/zhihu_qrcode.jpg" height="400" />  <img src="docs/_static/qq_group_qrcode.jpg" height="400" />
+<img src="docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="docs/en/_static/qq_group_qrcode.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
