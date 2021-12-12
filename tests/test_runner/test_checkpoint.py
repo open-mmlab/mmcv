@@ -343,38 +343,20 @@ def test_checkpoint_loader():
     os.remove(checkpoint_path)
 
     filenames = [
-        'http://xx.xx/xx.pth',
-        'https://xx.xx/xx.pth',
-        'modelzoo://xx.xx/xx.pth',
-        'torchvision://xx.xx/xx.pth',
-        'open-mmlab://xx.xx/xx.pth',
-        'openmmlab://xx.xx/xx.pth',
-        'mmcls://xx.xx/xx.pth',
-        'pavi://xx.xx/xx.pth',
-        's3://xx.xx/xx.pth',
-        'ss3://xx.xx/xx.pth',
-        ' s3://xx.xx/xx.pth',
-        'open-mmlab:s3://xx.xx/xx.pth',
-        'openmmlab:s3://xx.xx/xx.pth',
-        'openmmlabs3://xx.xx/xx.pth',
-        ':s3://xx.xx/xx.path',
+        'http://xx.xx/xx.pth', 'https://xx.xx/xx.pth',
+        'modelzoo://xx.xx/xx.pth', 'torchvision://xx.xx/xx.pth',
+        'open-mmlab://xx.xx/xx.pth', 'openmmlab://xx.xx/xx.pth',
+        'mmcls://xx.xx/xx.pth', 'pavi://xx.xx/xx.pth', 's3://xx.xx/xx.pth',
+        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth',
+        'open-mmlab:s3://xx.xx/xx.pth', 'openmmlab:s3://xx.xx/xx.pth',
+        'openmmlabs3://xx.xx/xx.pth', ':s3://xx.xx/xx.path'
     ]
     fn_names = [
-        'load_from_http',
-        'load_from_http',
-        'load_from_torchvision',
-        'load_from_torchvision',
-        'load_from_openmmlab',
-        'load_from_openmmlab',
-        'load_from_mmcls',
-        'load_from_pavi',
-        'load_from_ceph',
-        'load_from_local',
-        'load_from_local',
-        'load_from_ceph',
-        'load_from_ceph',
-        'load_from_local',
-        'load_from_local',
+        'load_from_http', 'load_from_http', 'load_from_torchvision',
+        'load_from_torchvision', 'load_from_openmmlab', 'load_from_openmmlab',
+        'load_from_mmcls', 'load_from_pavi', 'load_from_ceph',
+        'load_from_local', 'load_from_local', 'load_from_ceph',
+        'load_from_ceph', 'load_from_local', 'load_from_local'
     ]
 
     for filename, fn_name in zip(filenames, fn_names):
