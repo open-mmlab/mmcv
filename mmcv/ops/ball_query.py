@@ -19,11 +19,12 @@ class BallQuery(Function):
             max_radius (float): maximum radius of the balls.
             sample_num (int): maximum number of features in the balls.
             xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            center_xyz (Tensor): (B, npoint, 3) centers of the ball query.
+            center_xyz (torch.Tensor): (B, npoint, 3) centers of the ball
+                query.
 
         Returns:
-            Tensor: (B, npoint, nsample) tensor with the indices of
-                the features that form the query balls.
+            torch.Tensor: (B, npoint, nsample) tensor with the indices of the
+            features that form the query balls.
         """
         assert center_xyz.is_contiguous()
         assert xyz.is_contiguous()
