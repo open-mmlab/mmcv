@@ -61,7 +61,13 @@ class MaskedConv2dFunction(Function):
                 kernel_w=kernel_w,
                 pad_h=pad_h,
                 pad_w=pad_w)
-
+            # We change the order of parameters because:
+            # This overload of addmm is deprecated:
+            # addmm(Number beta, Tensor input, Number alpha,
+            # Tensor mat1, Tensor mat2, *, Tensor out)
+            # Consider using one of the following signatures instead:
+            # addmm(Tensor input, Tensor mat1, Tensor mat2, *,
+            # Number beta, Number alpha, Tensor out)
             masked_output = torch.addmm(
                 bias[:, None],
                 weight.view(out_channel, -1),
