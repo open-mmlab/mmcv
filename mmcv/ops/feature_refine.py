@@ -16,7 +16,7 @@ class FeatureRefineFunction(Function):
 
     The details were described in the paper
     `R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating
-    Object <https://arxiv.org/abs/1908.05612>`.
+    Object <https://arxiv.org/abs/1908.05612>`_.
     """
 
     @staticmethod
