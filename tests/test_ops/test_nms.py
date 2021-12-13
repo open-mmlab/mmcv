@@ -184,7 +184,6 @@ class Testnms(object):
         assert torch.equal(boxes, seq_boxes)
 
         # test skip nms when `nms_cfg` is None
-
         seq_boxes, seq_keep = batched_nms(
             torch.from_numpy(results['boxes']),
             torch.from_numpy(results['scores']),
