@@ -267,8 +267,8 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     enough so that boxes from different classes do not overlap.
 
     Note:
-    In v1.4.1 and later, ``batched_nms`` supports skipping the NMS and
-    returns sorted raw results when `nms_cfg` is None.
+        In v1.4.1 and later, ``batched_nms`` supports skipping the NMS and
+        returns sorted raw results when `nms_cfg` is None.
 
     Args:
         boxes (torch.Tensor): boxes in shape (N, 4).
