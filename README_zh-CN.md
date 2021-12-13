@@ -194,7 +194,7 @@ c. 安装完整版并且编译 onnxruntime 的自定义算子
 
 ## FAQ
 
-如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/zh_CNen/latest/faq.html) 看是否已经有解决方案。
+如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html) 看是否已经有解决方案。
 
 ## 贡献指南
 
