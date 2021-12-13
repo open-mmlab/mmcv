@@ -197,8 +197,9 @@ def test_load_checkpoint_with_prefix():
 
 def test_load_checkpoint():
     import os
-    import tempfile
+
     import re
+    import tempfile
 
     class PrefixModel(nn.Module):
 
@@ -229,6 +230,7 @@ def test_load_checkpoint():
 
 def test_load_checkpoint_metadata():
     import os
+
     import tempfile
 
     from mmcv.runner import load_checkpoint, save_checkpoint
@@ -332,9 +334,11 @@ def test_load_classes_name():
 
 
 def test_checkpoint_loader():
-    from mmcv.runner import _load_checkpoint, save_checkpoint, CheckpointLoader
-    import tempfile
     import os
+
+    import tempfile
+
+    from mmcv.runner import CheckpointLoader, _load_checkpoint, save_checkpoint
     checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
     model = Model()
     save_checkpoint(model, checkpoint_path)
@@ -436,10 +440,13 @@ def test_save_checkpoint(tmp_path):
 def test_load_from_local():
     import os
     home_path = os.path.expanduser('~')
-    checkpoint_path = os.path.join(home_path, 'checkpoint.pth')
+    checkpoint_path = os.path.join(
+        home_path, 'dummy_checkpoint_used_to_test_load_from_local.pth')
     model = Model()
     save_checkpoint(model, checkpoint_path)
-    checkpoint = load_from_local('~/checkpoint.pth', map_location=None)
+    checkpoint = load_from_local(
+        '~/dummy_checkpoint_used_to_test_load_from_local.pth',
+        map_location=None)
     assert_tensor_equal(checkpoint['state_dict']['block.conv.weight'],
                         model.block.conv.weight)
     os.remove(checkpoint_path)

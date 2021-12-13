@@ -262,7 +262,7 @@ def load_from_local(filename, map_location):
     """
     filename = osp.expanduser(filename)
     if not osp.isfile(filename):
-        raise IOError(f'{filename} is not a checkpoint file')
+        raise FileNotFoundError(f'{filename} can not be found.')
     checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -685,8 +685,7 @@ def save_checkpoint(model,
                 'file_client_args should be "None" if filename starts with'
                 f'"pavi://", but got {file_client_args}')
         try:
-            from pavi import modelcloud
-            from pavi import exception
+            from pavi import exception, modelcloud
         except ImportError:
             raise ImportError(
                 'Please install pavi to load checkpoint from modelcloud.')
