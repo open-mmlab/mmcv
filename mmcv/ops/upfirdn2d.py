@@ -248,8 +248,8 @@ def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
     https://www.mathworks.com/help/signal/ref/upfirdn.html
 
     Args:
-        input (Tensor): Tensor with shape of (n, c, h, w).
-        kernel (Tensor): Filter kernel.
+        input (torch.Tensor): Tensor with shape of (n, c, h, w).
+        kernel (torch.Tensor): Filter kernel.
         up (int | tuple[int], optional): Upsampling factor. If given a number,
             we will use this factor for the both height and width side.
             Defaults to 1.
@@ -260,7 +260,7 @@ def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
             (x_pad_0, x_pad_1, y_pad_0, y_pad_1). Defaults to (0, 0).
 
     Returns:
-        Tensor: Tensor after UpFIRDn.
+        torch.Tensor: Tensor after UpFIRDn.
     """
     if input.device.type == 'cpu':
         if len(pad) == 2:

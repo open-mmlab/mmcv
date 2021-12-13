@@ -15,8 +15,6 @@ import os
 import sys
 
 import pytorch_sphinx_theme
-from m2r import MdInclude
-from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -51,14 +49,12 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx.ext.autosectionlabel',
     'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
 ]  # yapf: disable
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
-autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -108,92 +104,9 @@ html_theme_options = {
             'name': 'GitHub',
             'url': 'https://github.com/open-mmlab/mmcv'
         },
-        {
-            'name':
-            'Docs',
-            'children': [
-                {
-                    'name': 'MMCV',
-                    'url': 'https://mmcv.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MIM',
-                    'url': 'https://openmim.readthedocs.io/en/latest/'
-                },
-                {
-                    'name': 'MMAction2',
-                    'url': 'https://mmaction2.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMClassification',
-                    'url':
-                    'https://mmclassification.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://mmdetection.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMDetection3D',
-                    'url': 'https://mmdetection3d.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMEditing',
-                    'url': 'https://mmediting.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMGeneration',
-                    'url': 'https://mmgeneration.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMOCR',
-                    'url': 'https://mmocr.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMPose',
-                    'url': 'https://mmpose.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMSegmentation',
-                    'url': 'https://mmsegmentation.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMTracking',
-                    'url': 'https://mmtracking.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFlow',
-                    'url': 'https://mmflow.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFewShot',
-                    'url': 'https://mmfewshot.readthedocs.io/en/latest/',
-                },
-            ]
-        },
-        {
-            'name':
-            'OpenMMLab',
-            'children': [
-                {
-                    'name': 'Homepage',
-                    'url': 'https://openmmlab.com/'
-                },
-                {
-                    'name': 'GitHub',
-                    'url': 'https://github.com/open-mmlab/'
-                },
-                {
-                    'name': 'Twitter',
-                    'url': 'https://twitter.com/OpenMMLab'
-                },
-                {
-                    'name': 'Zhihu',
-                    'url': 'https://zhihu.com/people/openmmlab'
-                },
-            ]
-        },
-    ]
+    ],
+    # Specify the language of shared menu
+    'menu_lang': 'en',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -286,16 +199,3 @@ StandaloneHTMLBuilder.supported_image_types = [
 # Ignore >>> when copying code
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
-
-
-def setup(app):
-    app.add_config_value('no_underscore_emphasis', False, 'env')
-    app.add_config_value('m2r_parse_relative_links', False, 'env')
-    app.add_config_value('m2r_anonymous_references', False, 'env')
-    app.add_config_value('m2r_disable_inline_math', False, 'env')
-    app.add_directive('mdinclude', MdInclude)
-    app.add_config_value('recommonmark_config', {
-        'auto_toc_tree_section': 'Contents',
-        'enable_eval_rst': True,
-    }, True)
-    app.add_transform(AutoStructify)
