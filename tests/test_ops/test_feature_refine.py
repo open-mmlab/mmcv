@@ -117,5 +117,4 @@ def test_gradcheck_fr():
                                       [-2.1254, 0.6047, -0.3515,
                                        0.7254]]]]).cuda()
 
-    fr = FR(1 / 8., points=1)
-    assert torch.allclose(fr(feature, bbox), expected_output, 1e-2)
+    assert torch.allclose(feature_refine(feature, bbox, spatial_scale=1/8, points=1), expected_output, 1e-2)
