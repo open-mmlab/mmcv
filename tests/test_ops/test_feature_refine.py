@@ -27,7 +27,7 @@ class FR(nn.Module):
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-def test_gradcheck_fr():
+def test_feature_refine():
     feature = torch.tensor([[[[1.2924, -0.2172, -0.5222, 0.1172],
                               [0.9144, 1.2248, 1.3115, -0.9690],
                               [-0.8949, -1.1797, -0.9093, -0.3961],
