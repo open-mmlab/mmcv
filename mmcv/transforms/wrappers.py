@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 from contextlib import nullcontext
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 
@@ -24,7 +24,7 @@ class Compose(BaseTransform):
           dicts of transforms or transform objects.
     """
 
-    def __init__(self, transforms: list[Union[dict, Callable[[dict], dict]]]):
+    def __init__(self, transforms: list[Union[Dict, Callable[[Dict], Dict]]]):
         assert isinstance(transforms, Sequence)
         self.transforms = []
         for transform in transforms:
@@ -84,9 +84,9 @@ class Remap(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: list[Union[dict, Callable[[dict], dict]]],
-                 input_mapping: Optional[dict] = None,
-                 output_mapping: Optional[dict] = None,
+                 transforms: list[Union[Dict, Callable[[Dict], Dict]]],
+                 input_mapping: Optional[Dict] = None,
+                 output_mapping: Optional[Dict] = None,
                  inplace: bool = False,
                  strict: bool = True):
 
@@ -192,9 +192,9 @@ class Remap(BaseTransform):
 class ApplyToMultiple(Remap):
 
     def __init__(self,
-                 transforms: list[Union[dict, Callable[[dict], dict]]],
-                 input_mapping: Optional[dict] = None,
-                 output_mapping: Optional[dict] = None,
+                 transforms: list[Union[Dict, Callable[[Dict], Dict]]],
+                 input_mapping: Optional[Dict] = None,
+                 output_mapping: Optional[Dict] = None,
                  inplace: bool = False,
                  strict: bool = True,
                  share_random_params: bool = False):
@@ -276,7 +276,7 @@ class RandomChoice(BaseTransform):
     """
 
     def __init__(self,
-                 pipelines: list[list[Union[dict, Callable[[dict], dict]]]],
+                 pipelines: list[list[Union[Dict, Callable[[Dict], Dict]]]],
                  pipeline_probs: Optional[list[float]] = None):
 
         if pipeline_probs is not None:
