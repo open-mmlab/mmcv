@@ -36,18 +36,21 @@ class _Voxelization(Function):
                 Default: 20000.
 
         Returns:
-            voxels_out (torch.Tensor): Output voxels with the shape of [M,
-                max_points, ndim]. Only contain points and returned when
-                max_points != -1.
-            coors_out (torch.Tensor): Output coordinates with the shape of
-                [M, 3].
-            num_points_per_voxel_out (torch.Tensor): Num points per voxel with
-                the shape of [M]. Only returned when max_points != -1.
+            tuple[torch.Tensor]: tuple[torch.Tensor]: A tuple contains three
+            elements. The first one is the output voxels with the shape of
+            [M, max_points, n_dim], which only contain points and returned
+            when max_points != -1. The second is the voxel coordinates with
+            shape of [M, 3]. The last is number of point per voxel with the
+            shape of [M], which only returned when max_points != -1.
         """
         if max_points == -1 or max_voxels == -1:
             coors = points.new_zeros(size=(points.size(0), 3), dtype=torch.int)
-            ext_module.dynamic_voxelize_forward(points, coors, voxel_size,
-                                                coors_range, 3)
+            ext_module.dynamic_voxelize_forward(
+                points,
+                torch.tensor(voxel_size, dtype=torch.float),
+                torch.tensor(coors_range, dtype=torch.float),
+                coors,
+                NDim=3)
             return coors
         else:
             voxels = points.new_zeros(
@@ -55,9 +58,18 @@ class _Voxelization(Function):
             coors = points.new_zeros(size=(max_voxels, 3), dtype=torch.int)
             num_points_per_voxel = points.new_zeros(
                 size=(max_voxels, ), dtype=torch.int)
-            voxel_num = ext_module.hard_voxelize_forward(
-                points, voxels, coors, num_points_per_voxel, voxel_size,
-                coors_range, max_points, max_voxels, 3)
+            voxel_num = torch.zeros(size=(), dtype=torch.long)
+            ext_module.hard_voxelize_forward(
+                points,
+                torch.tensor(voxel_size, dtype=torch.float),
+                torch.tensor(coors_range, dtype=torch.float),
+                voxels,
+                coors,
+                num_points_per_voxel,
+                voxel_num,
+                max_points=max_points,
+                max_voxels=max_voxels,
+                NDim=3)
             # select the valid voxels
             voxels_out = voxels[:voxel_num]
             coors_out = coors[:voxel_num]
@@ -71,8 +83,8 @@ voxelization = _Voxelization.apply
 class Voxelization(nn.Module):
     """Convert kitti points(N, >=3) to voxels.
 
-    Please refer to `PVCNN <https://arxiv.org/abs/1907.03739>`_ for more
-    details.
+    Please refer to `Point-Voxel CNN for Efficient 3D Deep Learning
+    <https://arxiv.org/abs/1907.03739>`_ for more details.
 
     Args:
         voxel_size (tuple or float): The size of voxel with the shape of [3].

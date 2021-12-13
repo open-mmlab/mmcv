@@ -87,8 +87,8 @@ class DeformConv2dFunction(Function):
         ctx.bufs_ = [input.new_empty(0), input.new_empty(0)]  # columns, ones
 
         cur_im2col_step = min(ctx.im2col_step, input.size(0))
-        assert (input.size(0) %
-                cur_im2col_step) == 0, 'im2col step must divide batchsize'
+        assert (input.size(0) % cur_im2col_step
+                ) == 0, 'batch size must be divisible by im2col_step'
         ext_module.deform_conv_forward(
             input,
             weight,
@@ -117,8 +117,8 @@ class DeformConv2dFunction(Function):
         grad_input = grad_offset = grad_weight = None
 
         cur_im2col_step = min(ctx.im2col_step, input.size(0))
-        assert (input.size(0) %
-                cur_im2col_step) == 0, 'im2col step must divide batchsize'
+        assert (input.size(0) % cur_im2col_step
+                ) == 0, 'batch size must be divisible by im2col_step'
 
         grad_output = grad_output.contiguous()
         if ctx.needs_input_grad[0] or ctx.needs_input_grad[1]:
@@ -197,6 +197,13 @@ class DeformConv2d(nn.Module):
     `Deformable Convolutional Networks
     <https://arxiv.org/pdf/1703.06211.pdf>`_
 
+    Note:
+        The argument ``im2col_step`` was added in version 1.3.17, which means
+        number of samples processed by the ``im2col_cuda_kernel`` per call.
+        It enables users to define ``batch_size`` and ``im2col_step`` more
+        flexibly and solved `issue mmcv#1440
+        <https://github.com/open-mmlab/mmcv/issues/1440>`_.
+
     Args:
         in_channels (int): Number of channels in the input image.
         out_channels (int): Number of channels produced by the convolution.
@@ -210,7 +217,10 @@ class DeformConv2d(nn.Module):
         deform_groups (int): Number of deformable group partitions.
         bias (bool): If True, adds a learnable bias to the output.
             Default: False.
-
+        im2col_step (int): Number of samples processed by im2col_cuda_kernel
+            per call. It will work when ``batch_size`` > ``im2col_step``, but
+            ``batch_size`` must be divisible by ``im2col_step``. Default: 32.
+            `New in version 1.3.17.`
     """
 
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},
@@ -224,7 +234,8 @@ class DeformConv2d(nn.Module):
                  dilation: Union[int, Tuple[int, ...]] = 1,
                  groups: int = 1,
                  deform_groups: int = 1,
-                 bias: bool = False) -> None:
+                 bias: bool = False,
+                 im2col_step: int = 32) -> None:
         super(DeformConv2d, self).__init__()
 
         assert not bias, \
@@ -243,6 +254,7 @@ class DeformConv2d(nn.Module):
         self.dilation = _pair(dilation)
         self.groups = groups
         self.deform_groups = deform_groups
+        self.im2col_step = im2col_step
         # enable compatibility with nn.Conv2d
         self.transposed = False
         self.output_padding = _single(0)
@@ -293,7 +305,8 @@ class DeformConv2d(nn.Module):
             offset = F.pad(offset, (0, pad_w, 0, pad_h), 'constant', 0)
             offset = offset.contiguous()
         out = deform_conv2d(x, offset, self.weight, self.stride, self.padding,
-                            self.dilation, self.groups, self.deform_groups)
+                            self.dilation, self.groups, self.deform_groups,
+                            False, self.im2col_step)
         if input_pad:
             out = out[:, :, :out.size(2) - pad_h, :out.size(3) -
                       pad_w].contiguous()
@@ -361,7 +374,8 @@ class DeformConv2dPack(DeformConv2d):
     def forward(self, x):
         offset = self.conv_offset(x)
         return deform_conv2d(x, offset, self.weight, self.stride, self.padding,
-                             self.dilation, self.groups, self.deform_groups)
+                             self.dilation, self.groups, self.deform_groups,
+                             False, self.im2col_step)
 
     def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
                               missing_keys, unexpected_keys, error_msgs):

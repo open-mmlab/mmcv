@@ -13,13 +13,12 @@ from tempfile import TemporaryDirectory
 import torch
 import torchvision
 from torch.optim import Optimizer
-from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import mkdir_or_exist
+from ..utils import load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -149,7 +148,12 @@ def get_deprecated_model_names():
 
 
 def _process_mmcls_checkpoint(checkpoint):
-    state_dict = checkpoint['state_dict']
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        # Some checkpoints converted from 3rd-party repo don't
+        # have the "state_dict" key.
+        state_dict = checkpoint
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         if k.startswith('backbone.'):
@@ -240,7 +244,8 @@ class CheckpointLoader:
 
         checkpoint_loader = cls._get_checkpoint_loader(filename)
         class_name = checkpoint_loader.__name__
-        mmcv.print_log(f'Use {class_name} loader', logger)
+        mmcv.print_log(
+            f'load checkpoint from {class_name[10:]} path: {filename}', logger)
         return checkpoint_loader(filename, map_location)
 
 
@@ -278,14 +283,13 @@ def load_from_http(filename, map_location=None, model_dir=None):
         dict or OrderedDict: The loaded checkpoint.
     """
     rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(
+        checkpoint = load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(
+            checkpoint = load_url(
                 filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 

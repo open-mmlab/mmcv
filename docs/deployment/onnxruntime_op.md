@@ -1,4 +1,4 @@
-## Custom operators for ONNX Runtime in MMCV
+## ONNX Runtime Deployment
 
 ### Introduction of ONNX Runtime
 
@@ -15,15 +15,15 @@
 
 ### List of operators for ONNX Runtime supported in MMCV
 
-|                        Operator                        |  CPU  |  GPU  | MMCV Releases |
-| :----------------------------------------------------: | :---: | :---: | :-----------: |
-|      [SoftNMS](onnxruntime_custom_ops.md#softnms)      |   Y   |   N   |     1.2.3     |
-|     [RoIAlign](onnxruntime_custom_ops.md#roialign)     |   Y   |   N   |     1.2.5     |
-|          [NMS](onnxruntime_custom_ops.md#nms)          |   Y   |   N   |     1.2.7     |
-| [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) |   Y   |   N   |     1.3.1     |
-|   [CornerPool](onnxruntime_custom_ops.md#cornerpool)   |   Y   |   N   |     1.3.4     |
-|       [cummax](onnxruntime_custom_ops.md#cummax)       |   Y   |   N   |    master     |
-|       [cummin](onnxruntime_custom_ops.md#cummin)       |   Y   |   N   |    master     |
+| Operator                                               | CPU | GPU | MMCV Releases |
+|:-------------------------------------------------------|:---:|:---:|:-------------:|
+| [SoftNMS](onnxruntime_custom_ops.md#softnms)           |  Y  |  N  |     1.2.3     |
+| [RoIAlign](onnxruntime_custom_ops.md#roialign)         |  Y  |  N  |     1.2.5     |
+| [NMS](onnxruntime_custom_ops.md#nms)                   |  Y  |  N  |     1.2.7     |
+| [grid_sampler](onnxruntime_custom_ops.md#grid_sampler) |  Y  |  N  |     1.3.1     |
+| [CornerPool](onnxruntime_custom_ops.md#cornerpool)     |  Y  |  N  |     1.3.4     |
+| [cummax](onnxruntime_custom_ops.md#cummax)             |  Y  |  N  |     1.3.4     |
+| [cummin](onnxruntime_custom_ops.md#cummin)             |  Y  |  N  |     1.3.4     |
 
 ### How to build custom operators for ONNX Runtime
 
@@ -87,6 +87,8 @@ onnx_results = sess.run(None, {'input' : input_data})
 ### How to add a new custom operator for ONNX Runtime in MMCV
 
 #### Reminder
+
+- *Please note that this feature is experimental and may change in the future. Strongly suggest users always try with the latest master branch.*
 
 - The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
 - The custom operator should be able to be exported to ONNX.

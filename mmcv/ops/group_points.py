@@ -67,12 +67,16 @@ class QueryAndGroup(nn.Module):
     def forward(self, points_xyz, center_xyz, features=None):
         """
         Args:
-            points_xyz (Tensor): (B, N, 3) xyz coordinates of the features.
-            center_xyz (Tensor): (B, npoint, 3) coordinates of the centriods.
-            features (Tensor): (B, C, N) Descriptors of the features.
+            points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
+                points.
+            center_xyz (torch.Tensor): (B, npoint, 3) coordinates of the
+                centriods.
+            features (torch.Tensor): (B, C, N) The features of grouped
+                points.
 
-        Return：
-            Tensor: (B, 3 + C, npoint, sample_num) Grouped feature.
+        Returns:
+            torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
+            concatenated coordinates and features of points.
         """
         # if self.max_radius is None, we will perform kNN instead of ball query
         # idx is of shape [B, npoint, sample_num]
@@ -152,7 +156,7 @@ class GroupAll(nn.Module):
             new_xyz (Tensor): new xyz coordinates of the features.
             features (Tensor): (B, C, N) features to group.
 
-        Return:
+        Returns:
             Tensor: (B, C + 3, 1, N) Grouped feature.
         """
         grouped_xyz = xyz.transpose(1, 2).unsqueeze(2)
@@ -192,8 +196,15 @@ class GroupingOperation(Function):
         _, C, N = features.size()
         output = torch.cuda.FloatTensor(B, C, nfeatures, nsample)
 
-        ext_module.group_points_forward(B, C, N, nfeatures, nsample, features,
-                                        indices, output)
+        ext_module.group_points_forward(
+            features,
+            indices,
+            output,
+            b=B,
+            c=C,
+            n=N,
+            npoints=nfeatures,
+            nsample=nsample)
 
         ctx.for_backwards = (indices, N)
         return output
@@ -215,9 +226,15 @@ class GroupingOperation(Function):
         grad_features = torch.cuda.FloatTensor(B, C, N).zero_()
 
         grad_out_data = grad_out.data.contiguous()
-        ext_module.group_points_backward(B, C, N, npoint, nsample,
-                                         grad_out_data, idx,
-                                         grad_features.data)
+        ext_module.group_points_backward(
+            grad_out_data,
+            idx,
+            grad_features.data,
+            b=B,
+            c=C,
+            n=N,
+            npoints=npoint,
+            nsample=nsample)
         return grad_features, None
 
 
