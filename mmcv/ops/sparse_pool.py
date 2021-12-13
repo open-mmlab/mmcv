@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import sparse_functional as Fsp
-from . import sparse_ops as ops
+import sparse_functional as Fsp
+import sparse_ops as ops
+
 from .sparse_modules import SparseModule
 from .sparse_structure import SparseConvTensor
 

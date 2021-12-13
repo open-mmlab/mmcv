@@ -39,11 +39,11 @@ struct mp_rename_impl<A<T...>, B> {
 }  // namespace detail
 
 template <class A, template <class...> class B>
-using mp_rename = typename detail::mp_rename_impl<A, B>::type;
+using mp_rename = typename ::detail::mp_rename_impl<A, B>::type;
 
 template <class L, class F>
 constexpr F mp_for_each(F &&f) {
-  return detail::mp_for_each_impl(mp_rename<L, mp_list>(), std::forward<F>(f));
+  return ::detail::mp_for_each_impl(mp_rename<L, mp_list>(), std::forward<F>(f));
 }
 
 #endif
