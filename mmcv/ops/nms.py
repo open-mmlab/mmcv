@@ -297,7 +297,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         - boxes (Tensor): Bboxes with score after nms, has shape
           (num_bboxes, 5). last dimension 5 arrange as
           (x1, y1, x2, y2, score)
-        - keep (Tesnor): The indices of remaining boxes in input
+        - keep (Tensor): The indices of remaining boxes in input
           boxes.
     """
     # skip nms when nms_cfg is None
