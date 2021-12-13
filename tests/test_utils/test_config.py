@@ -347,11 +347,15 @@ def test_merge_delete():
     cfg_file = osp.join(data_path, 'config/delete.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
-    assert cfg.item1 == [1, 2]
-    assert cfg.item2 == dict(b=0)
+    assert cfg.item1 == dict(a=0)
+    assert cfg.item2 == dict(a=0, b=0)
     assert cfg.item3 is True
     assert cfg.item4 == 'test'
     assert '_delete_' not in cfg.item2
+
+    # related issue: https://github.com/open-mmlab/mmcv/issues/1570
+    assert type(cfg.item1) == ConfigDict
+    assert type(cfg.item2) == ConfigDict
 
 
 def test_merge_intermediate_variable():
@@ -532,17 +536,3 @@ def test_deprecation():
         with pytest.warns(UserWarning):
             cfg = Config.fromfile(cfg_file)
         assert cfg.item1 == 'expected'
-
-
-def test_type():
-    # dict with delete
-    d1 = dict(model=dict(_delete_=True, backbone=dict(type='MobileNetV2')))
-    cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
-    cfg.merge_from_dict(d1)
-    assert type(cfg.model) == ConfigDict
-
-    # dict without delete
-    d2 = dict(model=dict(backbone=dict(type='MobileNetV2')))
-    cfg = Config(dict(model=dict(backbone=dict(type='ResNet'))))
-    cfg.merge_from_dict(d2)
-    assert type(cfg.model) == ConfigDict
