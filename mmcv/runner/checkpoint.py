@@ -334,6 +334,11 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     setting, this function download ckpt at all ranks to different temporary
     directories.
 
+    Note:
+        Since v1.4.1, the registered scheme prefixes have been enhanced to
+        support bucket names in the path prefix, e.g. 's3://xx.xx/xx.path',
+        'bucket1:s3://xx.xx/xx.path'.
+
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
