@@ -35,7 +35,7 @@ MMCV 提供了如下众多功能：
 - 多种 CNN 网络结构
 - 高质量实现的常见 CUDA 算子
 
-如想了解更多特性和使用，请参考[文档](http://mmcv.readthedocs.io/en/latest)。
+如想了解更多特性和使用，请参考[文档](http://mmcv.readthedocs.io/zh_CN/latest)。
 
 提示: MMCV 需要 Python 3.6 以上版本。
 
@@ -50,7 +50,7 @@ MMCV 有两个版本：
 
 a. 安装完整版
 
-在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。
+在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch [官方文档](https://pytorch.org/)。
 
 我们提供了不同 PyTorch 和 CUDA 版本的 mmcv-full 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [check_installation.py](.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
 
@@ -188,13 +188,13 @@ pip install mmcv
 
 c. 安装完整版并且编译 onnxruntime 的自定义算子
 
-- 详细的指南请查看 [这里](docs/zh_cn/deployment/onnxruntime_op.md)。
+- 详细的指南请查看[这里](docs/zh_cn/deployment/onnxruntime_op.md)。
 
-如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/en/latest/get_started/build.html)。
+如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 ## FAQ
 
-如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/en/latest/faq.html) 看是否已经有解决方案。
+如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/zh_CNen/latest/faq.html) 看是否已经有解决方案。
 
 ## 贡献指南
 
