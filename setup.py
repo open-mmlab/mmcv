@@ -57,8 +57,9 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     CommandLine:
         python -c "import setup; print(setup.parse_requirements())"
     """
-    import sys
     from os.path import exists
+
+    import sys
     require_fpath = fname
 
     def parse_line(line):
@@ -185,6 +186,7 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
+
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
@@ -287,28 +289,27 @@ def get_extensions():
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+        elif hasattr(
+                torch,
+                'is_mlu_available') and torch.is_mlu_available() or os.getenv(
+                    'FORCE_MLU', '0') == '1':
+            from torch_mlu.utils.cpp_extension import MLUExtension
+            define_macros += [('MMCV_WITH_MLU', None)]
+            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
+            extension = MLUExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
         else:
-            try:
-                if torch.is_mlu_available():
-                    from torch_mlu.utils.cpp_extension import MLUExtension
-                    define_macros += [('MMCV_WITH_MLU', None)]
-                    mlu_args = os.getenv('MMCV_MLU_ARGS')
-                    extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
-                    op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
-                    op_files += glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
-                    op_files += glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp')
-                    op_files += glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
-                    extension = MLUExtension
-                    include_dirs.append(
-                        os.path.abspath('./mmcv/ops/csrc/common'))
-                else:
-                    print('Cambricon Catch is not available!')
-            except AttributeError:
-                print(f'Compiling {ext_name} without CUDA')
-                op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
-                    glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
-                extension = CppExtension
-                include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            print(f'Compiling {ext_name} only with CPU')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+            extension = CppExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
 
         # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
         # c++14 features, the argument ['std=c++14'] must be added here.
@@ -330,8 +331,8 @@ def get_extensions():
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
         ext_name = 'mmcv._ext_ort'
-        from torch.utils.cpp_extension import library_paths, include_paths
         import onnxruntime
+        from torch.utils.cpp_extension import include_paths, library_paths
         library_dirs = []
         libraries = []
         include_dirs = []
