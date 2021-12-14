@@ -5,30 +5,23 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 ### Installation
 
-- "KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"
+- "KeyError: "xxx: 'yyy is not in the zzz registry'"
 
-    The registry mechanism will be triggered only when the file where the module is located is imported.
+    The registry mechanism will be triggered only when the file of the module is imported.
     So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.
-
-- Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
-
-    Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation).
 
 - "No module named 'mmcv.ops'"; "No module named 'mmcv._ext'"
 
     1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`
-
     2. Install mmcv-full following the [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) or [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html)
 
 - "invalid device function" or "no kernel image is available for execution"
 
     1. Check the CUDA compute capability of you GPU
-
     2. Run `python mmdet/utils/collect_env.py` to check whether PyTorch, torchvision,
        and MMCV are built for the correct GPU architecture.
        You may need to set `TORCH_CUDA_ARCH_LIST` to reinstall MMCV.
        The compatibility issue could happen when  using old GPUS, e.g., Tesla K80 (3.7) on colab.
-
     3. Check whether the running environment is the same as that when mmcv/mmdet is compiled.
        For example, you may compile mmcv using CUDA 10.0 bug run it on CUDA9.0   environments
 
@@ -36,17 +29,14 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
     1. If those symbols are CUDA/C++ symbols (e.g., libcudart.so or GLIBCXX), check
        whether the CUDA/GCC runtimes are the same as those used for compiling mmcv
-
-    2. If those symbols are Pytorch symbols (e.g., symbols containing caffe, aten, and TH), check whether
-       the Pytorch version is the same as that used for compiling mmcv
-
+    2. If those symbols are Pytorch symbols (e.g., symbols containing caffe, aten, and TH), check     whether the Pytorch version is the same as that used for compiling mmcv
     3. Run `python mmdet/utils/collect_env.py` to check whether PyTorch, torchvision,
        and MMCV are built by and running on the same environment
 
 - "RuntimeError: CUDA error: invalid configuration argument"
 
-    This error may be due to your poor GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/open-mmlab/mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
-    and recompile mmcv
+    This error may be caused by the poor performance of GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/open-mmlab/mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
+    and recompile mmcv.
 
 - "RuntimeError: nms is not compiled with GPU support"
 
@@ -55,20 +45,15 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - "Segmentation fault"
 
-    1. Check you GCC version and use GCC 5.4. This usually caused by the incompatibility between PyTorch and the environment (e.g., GCC < 4.9 for PyTorch). We also recommend the users to avoid using GCC 5.5 because many feedbacks report that GCC 5.5 will cause "segmentation fault" and simply changing it to GCC 5.4 could solve the problem
-
+    1. Check your GCC version and use GCC >= 5.4. This usually caused by the incompatibility between PyTorch and the environment (e.g., GCC < 4.9 for PyTorch). We also recommend the users to avoid using GCC 5.5 because many feedbacks report that GCC 5.5 will cause "segmentation fault" and simply changing it to GCC 5.4 could solve the problem
     2. Check whether PyTorch is correctly installed and could use CUDA op, e.g. type the following command in your terminal and see whether they could correctly output results
-
         ```shell
         python -c 'import torch; print(torch.cuda.is_available())'
         ```
-
     3. If PyTorch is correctly installed, check whether MMCV is correctly installed. If MMCV is correctly installed, then there will be no issue of the command
-
         ```shell
         python -c 'import mmcv; import mmcv.ops'
         ```
-
     4. If MMCV and PyTorch are correctly installed, you can use `ipdb` to set breakpoints or directly add `print` to debug and see which part leads the `segmentation fault`
 
 - "libtorch_cuda_cu.so: cannot open shared object file"
@@ -95,13 +80,15 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
   - replace `explicit operator type&() { return *(this->value); }` with `explicit operator type&() { return *((type*)this->value); }` at `torch\include\pybind11\cast.h`
   - replace all the `CONSTEXPR_EXCEPT_WIN_CUDA` with `const` at `torch/include\torch/csrc/jit/api/module.h`
 
-  More details can be found at https://github.com/pytorch/pytorch/pull/45956.
+- Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
+
+    Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation). More details can be found at https://github.com/pytorch/pytorch/pull/45956.
+
 ### Usage
 
 - "RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one"
 
     1. This error indicates that your module has parameters that were not used in producing loss. This phenomenon may be caused by running different branches in your code in DDP mode. More datails at https://github.com/pytorch/pytorch/issues/55582
-
     2. You can set ` find_unused_parameters = True` in the config to solve the above problems or find those unused parameters manually
 
 - "RuntimeError: Trying to backward through the graph a second time"
