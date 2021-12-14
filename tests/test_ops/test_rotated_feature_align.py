@@ -1,12 +1,12 @@
 import pytest
 import torch
 
-from mmcv.ops import feature_refine
+from mmcv.ops import rotated_feature_align
 
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-def test_feature_refine():
+def test_rotated_feature_align():
     feature = torch.tensor([[[[1.2924, -0.2172, -0.5222, 0.1172],
                               [0.9144, 1.2248, 1.3115, -0.9690],
                               [-0.8949, -1.1797, -0.9093, -0.3961],
@@ -97,5 +97,5 @@ def test_feature_refine():
                                        0.7254]]]]).cuda()
 
     assert torch.allclose(
-        feature_refine(feature, bbox, spatial_scale=1 / 8, points=1),
+        rotated_feature_align(feature, bbox, spatial_scale=1 / 8, points=1),
         expected_output, 1e-2)

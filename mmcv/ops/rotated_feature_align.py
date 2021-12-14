@@ -9,12 +9,12 @@ ext_module = ext_loader.load_ext(
     '_ext', ['feature_refine_forward', 'feature_refine_backward'])
 
 
-class FeatureRefineFunction(Function):
+class RotatedFeatureAlignFunction(Function):
     """Using the feature interpolation to obtain the position information
     correspond to the refined rotate anchors and reconstruct the feature maps
-    by pixel-wise manner to achieve feature alignment.
+    in pixel-wise manner to achieve feature alignment.
 
-    The details were described in the paper
+    The details are described in the paper
     `R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating
     Object <https://arxiv.org/abs/1908.05612>`_.
     """
@@ -66,4 +66,4 @@ class FeatureRefineFunction(Function):
         return grad_input, None, None, None
 
 
-feature_refine = FeatureRefineFunction.apply
+rotated_feature_align = RotatedFeatureAlignFunction.apply

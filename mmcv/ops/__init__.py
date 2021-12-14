@@ -16,7 +16,6 @@ from .deprecated_wrappers import Conv2d_deprecated as Conv2d
 from .deprecated_wrappers import ConvTranspose2d_deprecated as ConvTranspose2d
 from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
-from .feature_refine import feature_refine
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
 from .furthest_point_sample import (furthest_point_sample,
@@ -46,6 +45,7 @@ from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
+from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
 from .scatter_points import DynamicScatter, dynamic_scatter
 from .sync_bn import SyncBatchNorm
@@ -71,10 +71,11 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
     'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'feature_refine', 'RoIAlignRotated', 'roi_align_rotated', 'pixel_group',
-    'QueryAndGroup', 'GroupAll', 'grouping_operation', 'contour_expand',
-    'three_nn', 'three_interpolate', 'MultiScaleDeformableAttention',
-    'BorderAlign', 'border_align', 'gather_points', 'furthest_point_sample',
+    'rotated_feature_align', 'RoIAlignRotated', 'roi_align_rotated',
+    'pixel_group', 'QueryAndGroup', 'GroupAll', 'grouping_operation',
+    'contour_expand', 'three_nn', 'three_interpolate',
+    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
+    'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',

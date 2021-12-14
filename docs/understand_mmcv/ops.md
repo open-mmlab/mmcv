@@ -13,7 +13,6 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - Deformable RoIPool
 - DynamicScatter
 - GatherPoints
-- FeatureRefine
 - FurthestPointSample
 - FurthestPointSampleWithDist
 - GeneralizedAttention
@@ -22,6 +21,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - MaskedConv
 - NMS
 - PSAMask
+- RotatedFeatureAlign
 - RoIPointPool3d
 - RoIPool
 - RoIAlign
