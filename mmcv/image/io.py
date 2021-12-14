@@ -303,14 +303,10 @@ def imwrite(img,
             'The parameter `auto_mkdir` will be deprecated in the future and '
             'every file clients will make directory automatically.')
     file_client = FileClient.infer_client(file_client_args, file_path)
-    try:
-        img_ext = osp.splitext(file_path)[-1]
-        # Encode image according to image suffix.
-        # For example, if image path is '/path/your/img.jpg', the encode
-        # format is '.jpg'.
-        _, img_buff = cv2.imencode(img_ext, img, params)
-        file_client.put(img_buff.tobytes(), file_path)
-    except Exception as error:
-        warnings.warn(error)
-        return False
-    return True
+    img_ext = osp.splitext(file_path)[-1]
+    # Encode image according to image suffix.
+    # For example, if image path is '/path/your/img.jpg', the encode
+    # format is '.jpg'.
+    flag, img_buff = cv2.imencode(img_ext, img, params)
+    file_client.put(img_buff.tobytes(), file_path)
+    return flag
