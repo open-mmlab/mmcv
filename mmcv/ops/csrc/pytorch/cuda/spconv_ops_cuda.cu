@@ -411,3 +411,61 @@ std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
   }
   return {inputGrad, filtersGrad.view(filterShape)};
 }
+
+template std::vector<torch::Tensor> GetIndicePairsForwardCUDAKernelLauncher<2>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> GetIndicePairsForwardCUDAKernelLauncher<3>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> GetIndicePairsForwardCUDAKernelLauncher<4>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> GetIndicePairsBackwardCUDAKernelLauncher<2>(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> GetIndicePairsBackwardCUDAKernelLauncher<3>(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template torch::Tensor IndiceConvForwardCUDAKernelLauncher<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+template torch::Tensor IndiceConvForwardCUDAKernelLauncher<at::Half>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+template std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+template std::vector<torch::Tensor>
+IndiceConvBackwardCUDAKernelLauncher<at::Half>(torch::Tensor features,
+                                               torch::Tensor filters,
+                                               torch::Tensor outGrad,
+                                               torch::Tensor indicePairs,
+                                               torch::Tensor indiceNum,
+                                               int64_t _inverse, int64_t _subM);

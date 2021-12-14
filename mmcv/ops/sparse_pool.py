@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sparse_functional as Fsp
-import sparse_ops as ops
-
+# import sparse_functional as Fsp
+# import sparse_ops as ops
+from .sparse_functional import indice_maxpool
 from .sparse_modules import SparseModule
+from .sparse_ops import get_conv_output_size, get_indice_pairs
 from .sparse_structure import SparseConvTensor
 
 
@@ -53,18 +54,19 @@ class SparseMaxPool(SparseModule):
         spatial_shape = input.spatial_shape
         batch_size = input.batch_size
         if not self.subm:
-            out_spatial_shape = ops.get_conv_output_size(
-                spatial_shape, self.kernel_size, self.stride, self.padding,
-                self.dilation)
+            out_spatial_shape = get_conv_output_size(spatial_shape,
+                                                     self.kernel_size,
+                                                     self.stride, self.padding,
+                                                     self.dilation)
         else:
             out_spatial_shape = spatial_shape
-        outids, indice_pairs, indice_pairs_num = ops.get_indice_pairs(
+        outids, indice_pairs, indice_pairs_num = get_indice_pairs(
             indices, batch_size, spatial_shape, self.kernel_size, self.stride,
             self.padding, self.dilation, 0, self.subm)
 
-        out_features = Fsp.indice_maxpool(features, indice_pairs.to(device),
-                                          indice_pairs_num.to(device),
-                                          outids.shape[0])
+        out_features = indice_maxpool(features, indice_pairs.to(device),
+                                      indice_pairs_num.to(device),
+                                      outids.shape[0])
         out_tensor = SparseConvTensor(out_features, outids, out_spatial_shape,
                                       batch_size)
         out_tensor.indice_dict = input.indice_dict

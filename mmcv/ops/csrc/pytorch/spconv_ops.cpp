@@ -85,12 +85,10 @@ std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
     int64_t _subM);
 
 template <typename T>
-torch::Tensor indice_conv_backward_cuda(torch::Tensor features,
-                                        torch::Tensor filters,
-                                        torch::Tensor outGrad,
-                                        torch::Tensor indicePairs,
-                                        torch::Tensor indiceNum,
-                                        int64_t _inverse, int64_t _subM) {
+std::vector<torch::Tensor> indice_conv_backward_cuda(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM) {
   return IndiceConvBackwardCUDAKernelLauncher<T>(
       features, filters, outGrad, indicePairs, indiceNum, _inverse, _subM);
 };
@@ -185,3 +183,58 @@ std::vector<torch::Tensor> indice_conv_backward(
     AT_ERROR("indice_conv is not implemented on CPU");
   }
 }
+
+template std::vector<torch::Tensor> get_indice_pairs_forward<2>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> get_indice_pairs_forward<3>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> get_indice_pairs_forward<4>(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> get_indice_pairs_backward<2>(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template std::vector<torch::Tensor> get_indice_pairs_backward<3>(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template torch::Tensor indice_conv_forward<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+template torch::Tensor indice_conv_forward<at::Half>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+template std::vector<torch::Tensor> indice_conv_backward<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+template std::vector<torch::Tensor> indice_conv_backward<at::Half>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);

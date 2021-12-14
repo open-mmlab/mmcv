@@ -61,3 +61,13 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
     AT_ERROR("fused_indice_conv_batchnorm is not implemented on CPU");
   }
 }
+
+template torch::Tensor fused_indice_conv_batchnorm_forward<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+template torch::Tensor fused_indice_conv_batchnorm_forward<at::Half>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
