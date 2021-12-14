@@ -17,9 +17,7 @@
 - "invalid device function" 或者 "no kernel image is available for execution"
 
     1. 检查 GPU 的 CUDA 计算能力
-    2. 运行  `python mmdet/utils/collect_env.py` 来检查 PyTorch、torchvision 和 MMCV 是否是针对正确的 GPU 架构构建的
-        您可能需要去设置 `TORCH_CUDA_ARCH_LIST` 来重新安装 MMCV
-        兼容性问题的可能会出现在使用旧版的 GPUs，如：colab 上的 Tesla K80 (3.7)
+    2. 运行  `python mmdet/utils/collect_env.py` 来检查 PyTorch、torchvision 和 MMCV 是否是针对正确的 GPU 架构构建的，您可能需要去设置 `TORCH_CUDA_ARCH_LIST` 来重新安装 MMCV。兼容性问题可能会出现在使用旧版的 GPUs，如：colab 上的 Tesla K80 (3.7)
     3. 检查运行环境是否和 mmcv/mmdet 编译时的环境相同。例如，您可能使用 CUDA 10.0 编译 mmcv，但在 CUDA 9.0 的环境中运行它
 
 - "undefined symbol" 或者 "cannot open xxx.so"
