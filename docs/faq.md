@@ -5,7 +5,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 ### Installation
 
-- "KeyError: "xxx: 'yyy is not in the zzz registry'"
+- KeyError: "xxx: 'yyy is not in the zzz registry'"
 
     The registry mechanism will be triggered only when the file of the module is imported.
     So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.

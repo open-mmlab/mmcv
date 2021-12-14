@@ -5,7 +5,7 @@
 
 ### 安装问题
 
-- "KeyError: "xxx: 'yyy is not in the zzz registry'"
+- KeyError: "xxx: 'yyy is not in the zzz registry'"
 
     只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件，更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
 
