@@ -76,6 +76,7 @@ class AdaptivePadding(nn.Module):
         padding (str): Support "same" and "corner", "corner" mode
             would pad zero to bottom right, and "same" mode would
             pad zero around input. Default: "corner".
+
     Example:
         >>> kernel_size = 16
         >>> stride = 16
@@ -114,7 +115,7 @@ class AdaptivePadding(nn.Module):
 
         Returns:
             Tuple[int]: The padding size along the
-                original H and W directions
+            original H and W directions
         """
         input_h, input_w = input_shape
         kernel_h, kernel_w = self.kernel_size
@@ -256,9 +257,9 @@ class PatchEmbed(BaseModule):
         Returns:
             tuple: Contains merged results and its spatial shape.
 
-                - x (Tensor): Has shape (B, out_h * out_w, embed_dims)
-                - out_size (tuple[int]): Spatial shape of x, arrange as
-                    (out_h, out_w).
+            - x (Tensor): Has shape (B, out_h * out_w, embed_dims)
+            - out_size (tuple[int]): Spatial shape of x, arrange as
+              (out_h, out_w).
         """
 
         if self.adaptive_padding:
@@ -363,9 +364,9 @@ class PatchMerging(BaseModule):
         Returns:
             tuple: Contains merged results and its spatial shape.
 
-                - x (Tensor): Has shape (B, Merged_H * Merged_W, C_out)
-                - out_size (tuple[int]): Spatial shape of x, arrange as
-                    (Merged_H, Merged_W).
+            - x (Tensor): Has shape (B, Merged_H * Merged_W, C_out)
+            - out_size (tuple[int]): Spatial shape of x, arrange as
+              (Merged_H, Merged_W).
         """
         B, L, C = x.shape
         assert isinstance(input_size, Sequence), f'Expect ' \
@@ -500,9 +501,9 @@ class MultiheadAttention(BaseModule):
 
         Returns:
             Tensor: forwarded results with shape
-                [num_queries, bs, embed_dims]
-                if self.batch_first is False, else
-                [bs, num_queries embed_dims].
+            [num_queries, bs, embed_dims]
+            if self.batch_first is False, else
+            [bs, num_queries embed_dims].
         """
 
         if key is None:
