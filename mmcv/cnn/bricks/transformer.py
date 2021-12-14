@@ -156,7 +156,8 @@ class PatchEmbed(BaseModule):
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (str): The type of embedding-conv. Default: "Conv2d".
+        conv_type (str): The type of convolution
+            to generate patch embedding. Default: "Conv2d".
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: 16.
@@ -169,7 +170,7 @@ class PatchEmbed(BaseModule):
         norm_cfg (dict, optional): Config dict for normalization layer.
             Default: None.
         input_size (int | tuple | None): The size of input, which will be
-            used to calculate the out size. Only work when `dynamic_size`
+            used to calculate the out size. Only works when `dynamic_size`
             is False. Default: None.
         init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
             Default: None.
@@ -198,7 +199,7 @@ class PatchEmbed(BaseModule):
         dilation = to_2tuple(dilation)
 
         if isinstance(padding, str):
-            self.adap_padding = AdaptivePadding(
+            self.adaptive_padding = AdaptivePadding(
                 kernel_size=kernel_size,
                 stride=stride,
                 dilation=dilation,
@@ -206,7 +207,7 @@ class PatchEmbed(BaseModule):
             # disable the padding of conv
             padding = 0
         else:
-            self.adap_padding = None
+            self.adaptive_padding = None
         padding = to_2tuple(padding)
 
         self.projection = build_conv_layer(
@@ -230,8 +231,8 @@ class PatchEmbed(BaseModule):
             # calculate the num_patches
             # e.g. when `use_abs_pos_embed` outside
             self.init_input_size = input_size
-            if self.adap_padding:
-                pad_h, pad_w = self.adap_padding.get_pad_shape(input_size)
+            if self.adaptive_padding:
+                pad_h, pad_w = self.adaptive_padding.get_pad_shape(input_size)
                 input_h, input_w = input_size
                 input_h = input_h + pad_h
                 input_w = input_w + pad_w
@@ -260,8 +261,8 @@ class PatchEmbed(BaseModule):
                     (out_h, out_w).
         """
 
-        if self.adap_padding:
-            x = self.adap_padding(x)
+        if self.adaptive_padding:
+            x = self.adaptive_padding(x)
 
         x = self.projection(x)
         out_size = (x.shape[2], x.shape[3])
@@ -277,8 +278,9 @@ class PatchMerging(BaseModule):
     This layer groups feature map by kernel_size, and applies norm and linear
     layers to the grouped feature map ((used in Swin Transformer)).
     Our implementation uses `nn.Unfold` to
-    merge patch, which is about 25% faster than original implementation.
-    Instead, we need to modify pretrained models for compatibility.
+    merge patches, which is about 25% faster than the original
+    implementation. However, we need to modify pretrained
+    models for compatibility.
 
     Args:
         in_channels (int): The num of input channels.
@@ -325,7 +327,7 @@ class PatchMerging(BaseModule):
         dilation = to_2tuple(dilation)
 
         if isinstance(padding, str):
-            self.adap_padding = AdaptivePadding(
+            self.adaptive_padding = AdaptivePadding(
                 kernel_size=kernel_size,
                 stride=stride,
                 dilation=dilation,
@@ -333,7 +335,7 @@ class PatchMerging(BaseModule):
             # disable the padding of unfold
             padding = 0
         else:
-            self.adap_padding = None
+            self.adaptive_padding = None
 
         padding = to_2tuple(padding)
         self.sampler = nn.Unfold(
@@ -376,8 +378,8 @@ class PatchMerging(BaseModule):
 
         x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
 
-        if self.adap_padding:
-            x = self.adap_padding(x)
+        if self.adaptive_padding:
+            x = self.adaptive_padding(x)
             H, W = x.shape[-2:]
 
         # Use nn.Unfold to merge patch. About 25% faster than original method,
