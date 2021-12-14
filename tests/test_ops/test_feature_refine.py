@@ -1,28 +1,7 @@
 import pytest
 import torch
-from torch import nn
 
 from mmcv.ops import feature_refine
-
-
-class FR(nn.Module):
-    """FR module."""
-
-    def __init__(self, spatial_scale, points=1):
-        super(FR, self).__init__()
-        self.spatial_scale = float(spatial_scale)
-        self.points = points
-
-    def forward(self, features, best_rbboxes):
-        """Forward function."""
-        return feature_refine(features, best_rbboxes, self.spatial_scale,
-                              self.points)
-
-    def __repr__(self):
-        format_str = self.__class__.__name__
-        format_str += f'(spatial_scale={self.spatial_scale},' \
-                      f' points={self.points})'
-        return format_str
 
 
 @pytest.mark.skipif(
@@ -117,4 +96,6 @@ def test_feature_refine():
                                       [-2.1254, 0.6047, -0.3515,
                                        0.7254]]]]).cuda()
 
-    assert torch.allclose(feature_refine(feature, bbox, spatial_scale=1/8, points=1), expected_output, 1e-2)
+    assert torch.allclose(
+        feature_refine(feature, bbox, spatial_scale=1 / 8, points=1),
+        expected_output, 1e-2)
