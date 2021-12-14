@@ -26,7 +26,7 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
   Tensor pts_mask =
       -at::ones({boxes_num, pts_num}, pts_feature.options().dtype(at::kInt));
 
-  dim3 blocks_mask(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num);
+  dim3 blocks_mask(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), boxes_num);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -42,7 +42,7 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
 
   // TODO: Merge the collect and pool functions, SS
 
-  dim3 blocks_collect(DIVUP(boxes_num, THREADS_PER_BLOCK));
+  dim3 blocks_collect(GET_BLOCKS(boxes_num, THREADS_PER_BLOCK));
 
   AT_DISPATCH_INTEGRAL_TYPES(
       pts_idx_of_voxels.scalar_type(), "collect_inside_pts_for_box3d", [&] {
@@ -55,8 +55,8 @@ void RoiawarePool3dForwardCUDAKernelLauncher(
 
   AT_CUDA_CHECK(cudaGetLastError());
 
-  dim3 blocks_pool(DIVUP(out_x * out_y * out_z, THREADS_PER_BLOCK), channels,
-                   boxes_num);
+  dim3 blocks_pool(GET_BLOCKS(out_x * out_y * out_z, THREADS_PER_BLOCK),
+                   channels, boxes_num);
   if (pool_method == 0) {
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         pts_feature.scalar_type(), "roiaware_maxpool3d", [&] {
@@ -93,7 +93,7 @@ void RoiawarePool3dBackwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(grad_out.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(out_x * out_y * out_z, THREADS_PER_BLOCK), channels,
+  dim3 blocks(GET_BLOCKS(out_x * out_y * out_z, THREADS_PER_BLOCK), channels,
               boxes_num);
   dim3 threads(THREADS_PER_BLOCK);
 

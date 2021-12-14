@@ -67,7 +67,7 @@ void CumMaxMinForwardLauncher(const scalar_t *input, scalar_t *output_value,
   const int data_size =
       tensor_desc.stride[0] * tensor_desc.shape[0] / tensor_desc.shape[cum_dim];
 
-  const int col_block = DIVUP(data_size, THREADS_PER_BLOCK);
+  const int col_block = GET_BLOCKS(data_size, THREADS_PER_BLOCK);
 
   cummaxmin_kernel<scalar_t><<<col_block, THREADS_PER_BLOCK, 0, stream>>>(
       input, output_value, output_index, tensor_desc, cum_dim, cum_type);

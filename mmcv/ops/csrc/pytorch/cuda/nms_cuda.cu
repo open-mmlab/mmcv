@@ -13,7 +13,7 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   auto boxes_sorted = boxes.index_select(0, order_t);
 
   int boxes_num = boxes.size(0);
-  const int col_blocks = DIVUP(boxes_num, threadsPerBlock);
+  const int col_blocks = GET_BLOCKS(boxes_num, threadsPerBlock);
   Tensor mask =
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
   dim3 blocks(col_blocks, col_blocks);

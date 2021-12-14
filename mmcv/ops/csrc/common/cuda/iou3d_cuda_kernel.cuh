@@ -298,7 +298,8 @@ __global__ void nms_forward_cuda_kernel(const int boxes_num,
         t |= 1ULL << i;
       }
     }
-    const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
+    const int col_blocks =
+        (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
     mask[cur_box_idx * col_blocks + col_start] = t;
   }
 }
@@ -361,7 +362,8 @@ __global__ void nms_normal_forward_cuda_kernel(const int boxes_num,
         t |= 1ULL << i;
       }
     }
-    const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
+    const int col_blocks =
+        (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
     mask[cur_box_idx * col_blocks + col_start] = t;
   }
 }

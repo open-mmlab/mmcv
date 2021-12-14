@@ -13,7 +13,7 @@ void AssignScoreWithKForwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(B * O * N1 * K, THREADS_PER_BLOCK));
+  dim3 blocks(GET_BLOCKS(B * O * N1 * K, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -36,9 +36,9 @@ void AssignScoreWithKBackwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(grad_out.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks1(DIVUP(B * M * O, THREADS_PER_BLOCK));
+  dim3 blocks1(GET_BLOCKS(B * M * O, THREADS_PER_BLOCK));
   dim3 threads1(THREADS_PER_BLOCK);
-  dim3 blocks2(DIVUP(B * N1 * K * M, THREADS_PER_BLOCK));
+  dim3 blocks2(GET_BLOCKS(B * N1 * K * M, THREADS_PER_BLOCK));
   dim3 threads2(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

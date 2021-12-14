@@ -3,7 +3,7 @@
 #define TRT_CUDA_HELPER_HPP
 #include <cublas_v2.h>
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+// #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 #define cudaCheckError()                                       \
   {                                                            \

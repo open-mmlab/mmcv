@@ -9,10 +9,10 @@
 
 #define THREADS_PER_BLOCK 512
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+// #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-inline int GET_BLOCKS(const int N) {
-  int optimal_block_num = (N + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+inline int GET_BLOCKS(const int N, const int num_threads = THREADS_PER_BLOCK) {
+  int optimal_block_num = (N + num_threads - 1) / num_threads;
   int max_block_num = 4096;
   return min(optimal_block_num, max_block_num);
 }

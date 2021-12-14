@@ -16,7 +16,7 @@ void GatherPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(npoints, THREADS_PER_BLOCK), c, b);
+  dim3 blocks(GET_BLOCKS(npoints, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -43,7 +43,7 @@ void GatherPointsBackwardCUDAKernelLauncher(int b, int c, int n, int npoints,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(npoints, THREADS_PER_BLOCK), c, b);
+  dim3 blocks(GET_BLOCKS(npoints, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
