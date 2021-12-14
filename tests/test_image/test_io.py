@@ -367,6 +367,9 @@ class TestIO:
             assert ret_with_args
             mock_method.assert_called()
 
+        with pytest.raises(cv2.error):
+            mmcv.imwrite(img, 'error_file.jppg')
+
     @patch('mmcv.image.io.TurboJPEG', None)
     def test_no_turbojpeg(self):
         with pytest.raises(ImportError):
