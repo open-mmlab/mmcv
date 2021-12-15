@@ -29,7 +29,7 @@ class RotatedFeatureAlignFunction(Function):
             spatial_scale (float): The scale of feature map size and
                 input image size.
             points (int, optional): The number of sample points.
-                Defaults to 1.
+                Only 1 and 5 are supported. Defaults to 1.
 
         Returns:
             torch.Tensor: Refined features with shape [N,C,H,W].
