@@ -1362,3 +1362,32 @@ REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
                      hard_voxelize_forward_cuda);
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
+
+void ARFForwardLauncher(const Tensor input, const Tensor indices,
+                        Tensor output);
+
+void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
+                         Tensor grad_in);
+
+void active_rotated_filter_forward_cuda(const Tensor input,
+                                        const Tensor indices, Tensor output) {
+  void ARFForwardLauncher(const Tensor input, const Tensor indices,
+                          Tensor output);
+};
+
+void active_rotated_filter_backward_cuda(const Tensor grad_out,
+                                         const Tensor indices, Tensor grad_in) {
+  void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
+                           Tensor grad_in);
+};
+
+void active_rotated_filter_forward_impl(const Tensor input,
+                                        const Tensor indices, Tensor output);
+
+void active_rotated_filter_backward_impl(const Tensor grad_out,
+                                         const Tensor indices, Tensor grad_in);
+
+REGISTER_DEVICE_IMPL(active_rotated_filter_forward_impl, CUDA,
+                     active_rotated_filter_forward_cuda);
+REGISTER_DEVICE_IMPL(active_rotated_filter_backward_impl, CUDA,
+                     active_rotated_filter_backward_cuda);

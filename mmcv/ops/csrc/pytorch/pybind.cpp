@@ -340,6 +340,12 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW);
 
+void active_rotated_filter_forward(const Tensor input, const Tensor indices,
+                                   const Tensor output);
+
+void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
+                                    const Tensor grad_in);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -686,4 +692,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
         py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
         py::arg("pool_method"));
+  m.def("active_rotated_filter_forward", &active_rotated_filter_forward,
+        "active_rotated_filter_forward", py::arg("input"), py::arg("indices"),
+        py::arg("output"));
+  m.def("active_rotated_filter_backward", &active_rotated_filter_backward,
+        "active_rotated_filter_backward", py::arg("grad_out"),
+        py::arg("indices"), py::arg("grad_in"));
 }
