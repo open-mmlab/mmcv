@@ -57,15 +57,15 @@ def build_plugin_layer(cfg, postfix='', **kwargs):
 
     Args:
         cfg (None or dict): cfg should contain:
-            type (str): identify plugin layer type.
-            layer args: args needed to instantiate a plugin layer.
+
+            - type (str): identify plugin layer type.
+            - layer args: args needed to instantiate a plugin layer.
         postfix (int, str): appended into norm abbreviation to
             create named layer. Default: ''.
 
     Returns:
-        tuple[str, nn.Module]:
-            name (str): abbreviation + postfix
-            layer (nn.Module): created plugin layer
+        tuple[str, nn.Module]: The first one is the concatenation of
+        abbreviation and postfix. The second is the created plugin layer.
     """
     if not isinstance(cfg, dict):
         raise TypeError('cfg must be a dict')

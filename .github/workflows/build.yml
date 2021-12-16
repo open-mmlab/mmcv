@@ -6,7 +6,6 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'docs/**'
-      - 'docs_zh-CN/**'
       - 'examples/**'
       - '.dev_scripts/**'
 
@@ -15,9 +14,12 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'docs/**'
-      - 'docs_zh-CN/**'
       - 'examples/**'
       - '.dev_scripts/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   MMCV_WITH_OPS: 1

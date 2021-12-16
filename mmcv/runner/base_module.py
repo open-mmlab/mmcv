@@ -18,13 +18,12 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
     functionality of parameter initialization. Compared with
     ``torch.nn.Module``, ``BaseModule`` mainly adds three attributes.
 
-        - ``init_cfg``: the config to control the initialization.
-        - ``init_weights``: The function of parameter
-            initialization and recording initialization
-            information.
-        - ``_params_init_info``: Used to track the parameter
-            initialization information. This attribute only
-            exists during executing the ``init_weights``.
+    - ``init_cfg``: the config to control the initialization.
+    - ``init_weights``: The function of parameter initialization and recording
+      initialization information.
+    - ``_params_init_info``: Used to track the parameter initialization
+      information. This attribute only exists during executing the
+      ``init_weights``.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.
@@ -193,3 +192,17 @@ class ModuleList(BaseModule, nn.ModuleList):
     def __init__(self, modules=None, init_cfg=None):
         BaseModule.__init__(self, init_cfg)
         nn.ModuleList.__init__(self, modules)
+
+
+class ModuleDict(BaseModule, nn.ModuleDict):
+    """ModuleDict in openmmlab.
+
+    Args:
+        modules (dict, optional): a mapping (dictionary) of (string: module)
+            or an iterable of key-value pairs of type (string, module).
+        init_cfg (dict, optional): Initialization config dict.
+    """
+
+    def __init__(self, modules=None, init_cfg=None):
+        BaseModule.__init__(self, init_cfg)
+        nn.ModuleDict.__init__(self, modules)
