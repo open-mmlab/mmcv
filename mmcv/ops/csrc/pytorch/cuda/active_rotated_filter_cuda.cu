@@ -4,9 +4,8 @@
 #include "active_rotated_filter_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-void ARFForwardLauncher(const Tensor input,
-                              const Tensor indices,
-                              Tensor output) {
+void ARFForwardLauncher(const Tensor input, const Tensor indices,
+                        Tensor output) {
   int nOutputPlane = input.size(0);
   int nInputPlane = input.size(1);
   int nOrientation = input.size(2);
@@ -19,24 +18,18 @@ void ARFForwardLauncher(const Tensor input,
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(weight.type(), "ARF_forward", [&] {
-    ARF_forward_cuda_kernel<scalar_t><<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-         output_size,
-         input.contiguous().data_ptr<scalar_t>(),
-         indices.contiguous().data_ptr<int>(),
-         nInputPlane,
-         nOutputPlane,
-         nOrientation,
-         nRotation,
-         nEntry,
-         output.contiguous().data<scalar_t>());
+    ARF_forward_cuda_kernel<scalar_t>
+        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+            output_size, input.contiguous().data_ptr<scalar_t>(),
+            indices.contiguous().data_ptr<int>(), nInputPlane, nOutputPlane,
+            nOrientation, nRotation, nEntry,
+            output.contiguous().data<scalar_t>());
   });
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-
-void ARFBackwardLauncher(const Tensor grad_out,
-                               const Tensor indices,
-                               Tensor grad_in) {
+void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
+                         Tensor grad_in) {
   int nOrientation = indices.size(0);
   int kH = indices.size(1);
   int kW = indices.size(2);
@@ -49,16 +42,12 @@ void ARFBackwardLauncher(const Tensor grad_out,
   at::cuda::CUDAGuard device_guard(indices.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES(grad_out.type(), "ARF_backward", [&] {
-    ARF_backward_cuda_kernel<scalar_t><<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-         output_size,
-         grad_out.contiguous().data_ptr<scalar_t>(),
-         indices.contiguous().data_ptr<int>(),
-         nInputPlane,
-         nOutputPlane,
-         nOrientation,
-         nRotation,
-         nEntry,
-         grad_in.contiguous().data_ptr<scalar_t>());
+    ARF_backward_cuda_kernel<scalar_t>
+        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+            output_size, grad_out.contiguous().data_ptr<scalar_t>(),
+            indices.contiguous().data_ptr<int>(), nInputPlane, nOutputPlane,
+            nOrientation, nRotation, nEntry,
+            grad_in.contiguous().data_ptr<scalar_t>());
   });
   AT_CUDA_CHECK(cudaGetLastError());
 }

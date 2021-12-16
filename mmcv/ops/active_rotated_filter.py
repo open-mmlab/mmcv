@@ -6,17 +6,17 @@ from torch.autograd.function import once_differentiable
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    '_ext', ['active_rotated_filter_forward', 'active_rotated_filter_backward'])
+    '_ext',
+    ['active_rotated_filter_forward', 'active_rotated_filter_backward'])
 
 
 class ActiveRotatedFilterFunction(Function):
-    """Encoding the orientation information and then produces
-    orientation-sensitive and orientation-invariant features to alleviate the
-    inconsistency between classification score and localization accuracy.
+    """Encoding the orientation information and then produces orientation-
+    sensitive and orientation-invariant features to alleviate the inconsistency
+    between classification score and localization accuracy.
 
-    The details are described in the paper
-    `Align Deep Features for Oriented Object Detection
-     <https://arxiv.org/abs/2008.09397>`.
+    The details are described in the paper `Align Deep Features for Oriented
+    Object Detection  <https://arxiv.org/abs/2008.09397>`.
     """
 
     @staticmethod
