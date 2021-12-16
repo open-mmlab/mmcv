@@ -14,7 +14,8 @@ from mmcv.fileio.file_client import FileClient, PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
-                                    load_from_pavi, save_checkpoint)
+                                    load_from_local, load_from_pavi,
+                                    save_checkpoint)
 
 
 @MODULE_WRAPPERS.register_module()
@@ -349,13 +350,16 @@ def test_checkpoint_loader():
         'modelzoo://xx.xx/xx.pth', 'torchvision://xx.xx/xx.pth',
         'open-mmlab://xx.xx/xx.pth', 'openmmlab://xx.xx/xx.pth',
         'mmcls://xx.xx/xx.pth', 'pavi://xx.xx/xx.pth', 's3://xx.xx/xx.pth',
-        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth'
+        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth',
+        'open-mmlab:s3://xx.xx/xx.pth', 'openmmlab:s3://xx.xx/xx.pth',
+        'openmmlabs3://xx.xx/xx.pth', ':s3://xx.xx/xx.path'
     ]
     fn_names = [
         'load_from_http', 'load_from_http', 'load_from_torchvision',
         'load_from_torchvision', 'load_from_openmmlab', 'load_from_openmmlab',
         'load_from_mmcls', 'load_from_pavi', 'load_from_ceph',
-        'load_from_local', 'load_from_local'
+        'load_from_local', 'load_from_local', 'load_from_ceph',
+        'load_from_ceph', 'load_from_local', 'load_from_local'
     ]
 
     for filename, fn_name in zip(filenames, fn_names):
@@ -436,3 +440,18 @@ def test_save_checkpoint(tmp_path):
         save_checkpoint(
             model, filename, file_client_args={'backend': 'petrel'})
     mock_method.assert_called()
+
+
+def test_load_from_local():
+    import os
+    home_path = os.path.expanduser('~')
+    checkpoint_path = os.path.join(
+        home_path, 'dummy_checkpoint_used_to_test_load_from_local.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_from_local(
+        '~/dummy_checkpoint_used_to_test_load_from_local.pth',
+        map_location=None)
+    assert_tensor_equal(checkpoint['state_dict']['block.conv.weight'],
+                        model.block.conv.weight)
+    os.remove(checkpoint_path)

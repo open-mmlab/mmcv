@@ -13,8 +13,8 @@ class EMAHook(Hook):
 
         .. math::
 
-            \text{Xema\_{t+1}} = (1 - \text{momentum}) \times
-            \text{Xema\_{t}} +  \text{momentum} \times X_t
+            Xema\_{t+1} = (1 - \text{momentum}) \times
+            Xema\_{t} +  \text{momentum} \times X_t
 
     Args:
         momentum (float): The momentum used for updating ema parameter.
