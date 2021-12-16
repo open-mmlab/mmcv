@@ -40,7 +40,7 @@ def train(self, data_loader, **kwargs):
 ```
 
 ### IterBasedRunner
-不同于 `EpochBasedRunner`，`IterBasedRunner` 是指以 iter 为周期的工作流，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `EpochBasedRunner`。
+不同于 `EpochBasedRunner`，`IterBasedRunner` 是指以 iter 为周期的工作流，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `IterBasedRunner`。
 
 其抽象逻辑如下所示：
 
