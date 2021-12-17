@@ -341,10 +341,10 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilation_patchW, int dH, int dW);
 
 void active_rotated_filter_forward(const Tensor input, const Tensor indices,
-                                   const Tensor output);
+                                   Tensor output);
 
 void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
-                                    const Tensor grad_in);
+                                    Tensor grad_in);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
