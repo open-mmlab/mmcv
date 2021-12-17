@@ -18,45 +18,93 @@ def box_iou_rotated(bboxes1,
     of bboxes1 and bboxes2, otherwise the ious between each aligned pair of
     bboxes1 and bboxes2.
 
-    coordinates details:
-        the positive direction along x axis is left->right
-        the positive direction along y axis is top->down
-        the w border is in parallel with x axis when angle = 0
-        there are 2 opposite definitions of the positive angular direction,
-        CW and CCW. MMCV supports both definitions and by default CW.
-        Please set clockwise=False if you are using the CCW definition.
+    .. note::
+        The operator assumes:
 
-        if clockwise is True
+        1) The positive direction along x axis is left -> right.
 
-        .. code-block:: none
+        2) The positive direction along y axis is top -> down.
 
-            0-------------------> x (0 rad)
-            |  .-------------.
-            |  |             |
-            |  |     box     h
-            |  |   angle=0   |
-            |  .------w------.
-            v
-            y (pi/2 rad)
-            In such coordination system the rotation matrix is:
-                [cosa -sina]
-                [sina  cosa]
+        3) The w border is in parallel with x axis when angle = 0.
 
-        if clockwise is False
+        However, there are 2 opposite definitions of the positive angular
+        direction, clockwise (CW) and counter-clockwise (CCW). MMCV supports
+        both definitions and uses CW by default.
 
-        .. code-block:: none
+        Please set `clockwise=False` if you are using the CCW definition.
 
-            0-------------------> x (0 rad)
-            |  .-------------.
-            |  |             |
-            |  |     box     h
-            |  |   angle=0   |
-            |  .------w------.
-            v
-            y (-pi/2 rad)
-            In such coordination system the rotation matrix is:
-                [cosa  sina]
-                [-sina cosa]
+        The coordinate system when `clockwise` is `True` (default)
+
+            .. code-block:: none
+
+                0-------------------> x (0 rad)
+                |  A-------------B
+                |  |             |
+                |  |     box     h
+                |  |   angle=0   |
+                |  D------w------C
+                v
+                y (pi/2 rad)
+
+            In such coordination system the rotation matrix is
+
+            .. math::
+                \\begin{pmatrix}
+                \\cos\\alpha & -\\sin\\alpha \\\\
+                \\sin\\alpha & \\cos\\alpha
+                \\end{pmatrix}
+
+            The coordinates of the corner point A can be calculated as:
+
+            .. math::
+                P_A=
+                \\begin{pmatrix} x_A \\\\ y_A\\end{pmatrix}
+                =
+                \\begin{pmatrix} x_{center} \\\\ y_{center}\\end{pmatrix} +
+                \\begin{pmatrix}\\cos\\alpha & -\\sin\\alpha \\\\
+                \\sin\\alpha & \\cos\\alpha\\end{pmatrix}
+                \\begin{pmatrix} -0.5w \\\\ -0.5h\\end{pmatrix} \\\\
+                =
+                \\begin{pmatrix} x_{center}-0.5w\\cos\\alpha+0.5h\\sin\\alpha
+                \\\\
+                y_{center}-0.5w\\sin\\alpha-0.5h\\cos\\alpha\\end{pmatrix}
+
+
+        The coordinate system when `clockwise` is `False`
+
+            .. code-block:: none
+
+                0-------------------> x (0 rad)
+                |  A-------------B
+                |  |             |
+                |  |     box     h
+                |  |   angle=0   |
+                |  D------w------C
+                v
+                y (-pi/2 rad)
+
+            In such coordination system the rotation matrix is
+
+            .. math::
+                \\begin{pmatrix}
+                \\cos\\alpha & \\sin\\alpha \\\\
+                -\\sin\\alpha & \\cos\\alpha
+                \\end{pmatrix}
+
+            The coordinates of the corner point A can be calculated as:
+
+            .. math::
+                P_A=
+                \\begin{pmatrix} x_A \\\\ y_A\\end{pmatrix}
+                =
+                \\begin{pmatrix} x_{center} \\\\ y_{center}\\end{pmatrix} +
+                \\begin{pmatrix}\\cos\\alpha & \\sin\\alpha \\\\
+                -\\sin\\alpha & \\cos\\alpha\\end{pmatrix}
+                \\begin{pmatrix} -0.5w \\\\ -0.5h\\end{pmatrix} \\\\
+                =
+                \\begin{pmatrix} x_{center}-0.5w\\cos\\alpha-0.5h\\sin\\alpha
+                \\\\
+                y_{center}+0.5w\\sin\\alpha-0.5h\\cos\\alpha\\end{pmatrix}
 
     Args:
         boxes1 (torch.Tensor): rotated bboxes 1. It has shape (N, 5),
