@@ -10,7 +10,16 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class WandbLoggerHook(LoggerHook):
-
+    """
+    Args:
+        with_step (bool): whether making a log in each step or not.
+            Default: True.
+        config_path (str, optional): The path of the final config of each
+            experiment. It can be either a path of the final config file or
+            a directory of config files. The config is uploaded to wandb
+            server if it is not None. Default: None.
+            `New in version 1.3.18.` 
+    """
     def __init__(self,
                  init_kwargs=None,
                  interval=10,
@@ -23,17 +32,6 @@ class WandbLoggerHook(LoggerHook):
         
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
-        
-        """
-        Args:
-            with_step (bool): whether making a log in each step or not.
-                Default: True.
-            config_path (str, optional): The path of the final config of each
-                experiment. It can be either a path of the final config file or
-                a directory of config files. The config is uploaded to wandb
-                server if it is not None. Default: None.
-                `New in version 1.3.18.` 
-        """
         
         self.import_wandb()
         self.init_kwargs = init_kwargs
