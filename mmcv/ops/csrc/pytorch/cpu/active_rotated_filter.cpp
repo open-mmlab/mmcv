@@ -69,7 +69,7 @@ void active_rotated_filter_forward_cpu(const Tensor input, const Tensor indices,
   const int kW = input.size(4);
   const int nRotation = indices.size(3);
 
-  AT_DISPATCH_FLOATING_TYPES(input.type(), "ARF_forward", [&] {
+  AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "ARF_forward", [&] {
     ARF_forward_cpu_kernel<scalar_t>(input.data_ptr<scalar_t>(),
                                      indices.data_ptr<int>(), nOutputPlane,
                                      nInputPlane, nOrientation, kH, kW,
@@ -86,7 +86,7 @@ void active_rotated_filter_backward_cpu(const Tensor grad_out,
   const int nOutputPlane = grad_out.size(0) / nRotation;
   const int nInputPlane = grad_out.size(1) / nOrientation;
 
-  AT_DISPATCH_FLOATING_TYPES(grad_out.type(), "ARF_backward", [&] {
+  AT_DISPATCH_FLOATING_TYPES(grad_out.scalar_type(), "ARF_backward", [&] {
     ARF_backward_cpu_kernel<scalar_t>(
         indices.data_ptr<int>(), grad_out.data_ptr<scalar_t>(), nOutputPlane,
         nInputPlane, nOrientation, kH, kW, nRotation,

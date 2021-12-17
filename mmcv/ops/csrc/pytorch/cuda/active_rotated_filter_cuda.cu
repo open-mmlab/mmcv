@@ -17,7 +17,7 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
 
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(weight.type(), "ARF_forward", [&] {
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(input.scalar_type(), "ARF_forward", [&] {
     ARF_forward_cuda_kernel<scalar_t>
         <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
             output_size, input.contiguous().data_ptr<scalar_t>(),
@@ -41,7 +41,7 @@ void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
 
   at::cuda::CUDAGuard device_guard(indices.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES(grad_out.type(), "ARF_backward", [&] {
+  AT_DISPATCH_FLOATING_TYPES(grad_out.scalar_type(), "ARF_backward", [&] {
     ARF_backward_cuda_kernel<scalar_t>
         <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
             output_size, grad_out.contiguous().data_ptr<scalar_t>(),
