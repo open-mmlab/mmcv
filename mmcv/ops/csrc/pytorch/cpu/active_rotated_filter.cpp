@@ -19,7 +19,6 @@ void ARF_forward_cpu_kernel(const T* weightData, const int* indicesData,
       for (l = 0; l < nEntry; l++) {
         int weightIndex = i * nInputPlane * nEntry + j * nEntry + l;
         T val = *(weightData + weightIndex);
-        // T val = *(weightData++);
         for (k = 0; k < nRotation; k++) {
           int index = (int)(*(indicesData + l * nRotation + k)) - 1;
           T* target = outputData + i * (nRotation * nInputPlane * nEntry) +
@@ -32,7 +31,7 @@ void ARF_forward_cpu_kernel(const T* weightData, const int* indicesData,
 }
 
 template <typename T>
-void ARF_backward_cpu_kernel(const int* indicesData, const T* gradOutputData,
+void ARF_backward_cpu_kernel(const T* gradOutputData, const int* indicesData,
                              const int nOutputPlane, const int nInputPlane,
                              const int nOrientation, const int kH, const int kW,
                              const int nRotation, T* gradInputData) {
@@ -46,7 +45,6 @@ void ARF_backward_cpu_kernel(const int* indicesData, const T* gradOutputData,
       for (l = 0; l < nEntry; l++) {
         int gradInputIndex = i * nInputPlane * nEntry + j * nEntry + l;
         T* val = gradInputData + gradInputIndex;
-        // T *val = gradInputData++;
         *val = 0;
         for (k = 0; k < nRotation; k++) {
           int index = (int)(*(indicesData + l * nRotation + k)) - 1;
@@ -88,7 +86,7 @@ void active_rotated_filter_backward_cpu(const Tensor grad_out,
 
   AT_DISPATCH_FLOATING_TYPES(grad_out.scalar_type(), "ARF_backward", [&] {
     ARF_backward_cpu_kernel<scalar_t>(
-        indices.data_ptr<int>(), grad_out.data_ptr<scalar_t>(), nOutputPlane,
+        grad_out.data_ptr<scalar_t>(), indices.data_ptr<int>(), nOutputPlane,
         nInputPlane, nOrientation, kH, kW, nRotation,
         grad_in.data_ptr<scalar_t>());
   });
