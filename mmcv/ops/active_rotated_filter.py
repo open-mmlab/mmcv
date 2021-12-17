@@ -34,7 +34,7 @@ class ActiveRotatedFilterFunction(Function):
         indices = indices.byte()
         ctx.save_for_backward(input, indices)
         op, ip, o, h, w = input.size()
-        o, h, w, r = input.size()
+        o, h, w, r = indices.size()
         output = input.new_zeros((op * r, ip * o, h, w))
         ext_module.active_rotated_filter_forward(input, indices, output)
 
