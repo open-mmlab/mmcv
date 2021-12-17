@@ -160,7 +160,7 @@ def rgb2ycbcr(img, y_only=False):
 
     Returns:
         ndarray: The converted YCbCr image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img)
@@ -194,7 +194,7 @@ def bgr2ycbcr(img, y_only=False):
 
     Returns:
         ndarray: The converted YCbCr image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img)
@@ -227,7 +227,7 @@ def ycbcr2rgb(img):
 
     Returns:
         ndarray: The converted RGB image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img) * 255
@@ -259,7 +259,7 @@ def ycbcr2bgr(img):
 
     Returns:
         ndarray: The converted BGR image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img) * 255

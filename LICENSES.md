@@ -4,5 +4,5 @@ In this file, we list the operations with other licenses instead of Apache 2.0. 
 
 |    Operation     |                                                                    Files                                                                              |    License     |
 | :--------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------: | :------------: |
-|    upfirdn2d     |          [mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu](https://github.com/open-mmlab/mmcv/mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu)          | NVIDIA License |
-| fused_leaky_relu | [mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu](https://github.com/open-mmlab/mmcv/mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu) | NVIDIA License |
+|    upfirdn2d     |          [mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu](https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu)          | NVIDIA License |
+| fused_leaky_relu | [mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu](https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu) | NVIDIA License |

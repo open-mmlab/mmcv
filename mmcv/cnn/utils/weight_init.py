@@ -548,7 +548,7 @@ def _initialize_override(module, override, cfg):
 
 
 def initialize(module, init_cfg):
-    """Initialize a module.
+    r"""Initialize a module.
 
     Args:
         module (``torch.nn.Module``): the module will be initialized.
@@ -556,6 +556,7 @@ def initialize(module, init_cfg):
             define initializer. OpenMMLab has implemented 6 initializers
             including ``Constant``, ``Xavier``, ``Normal``, ``Uniform``,
             ``Kaiming``, and ``Pretrained``.
+
     Example:
         >>> module = nn.Linear(2, 3, bias=True)
         >>> init_cfg = dict(type='Constant', layer='Linear', val =1 , bias =2)

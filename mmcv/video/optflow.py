@@ -242,7 +242,7 @@ def sparse_flow_from_bytes(content):
 
     Returns:
         Tuple(ndarray, ndarray): Loaded optical flow with the shape (H, W, 2)
-            and flow valid mask with the shape (H, W).
+        and flow valid mask with the shape (H, W).
     """  # nopa
 
     content = np.frombuffer(content, np.uint8)

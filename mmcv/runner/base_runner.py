@@ -207,8 +207,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current learning rates of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
         if isinstance(self.optimizer, torch.optim.Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
@@ -226,8 +226,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current momentums of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
 
         def _get_momentum(optimizer):
@@ -287,7 +287,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook_cfg (dict): Hook config. It should have at least keys 'type'
               and 'priority' indicating its type and priority.
 
-        Notes:
+        Note:
             The specific hook class to register should not use 'type' and
             'priority' arguments during initialization.
         """

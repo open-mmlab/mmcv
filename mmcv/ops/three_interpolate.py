@@ -21,14 +21,15 @@ class ThreeInterpolate(Function):
                 weight: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            features (Tensor): (B, C, M) Features descriptors to be
-                interpolated
-            indices (Tensor): (B, n, 3) index three nearest neighbors
-                of the target features in features
-            weight (Tensor): (B, n, 3) weights of interpolation
+            features (torch.Tensor): (B, C, M) Features descriptors to be
+                interpolated.
+            indices (torch.Tensor): (B, n, 3) indices of three nearest
+                neighbor features for the target features.
+            weight (torch.Tensor): (B, n, 3) weights of three nearest
+                neighbor features for the target features.
 
         Returns:
-            Tensor: (B, C, N) tensor of the interpolated features
+            torch.Tensor: (B, C, N) tensor of the interpolated features
         """
         assert features.is_contiguous()
         assert indices.is_contiguous()
@@ -49,10 +50,10 @@ class ThreeInterpolate(Function):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Args:
-            grad_out (Tensor): (B, C, N) tensor with gradients of outputs
+            grad_out (torch.Tensor): (B, C, N) tensor with gradients of outputs
 
         Returns:
-            Tensor: (B, C, M) tensor with gradients of features
+            torch.Tensor: (B, C, M) tensor with gradients of features
         """
         idx, weight, m = ctx.three_interpolate_for_backward
         B, c, n = grad_out.size()

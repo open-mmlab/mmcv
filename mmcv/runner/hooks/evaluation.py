@@ -65,7 +65,7 @@ class EvalHook(Hook):
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
-    Notes:
+    Note:
         If new arguments are added for EvalHook, tools/test.py,
         tools/eval_metric.py may be affected.
     """
@@ -271,7 +271,9 @@ class EvalHook(Hook):
         results = self.test_fn(runner.model, self.dataloader)
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
         key_score = self.evaluate(runner, results)
-        if self.save_best:
+        # the key_score may be `None` so it needs to skip the action to save
+        # the best checkpoint
+        if self.save_best and key_score:
             self._save_ckpt(runner, key_score)
 
     def _should_evaluate(self, runner):
@@ -358,11 +360,22 @@ class EvalHook(Hook):
         """
         eval_res = self.dataloader.dataset.evaluate(
             results, logger=runner.logger, **self.eval_kwargs)
+
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
         runner.log_buffer.ready = True
 
         if self.save_best is not None:
+            # If the performance of model is pool, the `eval_res` may be an
+            # empty dict and it will raise exception when `self.save_best` is
+            # not None. More details at
+            # https://github.com/open-mmlab/mmdetection/issues/6265.
+            if not eval_res:
+                warnings.warn(
+                    'Since `eval_res` is an empty dict, the behavior to save '
+                    'the best checkpoint will be skipped in this evaluation.')
+                return None
+
             if self.key_indicator == 'auto':
                 # infer from eval_results
                 self._init_rule(self.rule, list(eval_res.keys())[0])
@@ -490,6 +503,7 @@ class DistEvalHook(EvalHook):
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
-
-            if self.save_best:
+            # the key_score may be `None` so it needs to skip the action to
+            # save the best checkpoint
+            if self.save_best and key_score:
                 self._save_ckpt(runner, key_score)
