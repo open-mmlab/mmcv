@@ -252,9 +252,9 @@ flow = mmcv.flowread('compressed.jpg', quantize=True, concat_axis=1)
 mmcv.flowshow(flow)
 ```
 
-![progress](../../docs/_static/flow_visualization.png)
+![progress](../../en/_static/flow_visualization.png)
 
-3. 流变换
+1. 流变换
 
 ```python
 img1 = mmcv.imread('img1.jpg')
@@ -264,12 +264,12 @@ warpped_img2 = mmcv.flow_warp(img1, flow)
 
 img1 (左) and img2 (右)
 
-![raw images](../../docs/_static/flow_raw_images.png)
+![raw images](../../en/_static/flow_raw_images.png)
 
 光流 (img2 -> img1)
 
-![optical flow](../../docs/_static/flow_img2toimg1.png)
+![optical flow](../../en/_static/flow_img2toimg1.png)
 
 变换后的图像和真实图像的差异
 
-![warpped image](../../docs/_static/flow_warp_diff.png)
+![warpped image](../../en/_static/flow_warp_diff.png)
