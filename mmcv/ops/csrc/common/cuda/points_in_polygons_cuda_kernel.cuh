@@ -8,6 +8,10 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+struct point {
+  float x, y;
+};
+
 template <typename scalar_t>
 __global__ void points_in_polygons_forward_cuda_kernel(
     const int nthreads, const scalar_t *vertex1, const scalar_t *vertex2,
