@@ -24,7 +24,7 @@ class ActiveRotatedFilterFunction(Function):
         """
         Args:
             input (torch.Tensor): Input features with shape
-                [nOutputPlane, nInputPlane, nOrientatio, H, W].
+                [nOutputPlane, nInputPlane, nOrientation, H, W].
             indices (torch.Tensor): Indices with shape
                 [nOrientation, H, W, nRotation].
         Returns:
@@ -49,7 +49,7 @@ class ActiveRotatedFilterFunction(Function):
                 nInputPlane * nOrientation, H, W].
         Returns:
             torch.Tensor: The gradiant of input features with shape
-                [nOutputPlane, nInputPlane, nOrientatio, H, W].
+                [nOutputPlane, nInputPlane, nOrientation, H, W].
         """
         input, indices = ctx.saved_tensors
         grad_in = torch.zeros_like(input)
