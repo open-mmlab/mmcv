@@ -690,5 +690,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pool_method"));
   m.def("points_in_polygons_forward", &points_in_polygons_forward,
         "points_in_polygons_forward", py::arg("points"), py::arg("polygons"),
-        py::arg("output")
+        py::arg("output"));
 }
