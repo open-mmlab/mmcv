@@ -6,6 +6,18 @@ ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
 
 
 def points_in_polygons(points, polygons):
+    """Judging whether points are inside polygons.
+
+    Args:
+        points (torch.Tensor): It has shape (B, 2), indicating (x, y).
+        polygons (torch.Tensor): It has shape (M, 8), indicating
+            (x1, y1, x2, y2, x3, y3, x4, y4).
+
+    Returns:
+        torch.Tensor: Return the result with the shape of (B, M),
+            1 indicates that the point is inside the polygon,
+            0 indicates that the point is outside the polygon.
+    """
     assert points.shape[1] == 2, \
         'points dimension should be 2, ' \
         f'but got unexpected shape {points.shape[1]}'
