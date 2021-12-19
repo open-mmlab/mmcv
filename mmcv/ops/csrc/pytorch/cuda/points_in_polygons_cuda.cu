@@ -7,11 +7,13 @@
 #include "points_in_polygons_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points, const at::Tensor polygons,
-                const int rows, const int cols, at::Tensor output) {
-    const int output_size = rows * cols;
-    AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-        points.scalar_type(), "PointsInPolygonsLaucher", ([&] {
+void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points,
+                                               const at::Tensor polygons,
+                                               const int rows, const int cols,
+                                               at::Tensor output) {
+  const int output_size = rows * cols;
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      points.scalar_type(), "PointsInPolygonsLaucher", ([&] {
         const scalar_t *vertex1 = points.data_ptr<scalar_t>();
         const scalar_t *vertex2 = polygons.data_ptr<scalar_t>();
         scalar_t *inside_flag = output.data_ptr<scalar_t>();
@@ -19,6 +21,6 @@ void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points, const at
         points_in_polygons_forward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
                 output_size, vertex1, vertex2, rows, cols, inside_flag);
-        }));
+      }));
   AT_CUDA_CHECK(cudaGetLastError());
 }

@@ -2,9 +2,7 @@ import torch
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', [
-    'points_in_polygons_forward'
-])
+ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
 
 
 def points_in_polygons(points, polygons):
@@ -17,6 +15,5 @@ def points_in_polygons(points, polygons):
     output = torch.full([points.shape[0], polygons.shape[0]],
                         0.).cuda().float()
     ext_module.points_in_boxes_part_forward(points.contiguous(),
-                                            polygons.contiguous(),
-                                            output)
+                                            polygons.contiguous(), output)
     return output

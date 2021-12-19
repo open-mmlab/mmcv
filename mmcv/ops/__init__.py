@@ -38,6 +38,7 @@ from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
+from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
 from .roi_align import RoIAlign, roi_align
@@ -53,7 +54,6 @@ from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
-from .points_in_polygons import points_in_polygons
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -79,5 +79,5 @@ __all__ = [
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
-    'pointsJf'
+    'points_in_polygons'
 ]

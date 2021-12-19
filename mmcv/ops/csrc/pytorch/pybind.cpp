@@ -340,8 +340,7 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW);
 
-void points_in_polygons_forward(Tensor points, Tensor polygons,
-                                 Tensor output);
+void points_in_polygons_forward(Tensor points, Tensor polygons, Tensor output);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),

@@ -1368,20 +1368,15 @@ void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points,
                                                const int rows, const int cols,
                                                at::Tensor output);
 
-void points_in_polygons_forward_cuda(const Tensor points,
-                                     const Tensor polygons,
-                                     Tensor output,
-                                     const int rows,
+void points_in_polygons_forward_cuda(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
                                      const int cols) {
-  PointsInPolygonsForwardCUDAKernelLauncher(points, polygons, rows,
-                                             cols, output);
+  PointsInPolygonsForwardCUDAKernelLauncher(points, polygons, rows, cols,
+                                            output);
 };
 
-
-void points_in_polygons_forward_impl(const Tensor points,
-                                     const Tensor polygons,
-                                     Tensor output,
-                                     const int rows,
+void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
                                      const int cols);
 
 REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, CUDA,
