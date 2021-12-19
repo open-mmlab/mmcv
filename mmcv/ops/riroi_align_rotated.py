@@ -80,11 +80,14 @@ riroi_align_rotated = RiRoIAlignRotatedFunction.apply
 
 
 class RiRoIAlignRotated(nn.Module):
-    """RoI align pooling layer for rotated proposals.
+    """Rotation-invariant RoI align pooling layer for rotated proposals.
 
     It accepts a feature map of shape (N, C, H, W) and rois with shape
     (n, 6) with each roi decoded as (batch_index, center_x, center_y,
     w, h, angle). The angle is in radian.
+
+    The details are described in the paper `ReDet: A Rotation-equivariant
+    Detector for Aerial Object Detection  <https://arxiv.org/abs/2103.07733>`.
 
     Args:
         out_size (tuple): h, w
