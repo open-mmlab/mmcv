@@ -10,17 +10,17 @@ except ImportError:
 
 
 def tensor2imgs(tensor, mean=(0, 0, 0), std=(1, 1, 1), to_rgb=True):
-    """Convert tensor to 3-channel images.
+    """Convert tensor to 3-channel images or 1-channel gray images.
 
     Args:
         tensor (torch.Tensor): Tensor that contains multiple images, shape (
-            N, C, H, W).
+            N, C, H, W). :math:`C` can be either 3 or 1.
         mean (tuple[float], optional): Mean of images. Defaults to (0, 0, 0).
         std (tuple[float], optional): Standard deviation of images.
             Defaults to (1, 1, 1).
         to_rgb (bool, optional): Whether the tensor was converted to RGB
             format in the first place. If so, convert it back to BGR.
-            Defaults to True.
+            For the tensor with 1 channel, it must be False. Defaults to True.
 
     Returns:
         list[np.ndarray]: A list that contains multiple images.
@@ -29,8 +29,8 @@ def tensor2imgs(tensor, mean=(0, 0, 0), std=(1, 1, 1), to_rgb=True):
     if torch is None:
         raise RuntimeError('pytorch is not installed')
     assert torch.is_tensor(tensor) and tensor.ndim == 4
-    assert len(mean) == 3
-    assert len(std) == 3
+    assert (tensor.size(1) == len(mean) == len(std) == 3) or \
+        (tensor.size(1) == len(mean) == len(std) == 1 and not to_rgb)
 
     num_imgs = tensor.size(0)
     mean = np.array(mean, dtype=np.float32)
