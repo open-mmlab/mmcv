@@ -10,6 +10,8 @@ void RiROIAlignRotatedForwardCUDAKernelLauncher(
     at::Tensor output) {
   const int output_size =
       num_rois * pooled_height * pooled_width * channels * nOrientation;
+  at::cuda::CUDAGuard device_guard(features.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features.scalar_type(), "RiROIAlignRotatedLaucherForward", ([&] {
         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
@@ -17,7 +19,7 @@ void RiROIAlignRotatedForwardCUDAKernelLauncher(
         scalar_t *top_data = output.data_ptr<scalar_t>();
 
         riroi_align_rotated_forward_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size, bottom_data, rois_data, scalar_t(spatial_scale),
                 sample_num, clockwise, channels, height, width, pooled_height,
                 pooled_width, nOrientation, top_data);
@@ -34,13 +36,15 @@ void RiROIAlignRotatedBackwardCUDAKernelLauncher(
     at::Tensor bottom_grad) {
   const int output_size =
       num_rois * pooled_height * pooled_width * channels * nOrientation;
+  at::cuda::CUDAGuard device_guard(top_grad.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       top_grad.scalar_type(), "RiROIAlignRotatedLaucherBackward", ([&] {
         const scalar_t *top_diff = top_grad.data_ptr<scalar_t>();
         const scalar_t *rois_data = rois.data_ptr<scalar_t>();
         scalar_t *bottom_diff = bottom_grad.data_ptr<scalar_t>();
         riroi_align_rotated_backward_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size, top_diff, rois_data, spatial_scale, sample_num,
                 clockwise, channels, height, width, pooled_height, pooled_width,
                 nOrientation, bottom_diff);

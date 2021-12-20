@@ -1014,11 +1014,11 @@ void riroi_align_rotated_forward_cuda(Tensor features, Tensor rois,
   // Number of ROIs
   int num_rois = rois.size(0);
   int size_rois = rois.size(1);
-
   if (size_rois != 6) {
     AT_ERROR("wrong roi size");
   }
-
+  CHECK_CONTIGUOUS(features);
+  CHECK_CONTIGUOUS(rois);
   int num_channels = features.size(1) / nOrientation;
   int data_height = features.size(2);
   int data_width = features.size(3);
@@ -1039,7 +1039,8 @@ void riroi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   if (size_rois != 6) {
     AT_ERROR("wrong roi size");
   }
-
+  CHECK_CONTIGUOUS(top_grad);
+  CHECK_CONTIGUOUS(rois);
   int num_channels = bottom_grad.size(1) / nOrientation;
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
