@@ -26,6 +26,6 @@ def points_in_polygons(points, polygons):
         f'but got unexpected shape {polygons.shape[1]}'
     output = torch.full([points.shape[0], polygons.shape[0]],
                         0.).cuda().float()
-    ext_module.points_in_boxes_part_forward(points.contiguous(),
-                                            polygons.contiguous(), output)
+    ext_module.points_in_polygons_forward(points.contiguous(),
+                                          polygons.contiguous(), output)
     return output
