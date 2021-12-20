@@ -34,14 +34,14 @@ def test_tensor2imgs():
         tensor = torch.randn(2, 3, 5, 5)
         mmcv.tensor2imgs(tensor, mean=(1, ))
         tensor = torch.randn(2, 1, 5, 5)
-        mmcv.tensor2imgs(tensor)
+        mmcv.tensor2imgs(tensor, mean=(0, 0, 0))
 
     # test std length
     with pytest.raises(AssertionError):
         tensor = torch.randn(2, 3, 5, 5)
         mmcv.tensor2imgs(tensor, std=(1, ))
         tensor = torch.randn(2, 1, 5, 5)
-        mmcv.tensor2imgs(tensor)
+        mmcv.tensor2imgs(tensor, std=(1, 1, 1))
 
     # test to_rgb
     with pytest.raises(AssertionError):
@@ -68,6 +68,6 @@ def test_tensor2imgs():
     # test tensor channel 1 and rgb=False
     tensor = torch.randn(2, 1, 5, 5)
     gts = [t.squeeze(0).cpu().numpy().astype(np.uint8) for t in tensor]
-    outputs = mmcv.tensor2imgs(tensor, mean=(0, ), std=(1, ), to_rgb=False)
+    outputs = mmcv.tensor2imgs(tensor, to_rgb=False)
     for gt, output in zip(gts, outputs):
         assert_array_equal(gt, output)
