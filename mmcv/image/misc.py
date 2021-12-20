@@ -15,12 +15,12 @@ def tensor2imgs(tensor, mean=None, std=None, to_rgb=True):
     Args:
         tensor (torch.Tensor): Tensor that contains multiple images, shape (
             N, C, H, W). :math:`C` can be either 3 or 1.
-        mean (tuple[float], optional): Mean of images. If None, default one
-            will be used according to the channel dim of tensor.
-            Defaults to None.
+        mean (tuple[float], optional): Mean of images. If None,
+            (0, 0, 0) will be used for tensor with 3-channel,
+            while (0, ) for tensor with 1-channel. Defaults to None.
         std (tuple[float], optional): Standard deviation of images. If None,
-            default one will be used according to the channel dim of tensor.
-            Defaults to None.
+            (1, 1, 1) will be used for tensor with 3-channel,
+            while (1, ) for tensor with 1-channel. Defaults to None.
         to_rgb (bool, optional): Whether the tensor was converted to RGB
             format in the first place. If so, convert it back to BGR.
             For the tensor with 1 channel, it must be False. Defaults to True.
