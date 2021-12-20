@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef ROI_ALIGN_ROTATED_PYTORCH_H
 #define ROI_ALIGN_ROTATED_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 #ifdef MMCV_WITH_CUDA

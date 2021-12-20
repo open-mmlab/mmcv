@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef GATHER_POINTS_PYTORCH_H
 #define GATHER_POINTS_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void gather_points_forward(Tensor points_tensor, Tensor idx_tensor,

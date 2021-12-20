@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef DEFORM_ROI_POOL_PYTORCH_H
 #define DEFORM_ROI_POOL_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void deform_roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor offset,

@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef MASKED_CONV2D_PYTORCH_H
 #define MASKED_CONV2D_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void masked_im2col_forward_cuda(const Tensor im, const Tensor mask_h_idx,

@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef FURTHEST_POINT_SAMPLE_PYTORCH_H
 #define FURTHEST_POINT_SAMPLE_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void furthest_point_sampling_forward(Tensor points_tensor, Tensor temp_tensor,

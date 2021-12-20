@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef THREE_NN_PYTORCH_H
 #define THREE_NN_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void three_nn_forward(Tensor unknown_tensor, Tensor known_tensor,

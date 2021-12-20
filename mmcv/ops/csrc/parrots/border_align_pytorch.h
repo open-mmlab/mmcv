@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef BORDER_ALIGN_PYTORCH_H
 #define BORDER_ALIGN_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 #ifdef MMCV_WITH_CUDA

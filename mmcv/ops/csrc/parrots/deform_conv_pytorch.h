@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef DEFORM_CONV_PYTORCH_H
 #define DEFORM_CONV_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,

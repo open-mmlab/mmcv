@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef FOCAL_LOSS_PYTORCH_H
 #define FOCAL_LOSS_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void sigmoid_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,

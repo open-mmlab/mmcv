@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef BOX_IOU_ROTATED_PYTORCH_H
 #define BOX_IOU_ROTATED_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void box_iou_rotated_cpu(const Tensor boxes1, const Tensor boxes2, Tensor ious,

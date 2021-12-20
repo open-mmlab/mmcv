@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef CARAFE_PYTORCH_H
 #define CARAFE_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void carafe_forward_cuda(Tensor features, Tensor masks, Tensor rfeatures,

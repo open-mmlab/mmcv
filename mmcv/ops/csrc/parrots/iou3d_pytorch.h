@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef IOU_3D_PYTORCH_H
 #define IOU_3D_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void iou3d_boxes_iou_bev_forward(Tensor boxes_a, Tensor boxes_b,

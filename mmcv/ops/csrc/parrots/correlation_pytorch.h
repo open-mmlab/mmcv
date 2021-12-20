@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef CORRELATION_PYTORCH_H
 #define CORRELATION_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void correlation_forward(Tensor input1, Tensor input2, Tensor output, int kH,

@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef ASSIGN_SCORE_WITHK_PYTORCH_H
 #define ASSIGN_SCORE_WITHK_PYTORCH_H
-#include <torch/extension.h>
+#include <torch/types.h>
 using namespace at;
 
 void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
