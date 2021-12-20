@@ -103,6 +103,7 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
+        self.should_stop = False
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)
