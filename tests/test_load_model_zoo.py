@@ -128,7 +128,7 @@ def test_load_external_url():
     os.environ[ENV_MMCV_HOME] = mmcv_home
     url = _load_checkpoint('open-mmlab://train')
     assert url == 'url:https://localhost/train.pth'
-    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
+    with pytest.raises(FileNotFoundError, match='train.pth can not be found.'):
         _load_checkpoint('open-mmlab://train_empty')
     url = _load_checkpoint('open-mmlab://test')
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'
@@ -140,7 +140,7 @@ def test_load_external_url():
     assert url == 'url:http://localhost/train.pth'
 
     # test local file
-    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
+    with pytest.raises(FileNotFoundError, match='train.pth can not be found.'):
         _load_checkpoint('train.pth')
     url = _load_checkpoint(osp.join(_get_mmcv_home(), 'test.pth'))
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'

@@ -17,7 +17,7 @@ mmcv.track_progress(func, tasks)
 ```
 
 效果如下
-![progress](../../docs/_static/progress.*)
+![progress](../../en/_static/progress.*)
 
 如果你想可视化多进程任务的进度，你可以使用 `track_parallel_progress` 。
 
@@ -25,7 +25,7 @@ mmcv.track_progress(func, tasks)
 mmcv.track_parallel_progress(func, tasks, 8)  # 8 workers
 ```
 
-![progress](../../docs/_static/parallel_progress.*)
+![progress](../../_static/parallel_progress.*)
 
 如果你想要迭代或枚举数据列表并可视化进度,你可以使用 `track_iter_progress` 。
 

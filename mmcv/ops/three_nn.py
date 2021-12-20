@@ -20,14 +20,14 @@ class ThreeNN(Function):
                 source: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
-            target (Tensor): shape (B, N, 3), points set that needs to
+            target (torch.Tensor): shape (B, N, 3), points set that needs to
                 find the nearest neighbors.
-            source (Tensor): shape (B, M, 3), points set that is used
+            source (torch.Tensor): shape (B, M, 3), points set that is used
                 to find the nearest neighbors of points in target set.
 
         Returns:
-            Tensor: shape (B, N, 3), L2 distance of each point in target
-                set to their corresponding nearest neighbors.
+            torch.Tensor: shape (B, N, 3), L2 distance of each point in target
+            set to their corresponding top three nearest neighbors.
         """
         target = target.contiguous()
         source = source.contiguous()
