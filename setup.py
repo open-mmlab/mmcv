@@ -133,13 +133,16 @@ def add_version_info():
         return cuda_version
 
     def get_gcc():
-        proc = subprocess.Popen(['gcc', '--version'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        gcc_version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', out.decode())
-        if gcc_version:
-            return gcc_version.group()
+        if os.getenv('gcc'):
+            proc = subprocess.Popen(['gcc', '--version'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            out, err = proc.communicate()
+            gcc_version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', out.decode())
+            if gcc_version:
+                return gcc_version.group()
+            else:
+                return None
         else:
             return None
 
@@ -192,9 +195,12 @@ def add_version_info():
     if EXT_TYPE:
         torch_version = torch.__version__
         if '+' not in torch_version:  # eg. 1.8.1 -> 1.8.1+cu111
-            if torch.cuda.is_available():
+            if torch.cuda.is_available() and torch.version.cuda:
                 torch_version += '+cu'
                 torch_version += (torch.version.cuda).replace('.', '')
+            elif torch.cuda.is_available() and torch.version.hip:
+                torch_version += '+rocm'
+                torch_version += torch.version.hip
             else:
                 torch_version += '+cpu'
     else:
