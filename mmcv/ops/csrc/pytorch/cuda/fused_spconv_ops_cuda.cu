@@ -92,3 +92,13 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
 
   return output;
 }
+
+template torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher<float>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+template torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher<at::Half>(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);

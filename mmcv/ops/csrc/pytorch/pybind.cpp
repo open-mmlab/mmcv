@@ -240,27 +240,6 @@ void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
 
-// std::vector<torch::Tensor> get_indice_pairs_forward<2>(
-//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-//     std::vector<int64_t> stride, std::vector<int64_t> padding,
-//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-//     int64_t _subM, int64_t _transpose);
-
-// std::vector<torch::Tensor> get_indice_pairs_forward<3>(
-//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-//     std::vector<int64_t> stride, std::vector<int64_t> padding,
-//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-//     int64_t _subM, int64_t _transpose);
-
-// std::vector<torch::Tensor> get_indice_pairs_forward<4>(
-//     Tensor indices, int64_t batchSize, std::vector<int64_t> outSpatialShape,
-//     std::vector<int64_t> spatialShape, std::vector<int64_t> kernelSize,
-//     std::vector<int64_t> stride, std::vector<int64_t> padding,
-//     std::vector<int64_t> dilation, std::vector<int64_t> outPadding,
-//     int64_t _subM, int64_t _transpose);
-
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
     torch::Tensor indices, int64_t batchSize,

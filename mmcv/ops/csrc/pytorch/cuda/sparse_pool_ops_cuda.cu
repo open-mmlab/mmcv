@@ -74,3 +74,19 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
   }
   return inputGrad;
 }
+
+template torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher<float>(
+    torch::Tensor features, torch::Tensor indicePairs, torch::Tensor indiceNum,
+    int64_t numAct);
+
+template torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher<at::Half>(
+    torch::Tensor features, torch::Tensor indicePairs, torch::Tensor indiceNum,
+    int64_t numAct);
+
+template torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher<float>(
+    torch::Tensor features, torch::Tensor outFeatures, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum);
+
+template torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher<at::Half>(
+    torch::Tensor features, torch::Tensor outFeatures, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum);

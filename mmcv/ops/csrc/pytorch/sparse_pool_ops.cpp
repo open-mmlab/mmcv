@@ -96,3 +96,22 @@ torch::Tensor indice_maxpool_backward(torch::Tensor features,
     AT_ERROR("indice_maxpool is not implemented on CPU");
   }
 }
+
+template torch::Tensor indice_maxpool_forward<float>(torch::Tensor features,
+                                                     torch::Tensor indicePairs,
+                                                     torch::Tensor indiceNum,
+                                                     int64_t numAct);
+
+template torch::Tensor indice_maxpool_forward<at::Half>(
+    torch::Tensor features, torch::Tensor indicePairs, torch::Tensor indiceNum,
+    int64_t numAct);
+
+template torch::Tensor indice_maxpool_backward<float>(torch::Tensor features,
+                                                      torch::Tensor outFeatures,
+                                                      torch::Tensor outGrad,
+                                                      torch::Tensor indicePairs,
+                                                      torch::Tensor indiceNum);
+
+template torch::Tensor indice_maxpool_backward<at::Half>(
+    torch::Tensor features, torch::Tensor outFeatures, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum);
