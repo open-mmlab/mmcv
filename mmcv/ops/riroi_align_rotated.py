@@ -2,6 +2,7 @@
 import torch.nn as nn
 from torch.autograd import Function
 
+from mmcv.utils import is_tuple_of
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -16,8 +17,8 @@ class RiRoIAlignRotatedFunction(Function):
                 rois,
                 out_size,
                 spatial_scale,
-                sample_num=0,
-                nOrientation=8,
+                num_samples=0,
+                num_orientations=8,
                 clockwise=False):
         if isinstance(out_size, int):
             out_h = out_size
@@ -27,10 +28,11 @@ class RiRoIAlignRotatedFunction(Function):
             out_h, out_w = out_size
         else:
             raise TypeError(
-                f'"out_size" should be an integer or tuple of integers, but got {out_size}')
+                f'"out_size" should be an integer or tuple of integers,'
+                f' but got {out_size}')
         ctx.spatial_scale = spatial_scale
-        ctx.sample_num = sample_num
-        ctx.nOrientation = nOrientation
+        ctx.num_samples = num_samples
+        ctx.num_orientations = num_orientations
         ctx.clockwise = clockwise
         ctx.save_for_backward(rois)
         ctx.feature_size = features.size()
@@ -42,7 +44,7 @@ class RiRoIAlignRotatedFunction(Function):
 
         ext_module.riroi_align_rotated_forward(features, rois, output, out_h,
                                                out_w, spatial_scale,
-                                               sample_num, nOrientation,
+                                               num_samples, num_orientations,
                                                clockwise)
         return output
 
@@ -50,9 +52,9 @@ class RiRoIAlignRotatedFunction(Function):
     def backward(ctx, grad_output):
         feature_size = ctx.feature_size
         spatial_scale = ctx.spatial_scale
-        nOrientation = ctx.nOrientation
+        num_orientations = ctx.num_orientations
         clockwise = ctx.clockwise
-        sample_num = ctx.sample_num
+        num_samples = ctx.num_samples
         rois = ctx.saved_tensors[0]
         assert feature_size is not None
         batch_size, num_channels, feature_height, feature_width = feature_size
@@ -63,13 +65,11 @@ class RiRoIAlignRotatedFunction(Function):
         grad_input = grad_rois = None
 
         if ctx.needs_input_grad[0]:
-            grad_input = rois.new_zeros(batch_size, num_channels, data_height,
-                                        data_width)
-            ext_module.riroi_align_rotated_backward(grad_output.contiguous(),
-                                                    rois, grad_input, out_h,
-                                                    out_w, spatial_scale,
-                                                    sample_num, nOrientation,
-                                                    clockwise)
+            grad_input = rois.new_zeros(batch_size, num_channels,
+                                        feature_height, feature_width)
+            ext_module.riroi_align_rotated_backward(
+                grad_output.contiguous(), rois, grad_input, out_h, out_w,
+                spatial_scale, num_samples, num_orientations, clockwise)
 
             return grad_input, grad_rois, None, None, None, None, None
 
@@ -90,9 +90,9 @@ class RiRoIAlignRotated(nn.Module):
     Args:
         out_size (tuple): h, w
         spatial_scale (float): scale the input boxes by this number
-        sample_num (int): number of inputs samples to take for each
+        num_samples (int): number of inputs samples to take for each
             output sample. 0 to take samples densely for current models.
-        nOrientation (int): number of oriented channels.
+        num_orientations (int): number of oriented channels.
         clockwise (bool): If True, the angle in each proposal follows a
             clockwise fashion in image space, otherwise, the angle is
             counterclockwise. Default: False.
@@ -101,20 +101,20 @@ class RiRoIAlignRotated(nn.Module):
     def __init__(self,
                  out_size,
                  spatial_scale,
-                 sample_num=0,
-                 nOrientation=8,
+                 num_samples=0,
+                 num_orientations=8,
                  clockwise=False):
         super(RiRoIAlignRotated, self).__init__()
 
         self.out_size = out_size
         self.spatial_scale = float(spatial_scale)
-        self.sample_num = int(sample_num)
-        self.nOrientation = int(nOrientation)
+        self.num_samples = int(num_samples)
+        self.num_orientations = int(num_orientations)
         self.clockwise = clockwise
 
     def forward(self, features, rois):
         return RiRoIAlignRotatedFunction.apply(features, rois, self.out_size,
                                                self.spatial_scale,
-                                               self.sample_num,
-                                               self.nOrientation,
+                                               self.num_samples,
+                                               self.num_orientations,
                                                self.clockwise)

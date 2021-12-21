@@ -19,16 +19,17 @@ template <typename scalar_t>
 __global__ void riroi_align_rotated_forward_cuda_kernel(
     const int nthreads, const scalar_t *bottom_data,
     const scalar_t *bottom_rois, const scalar_t spatial_scale,
-    const int sample_num, const bool clockwise, const int channels,
+    const int num_samples, const bool clockwise, const int channels,
     const int height, const int width, const int pooled_height,
-    const int pooled_width, const int nOrientation, scalar_t *top_data) {
+    const int pooled_width, const int num_orientations, scalar_t *top_data) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
     int ph = (index / pooled_width) % pooled_height;
-    int o = (index / pooled_width / pooled_height) % nOrientation;
-    int c = (index / pooled_width / pooled_height / nOrientation) % channels;
-    int n = index / pooled_width / pooled_height / nOrientation / channels;
+    int o = (index / pooled_width / pooled_height) % num_orientations;
+    int c =
+        (index / pooled_width / pooled_height / num_orientations) % channels;
+    int n = index / pooled_width / pooled_height / num_orientations / channels;
 
     const scalar_t *offset_bottom_rois = bottom_rois + n * 6;
     int roi_batch_ind = offset_bottom_rois[0];
@@ -52,30 +53,30 @@ __global__ void riroi_align_rotated_forward_cuda_kernel(
         static_cast<scalar_t>(roi_width) / static_cast<scalar_t>(pooled_width);
 
     // find aligned index
-    scalar_t ind_float = theta * nOrientation / (2 * M_PI);
+    scalar_t ind_float = theta * num_orientations / (2 * M_PI);
     int ind = floor(ind_float);
     scalar_t l_var = ind_float - (scalar_t)ind;
     scalar_t r_var = 1.0 - l_var;
     // correct start channel
-    ind = (ind + nOrientation) % nOrientation;
+    ind = (ind + num_orientations) % num_orientations;
     // rotated channel
-    int ind_rot = (o - ind + nOrientation) % nOrientation;
-    int ind_rot_plus = (ind_rot + 1 + nOrientation) % nOrientation;
+    int ind_rot = (o - ind + num_orientations) % num_orientations;
+    int ind_rot_plus = (ind_rot + 1 + num_orientations) % num_orientations;
     const scalar_t *offset_bottom_data =
-        bottom_data +
-        (roi_batch_ind * channels * nOrientation + c * nOrientation + ind_rot) *
-            height * width;
+        bottom_data + (roi_batch_ind * channels * num_orientations +
+                       c * num_orientations + ind_rot) *
+                          height * width;
 
     const scalar_t *offset_bottom_data_plus =
-        bottom_data + (roi_batch_ind * channels * nOrientation +
-                       c * nOrientation + ind_rot_plus) *
+        bottom_data + (roi_batch_ind * channels * num_orientations +
+                       c * num_orientations + ind_rot_plus) *
                           height * width;
     // We use roi_bin_grid to sample the grid and mimic integral
-    int roi_bin_grid_h = (sample_num > 0)
-                             ? sample_num
+    int roi_bin_grid_h = (num_samples > 0)
+                             ? num_samples
                              : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
+        (num_samples > 0) ? num_samples : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
@@ -119,17 +120,18 @@ __global__ void riroi_align_rotated_forward_cuda_kernel(
 template <typename scalar_t>
 __global__ void riroi_align_rotated_backward_cuda_kernel(
     const int nthreads, const scalar_t *top_diff, const scalar_t *bottom_rois,
-    const scalar_t spatial_scale, const int sample_num, const bool clockwise,
+    const scalar_t spatial_scale, const int num_samples, const bool clockwise,
     const int channels, const int height, const int width,
-    const int pooled_height, const int pooled_width, const int nOrientation,
+    const int pooled_height, const int pooled_width, const int num_orientations,
     scalar_t *bottom_diff) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
     int ph = (index / pooled_width) % pooled_height;
-    int o = (index / pooled_width / pooled_height) % nOrientation;
-    int c = (index / pooled_width / pooled_height / nOrientation) % channels;
-    int n = index / pooled_width / pooled_height / nOrientation / channels;
+    int o = (index / pooled_width / pooled_height) % num_orientations;
+    int c =
+        (index / pooled_width / pooled_height / num_orientations) % channels;
+    int n = index / pooled_width / pooled_height / num_orientations / channels;
 
     const scalar_t *offset_bottom_rois = bottom_rois + n * 6;
     int roi_batch_ind = offset_bottom_rois[0];
@@ -154,34 +156,35 @@ __global__ void riroi_align_rotated_backward_cuda_kernel(
         static_cast<scalar_t>(roi_width) / static_cast<scalar_t>(pooled_width);
 
     // find aligned index
-    scalar_t ind_float = theta * nOrientation / (2 * M_PI);
+    scalar_t ind_float = theta * num_orientations / (2 * M_PI);
     int ind = floor(ind_float);
     scalar_t l_var = ind_float - (scalar_t)ind;
     scalar_t r_var = 1.0 - l_var;
     // correct start channel
-    ind = (ind + nOrientation) % nOrientation;
+    ind = (ind + num_orientations) % num_orientations;
     // rotated channel
-    int ind_rot = (o - ind + nOrientation) % nOrientation;
-    int ind_rot_plus = (ind_rot + 1 + nOrientation) % nOrientation;
+    int ind_rot = (o - ind + num_orientations) % num_orientations;
+    int ind_rot_plus = (ind_rot + 1 + num_orientations) % num_orientations;
     scalar_t *offset_bottom_diff =
-        bottom_diff +
-        (roi_batch_ind * channels * nOrientation + c * nOrientation + ind_rot) *
-            height * width;
-    scalar_t *offset_bottom_diff_plus =
-        bottom_diff + (roi_batch_ind * channels * nOrientation +
-                       c * nOrientation + ind_rot_plus) *
+        bottom_diff + (roi_batch_ind * channels * num_orientations +
+                       c * num_orientations + ind_rot) *
                           height * width;
-    int top_offset = (n * channels * nOrientation + c * nOrientation + o) *
-                     pooled_height * pooled_width;
+    scalar_t *offset_bottom_diff_plus =
+        bottom_diff + (roi_batch_ind * channels * num_orientations +
+                       c * num_orientations + ind_rot_plus) *
+                          height * width;
+    int top_offset =
+        (n * channels * num_orientations + c * num_orientations + o) *
+        pooled_height * pooled_width;
     const scalar_t *offset_top_diff = top_diff + top_offset;
     const scalar_t top_diff_this_bin = offset_top_diff[ph * pooled_width + pw];
 
     // We use roi_bin_grid to sample the grid and mimic integral
-    int roi_bin_grid_h = (sample_num > 0)
-                             ? sample_num
+    int roi_bin_grid_h = (num_samples > 0)
+                             ? num_samples
                              : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
+        (num_samples > 0) ? num_samples : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.

@@ -40,9 +40,9 @@ expect_grad = np.array([[[[1.4727, 1.5586], [1.5586, 1.6602]],
 pool_h = 2
 pool_w = 2
 spatial_scale = 1.0
-sample_num = 2
+num_samples = 2
 sampling_ratio = 2
-nOrientation = 8
+num_orientations = 8
 clockwise = False
 
 
@@ -52,8 +52,8 @@ def test_roialign_rotated_gradcheck():
     x = torch.tensor(
         np_feature, dtype=torch.float, device='cuda', requires_grad=True)
     rois = torch.tensor(np_rois, dtype=torch.float, device='cuda')
-    froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, sample_num,
-                                 nOrientation, clockwise)
+    froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, num_samples,
+                                 num_orientations, clockwise)
     gradcheck(froipool, (x, rois), eps=1e-3, atol=1e-3)
 
 
@@ -63,8 +63,8 @@ def test_roialign_rotated_allclose():
     x = torch.tensor(
         np_feature, dtype=torch.float, device='cuda', requires_grad=True)
     rois = torch.tensor(np_rois, dtype=torch.float, device='cuda')
-    froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, sample_num,
-                                 nOrientation, clockwise)
+    froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, num_samples,
+                                 num_orientations, clockwise)
     output = froipool(x, rois)
     output.backward(torch.ones_like(output))
     assert np.allclose(
