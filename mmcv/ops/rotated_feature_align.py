@@ -30,6 +30,7 @@ class RotatedFeatureAlignFunction(Function):
                 input image size.
             points (int, optional): The number of sample points.
                 Only 1 and 5 are supported. Defaults to 1.
+
         Returns:
             torch.Tensor: Refined features with shape [N,C,H,W].
         """
