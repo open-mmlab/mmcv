@@ -24,12 +24,13 @@ class ActiveRotatedFilterFunction(Function):
         """
         Args:
             input (torch.Tensor): Input features with shape
-                [nOutputPlane, nInputPlane, nOrientation, H, W].
+                [nOutputPlane, nInputPlane, num_orientations, H, W].
             indices (torch.Tensor): Indices with shape
-                [nOrientation, H, W, nRotation].
+                [num_orientations, H, W, num_rotations].
         Returns:
             torch.Tensor: Refined features with shape
-                [nOutputPlane * nRotation, nInputPlane * nOrientation, H, W].
+                [nOutputPlane * num_rotations, nInputPlane * num_orientations,
+                 H, W].
         """
         ctx.save_for_backward(input, indices)
         op, ip, o, h, w = input.size()
@@ -45,11 +46,11 @@ class ActiveRotatedFilterFunction(Function):
         """
         Args:
             grad_output (torch.Tensor): The gradiant of output features
-                with shape [nOutputPlane * nRotation,
-                nInputPlane * nOrientation, H, W].
+                with shape [nOutputPlane * num_rotations,
+                nInputPlane * num_orientations, H, W].
         Returns:
             torch.Tensor: The gradiant of input features with shape
-                [nOutputPlane, nInputPlane, nOrientation, H, W].
+                [nOutputPlane, nInputPlane, num_orientations, H, W].
         """
         input, indices = ctx.saved_tensors
         grad_in = torch.zeros_like(input)

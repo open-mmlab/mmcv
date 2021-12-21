@@ -8,11 +8,11 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
                         Tensor output) {
   int nOutputPlane = input.size(0);
   int nInputPlane = input.size(1);
-  int nOrientation = input.size(2);
+  int num_orientations = input.size(2);
   int kH = input.size(3);
   int kW = input.size(4);
-  int nRotation = indices.size(3);
-  int nEntry = nOrientation * kH * kW;
+  int num_rotations = indices.size(3);
+  int nEntry = num_orientations * kH * kW;
   int output_size = output.numel();
 
   at::cuda::CUDAGuard device_guard(input.device());
@@ -22,7 +22,7 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
         <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
             output_size, input.contiguous().data_ptr<scalar_t>(),
             indices.contiguous().data_ptr<int>(), nInputPlane, nOutputPlane,
-            nOrientation, nRotation, nEntry,
+            num_orientations, num_rotations, nEntry,
             output.contiguous().data<scalar_t>());
   });
   AT_CUDA_CHECK(cudaGetLastError());
@@ -30,13 +30,13 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
 
 void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
                          Tensor grad_in) {
-  int nOrientation = indices.size(0);
+  int num_orientations = indices.size(0);
   int kH = indices.size(1);
   int kW = indices.size(2);
-  int nRotation = indices.size(3);
-  int nOutputPlane = grad_out.size(0) / nRotation;
-  int nInputPlane = grad_out.size(1) / nOrientation;
-  int nEntry = nOrientation * kH * kW;
+  int num_rotations = indices.size(3);
+  int nOutputPlane = grad_out.size(0) / num_rotations;
+  int nInputPlane = grad_out.size(1) / num_orientations;
+  int nEntry = num_orientations * kH * kW;
   int output_size = grad_in.numel();
 
   at::cuda::CUDAGuard device_guard(indices.device());
@@ -46,7 +46,7 @@ void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
         <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
             output_size, grad_out.contiguous().data_ptr<scalar_t>(),
             indices.contiguous().data_ptr<int>(), nInputPlane, nOutputPlane,
-            nOrientation, nRotation, nEntry,
+            num_orientations, num_rotations, nEntry,
             grad_in.contiguous().data_ptr<scalar_t>());
   });
   AT_CUDA_CHECK(cudaGetLastError());
