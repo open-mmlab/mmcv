@@ -19,4 +19,4 @@ def test_points_in_polygons():
     polygons = torch.from_numpy(polygons).cuda().float()
     expected_output = torch.from_numpy(expected_output).cuda().float()
     assert torch.allclose(
-        points_in_polygons(points, polygons), expert_output, 1e-3)
+        points_in_polygons(points, polygons), expected_output, 1e-3)
