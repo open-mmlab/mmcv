@@ -73,7 +73,8 @@ void iou3d_nms_forward(Tensor boxes, Tensor keep, Tensor keep_num,
   int64_t *keep_data = keep.data_ptr<int64_t>();
   int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
 
-  const int col_blocks = GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS);
+  const int col_blocks =
+      (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
 
   Tensor mask =
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
@@ -117,7 +118,8 @@ void iou3d_nms_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
   int64_t *keep_data = keep.data_ptr<int64_t>();
   int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
 
-  const int col_blocks = GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS);
+  const int col_blocks =
+      (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
 
   Tensor mask =
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));

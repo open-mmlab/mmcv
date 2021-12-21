@@ -22,18 +22,19 @@ __global__ void group_points_forward_cuda_kernel(int b, int c, int n,
   //      out: (B, C, npoints, nsample)
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int pt_idx = index / nsample;
-  if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
+  CUDA_1D_KERNEL_LOOP(index, npoints * nsample) {
+    int pt_idx = index / nsample;
+    if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
 
-  int sample_idx = index % nsample;
+    int sample_idx = index % nsample;
 
-  idx += bs_idx * npoints * nsample + pt_idx * nsample + sample_idx;
-  int in_idx = bs_idx * c * n + c_idx * n + idx[0];
-  int out_idx = bs_idx * c * npoints * nsample + c_idx * npoints * nsample +
-                pt_idx * nsample + sample_idx;
+    idx += bs_idx * npoints * nsample + pt_idx * nsample + sample_idx;
+    int in_idx = bs_idx * c * n + c_idx * n + idx[0];
+    int out_idx = bs_idx * c * npoints * nsample + c_idx * npoints * nsample +
+                  pt_idx * nsample + sample_idx;
 
-  out[out_idx] = points[in_idx];
+    out[out_idx] = points[in_idx];
+  }
 }
 
 template <typename T>
@@ -48,16 +49,17 @@ __global__ void group_points_backward_cuda_kernel(int b, int c, int n,
   //      grad_points: (B, C, N)
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int pt_idx = index / nsample;
-  if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
+  CUDA_1D_KERNEL_LOOP(index, npoints * nsample) {
+    int pt_idx = index / nsample;
+    if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
 
-  int sample_idx = index % nsample;
-  grad_out += bs_idx * c * npoints * nsample + c_idx * npoints * nsample +
-              pt_idx * nsample + sample_idx;
-  idx += bs_idx * npoints * nsample + pt_idx * nsample + sample_idx;
+    int sample_idx = index % nsample;
+    grad_out += bs_idx * c * npoints * nsample + c_idx * npoints * nsample +
+                pt_idx * nsample + sample_idx;
+    idx += bs_idx * npoints * nsample + pt_idx * nsample + sample_idx;
 
-  atomicAdd(grad_points + bs_idx * c * n + c_idx * n + idx[0], grad_out[0]);
+    atomicAdd(grad_points + bs_idx * c * n + c_idx * n + idx[0], grad_out[0]);
+  }
 }
 
 #endif  // GROUP_POINTS_CUDA_KERNEL_CUH

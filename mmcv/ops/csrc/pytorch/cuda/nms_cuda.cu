@@ -13,10 +13,11 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   auto boxes_sorted = boxes.index_select(0, order_t);
 
   int boxes_num = boxes.size(0);
-  const int col_blocks = GET_BLOCKS(boxes_num, threadsPerBlock);
+  const int col_blocks = (boxes_num + threadsPerBlock - 1) / threadsPerBlock;
+  const int col_blocks_alloc = GET_BLOCKS(boxes_num, threadsPerBlock);
   Tensor mask =
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
-  dim3 blocks(col_blocks, col_blocks);
+  dim3 blocks(col_blocks_alloc, col_blocks_alloc);
   dim3 threads(threadsPerBlock);
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   nms_cuda<<<blocks, threads, 0, stream>>>(

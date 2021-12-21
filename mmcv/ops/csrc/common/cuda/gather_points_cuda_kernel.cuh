@@ -22,13 +22,15 @@ __global__ void gather_points_forward_cuda_kernel(int b, int c, int n, int m,
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(index, m) {
+    int pt_idx = index;
+    if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
 
-  out += bs_idx * c * m + c_idx * m + pt_idx;
-  idx += bs_idx * m + pt_idx;
-  points += bs_idx * c * n + c_idx * n;
-  out[0] = points[idx[0]];
+    out += bs_idx * c * m + c_idx * m + pt_idx;
+    idx += bs_idx * m + pt_idx;
+    points += bs_idx * c * n + c_idx * n;
+    out[0] = points[idx[0]];
+  }
 }
 
 template <typename T>
@@ -43,14 +45,16 @@ __global__ void gather_points_backward_cuda_kernel(int b, int c, int n, int m,
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(index, m) {
+    int pt_idx = index;
+    if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
 
-  grad_out += bs_idx * c * m + c_idx * m + pt_idx;
-  idx += bs_idx * m + pt_idx;
-  grad_points += bs_idx * c * n + c_idx * n;
+    grad_out += bs_idx * c * m + c_idx * m + pt_idx;
+    idx += bs_idx * m + pt_idx;
+    grad_points += bs_idx * c * n + c_idx * n;
 
-  atomicAdd(grad_points + idx[0], grad_out[0]);
+    atomicAdd(grad_points + idx[0], grad_out[0]);
+  }
 }
 
 #endif  // GATHER_POINTS_CUDA_KERNEL_CUH
