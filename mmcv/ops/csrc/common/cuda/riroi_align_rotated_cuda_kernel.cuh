@@ -9,7 +9,6 @@
 #else  // MMCV_USE_PARROTS
 #include "pytorch_cuda_helper.hpp"
 #endif  // MMCV_USE_PARROTS
-#endif  // MMCV_WITH_TRT
 
 /*** Forward ***/
 template <typename scalar_t>
