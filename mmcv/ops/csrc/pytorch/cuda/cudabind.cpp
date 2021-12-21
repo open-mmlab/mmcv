@@ -1373,32 +1373,32 @@ void FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
                         Tensor bottom_grad);
 
 void rotated_feature_align_forward_cuda(const Tensor features,
-                                 const Tensor best_bboxes,
-                                 const float spatial_scale, const int points,
-                                 Tensor output) {
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output) {
   void FRForwardLauncher(const Tensor features, const Tensor best_bboxes,
                          const float spatial_scale, const int points,
                          Tensor output);
 };
 
 void rotated_feature_align_backward_cuda(const Tensor top_grad,
-                                  const Tensor best_bboxes,
-                                  const float spatial_scale, const int points,
-                                  Tensor bottom_grad) {
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad) {
   void FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
                           const float spatial_scale, const int points,
                           Tensor bottom_grad);
 };
 
 void rotated_feature_align_forward_impl(const Tensor features,
-                                 const Tensor best_bboxes,
-                                 const float spatial_scale, const int points,
-                                 Tensor output);
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output);
 
 void rotated_feature_align_backward_impl(const Tensor top_grad,
-                                  const Tensor best_bboxes,
-                                  const float spatial_scale, const int points,
-                                  Tensor bottom_grad);
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad);
 
 REGISTER_DEVICE_IMPL(rotated_feature_align_forward_impl, CUDA,
                      rotated_feature_align_forward_cuda);

@@ -1,12 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 // Modified from
 // https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection/blob/master/mmdet/ops/fr/src/feature_refine_kernel.cu
-#include "rotated_feature_align_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
+#include "rotated_feature_align_cuda_kernel.cuh"
 
-void RotatedFeatureAlignForwardLauncher(const Tensor features, const Tensor best_bboxes,
-                       const float spatial_scale, const int points,
-                       Tensor output) {
+void RotatedFeatureAlignForwardLauncher(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output) {
   at::cuda::CUDAGuard device_guard(features.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = features.numel();
@@ -25,9 +26,10 @@ void RotatedFeatureAlignForwardLauncher(const Tensor features, const Tensor best
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void RotatedFeatureAlignBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
-                        const float spatial_scale, const int points,
-                        Tensor bottom_grad) {
+void RotatedFeatureAlignBackwardLauncher(const Tensor top_grad,
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad) {
   at::cuda::CUDAGuard device_guard(top_grad.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = top_grad.numel();

@@ -340,13 +340,15 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW);
 
-void rotated_feature_align_forward(const Tensor features, const Tensor best_bboxes,
-                            Tensor output, const float spatial_scale,
-                            const int points);
+void rotated_feature_align_forward(const Tensor features,
+                                   const Tensor best_bboxes, Tensor output,
+                                   const float spatial_scale, const int points);
 
-void rotated_feature_align_backward(const Tensor top_grad, const Tensor best_bboxes,
-                             Tensor bottom_grad, const float spatial_scale,
-                             const int points);
+void rotated_feature_align_backward(const Tensor top_grad,
+                                    const Tensor best_bboxes,
+                                    Tensor bottom_grad,
+                                    const float spatial_scale,
+                                    const int points);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
