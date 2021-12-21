@@ -50,6 +50,7 @@ class RotatedFeatureAlignFunction(Function):
         Args:
             grad_output (torch.Tensor): The gradiant of output features
                 with shape [N,C,H,W].
+                
         Returns:
             torch.Tensor: The gradiant of input features with shape [N,C,H,W].
         """
