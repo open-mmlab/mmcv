@@ -37,9 +37,6 @@ __global__ void riroi_align_rotated_forward_cuda_kernel(
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
-    if (clockwise) {
-      theta = -theta;  // If clockwise, the angle needs to be reversed.
-    }
     // Force malformed ROIs to be 1x1
     roi_width = max(roi_width, (scalar_t)1.);
     roi_height = max(roi_height, (scalar_t)1.);
@@ -76,6 +73,9 @@ __global__ void riroi_align_rotated_forward_cuda_kernel(
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
+    if (clockwise) {
+      theta = -theta;  // If clockwise, the angle needs to be reversed.
+    }
     scalar_t roi_start_h = -roi_height / 2.0;
     scalar_t roi_start_w = -roi_width / 2.0;
     scalar_t cosscalar_theta = cos(theta);
@@ -139,9 +139,6 @@ __global__ void riroi_align_rotated_backward_cuda_kernel(
     scalar_t roi_height = offset_bottom_rois[4] * spatial_scale;
     // scalar_t theta = offset_bottom_rois[5] * M_PI / 180.0;
     scalar_t theta = offset_bottom_rois[5];
-    if (clockwise) {
-      theta = -theta;  // If clockwise, the angle needs to be reversed.
-    }
     // Force malformed ROIs to be 1x1
     roi_width = max(roi_width, (scalar_t)1.);
     roi_height = max(roi_height, (scalar_t)1.);
@@ -184,6 +181,9 @@ __global__ void riroi_align_rotated_backward_cuda_kernel(
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
+    if (clockwise) {
+      theta = -theta;  // If clockwise, the angle needs to be reversed.
+    }
     scalar_t roi_start_h = -roi_height / 2.0;
     scalar_t roi_start_w = -roi_width / 2.0;
     scalar_t cosTheta = cos(theta);
