@@ -9,6 +9,9 @@ def points_in_polygons(points, polygons):
     """Judging whether points are inside polygons, which is used in the ATSS
     assignment for the rotated boxes.
 
+    It should be noted that when the point is just at the polygon boundary, the
+    judgment will be inaccurate, but the effect on assignment is limited.
+
     Args:
         points (torch.Tensor): It has shape (B, 2), indicating (x, y).
             M means the number of predicted points.
