@@ -23,7 +23,7 @@ __global__ void ARF_forward_cuda_kernel(
     scalar_t val = *(weight_data + n);
     for (k = 0; k < num_rotations; k++) {
       int index = (int)(*(indices_data + l * num_rotations + k)) - 1;
-      scalar_t* target = output_data + i * (num_rotations * nInputPlane * nEntry) +
+      scalar_t *target = output_data + i * (num_rotations * nInputPlane * nEntry) +
                          k * (nInputPlane * nEntry) + j * (nEntry) + index;
       *target = val;
     }
@@ -41,7 +41,7 @@ __global__ void ARF_backward_cuda_kernel(
     int j = (n / nEntry) % nInputPlane;
     int i = n / nEntry / nInputPlane;
     int k;
-    scalar_t* val = weight_data + n;
+    scalar_t *val = weight_data + n;
     *val = 0;
     for (k = 0; k < num_rotations; k++) {
       int index = (int)(*(indices_data + l * num_rotations + k)) - 1;
