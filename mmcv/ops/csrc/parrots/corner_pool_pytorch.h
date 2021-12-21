@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef CORNER_POOL_PYTORCH_H
 #define CORNER_POOL_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 
 at::Tensor bottom_pool_forward(at::Tensor input);
 at::Tensor bottom_pool_backward(at::Tensor input, at::Tensor grad_output);

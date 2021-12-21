@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef VOXELIZATION_PYTORCH_H
 #define VOXELIZATION_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void hard_voxelize_forward(const at::Tensor &points,

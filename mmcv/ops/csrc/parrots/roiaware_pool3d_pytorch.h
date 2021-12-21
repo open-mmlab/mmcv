@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef ROIAWARE_POOL3D_PYTORCH_H
 #define ROIAWARE_POOL3D_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void roiaware_pool3d_forward(Tensor rois, Tensor pts, Tensor pts_feature,

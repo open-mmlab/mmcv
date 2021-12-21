@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef THREE_INTERPOLATE_PYTORCH_H
 #define THREE_INTERPOLATE_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,

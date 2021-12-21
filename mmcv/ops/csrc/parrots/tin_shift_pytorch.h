@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef TIN_SHIFT_PYTORCH_H
 #define TIN_SHIFT_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void tin_shift_forward_cuda(Tensor input, Tensor shift, Tensor output);

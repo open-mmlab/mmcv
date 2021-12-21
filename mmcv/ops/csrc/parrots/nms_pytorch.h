@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef NMS_PYTORCH_H
 #define NMS_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 
 at::Tensor nms(at::Tensor boxes, at::Tensor scores, float iou_threshold,
                int offset);

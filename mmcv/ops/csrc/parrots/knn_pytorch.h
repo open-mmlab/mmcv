@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef KNN_PYTORCH_H
 #define KNN_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,

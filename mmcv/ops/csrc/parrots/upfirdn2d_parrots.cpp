@@ -1,5 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include <torch/types.h>
+#include <torch/extension.h>
 
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>

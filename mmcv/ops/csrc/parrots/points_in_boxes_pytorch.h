@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef POINTS_IN_BOXES_PYTORCH_H
 #define POINTS_IN_BOXES_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void points_in_boxes_part_forward(Tensor boxes_tensor, Tensor pts_tensor,

@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef GROUP_POINTS_PYTORCH_H
 #define GROUP_POINTS_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void group_points_forward(Tensor points_tensor, Tensor idx_tensor,

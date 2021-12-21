@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef PIXEL_GROUP_PYTORCH_H
 #define PIXEL_GROUP_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 std::vector<std::vector<float>> pixel_group(
