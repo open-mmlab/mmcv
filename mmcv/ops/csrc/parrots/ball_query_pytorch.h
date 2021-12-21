@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef BALL_QUERY_PYTORCH_H
 #define BALL_QUERY_PYTORCH_H
-#include <torch/types.h>
+#include <torch/extension.h>
 using namespace at;
 
 void ball_query_forward(const Tensor new_xyz, const Tensor xyz, Tensor idx,
