@@ -994,7 +994,7 @@ REGISTER_DEVICE_IMPL(roi_align_rotated_backward_impl, CUDA,
 
 void RiROIAlignRotatedForwardCUDAKernelLauncher(
     const at::Tensor features, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool clockwise, const int channels,
+    const int num_samples, const bool clockwise, const int channels,
     const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, const int num_orientations,
     at::Tensor output);
@@ -1045,7 +1045,7 @@ void riroi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
   RiROIAlignRotatedBackwardCUDAKernelLauncher(
-      top_grad, rois, spatial_scale, sample_num, clockwise, num_channels,
+      top_grad, rois, spatial_scale, num_samples, clockwise, num_channels,
       data_height, data_width, num_rois, pooled_height, pooled_width,
       num_orientations, bottom_grad);
 }
@@ -1053,13 +1053,13 @@ void riroi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
 void riroi_align_rotated_forward_impl(Tensor features, Tensor rois,
                                       Tensor output, int pooled_height,
                                       int pooled_width, float spatial_scale,
-                                      int sample_num, int num_orientations,
+                                      int num_samples, int num_orientations,
                                       bool clockwise);
 
 void riroi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
                                        Tensor bottom_grad, int pooled_height,
                                        int pooled_width, float spatial_scale,
-                                       int sample_num, int num_orientations,
+                                       int num_samples, int num_orientations,
                                        bool clockwise);
 
 REGISTER_DEVICE_IMPL(riroi_align_rotated_forward_impl, CUDA,
