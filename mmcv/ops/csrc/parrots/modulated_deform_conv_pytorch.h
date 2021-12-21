@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #ifndef MODULATED_DEFORM_CONV_PYTORCH_H
 #define MODULATED_DEFORM_CONV_PYTORCH_H
-#include <torch/types
+#include <torch/extension.h>
 
 void modulated_deform_conv_forward(
     Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
