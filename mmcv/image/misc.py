@@ -32,13 +32,14 @@ def tensor2imgs(tensor, mean=None, std=None, to_rgb=True):
     if torch is None:
         raise RuntimeError('pytorch is not installed')
     assert torch.is_tensor(tensor) and tensor.ndim == 4
-    assert tensor.size(1) in [1, 3]
+    channels = torch.size(1)
+    assert channels in [1, 3]
     if mean is None:
-        mean = (0, ) if tensor.size(1) == 1 else (0, 0, 0)
+        mean = (0, ) * channels
     if std is None:
-        std = (1, ) if tensor.size(1) == 1 else (1, 1, 1)
-    assert (tensor.size(1) == len(mean) == len(std) == 3) or \
-        (tensor.size(1) == len(mean) == len(std) == 1 and not to_rgb)
+        std = (1, ) * channels
+    assert (channels == len(mean) == len(std) == 3) or \
+        (channels == len(mean) == len(std) == 1 and not to_rgb)
 
     num_imgs = tensor.size(0)
     mean = np.array(mean, dtype=np.float32)
