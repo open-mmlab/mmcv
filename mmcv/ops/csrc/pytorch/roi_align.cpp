@@ -122,11 +122,11 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
 #endif
 #ifdef MMCV_WITH_MLU
   } else if (input.device().type() == at::kMLU) {
-    CHECK_MLU(input);
-    CHECK_MLU(rois);
-    CHECK_MLU(output);
-    CHECK_MLU(argmax_y);
-    CHECK_MLU(argmax_x);
+    CHECK_MLU_INPUT(input);
+    CHECK_MLU_INPUT(rois);
+    CHECK_MLU_INPUT(output);
+    CHECK_MLU_INPUT(argmax_y);
+    CHECK_MLU_INPUT(argmax_x);
 
     roi_align_forward_mlu(input, rois, output, argmax_y, argmax_x,
                           aligned_height, aligned_width, spatial_scale,
@@ -164,11 +164,11 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
 #endif
 #ifdef MMCV_WITH_MLU
   } else if (grad_output.device().type() == at::kMLU) {
-    CHECK_MLU(grad_output);
-    CHECK_MLU(rois);
-    CHECK_MLU(argmax_y);
-    CHECK_MLU(argmax_x);
-    CHECK_MLU(grad_input);
+    CHECK_MLU_INPUT(grad_output);
+    CHECK_MLU_INPUT(rois);
+    CHECK_MLU_INPUT(argmax_y);
+    CHECK_MLU_INPUT(argmax_x);
+    CHECK_MLU_INPUT(grad_input);
 
     roi_align_backward_mlu(grad_output, rois, argmax_y, argmax_x, grad_input,
                            aligned_height, aligned_width, spatial_scale,

@@ -96,8 +96,10 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 #endif
 #ifdef MMCV_WITH_MLU
   } else if (input.device().type() == at::kMLU) {
-    CHECK_MLU(input);
-    CHECK_MLU(target);
+    CHECK_MLU_INPUT(input);
+    CHECK_MLU_INPUT(target);
+    CHECK_MLU_INPUT(weight);
+    CHECK_MLU_INPUT(output);
     sigmoid_focal_loss_forward_mlu(input, target, weight, output, gamma, alpha);
 #endif
   } else {
@@ -121,10 +123,10 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
 #endif
 #ifdef MMCV_WITH_MLU
   } else if (input.device().type() == at::kMLU) {
-    CHECK_MLU(input);
-    CHECK_MLU(target);
-    CHECK_MLU(weight);
-    CHECK_MLU(grad_input);
+    CHECK_MLU_INPUT(input);
+    CHECK_MLU_INPUT(target);
+    CHECK_MLU_INPUT(weight);
+    CHECK_MLU_INPUT(grad_input);
 
     sigmoid_focal_loss_backward_mlu(input, target, weight, grad_input, gamma,
                                     alpha);
