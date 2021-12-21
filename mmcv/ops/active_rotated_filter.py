@@ -16,7 +16,7 @@ class ActiveRotatedFilterFunction(Function):
     between classification score and localization accuracy.
 
     The details are described in the paper `Align Deep Features for Oriented
-    Object Detection  <https://arxiv.org/abs/2008.09397>`.
+    Object Detection  <https://arxiv.org/abs/2008.09397>_`.
     """
 
     @staticmethod
