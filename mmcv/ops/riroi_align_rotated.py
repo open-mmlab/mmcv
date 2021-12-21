@@ -87,7 +87,7 @@ class RiRoIAlignRotated(nn.Module):
     w, h, angle). The angle is in radian.
 
     The details are described in the paper `ReDet: A Rotation-equivariant
-    Detector for Aerial Object Detection  <https://arxiv.org/abs/2103.07733>`.
+    Detector for Aerial Object Detection  <https://arxiv.org/abs/2103.07733>`_.
 
     Args:
         out_size (tuple): h, w
