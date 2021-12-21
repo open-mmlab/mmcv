@@ -55,7 +55,7 @@ class RiRoIAlignRotatedFunction(Function):
         sample_num = ctx.sample_num
         rois = ctx.saved_tensors[0]
         assert feature_size is not None
-        batch_size, num_channels, data_height, data_width = feature_size
+        batch_size, num_channels, feature_height, feature_width = feature_size
 
         out_w = grad_output.size(3)
         out_h = grad_output.size(2)
