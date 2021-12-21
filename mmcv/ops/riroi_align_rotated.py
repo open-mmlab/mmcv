@@ -22,10 +22,8 @@ class RiRoIAlignRotatedFunction(Function):
         if isinstance(out_size, int):
             out_h = out_size
             out_w = out_size
-        elif isinstance(out_size, tuple):
+        elif is_tuple_of(out_size, int):
             assert len(out_size) == 2
-            assert isinstance(out_size[0], int)
-            assert isinstance(out_size[1], int)
             out_h, out_w = out_size
         else:
             raise TypeError(
