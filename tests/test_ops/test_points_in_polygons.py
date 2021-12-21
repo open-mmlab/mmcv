@@ -17,6 +17,6 @@ def test_points_in_polygons():
                                 [1., 0., 0.], [0., 0., 0.]])
     points = torch.from_numpy(points).cuda().float()
     polygons = torch.from_numpy(polygons).cuda().float()
-    expert_output = torch.from_numpy(expert_output).cuda().float()
+    expected_output = torch.from_numpy(expected_output).cuda().float()
     assert torch.allclose(
         points_in_polygons(points, polygons), expert_output, 1e-3)
