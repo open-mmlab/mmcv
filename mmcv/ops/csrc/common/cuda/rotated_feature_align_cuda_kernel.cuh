@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 // Modified from
 // https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection/blob/master/mmdet/ops/fr/src/feature_refine_kernel.cu
-#ifndef FEATURE_REFINE_CUDA_KERNEL_CUH
-#define FEATURE_REFINE_CUDA_KERNEL_CUH
+#ifndef ROTATED_FEATURE_ALIGN_CUDA_KERNEL_CUH
+#define ROTATED_FEATURE_ALIGN_CUDA_KERNEL_CUH
 
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
@@ -11,7 +11,7 @@
 #endif
 
 template <typename scalar_t>
-__global__ void feature_refine_forward_kernel(
+__global__ void rotated_feature_align_forward_kernel(
     const int nthreads, const int points, const scalar_t* bottom_data,
     const scalar_t* best_bboxes, const scalar_t spatial_scale,
     const int channels, const int height, const int width, scalar_t* top_data) {
@@ -62,7 +62,7 @@ __global__ void feature_refine_forward_kernel(
 }
 
 template <typename scalar_t>
-__global__ void feature_refine_backward_kernel(
+__global__ void rotated_feature_align_backward_kernel(
     const int nthreads, const int points, const scalar_t* top_diff,
     const scalar_t* best_bboxes, const scalar_t spatial_scale,
     const int channels, const int height, const int width,
@@ -126,4 +126,4 @@ __global__ void feature_refine_backward_kernel(
     }
   }
 }
-#endif  // FEATURE_REFINE_CUDA_KERNEL_CUH
+#endif  // ROTATED_FEATURE_ALIGN_CUDA_KERNEL_CUH
