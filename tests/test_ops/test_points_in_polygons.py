@@ -14,7 +14,7 @@ def test_points_in_polygons():
                          [400., 400., 500., 500., 600., 300., 500., 200.],
                          [300., 300., 600., 700., 700., 700., 700., 100.]])
     expected_output = np.array([[0., 0., 0.], [0., 0., 1.], [0., 0., 0.],
-                              [1., 0., 0.], [0., 0., 0.]])
+                                [1., 0., 0.], [0., 0., 0.]])
     points = torch.from_numpy(points).cuda().float()
     polygons = torch.from_numpy(polygons).cuda().float()
     expert_output = torch.from_numpy(expert_output).cuda().float()

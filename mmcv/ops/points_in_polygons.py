@@ -6,12 +6,15 @@ ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
 
 
 def points_in_polygons(points, polygons):
-    """Judging whether points are inside polygons.
+    """Judging whether points are inside polygons, which is used in the ATSS
+    assignment for the rotated boxes.
 
     Args:
         points (torch.Tensor): It has shape (B, 2), indicating (x, y).
+            M means the number of predicted points.
         polygons (torch.Tensor): It has shape (M, 8), indicating
-            (x1, y1, x2, y2, x3, y3, x4, y4).
+            (x1, y1, x2, y2, x3, y3, x4, y4). M means the number of
+            ground truth polygons.
 
     Returns:
         torch.Tensor: Return the result with the shape of (B, M),
