@@ -35,7 +35,7 @@ class RiRoIAlignRotatedFunction(Function):
         ctx.save_for_backward(rois)
         ctx.feature_size = features.size()
 
-        batch_size, num_channels, data_height, data_width = features.size()
+        batch_size, num_channels, _, _ = features.size()
         num_rois = rois.size(0)
 
         output = features.new_zeros(num_rois, num_channels, out_h, out_w)
