@@ -27,7 +27,7 @@ class RiRoIAlignRotatedFunction(Function):
             out_h, out_w = out_size
         else:
             raise TypeError(
-                '"out_size" must be an integer or tuple of integers')
+                f'"out_size" should be an integer or tuple of integers, but got {out_size}')
         ctx.spatial_scale = spatial_scale
         ctx.sample_num = sample_num
         ctx.nOrientation = nOrientation
