@@ -15,8 +15,8 @@ def points_in_polygons(points, polygons):
 
     Returns:
         torch.Tensor: Return the result with the shape of (B, M),
-            1 indicates that the point is inside the polygon,
-            0 indicates that the point is outside the polygon.
+        1 indicates that the point is inside the polygon,
+        0 indicates that the point is outside the polygon.
     """
     assert points.shape[1] == 2, \
         'points dimension should be 2, ' \
