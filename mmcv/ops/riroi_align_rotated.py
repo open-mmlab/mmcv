@@ -2,8 +2,7 @@
 import torch.nn as nn
 from torch.autograd import Function
 
-from mmcv.utils import is_tuple_of
-from ..utils import ext_loader
+from ..utils import ext_loader, is_tuple_of
 
 ext_module = ext_loader.load_ext(
     '_ext', ['riroi_align_rotated_forward', 'riroi_align_rotated_backward'])
@@ -88,7 +87,7 @@ class RiRoIAlignRotated(nn.Module):
     Detector for Aerial Object Detection  <https://arxiv.org/abs/2103.07733>`_.
 
     Args:
-        out_size (tuple): h, w
+        out_size (tuple): fixed dimensional RoI output with shape (h, w).
         spatial_scale (float): scale the input boxes by this number
         num_samples (int): number of inputs samples to take for each
             output sample. 0 to take samples densely for current models.
