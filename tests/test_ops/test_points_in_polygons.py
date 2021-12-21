@@ -13,7 +13,7 @@ def test_points_in_polygons():
     polygons = np.array([[200., 200., 400., 400., 500., 200., 400., 100.],
                          [400., 400., 500., 500., 600., 300., 500., 200.],
                          [300., 300., 600., 700., 700., 700., 700., 100.]])
-    expert_output = np.array([[0., 0., 0.], [0., 0., 1.], [0., 0., 0.],
+    expected_output = np.array([[0., 0., 0.], [0., 0., 1.], [0., 0., 0.],
                               [1., 0., 0.], [0., 0., 0.]])
     points = torch.from_numpy(points).cuda().float()
     polygons = torch.from_numpy(polygons).cuda().float()
