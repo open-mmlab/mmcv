@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#include <torch/extension.h>
 
 std::string get_compiler_version();
 std::string get_compiling_cuda_version();
