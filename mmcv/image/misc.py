@@ -32,7 +32,7 @@ def tensor2imgs(tensor, mean=None, std=None, to_rgb=True):
     if torch is None:
         raise RuntimeError('pytorch is not installed')
     assert torch.is_tensor(tensor) and tensor.ndim == 4
-    channels = torch.size(1)
+    channels = tensor.size(1)
     assert channels in [1, 3]
     if mean is None:
         mean = (0, ) * channels
