@@ -39,7 +39,7 @@ void RiROIAlignRotatedBackwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(top_grad.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      top_grad.scalar_type(), "RiROIAlignRotatedLaucherBackward", ([&] {
+      top_grad.scalar_type(), "riroi_align_rotated_backward_cuda_kernel", ([&] {
         const scalar_t *top_diff = top_grad.data_ptr<scalar_t>();
         const scalar_t *rois_data = rois.data_ptr<scalar_t>();
         scalar_t *bottom_diff = bottom_grad.data_ptr<scalar_t>();
