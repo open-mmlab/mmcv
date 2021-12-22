@@ -34,7 +34,7 @@ void RotatedFeatureAlignBackwardCUDAKernelLauncher(const Tensor top_grad,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = top_grad.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      top_grad.scalar_type(), "RotatedFeatureAlignBackwardLaucherFun", ([&] {
+      top_grad.scalar_type(), "rotated_feature_align_backward_cuda_kernel", ([&] {
         const scalar_t* top_diff = top_grad.data_ptr<scalar_t>();
         const scalar_t* bboxes_data = best_bboxes.data_ptr<scalar_t>();
         scalar_t* bottom_diff = bottom_grad.data_ptr<scalar_t>();
