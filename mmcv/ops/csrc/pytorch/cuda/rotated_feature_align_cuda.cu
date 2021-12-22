@@ -4,7 +4,7 @@
 #include "pytorch_cuda_helper.hpp"
 #include "rotated_feature_align_cuda_kernel.cuh"
 
-void RotatedFeatureAlignForwardLauncher(const Tensor features,
+void RotatedFeatureAlignForwardCUDAKernelLauncher(const Tensor features,
                                         const Tensor best_bboxes,
                                         const float spatial_scale,
                                         const int points, Tensor output) {
