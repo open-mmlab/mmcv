@@ -38,24 +38,38 @@ static void policyFuncForward(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
   auto N = input.size(0);
   auto C = input.size(1);
 
-  auto nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  auto c_align_size = PAD_UP((C * input.itemsize()), NFU_ALIGN_SIZE);
+  const size_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
+  const size_t c_align_size = PAD_UP((C * input.itemsize()), NFU_ALIGN_SIZE);
   const int split_target_num = 2;
   const int split_pipeline_num = 6;
-  auto scalar_size = NFU_ALIGN_SIZE;
-  auto weight_size = c_align_size;
+  const int has_weight = weight.data_ptr() != nullptr;
   const int target_data_width = target.scalar_type() == at::kLong
                                     ? target.itemsize() / 2
                                     : target.itemsize();
+  const int threshold_c =
+      PAD_DOWN((nram_size - split_target_num * sizeof(int)) /
+                   (split_pipeline_num + has_weight),
+               NFU_ALIGN_SIZE) /
+      input.itemsize();
 
-  // n_seg * c_align_size * split_pipeline_num +
-  //    n_seg * target.itemsize() * split_target_num +
-  //    weight_size + scalar_size <= nram_size
-  auto n_seg = (nram_size - weight_size - scalar_size) /
-               (c_align_size * split_pipeline_num +
-                target_data_width * split_target_num);
-  auto seg_num = (N + n_seg - 1) / n_seg;
-
+  int n_seg = 1;
+  if (C <= threshold_c) {
+    int c_size = C * input.itemsize();
+    int reservered_align_size =
+        (split_target_num + split_pipeline_num) * NFU_ALIGN_SIZE;
+    int wegiht_size = 0;
+    if (has_weight) {
+      c_size = c_align_size;
+      reservered_align_size = split_target_num * NFU_ALIGN_SIZE;
+      wegiht_size = c_align_size;
+    }
+    // n_seg * c_size * split_pipeline_num + n_seg * target.itemsize() *
+    // split_target_num
+    //     + weight_size + reservered_align_size <= nram_size
+    n_seg = (nram_size - wegiht_size - reservered_align_size) /
+            (split_pipeline_num * c_size + split_target_num * sizeof(int32_t));
+  }
+  auto seg_num = n_seg == 0 ? N : (N + n_seg - 1) / n_seg;
   auto core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
   auto cluster_num = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
   auto core_num = core_dim * cluster_num;
@@ -104,31 +118,8 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input, Tensor target,
     CNLOG(INFO) << "weight is a empty tensor.";
   }
 
-  // check C
-  auto nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  auto input_N = input.size(0);
-  auto input_C = input.size(1);
-  const int split_target_num = 2;
-  const int split_pipeline_num = 6;
-  const int has_weight = (int)(weight.data_ptr() != nullptr);
-
-  // target supports only INT on MLU device while it keeps LONG on host side,
-  // so target.itemsize() / 2
-  const int target_data_width = target.scalar_type() == at::kLong
-                                    ? target.itemsize() / 2
-                                    : target.itemsize();
-  auto threshold_C = PAD_DOWN((nram_size - NFU_ALIGN_SIZE -
-                               split_target_num * target_data_width) /
-                                  (split_pipeline_num + has_weight),
-                              NFU_ALIGN_SIZE) /
-                     input.itemsize();
-
-  TORCH_CHECK(threshold_C >= input_C,
-              "input.size(1) should be in the range of [0, ", threshold_C,
-              "]. ", "But now input.size(1) is ", input_C, ".");
-
+  // return if zero-element
   if (input.numel() == 0 || target.numel() == 0 || output.numel() == 0) {
-    // return if zero-element
     return;
   }
 
@@ -159,8 +150,8 @@ void SigmoidFocalLossForwardMLUKernelLauncher(Tensor input, Tensor target,
               << k_dim.z << ">>>";
   // launch kernel
   KernelFocalLossSigmoidForward(k_dim, k_type, queue, d_type, input_ptr,
-                                target_ptr, weight_ptr, input_N, input_C, alpha,
-                                gamma, output_ptr);
+                                target_ptr, weight_ptr, input.size(0),
+                                input.size(1), alpha, gamma, output_ptr);
 }
 
 void getDealNAndThresholdC(const int compute_data_bytes,
