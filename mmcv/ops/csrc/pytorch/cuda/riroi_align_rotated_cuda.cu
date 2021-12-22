@@ -13,7 +13,7 @@ void RiROIAlignRotatedForwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(features.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.scalar_type(), "RiROIAlignRotatedLaucherForward", ([&] {
+      features.scalar_type(), "riroi_align_rotated_forward_cuda_kernel", ([&] {
         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
         const scalar_t *rois_data = rois.data_ptr<scalar_t>();
         scalar_t *top_data = output.data_ptr<scalar_t>();
