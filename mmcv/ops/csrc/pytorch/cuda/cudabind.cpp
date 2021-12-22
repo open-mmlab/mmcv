@@ -1371,14 +1371,12 @@ void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
 
 void active_rotated_filter_forward_cuda(const Tensor input,
                                         const Tensor indices, Tensor output) {
-  void ARFForwardLauncher(const Tensor input, const Tensor indices,
-                          Tensor output);
+  ARFForwardLauncher(input, indices, output);
 };
 
 void active_rotated_filter_backward_cuda(const Tensor grad_out,
                                          const Tensor indices, Tensor grad_in) {
-  void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
-                           Tensor grad_in);
+  ARFBackwardLauncher(grad_out, indices, grad_in);
 };
 
 void active_rotated_filter_forward_impl(const Tensor input,

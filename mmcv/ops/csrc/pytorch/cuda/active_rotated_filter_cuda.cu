@@ -23,7 +23,7 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
             output_size, input.data_ptr<scalar_t>(),
             indices.data_ptr<int>(), nInputPlane, nOutputPlane,
             num_orientations, num_rotations, nEntry,
-            output.data<scalar_t>());
+            output.data_ptr<scalar_t>());
   });
   AT_CUDA_CHECK(cudaGetLastError());
 }
