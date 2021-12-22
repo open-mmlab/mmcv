@@ -12,7 +12,7 @@ void RotatedFeatureAlignForwardLauncher(const Tensor features,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = features.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.scalar_type(), "RotatedFeatureAlignForwardLaucherFun", ([&] {
+      features.scalar_type(), "rotated_feature_align_forward_cuda_kernel", ([&] {
         const scalar_t* bottom_data = features.data_ptr<scalar_t>();
         const scalar_t* bboxes_data = best_bboxes.data_ptr<scalar_t>();
         scalar_t* top_data = output.data_ptr<scalar_t>();
