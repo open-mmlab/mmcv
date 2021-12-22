@@ -26,7 +26,7 @@ void RotatedFeatureAlignForwardCUDAKernelLauncher(const Tensor features,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void RotatedFeatureAlignBackwardLauncher(const Tensor top_grad,
+void RotatedFeatureAlignBackwardCUDAKernelLauncher(const Tensor top_grad,
                                          const Tensor best_bboxes,
                                          const float spatial_scale,
                                          const int points, Tensor bottom_grad) {
