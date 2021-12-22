@@ -15,7 +15,7 @@ void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points,
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      points.scalar_type(), "PointsInPolygonsLaucher", ([&] {
+      points.scalar_type(), "points_in_polygons_forward_cuda_kernel", ([&] {
         const scalar_t *vertex1 = points.data_ptr<scalar_t>();
         const scalar_t *vertex2 = polygons.data_ptr<scalar_t>();
         scalar_t *inside_flag = output.data_ptr<scalar_t>();
