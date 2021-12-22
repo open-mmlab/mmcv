@@ -4,8 +4,9 @@
 #include "active_rotated_filter_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-void ARFForwardLauncher(const Tensor input, const Tensor indices,
-                        Tensor output) {
+void ActiveRotatedFilterForwardCUDAKernelLauncher(const Tensor input,
+                                                  const Tensor indices,
+                                                  Tensor output) {
   int nOutputPlane = input.size(0);
   int nInputPlane = input.size(1);
   int num_orientations = input.size(2);
@@ -17,18 +18,21 @@ void ARFForwardLauncher(const Tensor input, const Tensor indices,
 
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(input.scalar_type(), "ARF_forward", [&] {
-    ARF_forward_cuda_kernel<scalar_t>
-        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-            output_size, input.data_ptr<scalar_t>(), indices.data_ptr<int>(),
-            nInputPlane, nOutputPlane, num_orientations, num_rotations, nEntry,
-            output.data_ptr<scalar_t>());
-  });
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      input.scalar_type(), "active_rotated_filter_forward_cuda_kernel", [&] {
+        active_rotated_filter_forward_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+                output_size, input.data_ptr<scalar_t>(),
+                indices.data_ptr<int>(), nInputPlane, nOutputPlane,
+                num_orientations, num_rotations, nEntry,
+                output.data_ptr<scalar_t>());
+      });
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
-                         Tensor grad_in) {
+void ActiveRotatedFilterBackwardCUDAKernelLauncher(const Tensor grad_out,
+                                                   const Tensor indices,
+                                                   Tensor grad_in) {
   int num_orientations = indices.size(0);
   int kH = indices.size(1);
   int kW = indices.size(2);
@@ -40,12 +44,15 @@ void ARFBackwardLauncher(const Tensor grad_out, const Tensor indices,
 
   at::cuda::CUDAGuard device_guard(indices.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES(grad_out.scalar_type(), "ARF_backward", [&] {
-    ARF_backward_cuda_kernel<scalar_t>
-        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-            output_size, grad_out.data_ptr<scalar_t>(), indices.data_ptr<int>(),
-            nInputPlane, nOutputPlane, num_orientations, num_rotations, nEntry,
-            grad_in.data_ptr<scalar_t>());
-  });
+  AT_DISPATCH_FLOATING_TYPES(
+      grad_out.scalar_type(), "active_rotated_filter_backward_cuda_kernel",
+      [&] {
+        active_rotated_filter_backward_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+                output_size, grad_out.data_ptr<scalar_t>(),
+                indices.data_ptr<int>(), nInputPlane, nOutputPlane,
+                num_orientations, num_rotations, nEntry,
+                grad_in.data_ptr<scalar_t>());
+      });
   AT_CUDA_CHECK(cudaGetLastError());
 }

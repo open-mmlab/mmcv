@@ -11,7 +11,7 @@
 #endif
 
 template <typename scalar_t>
-__global__ void ARF_forward_cuda_kernel(
+__global__ void active_rotated_filter_forward_cuda_kernel(
     const int nthreads, const scalar_t* weight_data, const int* indices_data,
     const int nInputPlane, const int nOutputPlane, const int num_orientations,
     const int num_rotations, const int nEntry, scalar_t* output_data) {
@@ -23,7 +23,7 @@ __global__ void ARF_forward_cuda_kernel(
     scalar_t val = *(weight_data + index);
     for (k = 0; k < num_rotations; k++) {
       int idx = (int)(*(indices_data + l * num_rotations + k)) - 1;
-      scalar_t *target = output_data +
+      scalar_t* target = output_data +
                          i * (num_rotations * nInputPlane * nEntry) +
                          k * (nInputPlane * nEntry) + j * (nEntry) + idx;
       *target = val;
@@ -32,7 +32,7 @@ __global__ void ARF_forward_cuda_kernel(
 }
 
 template <typename scalar_t>
-__global__ void ARF_backward_cuda_kernel(
+__global__ void active_rotated_filter_backward_cuda_kernel(
     const int nthreads, const scalar_t* gradWeight_data,
     const int* indices_data, const int nInputPlane, const int nOutputPlane,
     const int num_orientations, const int num_rotations, const int nEntry,
@@ -42,7 +42,7 @@ __global__ void ARF_backward_cuda_kernel(
     int j = (index / nEntry) % nInputPlane;
     int i = index / nEntry / nInputPlane;
     int k;
-    scalar_t *val = weight_data + index;
+    scalar_t* val = weight_data + index;
     *val = 0;
     scalar_t tmp = 0;
     for (k = 0; k < num_rotations; k++) {
