@@ -229,52 +229,29 @@ expected_output = np.array([[[[-1.4934e-01, 1.1341e+00, -1.6241e-01],
                               [1.6781e-02, 4.7821e-01, 3.0827e-01],
                               [-1.0764e+00, -4.4542e-01, -1.8606e+00]]]])
 
-expected_grad = np.array([[[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]],
-
-                          [[[[8., 8., 8.],
-                             [8., 8., 8.],
-                             [8., 8., 8.]]]]])
+expected_grad = np.array([[[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
+                          [[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]]])
 
 
 @pytest.mark.parametrize('device', [
     'cpu',
-    pytest.param("cuda",
-                 marks=pytest.mark.skipif(not torch.cuda.is_available(),
-                                          reason='requires CUDA support')),
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support')),
 ])
 def test_active_rotated_filter(device):
     feature = torch.tensor(
         np_feature, dtype=torch.float, device=device, requires_grad=True)
-    indices = torch.tensor(
-        np_indices, dtype=torch.int, device=device)
+    indices = torch.tensor(np_indices, dtype=torch.int, device=device)
     output = active_rotated_filter(feature, indices)
     output.backward(torch.ones_like(output))
     assert np.allclose(output.data.cpu().numpy(), expected_output, atol=1e-3)
-    assert np.allclose(feature.grad.data.cpu().numpy(), expected_grad,
-                       atol=1e-3)
+    assert np.allclose(
+        feature.grad.data.cpu().numpy(), expected_grad, atol=1e-3)
