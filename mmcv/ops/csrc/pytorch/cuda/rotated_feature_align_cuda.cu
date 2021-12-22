@@ -5,14 +5,16 @@
 #include "rotated_feature_align_cuda_kernel.cuh"
 
 void RotatedFeatureAlignForwardCUDAKernelLauncher(const Tensor features,
-                                        const Tensor best_bboxes,
-                                        const float spatial_scale,
-                                        const int points, Tensor output) {
+                                                  const Tensor best_bboxes,
+                                                  const float spatial_scale,
+                                                  const int points,
+                                                  Tensor output) {
   at::cuda::CUDAGuard device_guard(features.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = features.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.scalar_type(), "rotated_feature_align_forward_cuda_kernel", ([&] {
+      features.scalar_type(), "rotated_feature_align_forward_cuda_kernel",
+      ([&] {
         const scalar_t* bottom_data = features.data_ptr<scalar_t>();
         const scalar_t* bboxes_data = best_bboxes.data_ptr<scalar_t>();
         scalar_t* top_data = output.data_ptr<scalar_t>();
@@ -27,14 +29,16 @@ void RotatedFeatureAlignForwardCUDAKernelLauncher(const Tensor features,
 }
 
 void RotatedFeatureAlignBackwardCUDAKernelLauncher(const Tensor top_grad,
-                                         const Tensor best_bboxes,
-                                         const float spatial_scale,
-                                         const int points, Tensor bottom_grad) {
+                                                   const Tensor best_bboxes,
+                                                   const float spatial_scale,
+                                                   const int points,
+                                                   Tensor bottom_grad) {
   at::cuda::CUDAGuard device_guard(top_grad.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   const int output_size = top_grad.numel();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      top_grad.scalar_type(), "rotated_feature_align_backward_cuda_kernel", ([&] {
+      top_grad.scalar_type(), "rotated_feature_align_backward_cuda_kernel",
+      ([&] {
         const scalar_t* top_diff = top_grad.data_ptr<scalar_t>();
         const scalar_t* bboxes_data = best_bboxes.data_ptr<scalar_t>();
         scalar_t* bottom_diff = bottom_grad.data_ptr<scalar_t>();

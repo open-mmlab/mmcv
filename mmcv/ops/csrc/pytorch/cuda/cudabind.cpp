@@ -1364,9 +1364,10 @@ REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
 
-void RotatedFeatureAlignForwardLauncher(const Tensor features, const Tensor best_bboxes,
-                       const float spatial_scale, const int points,
-                       Tensor output);
+void RotatedFeatureAlignForwardLauncher(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output);
 
 void FRBackwardLauncher(const Tensor top_grad, const Tensor best_bboxes,
                         const float spatial_scale, const int points,
