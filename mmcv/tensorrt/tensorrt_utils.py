@@ -231,5 +231,6 @@ class TRTWraper(TRTWrapper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        warnings.warn('TRTWraper will be deprecated in'
-                      ' future. Please use TRTWrapper instead')
+        warnings.warn(
+            'TRTWraper will be deprecated in'
+            ' future. Please use TRTWrapper instead', DeprecationWarning)
