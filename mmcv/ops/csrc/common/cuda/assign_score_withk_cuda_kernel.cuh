@@ -22,9 +22,7 @@ __global__ void assign_score_withk_forward_cuda_kernel(
     const int O, const int aggregate, const T* points, const T* centers,
     const T* scores, const int64_t* knn_idx, T* output) {
   // ----- parallel loop for B, N1, K and O ---------
-  CUDA_1D_KERNEL_LOOP(index, B * O * N1 * K) {
-    long i = index;
-    if (i >= B * N1 * K * O) return;
+  CUDA_1D_KERNEL_LOOP(i, B * O * N1 * K) {
     // ------- loop for M ----------
     const int b = (int)(i / (O * N1 * K));
     const int o = (int)(i % (O * N1 * K) / (N1 * K));
@@ -60,9 +58,7 @@ __global__ void assign_score_withk_points_backward_cuda_kernel(
     const int O, const int aggregate, const T* grad_out, const T* scores,
     const int64_t* knn_idx, T* grad_points, T* grad_centers) {
   // ----- parallel loop for B, M, O ---------
-  CUDA_1D_KERNEL_LOOP(index, B * M * O) {
-    long i = index;
-    if (i >= B * M * O) return;
+  CUDA_1D_KERNEL_LOOP(i, B * M * O) {
     int b = (int)(i / (M * O));
     int m = (int)(i % (M * O) / O);
     int o = (int)(i % O);
@@ -93,9 +89,7 @@ __global__ void assign_score_withk_scores_backward_cuda_kernel(
     const int O, const int aggregate, const T* grad_out, const T* points,
     const T* centers, const int64_t* knn_idx, T* grad_scores) {
   // ----- parallel loop for B, N, K, M ---------
-  CUDA_1D_KERNEL_LOOP(index, B * N * K * M) {
-    long i = index;
-    if (i >= B * N * K * M) return;
+  CUDA_1D_KERNEL_LOOP(i, B * N * K * M) {
     const int b = (int)(i / (N * M * K));
     const int n = (int)(i % (N * M * K) / M / K);
     const int k = (int)(i % (M * K) / M);

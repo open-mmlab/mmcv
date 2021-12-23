@@ -44,11 +44,9 @@ __global__ void assign_pts_to_box3d(int batch_size, int pts_num, int boxes_num,
   // background points
   int box_idx = blockIdx.y;
   int bs_idx = blockIdx.z;
-  CUDA_1D_KERNEL_LOOP(index, pts_num) {
-    int pt_idx = index;
-    if (pt_idx >= pts_num || box_idx >= boxes_num || bs_idx >= batch_size) {
-      return;
-    }
+  CUDA_1D_KERNEL_LOOP(pt_idx, pts_num) {
+    if (box_idx >= boxes_num || bs_idx >= batch_size) return;
+
     int assign_idx =
         bs_idx * pts_num * boxes_num + pt_idx * boxes_num + box_idx;
     pts_assign[assign_idx] = 0;
@@ -71,12 +69,7 @@ __global__ void get_pooled_idx(int batch_size, int pts_num, int boxes_num,
   // params pts_assign: (B, N)
   // params pts_idx: (B, M, 512)
   // params pooled_empty_flag: (B, M)
-  CUDA_1D_KERNEL_LOOP(index, boxes_num) {
-    int boxes_idx = index;
-    if (boxes_idx >= boxes_num) {
-      return;
-    }
-
+  CUDA_1D_KERNEL_LOOP(boxes_idx, boxes_num) {
     int bs_idx = blockIdx.y;
 
     int cnt = 0;
@@ -118,17 +111,9 @@ __global__ void roipoint_pool3d_forward(
   // params pooled_empty_flag: (B, M)
   int box_idx = blockIdx.y;
   int bs_idx = blockIdx.z;
-  CUDA_1D_KERNEL_LOOP(index, sampled_pts_num) {
-    int sample_pt_idx = index;
-
-    if (sample_pt_idx >= sampled_pts_num || box_idx >= boxes_num ||
-        bs_idx >= batch_size) {
-      return;
-    }
-
-    if (pooled_empty_flag[bs_idx * boxes_num + box_idx]) {
-      return;
-    }
+  CUDA_1D_KERNEL_LOOP(sample_pt_idx, sampled_pts_num) {
+    if (box_idx >= boxes_num || bs_idx >= batch_size) return;
+    if (pooled_empty_flag[bs_idx * boxes_num + box_idx]) return;
 
     int temp_idx = bs_idx * boxes_num * sampled_pts_num +
                    box_idx * sampled_pts_num + sample_pt_idx;

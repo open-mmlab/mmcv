@@ -21,9 +21,8 @@ __global__ void ball_query_forward_cuda_kernel(int b, int n, int m,
   // output:
   //      idx: (B, M, nsample)
   int bs_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, m) {
-    int pt_idx = index;
-    if (bs_idx >= b || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, m) {
+    if (bs_idx >= b) return;
 
     new_xyz += bs_idx * m * 3 + pt_idx * 3;
     xyz += bs_idx * n * 3;

@@ -51,9 +51,8 @@ __global__ void knn_forward_cuda_kernel(int b, int n, int m, int nsample,
                                         const T *xyz, const T *new_xyz,
                                         int *__restrict__ idx, T *dist2) {
   int bs_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, m) {
-    int pt_idx = index;
-    if (bs_idx >= b || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, m) {
+    if (bs_idx >= b) return;
 
     new_xyz += bs_idx * m * 3 + pt_idx * 3;
     xyz += bs_idx * n * 3;

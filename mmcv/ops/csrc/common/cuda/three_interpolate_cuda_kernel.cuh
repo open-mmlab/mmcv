@@ -20,10 +20,8 @@ __global__ void three_interpolate_forward_cuda_kernel(
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, n) {
-    int pt_idx = index;
-
-    if (bs_idx >= b || c_idx >= c || pt_idx >= n) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, n) {
+    if (bs_idx >= b || c_idx >= c) return;
 
     weight += bs_idx * n * 3 + pt_idx * 3;
     points += bs_idx * c * m + c_idx * m;
@@ -46,10 +44,8 @@ __global__ void three_interpolate_backward_cuda_kernel(
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, n) {
-    int pt_idx = index;
-
-    if (bs_idx >= b || c_idx >= c || pt_idx >= n) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, n) {
+    if (bs_idx >= b || c_idx >= c) return;
 
     grad_out += bs_idx * c * n + c_idx * n + pt_idx;
     weight += bs_idx * n * 3 + pt_idx * 3;

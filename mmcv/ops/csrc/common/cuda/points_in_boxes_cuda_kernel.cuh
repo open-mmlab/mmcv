@@ -45,9 +45,8 @@ __global__ void points_in_boxes_part_forward_cuda_kernel(
   // (B, npoints), default -1
 
   int bs_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, pts_num) {
-    int pt_idx = index;
-    if (bs_idx >= batch_size || pt_idx >= pts_num) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, pts_num) {
+    if (bs_idx >= batch_size) return;
 
     boxes += bs_idx * boxes_num * 7;
     pts += bs_idx * pts_num * 3 + pt_idx * 3;
@@ -75,9 +74,8 @@ __global__ void points_in_boxes_all_forward_cuda_kernel(
   // (B, npoints), default -1
 
   int bs_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, pts_num) {
-    int pt_idx = index;
-    if (bs_idx >= batch_size || pt_idx >= pts_num) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, pts_num) {
+    if (bs_idx >= batch_size) return;
 
     boxes += bs_idx * boxes_num * 7;
     pts += bs_idx * pts_num * 3 + pt_idx * 3;

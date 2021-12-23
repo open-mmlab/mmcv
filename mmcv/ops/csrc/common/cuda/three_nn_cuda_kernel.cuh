@@ -19,9 +19,8 @@ __global__ void three_nn_forward_cuda_kernel(int b, int n, int m,
   //      idx: (B, N, 3)
 
   int bs_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, n) {
-    int pt_idx = index;
-    if (bs_idx >= b || pt_idx >= n) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, n) {
+    if (bs_idx >= b) return;
 
     unknown += bs_idx * n * 3 + pt_idx * 3;
     known += bs_idx * m * 3;

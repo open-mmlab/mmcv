@@ -13,6 +13,10 @@
     for (size_t j = blockIdx.y * blockDim.y + threadIdx.y; j < (m); \
          j += blockDim.y * gridDim.y)
 
+#define CUDA_2D_KERNEL_BLOCK_LOOP(i, n, j, m)          \
+  for (size_t i = blockIdx.x; i < (n); i += gridDim.x) \
+    for (size_t j = blockIdx.y; j < (m); j += gridDim.y)
+
 #define THREADS_PER_BLOCK 512
 
 inline int GET_BLOCKS(const int N, const int num_threads = THREADS_PER_BLOCK) {

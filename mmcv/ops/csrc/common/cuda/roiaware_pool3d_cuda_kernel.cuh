@@ -45,9 +45,8 @@ __global__ void generate_pts_mask_for_box3d(int boxes_num, int pts_num,
   // npoints): -1 means point does not in this box, otherwise: encode (x_idxs,
   // y_idxs, z_idxs) by binary bit
   int box_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, pts_num) {
-    int pt_idx = index;
-    if (pt_idx >= pts_num || box_idx >= boxes_num) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, pts_num) {
+    if (box_idx >= boxes_num) return;
 
     pts += pt_idx * 3;
     rois += box_idx * 7;
@@ -88,10 +87,7 @@ __global__ void collect_inside_pts_for_box3d(int boxes_num, int pts_num,
                                              T *pts_idx_of_voxels) {
   // params pts_mask: (N, npoints)  0 or 1
   // params pts_idx_of_voxels: (N, out_x, out_y, out_z, max_pts_each_voxel)
-  CUDA_1D_KERNEL_LOOP(index, boxes_num) {
-    int box_idx = index;
-    if (box_idx >= boxes_num) return;
-
+  CUDA_1D_KERNEL_LOOP(box_idx, boxes_num) {
     int max_num_pts = max_pts_each_voxel - 1;  // index 0 is the counter
     pts_idx_of_voxels += box_idx * out_x * out_y * out_z * max_pts_each_voxel;
 
@@ -127,15 +123,11 @@ __global__ void roiaware_maxpool3d(int boxes_num, int pts_num, int channels,
 
   int box_idx = blockIdx.z;
   int channel_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, out_x * out_y * out_z) {
-    int voxel_idx_flat = index;
-
+  CUDA_1D_KERNEL_LOOP(voxel_idx_flat, out_x * out_y * out_z) {
     int x_idx = voxel_idx_flat / (out_y * out_z);
     int y_idx = (voxel_idx_flat - x_idx * (out_y * out_z)) / out_z;
     int z_idx = voxel_idx_flat % out_z;
-    if (box_idx >= boxes_num || channel_idx >= channels || x_idx >= out_x ||
-        y_idx >= out_y || z_idx >= out_z)
-      return;
+    if (box_idx >= boxes_num || channel_idx >= channels) return;
 
     int offset_base = x_idx * out_y * out_z + y_idx * out_z + z_idx;
     pts_idx_of_voxels += box_idx * out_x * out_y * out_z * max_pts_each_voxel +
@@ -178,15 +170,11 @@ __global__ void roiaware_avgpool3d(int boxes_num, int pts_num, int channels,
 
   int box_idx = blockIdx.z;
   int channel_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, out_x * out_y * out_z) {
-    int voxel_idx_flat = index;
-
+  CUDA_1D_KERNEL_LOOP(voxel_idx_flat, out_x * out_y * out_z) {
     int x_idx = voxel_idx_flat / (out_y * out_z);
     int y_idx = (voxel_idx_flat - x_idx * (out_y * out_z)) / out_z;
     int z_idx = voxel_idx_flat % out_z;
-    if (box_idx >= boxes_num || channel_idx >= channels || x_idx >= out_x ||
-        y_idx >= out_y || z_idx >= out_z)
-      return;
+    if (box_idx >= boxes_num || channel_idx >= channels) return;
 
     int offset_base = x_idx * out_y * out_z + y_idx * out_z + z_idx;
     pts_idx_of_voxels += box_idx * out_x * out_y * out_z * max_pts_each_voxel +
@@ -218,15 +206,11 @@ __global__ void roiaware_maxpool3d_backward(int boxes_num, int channels,
 
   int box_idx = blockIdx.z;
   int channel_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, out_x * out_y * out_z) {
-    int voxel_idx_flat = index;
-
+  CUDA_1D_KERNEL_LOOP(voxel_idx_flat, out_x * out_y * out_z) {
     int x_idx = voxel_idx_flat / (out_y * out_z);
     int y_idx = (voxel_idx_flat - x_idx * (out_y * out_z)) / out_z;
     int z_idx = voxel_idx_flat % out_z;
-    if (box_idx >= boxes_num || channel_idx >= channels || x_idx >= out_x ||
-        y_idx >= out_y || z_idx >= out_z)
-      return;
+    if (box_idx >= boxes_num || channel_idx >= channels) return;
 
     int offset_base = x_idx * out_y * out_z + y_idx * out_z + z_idx;
     argmax += box_idx * out_x * out_y * out_z * channels +
@@ -252,15 +236,11 @@ __global__ void roiaware_avgpool3d_backward(int boxes_num, int channels,
 
   int box_idx = blockIdx.z;
   int channel_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, out_x * out_y * out_z) {
-    int voxel_idx_flat = index;
-
+  CUDA_1D_KERNEL_LOOP(voxel_idx_flat, out_x * out_y * out_z) {
     int x_idx = voxel_idx_flat / (out_y * out_z);
     int y_idx = (voxel_idx_flat - x_idx * (out_y * out_z)) / out_z;
     int z_idx = voxel_idx_flat % out_z;
-    if (box_idx >= boxes_num || channel_idx >= channels || x_idx >= out_x ||
-        y_idx >= out_y || z_idx >= out_z)
-      return;
+    if (box_idx >= boxes_num || channel_idx >= channels) return;
 
     int offset_base = x_idx * out_y * out_z + y_idx * out_z + z_idx;
     pts_idx_of_voxels += box_idx * out_x * out_y * out_z * max_pts_each_voxel +

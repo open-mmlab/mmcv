@@ -23,9 +23,9 @@ __global__ void group_points_forward_cuda_kernel(int b, int c, int n,
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
   CUDA_1D_KERNEL_LOOP(index, npoints * nsample) {
-    int pt_idx = index / nsample;
-    if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
+    if (bs_idx >= b || c_idx >= c) return;
 
+    int pt_idx = index / nsample;
     int sample_idx = index % nsample;
 
     idx += bs_idx * npoints * nsample + pt_idx * nsample + sample_idx;
@@ -51,7 +51,7 @@ __global__ void group_points_backward_cuda_kernel(int b, int c, int n,
   int c_idx = blockIdx.y;
   CUDA_1D_KERNEL_LOOP(index, npoints * nsample) {
     int pt_idx = index / nsample;
-    if (bs_idx >= b || c_idx >= c || pt_idx >= npoints) return;
+    if (bs_idx >= b || c_idx >= c) return;
 
     int sample_idx = index % nsample;
     grad_out += bs_idx * c * npoints * nsample + c_idx * npoints * nsample +

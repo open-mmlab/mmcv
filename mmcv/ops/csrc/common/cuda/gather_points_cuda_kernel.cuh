@@ -22,9 +22,8 @@ __global__ void gather_points_forward_cuda_kernel(int b, int c, int n, int m,
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, m) {
-    int pt_idx = index;
-    if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, m) {
+    if (bs_idx >= b || c_idx >= c) return;
 
     out += bs_idx * c * m + c_idx * m + pt_idx;
     idx += bs_idx * m + pt_idx;
@@ -45,9 +44,8 @@ __global__ void gather_points_backward_cuda_kernel(int b, int c, int n, int m,
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  CUDA_1D_KERNEL_LOOP(index, m) {
-    int pt_idx = index;
-    if (bs_idx >= b || c_idx >= c || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, m) {
+    if (bs_idx >= b || c_idx >= c) return;
 
     grad_out += bs_idx * c * m + c_idx * m + pt_idx;
     idx += bs_idx * m + pt_idx;
