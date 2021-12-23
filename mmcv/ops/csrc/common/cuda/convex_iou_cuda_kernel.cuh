@@ -8,6 +8,12 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+
+#define maxn 100
+const double eps=1E-8;
+int const threadsPerBlock = 512; //sizeof(unsigned long long) * 8;
+
+
 __device__ inline int sig(double d){
     return int(d>eps)-int(d<-eps);
 }

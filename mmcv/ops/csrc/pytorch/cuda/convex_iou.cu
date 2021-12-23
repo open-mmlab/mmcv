@@ -10,13 +10,12 @@ void ConvexIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
 
   at::cuda::CUDAGuard device_guard(pointsets.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      pointsets.scalar_type(), "convex_iou_cuda_kernel", ([&] {
-        convex_iou_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-                num_pointsets, num_polygons,
-                pointsets.data_ptr<scalar_t>(), polygons.data_ptr<scalar_t>(),
-                ious.data_ptr<scalar_t>());
-      }));
+
+  convex_iou_cuda_kernel
+      <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+          num_pointsets, num_polygons,
+          pointsets.data_ptr<float>(), polygons.data_ptr<float>(),
+          ious.data_ptr<float>());
+
   AT_CUDA_CHECK(cudaGetLastError());
 }
