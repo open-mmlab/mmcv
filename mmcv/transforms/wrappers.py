@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 from contextlib import nullcontext
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 
@@ -24,7 +24,7 @@ class Compose(BaseTransform):
           dicts of transforms or transform objects.
     """
 
-    def __init__(self, transforms: list[Union[Dict, Callable[[Dict], Dict]]]):
+    def __init__(self, transforms: List[Union[Dict, Callable[[Dict], Dict]]]):
         assert isinstance(transforms, Sequence)
         self.transforms = []
         for transform in transforms:
@@ -84,7 +84,7 @@ class Remap(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: list[Union[Dict, Callable[[Dict], Dict]]],
+                 transforms: List[Union[Dict, Callable[[Dict], Dict]]],
                  input_mapping: Optional[Dict] = None,
                  output_mapping: Optional[Dict] = None,
                  inplace: bool = False,
@@ -108,7 +108,7 @@ class Remap(BaseTransform):
 
         self.transforms = Compose(transforms)
 
-    def remap_input(self, data: dict, input_mapping: dict) -> dict[str, Any]:
+    def remap_input(self, data: Dict, input_mapping: Dict) -> Dict[str, Any]:
         """Remap inputs for the wrapped transforms by gathering and renaming
         data items according to the input_mapping.
 
@@ -143,7 +143,7 @@ class Remap(BaseTransform):
 
         return inputs
 
-    def remap_output(self, data: dict, output_mapping: dict) -> dict[str, Any]:
+    def remap_output(self, data: Dict, output_mapping: Dict) -> Dict[str, Any]:
         """Remap outputs from the wrapped transforms by gathering and renaming
         data items according to the output_mapping."""
 
@@ -176,7 +176,7 @@ class Remap(BaseTransform):
         # being overwritten by intermediate namesakes
         return _remap(data, output_mapping)
 
-    def transform(self, results: dict) -> dict:
+    def transform(self, results: Dict) -> Dict:
 
         inputs = self.remap_input(results, self.input_mapping)
         outputs = self.transforms(inputs)
@@ -192,7 +192,7 @@ class Remap(BaseTransform):
 class ApplyToMultiple(Remap):
 
     def __init__(self,
-                 transforms: list[Union[Dict, Callable[[Dict], Dict]]],
+                 transforms: List[Union[Dict, Callable[[Dict], Dict]]],
                  input_mapping: Optional[Dict] = None,
                  output_mapping: Optional[Dict] = None,
                  inplace: bool = False,
@@ -203,7 +203,7 @@ class ApplyToMultiple(Remap):
 
         self.share_random_params = share_random_params
 
-    def scatter_sequence(self, data: dict) -> list[dict]:
+    def scatter_sequence(self, data: Dict) -> list[dict]:
         # infer split number from input
         seq_len = 0
         key_rep = None
@@ -232,7 +232,7 @@ class ApplyToMultiple(Remap):
             scatters.append(scatter)
         return scatters
 
-    def transform(self, results: dict):
+    def transform(self, results: Dict):
         # Apply input remapping
         inputs = self.remap_input(results, self.input_mapping)
 
@@ -276,8 +276,8 @@ class RandomChoice(BaseTransform):
     """
 
     def __init__(self,
-                 pipelines: list[list[Union[Dict, Callable[[Dict], Dict]]]],
-                 pipeline_probs: Optional[list[float]] = None):
+                 pipelines: List[List[Union[Dict, Callable[[Dict], Dict]]]],
+                 pipeline_probs: Optional[List[float]] = None):
 
         if pipeline_probs is not None:
             assert mmcv.is_seq_of(pipeline_probs, float)
