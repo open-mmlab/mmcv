@@ -128,24 +128,95 @@ MMCV 提供了很多 Hook，每个 Hook 都有对应的优先级，在 Runner �
 
 ##### 默认钩子
 
-| 名称 | 用途 | 优先级 | API 文档 |
-| ---  | --- | --- | --- |
-| LrUpdaterHook  | 学习率调整 | VERY_HIGH (10) | [mmcv/runner/hooks/lr_updater.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LrUpdaterHook) |
-| MomentumUpdaterHook | 动量更新 | HIGH (30) | [mmcv/runner/hooks/momentum_updater.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/momentum_updater.py) |
-| OptimizerHook | 反向传播以及参数更新 | ABOVE_NORMAL (40) | [mmcv/runner/hooks/optimizer.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OptimizerHook) |
-| CheckPointHook | 按指定间隔保存权重 | NORMAL (50) | [mmcv/runner/hooks/checkpoint.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CheckpointHook) |
-| IterTimerHook | 迭代耗时统计 | LOW (70) | [mmcv/runner/hooks/iter_timer.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/iter_timer.py) |
-| LoggerHook | 打印日志 | VERY_LOW (90) | [mmcv/runner/hooks/logger](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook) |
+<table class="docutils">
+  <tbody>
+    <tr>
+      <td align="left">名称</td>
+      <td align="left">用途</td>
+      <td align="left">优先级</td>
+      <td align="left">API 文档</td>
+    </tr>
+    <tr>
+      <td align="left">LrUpdaterHook</td>
+      <td align="left">学习率调整</td>
+      <td align="left">VERY_HIGH (10)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LrUpdaterHook">mmmcv.runner.LrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">MomentumUpdaterHook</td>
+      <td align="left">动量更新</td>
+      <td align="left">HIGH (30)</td>
+      <td align="left"><a href="https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/momentum_updater.py">mmcv/runner/hooks/momentum_updater.py</a></td>
+    </tr>
+    <tr>
+      <td align="left">OptimizerHook</td>
+      <td align="left">反向传播以及参数更新</td>
+      <td align="left">ABOVE_NORMAL (40)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OptimizerHook">mmmcv.runner.OptimizerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">CheckPointHook</td>
+      <td align="left">按指定间隔保存权重</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CheckPointHook">mmmcv.runner.CheckPointHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">IterTimerHook</td>
+      <td align="left">统计迭代耗时</td>
+      <td align="left">LOW (70)</td>
+      <td align="left"><a href="https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/iter_timer.py">mmcv/runner/hooks/iter_timer.py</a></td>
+    </tr>
+    <tr>
+      <td align="left">LoggerHook</td>
+      <td align="left">记录日志</td>
+      <td align="left">LOW (90)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook">mmcv.runner.LoggerHook</a></td>
+    </tr>
+  </tbody>
+</table>
 
 ##### 定制钩子
 
-| 名称 | 用途 | 优先级 | API 文档 |
-| ---  | --- | --- | --- |
-| DistSamplerSeedHook | 确保 shuffle 生效 | NORMAL (50) | [mmcv/runner/hooks/sampler_seed.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.DistSamplerSeedHook) |
-| EvalHook | 按指定间隔测试验证集 | NORMAL (50) | [mmcv/runner/hooks/evaluation.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.EvalHook) |
-| EmptyCacheHook | PyTorch CUDA 缓存清理 | NORMAL (50) | [mmcv/runner/hooks/memory.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ProfilerHook) |
-| ProfilerHook | 分析训练时间的瓶颈 | NORMAL (50) | [mmcv/runner/hooks/profiler.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ProfilerHook) |
-| SyncBuffersHook | 同步模型的 buffer | NORMAL (50) | [mmcv/runner/hooks/sync_buffer.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.SyncBuffersHook) |
+<table class="docutils">
+  <tbody>
+    <tr>
+      <td align="left">名称</td>
+      <td align="left">用途</td>
+      <td align="left">优先级</td>
+      <td align="left">API 文档</td>
+    </tr>
+    <tr>
+      <td align="left">DistSamplerSeedHook</td>
+      <td align="left">确保 shuffle 生效</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.DistSamplerSeedHook">mmcv.runner.DistSamplerSeedHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">EvalHook</td>
+      <td align="left">按指定间隔测试验证集</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.EvalHook">mmcv.runner.EvalHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">EmptyCacheHook</td>
+      <td align="left">PyTorch CUDA 缓存清理</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.EmptyCacheHook">mmmcv.runner.EmptyCacheHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">ProfilerHook</td>
+      <td align="left">分析训练时间的瓶颈</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ProfilerHook">mmcv.runner.ProfilerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">SyncBuffersHook</td>
+      <td align="left">同步模型的 buffer</td>
+      <td align="left">NORMAL (50)</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.SyncBuffersHook">mmcv.runner.SyncBuffersHook</a></td>
+    </tr>
+  </tbody>
+</table>
 
 ### 钩子用法介绍
 
@@ -416,22 +487,80 @@ runner.register_hook(ema_config, priority='NORMAL')
 
 #### LrUpdaterHook
 
-学习率决定每次更新的步长，合适的学习率可以使训练快速收敛。MMCV 中提供很多学习率衰减策略，其中部分学习率衰减策略也伴有动量衰减策略。
+学习率决定每次更新的步长，合适的学习率可以使训练快速收敛。MMCV 中提供很多学习率衰减策略，其中部分学习率更新策略也伴有动量更新策略。
 
 下表是 MMCV 支持的学习率更新策略和对应的动量更新策略
 
-| 名称 | 描述 | 策略 | API 文档 |
-| ---  | --- | --- | --- |
-| FixedLrUpdaterHook | 固定学习率 | fixed | [mmcv.runner.FixedLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FixedLrUpdaterHook) |
-| StepLrUpdaterHook, StepMomentumUpdaterHook | 等间隔调整学习率 | step | [mmcv.runner.StepLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.StepLrUpdaterHook), [mmcv.runner.StepMomentumUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FixedLrUpdaterHook) |
-| ExpLrUpdaterHook | 指数调整学习率 | exp | [mmcv.runner.ExpLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ExpLrUpdaterHook) |
-| PolyLrUpdaterHook | 多项式调整学习率 | poly | [mmcv.runner.PolyLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.PolyLrUpdaterHook) |
-| InvLrUpdaterHook | 反比例调整学习率 | Inv | [mmcv.runner.InvLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.InvLrUpdaterHook) |
-| CosineAnnealingLrUpdaterHook, CosineAnnealingMomentumUpdaterHook | 余弦退火调整学习率 | CosineAnnealing | [mmcv.runner.CosineAnnealingLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CosineAnnealingLrUpdaterHook) |
-| FlatCosineAnnealingLrUpdaterHook | 初始学习率训练一段时间再使用余弦退火调整学习率 | FlatCosineAnnealing | [mmcv.runner.FlatCosineAnnealingLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FlatCosineAnnealingLrUpdaterHook) |
-| CosineRestartLrUpdaterHook | 多次余弦退火调整学习率，每次的初始学习率可能不一样 | CosineRestart | [mmcv.runner.CosineRestartLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CosineRestartLrUpdaterHook) |
-| CyclicLrUpdaterHook, CyclicMomentumUpdaterHook | 循环调整学习率 | cyclic | [mmcv.runner.CyclicLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CyclicLrUpdaterHook), [mmcv.runner.CyclicMomentumUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CyclicMomentumUpdaterHook) |
-| OneCycleLrUpdaterHook, OneCycleMomentumUpdaterHook | 一个循环内调整学习率，学习率从小增大再减小 | OneCycle | [mmcv.runner.OneCycleLrUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OneCycleLrUpdaterHook), [mmcv.runner.OneCycleMomentumUpdaterHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OneCycleMomentumUpdaterHook) |
+<table class="docutils">
+  <tbody>
+    <tr>
+      <td align="left" width="120">名称</td>
+      <td align="left" style="min-width: 160px">描述</td>
+      <td align="left" width="100">策略</td>
+      <td align="left" width="240">API 文档</td>
+    </tr>
+    <tr>
+      <td align="left">FixedLrUpdaterHook</td>
+      <td align="left">固定学习率</td>
+      <td align="left">fixed</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FixedLrUpdaterHook">mmcv.runner.FixedLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">StepLrUpdaterHook, StepMomentumUpdaterHook</td>
+      <td align="left">等间隔调整学习率</td>
+      <td align="left">step</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.StepLrUpdaterHook">mmcv.runner.StepLrUpdaterHook</a>, <a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FixedLrUpdaterHook">mmcv.runner.StepMomentumUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">ExpLrUpdaterHook</td>
+      <td align="left">指数调整学习率</td>
+      <td align="left">exp</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ExpLrUpdaterHook">mmcv.runner.ExpLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">PolyLrUpdaterHook</td>
+      <td align="left">多项式调整学习率</td>
+      <td align="left">poly</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.PolyLrUpdaterHook">mmcv.runner.PolyLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">InvLrUpdaterHook</td>
+      <td align="left">反比例调整学习率</td>
+      <td align="left">Inv</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.InvLrUpdaterHook">mmcv.runner.InvLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">CosineAnnealingLrUpdaterHook, CosineAnnealingMomentumUpdaterHook</td>
+      <td align="left">余弦退火调整学习率</td>
+      <td align="left">CosineAnnealing</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CosineAnnealingLrUpdaterHook">mmcv.runner.CosineAnnealingLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">FlatCosineAnnealingLrUpdaterHook</td>
+      <td align="left">初始学习率训练一段时间再使用余弦退火调整学习率</td>
+      <td align="left">FlatCosineAnnealing</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FlatCosineAnnealingLrUpdaterHook">mmcv.runner.FlatCosineAnnealingLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">CosineRestartLrUpdaterHook</td>
+      <td align="left">多次余弦退火调整学习率</td>
+      <td align="left">CosineRestart</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CosineRestartLrUpdaterHook">mmcv.runner.CosineRestartLrUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">CyclicLrUpdaterHook, CyclicMomentumUpdaterHook</td>
+      <td align="left">循环调整学习率</td>
+      <td align="left">cyclic</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CyclicLrUpdaterHook">mmcv.runner.CyclicLrUpdaterHook</a>, <a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CyclicMomentumUpdaterHook">mmcv.runner.CyclicMomentumUpdaterHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">OneCycleLrUpdaterHook, OneCycleMomentumUpdaterHook</td>
+      <td align="left">一个循环内调整学习率，学习率先增大再减小</td>
+      <td align="left">OneCycle</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OneCycleLrUpdaterHook">mmcv.runner.OneCycleLrUpdaterHook</a>, <a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OneCycleMomentumUpdaterHook">mmcv.runner.OneCycleMomentumUpdaterHook</a></td>
+    </tr>
+  </tbody>
+</table>
 
 学习率调整策略虽然有很多种，但用法如出一辙，下面只举两个常用的用法。
 
@@ -464,14 +593,38 @@ runner.register_lr_hook(lr_config)
 
 MMCV 提供以下日志相关的 LoggerHook
 
-| 名称 | API 文档 |
-| --- | --- |
-| TextLoggerHook | [mmcv.runner.TextLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.TextLoggerHook) |
-| TensorboardLoggerHook | [mmcv.runner.TensorboardLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.TensorboardLoggerHook) |
-| NeptuneLoggerHook | [mmcv.runner.NeptuneLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.NeptuneLoggerHook) |
-| DvcliveLoggerHook | [mmcv.runner.DvcliveLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.DvcliveLoggerHook) |
-| WandbLoggerHook | [mmcv.runner.WandbLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.WandbLoggerHook) |
-| MlflowLoggerHook | [mmcv.runner.MlflowLoggerHook](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.MlflowLoggerHook) |
+<table class="docutils">
+  <tbody>
+    <tr>
+      <td align="left">名称</td>
+      <td align="left">API 文档</td>
+    </tr>
+    <tr>
+      <td align="left">TextLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.TextLoggerHook">mmcv.runner.TextLoggerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">TensorboardLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.TensorboardLoggerHook">mmcv.runner.TensorboardLoggerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">NeptuneLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.NeptuneLoggerHook">mmcv.runner.NeptuneLoggerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">DvcliveLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.DvcliveLoggerHook">mmcv.runner.DvcliveLoggerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">WandbLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.WandbLoggerHook">mmcv.runner.WandbLoggerHook</a></td>
+    </tr>
+    <tr>
+      <td align="left">MlflowLoggerHook</td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.MlflowLoggerHook">mmcv.runner.MlflowLoggerHook</a></td>
+    </tr>
+  </tbody>
+</table>
 
 面对这么多 LoggerHook，我们该如何选择合适的日志 Hook 呢？以下是我们的一些推荐：
 
@@ -486,7 +639,7 @@ MMCV 提供以下日志相关的 LoggerHook
 MMCV 目前提供的 LoggerHook 功能有限，只用于记录标量数据，例如 loss、acc 等，暂不支持可视化图像或特征图等。欢迎提 PR 完善 LoggerHook。
 ```
 
-##### Text
+##### 输出到文件
 
 [TextLoggerHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/logger/text.py) 会将日志打印到终端以及保存到 json 文件。
 
@@ -521,7 +674,7 @@ runner = EpochBasedRunner(...)
 runner.register_logger_hooks(log_config)
 ```
 
-##### TensorBoard
+##### 输出到 TensorBoard
 
 TensorBoard 最初是随 TensorFlow 提出的一款可视化工具包，其便捷性和完善的记录功能使它得到了广泛应用，并扩展到 PyTorch 等多种深度学习框架。TensorBoard 支持记录多种数据类型：
 
@@ -572,7 +725,7 @@ tensorboard dev upload --logdir work_dirs
 
 ![avatar](../../en/_static/understand_mmcv/tensorboard.png)
 
-##### Neptune
+##### 上传至 Neptune
 
 Neptune 是一个集实验记录、数据存储、可视化、模型注册等多种功能于一体的机器学习实验管理工具，用户可以在网页端轻松地查看所有的记录与可视化结果。Neptune 支持记录的数据类型包括但不限于：
 
