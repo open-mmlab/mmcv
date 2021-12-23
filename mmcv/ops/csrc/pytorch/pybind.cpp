@@ -343,8 +343,8 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
 void convex_iou(const Tensor pointsets, const Tensor polygons,
                     Tensor ious);
 
-void convex_giou(const Tensor pointsets, const Tensor polygons,
-                    Tensor output);
+//void convex_giou(const Tensor pointsets, const Tensor polygons,
+//                    Tensor output);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -694,6 +694,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pool_method"));
   m.def("convex_iou", &convex_iou, "convex_iou",
         py::arg("pointsets"), py::arg("polygons"), py::arg("ious"));
-  m.def("convex_giou", &convex_giou, "convex_giou",
-        py::arg("pointsets"), py::arg("polygons"), py::arg("output"));
+//  m.def("convex_giou", &convex_giou, "convex_giou",
+//        py::arg("pointsets"), py::arg("polygons"), py::arg("output"));
 }

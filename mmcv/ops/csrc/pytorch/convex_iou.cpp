@@ -15,13 +15,13 @@ void convex_iou(const Tensor pointsets, const Tensor polygons,
   convex_iou_impl(pointsets, polygons, ious);
 }
 
-void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
-                    Tensor ouput) {
-  DISPATCH_DEVICE_IMPL(convex_giou_impl, pointsets, polygons, ouput);
-}
+//void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
+//                    Tensor ouput) {
+//  DISPATCH_DEVICE_IMPL(convex_giou_impl, pointsets, polygons, ouput);
+//}
 
 
-void convex_giou(const Tensor pointsets, const Tensor polygons,
-                    Tensor ouput) {
-  convex_giou_impl(pointsets, polygons, ouput);
-}
+//void convex_giou(const Tensor pointsets, const Tensor polygons,
+//                    Tensor ouput) {
+//  convex_giou_impl(pointsets, polygons, ouput);
+//}
