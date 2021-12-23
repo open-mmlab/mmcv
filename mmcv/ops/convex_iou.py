@@ -6,7 +6,7 @@ ext_module = ext_loader.load_ext('_ext', ['convex_iou', 'convex_giou'])
 
 def convex_giou(pointsets, polygons):
     """Return generalized intersection-over-union (Jaccard index) between point
-     sets and polygons.
+    sets and polygons.
 
     Args:
         pointsets (torch.Tensor): It has shape (N, 18),
@@ -19,8 +19,8 @@ def convex_giou(pointsets, polygons):
             between point sets and polygons with the shape (N,). The second
             element is the gradient of point sets with the shape (N, 18).
     """
-    convex_giou_grad = ext_module.convex_giou_cuda.convex_giou(pointsets,
-                                                               polygons)
+    convex_giou_grad = ext_module.convex_giou_cuda.convex_giou(
+        pointsets, polygons)
     convex_giou_grad = convex_giou_grad.reshape(-1, 19)
     convex_giou = convex_giou_grad[:, -1]
     points_grad = convex_giou_grad[:, 0:-1]
@@ -28,8 +28,8 @@ def convex_giou(pointsets, polygons):
 
 
 def convex_iou(pointsets, polygons):
-    """Return intersection-over-union (Jaccard index) between point
-     sets and polygons.
+    """Return intersection-over-union (Jaccard index) between point sets and
+    polygons.
 
     Args:
         pointsets (torch.Tensor): It has shape (N, 18),
@@ -40,7 +40,6 @@ def convex_iou(pointsets, polygons):
     Returns:
         torch.Tensor: Return the ious between point sets and polygons with the
          shape (N, K).
-
     """
     N, K = pointsets.size(0), polygons.size(0)
     convex_ious = ext_module.convex_iou_cuda.convex_iou(pointsets, polygons)

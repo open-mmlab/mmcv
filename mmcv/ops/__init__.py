@@ -7,6 +7,7 @@ from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
+from .convex_iou import convex_giou, convex_iou
 from .corner_pool import CornerPool
 from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
@@ -53,7 +54,6 @@ from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
-from .convex_iou import convex_iou, convex_giou
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
