@@ -340,11 +340,9 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW);
 
-void convex_iou(const Tensor pointsets, const Tensor polygons,
-                    Tensor ious);
+void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
 
-//void convex_giou(const Tensor pointsets, const Tensor polygons,
-//                    Tensor output);
+void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -692,8 +690,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
         py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
         py::arg("pool_method"));
-  m.def("convex_iou", &convex_iou, "convex_iou",
-        py::arg("pointsets"), py::arg("polygons"), py::arg("ious"));
-//  m.def("convex_giou", &convex_giou, "convex_giou",
-//        py::arg("pointsets"), py::arg("polygons"), py::arg("output"));
+  m.def("convex_iou", &convex_iou, "convex_iou", py::arg("pointsets"),
+        py::arg("polygons"), py::arg("ious"));
+  m.def("convex_giou", &convex_giou, "convex_giou", py::arg("pointsets"),
+        py::arg("polygons"), py::arg("output"));
 }
