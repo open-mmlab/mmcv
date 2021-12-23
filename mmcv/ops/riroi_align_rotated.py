@@ -56,7 +56,7 @@ class RiRoIAlignRotatedFunction(Function):
         num_samples = ctx.num_samples
         rois = ctx.saved_tensors[0]
         assert feature_size is not None
-        batch_size, num_channels, feature_height, feature_width = feature_size
+        batch_size, num_channels, feature_h, feature_w = feature_size
 
         out_w = grad_output.size(3)
         out_h = grad_output.size(2)
@@ -64,8 +64,8 @@ class RiRoIAlignRotatedFunction(Function):
         grad_input = grad_rois = None
 
         if ctx.needs_input_grad[0]:
-            grad_input = rois.new_zeros(batch_size, num_channels,
-                                        feature_height, feature_width)
+            grad_input = rois.new_zeros(batch_size, num_channels, feature_h,
+                                        feature_w)
             ext_module.riroi_align_rotated_backward(
                 grad_output.contiguous(), rois, grad_input, out_h, out_w,
                 spatial_scale, num_samples, num_orientations, clockwise)
