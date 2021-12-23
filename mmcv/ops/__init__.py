@@ -7,7 +7,7 @@ from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
-from .convex_iou import convex_iou
+from .convex_iou import convex_iou, convex_giou
 from .corner_pool import CornerPool
 from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
@@ -79,5 +79,5 @@ __all__ = [
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
-    'convex_iou'
+    'convex_iou', 'convex_giou'
 ]
