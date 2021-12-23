@@ -21,7 +21,7 @@ class RotatedFeatureAlignFunction(Function):
     """
 
     @staticmethod
-    def forward(ctx, features, best_rbboxes, spatial_scale, points=1):
+    def forward(ctx, features, best_rbboxes, spatial_scale, points):
         """
         Args:
             features (torch.Tensor): Input features with shape [N,C,H,W].
@@ -67,4 +67,5 @@ class RotatedFeatureAlignFunction(Function):
         return grad_input, None, None, None
 
 
-rotated_feature_align = RotatedFeatureAlignFunction.apply
+def rotated_feature_align(features, best_rbboxes, spatial_scale=1/8, points=1):
+    return RotatedFeatureAlignFunction.apply(features, best_rbboxes, spatial_scale, points)
