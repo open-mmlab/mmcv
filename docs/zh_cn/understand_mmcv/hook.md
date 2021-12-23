@@ -123,40 +123,39 @@ MMCV 提供了很多 Hook，每个 Hook 都有对应的优先级，在 Runner �
 我们将 MMCV 提供的 Hook 分为两类，一类是默认 Hook，另一类是定制 Hook。前者表示当我们调用 Runner 的 register_training_hooks 方法时被默认注册（注意，我们同样需要提供配置），后者表示需要手动注册，这里的手动有两种方式，一种是调用 Runner 的 register_hook 注册，另一种在调用 register_training_hooks 时传入 custom_hooks_config 参数。
 
 ```{note}
-不建议修改 MMCV 默认 Hook 的优先级，除非您有特殊需求。另外，定制 Hook 的优先级默认为
-Normal（50）
+不建议修改 MMCV 默认 Hook 的优先级，除非您有特殊需求。另外，定制 Hook 的优先级默认为 Normal（50）
 ```
 
 ##### 默认钩子
 
-| 名称 | 用途 | 优先级 | 源码路径 |
+| 名称 | 用途 | 优先级 | API 文档 |
 | ---  | --- | --- | --- |
-| LrUpdaterHook  | 学习率调整 | VERY_HIGH (10) | [mmcv/runner/hooks/lr_updater.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py) |
+| LrUpdaterHook  | 学习率调整 | VERY_HIGH (10) | [mmcv/runner/hooks/lr_updater.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LrUpdaterHook) |
 | MomentumUpdaterHook | 动量更新 | HIGH (30) | [mmcv/runner/hooks/momentum_updater.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/momentum_updater.py) |
-| OptimizerHook | 反向传播以及参数更新 | ABOVE_NORMAL (40) | [mmcv/runner/hooks/optimizer.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py) |
-| CheckPointHook | 按指定间隔保存权重 | NORMAL (50) | [mmcv/runner/hooks/checkpoint.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/checkpoint.py) |
+| OptimizerHook | 反向传播以及参数更新 | ABOVE_NORMAL (40) | [mmcv/runner/hooks/optimizer.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.OptimizerHook) |
+| CheckPointHook | 按指定间隔保存权重 | NORMAL (50) | [mmcv/runner/hooks/checkpoint.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CheckpointHook) |
 | IterTimerHook | 迭代耗时统计 | LOW (70) | [mmcv/runner/hooks/iter_timer.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/iter_timer.py) |
-| LoggerHook | 打印日志 | VERY_LOW (90) | [mmcv/runner/hooks/logger](https://github.com/open-mmlab/mmcv/tree/master/mmcv/runner/hooks/logger) |
+| LoggerHook | 打印日志 | VERY_LOW (90) | [mmcv/runner/hooks/logger](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook) |
 
 ##### 定制钩子
 
-| 名称 | 用途 | 优先级 | 源码路径 |
+| 名称 | 用途 | 优先级 | API 文档 |
 | ---  | --- | --- | --- |
-| DistSamplerSeedHook | 确保 shuffle 生效 | NORMAL (50) | [mmcv/runner/hooks/sampler_seed.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/sampler_seed.py) |
-| EvalHook | 按指定间隔测试验证集 | NORMAL (50) | [mmcv/runner/hooks/evaluation.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py) |
-| EmptyCacheHook | PyTorch CUDA 缓存清理 | NORMAL (50) | [mmcv/runner/hooks/memory.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/memory.py) |
-| ProfilerHook | 分析训练时间的瓶颈 | NORMAL (50) | [mmcv/runner/hooks/profiler.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/profiler.py) |
-| SyncBuffersHook | 同步模型的 buffer | NORMAL (50) | [mmcv/runner/hooks/sync_buffer.py](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/sync_buffer.py) |
+| DistSamplerSeedHook | 确保 shuffle 生效 | NORMAL (50) | [mmcv/runner/hooks/sampler_seed.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.DistSamplerSeedHook) |
+| EvalHook | 按指定间隔测试验证集 | NORMAL (50) | [mmcv/runner/hooks/evaluation.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.EvalHook) |
+| EmptyCacheHook | PyTorch CUDA 缓存清理 | NORMAL (50) | [mmcv/runner/hooks/memory.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ProfilerHook) |
+| ProfilerHook | 分析训练时间的瓶颈 | NORMAL (50) | [mmcv/runner/hooks/profiler.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.ProfilerHook) |
+| SyncBuffersHook | 同步模型的 buffer | NORMAL (50) | [mmcv/runner/hooks/sync_buffer.py](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.SyncBuffersHook) |
 
 ### 钩子用法介绍
 
 #### EvalHook
 
-[EvalHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py) 是按照一定的间隔对模型进行验证，在 EvalHook 出现之前，MMCV 对验证的支持是通过设置 workflow 配置，形如 `workflow=[('train', 2), ('val', 1)]`，表示每训练 2 个 epoch（假设使用的 Runner 是 EpochBasedRunner）验证一次。但这种方式灵活度不够，例如不能保存最优的模型。
+[EvalHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py) 按照一定的间隔对模型进行验证，在 EvalHook 出现之前，MMCV 对验证的支持是通过设置 workflow，形如 `workflow=[('train', 2), ('val', 1)]`，表示每训练 2 个 epoch（假设使用的 Runner 是 EpochBasedRunner）验证一次。但这种方式灵活度不够，例如不能保存最优的模型。
 
 于是，我们设计了 EvalHook。EvalHook 除了能很好地解决不能保存最优模型的问题，还提供了其他功能，例如支持从指定 epoch 才开始验证模型（因为前面的 epoch 模型效果较差，可以不验证从而节省时间）、支持恢复训练的时候先验证再训练（例如加载模型后想查看 checkpoint 的性能）。
 
-MMCV 除了提供 EvalHook，还提供了 [DistEvalHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py)，其继承自 EvalHook，用于分布式环境下的验证。除了初始化参数有些不同，DistEvalHook 还有一个不同点是重载了 EvalHook 中的 `_do_evaluate` 方法。EvalHook 中的 `_do_evaluate` 方法主要执行测试并保存最优模型（如果该模型是当前最优）。而 DistEvalHook 中的 `_do_evaluate` 作用也是类似的，首先在进行测试前同步 BN 中的 buffer（为了保证各个进程的模型是一致的），然后进行分布式测试（即每个进程单独测试） 以及每个进程都会测试（分布式测试），最后 master 进程收集其他进程的测试结果。
+MMCV 除了提供 EvalHook，还提供了 [DistEvalHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py)，其继承自 EvalHook，用于分布式环境下的验证。除了初始化参数有些不同，DistEvalHook 还有一个不同点是重载了 EvalHook 中的 `_do_evaluate` 方法。EvalHook 中的 `_do_evaluate` 方法主要执行测试并保存最优模型（如果该模型是当前最优）。而 DistEvalHook 中的 `_do_evaluate` 作用也是类似的，首先在进行测试前同步 BN 中的 buffer（为了保证各个进程的模型是一致的），然后进行分布式测试（即每个进程单独测试），最后 master 进程收集其他进程的测试结果。
 
 ```{note}
 推荐使用 EvalHook 代替 workflow 中的 val
@@ -164,7 +163,7 @@ MMCV 除了提供 EvalHook，还提供了 [DistEvalHook](https://github.com/open
 
 使用 EvalHook 只需两行代码，一行实例化 EvalHook ，另一个行将实例化的对象注册到 Runner。
 
-##### 最简例子
+##### 最简用法
 
 ```python
 from mmcv.runner.hooks import EvalHook
@@ -212,7 +211,7 @@ runner.register_hook(EvalHook(val_dataloader, save_best='acc'))
 
 #### CheckPointHook
 
-[CheckpointHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/checkpoint.py) 主要是对模型参数进行保存，如果是分布式多卡训练，则仅仅会在 master 进程保存。另外，我们可以通过 `max_keep_ckpts` 参数设置最多保存多少个权重文件，前面的权重会被删除。
+[CheckpointHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/checkpoint.py) 主要是对模型参数进行保存，如果是分布式多卡训练，则仅仅会在 master 进程保存。另外，我们可以通过 `max_keep_ckpts` 参数设置最多保存多少个权重文件，权重文件数超过 `max_keep_ckpts` 时，前面的权重会被删除。
 
 如果以 epoch 为单位进行保存，则该 Hook 实现 `after_train_epoch` 方法即可，否则仅需实现 `after_train_iter` 方法。
 
@@ -419,7 +418,7 @@ runner.register_hook(ema_config, priority='NORMAL')
 
 学习率决定每次更新的步长，合适的学习率可以使训练快速收敛。MMCV 中提供很多学习率衰减策略，其中部分学习率衰减策略也伴有动量衰减策略。
 
-下表是 MMCV 提供的学习率衰减策略和对应的动量衰减策略
+下表是 MMCV 支持的学习率更新策略和对应的动量更新策略
 
 | 名称 | 描述 | 策略 | API 文档 |
 | ---  | --- | --- | --- |
@@ -436,9 +435,9 @@ runner.register_hook(ema_config, priority='NORMAL')
 
 学习率调整策略虽然有很多种，但用法如出一辙，下面只举两个常用的用法。
 
-```{tip}
+:::{tip}
 为了确保学习率的衰减符合期望，我们可以参考 [可视化学习率脚本](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) 在开始训练前可视化学习率的变化。
-```
+:::
 
 ##### 等间隔调整学习率
 
@@ -575,7 +574,7 @@ tensorboard dev upload --logdir work_dirs
 
 ##### Neptune
 
-Neptune 是一个集实验记录、数据存储、可视化、模型注册等多种功能于一体的机器学习实验管理工具，用户可以在网页端 UI 轻松地查看所有的记录与可视化结果。Neptune 支持记录的数据类型包括但不限于：
+Neptune 是一个集实验记录、数据存储、可视化、模型注册等多种功能于一体的机器学习实验管理工具，用户可以在网页端轻松地查看所有的记录与可视化结果。Neptune 支持记录的数据类型包括但不限于：
 
   - 指标和损失
   - 超参数和模型 config
@@ -634,7 +633,7 @@ python examples/train.py
 例如，我们想在训练的过程中判断 loss 是否有效（无穷大即为无效），我们可以在每次迭代之后判断 loss 的值，即可以在 after_train_iter 中添加判断的逻辑。
 
 ```{note}
-如无必要，不能在 Hook 中修改能够影响其他 Hook 的属性或者方法。而且原则上 Hook 之间最好不要有前后依赖关系。Hook 的主要目的是扩展功能，而不是修改已经实现的功能。
+如无必要，不应当在 Hook 中修改能够影响其他 Hook 的属性或者方法。而且原则上 Hook 之间最好不要有前后依赖关系。Hook 的主要目的是扩展功能，而不是修改已经实现的功能。
 ```
 
 ```python
