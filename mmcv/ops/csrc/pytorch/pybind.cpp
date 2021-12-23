@@ -340,6 +340,16 @@ void correlation_backward(Tensor grad_output, Tensor input1, Tensor input2,
                           int dilationH, int dilationW, int dilation_patchH,
                           int dilation_patchW, int dH, int dW);
 
+void rotated_feature_align_forward(const Tensor features,
+                                   const Tensor best_bboxes, Tensor output,
+                                   const float spatial_scale, const int points);
+
+void rotated_feature_align_backward(const Tensor top_grad,
+                                    const Tensor best_bboxes,
+                                    Tensor bottom_grad,
+                                    const float spatial_scale,
+                                    const int points);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -686,4 +696,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
         py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
         py::arg("pool_method"));
+  m.def("rotated_feature_align_forward", &rotated_feature_align_forward,
+        "Feature Refine forward (CUDA)", py::arg("features"),
+        py::arg("best_bboxes"), py::arg("output"), py::arg("spatial_scale"),
+        py::arg("points"));
+  m.def("rotated_feature_align_backward", &rotated_feature_align_backward,
+        "Feature Refine backward (CUDA)", py::arg("top_grad"),
+        py::arg("best_bboxes"), py::arg("bottom_grad"),
+        py::arg("spatial_scale"), py::arg("points"));
 }
