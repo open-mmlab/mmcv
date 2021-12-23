@@ -40,6 +40,7 @@ from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
 from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
+from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
@@ -71,11 +72,11 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
     'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'rotated_feature_align', 'RoIAlignRotated', 'roi_align_rotated',
-    'pixel_group', 'QueryAndGroup', 'GroupAll', 'grouping_operation',
-    'contour_expand', 'three_nn', 'three_interpolate',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'gather_points', 'furthest_point_sample',
+    'rotated_feature_align', 'RiRoIAlignRotated', 'riroi_align_rotated',
+    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'QueryAndGroup',
+    'GroupAll', 'grouping_operation', 'contour_expand', 'three_nn',
+    'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
+    'border_align', 'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
