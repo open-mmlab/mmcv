@@ -67,5 +67,9 @@ class RotatedFeatureAlignFunction(Function):
         return grad_input, None, None, None
 
 
-def rotated_feature_align(features, best_rbboxes, spatial_scale=1/8, points=1):
-    return RotatedFeatureAlignFunction.apply(features, best_rbboxes, spatial_scale, points)
+def rotated_feature_align(features,
+                          best_rbboxes,
+                          spatial_scale=1 / 8,
+                          points=1):
+    return RotatedFeatureAlignFunction.apply(features, best_rbboxes,
+                                             spatial_scale, points)

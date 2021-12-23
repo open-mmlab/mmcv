@@ -1380,8 +1380,8 @@ void rotated_feature_align_forward_cuda(const Tensor features,
                                         const Tensor best_bboxes,
                                         const float spatial_scale,
                                         const int points, Tensor output) {
-  RotatedFeatureAlignForwardCUDAKernelLauncher(
-      features, best_bboxes, spatial_scale, points, output);
+  RotatedFeatureAlignForwardCUDAKernelLauncher(features, best_bboxes,
+                                               spatial_scale, points, output);
 };
 
 void rotated_feature_align_backward_cuda(const Tensor top_grad,
