@@ -1386,4 +1386,4 @@ void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
                       Tensor output);
 
 REGISTER_DEVICE_IMPL(convex_iou_impl, CUDA, convex_iou_cuda);
-// REGISTER_DEVICE_IMPL(convex_giou_impl, CUDA, convex_giou_cuda);
+REGISTER_DEVICE_IMPL(convex_giou_impl, CUDA, convex_giou_cuda);
