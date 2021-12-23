@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Function
 
@@ -119,8 +120,7 @@ class DynamicScatter(nn.Module):
                 inds = torch.where(coors[:, 0] == i)
                 voxel, voxel_coor = self.forward_single(
                     points[inds], coors[inds][:, 1:])
-                coor_pad = nn.functional.pad(
-                    voxel_coor, (1, 0), mode='constant', value=i)
+                coor_pad = F.pad(voxel_coor, (1, 0), mode='constant', value=i)
                 voxel_coors.append(coor_pad)
                 voxels.append(voxel)
             features = torch.cat(voxels, dim=0)

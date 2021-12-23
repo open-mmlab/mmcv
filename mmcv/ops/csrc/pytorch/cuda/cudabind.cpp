@@ -1433,7 +1433,51 @@ void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
                                    const std::vector<float> voxel_size,
                                    const std::vector<float> coors_range,
                                    const int NDim);
+
 REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
                      hard_voxelize_forward_cuda);
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
+
+void RotatedFeatureAlignForwardCUDAKernelLauncher(const Tensor features,
+                                                  const Tensor best_bboxes,
+                                                  const float spatial_scale,
+                                                  const int points,
+                                                  Tensor output);
+
+void RotatedFeatureAlignBackwardCUDAKernelLauncher(const Tensor top_grad,
+                                                   const Tensor best_bboxes,
+                                                   const float spatial_scale,
+                                                   const int points,
+                                                   Tensor bottom_grad);
+
+void rotated_feature_align_forward_cuda(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output) {
+  RotatedFeatureAlignForwardCUDAKernelLauncher(features, best_bboxes,
+                                               spatial_scale, points, output);
+};
+
+void rotated_feature_align_backward_cuda(const Tensor top_grad,
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad) {
+  RotatedFeatureAlignBackwardCUDAKernelLauncher(
+      top_grad, best_bboxes, spatial_scale, points, bottom_grad);
+};
+
+void rotated_feature_align_forward_impl(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output);
+
+void rotated_feature_align_backward_impl(const Tensor top_grad,
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad);
+
+REGISTER_DEVICE_IMPL(rotated_feature_align_forward_impl, CUDA,
+                     rotated_feature_align_forward_cuda);
+REGISTER_DEVICE_IMPL(rotated_feature_align_backward_impl, CUDA,
+                     rotated_feature_align_backward_cuda);

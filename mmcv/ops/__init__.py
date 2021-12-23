@@ -46,6 +46,7 @@ from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
+from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
 from .scatter_points import DynamicScatter, dynamic_scatter
 from .sync_bn import SyncBatchNorm

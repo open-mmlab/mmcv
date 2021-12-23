@@ -696,7 +696,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "roiaware_pool3d_backward", py::arg("pts_idx_of_voxels"),
         py::arg("argmax"), py::arg("grad_out"), py::arg("grad_in"),
         py::arg("pool_method"));
-   m.def("rotated_feature_align_forward", &rotated_feature_align_forward,
+  m.def("rotated_feature_align_forward", &rotated_feature_align_forward,
         "Feature Refine forward (CUDA)", py::arg("features"),
         py::arg("best_bboxes"), py::arg("output"), py::arg("spatial_scale"),
         py::arg("points"));

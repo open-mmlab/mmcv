@@ -227,7 +227,8 @@ def force_fp32(apply_to=None, out_fp16=False):
 def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
     warnings.warning(
         '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated, and will be '
-        'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads')
+        'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads',
+        DeprecationWarning)
     _allreduce_grads(params, coalesce=coalesce, bucket_size_mb=bucket_size_mb)
 
 
