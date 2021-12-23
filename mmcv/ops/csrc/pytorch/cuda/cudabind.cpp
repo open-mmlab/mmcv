@@ -1406,3 +1406,12 @@ REGISTER_DEVICE_IMPL(rotated_feature_align_forward_impl, CUDA,
                      rotated_feature_align_forward_cuda);
 REGISTER_DEVICE_IMPL(rotated_feature_align_backward_impl, CUDA,
                      rotated_feature_align_backward_cuda);
+
+void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
+
+void min_area_polygons_cuda(const Tensor pointsets, Tensor polygons) {
+  MinAreaPolygonsCUDAKernelLauncher(pointsets, polygons);
+}
+
+void min_area_polygons_impl(const Tensor pointsets, Tensor polygons);
+REGISTER_DEVICE_IMPL(pointsets, polygons);

@@ -350,6 +350,8 @@ void rotated_feature_align_backward(const Tensor top_grad,
                                     const float spatial_scale,
                                     const int points);
 
+void min_area_polygons(const Tensor pointsets, Tensor polygons);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -704,4 +706,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "Feature Refine backward (CUDA)", py::arg("top_grad"),
         py::arg("best_bboxes"), py::arg("bottom_grad"),
         py::arg("spatial_scale"), py::arg("points"));
+  m.def("min_area_polygons", &rmin_area_polygons, "min_area_polygons",
+        py::arg("pointsets"), py::arg("polygons"));
 }

@@ -28,6 +28,7 @@ from .info import (get_compiler_version, get_compiling_cuda_version,
 from .iou3d import boxes_iou_bev, nms_bev, nms_normal_bev
 from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
+from .min_area_polygons import min_area_polygons
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
@@ -79,5 +80,6 @@ __all__ = [
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
-    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all'
+    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
+    'min_area_polygons'
 ]
