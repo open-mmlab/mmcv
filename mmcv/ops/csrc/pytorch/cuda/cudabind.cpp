@@ -1414,5 +1414,4 @@ void min_area_polygons_cuda(const Tensor pointsets, Tensor polygons) {
 }
 
 void min_area_polygons_impl(const Tensor pointsets, Tensor polygons);
-REGISTER_DEVICE_IMPL(min_area_polygons_impl, CUDA,
-                     min_area_polygons_cuda);
+REGISTER_DEVICE_IMPL(min_area_polygons_impl, CUDA, min_area_polygons_cuda);
