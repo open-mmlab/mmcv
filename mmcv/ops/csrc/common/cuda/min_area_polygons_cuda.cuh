@@ -8,6 +8,7 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+#define maxn 20
 const float eps = 1E-8;
 
 int const threadsPerBlock = 512;  // sizeof(unsigned long long) * 8;

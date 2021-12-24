@@ -9,9 +9,9 @@ void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets,
   int num_pointsets = pointsets.size(0);
   at::cuda::CUDAGuard device_guard(pointsets.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  min_area_polygons_cuda_kernel<scalar_t>
+  min_area_polygons_cuda_kernel
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-          num_pointsets, pointsets.data_ptr<scalar_t>(),
-          polygons.data_ptr<scalar_t>());
+          num_pointsets, pointsets.data_ptr<float>(),
+          polygons.data_ptr<float>());
   AT_CUDA_CHECK(cudaGetLastError());
 }
