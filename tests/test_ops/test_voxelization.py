@@ -39,7 +39,7 @@ def test_voxelization(device_type):
     device = torch.device(device_type)
 
     # test hard_voxelization on cpu/gpu
-    points = torch.tensor(points).contiguous().to(device)
+    points = points.contiguous().to(device)
     coors, voxels, num_points_per_voxel = hard_voxelization.forward(points)
     coors = coors.cpu().detach().numpy()
     voxels = voxels.cpu().detach().numpy()
