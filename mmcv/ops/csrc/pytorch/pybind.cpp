@@ -706,6 +706,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "Feature Refine backward (CUDA)", py::arg("top_grad"),
         py::arg("best_bboxes"), py::arg("bottom_grad"),
         py::arg("spatial_scale"), py::arg("points"));
-  m.def("min_area_polygons", &rmin_area_polygons, "min_area_polygons",
+  m.def("min_area_polygons", &min_area_polygons, "min_area_polygons",
         py::arg("pointsets"), py::arg("polygons"));
 }
