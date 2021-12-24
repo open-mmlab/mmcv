@@ -3,7 +3,7 @@
 - [x] box_iou_rotated (Support `CW`.)
 - [x] nms_rotated (Support `CW`.)
 - [x] RoIAlignRotated (Support `CW` & `CCW`. Defaults to `CCW`)
-- [ ] RiRoIAlignRotated (Support `CW` & `CCW`. Defaults to `CCW`)
+- [x] RiRoIAlignRotated (Support `CW` & `CCW`. Defaults to `CCW`)
 
 
 ## Definition of coordinate system
