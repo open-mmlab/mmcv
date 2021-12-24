@@ -20,6 +20,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - KNN
 - MaskedConv
 - NMS
+- PointsInPolygons
 - PSAMask
 - RiRoIAlignRotated
 - RotatedFeatureAlign
