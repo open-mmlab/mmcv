@@ -361,6 +361,8 @@ void riroi_align_rotated_backward(Tensor top_grad, Tensor rois,
                                   int num_samples, int num_orientations,
                                   bool clockwise);
 
+void points_in_polygons_forward(Tensor points, Tensor polygons, Tensor output);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -726,4 +728,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("num_samples"), py::arg("num_orientations"),
         py::arg("clockwise"));
+  m.def("points_in_polygons_forward", &points_in_polygons_forward,
+        "points_in_polygons_forward", py::arg("points"), py::arg("polygons"),
+        py::arg("output"));
 }

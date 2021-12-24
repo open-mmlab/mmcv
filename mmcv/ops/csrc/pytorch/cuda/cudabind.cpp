@@ -1481,3 +1481,22 @@ REGISTER_DEVICE_IMPL(rotated_feature_align_forward_impl, CUDA,
                      rotated_feature_align_forward_cuda);
 REGISTER_DEVICE_IMPL(rotated_feature_align_backward_impl, CUDA,
                      rotated_feature_align_backward_cuda);
+
+void PointsInPolygonsForwardCUDAKernelLauncher(const at::Tensor points,
+                                               const at::Tensor polygons,
+                                               const int rows, const int cols,
+                                               at::Tensor output);
+
+void points_in_polygons_forward_cuda(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
+                                     const int cols) {
+  PointsInPolygonsForwardCUDAKernelLauncher(points, polygons, rows, cols,
+                                            output);
+};
+
+void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
+                                     const int cols);
+
+REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, CUDA,
+                     points_in_polygons_forward_cuda);
