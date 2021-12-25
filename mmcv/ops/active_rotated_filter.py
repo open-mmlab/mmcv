@@ -27,10 +27,10 @@ class ActiveRotatedFilterFunction(Function):
                 [nOutputPlane, nInputPlane, num_orientations, H, W].
             indices (torch.Tensor): Indices with shape
                 [num_orientations, H, W, num_rotations].
+                
         Returns:
             torch.Tensor: Refined features with shape
-                [nOutputPlane * num_rotations, nInputPlane * num_orientations,
-                 H, W].
+            [nOutputPlane * num_rotations, nInputPlane * num_orientations, H, W].
         """
         ctx.save_for_backward(input, indices)
         op, ip, o, h, w = input.size()
