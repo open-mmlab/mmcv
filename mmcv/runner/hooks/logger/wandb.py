@@ -6,6 +6,24 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class WandbLoggerHook(LoggerHook):
+    """Class to log metrics with wandb.
+
+    It requires `wandb` to be installed.
+    Args:
+        interval (int): Logging interval (every k iterations).
+            Default 10.
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`.
+            Default: True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default: False.
+        by_epoch (bool): Whether EpochBasedRunner is used.
+            Default: True.
+        log_artifact (bool):
+            Default: False
+            If True, artifacts in {work_dir} will be uploaded to wandb after
+            training ends.
+    """
 
     def __init__(self,
                  init_kwargs=None,
@@ -14,13 +32,15 @@ class WandbLoggerHook(LoggerHook):
                  reset_flag=False,
                  commit=True,
                  by_epoch=True,
-                 with_step=True):
+                 with_step=True,
+                 log_artifact=False):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
         self.commit = commit
         self.with_step = with_step
+        self.log_artifact = log_artifact
 
     def import_wandb(self):
         try:
@@ -53,4 +73,6 @@ class WandbLoggerHook(LoggerHook):
 
     @master_only
     def after_run(self, runner):
+        if self.log_artifact:
+            self.wandb.log_artifact(runner.work_dir, name='artifacts')
         self.wandb.join()
