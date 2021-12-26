@@ -1190,6 +1190,8 @@ def test_mlflow_hook(log_model):
 
 
 def test_wandb_hook():
+    from mmcv.utils import scandir
+
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
     hook = WandbLoggerHook()
@@ -1197,6 +1199,12 @@ def test_wandb_hook():
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
+
+    wandb_artifact = hook.wandb.Artifact(name='artifacts', type='model')
+    for filename in scandir(runner.work_dir, hook.out_suffix, True):
+        local_filepath = osp.join(runner.work_dir, filename)
+        wandb_artifact.add_file(local_filepath)
+
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
@@ -1206,7 +1214,7 @@ def test_wandb_hook():
     },
                                       step=6,
                                       commit=True)
-    hook.wandb.log_artifact.assert_called_with()
+    hook.wandb.log_artifact.assert_called_with(wandb_artifact)
     hook.wandb.join.assert_called_with()
 
 
