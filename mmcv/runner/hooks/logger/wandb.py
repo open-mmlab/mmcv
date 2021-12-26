@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+
+from mmcv.utils import scandir
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -20,9 +23,14 @@ class WandbLoggerHook(LoggerHook):
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
         log_artifact (bool):
-            Default: False
+            Default: True
             If True, artifacts in {work_dir} will be uploaded to wandb after
             training ends.
+            `New in version 1.4.3.`
+        out_suffix (str or tuple[str], optional): Those filenames ending with
+            ``out_suffix`` will be uploaded to wandb.
+            Default: ('.log.json', '.log', '.py').
+            `New in version 1.4.3.`
     """
 
     def __init__(self,
@@ -33,7 +41,8 @@ class WandbLoggerHook(LoggerHook):
                  commit=True,
                  by_epoch=True,
                  with_step=True,
-                 log_artifact=False):
+                 log_artifact=True,
+                 out_suffix=('.log.json', '.log', '.py')):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
         self.import_wandb()
@@ -41,6 +50,7 @@ class WandbLoggerHook(LoggerHook):
         self.commit = commit
         self.with_step = with_step
         self.log_artifact = log_artifact
+        self.out_suffix = out_suffix
 
     def import_wandb(self):
         try:
@@ -74,5 +84,10 @@ class WandbLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner):
         if self.log_artifact:
-            self.wandb.log_artifact(runner.work_dir, name='artifacts')
+            wandb_artifact = self.wandb.Artifact(
+                name='artifacts', type='model')
+            for filename in scandir(runner.work_dir, self.out_suffix, True):
+                local_filepath = osp.join(runner.work_dir, filename)
+                wandb_artifact.add_file(local_filepath)
+            self.wandb.log_artifact(wandb_artifact)
         self.wandb.join()
