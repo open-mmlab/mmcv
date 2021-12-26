@@ -22,10 +22,9 @@ class WandbLoggerHook(LoggerHook):
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
-        log_artifact (bool):
+        log_artifact (bool): If True, artifacts in {work_dir} will be uploaded
+            to wandb after training ends.
             Default: True
-            If True, artifacts in {work_dir} will be uploaded to wandb after
-            training ends.
             `New in version 1.4.3.`
         out_suffix (str or tuple[str], optional): Those filenames ending with
             ``out_suffix`` will be uploaded to wandb.
