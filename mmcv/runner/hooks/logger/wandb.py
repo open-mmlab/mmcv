@@ -12,6 +12,7 @@ class WandbLoggerHook(LoggerHook):
     """Class to log metrics with wandb.
 
     It requires `wandb` to be installed.
+    
     Args:
         interval (int): Logging interval (every k iterations).
             Default 10.
