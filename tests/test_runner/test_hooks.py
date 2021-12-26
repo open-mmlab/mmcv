@@ -1195,11 +1195,6 @@ def test_wandb_hook():
     hook = WandbLoggerHook()
     loader = DataLoader(torch.ones((5, 2)))
 
-    # create a dummy config file
-    config_path = osp(runner.work_dir, 'config.py')
-    with open(config_path, 'w') as f:
-        f.write('lorem ipsum')
-
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
