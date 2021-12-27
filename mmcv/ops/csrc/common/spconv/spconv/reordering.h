@@ -17,17 +17,17 @@
 #include <spconv/tensorview/tensorview.h>
 
 namespace functor {
-template <typename Device, typename T, typename Index>
+template <typename Device, typename scalar_t, typename Index>
 struct SparseGatherFunctor {
-  void operator()(const Device& d, tv::TensorView<T> buffer,
-                  tv::TensorView<const T> features,
+  void operator()(const Device& d, tv::TensorView<scalar_t> buffer,
+                  tv::TensorView<const scalar_t> features,
                   tv::TensorView<const Index> indices, int size);
 };
 
-template <typename Device, typename T, typename Index>
+template <typename Device, typename scalar_t, typename Index>
 struct SparseScatterAddFunctor {
-  void operator()(const Device& d, tv::TensorView<T> out_features,
-                  tv::TensorView<const T> buffer,
+  void operator()(const Device& d, tv::TensorView<scalar_t> out_features,
+                  tv::TensorView<const scalar_t> buffer,
                   tv::TensorView<const Index> indices, int size,
                   bool stable = false);
 };

@@ -16,8 +16,8 @@
 #define REORDERING_CU_H_
 #include <spconv/tensorview/helper_kernel.cu.h>
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void gatherGenericKernel(T *buffer, const T *features,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void gatherGenericKernel(scalar_t *buffer, const scalar_t *features,
                                     const Index *indices, int size,
                                     int numPlanes) {
   int ILPStrideX[NumILP];
@@ -43,8 +43,8 @@ __global__ void gatherGenericKernel(T *buffer, const T *features,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP, typename VecType>
-__global__ void gatherVecKernel(T *buffer, const T *features,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
+__global__ void gatherVecKernel(scalar_t *buffer, const scalar_t *features,
                                 const Index *indices, int size, int numPlanes) {
   int ILPStrideX[NumILP];
   Index inds[NumILP];
@@ -70,9 +70,9 @@ __global__ void gatherVecKernel(T *buffer, const T *features,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP,
           typename VecType = int4>
-__global__ void gatherVecBlockKernel(T *buffer, const T *features,
+__global__ void gatherVecBlockKernel(scalar_t *buffer, const scalar_t *features,
                                      const Index *indices, int size,
                                      int numPlanes) {
   int ILPStrideY[NumILP];
@@ -94,8 +94,8 @@ __global__ void gatherVecBlockKernel(T *buffer, const T *features,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void scatterAddGenericKernel(T *outFeatures, const T *buffer,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void scatterAddGenericKernel(scalar_t *outFeatures, const scalar_t *buffer,
                                         const Index *indices, int size,
                                         int numPlanes) {
   int ILPStrideX[NumILP];
@@ -121,20 +121,20 @@ __global__ void scatterAddGenericKernel(T *outFeatures, const T *buffer,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP,
           typename VecType = int4>
-__global__ void scatterAddVecBlockKernel(T *outFeatures, const T *buffer,
+__global__ void scatterAddVecBlockKernel(scalar_t *outFeatures, const scalar_t *buffer,
                                          const Index *indices, int size,
                                          int numPlanes) {
   int ILPStrideY[NumILP];
-  constexpr int vecloadFactor = sizeof(VecType) / sizeof(T);
+  constexpr int vecloadFactor = sizeof(VecType) / sizeof(scalar_t);
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
     ILPStrideY[ilp] = ilp * gridDim.y * blockDim.y;
   outFeatures += blockIdx.x * NumTLP;
   buffer += blockIdx.x * NumTLP;
-  T buf[vecloadFactor];
-  T buf2[vecloadFactor];
+  scalar_t buf[vecloadFactor];
+  scalar_t buf2[vecloadFactor];
   Index idx;
   for (int iy : tv::KernelLoopY<int, NumILP>(size)) {
 #pragma unroll

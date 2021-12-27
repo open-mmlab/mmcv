@@ -121,7 +121,6 @@ TV_HOST_DEVICE Index getValidOutPosTranspose(
       out[pointCounter * (NDim + 1) + j] = val;
       if (val < 0 || (val > outSpatialShape[j] - 1)) {
         valid = false;
-        // break;
       }
       offset += m * (val - lowers[j]) / dilation[j];
       m *= kernelSize[j];

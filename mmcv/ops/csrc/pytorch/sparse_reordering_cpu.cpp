@@ -18,28 +18,28 @@
 #include "pytorch_cpp_helper.hpp"
 
 namespace functor {
-template <typename T, typename Index>
-struct SparseGatherFunctor<tv::CPU, T, Index> {
-  void operator()(const tv::CPU& d, tv::TensorView<T> buffer,
-                  tv::TensorView<const T> features,
+template <typename scalar_t, typename Index>
+struct SparseGatherFunctor<tv::CPU, scalar_t, Index> {
+  void operator()(const tv::CPU& d, tv::TensorView<scalar_t> buffer,
+                  tv::TensorView<const scalar_t> features,
                   tv::TensorView<const Index> indices, int size) {
     int numPlanes = features.dim(1);
     for (int i = 0; i < size; ++i) {
       std::memcpy(buffer.data() + i * numPlanes,
                   features.data() + indices[i] * numPlanes,
-                  sizeof(T) * numPlanes);
+                  sizeof(scalar_t) * numPlanes);
     }
   }
 };
 
-template <typename T, typename Index>
-struct SparseScatterAddFunctor<tv::CPU, T, Index> {
-  void operator()(const tv::CPU& d, tv::TensorView<T> outFeatures,
-                  tv::TensorView<const T> buffer,
+template <typename scalar_t, typename Index>
+struct SparseScatterAddFunctor<tv::CPU, scalar_t, Index> {
+  void operator()(const tv::CPU& d, tv::TensorView<scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> buffer,
                   tv::TensorView<const Index> indices, int size, bool stable) {
     int numPlanes = outFeatures.dim(1);
-    const T* buf = buffer.data();
-    T* out = outFeatures.data();
+    const scalar_t* buf = buffer.data();
+    scalar_t* out = outFeatures.data();
     for (int i = 0; i < size; ++i) {
       buf = buffer.data() + i * numPlanes;
       out = outFeatures.data() + indices[i] * numPlanes;
@@ -52,13 +52,13 @@ struct SparseScatterAddFunctor<tv::CPU, T, Index> {
 
 }  // namespace functor
 
-#define DECLARE_CPU_SPECS_T_INDEX(T, Index)                        \
-  template struct functor::SparseGatherFunctor<tv::CPU, T, Index>; \
-  template struct functor::SparseScatterAddFunctor<tv::CPU, T, Index>;
+#define DECLARE_CPU_SPECS_T_INDEX(scalar_t, Index)                        \
+  template struct functor::SparseGatherFunctor<tv::CPU, scalar_t, Index>; \
+  template struct functor::SparseScatterAddFunctor<tv::CPU, scalar_t, Index>;
 
-#define DECLARE_CPU_SPECS(T)         \
-  DECLARE_CPU_SPECS_T_INDEX(T, int); \
-  DECLARE_CPU_SPECS_T_INDEX(T, long);
+#define DECLARE_CPU_SPECS(scalar_t)         \
+  DECLARE_CPU_SPECS_T_INDEX(scalar_t, int); \
+  DECLARE_CPU_SPECS_T_INDEX(scalar_t, long);
 
 DECLARE_CPU_SPECS(float);
 DECLARE_CPU_SPECS(double);

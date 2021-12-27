@@ -26,12 +26,12 @@
 
 #include "pytorch_cuda_helper.hpp"
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolFwdBlockKernel(T *outFeatures, const T *inFeatures,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolFwdBlockKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
                                       const Index *indicesIn,
                                       const Index *indicesOut, int numHot,
                                       int numPlanes) {
-  T in, out;
+  scalar_t in, out;
   int ILPStrideY[NumILP];
   Index idxo, idxi;
 #pragma unroll
@@ -56,16 +56,16 @@ __global__ void maxPoolFwdBlockKernel(T *outFeatures, const T *inFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolFwdGenericBlockKernel(T *outFeatures,
-                                             const T *inFeatures,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolFwdGenericBlockKernel(scalar_t *outFeatures,
+                                             const scalar_t *inFeatures,
                                              const Index *indicesIn,
                                              const Index *indicesOut,
                                              int numHot, int numPlanes) {
   int ILPStrideX[NumILP];
   Index RI[NumILP];
   Index RO[NumILP];
-  T in, out;
+  scalar_t in, out;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
     ILPStrideX[ilp] = ilp * gridDim.x * blockDim.x;
@@ -88,15 +88,15 @@ __global__ void maxPoolFwdGenericBlockKernel(T *outFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP, typename VecType>
-__global__ void maxPoolFwdVecBlockKernel(T *outFeatures, const T *inFeatures,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
+__global__ void maxPoolFwdVecBlockKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
                                          const Index *indicesIn,
                                          const Index *indicesOut, int numHot,
                                          int numPlanes) {
   int ILPStrideY[NumILP];
-  constexpr int vecloadFactor = sizeof(VecType) / sizeof(T);
-  T bufi[vecloadFactor];
-  T bufo[vecloadFactor];
+  constexpr int vecloadFactor = sizeof(VecType) / sizeof(scalar_t);
+  scalar_t bufi[vecloadFactor];
+  scalar_t bufo[vecloadFactor];
   Index idxi, idxo;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
@@ -125,15 +125,15 @@ __global__ void maxPoolFwdVecBlockKernel(T *outFeatures, const T *inFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolFwdGenericKernel(T *outFeatures, const T *inFeatures,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolFwdGenericKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
                                         const Index *indicesIn,
                                         const Index *indicesOut, int numHot,
                                         int numPlanes) {
   int ILPStrideX[NumILP];
   Index RI[NumILP];
   Index RO[NumILP];
-  T in, out;
+  scalar_t in, out;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
     ILPStrideX[ilp] = ilp * gridDim.x * blockDim.x;
@@ -160,13 +160,13 @@ __global__ void maxPoolFwdGenericKernel(T *outFeatures, const T *inFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolBwdBlockKernel(const T *outFeatures, const T *inFeatures,
-                                      const T *fout, T *fin,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolBwdBlockKernel(const scalar_t *outFeatures, const scalar_t *inFeatures,
+                                      const scalar_t *fout, scalar_t *fin,
                                       const Index *indicesIn,
                                       const Index *indicesOut, int numHot,
                                       int numPlanes) {
-  T in, out;
+  scalar_t in, out;
   Index idxo, idxi;
   int ILPStrideY[NumILP];
 #pragma unroll
@@ -193,16 +193,16 @@ __global__ void maxPoolBwdBlockKernel(const T *outFeatures, const T *inFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolBwdGenericBlockKernel(const T *outFeatures,
-                                             const T *inFeatures, const T *fout,
-                                             T *fin, const Index *indicesIn,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolBwdGenericBlockKernel(const scalar_t *outFeatures,
+                                             const scalar_t *inFeatures, const scalar_t *fout,
+                                             scalar_t *fin, const Index *indicesIn,
                                              const Index *indicesOut,
                                              int numHot, int numPlanes) {
   int ILPStrideX[NumILP];
   Index RI[NumILP];
   Index RO[NumILP];
-  T in, out;
+  scalar_t in, out;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
     ILPStrideX[ilp] = ilp * gridDim.x * blockDim.x;
@@ -225,18 +225,18 @@ __global__ void maxPoolBwdGenericBlockKernel(const T *outFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP, typename VecType>
-__global__ void maxPoolBwdVecBlockKernel(const T *outFeatures,
-                                         const T *inFeatures, const T *fout,
-                                         T *fin, const Index *indicesIn,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
+__global__ void maxPoolBwdVecBlockKernel(const scalar_t *outFeatures,
+                                         const scalar_t *inFeatures, const scalar_t *fout,
+                                         scalar_t *fin, const Index *indicesIn,
                                          const Index *indicesOut, int numHot,
                                          int numPlanes) {
   int ILPStrideY[NumILP];
-  constexpr int vecloadFactor = sizeof(VecType) / sizeof(T);
-  T bufi[vecloadFactor];
-  T bufo[vecloadFactor];
-  T bufdi[vecloadFactor];
-  T bufdo[vecloadFactor];
+  constexpr int vecloadFactor = sizeof(VecType) / sizeof(scalar_t);
+  scalar_t bufi[vecloadFactor];
+  scalar_t bufo[vecloadFactor];
+  scalar_t bufdi[vecloadFactor];
+  scalar_t bufdo[vecloadFactor];
   Index idxi, idxo;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
@@ -270,16 +270,16 @@ __global__ void maxPoolBwdVecBlockKernel(const T *outFeatures,
   }
 }
 
-template <typename T, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolBwdGenericKernel(const T *outFeatures,
-                                        const T *inFeatures, const T *fout,
-                                        T *fin, const Index *indicesIn,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP>
+__global__ void maxPoolBwdGenericKernel(const scalar_t *outFeatures,
+                                        const scalar_t *inFeatures, const scalar_t *fout,
+                                        scalar_t *fin, const Index *indicesIn,
                                         const Index *indicesOut, int numHot,
                                         int numPlanes) {
   int ILPStrideX[NumILP];
   Index RI[NumILP];
   Index RO[NumILP];
-  T in, out;
+  scalar_t in, out;
 #pragma unroll
   for (int ilp = 0; ilp < NumILP; ilp++)
     ILPStrideX[ilp] = ilp * gridDim.x * blockDim.x;
@@ -307,18 +307,18 @@ __global__ void maxPoolBwdGenericKernel(const T *outFeatures,
 }
 
 namespace functor {
-template <typename T, typename Index>
-struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
+template <typename scalar_t, typename Index>
+struct SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, Index> {
   using vecload_type_t =
-      std::conditional_t<std::is_same<T, at::Half>::value, int2, int4>;
+      std::conditional_t<std::is_same<scalar_t, at::Half>::value, int2, int4>;
   using kernel_block_t = mp_list_c<int, 64, 32, 16>;
-  void operator()(const tv::GPU &d, tv::TensorView<T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
+  void operator()(const tv::GPU &d, tv::TensorView<scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
                   tv::TensorView<const Index> indices, int size) {
     if (size <= 0) return;
     int numPlanes = inFeatures.dim(1);
     bool notFound = true;
-    constexpr int vecloadFactor = sizeof(vecload_type_t) / sizeof(T);
+    constexpr int vecloadFactor = sizeof(vecload_type_t) / sizeof(scalar_t);
     mp_for_each<kernel_block_t>([=, &outFeatures, &inFeatures, &indices,
                                  &notFound](auto NumTLP) {
       constexpr int NumILP = NumTLP / 4;
@@ -327,7 +327,7 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
       if (notFound) {
         if (numPlanes % NumTLP == 0) {
           if (numHotBlock >= NumTLP) {
-            maxPoolFwdVecBlockKernel<T, Index, int(NumTLP), NumILP,
+            maxPoolFwdVecBlockKernel<scalar_t, Index, int(NumTLP), NumILP,
                                      vecload_type_t>
                 <<<dim3(std::min(size / NumTLP, 512), numPlanes / NumTLP),
                    dim3(NumTLP / vecloadFactor, NumTLP / NumILP), 0,
@@ -339,7 +339,7 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
           }
 
           if (size > numHotBlock) {
-            maxPoolFwdGenericKernel<T, Index, int(NumTLP), NumILP>
+            maxPoolFwdGenericKernel<scalar_t, Index, int(NumTLP), NumILP>
                 <<<dim3(1, numPlanes / NumTLP), dim3(NumTLP / NumILP, NumTLP),
                    0, d.getStream()>>>(outFeatures.data(), inFeatures.data(),
                                        indices.subview(0).data() + numHotBlock,
@@ -357,7 +357,7 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
       constexpr int NumILP = NumTLP / 4;
       int numHotBlock = (size / NumTLP) * NumTLP;
       if (numHotBlock >= NumTLP) {
-        maxPoolFwdGenericBlockKernel<T, Index, NumTLP, NumILP>
+        maxPoolFwdGenericBlockKernel<scalar_t, Index, NumTLP, NumILP>
             <<<dim3(size / NumTLP, tv::launch::DivUp(numPlanes, NumTLP)),
                dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
                 outFeatures.data(), inFeatures.data(),
@@ -367,7 +367,7 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
       }
 
       if (size > numHotBlock) {
-        maxPoolFwdGenericKernel<T, Index, NumTLP, NumILP>
+        maxPoolFwdGenericKernel<scalar_t, Index, NumTLP, NumILP>
             <<<dim3(1, tv::launch::DivUp(numPlanes, NumTLP)),
                dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
                 outFeatures.data(), inFeatures.data(),
@@ -380,19 +380,19 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, T, Index> {
   }
 };
 
-template <typename T, typename Index>
-struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
+template <typename scalar_t, typename Index>
+struct SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index> {
   using vecload_type_t =
-      std::conditional_t<std::is_same<T, at::Half>::value, int2, int4>;
+      std::conditional_t<std::is_same<scalar_t, at::Half>::value, int2, int4>;
   using kernel_block_t = mp_list_c<int, 64, 32, 16>;
-  void operator()(const tv::GPU &d, tv::TensorView<const T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
-                  tv::TensorView<const T> fout, tv::TensorView<T> fin,
+  void operator()(const tv::GPU &d, tv::TensorView<const scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
+                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size) {
     if (size <= 0) return;
     int numPlanes = inFeatures.dim(1);
     bool notFound = true;
-    constexpr int vecloadFactor = sizeof(vecload_type_t) / sizeof(T);
+    constexpr int vecloadFactor = sizeof(vecload_type_t) / sizeof(scalar_t);
     mp_for_each<kernel_block_t>([=, &outFeatures, &inFeatures, &fout, &fin,
                                  &indices, &notFound](auto NumTLP) {
       constexpr int NumILP = NumTLP / 4;
@@ -401,7 +401,7 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
       if (notFound) {
         if (numPlanes % NumTLP == 0) {
           if (numHotBlock >= NumTLP) {
-            maxPoolBwdVecBlockKernel<T, Index, int(NumTLP), NumILP,
+            maxPoolBwdVecBlockKernel<scalar_t, Index, int(NumTLP), NumILP,
                                      vecload_type_t>
                 <<<dim3(std::min(size / NumTLP, 512), numPlanes / NumTLP),
                    dim3(NumTLP / vecloadFactor, NumTLP / NumILP), 0,
@@ -414,7 +414,7 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
           }
 
           if (size > numHotBlock) {
-            maxPoolBwdGenericKernel<T, Index, int(NumTLP), NumILP>
+            maxPoolBwdGenericKernel<scalar_t, Index, int(NumTLP), NumILP>
                 <<<dim3(1, numPlanes / NumTLP), dim3(NumTLP / NumILP, NumTLP),
                    0, d.getStream()>>>(outFeatures.data(), inFeatures.data(),
                                        fout.data(), fin.data(),
@@ -433,7 +433,7 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
       constexpr int NumILP = NumTLP / 4;
       int numHotBlock = (size / NumTLP) * NumTLP;
       if (numHotBlock >= NumTLP) {
-        maxPoolBwdGenericBlockKernel<T, Index, NumTLP, NumILP>
+        maxPoolBwdGenericBlockKernel<scalar_t, Index, NumTLP, NumILP>
             <<<dim3(size / NumTLP, tv::launch::DivUp(numPlanes, NumTLP)),
                dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
                 outFeatures.data(), inFeatures.data(), fout.data(), fin.data(),
@@ -443,7 +443,7 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
       }
 
       if (size > numHotBlock) {
-        maxPoolBwdGenericKernel<T, Index, NumTLP, NumILP>
+        maxPoolBwdGenericKernel<scalar_t, Index, NumTLP, NumILP>
             <<<dim3(1, tv::launch::DivUp(numPlanes, NumTLP)),
                dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
                 outFeatures.data(), inFeatures.data(), fout.data(), fin.data(),
@@ -458,11 +458,11 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, T, Index> {
 
 }  // namespace functor
 
-#define DECLARE_GPU_SPECS_T_INDEX(T, Index)                                \
-  template struct functor::SparseMaxPoolForwardFunctor<tv::GPU, T, Index>; \
-  template struct functor::SparseMaxPoolBackwardFunctor<tv::GPU, T, Index>;
+#define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                                \
+  template struct functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, Index>; \
+  template struct functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index>;
 
-#define DECLARE_GPU_SPECS(T) DECLARE_GPU_SPECS_T_INDEX(T, int);
+#define DECLARE_GPU_SPECS(scalar_t) DECLARE_GPU_SPECS_T_INDEX(scalar_t, int);
 
 DECLARE_GPU_SPECS(float);
 DECLARE_GPU_SPECS(double);

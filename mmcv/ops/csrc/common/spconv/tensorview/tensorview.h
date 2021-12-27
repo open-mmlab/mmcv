@@ -101,57 +101,49 @@ void sstream_print(SStream &ss, T val, TArgs... args) {
     }                                                          \
   }
 
-// #ifdef MMCV_WITH_CUDA
-// struct GPU {
-//   GPU(cudaStream_t s = 0) : mStream(s) {}
-//   virtual cudaStream_t getStream() const { return mStream; }
-//   cudaStream_t mStream = 0;
-// };
-// #endif
-
 struct CPU {};
 
 #define TV_MAX_DIM 6
 
-template <typename T, size_t MaxDim = TV_MAX_DIM>
+template <typename scalar_t, size_t MaxDim = TV_MAX_DIM>
 struct SimpleVector {
  public:
   TV_HOST_DEVICE_INLINE SimpleVector(){};
-  TV_HOST_DEVICE_INLINE SimpleVector(std::initializer_list<T> q) {
+  TV_HOST_DEVICE_INLINE SimpleVector(std::initializer_list<scalar_t> q) {
     TV_ASSERT(q.size() <= MaxDim);
     mSize = 0;
-    for (T s : q) {
+    for (scalar_t s : q) {
       mArray[mSize++] = s;
     }
     mSize = q.size();
   }
-  SimpleVector(const std::vector<T> &arr) {
+  SimpleVector(const std::vector<scalar_t> &arr) {
     TV_ASSERT(arr.size() <= MaxDim);
     for (size_t i = 0; i < arr.size(); ++i) {
       mArray[i] = arr[i];
     }
     mSize = arr.size();
   }
-  TV_HOST_DEVICE_INLINE SimpleVector(const SimpleVector<T, MaxDim> &arr) {
+  TV_HOST_DEVICE_INLINE SimpleVector(const SimpleVector<scalar_t, MaxDim> &arr) {
     TV_ASSERT(arr.size() <= MaxDim);
     for (size_t i = 0; i < arr.size(); ++i) {
       mArray[i] = arr[i];
     }
     mSize = arr.size();
   }
-  TV_HOST_DEVICE_INLINE T &operator[](int idx) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator[](int idx) {
 #ifdef TV_DEBUG
     TV_ASSERT(idx >= 0 && idx < mSize);
 #endif
     return mArray[idx];
   }
-  TV_HOST_DEVICE_INLINE const T &operator[](int idx) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator[](int idx) const {
 #ifdef TV_DEBUG
     TV_ASSERT(idx >= 0 && idx < mSize);
 #endif
     return mArray[idx];
   }
-  TV_HOST_DEVICE_INLINE void push_back(T s) {
+  TV_HOST_DEVICE_INLINE void push_back(scalar_t s) {
 #ifdef TV_DEBUG
     TV_ASSERT(mSize < MaxDim);
 #endif
@@ -166,7 +158,7 @@ struct SimpleVector {
   }
 
   TV_HOST_DEVICE_INLINE size_t size() const { return mSize; }
-  TV_HOST_DEVICE_INLINE const T *data() const { return mArray; }
+  TV_HOST_DEVICE_INLINE const scalar_t *data() const { return mArray; }
   TV_HOST_DEVICE_INLINE size_t empty() const { return mSize == 0; }
 
   typedef size_t size_type;
@@ -174,9 +166,9 @@ struct SimpleVector {
   class iterator {
    public:
     typedef iterator self_type;
-    typedef T value_type;
-    typedef T &reference;
-    typedef T *pointer;
+    typedef scalar_t value_type;
+    typedef scalar_t &reference;
+    typedef scalar_t *pointer;
     typedef std::forward_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
     TV_HOST_DEVICE_INLINE iterator(pointer ptr) : ptr_(ptr) {}
@@ -205,9 +197,9 @@ struct SimpleVector {
   class const_iterator {
    public:
     typedef const_iterator self_type;
-    typedef T value_type;
-    typedef const T &reference;
-    typedef const T *pointer;
+    typedef scalar_t value_type;
+    typedef const scalar_t &reference;
+    typedef const scalar_t *pointer;
     typedef std::ptrdiff_t difference_type;
     typedef std::forward_iterator_tag iterator_category;
     TV_HOST_DEVICE_INLINE const_iterator(pointer ptr) : ptr_(ptr) {}
@@ -253,13 +245,13 @@ struct SimpleVector {
   }
 
  protected:
-  T mArray[MaxDim];
+  scalar_t mArray[MaxDim];
   size_t mSize = 0;
 };
 
-template <typename T, size_t MaxDim>
-bool operator==(const SimpleVector<T, MaxDim> &lfs,
-                const SimpleVector<T, MaxDim> &rfs) {
+template <typename scalar_t, size_t MaxDim>
+bool operator==(const SimpleVector<scalar_t, MaxDim> &lfs,
+                const SimpleVector<scalar_t, MaxDim> &rfs) {
   if (lfs.size() != rfs.size()) return false;
   for (size_t i = 0; i < lfs.size(); ++i) {
     if (lfs[i] != rfs[i]) return false;
@@ -267,9 +259,9 @@ bool operator==(const SimpleVector<T, MaxDim> &lfs,
   return true;
 }
 
-template <typename T, size_t MaxDim>
-bool operator!=(const SimpleVector<T, MaxDim> &lfs,
-                const SimpleVector<T, MaxDim> &rfs) {
+template <typename scalar_t, size_t MaxDim>
+bool operator!=(const SimpleVector<scalar_t, MaxDim> &lfs,
+                const SimpleVector<scalar_t, MaxDim> &rfs) {
   return !(lfs == rfs);
 }
 
@@ -291,14 +283,14 @@ struct Slice {
     mSlices[1] = -1;
     mSlices[2] = -1;
   }
-  template <typename T>
-  TV_HOST_DEVICE_INLINE Slice(std::initializer_list<T> slice) {
+  template <typename scalar_t>
+  TV_HOST_DEVICE_INLINE Slice(std::initializer_list<scalar_t> slice) {
     mSlices[0] = -1;
     mSlices[1] = -1;
     mSlices[2] = -1;
     TV_ASSERT(slice.size() <= 3);
     int idx = 0;
-    for (T s : slice) {
+    for (scalar_t s : slice) {
       mSlices[idx] = int(s);
       ++idx;
     }
@@ -326,8 +318,8 @@ struct ShapeBase : public SimpleVector<int, MaxDim> {
   TV_HOST_DEVICE_INLINE ShapeBase(std::initializer_list<int> shape)
       : SimpleVector<int, MaxDim>(shape) {}
 
-  template <typename T, template <class...> class Container>
-  ShapeBase(Container<T> shape) : SimpleVector<int, MaxDim>(shape) {}
+  template <typename scalar_t, template <class...> class Container>
+  ShapeBase(Container<scalar_t> shape) : SimpleVector<int, MaxDim>(shape) {}
   TV_HOST_DEVICE_INLINE ShapeBase(const ShapeBase<MaxDim> &shape)
       : SimpleVector<int, MaxDim>(shape) {}
   ShapeBase(const std::vector<int> &arr) : SimpleVector<int, MaxDim>(arr) {}
@@ -477,8 +469,8 @@ struct ArrayIndexRowMajor<0> {
 };
 
 namespace detail {
-template <typename T>
-constexpr const char *simpleTypeName(T val = T());
+template <typename scalar_t>
+constexpr const char *simpleTypeName(scalar_t val = scalar_t());
 template <>
 constexpr const char *simpleTypeName(float val) {
   return "float32";
@@ -505,42 +497,39 @@ constexpr const char *simpleTypeName(unsigned long val) {
 }
 };  // namespace detail
 
-template <typename T, int Rank = -1>
+template <typename scalar_t, int Rank = -1>
 struct TensorView {
   TV_HOST_DEVICE_INLINE TensorView() {}
-  explicit TV_HOST_DEVICE_INLINE TensorView(T *ptr, Shape shape)
+  explicit TV_HOST_DEVICE_INLINE TensorView(scalar_t *ptr, Shape shape)
       : mPtr(ptr), mShape(shape) {}
-  // explicit TV_HOST_DEVICE_INLINE TensorView(const
-  // TensorView<std::remove_const_t<T>> &tview) : mPtr(tview.data()),
-  // mShape(tview.shape()) {}
   template <class... Integers>
-  explicit TV_HOST_DEVICE_INLINE TensorView(T *ptr, Integers... shapes)
+  explicit TV_HOST_DEVICE_INLINE TensorView(scalar_t *ptr, Integers... shapes)
       : mPtr(ptr) {
     mShape = {int(shapes)...};
   }
 
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> &assign(
-      const TensorView<T, Rank> &tensor) {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> &assign(
+      const TensorView<scalar_t, Rank> &tensor) {
     TV_REQUIRE(tensor.shape() == shape(), "you must provide same input size%s",
                "\n");
-    T *ptr = mPtr;
-    const T *other_ptr = tensor.data();
+    scalar_t *ptr = mPtr;
+    const scalar_t *other_ptr = tensor.data();
     for (size_t i = 0; i < size(); ++i) *(ptr++) = *(other_ptr++);
     return *this;
   }
 
   template <typename T1>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> &assign(
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> &assign(
       std::initializer_list<T1> seq) {
     TV_REQUIRE(seq.size() == size(), "you must provide same input size%s",
                "\n");
-    T *ptr = mPtr;
-    for (const T1 &s : seq) *(ptr++) = T(s);
+    scalar_t *ptr = mPtr;
+    for (const T1 &s : seq) *(ptr++) = scalar_t(s);
     return *this;
   }
 
   template <class... Inds>
-  TV_HOST_DEVICE_INLINE T &operator()(Inds... inds) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()(Inds... inds) {
 #ifdef TV_DEBUG
     int idxes[sizeof...(Inds)]{int(inds)...};
     TV_REQUIRE(sizeof...(inds) == mShape.ndim(),
@@ -555,7 +544,7 @@ struct TensorView {
     return mPtr[rowArrayIdx(mShape, int(inds)...)];
   }
   template <class... Inds>
-  TV_HOST_DEVICE_INLINE const T &operator()(Inds... inds) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(Inds... inds) const {
 #ifdef TV_DEBUG
     int idxes[sizeof...(Inds)]{int(inds)...};
     TV_REQUIRE(sizeof...(inds) == mShape.ndim(),
@@ -569,7 +558,7 @@ struct TensorView {
 #endif
     return mPtr[rowArrayIdx(mShape, int(inds)...)];
   }
-  TV_HOST_DEVICE_INLINE T &operator()() {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()() {
 #if defined TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mPtr != nullptr,
@@ -585,7 +574,7 @@ struct TensorView {
 #endif
     return mPtr[0];
   }
-  TV_HOST_DEVICE_INLINE const T &operator()() const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()() const {
 #if defined TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mPtr != nullptr,
@@ -603,7 +592,7 @@ struct TensorView {
   }
 
   template <class T1>
-  TV_HOST_DEVICE_INLINE T &operator()(T1 i1) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()(T1 i1) {
 #if defined TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 1,
@@ -620,7 +609,7 @@ struct TensorView {
     return mPtr[i1];
   }
   template <class T1, class T2>
-  TV_HOST_DEVICE_INLINE T &operator()(T1 i1, T2 i2) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()(T1 i1, T2 i2) {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 2,
@@ -643,7 +632,7 @@ struct TensorView {
     return mPtr[i1 * mShape[1] + i2];
   }
   template <class T1, class T2, class T3>
-  TV_HOST_DEVICE_INLINE T &operator()(T1 i1, T2 i2, T3 i3) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()(T1 i1, T2 i2, T3 i3) {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 3,
@@ -671,7 +660,7 @@ struct TensorView {
     return mPtr[(i1 * mShape[1] + i2) * mShape[2] + i3];
   }
   template <class T1, class T2, class T3, class T4>
-  TV_HOST_DEVICE_INLINE T &operator()(T1 i1, T2 i2, T3 i3, T4 i4) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator()(T1 i1, T2 i2, T3 i3, T4 i4) {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 4,
@@ -705,7 +694,7 @@ struct TensorView {
   }
 
   template <class T1>
-  TV_HOST_DEVICE_INLINE const T &operator()(T1 i1) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1) const {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 1,
@@ -723,7 +712,7 @@ struct TensorView {
     return mPtr[i1];
   }
   template <class T1, class T2>
-  TV_HOST_DEVICE_INLINE const T &operator()(T1 i1, T2 i2) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1, T2 i2) const {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 2,
@@ -747,7 +736,7 @@ struct TensorView {
     return mPtr[i1 * mShape[1] + i2];
   }
   template <class T1, class T2, class T3>
-  TV_HOST_DEVICE_INLINE const T &operator()(T1 i1, T2 i2, T3 i3) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1, T2 i2, T3 i3) const {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 3,
@@ -775,7 +764,7 @@ struct TensorView {
     return mPtr[(i1 * mShape[1] + i2) * mShape[2] + i3];
   }
   template <class T1, class T2, class T3, class T4>
-  TV_HOST_DEVICE_INLINE const T &operator()(T1 i1, T2 i2, T3 i3, T4 i4) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1, T2 i2, T3 i3, T4 i4) const {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 4,
@@ -808,7 +797,7 @@ struct TensorView {
     return mPtr[((i1 * mShape[1] + i2) * mShape[2] + i3) * mShape[3] + i4];
   }
 
-  TV_HOST_DEVICE_INLINE T &operator[](int idx) {
+  TV_HOST_DEVICE_INLINE scalar_t &operator[](int idx) {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(idx >= 0 && idx < size(),
@@ -820,51 +809,34 @@ struct TensorView {
 #endif
     return mPtr[idx];
   }
-  // TODO: this is conflcit with operator[](SimpleVector<Slice> slice_vec).
-  /*TV_HOST_DEVICE_INLINE T &operator[](const Shape index) {
-    int idx = rowArrayIdx(mShape, index);
-#ifdef TV_DEBUG
-    TV_REQUIRE(idx >= 0 && idx < size(), "index(%d) out-of-range: [0, %ld)\n",
-                int(idx), size());
-#endif
-    return mPtr[idx];
-  }
-  TV_HOST_DEVICE_INLINE const T &operator[](const Shape index) const {
-    int idx = rowArrayIdx(mShape, index);
-#ifdef TV_DEBUG
-    TV_REQUIRE(idx >= 0 && idx < size(), "index(%d) out-of-range: [0, %ld)\n",
-                int(idx), size());
-#endif
-    return mPtr[idx];
-  }*/
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> operator[](
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> operator[](
       SimpleVector<Slice> slice_vec) {
     return _subview(slice_vec);
   }
-  TV_HOST_DEVICE_INLINE const TensorView<T, Rank> operator[](
+  TV_HOST_DEVICE_INLINE const TensorView<scalar_t, Rank> operator[](
       SimpleVector<Slice> slice_vec) const {
     return _subview(slice_vec);
   }
   TV_HOST_DEVICE_INLINE bool empty() const { return mPtr == nullptr; }
-  TV_HOST_DEVICE_INLINE T *data() { return mPtr; }
-  TV_HOST_DEVICE_INLINE const T *data() const { return mPtr; }
+  TV_HOST_DEVICE_INLINE scalar_t *data() { return mPtr; }
+  TV_HOST_DEVICE_INLINE const scalar_t *data() const { return mPtr; }
   TV_HOST_DEVICE_INLINE const Shape &shape() const { return mShape; }
   TV_HOST_DEVICE_INLINE int dim(int idx) const { return mShape[idx]; }
   TV_HOST_DEVICE_INLINE int ndim() const { return mShape.ndim(); }
   template <class... Inds>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> &reshape(Inds... newShapes) {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> &reshape(Inds... newShapes) {
     Shape shapes{int(newShapes)...};
     TV_ASSERT(shapes.size() == size());
     mShape = shapes;
     return *this;
   }
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> &reshape(Shape shapes) {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> &reshape(Shape shapes) {
     TV_ASSERT(shapes.size() == size());
     mShape = shapes;
     return *this;
   }
   template <class... Inds>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> view(Inds... newShapes) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> view(Inds... newShapes) const {
     Shape shapes{int(newShapes)...};
     for (size_t i = 0; i < shapes.ndim(); ++i) {
       if (shapes[i] == -1) {
@@ -874,27 +846,27 @@ struct TensorView {
       }
     }
     TV_ASSERT(shapes.size() == size());
-    return TensorView<T, Rank>(mPtr, shapes);
+    return TensorView<scalar_t, Rank>(mPtr, shapes);
   }
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> view(Shape shapes) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> view(Shape shapes) const {
     TV_ASSERT(shapes.size() == size());
-    return TensorView<T, Rank>(mPtr, shapes);
+    return TensorView<scalar_t, Rank>(mPtr, shapes);
   }
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> squeeze() const {
-    return TensorView<T, Rank>(mPtr, mShape.squeeze());
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> squeeze() const {
+    return TensorView<scalar_t, Rank>(mPtr, mShape.squeeze());
   }
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> squeeze(int dim) const {
-    return TensorView<T, Rank>(mPtr, mShape.squeeze(dim));
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> squeeze(int dim) const {
+    return TensorView<scalar_t, Rank>(mPtr, mShape.squeeze(dim));
   }
   TV_HOST_DEVICE_INLINE size_t size() const { return mShape.size(); }
 
   template <class... Slices>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> subview(Slice slice,
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(Slice slice,
                                                     Slices... slices) const {
     return subview<float, Slice, Slices...>(slice, slices...);
   }
   template <class T2 = float, class... Slices>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> subview(Slices... slices) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(Slices... slices) const {
     Slice slice_vec[sizeof...(Slices)] = {to_slice(slices)...};
     Shape new_shape{to_slice(slices)[0]...};
     Shape start{to_slice(slices)[0]...};
@@ -931,16 +903,16 @@ struct TensorView {
     for (size_t i = sizeof...(Slices); i < mShape.ndim(); ++i) {
       reduced_shape.push_back(new_shape[i]);
     }
-    return TensorView<T, Rank>(mPtr + offset, reduced_shape);
+    return TensorView<scalar_t, Rank>(mPtr + offset, reduced_shape);
   }
 
   template <class... Integers>
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> subview(int id, Integers... ints) {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(int id, Integers... ints) {
     Shape start = {id, ints...};
     for (int i = 1 + sizeof...(ints); i < ndim(); ++i) {
       start.push_back(0);
     }
-    return TensorView<T, Rank>(mPtr + rowArrayIdx(mShape, start),
+    return TensorView<scalar_t, Rank>(mPtr + rowArrayIdx(mShape, start),
                                mShape.subshape(sizeof...(ints) + 1));
   }
 
@@ -949,7 +921,7 @@ struct TensorView {
     if (empty()) return "";
     if (mShape.ndim() == 0) {
       ss << *mPtr;
-      ss << "Tensor: dtype=" << detail::simpleTypeName<T>();
+      ss << "Tensor: dtype=" << detail::simpleTypeName<scalar_t>();
       return ss.str();
     }
     Shape counter = mShape;
@@ -983,14 +955,14 @@ struct TensorView {
       }
     }
     ss << "]";
-    ss << "Tensor: dtype=" << detail::simpleTypeName<T>();
+    ss << "Tensor: dtype=" << detail::simpleTypeName<scalar_t>();
     return ss.str();
   }
 
  protected:
   // TODO: make this function public.
   // currently this function is called unexpectedly when using subview({0, 0}).
-  TV_HOST_DEVICE_INLINE TensorView<T, Rank> _subview(
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> _subview(
       SimpleVector<Slice> slice_vec) {
     Shape new_shape;
     for (int i = 0; i < slice_vec.size(); ++i) {
@@ -1026,7 +998,7 @@ struct TensorView {
     for (size_t i = slice_vec.size(); i < mShape.ndim(); ++i) {
       reduced_shape.push_back(new_shape[i]);
     }
-    return TensorView<T, Rank>(mPtr + offset, reduced_shape);
+    return TensorView<scalar_t, Rank>(mPtr + offset, reduced_shape);
   }
   template <typename T1>
   TV_HOST_DEVICE_INLINE Slice to_slice(T1 s) const {
@@ -1035,25 +1007,25 @@ struct TensorView {
 
   TV_HOST_DEVICE_INLINE Slice to_slice(Slice s) const { return Slice(s); }
 
-  T *mPtr = nullptr;
+  scalar_t *mPtr = nullptr;
   Shape mShape;
 };
 
-template <typename Os, typename T, int Rank>
-Os &operator<<(Os &os, const TensorView<T, Rank> &dt) {
+template <typename Os, typename scalar_t, int Rank>
+Os &operator<<(Os &os, const TensorView<scalar_t, Rank> &dt) {
   os << dt.repr();
   return os;
 }
 
-template <typename Os, typename T, int Rank>
-Os &operator<<(Os &os, const TensorView<const T, Rank> &dt) {
+template <typename Os, typename scalar_t, int Rank>
+Os &operator<<(Os &os, const TensorView<const scalar_t, Rank> &dt) {
   os << dt.repr();
   return os;
 }
 
 namespace detail {
-template <typename T>
-constexpr const char *printfTypeFormat(T val = T());
+template <typename scalar_t>
+constexpr const char *printfTypeFormat(scalar_t val = scalar_t());
 template <>
 constexpr const char *printfTypeFormat(float val) {
   return "%.2f";
@@ -1080,8 +1052,8 @@ constexpr const char *printfTypeFormat(unsigned long val) {
 }
 };  // namespace detail
 
-template <typename T>
-TV_HOST_DEVICE void printTensorView(const TensorView<T> tensor,
+template <typename scalar_t>
+TV_HOST_DEVICE void printTensorView(const TensorView<scalar_t> tensor,
                                     const char *format) {
   if (tensor.empty()) return;
   if (tensor.ndim() == 0) {
@@ -1122,21 +1094,21 @@ TV_HOST_DEVICE void printTensorView(const TensorView<T> tensor,
   printf("]\n");
 }
 
-template <typename T>
-TV_HOST_DEVICE void printTensorView(TensorView<T> tensor) {
-  using Traw = typename std::remove_const<T>::type;
+template <typename scalar_t>
+TV_HOST_DEVICE void printTensorView(TensorView<scalar_t> tensor) {
+  using Traw = typename std::remove_const<scalar_t>::type;
   return printTensorView(tensor, detail::printfTypeFormat<Traw>());
 }
-template <typename T>
-TV_HOST_DEVICE void printTensorView(const T *ptr, Shape shape) {
-  using Traw = typename std::remove_const<T>::type;
-  return printTensorView(TensorView<const T>(ptr, shape),
+template <typename scalar_t>
+TV_HOST_DEVICE void printTensorView(const scalar_t *ptr, Shape shape) {
+  using Traw = typename std::remove_const<scalar_t>::type;
+  return printTensorView(TensorView<const scalar_t>(ptr, shape),
                          detail::printfTypeFormat<Traw>());
 }
-template <typename T>
-TV_HOST_DEVICE void printTensorView(const T *ptr, Shape shape,
+template <typename scalar_t>
+TV_HOST_DEVICE void printTensorView(const scalar_t *ptr, Shape shape,
                                     const char *format) {
-  return printTensorView(TensorView<const T>(ptr, shape), format);
+  return printTensorView(TensorView<const scalar_t>(ptr, shape), format);
 }
 
 }  // namespace tv

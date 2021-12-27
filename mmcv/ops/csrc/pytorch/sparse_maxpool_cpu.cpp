@@ -18,10 +18,10 @@
 #include "pytorch_cpp_helper.hpp"
 
 namespace functor {
-template <typename T, typename Index>
-struct SparseMaxPoolForwardFunctor<tv::CPU, T, Index> {
-  void operator()(const tv::CPU &d, tv::TensorView<T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
+template <typename scalar_t, typename Index>
+struct SparseMaxPoolForwardFunctor<tv::CPU, scalar_t, Index> {
+  void operator()(const tv::CPU &d, tv::TensorView<scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
                   tv::TensorView<const Index> indices, int size) {
     int stride = outFeatures.dim(1);
     auto outFeaturesData = outFeatures.data();
@@ -39,11 +39,11 @@ struct SparseMaxPoolForwardFunctor<tv::CPU, T, Index> {
   }
 };
 
-template <typename T, typename Index>
-struct SparseMaxPoolBackwardFunctor<tv::CPU, T, Index> {
-  void operator()(const tv::CPU &d, tv::TensorView<const T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
-                  tv::TensorView<const T> fout, tv::TensorView<T> fin,
+template <typename scalar_t, typename Index>
+struct SparseMaxPoolBackwardFunctor<tv::CPU, scalar_t, Index> {
+  void operator()(const tv::CPU &d, tv::TensorView<const scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
+                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size) {
     int stride = outFeatures.dim(1);
     auto outFeaturesData = outFeatures.data();

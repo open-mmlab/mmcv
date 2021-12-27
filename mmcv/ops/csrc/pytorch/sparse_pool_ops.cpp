@@ -20,40 +20,40 @@
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA
-template <typename T>
+template <typename scalar_t>
 torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
                                                      torch::Tensor indicePairs,
                                                      torch::Tensor indiceNum,
                                                      int64_t numAct);
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor indice_maxpool_forward_cuda(torch::Tensor features,
                                           torch::Tensor indicePairs,
                                           torch::Tensor indiceNum,
                                           int64_t numAct) {
-  return IndiceMaxpoolForwardCUDAKernelLauncher<T>(features, indicePairs,
+  return IndiceMaxpoolForwardCUDAKernelLauncher<scalar_t>(features, indicePairs,
                                                    indiceNum, numAct);
 };
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
                                                       torch::Tensor outFeatures,
                                                       torch::Tensor outGrad,
                                                       torch::Tensor indicePairs,
                                                       torch::Tensor indiceNum);
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor indice_maxpool_backward_cuda(torch::Tensor features,
                                            torch::Tensor outFeatures,
                                            torch::Tensor outGrad,
                                            torch::Tensor indicePairs,
                                            torch::Tensor indiceNum) {
-  return IndiceMaxpoolBackwardCUDAKernelLauncher<T>(
+  return IndiceMaxpoolBackwardCUDAKernelLauncher<scalar_t>(
       features, outFeatures, outGrad, indicePairs, indiceNum);
 };
 #endif
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor indice_maxpool_forward(torch::Tensor features,
                                      torch::Tensor indicePairs,
                                      torch::Tensor indiceNum, int64_t numAct) {
@@ -63,7 +63,7 @@ torch::Tensor indice_maxpool_forward(torch::Tensor features,
     CHECK_CUDA_INPUT(indicePairs);
     CHECK_CUDA_INPUT(indiceNum);
 
-    return indice_maxpool_forward_cuda<T>(features, indicePairs, indiceNum,
+    return indice_maxpool_forward_cuda<scalar_t>(features, indicePairs, indiceNum,
                                           numAct);
 #else
     AT_ERROR("indice_maxpool is not compiled with GPU support");
@@ -73,7 +73,7 @@ torch::Tensor indice_maxpool_forward(torch::Tensor features,
   }
 }
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor indice_maxpool_backward(torch::Tensor features,
                                       torch::Tensor outFeatures,
                                       torch::Tensor outGrad,
@@ -87,7 +87,7 @@ torch::Tensor indice_maxpool_backward(torch::Tensor features,
     CHECK_CUDA_INPUT(indicePairs);
     CHECK_CUDA_INPUT(indiceNum);
 
-    return indice_maxpool_backward_cuda<T>(features, outFeatures, outGrad,
+    return indice_maxpool_backward_cuda<scalar_t>(features, outFeatures, outGrad,
                                            indicePairs, indiceNum);
 #else
     AT_ERROR("indice_maxpool is not compiled with GPU support");

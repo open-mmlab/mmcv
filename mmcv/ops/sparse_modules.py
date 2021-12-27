@@ -58,29 +58,31 @@ class SparseSequential(SparseModule):
 
     To make it easier to understand, given is a small example::
 
-        # Example of using Sequential
-        model = SparseSequential(
-                  SparseConv2d(1,20,5),
-                  nn.ReLU(),
-                  SparseConv2d(20,64,5),
-                  nn.ReLU()
-                )
+    Example:
+        >>> # using Sequential:
+        >>> from mmcv.ops import SparseSequential
+        >>> model = SparseSequential(
+                    SparseConv2d(1,20,5),
+                    nn.ReLU(),
+                    SparseConv2d(20,64,5),
+                    nn.ReLU()
+                    )
 
-        # Example of using Sequential with OrderedDict
-        model = SparseSequential(OrderedDict([
-                  ('conv1', SparseConv2d(1,20,5)),
-                  ('relu1', nn.ReLU()),
-                  ('conv2', SparseConv2d(20,64,5)),
-                  ('relu2', nn.ReLU())
-                ]))
+        >>> # using Sequential with OrderedDict
+        >>> model = SparseSequential(OrderedDict([
+                      ('conv1', SparseConv2d(1,20,5)),
+                      ('relu1', nn.ReLU()),
+                      ('conv2', SparseConv2d(20,64,5)),
+                      ('relu2', nn.ReLU())
+                    ]))
 
-        # Example of using Sequential with kwargs(python 3.6+)
-        model = SparseSequential(
-                  conv1=SparseConv2d(1,20,5),
-                  relu1=nn.ReLU(),
-                  conv2=SparseConv2d(20,64,5),
-                  relu2=nn.ReLU()
-                )
+        >>> # using Sequential with kwargs(python 3.6+)
+        >>> model = SparseSequential(
+                      conv1=SparseConv2d(1,20,5),
+                      relu1=nn.ReLU(),
+                      conv2=SparseConv2d(20,64,5),
+                      relu2=nn.ReLU()
+                    )
     """
 
     def __init__(self, *args, **kwargs):

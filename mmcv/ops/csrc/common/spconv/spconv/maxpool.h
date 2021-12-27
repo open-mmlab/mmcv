@@ -17,18 +17,18 @@
 #include <spconv/tensorview/tensorview.h>
 
 namespace functor {
-template <typename Device, typename T, typename Index>
+template <typename Device, typename scalar_t, typename Index>
 struct SparseMaxPoolForwardFunctor {
-  void operator()(const Device& d, tv::TensorView<T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
+  void operator()(const Device& d, tv::TensorView<scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
                   tv::TensorView<const Index> indices, int size);
 };
 
-template <typename Device, typename T, typename Index>
+template <typename Device, typename scalar_t, typename Index>
 struct SparseMaxPoolBackwardFunctor {
-  void operator()(const Device& d, tv::TensorView<const T> outFeatures,
-                  tv::TensorView<const T> inFeatures,
-                  tv::TensorView<const T> fout, tv::TensorView<T> fin,
+  void operator()(const Device& d, tv::TensorView<const scalar_t> outFeatures,
+                  tv::TensorView<const scalar_t> inFeatures,
+                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size);
 };
 }  // namespace functor

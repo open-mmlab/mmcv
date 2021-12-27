@@ -21,24 +21,24 @@
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA
-template <typename T>
+template <typename scalar_t>
 torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM);
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor fused_indice_conv_batchnorm_forward_cuda(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  return FusedIndiceConvBatchnormCUDAKernelLauncher<T>(
+  return FusedIndiceConvBatchnormCUDAKernelLauncher<scalar_t>(
       features, filters, bias, indicePairs, indiceNum, numActOut, _inverse,
       _subM);
 };
 #endif
 
-template <typename T>
+template <typename scalar_t>
 torch::Tensor fused_indice_conv_batchnorm_forward(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
@@ -51,7 +51,7 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
     CHECK_CUDA_INPUT(indicePairs);
     CHECK_CUDA_INPUT(indiceNum);
 
-    return fused_indice_conv_batchnorm_forward_cuda<T>(
+    return fused_indice_conv_batchnorm_forward_cuda<scalar_t>(
         features, filters, bias, indicePairs, indiceNum, numActOut, _inverse,
         _subM);
 #else

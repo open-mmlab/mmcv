@@ -25,36 +25,36 @@
 
 namespace py = pybind11;
 
-template <typename T, typename TPyObject>
-std::vector<T> array2Vector(TPyObject arr) {
+template <typename scalar_t, typename TPyObject>
+std::vector<scalar_t> array2Vector(TPyObject arr) {
   py::array arr_np = arr;
   size_t size = arr.attr("size").template cast<size_t>();
-  py::array_t<T> arr_cc = arr_np;
-  std::vector<T> data(arr_cc.data(), arr_cc.data() + size);
+  py::array_t<scalar_t> arr_cc = arr_np;
+  std::vector<scalar_t> data(arr_cc.data(), arr_cc.data() + size);
   return data;
 }
 
-template <typename T>
-std::vector<T> arrayT2Vector(py::array_t<T> arr) {
-  std::vector<T> data(arr.data(), arr.data() + arr.size());
+template <typename scalar_t>
+std::vector<scalar_t> arrayT2Vector(py::array_t<scalar_t> arr) {
+  std::vector<scalar_t> data(arr.data(), arr.data() + arr.size());
   return data;
 }
 
-template <typename T, typename TPyObject>
-tv::TensorView<T> array2TensorView(TPyObject arr) {
+template <typename scalar_t, typename TPyObject>
+tv::TensorView<scalar_t> array2TensorView(TPyObject arr) {
   py::array arr_np = arr;
-  py::array_t<T> arr_cc = arr_np;
+  py::array_t<scalar_t> arr_cc = arr_np;
   tv::Shape shape;
   for (int i = 0; i < arr_cc.ndim(); ++i) {
     shape.push_back(arr_cc.shape(i));
   }
-  return tv::TensorView<T>(arr_cc.mutable_data(), shape);
+  return tv::TensorView<scalar_t>(arr_cc.mutable_data(), shape);
 }
-template <typename T>
-tv::TensorView<T> arrayT2TensorView(py::array_t<T> arr) {
+template <typename scalar_t>
+tv::TensorView<scalar_t> arrayT2TensorView(py::array_t<scalar_t> arr) {
   tv::Shape shape;
   for (int i = 0; i < arr.ndim(); ++i) {
     shape.push_back(arr.shape(i));
   }
-  return tv::TensorView<T>(arr.mutable_data(), shape);
+  return tv::TensorView<scalar_t>(arr.mutable_data(), shape);
 }
