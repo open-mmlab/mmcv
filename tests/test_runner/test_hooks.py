@@ -1194,7 +1194,7 @@ def test_wandb_hook():
 
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = WandbLoggerHook()
+    hook = WandbLoggerHook(log_artifact=True)
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
