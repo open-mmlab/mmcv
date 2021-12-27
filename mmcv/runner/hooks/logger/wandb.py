@@ -24,6 +24,9 @@ class WandbLoggerHook(LoggerHook):
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
+        with_step (bool): If True, the step will be logged from
+            ``self.get_iters``. Otherwise, step will not be logged.
+            Default: True.
         log_artifact (bool): If True, artifacts in {work_dir} will be uploaded
             to wandb after training ends.
             Default: True
