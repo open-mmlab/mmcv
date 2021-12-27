@@ -415,8 +415,9 @@ def nms_rotated(dets, scores, iou_threshold, labels=None, clockwise=True):
     if dets.shape[0] == 0:
         return dets, None
     if not clockwise:
-        dets_cw = dets.clone().detach()
-        dets_cw[..., -1] *= -1
+        flip_mat = dets.new_ones(dets.shape[-1])
+        flip_mat[-1] = -1
+        dets_cw = dets * flip_mat
     else:
         dets_cw = dets
     multi_label = labels is not None

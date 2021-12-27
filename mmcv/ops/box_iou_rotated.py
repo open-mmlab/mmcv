@@ -131,13 +131,13 @@ def box_iou_rotated(bboxes1,
         ious = bboxes1.new_zeros(rows)
     else:
         ious = bboxes1.new_zeros((rows * cols))
+    if not clockwise:
+        flip_mat = bboxes1.new_ones(bboxes1.shape[-1])
+        flip_mat[-1] = -1
+        bboxes1 = bboxes1 * flip_mat
+        bboxes2 = bboxes2 * flip_mat
     bboxes1 = bboxes1.contiguous()
     bboxes2 = bboxes2.contiguous()
-    if not clockwise:
-        bboxes1 = bboxes1.clone().detach()
-        bboxes2 = bboxes2.clone().detach()
-        bboxes1[..., -1] *= -1
-        bboxes2[..., -1] *= -1
     ext_module.box_iou_rotated(
         bboxes1, bboxes2, ious, mode_flag=mode_flag, aligned=aligned)
     if not aligned:
