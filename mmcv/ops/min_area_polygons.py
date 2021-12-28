@@ -13,6 +13,6 @@ def min_area_polygons(pointsets):
     Returns:
         torch.Tensor: Return the smallest polygons with shape (N, 8).
     """
-    polygons = pointsets.new_zeros((pointsets.size(0) * 8))
+    polygons = pointsets.new_zeros((pointsets.size(0), 8))
     ext_module.min_area_polygons(pointsets, polygons)
-    return polygons.view(-1, 8)
+    return polygons
