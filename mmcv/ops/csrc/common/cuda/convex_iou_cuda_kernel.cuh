@@ -11,7 +11,6 @@
 #define MAXN 100
 #define NMAX 512
 const double EPS = 1E-8;
-int const THREADS = 512;
 
 __device__ inline int sig(double d) { return (d > EPS) - (d < -EPS); }
 
@@ -239,7 +238,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
   double p3_p1_grad[10][10] = {};
   double p3_p_grad[10][10] = {};
 
-  //***********************11111111111111111************************************
+  //1
   polygon_cut(p, n, o, c, cut_grad1);
   n1 = n;
   for (int i = 0; i < n; i++) {
@@ -252,7 +251,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
     }
   }
 
-  //*************************222222222222222**********************************
+  //2
   polygon_cut(p, n, c, d, cut_grad2);
   n2 = n;
   for (int i = 0; i < n; i++) {
@@ -264,7 +263,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
       }
     }
   }
-  //**********************3333333333333333333*************************************
+  //3
   polygon_cut(p, n, d, o, cut_grad3);
   n3 = n;
   for (int i = 0; i < n; i++) {
@@ -277,7 +276,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
     }
   }
 
-  //**************************mul*************************************
+  //mul
   // p3_p2(n3 * n2) * p2_p1(n2 * n1) = p3_p1 (n3 * n1)
   for (int i = 0; i < 2 * n3; i++) {
     for (int j = 0; j < 2 * n1; j++) {
@@ -720,7 +719,6 @@ __global__ void convex_giou_cuda_kernel(const int ex_n_boxes,
     float giou = devrIoU(cur_box, cur_gt_box, cur_grad, threadIdx.x);
     cur_grad[18] = giou;
   }
-}
 }
 
 __device__ inline int lineCross(Point a, Point b, Point c, Point d, Point& p) {
