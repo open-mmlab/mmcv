@@ -157,7 +157,7 @@ class FixedMomentumUpdaterHook(MomentumUpdaterHook):
         super(MomentumUpdaterHook, self).__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
-        raise base_momentum
+        return base_momentum
 
 
 @HOOKS.register_module()
