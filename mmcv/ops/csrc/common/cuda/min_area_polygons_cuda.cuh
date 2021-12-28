@@ -88,8 +88,8 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
     float R[2][2];
     float rot_points[2][MAXN];
     R[0][0] = cos(unique_angles[i]);
-    R[0][1] = cos(unique_angles[i] - pi / 2);
-    R[1][0] = cos(unique_angles[i] + pi / 2);
+    R[0][1] = -sin(unique_angles[i]);
+    R[1][0] = sin(unique_angles[i]);
     R[1][1] = cos(unique_angles[i]);
     // R x Points
     for (int m = 0; m < 2; m++) {
@@ -275,70 +275,18 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
   float R[2][2];
 
   R[0][0] = cos(angle);
-  R[0][1] = cos(angle - pi / 2);
-  R[1][0] = cos(angle + pi / 2);
+  R[0][1] = -sin(angle);
+  R[1][0] = sin(angle);
   R[1][1] = cos(angle);
 
-  float temp[1][2];
-  float points[1][2];
-  points[0][0] = xmax;
-  points[0][1] = ymin;
-  for (int m = 0; m < 1; m++) {
-    for (int n = 0; n < 2; n++) {
-      float sum = 0.0;
-      for (int k = 0; k < 2; k++) {
-        sum = sum + points[m][k] * R[k][n];
-      }
-      temp[m][n] = sum;
-    }
-  }
-  minpoints[0] = temp[0][0];
-  minpoints[1] = temp[0][1];
-
-  points[0][0] = xmin;
-  points[0][1] = ymin;
-  for (int m = 0; m < 1; m++) {
-    for (int n = 0; n < 2; n++) {
-      float sum = 0.0;
-      for (int k = 0; k < 2; k++) {
-        sum = sum + points[m][k] * R[k][n];
-      }
-      temp[m][n] = sum;
-    }
-  }
-
-  minpoints[2] = temp[0][0];
-  minpoints[3] = temp[0][1];
-
-  points[0][0] = xmin;
-  points[0][1] = ymax;
-  for (int m = 0; m < 1; m++) {
-    for (int n = 0; n < 2; n++) {
-      float sum = 0.0;
-      for (int k = 0; k < 2; k++) {
-        sum = sum + points[m][k] * R[k][n];
-      }
-      temp[m][n] = sum;
-    }
-  }
-
-  minpoints[4] = temp[0][0];
-  minpoints[5] = temp[0][1];
-
-  points[0][0] = xmax;
-  points[0][1] = ymax;
-  for (int m = 0; m < 1; m++) {
-    for (int n = 0; n < 2; n++) {
-      float sum = 0.0;
-      for (int k = 0; k < 2; k++) {
-        sum = sum + points[m][k] * R[k][n];
-      }
-      temp[m][n] = sum;
-    }
-  }
-
-  minpoints[6] = temp[0][0];
-  minpoints[7] = temp[0][1];
+  minpoints[0] = xmax * R[0][0] +  ymin * R[1][0];
+  minpoints[1] = xmax * R[0][1] +  ymin * R[1][1];
+  minpoints[2] = xmin * R[0][0] +  ymin * R[1][0];
+  minpoints[3] = xmin * R[0][1] +  ymin * R[1][1];
+  minpoints[4] = xmin * R[0][0] +  ymax * R[1][0];
+  minpoints[5] = xmin * R[0][1] +  ymax * R[1][1];
+  minpoints[6] = xmax * R[0][0] +  ymax * R[1][0];
+  minpoints[7] = xmax * R[0][1] +  ymax * R[1][1];
 }
 
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
