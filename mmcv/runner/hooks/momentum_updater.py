@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
-from .hook import Hook, HOOKS
+from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos, annealing_linear, format_param
 
 
@@ -83,7 +83,7 @@ class MomentumUpdaterHook(Hook):
                     _momentum / (1 - k) for _momentum in self.regular_mom
                 ]
             elif self.warmup == 'exp':
-                k = self.warmup_ratio ** (1 - cur_iters / self.warmup_iters)
+                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
                 warmup_momentum = [
                     _momentum / k for _momentum in self.regular_mom
                 ]
@@ -201,7 +201,7 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
                     exp = i
                     break
 
-        momentum = base_momentum * (self.gamma ** exp)
+        momentum = base_momentum * (self.gamma**exp)
         if self.min_momentum is not None:
             # clip to a minimum value
             momentum = max(momentum, self.min_momentum)
@@ -421,19 +421,19 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
         if self.three_phase:
             self.momentum_phases.append({
                 'end_iter':
-                    float(self.pct_start * runner.max_iters) - 1,
+                float(self.pct_start * runner.max_iters) - 1,
                 'start_momentum':
-                    'max_momentum',
+                'max_momentum',
                 'end_momentum':
-                    'base_momentum'
+                'base_momentum'
             })
             self.momentum_phases.append({
                 'end_iter':
-                    float(2 * self.pct_start * runner.max_iters) - 2,
+                float(2 * self.pct_start * runner.max_iters) - 2,
                 'start_momentum':
-                    'base_momentum',
+                'base_momentum',
                 'end_momentum':
-                    'max_momentum'
+                'max_momentum'
             })
             self.momentum_phases.append({
                 'end_iter': runner.max_iters - 1,
@@ -443,11 +443,11 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
         else:
             self.momentum_phases.append({
                 'end_iter':
-                    float(self.pct_start * runner.max_iters) - 1,
+                float(self.pct_start * runner.max_iters) - 1,
                 'start_momentum':
-                    'max_momentum',
+                'max_momentum',
                 'end_momentum':
-                    'base_momentum'
+                'base_momentum'
             })
             self.momentum_phases.append({
                 'end_iter': runner.max_iters - 1,
