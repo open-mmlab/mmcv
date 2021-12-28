@@ -713,22 +713,14 @@ __global__ void convex_giou_cuda_kernel(const int ex_n_boxes,
                                         const float* ex_boxes,
                                         const float* gt_boxes,
                                         float* point_grad) {
-  const int ex_start = blockIdx.x;
-  const int ex_size =
-      min(ex_n_boxes - ex_start * THREADS / 8, THREADS / 8);
-
-  if (threadIdx.x < ex_size) {
-    const int cur_box_idx = THREADS / 8 * ex_start + threadIdx.x;
-
-    // printf("%d, alive!\n", cur_box_idx);
-
-    const float* cur_box = ex_boxes + cur_box_idx * 18;
-    const float* cur_gt_box = gt_boxes + cur_box_idx * 8;
-    float* cur_grad = point_grad + cur_box_idx * 19;
+  CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
+    const float* cur_box = ex_boxes + index * 18;
+    const float* cur_gt_box = gt_boxes + index * 8;
+    float* cur_grad = point_grad + index * 19;
     float giou = devrIoU(cur_box, cur_gt_box, cur_grad, threadIdx.x);
-
     cur_grad[18] = giou;
   }
+}
 }
 
 __device__ inline int lineCross(Point a, Point b, Point c, Point d, Point& p) {
@@ -838,15 +830,10 @@ __global__ void convex_iou_cuda_kernel(const int ex_n_boxes,
                                        const int gt_n_boxes,
                                        const float* ex_boxes,
                                        const float* gt_boxes, float* iou) {
-  const int ex_start = blockIdx.x;
-  const int ex_size =
-      min(ex_n_boxes - ex_start * THREADS, THREADS);
-
-  if (threadIdx.x < ex_size) {
-    const int cur_box_idx = THREADS * ex_start + threadIdx.x;
-    const float* cur_box = ex_boxes + cur_box_idx * 18;
+  CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
+    const float* cur_box = ex_boxes + index * 18;
     for (int i = 0; i < gt_n_boxes; i++) {
-      iou[cur_box_idx * gt_n_boxes + i] = devrIoU(cur_box, gt_boxes + i * 8);
+      iou[index * gt_n_boxes + i] = devrIoU(cur_box, gt_boxes + i * 8);
     }
   }
 }
