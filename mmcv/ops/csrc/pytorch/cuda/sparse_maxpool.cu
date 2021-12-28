@@ -15,7 +15,7 @@
 #include <ATen/ATen.h>
 #include <spconv/spconv/maxpool.h>
 #include <spconv/spconv/mp_helper.h>
-#include <spconv/tensorview/helper_kernel.cu.h>
+#include <spconv/tensorview/helper_kernel.cuh>
 #include <spconv/tensorview/helper_launch.h>
 #include <spconv/tensorview/tensorview.h>
 #include <spconv/torch_utils.h>

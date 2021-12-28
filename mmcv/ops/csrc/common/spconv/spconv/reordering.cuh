@@ -14,7 +14,7 @@
 
 #ifndef REORDERING_CU_H_
 #define REORDERING_CU_H_
-#include <spconv/tensorview/helper_kernel.cu.h>
+#include <spconv/tensorview/helper_kernel.cuh>
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
 __global__ void gatherGenericKernel(scalar_t *buffer, const scalar_t *features,

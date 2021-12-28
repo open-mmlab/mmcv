@@ -14,9 +14,9 @@
 
 #include <ATen/ATen.h>
 #include <spconv/spconv/mp_helper.h>
-#include <spconv/spconv/reordering.cu.h>
+#include <spconv/spconv/reordering.cuh>
 #include <spconv/spconv/reordering.h>
-#include <spconv/tensorview/helper_kernel.cu.h>
+#include <spconv/tensorview/helper_kernel.cuh>
 #include <spconv/tensorview/helper_launch.h>
 #include <spconv/tensorview/tensorview.h>
 #include <spconv/torch_utils.h>

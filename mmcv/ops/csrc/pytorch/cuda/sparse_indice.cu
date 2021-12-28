@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
-#include <spconv/spconv/indice.cu.h>
+#include <spconv/spconv/indice.cuh>
 #include <spconv/spconv/indice.h>
 #include <spconv/spconv/mp_helper.h>
 #include <spconv/tensorview/helper_launch.h>
