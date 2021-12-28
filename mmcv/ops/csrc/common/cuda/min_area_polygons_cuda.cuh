@@ -11,11 +11,6 @@
 #define MAXN 20
 const float EPS = 1E-8;
 
-<<<<<<< Updated upstream
-int const threadsPerBlock = 512;  // sizeof(unsigned long long) * 8;
-
-=======
->>>>>>> Stashed changes
 __device__ inline int sig(float d) { return int(d > EPS) - int(d < -EPS); }
 
 struct Point {
