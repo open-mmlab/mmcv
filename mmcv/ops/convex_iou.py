@@ -19,9 +19,8 @@ def convex_giou(pointsets, polygons):
             between point sets and polygons with the shape (N,). The second
             element is the gradient of point sets with the shape (N, 18).
     """
-    output = pointsets.new_zeros((pointsets.size(0) * 19))
+    output = pointsets.new_zeros((pointsets.size(0), 19))
     ext_module.convex_giou(pointsets, polygons, output)
-    output = output.view(-1, 19)
     convex_giou = output[:, -1]
     points_grad = output[:, 0:-1]
     return convex_giou, points_grad
@@ -42,7 +41,6 @@ def convex_iou(pointsets, polygons):
          shape (N, K).
     """
     N, K = pointsets.size(0), polygons.size(0)
-    ious = pointsets.new_zeros((N * K))
+    ious = pointsets.new_zeros((N, K))
     ext_module.convex_iou(pointsets, polygons, ious)
-    ious = ious.view(N, K)
     return ious
