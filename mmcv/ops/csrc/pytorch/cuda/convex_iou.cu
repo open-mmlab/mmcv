@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
+// modified from
+// https://github.com/SDL-GuoZonghao/BeyondBoundingBox/blob/main/mmdet/ops/iou/src/convex_iou_kernel.cu
 #include "convex_iou_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 

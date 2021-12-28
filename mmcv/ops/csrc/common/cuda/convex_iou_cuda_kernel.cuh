@@ -8,12 +8,12 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define maxn 100
-#define nmax 512
-const double eps = 1E-8;
-int const threadsPerBlock = 512;
+#define MAXN 100
+#define NMAX 512
+const double EPS = 1E-8;
+int const THREADS = 512;
 
-__device__ inline int sig(double d) { return (d > eps) - (d < -eps); }
+__device__ inline int sig(double d) { return (d > EPS) - (d < -EPS); }
 
 struct Point {
   double x, y;
@@ -38,7 +38,7 @@ __device__ inline void swap1(Point* a, Point* b) {
 }
 
 __device__ inline void reverse1(Point* a, const int n) {
-  Point temp[maxn];
+  Point temp[MAXN];
   for (int i = 0; i < n; i++) {
     temp[i].x = a[i].x;
     temp[i].y = a[i].y;
@@ -176,8 +176,8 @@ __device__ inline int lineCross(Point a, Point b, Point c, Point d, Point& p,
 }
 __device__ inline void polygon_cut(Point* p, int& n, Point a, Point b,
                                    double* cut_grad) {
-  Point pp[maxn];
-  double ccur_grad[maxn] = {};
+  Point pp[MAXN];
+  double ccur_grad[MAXN] = {};
   int m = 0;
   p[n] = p[0];
   int k = n;
@@ -229,9 +229,9 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
   }
   Point p[10] = {o, a, b};
   int n = 3, n0 = 3, n1, n2, n3;
-  double cut_grad1[maxn] = {};
-  double cut_grad2[maxn] = {};
-  double cut_grad3[maxn] = {};
+  double cut_grad1[MAXN] = {};
+  double cut_grad2[MAXN] = {};
+  double cut_grad3[MAXN] = {};
   double p1_p_grad[10][10] = {};
   double p2_p1_grad[10][10] = {};
   double p3_p2_grad[10][10] = {};
@@ -407,7 +407,7 @@ __device__ inline double intersectAreaO(Point* ps1, int n1, Point* ps2, int n2,
 __device__ inline void Jarvis(Point* in_poly, int& n_poly) {
   Point p_max, p_k;
   int max_index, k_index;
-  int Stack[nmax] = {}, top1, top2;
+  int Stack[NMAX] = {}, top1, top2;
   double sign;
   Point right_point[10], left_point[10];
 
@@ -481,7 +481,7 @@ __device__ inline void Jarvis(Point* in_poly, int& n_poly) {
 
 __device__ inline double intersectAreaPoly(Point* ps1, int n1, Point* ps2,
                                            int n2, double* grad_C) {
-  Point polygen[maxn];
+  Point polygen[MAXN];
   int n = n1 + n2, n_poly = 0;
   for (int i = 0; i < n1; i++) {
     for (int j = 0; j < n - n1; j++) {
@@ -633,9 +633,9 @@ __device__ inline void Jarvis_and_index(Point* in_poly, int& n_poly,
 
 __device__ inline float devrIoU(float const* const p, float const* const q,
                                 float* point_grad, const int idx) {
-  Point ps1[maxn], ps2[maxn];
+  Point ps1[MAXN], ps2[MAXN];
 
-  Point convex[maxn];
+  Point convex[MAXN];
   for (int i = 0; i < 9; i++) {
     convex[i].x = (double)p[i * 2];
     convex[i].y = (double)p[i * 2 + 1];
@@ -715,10 +715,10 @@ __global__ void convex_giou_cuda_kernel(const int ex_n_boxes,
                                         float* point_grad) {
   const int ex_start = blockIdx.x;
   const int ex_size =
-      min(ex_n_boxes - ex_start * threadsPerBlock / 8, threadsPerBlock / 8);
+      min(ex_n_boxes - ex_start * THREADS / 8, THREADS / 8);
 
   if (threadIdx.x < ex_size) {
-    const int cur_box_idx = threadsPerBlock / 8 * ex_start + threadIdx.x;
+    const int cur_box_idx = THREADS / 8 * ex_start + threadIdx.x;
 
     // printf("%d, alive!\n", cur_box_idx);
 
@@ -743,7 +743,7 @@ __device__ inline int lineCross(Point a, Point b, Point c, Point d, Point& p) {
 }
 
 __device__ inline void polygon_cut(Point* p, int& n, Point a, Point b) {
-  Point pp[maxn];
+  Point pp[MAXN];
   int m = 0;
   p[n] = p[0];
   for (int i = 0; i < n; i++) {
@@ -808,8 +808,8 @@ __device__ inline double intersectAreaO(Point* ps1, int n1, Point* ps2,
 }
 
 __device__ inline float devrIoU(float const* const p, float const* const q) {
-  Point ps1[maxn], ps2[maxn];
-  Point convex[maxn];
+  Point ps1[MAXN], ps2[MAXN];
+  Point convex[MAXN];
   for (int i = 0; i < 9; i++) {
     convex[i].x = (double)p[i * 2];
     convex[i].y = (double)p[i * 2 + 1];
@@ -840,10 +840,10 @@ __global__ void convex_iou_cuda_kernel(const int ex_n_boxes,
                                        const float* gt_boxes, float* iou) {
   const int ex_start = blockIdx.x;
   const int ex_size =
-      min(ex_n_boxes - ex_start * threadsPerBlock, threadsPerBlock);
+      min(ex_n_boxes - ex_start * THREADS, THREADS);
 
   if (threadIdx.x < ex_size) {
-    const int cur_box_idx = threadsPerBlock * ex_start + threadIdx.x;
+    const int cur_box_idx = THREADS * ex_start + threadIdx.x;
     const float* cur_box = ex_boxes + cur_box_idx * 18;
     for (int i = 0; i < gt_n_boxes; i++) {
       iou[cur_box_idx * gt_n_boxes + i] = devrIoU(cur_box, gt_boxes + i * 8);
