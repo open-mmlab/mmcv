@@ -1,6 +1,6 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+// Copyright (c) OpenMMLab. All rights reserved
 // modified from
-// https://github.com/
+// https://github.com/SDL-GuoZonghao/BeyondBoundingBox/blob/main/mmdet/ops/minareabbox/src/minareabbox_kernel.cu
 #include "min_area_polygons_cuda.cuh"
 #include "pytorch_cuda_helper.hpp"
 

@@ -8,12 +8,12 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#define maxn 20
-const float eps = 1E-8;
+#define MAXN 20
+const float EPS = 1E-8;
 
 int const threadsPerBlock = 512;  // sizeof(unsigned long long) * 8;
 
-__device__ inline int sig(float d) { return int(d > eps) - int(d < -eps); }
+__device__ inline int sig(float d) { return int(d > EPS) - int(d < -EPS); }
 
 struct Point {
   float x, y;
@@ -44,7 +44,7 @@ __device__ inline float dis(Point a, Point b) {
   return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
-  float convex_points[2][maxn];
+  float convex_points[2][MAXN];
   for (int j = 0; j < n_points; j++) {
     convex_points[0][j] = ps[j].x;
   }
@@ -52,9 +52,9 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
     convex_points[1][j] = ps[j].y;
   }
 
-  Point edges[maxn];
-  float edges_angles[maxn];
-  float unique_angles[maxn];
+  Point edges[MAXN];
+  float edges_angles[MAXN];
+  float unique_angles[MAXN];
   float pi = 3.1415926;
   int n_edges = n_points - 1;
   int n_unique = 0;
@@ -93,7 +93,7 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   float minarea = 1e12;
   for (int i = 0; i < n_unique; i++) {
     float R[2][2];
-    float rot_points[2][maxn];
+    float rot_points[2][MAXN];
     R[0][0] = cos(unique_angles[i]);
     R[0][1] = cos(unique_angles[i] - pi / 2);
     R[1][0] = cos(unique_angles[i] + pi / 2);
@@ -271,8 +271,8 @@ __device__ inline void Jarvis_and_index(Point *in_poly, int &n_poly,
 }
 
 __device__ inline void Findminbox(float const *const p, float *minpoints) {
-  Point ps1[maxn];
-  Point convex[maxn];
+  Point ps1[MAXN];
+  Point convex[MAXN];
   float pi = 3.1415926;
   for (int i = 0; i < 9; i++) {
     convex[i].x = p[i * 2];
