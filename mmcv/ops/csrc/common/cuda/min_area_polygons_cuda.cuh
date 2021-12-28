@@ -371,7 +371,6 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
                                               const float *ex_boxes,
                                               float *minbox) {
-
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
     const float *cur_box = ex_boxes + index * 18;
     float *cur_min_box = minbox + index * 8;

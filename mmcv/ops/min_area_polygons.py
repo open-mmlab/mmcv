@@ -8,8 +8,7 @@ def min_area_polygons(pointsets):
     """Find the smallest polygons that surrounds all points in the point sets.
 
     Args:
-        pointsets (Tensor): point sets with shape  (N, 2 * K), where the
-        integer K > 4.
+        pointsets (Tensor): point sets with shape  (N, 18).
 
     Returns:
         torch.Tensor: Return the smallest polygons with shape (N, 8).
