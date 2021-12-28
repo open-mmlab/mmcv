@@ -31,9 +31,9 @@ def box_iou_rotated(bboxes1,
         direction, clockwise (CW) and counter-clockwise (CCW). MMCV supports
         both definitions and uses CW by default.
 
-        Please set `clockwise=False` if you are using the CCW definition.
+        Please set ``clockwise=False`` if you are using the CCW definition.
 
-        The coordinate system when `clockwise` is `True` (default)
+        The coordinate system when ``clockwise`` is ``True`` (default)
 
             .. code-block:: none
 
@@ -70,7 +70,7 @@ def box_iou_rotated(bboxes1,
                 y_{center}-0.5w\\sin\\alpha-0.5h\\cos\\alpha\\end{pmatrix}
 
 
-        The coordinate system when `clockwise` is `False`
+        The coordinate system when ``clockwise`` is ``False``
 
             .. code-block:: none
 
