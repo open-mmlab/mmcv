@@ -11,8 +11,11 @@
 #define MAXN 20
 const float EPS = 1E-8;
 
+<<<<<<< Updated upstream
 int const threadsPerBlock = 512;  // sizeof(unsigned long long) * 8;
 
+=======
+>>>>>>> Stashed changes
 __device__ inline int sig(float d) { return int(d > EPS) - int(d < -EPS); }
 
 struct Point {
@@ -368,14 +371,10 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
                                               const float *ex_boxes,
                                               float *minbox) {
-  const int ex_start = blockIdx.x;
-  const int ex_size =
-      min(ex_n_boxes - ex_start * threadsPerBlock, threadsPerBlock);
 
-  if (threadIdx.x < ex_size) {
-    const int cur_box_idx = threadsPerBlock * ex_start + threadIdx.x;
-    const float *cur_box = ex_boxes + cur_box_idx * 18;
-    float *cur_min_box = minbox + cur_box_idx * 8;
+  CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
+    const float *cur_box = ex_boxes + index * 18;
+    float *cur_min_box = minbox + index * 8;
     Findminbox(cur_box, cur_min_box);
   }
 }
