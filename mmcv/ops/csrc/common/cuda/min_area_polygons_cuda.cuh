@@ -11,17 +11,12 @@
 #define MAXN 20
 const float EPS = 1E-8;
 
-__device__ inline int sig(float d) { return int(d > EPS) - int(d < -EPS); }
-
 struct Point {
   float x, y;
   __device__ Point() {}
   __device__ Point(float x, float y) : x(x), y(y) {}
 };
 
-__device__ inline bool point_same(Point &a, Point &b) {
-  return sig(a.x - b.x) == 0 && sig(a.y - b.y) == 0;
-}
 
 __device__ inline void swap1(Point *a, Point *b) {
   Point temp;
@@ -164,9 +159,8 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   }
 }
 
-// convex_find and get the polygen_index_box_index
-__device__ inline void Jarvis_and_index(Point *in_poly, int &n_poly,
-                                        int *points_to_convex_ind) {
+// convex_find
+__device__ inline void Jarvis(Point *in_poly, int &n_poly) {
   int n_input = n_poly;
   Point input_poly[20];
   for (int i = 0; i < n_input; i++) {
@@ -207,10 +201,7 @@ __device__ inline void Jarvis_and_index(Point *in_poly, int &n_poly,
     p_k = p_max;
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
-      sign = (((double)in_poly[i].x - (double)in_poly[Stack[top1]].x) *
-                  ((double)p_k.y - (double)in_poly[Stack[top1]].y) -
-              ((double)p_k.x - (double)in_poly[Stack[top1]].x) *
-                  ((double)in_poly[i].y - (double)in_poly[Stack[top1]].y));
+      sign = cross(in_poly[Stack[top1]], in_poly[i], p_k);
       if ((sign > 0) || ((sign == 0) && (dis(in_poly[Stack[top1]], in_poly[i]) >
                                          dis(in_poly[Stack[top1]], p_k)))) {
         p_k = in_poly[i];
@@ -231,11 +222,7 @@ __device__ inline void Jarvis_and_index(Point *in_poly, int &n_poly,
     p_k = p_max;
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
-      sign = (((double)in_poly[i].x - (double)in_poly[Stack[top2]].x) *
-                  ((double)p_k.y - (double)in_poly[Stack[top2]].y) -
-              ((double)p_k.x - (double)in_poly[Stack[top2]].x) *
-                  ((double)in_poly[i].y - (double)in_poly[Stack[top2]].y));
-
+      sign = cross(in_poly[Stack[top2]], in_poly[i], p_k);
       if ((sign < 0) || (sign == 0) && (dis(in_poly[Stack[top2]], in_poly[i]) >
                                         dis(in_poly[Stack[top2]], p_k))) {
         p_k = in_poly[i];
@@ -258,14 +245,6 @@ __device__ inline void Jarvis_and_index(Point *in_poly, int &n_poly,
     }
   }
   n_poly = top1 + top2;
-  for (int i = 0; i < n_poly; i++) {
-    for (int j = 0; j < n_input; j++) {
-      if (point_same(in_poly[i], input_poly[j])) {
-        points_to_convex_ind[i] = j;
-        break;
-      }
-    }
-  }
 }
 
 __device__ inline void Findminbox(float const *const p, float *minpoints) {
@@ -277,8 +256,7 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
     convex[i].y = p[i * 2 + 1];
   }
   int n_convex = 9;
-  int points_to_convex_ind[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1};
-  Jarvis_and_index(convex, n_convex, points_to_convex_ind);
+  Jarvis(convex, n_convex);
   int n1 = n_convex;
   for (int i = 0; i < n1; i++) {
     ps1[i].x = convex[i].x;
@@ -366,6 +344,7 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
                                               const float *ex_boxes,
                                               float *minbox) {
+
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
     const float *cur_box = ex_boxes + index * 18;
     float *cur_min_box = minbox + index * 8;
