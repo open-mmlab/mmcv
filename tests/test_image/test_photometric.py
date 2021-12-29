@@ -376,3 +376,37 @@ class TestPhotometric:
             assert np.allclose(img, img_std)
             assert id(img) != id(self.img[:, :, i])
             assert id(img_std) != id(self.img[:, :, i])
+
+    def test_adjust_hue(self):
+        from PIL import Image
+
+        def _adjust_hue(img, hue_factor):
+            input_mode = img.mode
+            if input_mode in {'L', '1', 'I', 'F'}:
+                return img
+            h, s, v = img.convert('HSV').split()
+            np_h = np.array(h, dtype=np.uint8)
+            # uint8 addition take cares of rotation across boundaries
+            with np.errstate(over='ignore'):
+                np_h += np.uint8(hue_factor * 255)
+            h = Image.fromarray(np_h, 'L')
+            img = Image.merge('HSV', (h, s, v)).convert(input_mode)
+            return img
+
+        pil_img = Image.fromarray(self.img)
+
+        # test case with img is not ndarray
+        with pytest.raises(TypeError):
+            mmcv.adjust_hue(pil_img, hue_factor=0.0)
+
+        # test case with hue_factor > 0.5 or hue_factor < -0.5
+        with pytest.raises(ValueError):
+            mmcv.adjust_hue(self.img, hue_factor=-0.6)
+        with pytest.raises(ValueError):
+            mmcv.adjust_hue(self.img, hue_factor=0.6)
+
+        for i in np.arange(-0.5, 0.5, 0.2):
+            pil_res = _adjust_hue(pil_img, hue_factor=i)
+            pil_res = np.array(pil_res)
+            cv2_res = mmcv.adjust_hue(self.img, hue_factor=i)
+            assert np.allclose(pil_res, cv2_res, atol=10.0)
