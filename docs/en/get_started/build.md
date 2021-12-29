@@ -9,6 +9,12 @@ git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
 ```
 
+It is recommended to install `ninja` to speed up the compilation
+
+```bash
+pip install -r requirements/optional.txt
+```
+
 You can either
 
 - install the lite version
@@ -70,14 +76,14 @@ You should know how to set up environment variables, especially `Path`, on Windo
 
     Do not use raw `cmd.exe` s instruction is based on PowerShell syntax.
 
-1. Create a new conda environment
+2. Create a new conda environment
 
     ```shell
     conda create --name mmcv python=3.7  # 3.6, 3.7, 3.8 should work too as tested
     conda activate mmcv  # make sure to activate environment before any operation
     ```
 
-1. Install PyTorch. Choose a version based on your need.
+3. Install PyTorch. Choose a version based on your need.
 
     ```shell
     conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
@@ -85,17 +91,23 @@ You should know how to set up environment variables, especially `Path`, on Windo
 
     We only tested PyTorch version >= 1.6.0.
 
-1. Prepare MMCV source code
+4. Prepare MMCV source code
 
     ```shell
     git clone https://github.com/open-mmlab/mmcv.git
     cd mmcv
     ```
 
-1. Install required Python packages
+5. Install required Python packages
 
     ```shell
-    pip3 install -r requirements.txt
+    pip3 install -r requirements/runtime.txt
+    ```
+
+6. It is recommended to install `ninja` to speed up the compilation
+
+    ```bash
+    pip install -r requirements/optional.txt
     ```
 
 #### Build and install MMCV
@@ -106,11 +118,11 @@ MMCV can be built in three ways:
 
    In this way, no custom ops are compiled and mmcv is a pure python package.
 
-1. Full version (CPU ops)
+2. Full version (CPU ops)
 
    Module `ops` will be compiled as a pytorch extension, but only x86 code will be compiled. The compiled ops can be executed on CPU only.
 
-1. Full version (CUDA ops)
+3. Full version (CUDA ops)
 
    Both x86 and CUDA codes of `ops` module will be compiled. The compiled version can be run on both CPU and CUDA-enabled GPU (if implemented).
 
@@ -150,14 +162,14 @@ pip list
 ##### Option 2: Build MMCV (full version with CPU)
 
 1. Finish above common steps
-1. Set up environment variables
+2. Set up environment variables
 
     ```shell
     $env:MMCV_WITH_OPS = 1
     $env:MAX_JOBS = 8  # based on your available number of CPU cores and amount of memory
     ```
 
-1. Following build steps of the lite version
+3. Following build steps of the lite version
 
     ```shell
     # activate environment
@@ -175,7 +187,7 @@ pip list
 ##### Option 3: Build MMCV (full version with CUDA)
 
 1. Finish above common steps
-1. Make sure `CUDA_PATH` or `CUDA_HOME` is already set in `envs` via `ls env:`, desired output is shown as below:
+2. Make sure `CUDA_PATH` or `CUDA_HOME` is already set in `envs` via `ls env:`, desired output is shown as below:
 
    ```none
    (base) PS C:\Users\WRH> ls env:
@@ -197,7 +209,7 @@ pip list
    $env:CUDA_HOME = $env:CUDA_PATH_V10_2 # if CUDA_PATH_V10_2 is in envs:
    ```
 
-1. Set CUDA target arch
+3. Set CUDA target arch
 
    ```shell
    # Suppose you are using GTX 1080, which is of capability 6.1
@@ -210,7 +222,7 @@ pip list
 Check your the compute capability of your GPU from [here](https://developer.nvidia.com/cuda-gpus).
 ```
 
-1. Launch compiling the same way as CPU
+4. Launch compiling the same way as CPU
 
    ```shell
    $env:MMCV_WITH_OPS = 1
