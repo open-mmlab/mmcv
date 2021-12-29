@@ -15,7 +15,7 @@
 #ifndef SPCONV_GEOMETRY_H_
 #define SPCONV_GEOMETRY_H_
 
-#include <spconv/tensorview/tensorview.h>
+#include <utils/spconv/tensorview/tensorview.h>
 
 #include <iostream>
 #include <limits>

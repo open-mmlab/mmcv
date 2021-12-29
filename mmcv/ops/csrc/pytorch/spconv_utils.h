@@ -15,7 +15,7 @@
 #pragma once
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
-#include <spconv/tensorview/tensorview.h>
+#include <utils/spconv/tensorview/tensorview.h>
 #include <torch/script.h>
 
 #include "pytorch_cuda_helper.hpp"

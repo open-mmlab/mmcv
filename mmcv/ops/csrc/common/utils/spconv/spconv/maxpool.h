@@ -14,7 +14,7 @@
 
 #ifndef SPARSE_MAXPOOL_FUNCTOR_H_
 #define SPARSE_MAXPOOL_FUNCTOR_H_
-#include <spconv/tensorview/tensorview.h>
+#include <utils/spconv/tensorview/tensorview.h>
 
 namespace functor {
 template <typename Device, typename scalar_t, typename Index>

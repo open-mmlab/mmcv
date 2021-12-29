@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #include <cuda_runtime_api.h>
-// #include <spconv/spconv/maxpool.h>
-// #include <spconv/torch_utils.h>
-// #include <torch/script.h>
-
 #include "pytorch_cpp_helper.hpp"
 
 #ifdef MMCV_WITH_CUDA

@@ -13,13 +13,13 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
-#include <spconv/spconv/mp_helper.h>
-#include <spconv/spconv/reordering.cuh>
-#include <spconv/spconv/reordering.h>
-#include <spconv/tensorview/helper_kernel.cuh>
-#include <spconv/tensorview/helper_launch.h>
-#include <spconv/tensorview/tensorview.h>
-#include <spconv/torch_utils.h>
+#include <utils/spconv/spconv/mp_helper.h>
+#include <spconv/reordering.cuh>
+#include <utils/spconv/spconv/reordering.h>
+#include <utils/spconv/tensorview/helper_kernel.cuh>
+#include <utils/spconv/tensorview/helper_launch.h>
+#include <utils/spconv/tensorview/tensorview.h>
+#include "../spconv_utils.h"
 
 #include <chrono>
 #include <limits>

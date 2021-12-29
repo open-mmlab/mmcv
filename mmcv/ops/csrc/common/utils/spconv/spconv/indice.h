@@ -14,7 +14,7 @@
 
 #ifndef SPARSE_CONV_INDICE_FUNCTOR_H_
 #define SPARSE_CONV_INDICE_FUNCTOR_H_
-#include <spconv/tensorview/tensorview.h>
+#include <utils/spconv/tensorview/tensorview.h>
 
 namespace functor {
 template <typename Device, typename Index, typename IndexGrid, unsigned NDim>

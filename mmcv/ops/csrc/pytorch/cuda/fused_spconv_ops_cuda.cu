@@ -1,7 +1,7 @@
 #include <cuda_runtime_api.h>
-#include <spconv/spconv/indice.h>
-#include <spconv/spconv/reordering.h>
-#include <spconv/torch_utils.h>
+#include <utils/spconv/spconv/indice.h>
+#include <utils/spconv/spconv/reordering.h>
+#include "../spconv_utils.h"
 #include <torch/script.h>
 
 #include "pytorch_cuda_helper.hpp"

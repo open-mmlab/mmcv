@@ -13,12 +13,12 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
-#include <spconv/spconv/maxpool.h>
-#include <spconv/spconv/mp_helper.h>
-#include <spconv/tensorview/helper_kernel.cuh>
-#include <spconv/tensorview/helper_launch.h>
-#include <spconv/tensorview/tensorview.h>
-#include <spconv/torch_utils.h>
+#include <utils/spconv/spconv/maxpool.h>
+#include <utils/spconv/spconv/mp_helper.h>
+#include <utils/spconv/tensorview/helper_kernel.cuh>
+#include <utils/spconv/tensorview/helper_launch.h>
+#include <utils/spconv/tensorview/tensorview.h>
+#include "../spconv_utils.h"
 
 #include <chrono>
 #include <limits>

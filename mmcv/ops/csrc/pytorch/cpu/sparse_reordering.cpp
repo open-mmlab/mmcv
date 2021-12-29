@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <spconv/spconv/reordering.h>
+#include <utils/spconv/spconv/reordering.h>
 #include <torch/script.h>
 
 #include "pytorch_cpp_helper.hpp"

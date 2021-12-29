@@ -1,6 +1,6 @@
 #include <cuda_runtime_api.h>
-#include <spconv/spconv/maxpool.h>
-#include <spconv/torch_utils.h>
+#include <utils/spconv/spconv/maxpool.h>
+#include "../spconv_utils.h"
 #include <torch/script.h>
 
 #include "pytorch_cuda_helper.hpp"
