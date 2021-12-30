@@ -65,7 +65,7 @@ class EvalHook(Hook):
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
-    Notes:
+    Note:
         If new arguments are added for EvalHook, tools/test.py,
         tools/eval_metric.py may be affected.
     """

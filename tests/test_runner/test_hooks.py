@@ -12,7 +12,7 @@ import re
 import shutil
 import sys
 import tempfile
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
 import torch
@@ -37,6 +37,85 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
+
+
+def test_optimizerhook():
+
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.conv1 = nn.Conv2d(
+                in_channels=1,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+            self.conv2 = nn.Conv2d(
+                in_channels=2,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+            self.conv3 = nn.Conv2d(
+                in_channels=1,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+
+        def forward(self, x):
+            x1 = self.conv1(x)
+            x2 = self.conv2(x1)
+            return x1, x2
+
+    model = Model()
+    x = torch.rand(1, 1, 3, 3)
+
+    dummy_runner = Mock()
+    dummy_runner.optimizer.zero_grad = Mock(return_value=None)
+    dummy_runner.optimizer.step = Mock(return_value=None)
+    dummy_runner.model = model
+    dummy_runner.outputs = dict()
+
+    dummy_runner.outputs['num_samples'] = 0
+
+    class DummyLogger():
+
+        def __init__(self):
+            self.msg = ''
+
+        def log(self, msg=None, **kwargs):
+            self.msg += msg
+
+    dummy_runner.logger = DummyLogger()
+    optimizer_hook = OptimizerHook(
+        dict(max_norm=2), detect_anomalous_params=True)
+
+    dummy_runner.outputs['loss'] = model(x)[0].sum()
+    optimizer_hook.after_train_iter(dummy_runner)
+    # assert the parameters of conv2 and conv3 are not in the
+    # computational graph which is with x1.sum() as root.
+    assert 'conv2.weight' in dummy_runner.logger.msg
+    assert 'conv2.bias' in dummy_runner.logger.msg
+    assert 'conv3.weight' in dummy_runner.logger.msg
+    assert 'conv3.bias' in dummy_runner.logger.msg
+    assert 'conv1.weight' not in dummy_runner.logger.msg
+    assert 'conv1.bias' not in dummy_runner.logger.msg
+
+    dummy_runner.outputs['loss'] = model(x)[1].sum()
+    dummy_runner.logger.msg = ''
+    optimizer_hook.after_train_iter(dummy_runner)
+    # assert the parameters of conv3 are not in the computational graph
+    assert 'conv3.weight' in dummy_runner.logger.msg
+    assert 'conv3.bias' in dummy_runner.logger.msg
+    assert 'conv2.weight' not in dummy_runner.logger.msg
+    assert 'conv2.bias' not in dummy_runner.logger.msg
+    assert 'conv1.weight' not in dummy_runner.logger.msg
+    assert 'conv1.bias' not in dummy_runner.logger.msg
 
 
 def test_checkpoint_hook(tmp_path):
@@ -1147,21 +1226,37 @@ def test_neptune_hook():
     hook.run.stop.assert_called_with()
 
 
-def test_dvclive_hook(tmp_path):
+def test_dvclive_hook():
     sys.modules['dvclive'] = MagicMock()
     runner = _build_demo_runner()
 
-    (tmp_path / 'dvclive').mkdir()
-    hook = DvcliveLoggerHook(str(tmp_path / 'dvclive'))
+    hook = DvcliveLoggerHook()
+    dvclive_mock = hook.dvclive
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.dvclive.init.assert_called_with(str(tmp_path / 'dvclive'))
-    hook.dvclive.log.assert_called_with('momentum', 0.95, step=6)
-    hook.dvclive.log.assert_any_call('learning_rate', 0.02, step=6)
+    dvclive_mock.set_step.assert_called_with(6)
+    dvclive_mock.log.assert_called_with('momentum', 0.95)
+
+
+def test_dvclive_hook_model_file(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    runner = _build_demo_runner()
+
+    hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
+    runner.register_hook(hook)
+
+    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+
+    assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
+
+    shutil.rmtree(runner.work_dir)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',

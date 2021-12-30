@@ -15,11 +15,11 @@ class GatherPoints(Function):
                 indices: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            features (Tensor): (B, C, N) features to gather.
-            indices (Tensor): (B, M) where M is the number of points.
+            features (torch.Tensor): (B, C, N) features to gather.
+            indices (torch.Tensor): (B, M) where M is the number of points.
 
         Returns:
-            Tensor: (B, C, M) where M is the number of points.
+            torch.Tensor: (B, C, M) where M is the number of points.
         """
         assert features.is_contiguous()
         assert indices.is_contiguous()
