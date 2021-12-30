@@ -537,7 +537,7 @@ class BaseRunner(metaclass=ABCMeta):
         """
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)
-        self.register_optimizer_hook(optimizer_config)
+        # self.register_optimizer_hook(optimizer_config)
         self.register_checkpoint_hook(checkpoint_config)
         self.register_timer_hook(timer_config)
         self.register_logger_hooks(log_config)

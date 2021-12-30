@@ -64,6 +64,7 @@ class LrUpdaterHook(Hook):
             for param_group, lr in zip(runner.optimizer.param_groups,
                                        lr_groups):
                 param_group['lr'] = lr
+        runner.model.model.setOptimizer(runner.optimizer)
 
     def get_lr(self, runner, base_lr):
         raise NotImplementedError

@@ -6,6 +6,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 
+import poptorch
+
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
@@ -23,19 +25,29 @@ class Model(nn.Module):
         self.fc3 = nn.Linear(84, 10)
         self.loss_fn = nn.CrossEntropyLoss()
 
-    def forward(self, x):
+    def forward(self, x, labels):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 16 * 5 * 5)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        return x
+        loss = self.loss_fn(x, labels)
+        return loss
+
+
+class MMModel(nn.Module):
+
+    def __init__(self, poptorchtrainingmodel):
+        super(MMModel, self).__init__()
+        self.model = poptorchtrainingmodel
+
+    def forward(self, images, labels):
+        return self.model(images,labels)
 
     def train_step(self, data, optimizer):
         images, labels = data
-        predicts = self(images)  # -> self.__call__() -> self.forward()
-        loss = self.loss_fn(predicts, labels)
+        loss = self(images, labels)  # -> self.__call__() -> self.forward()
         return {'loss': loss}
 
 
@@ -53,11 +65,22 @@ if __name__ == '__main__':
     ])
     trainset = CIFAR10(
         root='data', train=True, download=True, transform=transform)
-    trainloader = DataLoader(
-        trainset, batch_size=128, shuffle=True, num_workers=2)
+    opts = poptorch.Options() 
+    # if there is no IPU, uncomment the following line
+    # opts = opts.useIpuModel(True)
+    trainloader = poptorch.DataLoader(opts,
+                                      trainset,
+                                      batch_size=128,
+                                      shuffle=True,
+                                      num_workers=20)
 
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = poptorch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     logger = get_logger('mmcv')
+
+    model = poptorch.BeginBlock(model, 'testmodel', ipu_id=0)
+    model = poptorch.trainingModel(model, options=opts, optimizer=optimizer)
+    model = MMModel(model)
+
     # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
         model,
@@ -82,3 +105,4 @@ if __name__ == '__main__':
         log_config=log_config)
 
     runner.run([trainloader], [('train', 1)])
+
