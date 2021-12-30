@@ -162,6 +162,14 @@ class IterBasedRunner(BaseRunner):
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
         self._inner_iter = checkpoint['meta']['iter']
+
+        if self.meta is None:
+            self.meta = {}
+        # resume meta information meta
+        # etc. load `last_ckpt`, `best_score`, `best_ckpt` for hook messages
+        self.meta.update(checkpoint['meta'])
+        self.meta.setdefault('hook_msgs', {})
+
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])

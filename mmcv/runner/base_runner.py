@@ -348,6 +348,15 @@ class BaseRunner(metaclass=ABCMeta):
                checkpoint,
                resume_optimizer=True,
                map_location='default'):
+        """Resume model from checkpoint.
+
+        Args:
+            checkpoint (str): Checkpoint to resume from.
+            resume_optimizer (bool, optional): Whether resume the optimizer(s)
+                if the checkpoint file includes optimizer(s). Default to True.
+            map_location (str, optional): Same as :func:`torch.load`.
+                Default to 'default'.
+        """
         if map_location == 'default':
             if torch.cuda.is_available():
                 device_id = torch.cuda.current_device()
@@ -364,9 +373,10 @@ class BaseRunner(metaclass=ABCMeta):
         self._iter = checkpoint['meta']['iter']
         if self.meta is None:
             self.meta = {}
+        # resume meta information meta
+        # etc. load `last_ckpt`, `best_score`, `best_ckpt` for hook messages
+        self.meta.update(checkpoint['meta'])
         self.meta.setdefault('hook_msgs', {})
-        # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
-        self.meta['hook_msgs'].update(checkpoint['meta'].get('hook_msgs', {}))
 
         # Re-calculate the number of iterations when resuming
         # models with different number of GPUs
@@ -380,9 +390,6 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
-
-        # resume meta information meta
-        self.meta = checkpoint['meta']
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
