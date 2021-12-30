@@ -374,11 +374,12 @@ class BaseRunner(metaclass=ABCMeta):
         if self.meta is None:
             self.meta = {}
         else:
+            # update current env information and seed
             if self.meta.get('env_info', False):
                 checkpoint['meta'].update(self.meta['env_info'])
             if self.meta.get('seed', False):
                 checkpoint['meta'].update(self.meta['seed'])
-        # resume meta information meta
+        # resume meta information
         self.meta.update(checkpoint['meta'])
 
         # Re-calculate the number of iterations when resuming
