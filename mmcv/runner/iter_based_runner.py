@@ -165,10 +165,13 @@ class IterBasedRunner(BaseRunner):
 
         if self.meta is None:
             self.meta = {}
+        else:
+            if self.meta.get('env_info', False):
+                checkpoint['meta'].update(self.meta['env_info'])
+            if self.meta.get('seed', False):
+                checkpoint['meta'].update(self.meta['seed'])
         # resume meta information meta
-        # etc. load `last_ckpt`, `best_score`, `best_ckpt` for hook messages
         self.meta.update(checkpoint['meta'])
-        self.meta.setdefault('hook_msgs', {})
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
