@@ -37,14 +37,8 @@ __device__ inline void swap1(Point* a, Point* b) {
 }
 
 __device__ inline void reverse1(Point* a, const int n) {
-  Point temp[MAXN];
-  for (int i = 0; i < n; i++) {
-    temp[i].x = a[i].x;
-    temp[i].y = a[i].y;
-  }
-  for (int i = 0; i < n; i++) {
-    a[i].x = temp[n - 1 - i].x;
-    a[i].y = temp[n - 1 - i].y;
+  for (int i = 0; i < (n - 1) / 2.0; i++) {
+    swap1(a[i], a[n - 1 - i]);
   }
 }
 
