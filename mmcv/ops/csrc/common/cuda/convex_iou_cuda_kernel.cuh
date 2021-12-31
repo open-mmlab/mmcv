@@ -63,8 +63,8 @@ __device__ inline double area(Point* ps, int n) {
   }
   return res / 2.0;
 }
-__device__ inline double polygen_area_grad(Point* ps, int n,
-                                           int* polygen_to_pred_index,
+__device__ inline double polygon_area_grad(Point* ps, int n,
+                                           int* polygon_to_pred_index,
                                            int n_pred, double* grad_C) {
   ps[n] = ps[0];
   double partion_grad[4 * 30 + 2];
@@ -84,16 +84,16 @@ __device__ inline double polygen_area_grad(Point* ps, int n,
   for (int i = 0; i < 2 * n; i++) {
     if (!(i % 2)) {
       for (int j = 0; j < n_pred; j++) {
-        if (i / 2 == polygen_to_pred_index[j]) {
-          grad_C[2 * polygen_to_pred_index[j + n_pred]] =
+        if (i / 2 == polygon_to_pred_index[j]) {
+          grad_C[2 * polygon_to_pred_index[j + n_pred]] =
               (partion_grad[i / 2 * 4] + partion_grad[i / 2 * 4 + 2]) / 2;
           break;
         }
       }
     } else {
       for (int j = 0; j < n_pred; j++) {
-        if (i / 2 == polygen_to_pred_index[j]) {
-          grad_C[2 * polygen_to_pred_index[j + n_pred] + 1] =
+        if (i / 2 == polygon_to_pred_index[j]) {
+          grad_C[2 * polygon_to_pred_index[j + n_pred] + 1] =
               (partion_grad[i / 2 * 4 + 1] + partion_grad[i / 2 * 4 + 1 + 2]) /
               2;
           break;
@@ -300,23 +300,23 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
   }
 
   // calculate S_grad
-  int polygen_index_box_index[20];
-  double grad_polygen[20];
+  int polygon_index_box_index[20];
+  double grad_polygon[20];
   double S_grad[6];
 
   for (int i = 0; i < n3; i++) {
-    polygen_index_box_index[i] = i;
-    polygen_index_box_index[i + n3] = i;
+    polygon_index_box_index[i] = i;
+    polygon_index_box_index[i + n3] = i;
   }
 
   double res =
-      polygen_area_grad(p, n3, polygen_index_box_index, n3, grad_polygen);
+      polygon_area_grad(p, n3, polygon_index_box_index, n3, grad_polygon);
 
   if (s1 * s2 == -1) {
     for (int j = 0; j < 2 * 3; j++) {
       double sum = 0.0;
       for (int m = 0; m < 2 * n3; m++) {
-        sum = sum - grad_polygen[m] * p3_p_grad[m][j];
+        sum = sum - grad_polygon[m] * p3_p_grad[m][j];
       }
       S_grad[j] = sum;
     }
@@ -353,7 +353,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
     for (int j = 0; j < 2 * 3; j++) {
       double sum = 0.0;
       for (int m = 0; m < 2 * n3; m++) {
-        sum = sum + grad_polygen[m] * p3_p_grad[m][j];
+        sum = sum + grad_polygon[m] * p3_p_grad[m][j];
       }
       S_grad[j] = sum;
     }
@@ -480,7 +480,7 @@ __device__ inline void Jarvis(Point* in_poly, int& n_poly) {
 
 __device__ inline double intersectAreaPoly(Point* ps1, int n1, Point* ps2,
                                            int n2, double* grad_C) {
-  Point polygen[MAXN];
+  Point polygon[MAXN];
   int n = n1 + n2, n_poly = 0;
   for (int i = 0; i < n1; i++) {
     for (int j = 0; j < n - n1; j++) {
@@ -496,46 +496,46 @@ __device__ inline double intersectAreaPoly(Point* ps1, int n1, Point* ps2,
   n_poly = n1 + n2;
   for (int i = 0; i < n_poly; i++) {
     if (i < n1) {
-      polygen[i] = ps1[i];
+      polygon[i] = ps1[i];
     } else {
-      polygen[i] = ps2[i - n1];
+      polygon[i] = ps2[i - n1];
     }
   }
 
-  Jarvis(polygen, n_poly);
+  Jarvis(polygon, n_poly);
 
-  int polygen_to_pred_index[18] = {-1, -1, -1, -1, -1, -1, -1, -1, -1,
+  int polygon_to_pred_index[18] = {-1, -1, -1, -1, -1, -1, -1, -1, -1,
                                    -1, -1, -1, -1, -1, -1, -1, -1, -1};
   int n_pred = 0;
   for (int i = 0; i < n_poly; i++) {
     for (int j = 0; j < n1; j++) {
-      if (polygen[i].x == ps1[j].x && polygen[i].y == ps1[j].y) {
-        polygen_to_pred_index[n_pred] = i;
-        polygen_to_pred_index[n_pred + n1] = j;
+      if (polygon[i].x == ps1[j].x && polygon[i].y == ps1[j].y) {
+        polygon_to_pred_index[n_pred] = i;
+        polygon_to_pred_index[n_pred + n1] = j;
         n_pred += 1;
         break;
       }
     }
   }
   if (n_pred == 0) {
-    double polygen_area = fabs(area(polygen, n_poly));
+    double polygon_area = fabs(area(polygon, n_poly));
     for (int i = 0; i < 18; i++) {
       grad_C[i] = 0.0;
     }
-    return polygen_area;
+    return polygon_area;
   } else {
-    double polygen_area =
-        polygen_area_grad(polygen, n_poly, polygen_to_pred_index, n1, grad_C);
-    if (polygen_area < 0) {
+    double polygon_area =
+        polygon_area_grad(polygon, n_poly, polygon_to_pred_index, n1, grad_C);
+    if (polygon_area < 0) {
       for (int i = 0; i < 18; i++) {
         grad_C[i] = -grad_C[i];
       }
     }
-    return fabs(polygen_area);
+    return fabs(polygon_area);
   }
 }
 
-// convex_find and get the polygen_index_box_index
+// convex_find and get the polygon_index_box_index
 __device__ inline void Jarvis_and_index(Point* in_poly, int& n_poly,
                                         int* points_to_convex_ind) {
   int n_input = n_poly;
@@ -656,10 +656,10 @@ __device__ inline float devrIoU(float const* const p, float const* const q,
     ps2[i].y = (double)q[i * 2 + 1];
   }
 
-  int polygen_index_box_index[18];
+  int polygon_index_box_index[18];
   for (int i = 0; i < n1; i++) {
-    polygen_index_box_index[i] = i;
-    polygen_index_box_index[i + n1] = i;
+    polygon_index_box_index[i] = i;
+    polygon_index_box_index[i + n1] = i;
   }
 
   double grad_A[18] = {};
@@ -668,7 +668,7 @@ __device__ inline float devrIoU(float const* const p, float const* const q,
 
   double inter_area = intersectAreaO(ps1, n1, ps2, n2, grad_AB);
   double S_pred =
-      polygen_area_grad(ps1, n1, polygen_index_box_index, n1, grad_A);
+      polygon_area_grad(ps1, n1, polygon_index_box_index, n1, grad_A);
   if (S_pred < 0) {
     for (int i = 0; i < n_convex * 2; i++) {
       grad_A[i] = -grad_A[i];
@@ -677,10 +677,10 @@ __device__ inline float devrIoU(float const* const p, float const* const q,
   double union_area = fabs(S_pred) + fabs(area(ps2, n2)) - inter_area;
 
   double iou = inter_area / union_area;
-  double polygen_area = intersectAreaPoly(ps1, n1, ps2, n2, grad_C);
+  double polygon_area = intersectAreaPoly(ps1, n1, ps2, n2, grad_C);
 
   //    printf("%d:live\n", idx);
-  double rot_giou = iou - (polygen_area - union_area) / polygen_area;
+  double rot_giou = iou - (polygon_area - union_area) / polygon_area;
 
   float grad_point_temp[18] = {};
 
@@ -690,14 +690,14 @@ __device__ inline float devrIoU(float const* const p, float const* const q,
         (float)((union_area + inter_area) / (union_area * union_area) *
                     grad_AB[2 * i] -
                 iou / union_area * grad_A[2 * i] -
-                1 / polygen_area * (grad_AB[2 * i] - grad_A[2 * i]) -
-                (union_area) / polygen_area / polygen_area * grad_C[2 * i]);
+                1 / polygon_area * (grad_AB[2 * i] - grad_A[2 * i]) -
+                (union_area) / polygon_area / polygon_area * grad_C[2 * i]);
     grad_point_temp[2 * grad_point + 1] =
         (float)((union_area + inter_area) / (union_area * union_area) *
                     grad_AB[2 * i + 1] -
                 iou / union_area * grad_A[2 * i + 1] -
-                1 / polygen_area * (grad_AB[2 * i + 1] - grad_A[2 * i + 1]) -
-                (union_area) / polygen_area / polygen_area * grad_C[2 * i + 1]);
+                1 / polygon_area * (grad_AB[2 * i + 1] - grad_A[2 * i + 1]) -
+                (union_area) / polygon_area / polygon_area * grad_C[2 * i + 1]);
   }
 
   for (int i = 0; i < 9; i++) {
