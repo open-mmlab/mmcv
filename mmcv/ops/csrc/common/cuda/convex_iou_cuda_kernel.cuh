@@ -38,7 +38,9 @@ __device__ inline void swap1(Point* a, Point* b) {
 
 __device__ inline void reverse1(Point* a, const int n) {
   for (int i = 0; i < (n - 1) / 2.0; i++) {
-    swap1(a[i], a[n - 1 - i]);
+    Point* j = &(a[i]);
+    Point* k = &(a[n - 1 - i]);
+    swap1(j, k);
   }
 }
 
@@ -75,25 +77,22 @@ __device__ inline double polygon_area_grad(Point* ps, int n,
       partion_grad[1] = ps[i].x;
     }
   }
-  for (int i = 0; i < 2 * n; i++) {
-    if (!(i % 2)) {
-      for (int j = 0; j < n_pred; j++) {
-        if (i / 2 == polygon_to_pred_index[j]) {
-          grad_C[2 * polygon_to_pred_index[j + n_pred]] =
-              (partion_grad[i / 2 * 4] + partion_grad[i / 2 * 4 + 2]) / 2;
-          break;
-        }
-      }
-    } else {
-      for (int j = 0; j < n_pred; j++) {
-        if (i / 2 == polygon_to_pred_index[j]) {
-          grad_C[2 * polygon_to_pred_index[j + n_pred] + 1] =
-              (partion_grad[i / 2 * 4 + 1] + partion_grad[i / 2 * 4 + 1 + 2]) /
-              2;
-          break;
-        }
-      }
-    }
+  for (int i = 0; i < n; i++) {
+     for (int j = 0; j < n_pred; j++) {
+       if (i == polygon_to_pred_index[j]) {
+         grad_C[2 * polygon_to_pred_index[j + n_pred]] =
+             (partion_grad[i * 4] + partion_grad[i * 4 + 2]) / 2;
+         break;
+       }
+     }
+     for (int j = 0; j < n_pred; j++) {
+       if (i == polygon_to_pred_index[j]) {
+         grad_C[2 * polygon_to_pred_index[j + n_pred] + 1] =
+             (partion_grad[i * 4 + 1] + partion_grad[i * 4 + 1 + 2]) /
+             2;
+         break;
+       }
+     }
   }
 
   return res / 2.0;
