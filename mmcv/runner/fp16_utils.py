@@ -35,7 +35,9 @@ def cast_tensor_type(inputs, src_type, dst_type):
     if isinstance(inputs, nn.Module):
         return inputs
     elif isinstance(inputs, torch.Tensor):
-        return inputs.to(dst_type)
+        # we need to confirm the type of inputs to be casted is the same as the
+        # argument `src_type`.
+        return inputs.to(dst_type) if inputs.dtype == src_type else inputs
     elif isinstance(inputs, str):
         return inputs
     elif isinstance(inputs, np.ndarray):
