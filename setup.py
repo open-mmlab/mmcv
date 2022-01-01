@@ -378,7 +378,6 @@ setup(
     url='https://github.com/open-mmlab/mmcv',
     author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
-    tests_require=parse_requirements('requirements/test.txt'),
     install_requires=install_requires,
     extras_require={
         'all': parse_requirements('requirements.txt'),
