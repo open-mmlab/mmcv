@@ -407,6 +407,7 @@ def nms_rotated(dets, scores, iou_threshold, labels=None, clockwise=True):
         labels (Tensor): boxes' label in shape (N,).
         clockwise (bool): flag indicating whether the positive angular
             orientation is clockwise. default True.
+            `New in version 1.4.3.`
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the
