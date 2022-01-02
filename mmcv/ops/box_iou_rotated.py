@@ -117,6 +117,7 @@ def box_iou_rotated(bboxes1,
             foreground).
         clockwise (bool): flag indicating whether the positive angular
             orientation is clockwise. default True.
+            `New in version 1.4.3.`
 
     Returns:
         torch.Tensor: Return the ious betweens boxes. If ``aligned`` is
