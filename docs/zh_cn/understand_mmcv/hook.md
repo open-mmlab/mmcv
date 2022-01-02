@@ -509,7 +509,7 @@ runner.register_hook(ema_config, priority='NORMAL')
       <td align="left">StepLrUpdaterHook, StepMomentumUpdaterHook</td>
       <td align="left">等间隔调整学习率</td>
       <td align="left">step</td>
-      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.StepLrUpdaterHook">mmcv.runner.StepLrUpdaterHook</a>, <a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.FixedLrUpdaterHook">mmcv.runner.StepMomentumUpdaterHook</a></td>
+      <td align="left"><a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.StepLrUpdaterHook">mmcv.runner.StepLrUpdaterHook</a>, <a href="https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.StepMomentumUpdaterHook">mmcv.runner.StepMomentumUpdaterHook</a></td>
     </tr>
     <tr>
       <td align="left">ExpLrUpdaterHook</td>
