@@ -46,8 +46,8 @@ class ActiveRotatedFilterFunction(Function):
         """
         Args:
             grad_output (torch.Tensor): The gradiant of output features
-                with shape [nOutputPlane * num_rotations,
-                nInputPlane * num_orientations, H, W].
+                with shape [num_output_planes * num_rotations,
+                num_input_planes * num_orientations, H, W].
                 
         Returns:
             torch.Tensor: The gradiant of input features with shape
