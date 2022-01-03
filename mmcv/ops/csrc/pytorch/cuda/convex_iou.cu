@@ -12,12 +12,13 @@ void ConvexIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
 
   at::cuda::CUDAGuard device_guard(pointsets.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-
-  convex_iou_cuda_kernel<<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0,
-                           stream>>>(
-      num_pointsets, num_polygons, pointsets.data_ptr<float>(),
-      polygons.data_ptr<float>(), ious.data_ptr<float>());
-
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      pointsets.scalar_type(), "convex_iou_cuda_kernel", ([&] {
+        convex_iou_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+                num_pointsets, num_polygons, pointsets.data_ptr<scalar_t>(),
+                polygons.data_ptr<scalar_t>(), ious.data_ptr<scalar_t>());
+      }));
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
@@ -29,13 +30,12 @@ void ConvexGIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
 
   at::cuda::CUDAGuard device_guard(pointsets.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-
-  int optimal_block_num =
-      (output_size + THREADS_PER_BLOCK / 8 - 1) / (THREADS_PER_BLOCK / 8);
-  convex_giou_cuda_kernel<<<min(optimal_block_num, 4096), THREADS_PER_BLOCK / 8,
-                            0, stream>>>(
-      num_pointsets, num_polygons, pointsets.data_ptr<float>(),
-      polygons.data_ptr<float>(), output.data_ptr<float>());
-
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      pointsets.scalar_type(), "convex_giou_cuda_kernel", ([&] {
+        convex_giou_cuda_kernel<scalar_t>
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK / 2, 0, stream>>>(
+                num_pointsets, num_polygons, pointsets.data_ptr<scalar_t>(),
+                polygons.data_ptr<scalar_t>(), output.data_ptr<scalar_t>());
+      }));
   AT_CUDA_CHECK(cudaGetLastError());
 }

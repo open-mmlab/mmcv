@@ -623,8 +623,9 @@ __device__ inline void Jarvis_and_index(Point* in_poly, int& n_poly,
   }
 }
 
-__device__ inline float devrIoU(float const* const p, float const* const q,
-                                float* point_grad, const int idx) {
+template <typename T>
+__device__ inline float devrIoU(T const* const p, T const* const q,
+                                T* point_grad, const int idx) {
   Point ps1[MAXN], ps2[MAXN];
 
   Point convex[MAXN];
@@ -700,16 +701,17 @@ __device__ inline float devrIoU(float const* const p, float const* const q,
   return (float)rot_giou;
 }
 
+template <typename T>
 __global__ void convex_giou_cuda_kernel(const int ex_n_boxes,
                                         const int gt_n_boxes,
-                                        const float* ex_boxes,
-                                        const float* gt_boxes,
-                                        float* point_grad) {
+                                        const T* ex_boxes,
+                                        const T* gt_boxes,
+                                        T* point_grad) {
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
-    const float* cur_box = ex_boxes + index * 18;
-    const float* cur_gt_box = gt_boxes + index * 8;
-    float* cur_grad = point_grad + index * 19;
-    float giou = devrIoU(cur_box, cur_gt_box, cur_grad, threadIdx.x);
+    const T* cur_box = ex_boxes + index * 18;
+    const T* cur_gt_box = gt_boxes + index * 8;
+    T* cur_grad = point_grad + index * 19;
+    T giou = devrIoU(cur_box, cur_gt_box, cur_grad, threadIdx.x);
     cur_grad[18] = giou;
   }
 }
@@ -790,7 +792,8 @@ __device__ inline double intersectAreaO(Point* ps1, int n1, Point* ps2,
   return res;
 }
 
-__device__ inline float devrIoU(float const* const p, float const* const q) {
+template <typename T>
+__device__ inline float devrIoU(T const* const p, T const* const q) {
   Point ps1[MAXN], ps2[MAXN];
   Point convex[MAXN];
   for (int i = 0; i < 9; i++) {
@@ -817,12 +820,13 @@ __device__ inline float devrIoU(float const* const p, float const* const q) {
   return (float)iou;
 }
 
+template <typename T>
 __global__ void convex_iou_cuda_kernel(const int ex_n_boxes,
                                        const int gt_n_boxes,
-                                       const float* ex_boxes,
-                                       const float* gt_boxes, float* iou) {
+                                       const T* ex_boxes,
+                                       const T* gt_boxes, T* iou) {
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
-    const float* cur_box = ex_boxes + index * 18;
+    const T* cur_box = ex_boxes + index * 18;
     for (int i = 0; i < gt_n_boxes; i++) {
       iou[index * gt_n_boxes + i] = devrIoU(cur_box, gt_boxes + i * 8);
     }
