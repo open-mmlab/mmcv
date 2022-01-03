@@ -702,10 +702,8 @@ __device__ inline float devrIoU(T const* const p, T const* const q,
 
 template <typename T>
 __global__ void convex_giou_cuda_kernel(const int ex_n_boxes,
-                                        const int gt_n_boxes,
-                                        const T* ex_boxes,
-                                        const T* gt_boxes,
-                                        T* point_grad) {
+                                        const int gt_n_boxes, const T* ex_boxes,
+                                        const T* gt_boxes, T* point_grad) {
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
     const T* cur_box = ex_boxes + index * 18;
     const T* cur_gt_box = gt_boxes + index * 8;
@@ -821,8 +819,7 @@ __device__ inline float devrIoU(T const* const p, T const* const q) {
 
 template <typename T>
 __global__ void convex_iou_cuda_kernel(const int ex_n_boxes,
-                                       const int gt_n_boxes,
-                                       const T* ex_boxes,
+                                       const int gt_n_boxes, const T* ex_boxes,
                                        const T* gt_boxes, T* iou) {
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
     const T* cur_box = ex_boxes + index * 18;
