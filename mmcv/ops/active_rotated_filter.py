@@ -27,7 +27,7 @@ class ActiveRotatedFilterFunction(Function):
                 [num_output_planes, num_input_planes, num_orientations, H, W].
             indices (torch.Tensor): Indices with shape
                 [num_orientations, H, W, num_rotations].
-                
+
         Returns:
             torch.Tensor: Refined features with shape
             [num_output_planes * num_rotations, num_input_planes * num_orientations, H, W].
@@ -48,7 +48,7 @@ class ActiveRotatedFilterFunction(Function):
             grad_output (torch.Tensor): The gradiant of output features
                 with shape [num_output_planes * num_rotations,
                 num_input_planes * num_orientations, H, W].
-                
+
         Returns:
             torch.Tensor: The gradiant of input features with shape
             [num_output_planes, num_input_planes, num_orientations, H, W].
