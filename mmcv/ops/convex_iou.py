@@ -38,7 +38,7 @@ def convex_iou(pointsets, polygons):
 
     Returns:
         torch.Tensor: Return the ious between point sets and polygons with the
-         shape (N, K).
+        shape (N, K).
     """
     N, K = pointsets.size(0), polygons.size(0)
     ious = pointsets.new_zeros((N, K))
