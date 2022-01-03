@@ -14,8 +14,8 @@ void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets,
       pointsets.scalar_type(), "min_area_polygons_cuda_kernel", ([&] {
         min_area_polygons_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-                 num_pointsets, pointsets.data_ptr<scalar_t>(),
-                 polygons.data_ptr<scalar_t>());
+                num_pointsets, pointsets.data_ptr<scalar_t>(),
+                polygons.data_ptr<scalar_t>());
       }));
   AT_CUDA_CHECK(cudaGetLastError());
 }

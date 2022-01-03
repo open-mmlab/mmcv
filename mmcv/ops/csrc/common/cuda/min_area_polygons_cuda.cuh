@@ -18,7 +18,6 @@ struct Point {
   __device__ Point(float x, float y) : x(x), y(y) {}
 };
 
-
 __device__ inline void swap1(Point *a, Point *b) {
   Point temp;
   temp.x = a->x;
@@ -279,21 +278,19 @@ __device__ inline void Findminbox(T const *const p, T *minpoints) {
   R[1][0] = sin(angle);
   R[1][1] = cos(angle);
 
-  minpoints[0] = xmax * R[0][0] +  ymin * R[1][0];
-  minpoints[1] = xmax * R[0][1] +  ymin * R[1][1];
-  minpoints[2] = xmin * R[0][0] +  ymin * R[1][0];
-  minpoints[3] = xmin * R[0][1] +  ymin * R[1][1];
-  minpoints[4] = xmin * R[0][0] +  ymax * R[1][0];
-  minpoints[5] = xmin * R[0][1] +  ymax * R[1][1];
-  minpoints[6] = xmax * R[0][0] +  ymax * R[1][0];
-  minpoints[7] = xmax * R[0][1] +  ymax * R[1][1];
+  minpoints[0] = xmax * R[0][0] + ymin * R[1][0];
+  minpoints[1] = xmax * R[0][1] + ymin * R[1][1];
+  minpoints[2] = xmin * R[0][0] + ymin * R[1][0];
+  minpoints[3] = xmin * R[0][1] + ymin * R[1][1];
+  minpoints[4] = xmin * R[0][0] + ymax * R[1][0];
+  minpoints[5] = xmin * R[0][1] + ymax * R[1][1];
+  minpoints[6] = xmax * R[0][0] + ymax * R[1][0];
+  minpoints[7] = xmax * R[0][1] + ymax * R[1][1];
 }
 
 template <typename T>
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
-                                              const T *ex_boxes,
-                                              T *minbox) {
-
+                                              const T *ex_boxes, T *minbox) {
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
     const T *cur_box = ex_boxes + index * 18;
     T *cur_min_box = minbox + index * 8;
