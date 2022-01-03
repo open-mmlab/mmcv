@@ -10,6 +10,7 @@
 
 #define MAXN 20
 const float EPS = 1E-8;
+const float PI = 3.1415926;
 
 struct Point {
   float x, y;
@@ -48,7 +49,6 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   Point edges[MAXN];
   float edges_angles[MAXN];
   float unique_angles[MAXN];
-  float pi = 3.1415926;
   int n_edges = n_points - 1;
   int n_unique = 0;
   int unique_flag = 0;
@@ -60,10 +60,10 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   for (int i = 0; i < n_edges; i++) {
     edges_angles[i] = atan2((double)edges[i].y, (double)edges[i].x);
     if (edges_angles[i] >= 0) {
-      edges_angles[i] = fmod((double)edges_angles[i], (double)pi / 2);
+      edges_angles[i] = fmod((double)edges_angles[i], (double)PI / 2);
     } else {
       edges_angles[i] =
-          edges_angles[i] - (int)(edges_angles[i] / (pi / 2) - 1) * (pi / 2);
+          edges_angles[i] - (int)(edges_angles[i] / (PI / 2) - 1) * (PI / 2);
     }
   }
   unique_angles[0] = edges_angles[0];
@@ -247,10 +247,10 @@ __device__ inline void Jarvis(Point *in_poly, int &n_poly) {
   n_poly = top1 + top2;
 }
 
-__device__ inline void Findminbox(float const *const p, float *minpoints) {
+template <typename T>
+__device__ inline void Findminbox(T const *const p, T *minpoints) {
   Point ps1[MAXN];
   Point convex[MAXN];
-  float pi = 3.1415926;
   for (int i = 0; i < 9; i++) {
     convex[i].x = p[i * 2];
     convex[i].y = p[i * 2 + 1];
@@ -289,13 +289,14 @@ __device__ inline void Findminbox(float const *const p, float *minpoints) {
   minpoints[7] = xmax * R[0][1] +  ymax * R[1][1];
 }
 
+template <typename T>
 __global__ void min_area_polygons_cuda_kernel(const int ex_n_boxes,
-                                              const float *ex_boxes,
-                                              float *minbox) {
+                                              const T *ex_boxes,
+                                              T *minbox) {
 
   CUDA_1D_KERNEL_LOOP(index, ex_n_boxes) {
-    const float *cur_box = ex_boxes + index * 18;
-    float *cur_min_box = minbox + index * 8;
+    const T *cur_box = ex_boxes + index * 18;
+    T *cur_min_box = minbox + index * 8;
     Findminbox(cur_box, cur_min_box);
   }
 }
