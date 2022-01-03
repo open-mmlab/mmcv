@@ -78,21 +78,20 @@ __device__ inline double polygon_area_grad(Point* ps, int n,
     }
   }
   for (int i = 0; i < n; i++) {
-     for (int j = 0; j < n_pred; j++) {
-       if (i == polygon_to_pred_index[j]) {
-         grad_C[2 * polygon_to_pred_index[j + n_pred]] =
-             (partion_grad[i * 4] + partion_grad[i * 4 + 2]) / 2;
-         break;
-       }
-     }
-     for (int j = 0; j < n_pred; j++) {
-       if (i == polygon_to_pred_index[j]) {
-         grad_C[2 * polygon_to_pred_index[j + n_pred] + 1] =
-             (partion_grad[i * 4 + 1] + partion_grad[i * 4 + 1 + 2]) /
-             2;
-         break;
-       }
-     }
+    for (int j = 0; j < n_pred; j++) {
+      if (i == polygon_to_pred_index[j]) {
+        grad_C[2 * polygon_to_pred_index[j + n_pred]] =
+            (partion_grad[i * 4] + partion_grad[i * 4 + 2]) / 2;
+        break;
+      }
+    }
+    for (int j = 0; j < n_pred; j++) {
+      if (i == polygon_to_pred_index[j]) {
+        grad_C[2 * polygon_to_pred_index[j + n_pred] + 1] =
+            (partion_grad[i * 4 + 1] + partion_grad[i * 4 + 1 + 2]) / 2;
+        break;
+      }
+    }
   }
 
   return res / 2.0;
@@ -231,7 +230,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
   double p3_p1_grad[10][10] = {};
   double p3_p_grad[10][10] = {};
 
-  //1
+  // 1
   polygon_cut(p, n, o, c, cut_grad1);
   n1 = n;
   for (int i = 0; i < n; i++) {
@@ -244,7 +243,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
     }
   }
 
-  //2
+  // 2
   polygon_cut(p, n, c, d, cut_grad2);
   n2 = n;
   for (int i = 0; i < n; i++) {
@@ -256,7 +255,7 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
       }
     }
   }
-  //3
+  // 3
   polygon_cut(p, n, d, o, cut_grad3);
   n3 = n;
   for (int i = 0; i < n; i++) {
@@ -269,8 +268,8 @@ __device__ inline double intersectArea(Point a, Point b, Point c, Point d,
     }
   }
 
-  //mul
-  // p3_p2(n3 * n2) * p2_p1(n2 * n1) = p3_p1 (n3 * n1)
+  // mul
+  //  p3_p2(n3 * n2) * p2_p1(n2 * n1) = p3_p1 (n3 * n1)
   for (int i = 0; i < 2 * n3; i++) {
     for (int j = 0; j < 2 * n1; j++) {
       double sum = 0.0;
