@@ -24,7 +24,7 @@ class ActiveRotatedFilterFunction(Function):
         """
         Args:
             input (torch.Tensor): Input features with shape
-                [nOutputPlane, nInputPlane, num_orientations, H, W].
+                [num_output_planes, num_input_planes, num_orientations, H, W].
             indices (torch.Tensor): Indices with shape
                 [num_orientations, H, W, num_rotations].
                 
