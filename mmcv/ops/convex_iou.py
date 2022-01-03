@@ -16,8 +16,8 @@ def convex_giou(pointsets, polygons):
 
     Returns:
         tuple[torch.Tensor, torch.Tensor]: The first element is the gious
-            between point sets and polygons with the shape (N,). The second
-            element is the gradient of point sets with the shape (N, 18).
+        between point sets and polygons with the shape (N,). The second
+        element is the gradient of point sets with the shape (N, 18).
     """
     output = pointsets.new_zeros((pointsets.size(0), 19))
     ext_module.convex_giou(pointsets, polygons, output)
