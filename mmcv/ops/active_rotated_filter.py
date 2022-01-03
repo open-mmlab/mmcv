@@ -51,7 +51,7 @@ class ActiveRotatedFilterFunction(Function):
                 
         Returns:
             torch.Tensor: The gradiant of input features with shape
-            [nOutputPlane, nInputPlane, num_orientations, H, W].
+            [num_output_planes, num_input_planes, num_orientations, H, W].
         """
         input, indices = ctx.saved_tensors
         grad_in = torch.zeros_like(input)
