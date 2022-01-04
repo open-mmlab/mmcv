@@ -4,6 +4,8 @@
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
+
+
 template <typename T>
 void active_rotated_filter_forward_cpu_kernel(
     const T* weightData, const int* indicesData, const int num_output_planes,
@@ -60,7 +62,9 @@ void active_rotated_filter_backward_cpu_kernel(
   }
 }
 
-void active_rotated_filter_forward_cpu(const Tensor input, const Tensor indices,
+
+
+void ActiveRotatedFilterForwardCPULauncher(const Tensor input, const Tensor indices,
                                        Tensor output) {
   const int num_output_planes = input.size(0);
   const int num_input_planes = input.size(1);
@@ -69,7 +73,7 @@ void active_rotated_filter_forward_cpu(const Tensor input, const Tensor indices,
   const int kW = input.size(4);
   const int num_rotations = indices.size(3);
 
-  AT_DISPATCH_FLOATING_TYPES(
+   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "active_rotated_filter_forward", [&] {
         active_rotated_filter_forward_cpu_kernel<scalar_t>(
             input.data_ptr<scalar_t>(), indices.data_ptr<int>(),
@@ -78,7 +82,7 @@ void active_rotated_filter_forward_cpu(const Tensor input, const Tensor indices,
       });
 }
 
-void active_rotated_filter_backward_cpu(const Tensor grad_out,
+void ActiveRotatedFilterBackwardCPULauncher(const Tensor grad_out,
                                         const Tensor indices, Tensor grad_in) {
   const int num_orientations = indices.size(0);
   const int kH = indices.size(1);
@@ -87,13 +91,23 @@ void active_rotated_filter_backward_cpu(const Tensor grad_out,
   const int num_output_planes = grad_out.size(0) / num_rotations;
   const int num_input_planes = grad_out.size(1) / num_orientations;
 
-  AT_DISPATCH_FLOATING_TYPES(
+   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_out.scalar_type(), "active_rotated_filter_backward", [&] {
         active_rotated_filter_backward_cpu_kernel<scalar_t>(
             grad_out.data_ptr<scalar_t>(), indices.data_ptr<int>(),
             num_output_planes, num_input_planes, num_orientations, kH, kW,
             num_rotations, grad_in.data_ptr<scalar_t>());
       });
+}
+
+void active_rotated_filter_forward_cpu(const Tensor input, const Tensor indices,
+                                       Tensor output) {
+  ActiveRotatedFilterForwardCPULauncher(input, indices, output);
+}
+
+void active_rotated_filter_backward_cpu(const Tensor grad_out,
+                                        const Tensor indices, Tensor grad_in) {
+  ActiveRotatedFilterBackwardCPULauncher(grad_out, indices, grad_in);
 }
 
 void active_rotated_filter_forward_impl(const Tensor input,
