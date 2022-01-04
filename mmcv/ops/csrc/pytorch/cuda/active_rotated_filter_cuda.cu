@@ -44,7 +44,7 @@ void ActiveRotatedFilterBackwardCUDAKernelLauncher(const Tensor grad_out,
 
   at::cuda::CUDAGuard device_guard(indices.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_out.scalar_type(), "active_rotated_filter_backward_cuda_kernel",
       [&] {
         active_rotated_filter_backward_cuda_kernel<scalar_t>
