@@ -15,35 +15,35 @@ class EarlyStoppingHook(Hook):
     r"""Stop training when a monitored metric has stopped improving.
 
     Args:
-    monitor: quantity to be monitored.
-    phase: runner mode when executing model.Evaluation will only take place
-        with corresponding runner mode.
-    min_delta: minimum change in the monitored quantity to qualify as an
-        improvement, i.e. an absolute change of less than or equal to
-        `min_delta`, will count as no improvement.
-    patience: number of checks with no improvement
-        after which training will be stopped. Under the default configuration,
-        one check happens after every training epoch. However, the frequency
-        of validation can be modified by setting various parameters on the
-        ``Runner``, for example ``[(train, 10), (val, 1)]``.
-        .. note::
-            It must be noted that the patience parameter counts the number of
-            validation checks with no improvement, and not the number of
-            training epochs. Therefore, with parameters
-            ``[(train, 10), (val, 1)]`` and ``patience=3``, the runner
-            will perform at least 40 training epochs before being stopped.
-    verbose: verbosity mode.
-    mode: one of ``'min'``, ``'max'``. In ``'min'`` mode, training will stop
-        when the quantity monitored has stopped decreasing and in ``'max'``
-        mode it will stop when the quantity monitored has stopped increasing.
-    strict: whether to crash the training if `monitor` is not found in the
-        validation metrics.
-    check_finite: When set ``True``, stops training when the monitor becomes
-        NaN or infinite.
-    stopping_threshold: Stop training immediately once the monitored quantity
-        reaches this threshold.
-    divergence_threshold: Stop training as soon as the monitored quantity
-        becomes worse than this threshold.
+        monitor: quantity to be monitored.
+        phase: runner mode when executing model.Evaluation will only take place
+            with corresponding runner mode.
+        min_delta: minimum change in the monitored quantity to qualify as an
+            improvement, i.e. an absolute change of less than or equal to
+            `min_delta`, will count as no improvement.
+        patience: number of checks with no improvement
+            after which training will be stopped. Under the default configuration,
+            one check happens after every training epoch. However, the frequency
+            of validation can be modified by setting various parameters on the
+            ``Runner``, for example ``[(train, 10), (val, 1)]``.
+            .. note::
+                It must be noted that the patience parameter counts the number of
+                validation checks with no improvement, and not the number of
+                training epochs. Therefore, with parameters
+                ``[(train, 10), (val, 1)]`` and ``patience=3``, the runner
+                will perform at least 40 training epochs before being stopped.
+        verbose: verbosity mode.
+        mode: one of ``'min'``, ``'max'``. In ``'min'`` mode, training will stop
+            when the quantity monitored has stopped decreasing and in ``'max'``
+            mode it will stop when the quantity monitored has stopped increasing.
+        strict: whether to crash the training if `monitor` is not found in the
+            validation metrics.
+        check_finite: When set ``True``, stops training when the monitor becomes
+            NaN or infinite.
+        stopping_threshold: Stop training immediately once the monitored quantity
+            reaches this threshold.
+        divergence_threshold: Stop training as soon as the monitored quantity
+            becomes worse than this threshold.
     """
 
     mode_dict = {'min': np.less, 'max': np.greater}
