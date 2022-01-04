@@ -90,7 +90,7 @@ void ActiveRotatedFilterBackwardCPULauncher(const Tensor grad_out,
   const int num_input_planes = grad_out.size(1) / num_orientations;
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_out.scalar_type(), "active_rotated_filter_backward", [&] {
+      grad_out.scalar_type(), "active_rotated_filter_backward_cpu_kernel", [&] {
         active_rotated_filter_backward_cpu_kernel<scalar_t>(
             grad_out.data_ptr<scalar_t>(), indices.data_ptr<int>(),
             num_output_planes, num_input_planes, num_orientations, kH, kW,
