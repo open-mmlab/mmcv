@@ -61,8 +61,10 @@ class BaseRunner(metaclass=ABCMeta):
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
                                 f'but got {type(batch_processor)}')
-            warnings.warn('batch_processor is deprecated, please implement '
-                          'train_step() and val_step() in the model instead.')
+            warnings.warn(
+                'batch_processor is deprecated, please implement '
+                'train_step() and val_step() in the model instead.',
+                DeprecationWarning)
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
             if is_module_wrapper(model):

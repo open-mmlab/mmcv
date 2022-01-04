@@ -333,7 +333,7 @@ class TestPhotometric:
 
         input_img = np.array(
             [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
-            dtype=np.float)
+            dtype=float)
         img = mmcv.lut_transform(input_img, lut_table)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
         assert np.allclose(img, baseline)

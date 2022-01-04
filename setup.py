@@ -189,13 +189,14 @@ def get_extensions():
         define_macros = []
         include_dirs = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
+            glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
-            'nvcc': [cuda_args] if cuda_args else [],
-            'cxx': [],
+            'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
+            'cxx': ['-std=c++14'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
@@ -377,9 +378,15 @@ setup(
     url='https://github.com/open-mmlab/mmcv',
     author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    setup_requires=parse_requirements('requirements/build.txt'),
+    tests_require=parse_requirements('requirements/test.txt'),
     install_requires=install_requires,
+    extras_require={
+        'all': parse_requirements('requirements.txt'),
+        'tests': parse_requirements('requirements/test.txt'),
+        'build': parse_requirements('requirements/build.txt'),
+        'optional': parse_requirements('requirements/optional.txt'),
+    },
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)

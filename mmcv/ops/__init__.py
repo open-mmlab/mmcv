@@ -7,7 +7,6 @@ from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
-from .convex_iou import convex_giou, convex_iou
 from .corner_pool import CornerPool
 from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
@@ -39,13 +38,16 @@ from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
+from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
+from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
+from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
 from .scatter_points import DynamicScatter, dynamic_scatter
 from .sync_bn import SyncBatchNorm
@@ -71,6 +73,7 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
     'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
+    'rotated_feature_align', 'RiRoIAlignRotated', 'riroi_align_rotated',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'QueryAndGroup',
     'GroupAll', 'grouping_operation', 'contour_expand', 'three_nn',
     'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
@@ -79,5 +82,5 @@ __all__ = [
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
-    'convex_iou', 'convex_giou'
+    'points_in_polygons'
 ]
