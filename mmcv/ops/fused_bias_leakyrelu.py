@@ -188,7 +188,7 @@ class FusedBiasLeakyReLUFunction(Function):
 
 
 class FusedBiasLeakyReLU(nn.Module):
-    """Fused bias leaky ReLU.
+    r"""Fused bias leaky ReLU.
 
     This function is introduced in the StyleGAN2:
     `Analyzing and Improving the Image Quality of StyleGAN
@@ -197,8 +197,8 @@ class FusedBiasLeakyReLU(nn.Module):
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a
     scale similarly with Kaiming initialization. However, since the
-    :math:`1+{alpha}^2` : is too small, we can just ignore it. Therefore, the
-    final scale is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
+    :math:`1+{alpha}^2` is too small, we can just ignore it. Therefore, the
+    final scale is just :math:`\sqrt{2}`. Of course, you may change it with
     your own scale.
 
     TODO: Implement the CPU version.
@@ -224,7 +224,7 @@ class FusedBiasLeakyReLU(nn.Module):
 
 
 def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
-    """Fused bias leaky ReLU function.
+    r"""Fused bias leaky ReLU function.
 
     This function is introduced in the StyleGAN2:
     `Analyzing and Improving the Image Quality of StyleGAN
@@ -233,8 +233,8 @@ def fused_bias_leakyrelu(input, bias, negative_slope=0.2, scale=2**0.5):
     The bias term comes from the convolution operation. In addition, to keep
     the variance of the feature map or gradients unchanged, they also adopt a
     scale similarly with Kaiming initialization. However, since the
-    :math:`1+{alpha}^2` : is too small, we can just ignore it. Therefore, the
-    final scale is just :math:`\sqrt{2}`:. Of course, you may change it with # noqa: W605, E501
+    :math:`1+{alpha}^2` is too small, we can just ignore it. Therefore, the
+    final scale is just :math:`\sqrt{2}`. Of course, you may change it with
     your own scale.
 
     Args:
