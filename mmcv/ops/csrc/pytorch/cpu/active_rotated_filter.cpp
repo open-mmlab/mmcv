@@ -71,7 +71,7 @@ void ActiveRotatedFilterForwardCPULauncher(const Tensor input,
   const int num_rotations = indices.size(3);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      input.scalar_type(), "active_rotated_filter_forward", [&] {
+      input.scalar_type(), "active_rotated_filter_forward_cpu_kernel", [&] {
         active_rotated_filter_forward_cpu_kernel<scalar_t>(
             input.data_ptr<scalar_t>(), indices.data_ptr<int>(),
             num_output_planes, num_input_planes, num_orientations, kH, kW,
