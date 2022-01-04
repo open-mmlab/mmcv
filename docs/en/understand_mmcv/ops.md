@@ -21,7 +21,9 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - MaskedConv
 - MinAreaPolygon
 - NMS
+- PointsInPolygons
 - PSAMask
+- RiRoIAlignRotated
 - RotatedFeatureAlign
 - RoIPointPool3d
 - RoIPool
