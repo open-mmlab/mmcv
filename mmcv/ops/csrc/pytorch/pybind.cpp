@@ -363,6 +363,10 @@ void riroi_align_rotated_backward(Tensor top_grad, Tensor rois,
 
 void points_in_polygons_forward(Tensor points, Tensor polygons, Tensor output);
 
+void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
+
+void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -731,4 +735,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("points_in_polygons_forward", &points_in_polygons_forward,
         "points_in_polygons_forward", py::arg("points"), py::arg("polygons"),
         py::arg("output"));
+  m.def("convex_iou", &convex_iou, "convex_iou", py::arg("pointsets"),
+        py::arg("polygons"), py::arg("ious"));
+  m.def("convex_giou", &convex_giou, "convex_giou", py::arg("pointsets"),
+        py::arg("polygons"), py::arg("output"));
 }
