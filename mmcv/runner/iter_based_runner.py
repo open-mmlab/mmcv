@@ -119,7 +119,11 @@ class IterBasedRunner(BaseRunner):
 
         self.call_hook('before_epoch')
 
-        while self.iter < self._max_iters and not self.should_stop:
+        while self.iter < self._max_iters:
+            if self.should_stop:
+                self.logger.info('Stop running because should_stop = True')
+                break
+
             for i, flow in enumerate(workflow):
                 self._inner_iter = 0
                 mode, iters = flow

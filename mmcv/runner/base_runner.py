@@ -103,7 +103,10 @@ class BaseRunner(metaclass=ABCMeta):
         self.optimizer = optimizer
         self.logger = logger
         self.meta = meta
+        # flag to stop runner iteration early.
+        # Runner will stop even if max_steps / max_epoch is not yet reach.
         self.should_stop = False
+
         # create work_dir
         if mmcv.is_str(work_dir):
             self.work_dir = osp.abspath(work_dir)

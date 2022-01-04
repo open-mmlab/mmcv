@@ -22,28 +22,36 @@ class EarlyStoppingHook(Hook):
             improvement, i.e. an absolute change of less than or equal to
             `min_delta`, will count as no improvement.
         patience: number of checks with no improvement
-            after which training will be stopped. Under the default configuration,
-            one check happens after every training epoch. However, the frequency
-            of validation can be modified by setting various parameters on the
+            after which training will be stopped. Under the default
+            configuration ,one check happens after every training epoch.
+            However, the frequency of validation can be modified by setting
+            various parameters on the
             ``Runner``, for example ``[(train, 10), (val, 1)]``.
             .. note::
-                It must be noted that the patience parameter counts the number of
-                validation checks with no improvement, and not the number of
+                It must be noted that the patience parameter counts the number
+                of validation checks with no improvement, and not the number of
                 training epochs. Therefore, with parameters
                 ``[(train, 10), (val, 1)]`` and ``patience=3``, the runner
                 will perform at least 40 training epochs before being stopped.
         verbose: verbosity mode.
-        mode: one of ``'min'``, ``'max'``. In ``'min'`` mode, training will stop
-            when the quantity monitored has stopped decreasing and in ``'max'``
-            mode it will stop when the quantity monitored has stopped increasing.
+        mode: one of ``'min'``, ``'max'``. In ``'min'`` mode, training will
+            stop when the quantity monitored has stopped decreasing and in
+            ``'max'`` mode it will stop when the quantity monitored has
+            stopped increasing.
         strict: whether to crash the training if `monitor` is not found in the
             validation metrics.
-        check_finite: When set ``True``, stops training when the monitor becomes
-            NaN or infinite.
-        stopping_threshold: Stop training immediately once the monitored quantity
-            reaches this threshold.
+        check_finite: When set ``True``, stops training when the monitor
+            becomes NaN or infinite.
+        stopping_threshold: Stop training immediately once the monitored
+            quantity reaches this threshold.
         divergence_threshold: Stop training as soon as the monitored quantity
             becomes worse than this threshold.
+
+    Example:
+        >>> EarlyStoppingHook('loss', mode='min', divergence_threshold=100)
+        >>> # if loss > 100, training will be stopped
+        >>> EarlyStoppingHook('loss', mode='min', stopping_treshold=0.01)
+        >>> # if loss < 0.01, training will be stopped regardless of patience.
     """
 
     mode_dict = {'min': np.less, 'max': np.greater}
