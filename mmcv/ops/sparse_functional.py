@@ -18,10 +18,27 @@ from . import sparse_ops as ops
 
 
 class SparseConvFunction(Function):
+    """Sparse Convolution.
+
+    Please refer to `SECOND <https://www.mdpi.com/1424-8220/18/10/3337>`_ for
+    more details.
+    """
 
     @staticmethod
     def forward(ctx, features, filters, indice_pairs, indice_pair_num,
                 num_activate_out):
+        """
+        Args:
+            features (torch.Tensor): Features that needs to convolute.
+            filters (torch.nn.parameter.Parameter): Convolution filters.
+            indice_pairs (torch.Tensor): Indice pairs between inputs locations
+                and outputs locations.
+            indice_pair_num (torch.Tensor): Indice pairs num.
+            num_activate_out (torch.Tensor): Output channels num.
+
+        Returns:
+            torch.Tensor: Output features from gather-gemm-scatter.
+        """
         ctx.save_for_backward(indice_pairs, indice_pair_num, features, filters)
         return ops.indice_conv(features, filters, indice_pairs,
                                indice_pair_num, num_activate_out, False)
@@ -41,6 +58,18 @@ class SparseInverseConvFunction(Function):
     @staticmethod
     def forward(ctx, features, filters, indice_pairs, indice_pair_num,
                 num_activate_out):
+        """
+        Args:
+            features (torch.Tensor): Features that needs to convolute.
+            filters (torch.nn.parameter.Parameter): Convolution filters.
+            indice_pairs (torch.Tensor): Indice pairs between inputs locations
+                and outputs locations.
+            indice_pair_num (torch.Tensor): Indice pairs num.
+            num_activate_out (torch.Tensor): Output channels num.
+
+        Returns:
+            torch.Tensor: Output features from gather-gemm-scatter.
+        """
         ctx.save_for_backward(indice_pairs, indice_pair_num, features, filters)
         return ops.indice_conv(features, filters, indice_pairs,
                                indice_pair_num, num_activate_out, True, False)
@@ -60,6 +89,18 @@ class SubMConvFunction(Function):
     @staticmethod
     def forward(ctx, features, filters, indice_pairs, indice_pair_num,
                 num_activate_out):
+        """
+        Args:
+            features (torch.Tensor): Features that needs to convolute.
+            filters (torch.nn.parameter.Parameter): Convolution filters.
+            indice_pairs (torch.Tensor): Indice pairs between inputs locations
+                and outputs locations.
+            indice_pair_num (torch.Tensor): Indice pairs num.
+            num_activate_out (torch.Tensor): Output channels num.
+
+        Returns:
+            torch.Tensor: Output features from gather-gemm-scatter.
+        """
         ctx.save_for_backward(indice_pairs, indice_pair_num, features, filters)
         return ops.indice_conv(features, filters, indice_pairs,
                                indice_pair_num, num_activate_out, False, True)
@@ -79,6 +120,17 @@ class SparseMaxPoolFunction(Function):
     @staticmethod
     def forward(ctx, features, indice_pairs, indice_pair_num,
                 num_activate_out):
+        """
+        Args:
+            features (torch.Tensor): Features that needs to convolute.
+            indice_pairs (torch.Tensor): Indice pairs between inputs locations
+                and outputs locations.
+            indice_pair_num (torch.Tensor): Indice pairs num.
+            num_activate_out (torch.Tensor): Output channels num.
+
+        Returns:
+            torch.Tensor: Output features from sparse maxpooling.
+        """
         out = ops.indice_maxpool(features, indice_pairs, indice_pair_num,
                                  num_activate_out)
         ctx.save_for_backward(indice_pairs, indice_pair_num, features, out)
