@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from collections.abc import Sequence
-from contextlib import nullcontext
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
@@ -13,6 +12,20 @@ from .utils import cache_random_params
 
 # Indicator for required but missing keys in results
 NotInResults = object()
+
+# Import nullcontext if python>=3.7, otherwise use a simple alternative
+# implementation.
+try:
+    from contextlib import nullcontext
+except ImportError:
+    from contextlib import contextmanager
+
+    @contextmanager
+    def nullcontext(resource=None):
+        try:
+            yield resource
+        finally:
+            pass
 
 
 @TRANSFORMS.register_module()
