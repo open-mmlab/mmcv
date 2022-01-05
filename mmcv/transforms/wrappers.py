@@ -203,7 +203,7 @@ class ApplyToMultiple(Remap):
 
         self.share_random_params = share_random_params
 
-    def scatter_sequence(self, data: Dict) -> list[dict]:
+    def scatter_sequence(self, data: Dict) -> List[Dict]:
         # infer split number from input
         seq_len = 0
         key_rep = None
