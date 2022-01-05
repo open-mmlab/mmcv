@@ -28,10 +28,11 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         return False
 
     def _legacy_zip_load(filename, model_dir, map_location):
-        warnings.warn('Falling back to the old format < 1.6. This support will'
-                      ' be deprecated in favor of default zipfile format '
-                      'introduced in 1.6. Please redo torch.save() to save it '
-                      'in the new zipfile format.')
+        warnings.warn(
+            'Falling back to the old format < 1.6. This support will'
+            ' be deprecated in favor of default zipfile format '
+            'introduced in 1.6. Please redo torch.save() to save it '
+            'in the new zipfile format.', DeprecationWarning)
         # Note: extractall() defaults to overwrite file if exists. No need to
         #       clean up beforehand. We deliberately don't handle tarfile here
         #       since our legacy serialization format was in tar.
@@ -84,8 +85,9 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         """
         # Issue warning to move data if old env is set
         if os.getenv('TORCH_MODEL_ZOO'):
-            warnings.warn('TORCH_MODEL_ZOO is deprecated, please use env '
-                          'TORCH_HOME instead')
+            warnings.warn(
+                'TORCH_MODEL_ZOO is deprecated, please use env '
+                'TORCH_HOME instead', DeprecationWarning)
 
         if model_dir is None:
             torch_home = _get_torch_home()

@@ -64,7 +64,8 @@ class CephBackend(BaseStorageBackend):
             raise ImportError('Please install ceph to enable CephBackend.')
 
         warnings.warn(
-            'CephBackend will be deprecated, please use PetrelBackend instead')
+            'CephBackend will be deprecated, please use PetrelBackend instead',
+            DeprecationWarning)
         self._client = ceph.S3Client()
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping

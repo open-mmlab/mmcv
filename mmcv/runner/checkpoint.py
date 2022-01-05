@@ -358,7 +358,8 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
 
     if backend == 'ceph':
         warnings.warn(
-            'CephBackend will be deprecated, please use PetrelBackend instead')
+            'CephBackend will be deprecated, please use PetrelBackend instead',
+            DeprecationWarning)
 
     # CephClient and PetrelBackend have the same prefix 's3://' and the latter
     # will be chosen as default. If PetrelBackend can not be instantiated
@@ -389,8 +390,9 @@ def load_from_torchvision(filename, map_location=None):
     """
     model_urls = get_torchvision_models()
     if filename.startswith('modelzoo://'):
-        warnings.warn('The URL scheme of "modelzoo://" is deprecated, please '
-                      'use "torchvision://" instead')
+        warnings.warn(
+            'The URL scheme of "modelzoo://" is deprecated, please '
+            'use "torchvision://" instead', DeprecationWarning)
         model_name = filename[11:]
     else:
         model_name = filename[14:]
@@ -422,8 +424,10 @@ def load_from_openmmlab(filename, map_location=None):
 
     deprecated_urls = get_deprecated_model_names()
     if model_name in deprecated_urls:
-        warnings.warn(f'{prefix_str}{model_name} is deprecated in favor '
-                      f'of {prefix_str}{deprecated_urls[model_name]}')
+        warnings.warn(
+            f'{prefix_str}{model_name} is deprecated in favor '
+            f'of {prefix_str}{deprecated_urls[model_name]}',
+            DeprecationWarning)
         model_name = deprecated_urls[model_name]
     model_url = model_urls[model_name]
     # check if is url

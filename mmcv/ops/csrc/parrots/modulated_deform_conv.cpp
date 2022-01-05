@@ -1,59 +1,49 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
-
-void modulated_deformable_im2col_cuda(
+void modulated_deformable_im2col_impl(
     const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
     const int batch_size, const int channels, const int height_im,
     const int width_im, const int height_col, const int width_col,
-    const int kernel_h, const int kenerl_w, const int pad_h, const int pad_w,
+    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
     const int stride_h, const int stride_w, const int dilation_h,
-    const int dilation_w, const int deformable_group, Tensor data_col);
+    const int dilation_w, const int deformable_group, Tensor data_col) {
+  DISPATCH_DEVICE_IMPL(modulated_deformable_im2col_impl, data_im, data_offset,
+                       data_mask, batch_size, channels, height_im, width_im,
+                       height_col, width_col, kernel_h, kernel_w, pad_h, pad_w,
+                       stride_h, stride_w, dilation_h, dilation_w,
+                       deformable_group, data_col);
+}
 
-void modulated_deformable_col2im_cuda(
+void modulated_deformable_col2im_impl(
     const Tensor data_col, const Tensor data_offset, const Tensor data_mask,
     const int batch_size, const int channels, const int height_im,
     const int width_im, const int height_col, const int width_col,
     const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
     const int stride_h, const int stride_w, const int dilation_h,
-    const int dilation_w, const int deformable_group, Tensor grad_im);
+    const int dilation_w, const int deformable_group, Tensor grad_im) {
+  DISPATCH_DEVICE_IMPL(modulated_deformable_col2im_impl, data_col, data_offset,
+                       data_mask, batch_size, channels, height_im, width_im,
+                       height_col, width_col, kernel_h, kernel_w, pad_h, pad_w,
+                       stride_h, stride_w, dilation_h, dilation_w,
+                       deformable_group, grad_im);
+}
 
-void modulated_deformable_col2im_coord_cuda(
+void modulated_deformable_col2im_coord_impl(
     const Tensor data_col, const Tensor data_im, const Tensor data_offset,
     const Tensor data_mask, const int batch_size, const int channels,
     const int height_im, const int width_im, const int height_col,
     const int width_col, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w, const int deformable_group,
-    Tensor grad_offset, Tensor grad_mask);
-
-#endif
-
-void modulated_deformable_im2col_cpu(
-    const Tensor data_im, const Tensor data_offset, const Tensor data_mask,
-    const int batch_size, const int channels, const int height_im,
-    const int width_im, const int height_col, const int width_col,
-    const int kernel_h, const int kenerl_w, const int pad_h, const int pad_w,
-    const int stride_h, const int stride_w, const int dilation_h,
-    const int dilation_w, const int deformable_group, Tensor data_col);
-
-void modulated_deformable_col2im_cpu(
-    const Tensor data_col, const Tensor data_offset, const Tensor data_mask,
-    const int batch_size, const int channels, const int height_im,
-    const int width_im, const int height_col, const int width_col,
-    const int kernel_h, const int kernel_w, const int pad_h, const int pad_w,
-    const int stride_h, const int stride_w, const int dilation_h,
-    const int dilation_w, const int deformable_group, Tensor grad_im);
-
-void modulated_deformable_col2im_coord_cpu(
-    const Tensor data_col, const Tensor data_im, const Tensor data_offset,
-    const Tensor data_mask, const int batch_size, const int channels,
-    const int height_im, const int width_im, const int height_col,
-    const int width_col, const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w, const int deformable_group,
-    Tensor grad_offset, Tensor grad_mask);
+    Tensor grad_offset, Tensor grad_mask) {
+  DISPATCH_DEVICE_IMPL(modulated_deformable_col2im_coord_impl, data_col,
+                       data_im, data_offset, data_mask, batch_size, channels,
+                       height_im, width_im, height_col, width_col, kernel_h,
+                       kernel_w, pad_h, pad_w, stride_h, stride_w, dilation_h,
+                       dilation_w, deformable_group, grad_offset, grad_mask);
+}
 
 void modulated_deform_conv_forward(
     Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
@@ -61,31 +51,6 @@ void modulated_deform_conv_forward(
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,
     const int dilation_h, const int dilation_w, const int group,
     const int deformable_group, const bool with_bias) {
-  if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(input);
-    CHECK_CUDA_INPUT(weight);
-    CHECK_CUDA_INPUT(bias);
-    CHECK_CUDA_INPUT(ones);
-    CHECK_CUDA_INPUT(offset);
-    CHECK_CUDA_INPUT(mask);
-    CHECK_CUDA_INPUT(output);
-    CHECK_CUDA_INPUT(columns);
-
-#else
-    AT_ERROR("ModulatedDeformConv is not compiled with GPU support");
-#endif
-  } else {
-    CHECK_CPU_INPUT(input);
-    CHECK_CPU_INPUT(weight);
-    CHECK_CPU_INPUT(bias);
-    CHECK_CPU_INPUT(ones);
-    CHECK_CPU_INPUT(offset);
-    CHECK_CPU_INPUT(mask);
-    CHECK_CPU_INPUT(output);
-    CHECK_CPU_INPUT(columns);
-  }
-
   at::DeviceGuard guard(input.device());
 
   const int batch = input.size(0);
@@ -127,19 +92,10 @@ void modulated_deform_conv_forward(
                         output.size(2), output.size(3)});
 
   for (int b = 0; b < batch; b++) {
-    if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-      modulated_deformable_im2col_cuda(
-          input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, columns);
-#endif
-    } else {
-      modulated_deformable_im2col_cpu(
-          input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, columns);
-    }
+    modulated_deformable_im2col_impl(
+        input[b], offset[b], mask[b], 1, channels, height, width, height_out,
+        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
+        dilation_h, dilation_w, deformable_group, columns);
 
     // divide into group
     weight = weight.view({group, weight.size(0) / group, weight.size(1),
@@ -174,41 +130,6 @@ void modulated_deform_conv_backward(
     int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias) {
-  if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(input);
-    CHECK_CUDA_INPUT(weight);
-    CHECK_CUDA_INPUT(bias);
-    CHECK_CUDA_INPUT(ones);
-    CHECK_CUDA_INPUT(offset);
-    CHECK_CUDA_INPUT(mask);
-    CHECK_CUDA_INPUT(columns);
-    CHECK_CUDA_INPUT(grad_input);
-    CHECK_CUDA_INPUT(grad_weight);
-    CHECK_CUDA_INPUT(grad_bias);
-    CHECK_CUDA_INPUT(grad_offset);
-    CHECK_CUDA_INPUT(grad_mask);
-    CHECK_CUDA_INPUT(grad_output);
-
-#else
-    AT_ERROR("ModulatedDeformConv is not compiled with GPU support");
-#endif
-  } else {
-    CHECK_CPU_INPUT(input);
-    CHECK_CPU_INPUT(weight);
-    CHECK_CPU_INPUT(bias);
-    CHECK_CPU_INPUT(ones);
-    CHECK_CPU_INPUT(offset);
-    CHECK_CPU_INPUT(mask);
-    CHECK_CPU_INPUT(columns);
-    CHECK_CPU_INPUT(grad_input);
-    CHECK_CPU_INPUT(grad_weight);
-    CHECK_CPU_INPUT(grad_bias);
-    CHECK_CPU_INPUT(grad_offset);
-    CHECK_CPU_INPUT(grad_mask);
-    CHECK_CPU_INPUT(grad_output);
-  }
-
   at::DeviceGuard guard(input.device());
 
   const int batch = input.size(0);
@@ -261,46 +182,24 @@ void modulated_deform_conv_backward(
     weight = weight.view({weight.size(0) * weight.size(1), weight.size(2),
                           weight.size(3), weight.size(4)});
 
-    if (input.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-      // gradient w.r.t. input coordinate data
-      modulated_deformable_col2im_coord_cuda(
-          columns, input[b], offset[b], mask[b], 1, channels, height, width,
-          height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h,
-          stride_w, dilation_h, dilation_w, deformable_group, grad_offset[b],
-          grad_mask[b]);
-      // gradient w.r.t. input data
-      modulated_deformable_col2im_cuda(
-          columns, offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, grad_input[b]);
+    // gradient w.r.t. input coordinate data
+    modulated_deformable_col2im_coord_impl(
+        columns, input[b], offset[b], mask[b], 1, channels, height, width,
+        height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h,
+        stride_w, dilation_h, dilation_w, deformable_group, grad_offset[b],
+        grad_mask[b]);
+    // gradient w.r.t. input data
+    modulated_deformable_col2im_impl(
+        columns, offset[b], mask[b], 1, channels, height, width, height_out,
+        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
+        dilation_h, dilation_w, deformable_group, grad_input[b]);
 
-      // gradient w.r.t. weight, dWeight should accumulate across the batch and
-      // group
-      modulated_deformable_im2col_cuda(
-          input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, columns);
-#endif
-    } else {
-      // gradient w.r.t. input coordinate data
-      modulated_deformable_col2im_coord_cpu(
-          columns, input[b], offset[b], mask[b], 1, channels, height, width,
-          height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h,
-          stride_w, dilation_h, dilation_w, deformable_group, grad_offset[b],
-          grad_mask[b]);
-      // gradient w.r.t. input data
-      modulated_deformable_col2im_cpu(
-          columns, offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, grad_input[b]);
-      // gradient w.r.t. weight, dWeight should accumulate across the batch and
-      // group
-      modulated_deformable_im2col_cpu(
-          input[b], offset[b], mask[b], 1, channels, height, width, height_out,
-          width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-          dilation_h, dilation_w, deformable_group, columns);
-    }
+    // gradient w.r.t. weight, dWeight should accumulate across the batch and
+    // group
+    modulated_deformable_im2col_impl(
+        input[b], offset[b], mask[b], 1, channels, height, width, height_out,
+        width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
+        dilation_h, dilation_w, deformable_group, columns);
 
     columns = columns.view({group, columns.size(0) / group, columns.size(1)});
     grad_weight = grad_weight.view({group, grad_weight.size(0) / group,

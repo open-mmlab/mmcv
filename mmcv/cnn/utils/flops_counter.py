@@ -24,6 +24,7 @@
 # SOFTWARE.
 
 import sys
+import warnings
 from functools import partial
 
 import numpy as np
@@ -502,9 +503,8 @@ def batch_counter_hook(module, input, output):
         input = input[0]
         batch_size = len(input)
     else:
-        pass
-        print('Warning! No positional inputs found for a module, '
-              'assuming batch size is 1.')
+        warnings.warn('No positional inputs found for a module, '
+                      'assuming batch size is 1.')
     module.__batch_counter__ += batch_size
 
 
@@ -530,9 +530,9 @@ def remove_batch_counter_hook_function(module):
 def add_flops_counter_variable_or_reset(module):
     if is_supported_instance(module):
         if hasattr(module, '__flops__') or hasattr(module, '__params__'):
-            print('Warning: variables __flops__ or __params__ are already '
-                  'defined for the module' + type(module).__name__ +
-                  ' ptflops can affect your code!')
+            warnings.warn('variables __flops__ or __params__ are already '
+                          'defined for the module' + type(module).__name__ +
+                          ' ptflops can affect your code!')
         module.__flops__ = 0
         module.__params__ = get_model_parameters_number(module)
 

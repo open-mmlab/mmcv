@@ -38,13 +38,16 @@ from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
+from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
 from .psa_mask import PSAMask
+from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
 from .roi_pool import RoIPool, roi_pool
 from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
+from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
 from .scatter_points import DynamicScatter, dynamic_scatter
 from .sparse_conv import (SparseConv2d, SparseConv3d, SparseConvTranspose2d,
@@ -76,6 +79,7 @@ __all__ = [
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
     'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
     'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
+    'rotated_feature_align', 'RiRoIAlignRotated', 'riroi_align_rotated',
     'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'QueryAndGroup',
     'GroupAll', 'grouping_operation', 'contour_expand', 'three_nn',
     'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
@@ -87,5 +91,6 @@ __all__ = [
     'SparseConvTranspose3d', 'SparseInverseConv2d', 'SparseInverseConv3d',
     'SubMConv2d', 'SubMConv3d', 'SparseModule', 'SparseSequential',
     'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
-    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all'
+    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
+    'points_in_polygons'
 ]
