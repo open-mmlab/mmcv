@@ -6,7 +6,6 @@ import time
 import warnings
 
 import torch
-from torch.optim import Optimizer
 
 import mmcv
 from .base_runner import BaseRunner
@@ -137,57 +136,6 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('after_epoch')
         self.call_hook('after_run')
 
-    def resume(self,
-               checkpoint,
-               resume_optimizer=True,
-               map_location='default'):
-        """Resume model from checkpoint.
-
-        Args:
-            checkpoint (str): Checkpoint to resume from.
-            resume_optimizer (bool, optional): Whether resume the optimizer(s)
-                if the checkpoint file includes optimizer(s). Default to True.
-            map_location (str, optional): Same as :func:`torch.load`.
-                Default to 'default'.
-        """
-        if map_location == 'default':
-            device_id = torch.cuda.current_device()
-            checkpoint = self.load_checkpoint(
-                checkpoint,
-                map_location=lambda storage, loc: storage.cuda(device_id))
-        else:
-            checkpoint = self.load_checkpoint(
-                checkpoint, map_location=map_location)
-
-        self._epoch = checkpoint['meta']['epoch']
-        self._iter = checkpoint['meta']['iter']
-        self._inner_iter = checkpoint['meta']['iter']
-
-        if self.meta is None:
-            self.meta = {}
-        else:
-            # update current env information and seed
-            if self.meta.get('env_info', False):
-                checkpoint['meta'].update(self.meta['env_info'])
-            if self.meta.get('seed', False):
-                checkpoint['meta'].update(self.meta['seed'])
-        # resume meta information
-        self.meta.update(checkpoint['meta'])
-
-        if 'optimizer' in checkpoint and resume_optimizer:
-            if isinstance(self.optimizer, Optimizer):
-                self.optimizer.load_state_dict(checkpoint['optimizer'])
-            elif isinstance(self.optimizer, dict):
-                for k in self.optimizer.keys():
-                    self.optimizer[k].load_state_dict(
-                        checkpoint['optimizer'][k])
-            else:
-                raise TypeError(
-                    'Optimizer should be dict or torch.optim.Optimizer '
-                    f'but got {type(self.optimizer)}')
-
-        self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
-
     def save_checkpoint(self,
                         out_dir,
                         filename_tmpl='iter_{}.pth',
@@ -218,7 +166,7 @@ class IterBasedRunner(BaseRunner):
             # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
             # there will be problems with resumed checkpoints.
             # More details in https://github.com/open-mmlab/mmcv/pull/1108
-        meta.update(epoch=self.epoch + 1, iter=self.iter)
+        meta.update(epoch=self.epoch + 1, iter=self.iter + 1)
 
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)

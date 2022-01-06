@@ -369,22 +369,25 @@ class BaseRunner(metaclass=ABCMeta):
             checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
 
+        # Note that runner may resume a checkpoint in the middle of workflows
+        # or epoch and resuming checkpoint will reset workflow and dataloader
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
         if self.meta is None:
             self.meta = {}
         else:
-            # update current env information and seed
-            if self.meta.get('env_info', False):
-                checkpoint['meta'].update(self.meta['env_info'])
-            if self.meta.get('seed', False):
-                checkpoint['meta'].update(self.meta['seed'])
+            # use current env information and seed if available
+            # instead of resuming them from checkpoint
+            if self.meta.get('env_info', None) is not None:
+                checkpoint['meta'].update(env_info=self.meta['env_info'])
+            if self.meta.get('seed', None) is not None:
+                checkpoint['meta'].update(seed=self.meta['seed'])
         # resume meta information
         self.meta.update(checkpoint['meta'])
 
-        # Re-calculate the number of iterations when resuming
-        # models with different number of GPUs
-        if 'config' in checkpoint['meta']:
+        # Re-calculate the number of iterations for epoch based runner
+        # when resuming models with different number of GPUs
+        if self.max_epochs is not None and 'config' in checkpoint['meta']:
             config = mmcv.Config.fromstring(
                 checkpoint['meta']['config'], file_format='.py')
             previous_gpu_ids = config.get('gpu_ids', None)
