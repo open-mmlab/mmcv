@@ -319,6 +319,66 @@ REGISTER_DEVICE_IMPL(deformable_col2im_impl, CUDA, deformable_col2im_cuda);
 REGISTER_DEVICE_IMPL(deformable_col2im_coord_impl, CUDA,
                      deformable_col2im_coord_cuda);
 
+
+
+void pyramid_deformable_im2col_cuda(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int offsetheight, const int offsetwidth,const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,const float scale_h, const float scale_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col);
+
+void pyramid_deformable_col2im_cuda(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width,const int offsetheight, const int offsetwidth, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,const float scale_h, const float scale_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im);
+
+void pyramid_deformable_col2im_coord_cuda(
+    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
+    const int height, const int width, const int offsetheight, const int offsetwidth,const int ksize_h, const int ksize_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const float scale_h, const float scale_w,const int parallel_imgs,
+    const int deformable_group, Tensor grad_offset);
+
+void pyramid_deformable_im2col_impl(Tensor data_im, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int offsetheight, const int offsetwidth, const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,const float scale_h, const float scale_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor data_col);
+
+void pyramid_deformable_col2im_impl(Tensor data_col, Tensor data_offset,
+                            const int channels, const int height,
+                            const int width, const int offsetheight, const int offsetwidth,const int ksize_h,
+                            const int ksize_w, const int pad_h, const int pad_w,
+                            const int stride_h, const int stride_w,
+                            const int dilation_h, const int dilation_w,const float scale_h, const float scale_w,
+                            const int parallel_imgs, const int deformable_group,
+                            Tensor grad_im);
+
+void pyramid_deformable_col2im_coord_impl(
+    Tensor data_col, Tensor data_im, Tensor data_offset, const int channels,
+    const int height, const int width, const int offsetheight, const int offsetwidth, const int ksize_h, const int ksize_w,
+    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w, const float scale_h, const float scale_w,const int parallel_imgs,
+    const int deformable_group, Tensor grad_offset);
+
+REGISTER_DEVICE_IMPL(pyramid_deformable_im2col_impl, CUDA, pyramid_deformable_im2col_cuda);
+REGISTER_DEVICE_IMPL(pyramid_deformable_col2im_impl, CUDA, pyramid_deformable_col2im_cuda);
+REGISTER_DEVICE_IMPL(pyramid_deformable_col2im_coord_impl, CUDA,
+                     pyramid_deformable_col2im_coord_cuda);
+
+
+
+
 void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
                                             Tensor offset, Tensor output,
                                             int pooled_height, int pooled_width,
