@@ -47,7 +47,7 @@ __global__ void riroi_align_rotated_forward_cuda_kernel(
 
     // find aligned index
     scalar_t ind_float = theta * num_orientations / (2 * M_PI);
-    int ind = floor(ind_float);
+    int ind = floorf(ind_float);
     scalar_t l_var = ind_float - (scalar_t)ind;
     scalar_t r_var = 1.0 - l_var;
     // correct start channel
@@ -150,7 +150,7 @@ __global__ void riroi_align_rotated_backward_cuda_kernel(
 
     // find aligned index
     scalar_t ind_float = theta * num_orientations / (2 * M_PI);
-    int ind = floor(ind_float);
+    int ind = floorf(ind_float);
     scalar_t l_var = ind_float - (scalar_t)ind;
     scalar_t r_var = 1.0 - l_var;
     // correct start channel
