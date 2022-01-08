@@ -85,7 +85,7 @@ void CornerPoolForwardLauncher(const scalar_t *input, scalar_t *output,
     case 0:
     case 1:
       nthreads = batch_size * channels * width;
-      col_block = DIVUP(nthreads, THREADS_PER_BLOCK);
+      col_block = GET_BLOCKS(nthreads, THREADS_PER_BLOCK);
       top_bottom_pool_kernel<scalar_t>
           <<<col_block, THREADS_PER_BLOCK, 0, stream>>>(
               input, output, batch_size, channels, height, width, pool_type);
@@ -93,7 +93,7 @@ void CornerPoolForwardLauncher(const scalar_t *input, scalar_t *output,
     case 2:
     case 3:
       nthreads = batch_size * channels * height;
-      col_block = DIVUP(nthreads, THREADS_PER_BLOCK);
+      col_block = GET_BLOCKS(nthreads, THREADS_PER_BLOCK);
       left_right_pool_kernel<scalar_t>
           <<<col_block, THREADS_PER_BLOCK, 0, stream>>>(
               input, output, batch_size, channels, height, width, pool_type);

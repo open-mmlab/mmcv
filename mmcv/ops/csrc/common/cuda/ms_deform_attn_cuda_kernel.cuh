@@ -15,9 +15,6 @@
 #include "pytorch_cuda_helper.hpp"
 
 const int CUDA_NUM_THREADS = 1024;
-inline int GET_BLOCKS(const int N, const int num_threads) {
-  return (N + num_threads - 1) / num_threads;
-}
 
 template <typename scalar_t>
 __device__ scalar_t ms_deform_attn_im2col_bilinear(
