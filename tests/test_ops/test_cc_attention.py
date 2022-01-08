@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from mmcv.ops import CrissCrossAttention
+
 
 class Loss(nn.Module):
 
@@ -19,7 +21,6 @@ class TestCrissCrossAttention(object):
     def test_cc_attention(self):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        from mmcv.ops import CrissCrossAttention
         loss_func = Loss()
 
         input = np.fromfile(

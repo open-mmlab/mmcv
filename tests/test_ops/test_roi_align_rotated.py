@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.ops import RoIAlignRotated, roi_align_rotated
+
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -50,12 +52,6 @@ sampling_ratio = 2
 
 
 def _test_roialign_rotated_gradcheck(device, dtype):
-    if not torch.cuda.is_available() and device == 'cuda':
-        pytest.skip('unittest does not support GPU yet.')
-    try:
-        from mmcv.ops import RoIAlignRotated
-    except ModuleNotFoundError:
-        pytest.skip('RoIAlignRotated op is not successfully compiled')
     if dtype is torch.half:
         pytest.skip('grad check does not support fp16')
     for case in inputs:
@@ -77,17 +73,6 @@ def _test_roialign_rotated_gradcheck(device, dtype):
 
 
 def _test_roialign_rotated_allclose(device, dtype):
-    if not torch.cuda.is_available() and device == 'cuda':
-        pytest.skip('unittest does not support GPU yet.')
-    try:
-        from mmcv.ops import roi_align_rotated
-    except ModuleNotFoundError:
-        pytest.skip('test requires compilation')
-    pool_h = 2
-    pool_w = 2
-    spatial_scale = 1.0
-    sampling_ratio = 2
-
     for case, output in zip(inputs, outputs):
         np_input = np.array(case[0])
         np_rois = np.array(case[1])
@@ -107,7 +92,13 @@ def _test_roialign_rotated_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
-@pytest.mark.parametrize('device', ['cuda', 'cpu'])
+@pytest.mark.parametrize('device', [
+    'cpu',
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support'))
+])
 @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_roialign_rotated(device, dtype):
     # check double only

@@ -1,7 +1,10 @@
 import os
 
 import numpy as np
+import pytest
 import torch
+
+from mmcv.ops import DeformRoIPoolPack, ModulatedDeformRoIPoolPack
 
 _USING_PARROTS = True
 try:
@@ -36,57 +39,33 @@ outputs = [([[[[1, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
 
 class TestDeformRoIPool(object):
 
-    def test_deform_roi_pool_gradcheck(self):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import DeformRoIPoolPack
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
-        sampling_ratio = 2
+    def setup_class(self):
+        self.pool_h = 2
+        self.pool_w = 2
+        self.spatial_scale = 1.0
+        self.sampling_ratio = 2
+        self._DeformRoIPoolPack = {
+            'plain': DeformRoIPoolPack,
+            'modulated': ModulatedDeformRoIPoolPack
+        }
 
+    @pytest.mark.skipif(
+        not torch.cuda.is_available(), reason='requires CUDA support')
+    @pytest.mark.parametrize('mode', ['plain', 'modulated'])
+    def test_deform_roi_pool_gradcheck(self, mode):
         for case in inputs:
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
-
             x = torch.tensor(
                 np_input, device='cuda', dtype=torch.float, requires_grad=True)
             rois = torch.tensor(np_rois, device='cuda', dtype=torch.float)
             output_c = x.size(1)
 
-            droipool = DeformRoIPoolPack((pool_h, pool_w),
-                                         output_c,
-                                         spatial_scale=spatial_scale,
-                                         sampling_ratio=sampling_ratio).cuda()
-
-            if _USING_PARROTS:
-                gradcheck(droipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
-
-    def test_modulated_deform_roi_pool_gradcheck(self):
-        if not torch.cuda.is_available():
-            return
-        from mmcv.ops import ModulatedDeformRoIPoolPack
-        pool_h = 2
-        pool_w = 2
-        spatial_scale = 1.0
-        sampling_ratio = 2
-
-        for case in inputs:
-            np_input = np.array(case[0])
-            np_rois = np.array(case[1])
-
-            x = torch.tensor(
-                np_input, device='cuda', dtype=torch.float, requires_grad=True)
-            rois = torch.tensor(np_rois, device='cuda', dtype=torch.float)
-            output_c = x.size(1)
-
-            droipool = ModulatedDeformRoIPoolPack(
-                (pool_h, pool_w),
+            droipool = self._DeformRoIPoolPack[mode](
+                (self.pool_h, self.pool_w),
                 output_c,
-                spatial_scale=spatial_scale,
-                sampling_ratio=sampling_ratio).cuda()
+                spatial_scale=self.spatial_scale,
+                sampling_ratio=self.sampling_ratio).cuda()
 
             if _USING_PARROTS:
                 gradcheck(droipool, (x, rois), no_grads=[rois])

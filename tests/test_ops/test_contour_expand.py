@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 
+from mmcv.ops import contour_expand
+
 
 def test_contour_expand():
-    from mmcv.ops import contour_expand
-
     np_internal_kernel_label = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
