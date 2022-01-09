@@ -13,13 +13,12 @@ from tempfile import TemporaryDirectory
 import torch
 import torchvision
 from torch.optim import Optimizer
-from torch.utils import model_zoo
 
 import mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import mkdir_or_exist
+from ..utils import load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -149,7 +148,12 @@ def get_deprecated_model_names():
 
 
 def _process_mmcls_checkpoint(checkpoint):
-    state_dict = checkpoint['state_dict']
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        # Some checkpoints converted from 3rd-party repo don't
+        # have the "state_dict" key.
+        state_dict = checkpoint
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         if k.startswith('backbone.'):
@@ -216,11 +220,13 @@ class CheckpointLoader:
             path (str): checkpoint path
 
         Returns:
-            loader (function): checkpoint loader
+            callable: checkpoint loader
         """
-
         for p in cls._schemes:
-            if path.startswith(p):
+            # use regular match to handle some cases that where the prefix of
+            # loader has a prefix. For example, both 's3://path' and
+            # 'open-mmlab:s3://path' should return `load_from_ceph`
+            if re.match(p, path) is not None:
                 return cls._schemes[p]
 
     @classmethod
@@ -240,7 +246,8 @@ class CheckpointLoader:
 
         checkpoint_loader = cls._get_checkpoint_loader(filename)
         class_name = checkpoint_loader.__name__
-        mmcv.print_log(f'Use {class_name} loader', logger)
+        mmcv.print_log(
+            f'load checkpoint from {class_name[10:]} path: {filename}', logger)
         return checkpoint_loader(filename, map_location)
 
 
@@ -255,9 +262,9 @@ def load_from_local(filename, map_location):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-
+    filename = osp.expanduser(filename)
     if not osp.isfile(filename):
-        raise IOError(f'{filename} is not a checkpoint file')
+        raise FileNotFoundError(f'{filename} can not be found.')
     checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -278,14 +285,13 @@ def load_from_http(filename, map_location=None, model_dir=None):
         dict or OrderedDict: The loaded checkpoint.
     """
     rank, world_size = get_dist_info()
-    rank = int(os.environ.get('LOCAL_RANK', rank))
     if rank == 0:
-        checkpoint = model_zoo.load_url(
+        checkpoint = load_url(
             filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = model_zoo.load_url(
+            checkpoint = load_url(
                 filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
@@ -322,11 +328,16 @@ def load_from_pavi(filename, map_location=None):
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes='s3://')
+@CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')
 def load_from_ceph(filename, map_location=None, backend='petrel'):
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
+
+    Note:
+        Since v1.4.1, the registered scheme prefixes have been enhanced to
+        support bucket names in the path prefix, e.g. 's3://xx.xx/xx.path',
+        'bucket1:s3://xx.xx/xx.path'.
 
     Args:
         filename (str): checkpoint file path with s3 prefix
@@ -347,7 +358,8 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
 
     if backend == 'ceph':
         warnings.warn(
-            'CephBackend will be deprecated, please use PetrelBackend instead')
+            'CephBackend will be deprecated, please use PetrelBackend instead',
+            DeprecationWarning)
 
     # CephClient and PetrelBackend have the same prefix 's3://' and the latter
     # will be chosen as default. If PetrelBackend can not be instantiated
@@ -378,8 +390,9 @@ def load_from_torchvision(filename, map_location=None):
     """
     model_urls = get_torchvision_models()
     if filename.startswith('modelzoo://'):
-        warnings.warn('The URL scheme of "modelzoo://" is deprecated, please '
-                      'use "torchvision://" instead')
+        warnings.warn(
+            'The URL scheme of "modelzoo://" is deprecated, please '
+            'use "torchvision://" instead', DeprecationWarning)
         model_name = filename[11:]
     else:
         model_name = filename[14:]
@@ -411,8 +424,10 @@ def load_from_openmmlab(filename, map_location=None):
 
     deprecated_urls = get_deprecated_model_names()
     if model_name in deprecated_urls:
-        warnings.warn(f'{prefix_str}{model_name} is deprecated in favor '
-                      f'of {prefix_str}{deprecated_urls[model_name]}')
+        warnings.warn(
+            f'{prefix_str}{model_name} is deprecated in favor '
+            f'of {prefix_str}{deprecated_urls[model_name]}',
+            DeprecationWarning)
         model_name = deprecated_urls[model_name]
     model_url = model_urls[model_name]
     # check if is url
@@ -421,7 +436,7 @@ def load_from_openmmlab(filename, map_location=None):
     else:
         filename = osp.join(_get_mmcv_home(), model_url)
         if not osp.isfile(filename):
-            raise IOError(f'{filename} is not a checkpoint file')
+            raise FileNotFoundError(f'{filename} can not be found.')
         checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -681,8 +696,7 @@ def save_checkpoint(model,
                 'file_client_args should be "None" if filename starts with'
                 f'"pavi://", but got {file_client_args}')
         try:
-            from pavi import modelcloud
-            from pavi import exception
+            from pavi import exception, modelcloud
         except ImportError:
             raise ImportError(
                 'Please install pavi to load checkpoint from modelcloud.')

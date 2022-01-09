@@ -220,6 +220,10 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
                 return temp > 0;
               }
             });
+  // compute distance to origin after sort, since the points are now different.
+  for (int i = 0; i < num_in; i++) {
+    dist[i] = dot_2d<T>(q[i], q[i]);
+  }
 #endif
 
   // Step 4:

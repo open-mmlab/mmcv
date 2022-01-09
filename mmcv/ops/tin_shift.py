@@ -18,6 +18,11 @@ class TINShiftFunction(Function):
 
     @staticmethod
     def forward(ctx, input, shift):
+        C = input.size(2)
+        num_segments = shift.size(1)
+        if C // num_segments <= 0 or C % num_segments != 0:
+            raise ValueError('C should be a multiple of num_segments, '
+                             f'but got C={C} and num_segments={num_segments}.')
 
         ctx.save_for_backward(shift)
 
@@ -46,7 +51,9 @@ class TINShift(nn.Module):
     Temporal Interlace shift is a differentiable temporal-wise frame shifting
     which is proposed in "Temporal Interlacing Network"
 
-    Please refer to https://arxiv.org/abs/2001.06499 for more details.
+    Please refer to `Temporal Interlacing Network
+    <https://arxiv.org/abs/2001.06499>`_ for more details.
+
     Code is modified from https://github.com/mit-han-lab/temporal-shift-module
     """
 
@@ -54,8 +61,9 @@ class TINShift(nn.Module):
         """Perform temporal interlace shift.
 
         Args:
-            input (Tensor): Feature map with shape [N, num_segments, C, H * W].
-            shift (Tensor): Shift tensor with shape [N, num_segments].
+            input (torch.Tensor): Feature map with shape
+                [N, num_segments, C, H * W].
+            shift (torch.Tensor): Shift tensor with shape [N, num_segments].
 
         Returns:
             Feature map after temporal interlace shift.

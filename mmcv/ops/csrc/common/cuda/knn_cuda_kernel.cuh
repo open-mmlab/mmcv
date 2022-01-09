@@ -51,40 +51,41 @@ __global__ void knn_forward_cuda_kernel(int b, int n, int m, int nsample,
                                         const T *xyz, const T *new_xyz,
                                         int *__restrict__ idx, T *dist2) {
   int bs_idx = blockIdx.y;
-  int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (bs_idx >= b || pt_idx >= m) return;
+  CUDA_1D_KERNEL_LOOP(pt_idx, m) {
+    if (bs_idx >= b) return;
 
-  new_xyz += bs_idx * m * 3 + pt_idx * 3;
-  xyz += bs_idx * n * 3;
-  idx += bs_idx * m * nsample + pt_idx * nsample;
-  dist2 += bs_idx * m * nsample + pt_idx * nsample;
+    new_xyz += bs_idx * m * 3 + pt_idx * 3;
+    xyz += bs_idx * n * 3;
+    idx += bs_idx * m * nsample + pt_idx * nsample;
+    dist2 += bs_idx * m * nsample + pt_idx * nsample;
 
-  T new_x = new_xyz[0];
-  T new_y = new_xyz[1];
-  T new_z = new_xyz[2];
+    T new_x = new_xyz[0];
+    T new_y = new_xyz[1];
+    T new_z = new_xyz[2];
 
-  float best_dist[100];
-  int best_idx[100];
-  for (int i = 0; i < nsample; i++) {
-    best_dist[i] = 1e10;
-    best_idx[i] = 0;
-  }
-  for (int i = 0; i < n; i++) {
-    T x = xyz[i * 3 + 0];
-    T y = xyz[i * 3 + 1];
-    T z = xyz[i * 3 + 2];
-    T d2 = (new_x - x) * (new_x - x) + (new_y - y) * (new_y - y) +
-           (new_z - z) * (new_z - z);
-    if (d2 < best_dist[0]) {
-      best_dist[0] = d2;
-      best_idx[0] = i;
-      reheap(best_dist, best_idx, nsample);
+    float best_dist[100];
+    int best_idx[100];
+    for (int i = 0; i < nsample; i++) {
+      best_dist[i] = 1e10;
+      best_idx[i] = 0;
     }
-  }
-  heap_sort(best_dist, best_idx, nsample);
-  for (int i = 0; i < nsample; i++) {
-    idx[i] = best_idx[i];
-    dist2[i] = best_dist[i];
+    for (int i = 0; i < n; i++) {
+      T x = xyz[i * 3 + 0];
+      T y = xyz[i * 3 + 1];
+      T z = xyz[i * 3 + 2];
+      T d2 = (new_x - x) * (new_x - x) + (new_y - y) * (new_y - y) +
+             (new_z - z) * (new_z - z);
+      if (d2 < best_dist[0]) {
+        best_dist[0] = d2;
+        best_idx[0] = i;
+        reheap(best_dist, best_idx, nsample);
+      }
+    }
+    heap_sort(best_dist, best_idx, nsample);
+    for (int i = 0; i < nsample; i++) {
+      idx[i] = best_idx[i];
+      dist2[i] = best_dist[i];
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import glob
 import os
+import platform
 import re
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
@@ -160,6 +161,9 @@ def get_extensions():
         define_macros += [('MMCV_WITH_TRT', None)]
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+        # prevent cub/thrust conflict with other python library
+        # More context See issues #1454
+        extra_compile_args['nvcc'] += ['-Xcompiler=-fno-gnu-unique']
         library_dirs += library_paths(cuda=True)
 
         from setuptools import Extension
@@ -185,13 +189,14 @@ def get_extensions():
         define_macros = []
         include_dirs = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
+            glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
-            'nvcc': [cuda_args] if cuda_args else [],
-            'cxx': [],
+            'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
+            'cxx': ['-std=c++14'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
@@ -223,7 +228,25 @@ def get_extensions():
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
         define_macros = []
+
+        # Before PyTorch1.8.0, when compiling CUDA code, `cxx` is a
+        # required key passed to PyTorch. Even if there is no flag passed
+        # to cxx, users also need to pass an empty list to PyTorch.
+        # Since PyTorch1.8.0, it has a default value so users do not need
+        # to pass an empty list anymore.
+        # More details at https://github.com/pytorch/pytorch/pull/45956
         extra_compile_args = {'cxx': []}
+
+        # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
+        # c++14 features, the argument ['std=c++14'] must be added here.
+        # However, in the windows environment, some standard libraries
+        # will depend on c++17 or higher. In fact, for the windows
+        # environment, the compiler will choose the appropriate compiler
+        # to compile those cpp files, so there is no need to add the
+        # argument
+        if platform.system() != 'Windows':
+            extra_compile_args['cxx'] = ['-std=c++14']
+
         include_dirs = []
 
         is_rocm_pytorch = False
@@ -249,7 +272,8 @@ def get_extensions():
             define_macros += [('HIP_DIFF', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*') \
+                + glob.glob('./mmcv/ops/csrc/pytorch/cpu/hip/*')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
         elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
@@ -257,15 +281,28 @@ def get_extensions():
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu')
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         else:
             print(f'Compiling {ext_name} without CUDA')
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp')
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+
+        # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
+        # c++14 features, the argument ['std=c++14'] must be added here.
+        # However, in the windows environment, some standard libraries
+        # will depend on c++17 or higher. In fact, for the windows
+        # environment, the compiler will choose the appropriate compiler
+        # to compile those cpp files, so there is no need to add the
+        # argument
+        if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
+            extra_compile_args['nvcc'] += ['-std=c++14']
 
         ext_ops = extension(
             name=ext_name,
@@ -341,9 +378,15 @@ setup(
     url='https://github.com/open-mmlab/mmcv',
     author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    setup_requires=parse_requirements('requirements/build.txt'),
+    tests_require=parse_requirements('requirements/test.txt'),
     install_requires=install_requires,
+    extras_require={
+        'all': parse_requirements('requirements.txt'),
+        'tests': parse_requirements('requirements/test.txt'),
+        'build': parse_requirements('requirements/build.txt'),
+        'optional': parse_requirements('requirements/optional.txt'),
+    },
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)

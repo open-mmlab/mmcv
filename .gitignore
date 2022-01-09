@@ -67,8 +67,8 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
-docs_zh_CN/_build/
+docs/en/_build/
+docs/zh_cn/_build/
 
 # PyBuilder
 target/
@@ -113,3 +113,9 @@ venv.bak/
 
 # custom
 .DS_Store
+
+# datasets and logs and checkpoints
+data/
+work_dir/
+
+src/
