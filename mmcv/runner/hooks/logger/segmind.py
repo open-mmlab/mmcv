@@ -8,11 +8,14 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class SegmindLoggerHook(LoggerHook):
-    def __init__(
-        self, init_kwargs=None, interval=10, ignore_last=True, reset_flag=True
-    ):
-        super(SegmindLoggerHook, self).__init__(
-            interval, ignore_last, reset_flag)
+
+    def __init__(self,
+                 init_kwargs=None,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=True):
+        super(SegmindLoggerHook, self).__init__(interval, ignore_last,
+                                                reset_flag)
         self.import_segmind()
 
     def import_segmind(self):
@@ -38,23 +41,19 @@ class SegmindLoggerHook(LoggerHook):
         metrics = {}
 
         for var, val in runner.log_buffer.output.items():
-            if var in ["time", "data_time"]:
+            if var in ['time', 'data_time']:
                 continue
 
-            tag = f"{var}_{runner.mode}"
+            tag = f'{var}_{runner.mode}'
             if isinstance(val, numbers.Number):
                 metrics[tag] = val
 
-        metrics["learning_rate"] = runner.current_lr()[0]
-        metrics["momentum"] = runner.current_momentum()[0]
+        metrics['learning_rate'] = runner.current_lr()[0]
+        metrics['momentum'] = runner.current_momentum()[0]
 
         # logging metrics to segmind
         self.try_mlflow_log(
-            self.log_metrics,
-            metrics,
-            step=runner.epoch,
-            epoch=runner.epoch
-        )
+            self.log_metrics, metrics, step=runner.epoch, epoch=runner.epoch)
 
     @master_only
     def after_run(self, runner):
