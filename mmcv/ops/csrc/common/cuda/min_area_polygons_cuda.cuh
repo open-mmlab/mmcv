@@ -9,8 +9,7 @@
 #endif
 
 #define MAXN 20
-const float EPS = 1E-8;
-const float PI = 3.1415926;
+__device__ const float PI = 3.1415926;
 
 struct Point {
   float x, y;
