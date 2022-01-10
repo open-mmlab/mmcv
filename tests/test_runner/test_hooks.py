@@ -1076,9 +1076,10 @@ def test_step_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 8),
-                                                         (False, 8)])
-def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
+@pytest.mark.parametrize('multi_optimizers, max_iters, gamma, cyclic_times',
+                         [(True, 8, 1, 1), (False, 8, 0.5, 2)])
+def test_cyclic_lr_update_hook(multi_optimizers, max_iters, gamma,
+                               cyclic_times):
     """Test CyclicLrUpdateHook."""
     with pytest.raises(AssertionError):
         # by_epoch should be False
@@ -1109,14 +1110,14 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
         multi_optimziers=multi_optimizers)
 
     # add cyclic LR scheduler
-    hook = CyclicLrUpdaterHook(
+    schedule_hook = CyclicLrUpdaterHook(
         by_epoch=False,
         target_ratio=(10.0, 1.0),
-        cyclic_times=1,
+        cyclic_times=cyclic_times,
         step_ratio_up=0.5,
         anneal_strategy='linear',
-        gamma=1)
-    runner.register_hook(hook)
+        gamma=gamma)
+    runner.register_hook(schedule_hook)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
     # add pavi hook
@@ -1157,13 +1158,17 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
                 'momentum': 0.95
             }, 1),
             call('train', {
-                'learning_rate': 0.155,
+                'learning_rate': 0.11,
                 'momentum': 0.95
             }, 4),
             call('train', {
-                'learning_rate': 0.155,
+                'learning_rate': 0.06,
                 'momentum': 0.95
             }, 6),
+            call('train', {
+                'learning_rate': 0.1,
+                'momentum': 0.95
+            }, 7),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
