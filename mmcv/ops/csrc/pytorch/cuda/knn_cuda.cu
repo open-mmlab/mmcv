@@ -19,7 +19,7 @@ void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(m, THREADS_PER_BLOCK), b);
+  dim3 blocks(GET_BLOCKS(m, THREADS_PER_BLOCK), b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

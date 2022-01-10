@@ -363,6 +363,14 @@ void riroi_align_rotated_backward(Tensor top_grad, Tensor rois,
 
 void points_in_polygons_forward(Tensor points, Tensor polygons, Tensor output);
 
+void min_area_polygons(const Tensor pointsets, Tensor polygons);
+
+void active_rotated_filter_forward(const Tensor input, const Tensor indices,
+                                   Tensor output);
+
+void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
+                                    Tensor grad_in);
+
 void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
 
 void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
@@ -735,6 +743,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("points_in_polygons_forward", &points_in_polygons_forward,
         "points_in_polygons_forward", py::arg("points"), py::arg("polygons"),
         py::arg("output"));
+  m.def("min_area_polygons", &min_area_polygons, "min_area_polygons",
+        py::arg("pointsets"), py::arg("polygons"));
+  m.def("active_rotated_filter_forward", &active_rotated_filter_forward,
+        "active_rotated_filter_forward", py::arg("input"), py::arg("indices"),
+        py::arg("output"));
+  m.def("active_rotated_filter_backward", &active_rotated_filter_backward,
+        "active_rotated_filter_backward", py::arg("grad_out"),
+        py::arg("indices"), py::arg("grad_in"));
   m.def("convex_iou", &convex_iou, "convex_iou", py::arg("pointsets"),
         py::arg("polygons"), py::arg("ious"));
   m.def("convex_giou", &convex_giou, "convex_giou", py::arg("pointsets"),

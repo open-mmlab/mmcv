@@ -21,8 +21,8 @@ void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(num_b, THREADS_PER_BLOCK_IOU3D),
-              DIVUP(num_a, THREADS_PER_BLOCK_IOU3D));
+  dim3 blocks(GET_BLOCKS(num_b, THREADS_PER_BLOCK_IOU3D),
+              GET_BLOCKS(num_a, THREADS_PER_BLOCK_IOU3D));
   dim3 threads(THREADS_PER_BLOCK_IOU3D, THREADS_PER_BLOCK_IOU3D);
 
   iou3d_boxes_overlap_bev_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
@@ -41,8 +41,8 @@ void IoU3DBoxesIoUBevForwardCUDAKernelLauncher(const int num_a,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(num_b, THREADS_PER_BLOCK_IOU3D),
-              DIVUP(num_a, THREADS_PER_BLOCK_IOU3D));
+  dim3 blocks(GET_BLOCKS(num_b, THREADS_PER_BLOCK_IOU3D),
+              GET_BLOCKS(num_a, THREADS_PER_BLOCK_IOU3D));
   dim3 threads(THREADS_PER_BLOCK_IOU3D, THREADS_PER_BLOCK_IOU3D);
 
   iou3d_boxes_iou_bev_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
@@ -58,8 +58,8 @@ void IoU3DNMSForwardCUDAKernelLauncher(const Tensor boxes,
   at::cuda::CUDAGuard device_guard(boxes.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(boxes_num, THREADS_PER_BLOCK_NMS),
-              DIVUP(boxes_num, THREADS_PER_BLOCK_NMS));
+  dim3 blocks(GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS),
+              GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS));
   dim3 threads(THREADS_PER_BLOCK_NMS);
 
   nms_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
@@ -75,8 +75,8 @@ void IoU3DNMSNormalForwardCUDAKernelLauncher(const Tensor boxes,
   at::cuda::CUDAGuard device_guard(boxes.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(boxes_num, THREADS_PER_BLOCK_NMS),
-              DIVUP(boxes_num, THREADS_PER_BLOCK_NMS));
+  dim3 blocks(GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS),
+              GET_BLOCKS(boxes_num, THREADS_PER_BLOCK_NMS));
   dim3 threads(THREADS_PER_BLOCK_NMS);
 
   nms_normal_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(

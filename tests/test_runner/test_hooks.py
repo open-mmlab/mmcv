@@ -1192,11 +1192,12 @@ def test_mlflow_hook(log_model):
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = WandbLoggerHook()
+    hook = WandbLoggerHook(log_artifact=True)
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
+
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
@@ -1206,6 +1207,7 @@ def test_wandb_hook():
     },
                                       step=6,
                                       commit=True)
+    hook.wandb.log_artifact.assert_called()
     hook.wandb.join.assert_called_with()
 
 
