@@ -1,7 +1,12 @@
+import tempfile
+
+import pytest
 import torch
 from torch import nn
 
-from mmcv.runner import BaseModule, ModuleList, Sequential
+import mmcv
+from mmcv.cnn.utils.weight_init import update_init_info
+from mmcv.runner import BaseModule, ModuleDict, ModuleList, Sequential
 from mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
@@ -78,6 +83,169 @@ class FooModel(BaseModule):
         # its type is not BaseModule, it can be initialized
         # with "override" key.
         self.reg = nn.Linear(3, 4)
+
+
+def test_initilization_info_logger():
+    # 'override' has higher priority
+
+    import torch.nn as nn
+    from mmcv.utils.logging import get_logger
+    import os
+
+    class OverloadInitConv(nn.Conv2d, BaseModule):
+
+        def init_weights(self):
+            for p in self.parameters():
+                with torch.no_grad():
+                    p.fill_(1)
+
+    class CheckLoggerModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super(CheckLoggerModel, self).__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv2 = OverloadInitConv(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='conv3', std=0.01, bias_prob=0.01)),
+        dict(type='Constant', layer='Linear', val=0., bias=1.)
+    ]
+
+    model = CheckLoggerModel(init_cfg=init_cfg)
+
+    train_log = '20210720_132454.log'
+    workdir = tempfile.mkdtemp()
+    log_file = os.path.join(workdir, train_log)
+    # create a logger
+    get_logger('init_logger', log_file=log_file)
+    assert not hasattr(model, '_params_init_info')
+    model.init_weights()
+    # assert `_params_init_info` would be deleted after `init_weights`
+    assert not hasattr(model, '_params_init_info')
+    # assert initialization information has been dumped
+    assert os.path.exists(log_file)
+
+    lines = mmcv.list_from_file(log_file)
+
+    # check initialization information is right
+    for i, line in enumerate(lines):
+        if 'conv1.weight' in line:
+            assert 'NormalInit' in lines[i + 1]
+        if 'conv2.weight' in line:
+            assert 'OverloadInitConv' in lines[i + 1]
+        if 'fc1.weight' in line:
+            assert 'ConstantInit' in lines[i + 1]
+
+    # test corner case
+
+    class OverloadInitConvFc(nn.Conv2d, BaseModule):
+
+        def __init__(self, *args, **kwargs):
+            super(OverloadInitConvFc, self).__init__(*args, **kwargs)
+            self.conv1 = nn.Linear(1, 1)
+
+        def init_weights(self):
+            for p in self.parameters():
+                with torch.no_grad():
+                    p.fill_(1)
+
+    class CheckLoggerModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super(CheckLoggerModel, self).__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv2 = OverloadInitConvFc(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    class TopLevelModule(BaseModule):
+
+        def __init__(self, init_cfg=None, checklog_init_cfg=None):
+            super(TopLevelModule, self).__init__(init_cfg)
+            self.module1 = CheckLoggerModel(checklog_init_cfg)
+            self.module2 = OverloadInitConvFc(1, 1, 1, 1)
+
+    checklog_init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='conv3', std=0.01, bias_prob=0.01)),
+        dict(type='Constant', layer='Linear', val=0., bias=1.)
+    ]
+
+    top_level_init_cfg = [
+        dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal', name='module2', std=0.01, bias_prob=0.01))
+    ]
+
+    model = TopLevelModule(
+        init_cfg=top_level_init_cfg, checklog_init_cfg=checklog_init_cfg)
+
+    model.module1.init_weights()
+    model.module2.init_weights()
+    model.init_weights()
+    model.module1.init_weights()
+    model.module2.init_weights()
+
+    assert not hasattr(model, '_params_init_info')
+    model.init_weights()
+    # assert `_params_init_info` would be deleted after `init_weights`
+    assert not hasattr(model, '_params_init_info')
+    # assert initialization information has been dumped
+    assert os.path.exists(log_file)
+
+    lines = mmcv.list_from_file(log_file)
+    # check initialization information is right
+    for i, line in enumerate(lines):
+        if 'TopLevelModule' in line and 'init_cfg' not in line:
+            # have been set init_flag
+            assert 'the same' in line
+
+
+def test_update_init_info():
+
+    class DummyModel(BaseModule):
+
+        def __init__(self, init_cfg=None):
+            super().__init__(init_cfg)
+            self.conv1 = nn.Conv2d(1, 1, 1, 1)
+            self.conv3 = nn.Conv2d(1, 1, 1, 1)
+            self.fc1 = nn.Linear(1, 1)
+
+    model = DummyModel()
+    from collections import defaultdict
+    model._params_init_info = defaultdict(dict)
+    for name, param in model.named_parameters():
+        model._params_init_info[param]['init_info'] = 'init'
+        model._params_init_info[param]['tmp_mean_value'] = param.data.mean()
+
+    with torch.no_grad():
+        for p in model.parameters():
+            p.fill_(1)
+
+    update_init_info(model, init_info='fill_1')
+
+    for item in model._params_init_info.values():
+        assert item['init_info'] == 'fill_1'
+        assert item['tmp_mean_value'] == 1
+
+    # test assert for new parameters
+    model.conv1.bias = nn.Parameter(torch.ones_like(model.conv1.bias))
+    with pytest.raises(AssertionError):
+        update_init_info(model, init_info=' ')
 
 
 def test_model_weight_init():
@@ -335,7 +503,7 @@ def test_sequential_model_weight_init():
                        torch.full(seq_model[1].conv2d.weight.shape, 2.))
     assert torch.equal(seq_model[1].conv2d.bias,
                        torch.full(seq_model[1].conv2d.bias.shape, 3.))
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     layers = [build_from_cfg(cfg, COMPONENTS) for cfg in seq_model_cfg]
     seq_model = Sequential(
         *layers,
@@ -372,7 +540,7 @@ def test_modulelist_weight_init():
                        torch.full(modellist[1].conv2d.weight.shape, 2.))
     assert torch.equal(modellist[1].conv2d.bias,
                        torch.full(modellist[1].conv2d.bias.shape, 3.))
-    # inner init_cfg has highter priority
+    # inner init_cfg has higher priority
     layers = [build_from_cfg(cfg, COMPONENTS) for cfg in models_cfg]
     modellist = ModuleList(
         layers,
@@ -387,3 +555,54 @@ def test_modulelist_weight_init():
                        torch.full(modellist[1].conv2d.weight.shape, 2.))
     assert torch.equal(modellist[1].conv2d.bias,
                        torch.full(modellist[1].conv2d.bias.shape, 3.))
+
+
+def test_moduledict_weight_init():
+    models_cfg = dict(
+        foo_conv_1d=dict(
+            type='FooConv1d',
+            init_cfg=dict(type='Constant', layer='Conv1d', val=0., bias=1.)),
+        foo_conv_2d=dict(
+            type='FooConv2d',
+            init_cfg=dict(type='Constant', layer='Conv2d', val=2., bias=3.)),
+    )
+    layers = {
+        name: build_from_cfg(cfg, COMPONENTS)
+        for name, cfg in models_cfg.items()
+    }
+    modeldict = ModuleDict(layers)
+    modeldict.init_weights()
+    assert torch.equal(
+        modeldict['foo_conv_1d'].conv1d.weight,
+        torch.full(modeldict['foo_conv_1d'].conv1d.weight.shape, 0.))
+    assert torch.equal(
+        modeldict['foo_conv_1d'].conv1d.bias,
+        torch.full(modeldict['foo_conv_1d'].conv1d.bias.shape, 1.))
+    assert torch.equal(
+        modeldict['foo_conv_2d'].conv2d.weight,
+        torch.full(modeldict['foo_conv_2d'].conv2d.weight.shape, 2.))
+    assert torch.equal(
+        modeldict['foo_conv_2d'].conv2d.bias,
+        torch.full(modeldict['foo_conv_2d'].conv2d.bias.shape, 3.))
+    # inner init_cfg has higher priority
+    layers = {
+        name: build_from_cfg(cfg, COMPONENTS)
+        for name, cfg in models_cfg.items()
+    }
+    modeldict = ModuleDict(
+        layers,
+        init_cfg=dict(
+            type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.))
+    modeldict.init_weights()
+    assert torch.equal(
+        modeldict['foo_conv_1d'].conv1d.weight,
+        torch.full(modeldict['foo_conv_1d'].conv1d.weight.shape, 0.))
+    assert torch.equal(
+        modeldict['foo_conv_1d'].conv1d.bias,
+        torch.full(modeldict['foo_conv_1d'].conv1d.bias.shape, 1.))
+    assert torch.equal(
+        modeldict['foo_conv_2d'].conv2d.weight,
+        torch.full(modeldict['foo_conv_2d'].conv2d.weight.shape, 2.))
+    assert torch.equal(
+        modeldict['foo_conv_2d'].conv2d.bias,
+        torch.full(modeldict['foo_conv_2d'].conv2d.bias.shape, 3.))

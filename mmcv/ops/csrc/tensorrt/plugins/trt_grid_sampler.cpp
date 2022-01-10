@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_grid_sampler.hpp"
 
 #include <assert.h>

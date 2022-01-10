@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
@@ -6,6 +7,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 /*
  * void bbox_overlaps_cuda(const Tensor bboxes1, const Tensor bboxes2, Tensor
  * ious, const int mode, const bool aligned, const int offset);
@@ -35,3 +37,4 @@ PARROTS_EXTENSION_REGISTER(bbox_overlaps)
     .output(1)
     .apply(bbox_overlaps_parrots)
     .done();
+#endif

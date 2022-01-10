@@ -1,4 +1,4 @@
-#include <cublas_v2.h>
+// Copyright (c) OpenMMLab. All rights reserved
 #include <cuda_fp16.h>
 
 #include "common_cuda_helper.hpp"
@@ -30,38 +30,6 @@ void trt_deformable_im2col(const T* data_input, const T* data_offset,
           deformable_group, height_col, width_col, data_col);
 
   cudaCheckError();
-}
-
-// used to switch gemm between fp32 and fp16
-template <typename scalar_t>
-cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa,
-                              cublasOperation_t transb, int m, int n, int k,
-                              const scalar_t* alpha, const scalar_t* A, int lda,
-                              const scalar_t* B, int ldb, const scalar_t* beta,
-                              scalar_t* C, int ldc) {
-  return CUBLAS_STATUS_INTERNAL_ERROR;
-}
-
-template <>
-cublasStatus_t cublasGemmWrap<float>(cublasHandle_t handle,
-                                     cublasOperation_t transa,
-                                     cublasOperation_t transb, int m, int n,
-                                     int k, const float* alpha, const float* A,
-                                     int lda, const float* B, int ldb,
-                                     const float* beta, float* C, int ldc) {
-  cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C,
-              ldc);
-}
-
-template <>
-cublasStatus_t cublasGemmWrap<half>(cublasHandle_t handle,
-                                    cublasOperation_t transa,
-                                    cublasOperation_t transb, int m, int n,
-                                    int k, const half* alpha, const half* A,
-                                    int lda, const half* B, int ldb,
-                                    const half* beta, half* C, int ldc) {
-  cublasHgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C,
-              ldc);
 }
 
 template <typename scalar_t>

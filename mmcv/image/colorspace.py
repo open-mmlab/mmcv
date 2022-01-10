@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import cv2
 import numpy as np
 
@@ -86,7 +86,7 @@ def _convert_input_type_range(img):
 
     It converts the input image to np.float32 type and range of [0, 1].
     It is mainly used for pre-processing the input image in colorspace
-    convertion functions such as rgb2ycbcr and ycbcr2rgb.
+    conversion functions such as rgb2ycbcr and ycbcr2rgb.
 
     Args:
         img (ndarray): The input image. It accepts:
@@ -116,7 +116,7 @@ def _convert_output_type_range(img, dst_type):
     images will be converted to np.uint8 type with range [0, 255]. If
     `dst_type` is np.float32, it converts the image to np.float32 type with
     range [0, 1].
-    It is mainly used for post-processing images in colorspace convertion
+    It is mainly used for post-processing images in colorspace conversion
     functions such as rgb2ycbcr and ycbcr2rgb.
 
     Args:
@@ -160,7 +160,7 @@ def rgb2ycbcr(img, y_only=False):
 
     Returns:
         ndarray: The converted YCbCr image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img)
@@ -194,7 +194,7 @@ def bgr2ycbcr(img, y_only=False):
 
     Returns:
         ndarray: The converted YCbCr image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img)
@@ -227,7 +227,7 @@ def ycbcr2rgb(img):
 
     Returns:
         ndarray: The converted RGB image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img) * 255
@@ -259,7 +259,7 @@ def ycbcr2bgr(img):
 
     Returns:
         ndarray: The converted BGR image. The output image has the same type
-            and range as input image.
+        and range as input image.
     """
     img_type = img.dtype
     img = _convert_input_type_range(img) * 255

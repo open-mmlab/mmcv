@@ -1,22 +1,24 @@
-# Contributing to OpenMMLab
+## Contributing to OpenMMLab
 
 All kinds of contributions are welcome, including but not limited to the following.
 
-- Fixes (typo, bugs)
-- New features and components
+- Fix typo or bugs
+- Add documentation or translate the documentation into other languages
+- Add new features and components
 
-## Workflow
+### Workflow
 
 1. fork and pull the latest OpenMMLab repository
 2. checkout a new branch (do not use master branch for PRs)
 3. commit your changes
 4. create a PR
 
-Note: If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
+```{note}
+If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
+```
+### Code style
 
-## Code style
-
-### Python
+#### Python
 
 We adopt [PEP8](https://www.python.org/dev/peps/pep-0008/) as the preferred code style.
 
@@ -64,6 +66,6 @@ After this on every commit check code linters and formatter will be enforced.
 
 >Before you create a PR, make sure that your code lints and is formatted by yapf.
 
-### C++ and CUDA
+#### C++ and CUDA
 
 We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).

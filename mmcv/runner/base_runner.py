@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import logging
 import os.path as osp
@@ -14,7 +14,7 @@ from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info
 from .hooks import HOOKS, Hook
 from .log_buffer import LogBuffer
-from .priority import get_priority
+from .priority import Priority, get_priority
 from .utils import get_time_str
 
 
@@ -61,8 +61,10 @@ class BaseRunner(metaclass=ABCMeta):
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
                                 f'but got {type(batch_processor)}')
-            warnings.warn('batch_processor is deprecated, please implement '
-                          'train_step() and val_step() in the model instead.')
+            warnings.warn(
+                'batch_processor is deprecated, please implement '
+                'train_step() and val_step() in the model instead.',
+                DeprecationWarning)
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
             if is_module_wrapper(model):
@@ -207,8 +209,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current learning rates of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
         if isinstance(self.optimizer, torch.optim.Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
@@ -226,8 +228,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current momentums of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
 
         def _get_momentum(optimizer):
@@ -287,7 +289,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook_cfg (dict): Hook config. It should have at least keys 'type'
               and 'priority' indicating its type and priority.
 
-        Notes:
+        Note:
             The specific hook class to register should not use 'type' and
             'priority' arguments during initialization.
         """
@@ -306,13 +308,34 @@ class BaseRunner(metaclass=ABCMeta):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
 
+    def get_hook_info(self):
+        # Get hooks info in each stage
+        stage_hook_map = {stage: [] for stage in Hook.stages}
+        for hook in self.hooks:
+            try:
+                priority = Priority(hook.priority).name
+            except ValueError:
+                priority = hook.priority
+            classname = hook.__class__.__name__
+            hook_info = f'({priority:<12}) {classname:<35}'
+            for trigger_stage in hook.get_triggered_stages():
+                stage_hook_map[trigger_stage].append(hook_info)
+
+        stage_hook_infos = []
+        for stage in Hook.stages:
+            hook_infos = stage_hook_map[stage]
+            if len(hook_infos) > 0:
+                info = f'{stage}:\n'
+                info += '\n'.join(hook_infos)
+                info += '\n -------------------- '
+                stage_hook_infos.append(info)
+        return '\n'.join(stage_hook_infos)
+
     def load_checkpoint(self,
                         filename,
                         map_location='cpu',
                         strict=False,
                         revise_keys=[(r'^module.', '')]):
-
-        self.logger.info('load checkpoint from %s', filename)
         return load_checkpoint(
             self.model,
             filename,
@@ -358,6 +381,9 @@ class BaseRunner(metaclass=ABCMeta):
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
 
+        # resume meta information meta
+        self.meta = checkpoint['meta']
+
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -391,7 +417,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:
             hook = lr_config
-        self.register_hook(hook, priority=10)
+        self.register_hook(hook, priority='VERY_HIGH')
 
     def register_momentum_hook(self, momentum_config):
         if momentum_config is None:
@@ -412,7 +438,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(momentum_config, HOOKS)
         else:
             hook = momentum_config
-        self.register_hook(hook, priority=30)
+        self.register_hook(hook, priority='HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
         if optimizer_config is None:
@@ -422,7 +448,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(optimizer_config, HOOKS)
         else:
             hook = optimizer_config
-        self.register_hook(hook, priority=50)
+        self.register_hook(hook, priority='ABOVE_NORMAL')
 
     def register_checkpoint_hook(self, checkpoint_config):
         if checkpoint_config is None:
@@ -432,7 +458,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
         else:
             hook = checkpoint_config
-        self.register_hook(hook, priority=70)
+        self.register_hook(hook, priority='NORMAL')
 
     def register_logger_hooks(self, log_config):
         if log_config is None:
@@ -441,7 +467,7 @@ class BaseRunner(metaclass=ABCMeta):
         for info in log_config['hooks']:
             logger_hook = mmcv.build_from_cfg(
                 info, HOOKS, default_args=dict(interval=log_interval))
-            self.register_hook(logger_hook, priority=90)
+            self.register_hook(logger_hook, priority='VERY_LOW')
 
     def register_timer_hook(self, timer_config):
         if timer_config is None:
@@ -451,7 +477,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook = mmcv.build_from_cfg(timer_config_, HOOKS)
         else:
             hook = timer_config
-        self.register_hook(hook, priority=80)
+        self.register_hook(hook, priority='LOW')
 
     def register_custom_hooks(self, custom_config):
         if custom_config is None:
@@ -488,14 +514,26 @@ class BaseRunner(metaclass=ABCMeta):
 
         Default and custom hooks include:
 
-          Hooks                 Priority
-        - LrUpdaterHook         10
-        - MomentumUpdaterHook   30
-        - OptimizerStepperHook  50
-        - CheckpointSaverHook   70
-        - IterTimerHook         80
-        - LoggerHook(s)         90
-        - CustomHook(s)         50 (default)
+        +----------------------+-------------------------+
+        | Hooks                | Priority                |
+        +======================+=========================+
+        | LrUpdaterHook        | VERY_HIGH (10)          |
+        +----------------------+-------------------------+
+        | MomentumUpdaterHook  | HIGH (30)               |
+        +----------------------+-------------------------+
+        | OptimizerStepperHook | ABOVE_NORMAL (40)       |
+        +----------------------+-------------------------+
+        | CheckpointSaverHook  | NORMAL (50)             |
+        +----------------------+-------------------------+
+        | IterTimerHook        | LOW (70)                |
+        +----------------------+-------------------------+
+        | LoggerHook(s)        | VERY_LOW (90)           |
+        +----------------------+-------------------------+
+        | CustomHook(s)        | defaults to NORMAL (50) |
+        +----------------------+-------------------------+
+
+        If custom hooks have same priority with default hooks, custom hooks
+        will be triggered after default hooks.
         """
         self.register_lr_hook(lr_config)
         self.register_momentum_hook(momentum_config)

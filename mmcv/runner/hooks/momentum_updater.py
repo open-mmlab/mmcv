@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 from .hook import HOOKS, Hook
 from .lr_updater import annealing_cos, annealing_linear, format_param
@@ -231,7 +232,7 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
     This momentum scheduler usually used together with the CyclicLRUpdater
     to improve the performance in the 3D detection area.
 
-    Attributes:
+    Args:
         target_ratio (tuple[float]): Relative ratio of the lowest momentum and
             the highest momentum to the initial momentum.
         cyclic_times (int): Number of cycles during training

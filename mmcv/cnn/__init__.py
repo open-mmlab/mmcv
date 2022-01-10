@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .alexnet import AlexNet
 # yapf: disable
 from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,

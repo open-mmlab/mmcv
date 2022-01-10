@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
 
 import torch
@@ -5,11 +6,27 @@ import torch
 TORCH_VERSION = torch.__version__
 
 
+def is_rocm_pytorch() -> bool:
+    is_rocm = False
+    if TORCH_VERSION != 'parrots':
+        try:
+            from torch.utils.cpp_extension import ROCM_HOME
+            is_rocm = True if ((torch.version.hip is not None) and
+                               (ROCM_HOME is not None)) else False
+        except ImportError:
+            pass
+    return is_rocm
+
+
 def _get_cuda_home():
     if TORCH_VERSION == 'parrots':
         from parrots.utils.build_extension import CUDA_HOME
     else:
-        from torch.utils.cpp_extension import CUDA_HOME
+        if is_rocm_pytorch():
+            from torch.utils.cpp_extension import ROCM_HOME
+            CUDA_HOME = ROCM_HOME
+        else:
+            from torch.utils.cpp_extension import CUDA_HOME
     return CUDA_HOME
 
 
@@ -72,7 +89,6 @@ def _get_norm():
     return _BatchNorm, _InstanceNorm, SyncBatchNorm_
 
 
-CUDA_HOME = _get_cuda_home()
 _ConvNd, _ConvTransposeMixin = _get_conv()
 DataLoader, PoolDataLoader = _get_dataloader()
 BuildExtension, CppExtension, CUDAExtension = _get_extension()
@@ -81,10 +97,6 @@ _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 
 
 class SyncBatchNorm(SyncBatchNorm_):
-
-    def _specify_ddp_gpu_num(self, gpu_size):
-        if TORCH_VERSION != 'parrots':
-            super()._specify_ddp_gpu_num(gpu_size)
 
     def _check_input_dim(self, input):
         if TORCH_VERSION == 'parrots':

@@ -1,8 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.utils import TORCH_VERSION, build_from_cfg
+from mmcv.utils import TORCH_VERSION, build_from_cfg, digit_version
 from .registry import ACTIVATION_LAYERS
 
 for module in [
@@ -70,7 +71,8 @@ class GELU(nn.Module):
         return F.gelu(input)
 
 
-if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.4':
+if (TORCH_VERSION == 'parrots'
+        or digit_version(TORCH_VERSION) < digit_version('1.4')):
     ACTIVATION_LAYERS.register_module(module=GELU)
 else:
     ACTIVATION_LAYERS.register_module(module=nn.GELU)
@@ -81,6 +83,7 @@ def build_activation_layer(cfg):
 
     Args:
         cfg (dict): The activation layer config, which should contain:
+
             - type (str): Layer type.
             - layer args: Args needed to instantiate an activation layer.
 

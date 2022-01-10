@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import torch
 
@@ -12,21 +13,22 @@ def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
     methods.
 
     Arguments:
-        score (np.array or Tensor): The foreground score with size hxw.
+        score (np.array or torch.Tensor): The foreground score with size hxw.
         mask (np.array or Tensor): The foreground mask with size hxw.
-        embedding (np.array or Tensor): The embedding with size hxwxc to
+        embedding (np.array or torch.Tensor): The embedding with size hxwxc to
             distinguish instances.
-        kernel_label (np.array or Tensor): The instance kernel index with
+        kernel_label (np.array or torch.Tensor): The instance kernel index with
             size hxw.
-        kernel_contour (np.array or Tensor): The kernel contour with size hxw.
+        kernel_contour (np.array or torch.Tensor): The kernel contour with
+            size hxw.
         kernel_region_num (int): The instance kernel region number.
         distance_threshold (float): The embedding distance threshold between
             kernel and pixel in one instance.
 
     Returns:
-        pixel_assignment (List[List[float]]): The instance coordinate list.
-            Each element consists of averaged confidence, pixel number, and
-            coordinates (x_i, y_i for all pixels) in order.
+        list[list[float]]: The instance coordinates and attributes list. Each
+        element consists of averaged confidence, pixel number, and coordinates
+        (x_i, y_i for all pixels) in order.
     """
     assert isinstance(score, (torch.Tensor, np.ndarray))
     assert isinstance(mask, (torch.Tensor, np.ndarray))
@@ -47,8 +49,28 @@ def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
     if isinstance(kernel_contour, np.ndarray):
         kernel_contour = torch.from_numpy(kernel_contour)
 
-    pixel_assignment = ext_module.pixel_group(score, mask, embedding,
-                                              kernel_label, kernel_contour,
-                                              kernel_region_num,
-                                              distance_threshold)
+    if torch.__version__ == 'parrots':
+        label = ext_module.pixel_group(
+            score,
+            mask,
+            embedding,
+            kernel_label,
+            kernel_contour,
+            kernel_region_num=kernel_region_num,
+            distance_threshold=distance_threshold)
+        label = label.tolist()
+        label = label[0]
+        list_index = kernel_region_num
+        pixel_assignment = []
+        for x in range(kernel_region_num):
+            pixel_assignment.append(
+                np.array(
+                    label[list_index:list_index + int(label[x])],
+                    dtype=np.float))
+            list_index = list_index + int(label[x])
+    else:
+        pixel_assignment = ext_module.pixel_group(score, mask, embedding,
+                                                  kernel_label, kernel_contour,
+                                                  kernel_region_num,
+                                                  distance_threshold)
     return pixel_assignment

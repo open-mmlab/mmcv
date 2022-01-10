@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
@@ -5,6 +6,7 @@
 #include "sync_bn_pytorch.h"
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void sync_bn_forward_mean_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                        const OperatorBase::in_list_t& ins,
                                        OperatorBase::out_list_t& outs) {
@@ -43,7 +45,7 @@ void sync_bn_forward_output_cuda_parrots(CudaContext& ctx,
   auto running_var = buildATensor(ctx, outs[1]);
   auto norm = buildATensor(ctx, outs[2]);
   auto std = buildATensor(ctx, outs[3]);
-  auto output = buildATensor(ctx, outs[3]);
+  auto output = buildATensor(ctx, outs[4]);
   sync_bn_forward_output_cuda(input, mean, var, running_mean, running_var,
                               weight, bias, norm, std, output, eps, momentum,
                               group_size);
@@ -106,3 +108,4 @@ PARROTS_EXTENSION_REGISTER(sync_bn_backward_data)
     .output(1)
     .apply(sync_bn_backward_data_cuda_parrots)
     .done();
+#endif

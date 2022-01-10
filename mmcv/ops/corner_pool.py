@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from torch import nn
 from torch.autograd import Function
@@ -103,11 +104,13 @@ class CornerPool(nn.Module):
     Corner Pooling is a new type of pooling layer that helps a
     convolutional network better localize corners of bounding boxes.
 
-    Please refer to https://arxiv.org/abs/1808.01244 for more details.
+    Please refer to `CornerNet: Detecting Objects as Paired Keypoints
+    <https://arxiv.org/abs/1808.01244>`_ for more details.
+
     Code is modified from https://github.com/princeton-vl/CornerNet-Lite.
 
     Args:
-        mode(str): Pooling orientation for the pooling layer
+        mode (str): Pooling orientation for the pooling layer
 
             - 'bottom': Bottom Pooling
             - 'left': Left Pooling

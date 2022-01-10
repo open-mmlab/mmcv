@@ -1,7 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
 import torch.nn as nn
 
+from mmcv.utils import _BatchNorm, _InstanceNorm
 from ..utils import constant_init, kaiming_init
 from .activation import build_activation_layer
 from .conv import build_conv_layer
@@ -103,9 +105,6 @@ class ConvModule(nn.Module):
             bias = not self.with_norm
         self.with_bias = bias
 
-        if self.with_norm and self.with_bias:
-            warnings.warn('ConvModule has norm and bias at the same time')
-
         if self.with_explicit_padding:
             pad_cfg = dict(type=padding_mode)
             self.padding_layer = build_padding_layer(pad_cfg, padding)
@@ -146,6 +145,10 @@ class ConvModule(nn.Module):
                 norm_channels = in_channels
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
             self.add_module(self.norm_name, norm)
+            if self.with_bias:
+                if isinstance(norm, (_BatchNorm, _InstanceNorm)):
+                    warnings.warn(
+                        'Unnecessary conv bias before batch/instance norm')
         else:
             self.norm_name = None
 

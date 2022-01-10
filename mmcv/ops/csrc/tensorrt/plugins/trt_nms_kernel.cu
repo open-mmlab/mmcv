@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <stdio.h>
 #include <thrust/execution_policy.h>
 #include <thrust/gather.h>
@@ -113,7 +114,8 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
       mmcv::getAlignedSize(spatial_dimension * boxes_word_size);
   size_t boxes_workspace =
       mmcv::getAlignedSize(spatial_dimension * 4 * boxes_word_size);
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks =
+      (spatial_dimension + threadsPerBlock - 1) / threadsPerBlock;
   size_t mask_workspace = mmcv::getAlignedSize(spatial_dimension * col_blocks *
                                                sizeof(unsigned long long));
   size_t index_template_workspace =
@@ -143,7 +145,7 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
  * @param[in] score_threshold threshold of scores
  * @param[in] offset box offset, only 0 or 1 is valid
  * @param[out] output with shape [output_length, 3], each row contain index
- *     (batch_id, class_id, boxes_id), filling -1 if result is not vaild.
+ *     (batch_id, class_id, boxes_id), filling -1 if result is not valid.
  * @param[in] center_point_box 0 if boxes is [left, top, right, bottom] 1 if
  *     boxes is [center_x, center_y, width, height]
  * @param[in] num_batches batch size of boxes and scores
@@ -162,7 +164,8 @@ void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                     int spatial_dimension, int num_classes,
                                     size_t output_length, void* workspace,
                                     cudaStream_t stream) {
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks =
+      (spatial_dimension + threadsPerBlock - 1) / threadsPerBlock;
   float* boxes_sorted = (float*)workspace;
   workspace = static_cast<char*>(workspace) +
               mmcv::getAlignedSize(spatial_dimension * 4 * sizeof(float));

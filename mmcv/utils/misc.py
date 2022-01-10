@@ -1,4 +1,5 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
+import collections.abc
 import functools
 import itertools
 import subprocess
@@ -6,6 +7,25 @@ import warnings
 from collections import abc
 from importlib import import_module
 from inspect import getfullargspec
+from itertools import repeat
+
+
+# From PyTorch internals
+def _ntuple(n):
+
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return x
+        return tuple(repeat(x, n))
+
+    return parse
+
+
+to_1tuple = _ntuple(1)
+to_2tuple = _ntuple(2)
+to_3tuple = _ntuple(3)
+to_4tuple = _ntuple(4)
+to_ntuple = _ntuple
 
 
 def is_str(x):
@@ -295,15 +315,25 @@ def deprecated_api_warning(name_dict, cls_name=None):
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
                             f'`{func_name}`, please use "{dst_arg_name}" '
-                            'instead')
+                            'instead', DeprecationWarning)
                         arg_names[arg_names.index(src_arg_name)] = dst_arg_name
             if kwargs:
                 for src_arg_name, dst_arg_name in name_dict.items():
                     if src_arg_name in kwargs:
+
+                        assert dst_arg_name not in kwargs, (
+                            f'The expected behavior is to replace '
+                            f'the deprecated key `{src_arg_name}` to '
+                            f'new key `{dst_arg_name}`, but got them '
+                            f'in the arguments at the same time, which '
+                            f'is confusing. `{src_arg_name} will be '
+                            f'deprecated in the future, please '
+                            f'use `{dst_arg_name}` instead.')
+
                         warnings.warn(
                             f'"{src_arg_name}" is deprecated in '
                             f'`{func_name}`, please use "{dst_arg_name}" '
-                            'instead')
+                            'instead', DeprecationWarning)
                         kwargs[dst_arg_name] = kwargs.pop(src_arg_name)
 
             # apply converted arguments to the decorated method
@@ -313,3 +343,35 @@ def deprecated_api_warning(name_dict, cls_name=None):
         return new_func
 
     return api_warning_wrapper
+
+
+def is_method_overridden(method, base_class, derived_class):
+    """Check if a method of base class is overridden in derived class.
+
+    Args:
+        method (str): the method name to check.
+        base_class (type): the class of the base class.
+        derived_class (type | Any): the class or instance of the derived class.
+    """
+    assert isinstance(base_class, type), \
+        "base_class doesn't accept instance, Please pass class instead."
+
+    if not isinstance(derived_class, type):
+        derived_class = derived_class.__class__
+
+    base_method = getattr(base_class, method)
+    derived_method = getattr(derived_class, method)
+    return derived_method != base_method
+
+
+def has_method(obj: object, method: str) -> bool:
+    """Check whether the object has a method.
+
+    Args:
+        method (str): The method name to check.
+        obj (object): The object to check.
+
+    Returns:
+        bool: True if the object has the method else False.
+    """
+    return hasattr(obj, method) and callable(getattr(obj, method))

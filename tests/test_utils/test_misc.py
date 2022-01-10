@@ -1,7 +1,34 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
 import mmcv
+from mmcv import deprecated_api_warning
+from mmcv.utils.misc import has_method
+
+
+def test_to_ntuple():
+    single_number = 2
+    assert mmcv.utils.to_1tuple(single_number) == (single_number, )
+    assert mmcv.utils.to_2tuple(single_number) == (single_number,
+                                                   single_number)
+    assert mmcv.utils.to_3tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_4tuple(single_number) == (single_number,
+                                                   single_number,
+                                                   single_number,
+                                                   single_number)
+    assert mmcv.utils.to_ntuple(5)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
+    assert mmcv.utils.to_ntuple(6)(single_number) == (single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number,
+                                                      single_number)
 
 
 def test_iter_cast():
@@ -105,6 +132,7 @@ def test_requires_executable(capsys):
 def test_import_modules_from_strings():
     # multiple imports
     import os.path as osp_
+
     import sys as sys_
     osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
     assert osp == osp_
@@ -134,3 +162,64 @@ def test_import_modules_from_strings():
             ['os.path', '_not_implemented'], allow_failed_imports=True)
         assert imported[0] == osp
         assert imported[1] is None
+
+
+def test_is_method_overridden():
+
+    class Base:
+
+        def foo1():
+            pass
+
+        def foo2():
+            pass
+
+    class Sub(Base):
+
+        def foo1():
+            pass
+
+    # test passing sub class directly
+    assert mmcv.is_method_overridden('foo1', Base, Sub)
+    assert not mmcv.is_method_overridden('foo2', Base, Sub)
+
+    # test passing instance of sub class
+    sub_instance = Sub()
+    assert mmcv.is_method_overridden('foo1', Base, sub_instance)
+    assert not mmcv.is_method_overridden('foo2', Base, sub_instance)
+
+    # base_class should be a class, not instance
+    base_instance = Base()
+    with pytest.raises(AssertionError):
+        mmcv.is_method_overridden('foo1', base_instance, sub_instance)
+
+
+def test_has_method():
+
+    class Foo:
+
+        def __init__(self, name):
+            self.name = name
+
+        def print_name(self):
+            print(self.name)
+
+    foo = Foo('foo')
+    assert not has_method(foo, 'name')
+    assert has_method(foo, 'print_name')
+
+
+def test_deprecated_api_warning():
+
+    @deprecated_api_warning(name_dict=dict(old_key='new_key'))
+    def dummy_func(new_key=1):
+        return new_key
+
+    # replace `old_key` to `new_key`
+    assert dummy_func(old_key=2) == 2
+
+    # The expected behavior is to replace the
+    # deprecated key `old_key` to `new_key`,
+    # but got them in the arguments at the same time
+    with pytest.raises(AssertionError):
+        dummy_func(old_key=1, new_key=2)

@@ -1,3 +1,6 @@
+// Copyright (c) OpenMMLab. All rights reserved
+#include <cublas_v2.h>
+
 #include "common_cuda_helper.hpp"
 #include "trt_cuda_helper.cuh"
 #include "trt_plugin_helper.hpp"
@@ -64,3 +67,25 @@ void memcpyPermute(scalar_t *dst, const scalar_t *src, int *src_size,
 template void memcpyPermute<float>(float *dst, const float *src, int *src_size,
                                    int *permute, int src_dim,
                                    cudaStream_t stream);
+
+template <>
+cublasStatus_t cublasGemmWrap<float>(cublasHandle_t handle,
+                                     cublasOperation_t transa,
+                                     cublasOperation_t transb, int m, int n,
+                                     int k, const float *alpha, const float *A,
+                                     int lda, const float *B, int ldb,
+                                     const float *beta, float *C, int ldc) {
+  return cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb,
+                     beta, C, ldc);
+}
+
+template <>
+cublasStatus_t cublasGemmWrap<half>(cublasHandle_t handle,
+                                    cublasOperation_t transa,
+                                    cublasOperation_t transb, int m, int n,
+                                    int k, const half *alpha, const half *A,
+                                    int lda, const half *B, int ldb,
+                                    const half *beta, half *C, int ldc) {
+  return cublasHgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb,
+                     beta, C, ldc);
+}

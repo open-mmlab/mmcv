@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef CARAFE_PYTORCH_H
 #define CARAFE_PYTORCH_H
 #include <torch/extension.h>

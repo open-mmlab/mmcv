@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import functools
 import warnings
 from collections import abc
@@ -7,14 +8,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
 
 try:
     # If PyTorch version >= 1.6.0, torch.cuda.amp.autocast would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
     # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
-    # manually, so the behavior may not be consistant with real amp.
+    # manually, so the behavior may not be consistent with real amp.
     from torch.cuda.amp import autocast
 except ImportError:
     pass
@@ -31,7 +32,9 @@ def cast_tensor_type(inputs, src_type, dst_type):
     Returns:
         The same type with inputs, but all contained Tensors have been cast.
     """
-    if isinstance(inputs, torch.Tensor):
+    if isinstance(inputs, nn.Module):
+        return inputs
+    elif isinstance(inputs, torch.Tensor):
         return inputs.to(dst_type)
     elif isinstance(inputs, str):
         return inputs
@@ -119,7 +122,8 @@ def auto_fp16(apply_to=None, out_fp32=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+            if (TORCH_VERSION != 'parrots' and
+                    digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
                 with autocast(enabled=True):
                     output = old_func(*new_args, **new_kwargs)
             else:
@@ -204,7 +208,8 @@ def force_fp32(apply_to=None, out_fp16=False):
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
-            if TORCH_VERSION != 'parrots' and TORCH_VERSION >= '1.6.0':
+            if (TORCH_VERSION != 'parrots' and
+                    digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
                 with autocast(enabled=False):
                     output = old_func(*new_args, **new_kwargs)
             else:
@@ -222,7 +227,8 @@ def force_fp32(apply_to=None, out_fp16=False):
 def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
     warnings.warning(
         '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated, and will be '
-        'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads')
+        'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads',
+        DeprecationWarning)
     _allreduce_grads(params, coalesce=coalesce, bucket_size_mb=bucket_size_mb)
 
 
@@ -243,7 +249,8 @@ def wrap_fp16_model(model):
     Args:
         model (nn.Module): Model in FP32.
     """
-    if TORCH_VERSION == 'parrots' or TORCH_VERSION < '1.6.0':
+    if (TORCH_VERSION == 'parrots'
+            or digit_version(TORCH_VERSION) < digit_version('1.6.0')):
         # convert model to fp16
         model.half()
         # patch the normalization layers to make it work in fp32 mode
@@ -375,6 +382,29 @@ class LossScaler:
                     self.scale_window == 0:
                 self.cur_scale *= self.scale_factor
         self.cur_iter += 1
+
+    def state_dict(self):
+        """Returns the state of the scaler as a :class:`dict`."""
+        return dict(
+            cur_scale=self.cur_scale,
+            cur_iter=self.cur_iter,
+            mode=self.mode,
+            last_overflow_iter=self.last_overflow_iter,
+            scale_factor=self.scale_factor,
+            scale_window=self.scale_window)
+
+    def load_state_dict(self, state_dict):
+        """Loads the loss_scaler state dict.
+
+        Args:
+           state_dict (dict): scaler state.
+        """
+        self.cur_scale = state_dict['cur_scale']
+        self.cur_iter = state_dict['cur_iter']
+        self.mode = state_dict['mode']
+        self.last_overflow_iter = state_dict['last_overflow_iter']
+        self.scale_factor = state_dict['scale_factor']
+        self.scale_window = state_dict['scale_window']
 
     @property
     def loss_scale(self):

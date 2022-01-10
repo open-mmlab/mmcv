@@ -1,7 +1,8 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os
 import os.path as osp
+import platform
 import random
 import string
 import tempfile
@@ -56,7 +57,7 @@ def test_build_runner():
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
 def test_epoch_based_runner(runner_class):
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         # batch_processor is deprecated
         model = OldStyleModel()
 
@@ -169,7 +170,12 @@ def test_save_checkpoint(runner_class):
             first_ckp_path = osp.join(root, 'iter_1.pth')
 
         assert osp.exists(first_ckp_path)
-        assert osp.realpath(latest_path) == osp.realpath(first_ckp_path)
+
+        if platform.system() != 'Windows':
+            assert osp.realpath(latest_path) == osp.realpath(first_ckp_path)
+        else:
+            # use copy instead of symlink on windows
+            pass
 
         torch.load(latest_path)
 

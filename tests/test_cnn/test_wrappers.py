@@ -330,7 +330,7 @@ def test_linear(in_w, in_h, in_feature, out_feature):
     wrapper(x_empty)
 
 
-@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 8))
+@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 10))
 def test_nn_op_forward_called():
 
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
@@ -343,6 +343,20 @@ def test_nn_op_forward_called():
 
             # non-randn input
             x_normal = torch.randn(1, 3, 10, 10)
+            wrapper = eval(m)(3, 2, 1)
+            wrapper(x_normal)
+            nn_module_forward.assert_called_with(x_normal)
+
+    for m in ['Conv3d', 'ConvTranspose3d', 'MaxPool3d']:
+        with patch(f'torch.nn.{m}.forward') as nn_module_forward:
+            # randn input
+            x_empty = torch.randn(0, 3, 10, 10, 10)
+            wrapper = eval(m)(3, 2, 1)
+            wrapper(x_empty)
+            nn_module_forward.assert_called_with(x_empty)
+
+            # non-randn input
+            x_normal = torch.randn(1, 3, 10, 10, 10)
             wrapper = eval(m)(3, 2, 1)
             wrapper(x_normal)
             nn_module_forward.assert_called_with(x_normal)

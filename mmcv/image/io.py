@@ -1,13 +1,16 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import io
 import os.path as osp
+import warnings
 from pathlib import Path
 
 import cv2
 import numpy as np
-from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_UNCHANGED
+from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
+                 IMREAD_UNCHANGED)
 
-from mmcv.utils import check_file_exist, is_str, mkdir_or_exist
+from mmcv.fileio import FileClient
+from mmcv.utils import is_filepath, is_str
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
@@ -30,7 +33,10 @@ supported_backends = ['cv2', 'turbojpeg', 'pillow', 'tifffile']
 imread_flags = {
     'color': IMREAD_COLOR,
     'grayscale': IMREAD_GRAYSCALE,
-    'unchanged': IMREAD_UNCHANGED
+    'unchanged': IMREAD_UNCHANGED,
+    'color_ignore_orientation': IMREAD_IGNORE_ORIENTATION | IMREAD_COLOR,
+    'grayscale_ignore_orientation':
+    IMREAD_IGNORE_ORIENTATION | IMREAD_GRAYSCALE
 }
 
 imread_backend = 'cv2'
@@ -102,7 +108,8 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
             array[:, :, :3] = array[:, :, (2, 1, 0)]  # RGB to BGR
     else:
         # Handle exif orientation tag
-        img = ImageOps.exif_transpose(img)
+        if flag in ['color', 'grayscale']:
+            img = ImageOps.exif_transpose(img)
         # If the image mode is not 'RGB', convert it to 'RGB' first.
         if img.mode != 'RGB':
             if img.mode != 'LA':
@@ -117,73 +124,84 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
                 img_rgba = img.convert('RGBA')
                 img = Image.new('RGB', img_rgba.size, (124, 117, 104))
                 img.paste(img_rgba, mask=img_rgba.split()[3])  # 3 is alpha
-        if flag == 'color':
+        if flag in ['color', 'color_ignore_orientation']:
             array = np.array(img)
             if channel_order != 'rgb':
                 array = array[:, :, ::-1]  # RGB to BGR
-        elif flag == 'grayscale':
+        elif flag in ['grayscale', 'grayscale_ignore_orientation']:
             img = img.convert('L')
             array = np.array(img)
         else:
             raise ValueError(
-                'flag must be "color", "grayscale" or "unchanged", '
-                f'but got {flag}')
+                'flag must be "color", "grayscale", "unchanged", '
+                f'"color_ignore_orientation" or "grayscale_ignore_orientation"'
+                f' but got {flag}')
     return array
 
 
-def imread(img_or_path, flag='color', channel_order='bgr', backend=None):
+def imread(img_or_path,
+           flag='color',
+           channel_order='bgr',
+           backend=None,
+           file_client_args=None):
     """Read an image.
+
+    Note:
+        In v1.4.1 and later, add `file_client_args` parameters.
 
     Args:
         img_or_path (ndarray or str or Path): Either a numpy array or str or
             pathlib.Path. If it is a numpy array (loaded image), then
             it will be returned as is.
         flag (str): Flags specifying the color type of a loaded image,
-            candidates are `color`, `grayscale` and `unchanged`.
-            Note that the `turbojpeg` backend does not support `unchanged`.
+            candidates are `color`, `grayscale`, `unchanged`,
+            `color_ignore_orientation` and `grayscale_ignore_orientation`.
+            By default, `cv2` and `pillow` backend would rotate the image
+            according to its EXIF info unless called with `unchanged` or
+            `*_ignore_orientation` flags. `turbojpeg` and `tifffile` backend
+            always ignore image's EXIF info regardless of the flag.
+            The `turbojpeg` backend only supports `color` and `grayscale`.
         channel_order (str): Order of channel, candidates are `bgr` and `rgb`.
         backend (str | None): The image decoding backend type. Options are
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
 
     Returns:
         ndarray: Loaded image array.
+
+    Examples:
+        >>> import mmcv
+        >>> img_path = '/path/to/img.jpg'
+        >>> img = mmcv.imread(img_path)
+        >>> img = mmcv.imread(img_path, flag='color', channel_order='rgb',
+        ...     backend='cv2')
+        >>> img = mmcv.imread(img_path, flag='color', channel_order='bgr',
+        ...     backend='pillow')
+        >>> s3_img_path = 's3://bucket/img.jpg'
+        >>> # infer the file backend by the prefix s3
+        >>> img = mmcv.imread(s3_img_path)
+        >>> # manually set the file backend petrel
+        >>> img = mmcv.imread(s3_img_path, file_client_args={
+        ...     'backend': 'petrel'})
+        >>> http_img_path = 'http://path/to/img.jpg'
+        >>> img = mmcv.imread(http_img_path)
+        >>> img = mmcv.imread(http_img_path, file_client_args={
+        ...     'backend': 'http'})
     """
 
-    if backend is None:
-        backend = imread_backend
-    if backend not in supported_backends:
-        raise ValueError(f'backend: {backend} is not supported. Supported '
-                         "backends are 'cv2', 'turbojpeg', 'pillow'")
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
-        check_file_exist(img_or_path,
-                         f'img file does not exist: {img_or_path}')
-        if backend == 'turbojpeg':
-            with open(img_or_path, 'rb') as in_file:
-                img = jpeg.decode(in_file.read(),
-                                  _jpegflag(flag, channel_order))
-                if img.shape[-1] == 1:
-                    img = img[:, :, 0]
-            return img
-        elif backend == 'pillow':
-            img = Image.open(img_or_path)
-            img = _pillow2array(img, flag, channel_order)
-            return img
-        elif backend == 'tifffile':
-            img = tifffile.imread(img_or_path)
-            return img
-        else:
-            flag = imread_flags[flag] if is_str(flag) else flag
-            img = cv2.imread(img_or_path, flag)
-            if flag == IMREAD_COLOR and channel_order == 'rgb':
-                cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
-            return img
+        file_client = FileClient.infer_client(file_client_args, img_or_path)
+        img_bytes = file_client.get(img_or_path)
+        return imfrombytes(img_bytes, flag, channel_order, backend)
     else:
         raise TypeError('"img" must be a numpy array or a str or '
                         'a pathlib.Path object')
@@ -196,28 +214,42 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
         backend (str | None): The image decoding backend type. Options are
-            `cv2`, `pillow`, `turbojpeg`, `None`. If backend is None, the
-            global imread_backend specified by ``mmcv.use_backend()`` will be
-            used. Default: None.
+            `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`. If backend is
+            None, the global imread_backend specified by ``mmcv.use_backend()``
+            will be used. Default: None.
 
     Returns:
         ndarray: Loaded image array.
+
+    Examples:
+        >>> img_path = '/path/to/img.jpg'
+        >>> with open(img_path, 'rb') as f:
+        >>>     img_buff = f.read()
+        >>> img = mmcv.imfrombytes(img_buff)
+        >>> img = mmcv.imfrombytes(img_buff, flag='color', channel_order='rgb')
+        >>> img = mmcv.imfrombytes(img_buff, backend='pillow')
+        >>> img = mmcv.imfrombytes(img_buff, backend='cv2')
     """
 
     if backend is None:
         backend = imread_backend
     if backend not in supported_backends:
-        raise ValueError(f'backend: {backend} is not supported. Supported '
-                         "backends are 'cv2', 'turbojpeg', 'pillow'")
+        raise ValueError(
+            f'backend: {backend} is not supported. Supported '
+            "backends are 'cv2', 'turbojpeg', 'pillow', 'tifffile'")
     if backend == 'turbojpeg':
         img = jpeg.decode(content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
     elif backend == 'pillow':
-        buff = io.BytesIO(content)
-        img = Image.open(buff)
-        img = _pillow2array(img, flag, channel_order)
+        with io.BytesIO(content) as buff:
+            img = Image.open(buff)
+            img = _pillow2array(img, flag, channel_order)
+        return img
+    elif backend == 'tifffile':
+        with io.BytesIO(content) as buff:
+            img = tifffile.imread(buff)
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)
@@ -228,20 +260,53 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         return img
 
 
-def imwrite(img, file_path, params=None, auto_mkdir=True):
+def imwrite(img,
+            file_path,
+            params=None,
+            auto_mkdir=None,
+            file_client_args=None):
     """Write image to file.
+
+    Note:
+        In v1.4.1 and later, add `file_client_args` parameters.
+
+    Warning:
+        The parameter `auto_mkdir` will be deprecated in the future and every
+        file clients will make directory automatically.
 
     Args:
         img (ndarray): Image array to be written.
         file_path (str): Image file path.
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
-            whether to create it automatically.
+            whether to create it automatically. It will be deprecated.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            Default: None.
 
     Returns:
         bool: Successful or not.
+
+    Examples:
+        >>> # write to hard disk client
+        >>> ret = mmcv.imwrite(img, '/path/to/img.jpg')
+        >>> # infer the file backend by the prefix s3
+        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg')
+        >>> # manually set the file backend petrel
+        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', file_client_args={
+        ...     'backend': 'petrel'})
     """
-    if auto_mkdir:
-        dir_name = osp.abspath(osp.dirname(file_path))
-        mkdir_or_exist(dir_name)
-    return cv2.imwrite(file_path, img, params)
+    assert is_filepath(file_path)
+    file_path = str(file_path)
+    if auto_mkdir is not None:
+        warnings.warn(
+            'The parameter `auto_mkdir` will be deprecated in the future and '
+            'every file clients will make directory automatically.')
+    file_client = FileClient.infer_client(file_client_args, file_path)
+    img_ext = osp.splitext(file_path)[-1]
+    # Encode image according to image suffix.
+    # For example, if image path is '/path/your/img.jpg', the encode
+    # format is '.jpg'.
+    flag, img_buff = cv2.imencode(img_ext, img, params)
+    file_client.put(img_buff.tobytes(), file_path)
+    return flag

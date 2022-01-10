@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import platform
 import shutil
@@ -34,6 +34,7 @@ class IterLoader:
             self._epoch += 1
             if hasattr(self._dataloader.sampler, 'set_epoch'):
                 self._dataloader.sampler.set_epoch(self._epoch)
+            time.sleep(2)  # Prevent possible deadlock during epoch transition
             self.iter_loader = iter(self._dataloader)
             data = next(self.iter_loader)
 
@@ -108,6 +109,8 @@ class IterBasedRunner(BaseRunner):
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
+        self.logger.info('Hooks will be executed in the following order:\n%s',
+                         self.get_hook_info())
         self.logger.info('workflow: %s, max: %d iters', workflow,
                          self._max_iters)
         self.call_hook('before_run')
@@ -193,14 +196,17 @@ class IterBasedRunner(BaseRunner):
                 latest checkpoint file. Defaults to True.
         """
         if meta is None:
-            meta = dict(iter=self.iter + 1, epoch=self.epoch + 1)
-        elif isinstance(meta, dict):
-            meta.update(iter=self.iter + 1, epoch=self.epoch + 1)
-        else:
+            meta = {}
+        elif not isinstance(meta, dict):
             raise TypeError(
                 f'meta should be a dict or None, but got {type(meta)}')
         if self.meta is not None:
             meta.update(self.meta)
+            # Note: meta.update(self.meta) should be done before
+            # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
+            # there will be problems with resumed checkpoints.
+            # More details in https://github.com/open-mmlab/mmcv/pull/1108
+        meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)
@@ -220,28 +226,48 @@ class IterBasedRunner(BaseRunner):
                                 optimizer_config=None,
                                 checkpoint_config=None,
                                 log_config=None,
-                                momentum_config=None):
+                                momentum_config=None,
+                                custom_hooks_config=None):
         """Register default hooks for iter-based training.
+
+        Checkpoint hook, optimizer stepper hook and logger hooks will be set to
+        `by_epoch=False` by default.
 
         Default hooks include:
 
-        - LrUpdaterHook
-        - MomentumUpdaterHook
-        - OptimizerStepperHook
-        - CheckpointSaverHook
-        - IterTimerHook
-        - LoggerHook(s)
+        +----------------------+-------------------------+
+        | Hooks                | Priority                |
+        +======================+=========================+
+        | LrUpdaterHook        | VERY_HIGH (10)          |
+        +----------------------+-------------------------+
+        | MomentumUpdaterHook  | HIGH (30)               |
+        +----------------------+-------------------------+
+        | OptimizerStepperHook | ABOVE_NORMAL (40)       |
+        +----------------------+-------------------------+
+        | CheckpointSaverHook  | NORMAL (50)             |
+        +----------------------+-------------------------+
+        | IterTimerHook        | LOW (70)                |
+        +----------------------+-------------------------+
+        | LoggerHook(s)        | VERY_LOW (90)           |
+        +----------------------+-------------------------+
+        | CustomHook(s)        | defaults to NORMAL (50) |
+        +----------------------+-------------------------+
+
+        If custom hooks have same priority with default hooks, custom hooks
+        will be triggered after default hooks.
         """
         if checkpoint_config is not None:
             checkpoint_config.setdefault('by_epoch', False)
         if lr_config is not None:
             lr_config.setdefault('by_epoch', False)
-        self.register_lr_hook(lr_config)
-        self.register_momentum_hook(momentum_config)
-        self.register_optimizer_hook(optimizer_config)
-        self.register_checkpoint_hook(checkpoint_config)
-        self.register_hook(IterTimerHook())
         if log_config is not None:
             for info in log_config['hooks']:
                 info.setdefault('by_epoch', False)
-        self.register_logger_hooks(log_config)
+        super(IterBasedRunner, self).register_training_hooks(
+            lr_config=lr_config,
+            momentum_config=momentum_config,
+            optimizer_config=optimizer_config,
+            checkpoint_config=checkpoint_config,
+            log_config=log_config,
+            timer_config=IterTimerHook(),
+            custom_hooks_config=custom_hooks_config)

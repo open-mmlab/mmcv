@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
 import cv2
@@ -131,9 +131,8 @@ class TestPhotometric:
 
         # test equalize with randomly sampled image.
         for _ in range(nb_rand_test):
-            img = np.clip(
-                np.random.normal(0, 1, (1000, 1200, 3)) * 260, 0,
-                255).astype(np.uint8)
+            img = np.clip(np.random.normal(0, 1, (256, 256, 3)) * 260, 0,
+                          255).astype(np.uint8)
             equalized_img = mmcv.imequalize(img)
             assert_array_equal(equalized_img, _imequalize(img))
 
@@ -334,7 +333,7 @@ class TestPhotometric:
 
         input_img = np.array(
             [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
-            dtype=np.float)
+            dtype=float)
         img = mmcv.lut_transform(input_img, lut_table)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
         assert np.allclose(img, baseline)

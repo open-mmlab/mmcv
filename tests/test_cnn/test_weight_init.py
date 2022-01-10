@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import random
 from tempfile import TemporaryDirectory
 
@@ -134,6 +134,15 @@ def test_constaninit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 2.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = ConstantInit(val=4., bias=5., layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].weight == 4.)
+    assert torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == 5.)
+    assert torch.all(model[2].bias == 5.)
+
     # test bias input type
     with pytest.raises(TypeError):
         func = ConstantInit(val=1, bias='1')
@@ -170,6 +179,22 @@ def test_xavierinit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, res))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = ConstantInit(val=4., bias=5., layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].weight == 4.)
+    assert torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == 5.)
+    assert torch.all(model[2].bias == 5.)
+
+    func = XavierInit(gain=100, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert not torch.all(model[0].weight == 4.)
+    assert not torch.all(model[2].weight == 4.)
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
     # test bias input type
     with pytest.raises(TypeError):
         func = XavierInit(bias='0.1', layer='Conv2d')
@@ -198,6 +223,16 @@ def test_normalinit():
     assert model[0].bias.allclose(torch.tensor(res))
     assert model[2].bias.allclose(torch.tensor(res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = NormalInit(mean=300, std=1e-5, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
 
 def test_truncnormalinit():
     """test TruncNormalInit class."""
@@ -225,6 +260,17 @@ def test_truncnormalinit():
     assert model[0].bias.allclose(torch.tensor(res))
     assert model[2].bias.allclose(torch.tensor(res))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = TruncNormalInit(
+        mean=300, std=1e-5, a=100, b=400, bias_prob=0.01, layer='_ConvNd')
+    func(model)
+    assert model[0].weight.allclose(torch.tensor(300.))
+    assert model[2].weight.allclose(torch.tensor(300.))
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
 
 def test_uniforminit():
     """"test UniformInit class."""
@@ -245,6 +291,17 @@ def test_uniforminit():
     assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
     assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
 
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+
+    func = UniformInit(a=100, b=100, bias_prob=0.01, layer='_ConvNd')
+    res = bias_init_with_prob(0.01)
+    func(model)
+    assert torch.all(model[0].weight == 100.)
+    assert torch.all(model[2].weight == 100.)
+    assert torch.all(model[0].bias == res)
+    assert torch.all(model[2].bias == res)
+
 
 def test_kaiminginit():
     """test KaimingInit class."""
@@ -256,6 +313,29 @@ def test_kaiminginit():
 
     func = KaimingInit(a=100, bias=10, layer=['Conv2d', 'Linear'])
     constant_func = ConstantInit(val=0, bias=0, layer=['Conv2d', 'Linear'])
+    model.apply(constant_func)
+    assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
+    assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 0.))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 0.))
+
+    func(model)
+    assert not torch.equal(model[0].weight,
+                           torch.full(model[0].weight.shape, 0.))
+    assert not torch.equal(model[2].weight,
+                           torch.full(model[2].weight.shape, 0.))
+    assert torch.equal(model[0].bias, torch.full(model[0].bias.shape, 10.))
+    assert torch.equal(model[2].bias, torch.full(model[2].bias.shape, 10.))
+
+    # test layer key with base class name
+    model = nn.Sequential(nn.Conv2d(3, 1, 3), nn.ReLU(), nn.Conv1d(1, 2, 1))
+    func = KaimingInit(bias=0.1, layer='_ConvNd')
+    func(model)
+    assert torch.all(model[0].bias == 0.1)
+    assert torch.all(model[2].bias == 0.1)
+
+    func = KaimingInit(a=100, bias=10, layer='_ConvNd')
+    constant_func = ConstantInit(val=0, bias=0, layer='_ConvNd')
     model.apply(constant_func)
     assert torch.equal(model[0].weight, torch.full(model[0].weight.shape, 0.))
     assert torch.equal(model[2].weight, torch.full(model[2].weight.shape, 0.))

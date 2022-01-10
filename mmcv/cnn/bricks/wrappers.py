@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 r"""Modified from https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/wrappers.py  # noqa: E501
 
 Wrap some nn modules to support empty tensor input. Currently, these wrappers
@@ -128,8 +129,8 @@ class ConvTranspose3d(nn.ConvTranspose3d):
 class MaxPool2d(nn.MaxPool2d):
 
     def forward(self, x):
-        # PyTorch 1.7 does not support empty tensor inference yet
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 7)):
+        # PyTorch 1.9 does not support empty tensor inference yet
+        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 9)):
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-2:], _pair(self.kernel_size),
                                      _pair(self.padding), _pair(self.stride),
@@ -146,8 +147,8 @@ class MaxPool2d(nn.MaxPool2d):
 class MaxPool3d(nn.MaxPool3d):
 
     def forward(self, x):
-        # PyTorch 1.7 does not support empty tensor inference yet
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 7)):
+        # PyTorch 1.9 does not support empty tensor inference yet
+        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 9)):
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-3:], _triple(self.kernel_size),
                                      _triple(self.padding),

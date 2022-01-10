@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
@@ -15,7 +16,7 @@ def mock(*args, **kwargs):
 
 @patch('torch.distributed._broadcast_coalesced', mock)
 @patch('torch.distributed.broadcast', mock)
-@patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', MagicMock)
+@patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', mock)
 def test_is_module_wrapper():
 
     class Model(nn.Module):
@@ -26,6 +27,12 @@ def test_is_module_wrapper():
 
         def forward(self, x):
             return self.conv(x)
+
+    # _verify_model_across_ranks is added in torch1.9.0 so we should check
+    # whether _verify_model_across_ranks is the member of torch.distributed
+    # before mocking
+    if hasattr(torch.distributed, '_verify_model_across_ranks'):
+        torch.distributed._verify_model_across_ranks = mock
 
     model = Model()
     assert not is_module_wrapper(model)

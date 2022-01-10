@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_deform_conv.hpp"
 
 #include <assert.h>
@@ -32,9 +33,7 @@ DeformableConvPluginDynamic::DeformableConvPluginDynamic(
       mDilation(dilation),
       mDeformableGroup(deformableGroup),
       mGroup(group),
-      mIm2colStep(im2colStep) {
-  cublasCreate(&m_cublas_handle);
-}
+      mIm2colStep(im2colStep) {}
 
 DeformableConvPluginDynamic::DeformableConvPluginDynamic(const std::string name,
                                                          const void *data,
@@ -46,12 +45,8 @@ DeformableConvPluginDynamic::DeformableConvPluginDynamic(const std::string name,
   deserialize_value(&data, &length, &mDeformableGroup);
   deserialize_value(&data, &length, &mGroup);
   deserialize_value(&data, &length, &mIm2colStep);
-  cublasCreate(&m_cublas_handle);
 }
-DeformableConvPluginDynamic::~DeformableConvPluginDynamic() {
-  // destroy cublas handle
-  cublasDestroy(m_cublas_handle);
-}
+DeformableConvPluginDynamic::~DeformableConvPluginDynamic() {}
 
 nvinfer1::IPluginV2DynamicExt *DeformableConvPluginDynamic::clone() const {
   DeformableConvPluginDynamic *plugin =
@@ -127,11 +122,6 @@ int DeformableConvPluginDynamic::enqueue(
     const nvinfer1::PluginTensorDesc *inputDesc,
     const nvinfer1::PluginTensorDesc *outputDesc, const void *const *inputs,
     void *const *outputs, void *workSpace, cudaStream_t stream) {
-  if (m_cuda_stream != stream) {
-    cublasSetStream(m_cublas_handle, stream);
-    m_cuda_stream = stream;
-  }
-
   int batch_size = inputDesc[0].dims.d[0];
   int inputChannel = inputDesc[0].dims.d[1];
   int inputHeight = inputDesc[0].dims.d[2];
@@ -203,6 +193,14 @@ void DeformableConvPluginDynamic::destroy() {
   // This gets called when the network containing plugin is destroyed
   delete this;
 }
+
+void DeformableConvPluginDynamic::attachToContext(
+    cudnnContext *cudnnContext, cublasContext *cublasContext,
+    nvinfer1::IGpuAllocator *gpuAllocator) {
+  m_cublas_handle = cublasContext;
+}
+
+void DeformableConvPluginDynamic::detachFromContext() {}
 
 void DeformableConvPluginDynamic::setPluginNamespace(const char *libNamespace) {
   mNamespace = libNamespace;

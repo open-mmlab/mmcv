@@ -1,10 +1,14 @@
-# Copyright (c) Open-MMLab. All rights reserved.
-from mmcv.utils import Registry
+# Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.utils import Registry, is_method_overridden
 
 HOOKS = Registry('hook')
 
 
 class Hook:
+    stages = ('before_run', 'before_train_epoch', 'before_train_iter',
+              'after_train_iter', 'after_train_epoch', 'before_val_epoch',
+              'before_val_iter', 'after_val_iter', 'after_val_epoch',
+              'after_run')
 
     def before_run(self, runner):
         pass
@@ -65,3 +69,24 @@ class Hook:
 
     def is_last_iter(self, runner):
         return runner.iter + 1 == runner._max_iters
+
+    def get_triggered_stages(self):
+        trigger_stages = set()
+        for stage in Hook.stages:
+            if is_method_overridden(stage, Hook, self):
+                trigger_stages.add(stage)
+
+        # some methods will be triggered in multi stages
+        # use this dict to map method to stages.
+        method_stages_map = {
+            'before_epoch': ['before_train_epoch', 'before_val_epoch'],
+            'after_epoch': ['after_train_epoch', 'after_val_epoch'],
+            'before_iter': ['before_train_iter', 'before_val_iter'],
+            'after_iter': ['after_train_iter', 'after_val_iter'],
+        }
+
+        for method, map_stages in method_stages_map.items():
+            if is_method_overridden(method, Hook, self):
+                trigger_stages.update(map_stages)
+
+        return [stage for stage in Hook.stages if stage in trigger_stages]

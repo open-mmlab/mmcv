@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include <parrots/compute/aten.hpp>
 #include <parrots/extension.hpp>
 #include <parrots/foundation/ssattrs.hpp>
@@ -5,6 +6,7 @@
 #include "tin_shift_pytorch.h"
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void tin_shift_forward_cuda_parrots(CudaContext &ctx, const SSElement &attr,
                                     const OperatorBase::in_list_t &ins,
                                     OperatorBase::out_list_t &outs) {
@@ -34,3 +36,4 @@ PARROTS_EXTENSION_REGISTER(tin_shift_backward)
     .output(1)
     .apply(tin_shift_backward_cuda_parrots)
     .done();
+#endif

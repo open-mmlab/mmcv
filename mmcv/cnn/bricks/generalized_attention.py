@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
 
 import numpy as np
@@ -130,7 +131,7 @@ class GeneralizedAttention(nn.Module):
 
             max_len_kv = int((max_len - 1.0) / self.kv_stride + 1)
             local_constraint_map = np.ones(
-                (max_len, max_len, max_len_kv, max_len_kv), dtype=np.int)
+                (max_len, max_len, max_len_kv, max_len_kv), dtype=int)
             for iy in range(max_len):
                 for ix in range(max_len):
                     local_constraint_map[

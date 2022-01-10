@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import platform
 import shutil
@@ -101,6 +101,8 @@ class EpochBasedRunner(BaseRunner):
         work_dir = self.work_dir if self.work_dir is not None else 'NONE'
         self.logger.info('Start running, host: %s, work_dir: %s',
                          get_host_info(), work_dir)
+        self.logger.info('Hooks will be executed in the following order:\n%s',
+                         self.get_hook_info())
         self.logger.info('workflow: %s, max: %d epochs', workflow,
                          self._max_epochs)
         self.call_hook('before_run')
@@ -149,14 +151,17 @@ class EpochBasedRunner(BaseRunner):
                 Defaults to True.
         """
         if meta is None:
-            meta = dict(epoch=self.epoch + 1, iter=self.iter)
-        elif isinstance(meta, dict):
-            meta.update(epoch=self.epoch + 1, iter=self.iter)
-        else:
+            meta = {}
+        elif not isinstance(meta, dict):
             raise TypeError(
                 f'meta should be a dict or None, but got {type(meta)}')
         if self.meta is not None:
             meta.update(self.meta)
+            # Note: meta.update(self.meta) should be done before
+            # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
+            # there will be problems with resumed checkpoints.
+            # More details in https://github.com/open-mmlab/mmcv/pull/1108
+        meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)
@@ -178,5 +183,6 @@ class Runner(EpochBasedRunner):
 
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            'Runner was deprecated, please use EpochBasedRunner instead')
+            'Runner was deprecated, please use EpochBasedRunner instead',
+            DeprecationWarning)
         super().__init__(*args, **kwargs)

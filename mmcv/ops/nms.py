@@ -1,5 +1,4 @@
 import os
-import sys
 
 import numpy as np
 import torch
@@ -15,13 +14,27 @@ ext_module = ext_loader.load_ext(
 class NMSop(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, bboxes, scores, iou_threshold, offset):
+    def forward(ctx, bboxes, scores, iou_threshold, offset, score_threshold,
+                max_num):
+        is_filtering_by_score = score_threshold > 0
+        if is_filtering_by_score:
+            valid_mask = scores > score_threshold
+            bboxes, scores = bboxes[valid_mask], scores[valid_mask]
+            valid_inds = torch.nonzero(
+                valid_mask, as_tuple=False).squeeze(dim=1)
+
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+
+        if max_num > 0:
+            inds = inds[:max_num]
+        if is_filtering_by_score:
+            inds = valid_inds[inds]
         return inds
 
     @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, offset):
+    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
+                 max_num):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         # TensorRT nms plugin is aligned with original nms in ONNXRuntime
@@ -35,16 +48,28 @@ class NMSop(torch.autograd.Function):
                 offset_i=int(offset))
         else:
             from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+            from ..onnx.onnx_utils.symbolic_helper import _size_helper
+
             boxes = unsqueeze(g, bboxes, 0)
             scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-            max_output_per_class = g.op(
-                'Constant',
-                value_t=torch.tensor([sys.maxsize], dtype=torch.long))
+
+            if max_num > 0:
+                max_num = g.op(
+                    'Constant',
+                    value_t=torch.tensor(max_num, dtype=torch.long))
+            else:
+                dim = g.op('Constant', value_t=torch.tensor(0))
+                max_num = _size_helper(g, bboxes, dim)
+            max_output_per_class = max_num
             iou_threshold = g.op(
                 'Constant',
                 value_t=torch.tensor([iou_threshold], dtype=torch.float))
+            score_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([score_threshold], dtype=torch.float))
             nms_out = g.op('NonMaxSuppression', boxes, scores,
-                           max_output_per_class, iou_threshold)
+                           max_output_per_class, iou_threshold,
+                           score_threshold)
             return squeeze(
                 g,
                 select(
@@ -90,7 +115,7 @@ class SoftNMSop(torch.autograd.Function):
 
 
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
-def nms(boxes, scores, iou_threshold, offset=0):
+def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
     """Dispatch to either CPU or GPU NMS implementations.
 
     The input can be either torch tensor or numpy array. GPU NMS will be used
@@ -102,10 +127,12 @@ def nms(boxes, scores, iou_threshold, offset=0):
         scores (torch.Tensor or np.ndarray): scores in shape (N, ).
         iou_threshold (float): IoU threshold for NMS.
         offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
+        score_threshold (float): score threshold for NMS.
+        max_num (int): maximum number of boxes after NMS.
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[49.1, 32.4, 51.0, 35.9],
@@ -141,7 +168,8 @@ def nms(boxes, scores, iou_threshold, offset=0):
         }
         inds = ext_module.nms(*indata_list, **indata_dict)
     else:
-        inds = NMSop.apply(boxes, scores, iou_threshold, offset)
+        inds = NMSop.apply(boxes, scores, iou_threshold, offset,
+                           score_threshold, max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -162,7 +190,7 @@ def soft_nms(boxes,
     The input can be either a torch tensor or numpy array.
     The returned type will always be the same as inputs.
 
-    Arguments:
+    Args:
         boxes (torch.Tensor or np.ndarray): boxes in shape (N, 4).
         scores (torch.Tensor or np.ndarray): scores in shape (N, ).
         iou_threshold (float): IoU threshold for NMS.
@@ -172,8 +200,8 @@ def soft_nms(boxes,
         offset (int, 0 or 1): boxes' width or height is (x2 - x1 + offset).
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets (boxes and scores) and indice, which always have
+        the same data type as the input.
 
     Example:
         >>> boxes = np.array([[4., 3., 5., 3.],
@@ -230,37 +258,55 @@ def soft_nms(boxes,
 
 
 def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
-    """Performs non-maximum suppression in a batched fashion.
+    r"""Performs non-maximum suppression in a batched fashion.
 
-    Modified from https://github.com/pytorch/vision/blob
-    /505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39.
+    Modified from `torchvision/ops/boxes.py#L39
+    <https://github.com/pytorch/vision/blob/
+    505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39>`_.
     In order to perform NMS independently per class, we add an offset to all
     the boxes. The offset is dependent only on the class idx, and is large
     enough so that boxes from different classes do not overlap.
 
-    Arguments:
+    Note:
+        In v1.4.1 and later, ``batched_nms`` supports skipping the NMS and
+        returns sorted raw results when `nms_cfg` is None.
+
+    Args:
         boxes (torch.Tensor): boxes in shape (N, 4).
         scores (torch.Tensor): scores in shape (N, ).
         idxs (torch.Tensor): each index value correspond to a bbox cluster,
             and NMS will not be applied between elements of different idxs,
             shape (N, ).
-        nms_cfg (dict): specify nms type and other parameters like iou_thr.
-            Possible keys includes the following.
+        nms_cfg (dict | None): Supports skipping the nms when `nms_cfg`
+            is None, otherwise it should specify nms type and other
+            parameters like `iou_thr`. Possible keys includes the following.
 
             - iou_thr (float): IoU threshold used for NMS.
             - split_thr (float): threshold number of boxes. In some cases the
-                number of boxes is large (e.g., 200k). To avoid OOM during
-                training, the users could set `split_thr` to a small value.
-                If the number of boxes is greater than the threshold, it will
-                perform NMS on each group of boxes separately and sequentially.
-                Defaults to 10000.
+              number of boxes is large (e.g., 200k). To avoid OOM during
+              training, the users could set `split_thr` to a small value.
+              If the number of boxes is greater than the threshold, it will
+              perform NMS on each group of boxes separately and sequentially.
+              Defaults to 10000.
         class_agnostic (bool): if true, nms is class agnostic,
             i.e. IoU thresholding happens over all boxes,
             regardless of the predicted class.
 
     Returns:
         tuple: kept dets and indice.
+
+        - boxes (Tensor): Bboxes with score after nms, has shape
+          (num_bboxes, 5). last dimension 5 arrange as
+          (x1, y1, x2, y2, score)
+        - keep (Tensor): The indices of remaining boxes in input
+          boxes.
     """
+    # skip nms when nms_cfg is None
+    if nms_cfg is None:
+        scores, inds = scores.sort(descending=True)
+        boxes = boxes[inds]
+        return torch.cat([boxes, scores[:, None]], -1), inds
+
     nms_cfg_ = nms_cfg.copy()
     class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
     if class_agnostic:
@@ -285,6 +331,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # Some type of nms would reweight the score, such as SoftNMS
         scores = dets[:, 4]
     else:
+        max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         # Some type of nms would reweight the score, such as SoftNMS
         scores_after_nms = scores.new_zeros(scores.size())
@@ -294,11 +341,18 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
             total_mask[mask[keep]] = True
             scores_after_nms[mask[keep]] = dets[:, -1]
         keep = total_mask.nonzero(as_tuple=False).view(-1)
+
         scores, inds = scores_after_nms[keep].sort(descending=True)
         keep = keep[inds]
         boxes = boxes[keep]
 
-    return torch.cat([boxes, scores[:, None]], -1), keep
+        if max_num > 0:
+            keep = keep[:max_num]
+            boxes = boxes[:max_num]
+            scores = scores[:max_num]
+
+    boxes = torch.cat([boxes, scores[:, None]], -1)
+    return boxes, keep
 
 
 def nms_match(dets, iou_threshold):
@@ -308,14 +362,14 @@ def nms_match(dets, iou_threshold):
     record the indice of suppressed bbox and form a group with the indice of
     kept bbox. In each group, indice is sorted as score order.
 
-    Arguments:
+    Args:
         dets (torch.Tensor | np.ndarray): Det boxes with scores, shape (N, 5).
         iou_thr (float): IoU thresh for NMS.
 
     Returns:
-        List[torch.Tensor | np.ndarray]: The outer list corresponds different
-            matched group, the inner Tensor corresponds the indices for a group
-            in score order.
+        list[torch.Tensor | np.ndarray]: The outer list corresponds different
+        matched group, the inner Tensor corresponds the indices for a group
+        in score order.
     """
     if dets.shape[0] == 0:
         matched = []
@@ -335,10 +389,10 @@ def nms_match(dets, iou_threshold):
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
     else:
-        return [np.array(m, dtype=np.int) for m in matched]
+        return [np.array(m, dtype=int) for m in matched]
 
 
-def nms_rotated(dets, scores, iou_threshold, labels=None):
+def nms_rotated(dets, scores, iou_threshold, labels=None, clockwise=True):
     """Performs non-maximum suppression (NMS) on the rotated boxes according to
     their intersection-over-union (IoU).
 
@@ -346,23 +400,32 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     IoU greater than iou_threshold with another (higher scoring) rotated box.
 
     Args:
-        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to \
+        dets (Tensor):  Rotated boxes in shape (N, 5). They are expected to
             be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor): boxes' label in shape (N,).
+        clockwise (bool): flag indicating whether the positive angular
+            orientation is clockwise. default True.
+            `New in version 1.4.3.`
 
     Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the \
-            same data type as the input.
+        tuple: kept dets(boxes and scores) and indice, which is always the
+        same data type as the input.
     """
     if dets.shape[0] == 0:
         return dets, None
+    if not clockwise:
+        flip_mat = dets.new_ones(dets.shape[-1])
+        flip_mat[-1] = -1
+        dets_cw = dets * flip_mat
+    else:
+        dets_cw = dets
     multi_label = labels is not None
     if multi_label:
-        dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
+        dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)
     else:
-        dets_wl = dets
+        dets_wl = dets_cw
     _, order = scores.sort(0, descending=True)
     dets_sorted = dets_wl.index_select(0, order)
 

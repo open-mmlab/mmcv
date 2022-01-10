@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # modified from
 # https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
@@ -71,17 +72,17 @@ class BorderAlign(nn.Module):
 
     For each border line (e.g. top, left, bottom or right) of each box,
     border_align does the following:
-        1. uniformly samples `pool_size`+1 positions on this line, involving \
-           the start and end points.
-        2. the corresponding features on these points are computed by \
-           bilinear interpolation.
-        3. max pooling over all the `pool_size`+1 positions are used for \
-           computing pooled feature.
+
+    1. uniformly samples ``pool_size`` +1 positions on this line, involving
+       the start and end points.
+    2. the corresponding features on these points are computed by bilinear
+       interpolation.
+    3. max pooling over all the ``pool_size`` +1 positions are used for
+       computing pooled feature.
 
     Args:
         pool_size (int): number of positions sampled over the boxes' borders
             (e.g. top, bottom, left, right).
-
     """
 
     def __init__(self, pool_size):
@@ -97,8 +98,8 @@ class BorderAlign(nn.Module):
             boxes: Boxes with shape [N,H*W,4]. Coordinate format (x1,y1,x2,y2).
 
         Returns:
-            Tensor: Pooled features with shape [N,C,H*W,4]. The order is
-                (top,left,bottom,right) for the last dimension.
+            torch.Tensor: Pooled features with shape [N,C,H*W,4]. The order is
+            (top,left,bottom,right) for the last dimension.
         """
         return border_align(input, boxes, self.pool_size)
 

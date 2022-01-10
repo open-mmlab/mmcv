@@ -1,9 +1,10 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import cv2
 import numpy as np
@@ -11,6 +12,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 import mmcv
+from mmcv.fileio.file_client import HTTPBackend, PetrelBackend
 
 
 class TestIO:
@@ -29,6 +31,18 @@ class TestIO:
         cls.exif_img_path = osp.join(cls.data_dir, 'color_exif.jpg')
         cls.img = cv2.imread(cls.img_path)
         cls.tiff_path = osp.join(cls.data_dir, 'uint16-5channel.tif')
+        # petrel s3 path
+        cls.s3_path = 's3://path/of/your/file.jpg'
+        # http path
+        cls.http_path = 'http://path/of/your/file.jpg'
+        # add mock package
+        sys.modules['petrel_client'] = MagicMock()
+        sys.modules['petrel_client.client'] = MagicMock()
+
+    @classmethod
+    def teardown_class(cls):
+        # clean instances avoid to influence other unittest
+        mmcv.FileClient._instances = {}
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape
@@ -41,6 +55,7 @@ class TestIO:
         # backend cv2
         mmcv.use_backend('cv2')
 
+        # HardDiskBackend
         img_cv2_color_bgr = mmcv.imread(self.img_path)
         assert img_cv2_color_bgr.shape == (300, 400, 3)
         img_cv2_color_rgb = mmcv.imread(self.img_path, channel_order='rgb')
@@ -68,6 +83,37 @@ class TestIO:
         assert img_cv2_unchanged.shape == (300, 400)
         with pytest.raises(TypeError):
             mmcv.imread(1)
+
+        # PetrelBackend
+        img_cv2_color_bgr = mmcv.imread(self.img_path)
+        with patch.object(
+                PetrelBackend, 'get',
+                return_value=img_cv2_color_bgr) as mock_method:
+            img_cv2_color_bgr_petrel = mmcv.imread(self.s3_path, backend='cv2')
+            img_cv2_color_bgr_petrel_with_args = mmcv.imread(
+                self.s3_path,
+                backend='cv2',
+                file_client_args={'backend': 'petrel'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_petrel,
+                               img_cv2_color_bgr_petrel_with_args)
+
+        # HTTPBackend
+        img_cv2_color_bgr = mmcv.imread(self.img_path)
+        with patch.object(
+                HTTPBackend, 'get',
+                return_value=img_cv2_color_bgr) as mock_method:
+            img_cv2_color_bgr_http = mmcv.imread(self.http_path, backend='cv2')
+            img_cv2_color_bgr_http_with_args = mmcv.imread(
+                self.http_path,
+                backend='cv2',
+                file_client_args={'backend': 'http'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_http,
+                               img_cv2_color_bgr_http_with_args)
+
+        with pytest.raises(FileNotFoundError):
+            mmcv.imread('/not/exists/' + self.img_path)
 
         # test arg backend pillow
         img_pil_gray_alpha = mmcv.imread(
@@ -184,12 +230,30 @@ class TestIO:
         # consistent exif behaviour
         img_cv2_exif = mmcv.imread(self.exif_img_path)
         img_pil_exif = mmcv.imread(self.exif_img_path, backend='pillow')
-        assert img_cv2_exif.shape == img_pil_exif.shape
+        assert img_cv2_exif.shape == (400, 300, 3)
+        assert img_pil_exif.shape == (400, 300, 3)
         img_cv2_exif_unchanged = mmcv.imread(
             self.exif_img_path, flag='unchanged')
         img_pil_exif_unchanged = mmcv.imread(
             self.exif_img_path, backend='pillow', flag='unchanged')
-        assert img_cv2_exif_unchanged.shape == img_pil_exif_unchanged.shape
+        assert img_cv2_exif_unchanged.shape == (300, 400, 3)
+        assert img_pil_exif_unchanged.shape == (300, 400, 3)
+        img_cv2_color_ignore_exif = mmcv.imread(
+            self.exif_img_path, flag='color_ignore_orientation')
+        img_pil_color_ignore_exif = mmcv.imread(
+            self.exif_img_path,
+            backend='pillow',
+            flag='color_ignore_orientation')
+        assert img_cv2_color_ignore_exif.shape == (300, 400, 3)
+        assert img_pil_color_ignore_exif.shape == (300, 400, 3)
+        img_cv2_grayscale_ignore_exif = mmcv.imread(
+            self.exif_img_path, flag='grayscale_ignore_orientation')
+        img_pil_grayscale_ignore_exif = mmcv.imread(
+            self.exif_img_path,
+            backend='pillow',
+            flag='grayscale_ignore_orientation')
+        assert img_cv2_grayscale_ignore_exif.shape == (300, 400)
+        assert img_pil_grayscale_ignore_exif.shape == (300, 400)
 
     def test_imfrombytes(self):
         # backend cv2, channel order: bgr
@@ -293,9 +357,18 @@ class TestIO:
         os.remove(out_file)
         self.assert_img_equal(img, rewrite_img)
 
-        ret = mmcv.imwrite(
-            img, './non_exist_path/mmcv_test.jpg', auto_mkdir=False)
-        assert ret is False
+        # test petrel client
+        with patch.object(
+                PetrelBackend, 'put', return_value=None) as mock_method:
+            ret = mmcv.imwrite(img, self.s3_path)
+            ret_with_args = mmcv.imwrite(
+                img, self.s3_path, file_client_args={'backend': 'petrel'})
+            assert ret
+            assert ret_with_args
+            mock_method.assert_called()
+
+        with pytest.raises(cv2.error):
+            mmcv.imwrite(img, 'error_file.jppg')
 
     @patch('mmcv.image.io.TurboJPEG', None)
     def test_no_turbojpeg(self):

@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "reduce_ops.h"
 
 #include <assert.h>
@@ -121,7 +122,7 @@ void CumMax_CumMin_CPU(const T1 *input, T1 *output, T2 *indices,
           reversed_dim_cumprod[dim_i + 1] * out_dimensions.data()[dim_i];
     }
 
-    // do cummax or cummin besed on `Operation` type
+    // do cummax or cummin based on `Operation` type
     tensor_dim_apply3<float, int64_t>(
         input, output, indices, dim, ndims, reversed_dim_cumprod,
         cummax_cummin_helper<float, int64_t, Operation>);
@@ -134,7 +135,7 @@ void MMCVCumMaxKernel::Compute(OrtKernelContext *context) {
   const float *input_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
 
-  // get ouput
+  // get output
   OrtTensorDimensions out_dimensions(ort_, input);
   OrtValue *output = ort_.KernelContext_GetOutput(
       context, 0, out_dimensions.data(), out_dimensions.size());
@@ -163,7 +164,7 @@ void MMCVCumMinKernel::Compute(OrtKernelContext *context) {
   const float *input_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
 
-  // get ouput
+  // get output
   OrtTensorDimensions out_dimensions(ort_, input);
   OrtValue *output = ort_.KernelContext_GetOutput(
       context, 0, out_dimensions.data(), out_dimensions.size());

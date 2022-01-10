@@ -7,6 +7,7 @@ import onnx
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 try:
     from mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
@@ -80,7 +81,7 @@ def test_roialign():
                 opset_version=11)
         onnx_model = onnx.load(onnx_file)
 
-        # create trt engine and wraper
+        # create trt engine and wrapper
         opt_shape_dict = {
             'input': [list(input.shape),
                       list(input.shape),
@@ -126,7 +127,8 @@ def test_nms():
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
-    nms = partial(nms, iou_threshold=0.7, offset=0)
+    nms = partial(
+        nms, iou_threshold=0.7, offset=0, score_threshold=0.1, max_num=100)
     wrapped_model = WrapFunction(nms)
     wrapped_model.cpu().eval()
     with torch.no_grad():
@@ -140,7 +142,7 @@ def test_nms():
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'boxes': [list(boxes.shape),
                   list(boxes.shape),
@@ -195,7 +197,7 @@ def test_batched_nms():
     fp16_mode = False
     max_workspace_size = 1 << 30
     data = mmcv.load('./tests/data/batched_nms_data.pkl')
-    nms_cfg = dict(type='nms', iou_threshold=0.7)
+    nms_cfg = dict(type='nms', iou_threshold=0.7, score_threshold=0.1)
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
     idxs = torch.from_numpy(data['idxs']).cuda()
@@ -219,7 +221,7 @@ def test_batched_nms():
             output_names=output_names,
             opset_version=11)
     onnx_model = onnx.load(onnx_file)
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'boxes': [list(boxes.shape),
                   list(boxes.shape),
@@ -294,7 +296,7 @@ def test_scatternd():
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(data.shape),
                   list(data.shape),
@@ -371,7 +373,7 @@ def test_deform_conv():
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(x.shape), list(x.shape),
                   list(x.shape)],
@@ -405,6 +407,77 @@ def test_deform_conv():
     assert torch.allclose(pytorch_results, trt_results)
 
 
+@pytest.mark.parametrize('with_bias', [True, False])
+def test_modulated_deform_conv(with_bias):
+    try:
+        from mmcv.ops import ModulatedDeformConv2dPack
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('test requires compilation')
+
+    input = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
+
+    x = torch.Tensor(input).cuda()
+    model = ModulatedDeformConv2dPack(
+        1,
+        1,
+        kernel_size=(2, 2),
+        stride=1,
+        padding=1,
+        deform_groups=1,
+        bias=with_bias)
+    model.weight.data.fill_(1.)
+    model.type(torch.float32)
+    model = model.cuda().eval()
+
+    input_names = ['input']
+    output_names = ['output']
+
+    with torch.no_grad():
+        torch.onnx.export(
+            model, (x.clone(), ),
+            onnx_file,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+
+    # create trt engine and wrapper
+    opt_shape_dict = {
+        'input': [list(x.shape), list(x.shape),
+                  list(x.shape)],
+    }
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    trt_engine = onnx2trt(
+        onnx_model,
+        opt_shape_dict,
+        fp16_mode=fp16_mode,
+        max_workspace_size=max_workspace_size)
+
+    save_trt_engine(trt_engine, trt_file)
+    trt_model = TRTWrapper(trt_file, input_names, output_names)
+
+    with torch.no_grad():
+        trt_outputs = trt_model({'input': x.clone()})
+        trt_results = trt_outputs['output']
+
+    # compute pytorch_output
+    with torch.no_grad():
+        pytorch_results = model(x.clone())
+
+    # allclose
+    if os.path.exists(onnx_file):
+        os.remove(onnx_file)
+    if os.path.exists(trt_file):
+        os.remove(trt_file)
+    torch.testing.assert_allclose(pytorch_results, trt_results)
+
+
 @pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
@@ -415,11 +488,10 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     input = torch.rand(1, 1, 10, 10).cuda()
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
-    grid = nn.functional.affine_grid(grid,
-                                     (1, 1, 15, 15)).type_as(input).cuda()
+    grid = F.affine_grid(grid, (1, 1, 15, 15)).type_as(input).cuda()
 
     def func(input, grid):
-        return nn.functional.grid_sample(
+        return F.grid_sample(
             input,
             grid,
             mode=mode,
@@ -443,7 +515,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     opt_shape_dict = {
         'input': [list(input.shape),
                   list(input.shape),
@@ -530,7 +602,7 @@ def test_cummin_cummax(func: Callable):
 
             onnx_model = onnx.load(onnx_file)
 
-            # create trt engine and wraper
+            # create trt engine and wrapper
             opt_shape_dict = {
                 'input':
                 [list(input.shape),
@@ -616,7 +688,7 @@ def test_instance_norm(dynamic_export, fp16_mode):
 
     onnx_model = onnx.load(onnx_file)
 
-    # create trt engine and wraper
+    # create trt engine and wrapper
     if dynamic_export:
         opt_shape_dict = {
             'input':
@@ -655,3 +727,81 @@ def test_instance_norm(dynamic_export, fp16_mode):
     if os.path.exists(trt_file):
         os.remove(trt_file)
     assert torch.allclose(pytorch_results, trt_results)
+
+
+@pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
+def test_corner_pool(mode):
+    try:
+        from mmcv.ops import CornerPool
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip('test requires compilation')
+
+    opset = 11
+    # register custom op `mmcv::MMCVCornerPool`
+    from mmcv.onnx.symbolic import register_extra_symbolics
+    register_extra_symbolics(opset)
+
+    # trt config
+    fp16_mode = False
+    max_workspace_size = 1 << 30
+
+    inputs = [
+        # (n, c, h, w)
+        torch.rand((2, 3, 5, 5)),
+        torch.rand((1, 2, 4, 6)),
+        torch.rand((2, 1, 3, 2)),
+    ]
+
+    class CornerPoolWrapper(CornerPool):
+
+        def __init__(self, mode):
+            super(CornerPoolWrapper, self).__init__(mode)
+
+        def forward(self, x):
+            # no use `torch.cummax`, instead `corner_pool` is used
+            # for various torch version
+            return self.corner_pool.apply(x)
+
+    wrapped_model = CornerPoolWrapper(mode).cuda()
+    for input in inputs:
+        input = input.cuda()
+
+        with torch.no_grad():
+            torch.onnx.export(
+                wrapped_model, (input, ),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                input_names=['input'],
+                output_names=['output'],
+                opset_version=opset)
+        onnx_model = onnx.load(onnx_file)
+
+        # create trt engine and wrapper
+        opt_shape_dict = {
+            'input': [list(input.shape),
+                      list(input.shape),
+                      list(input.shape)],
+        }
+        trt_engine = onnx2trt(
+            onnx_model,
+            opt_shape_dict,
+            fp16_mode=fp16_mode,
+            max_workspace_size=max_workspace_size)
+        save_trt_engine(trt_engine, trt_file)
+        trt_model = TRTWrapper(trt_file, ['input'], ['output'])
+
+        with torch.no_grad():
+            trt_outputs = trt_model({'input': input})
+            trt_pool_feat = trt_outputs['output']
+
+        # compute pytorch_output
+        with torch.no_grad():
+            pytorch_pool_feat = wrapped_model(input)
+
+        # allclose
+        if os.path.exists(onnx_file):
+            os.remove(onnx_file)
+        if os.path.exists(trt_file):
+            os.remove(trt_file)
+        assert torch.allclose(pytorch_pool_feat, trt_pool_feat, atol=1e-5)

@@ -1,7 +1,7 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef TRT_CUDA_HELPER_HPP
 #define TRT_CUDA_HELPER_HPP
-
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+#include <cublas_v2.h>
 
 #define cudaCheckError()                                       \
   {                                                            \
@@ -24,7 +24,16 @@
  * @param[in] stream cuda stream handle
  */
 template <class scalar_t>
-void memcpyPermute(scalar_t *dst, const scalar_t *src, int *src_size,
-                   int *permute, int src_dim, cudaStream_t stream = 0);
+void memcpyPermute(scalar_t* dst, const scalar_t* src, int* src_size,
+                   int* permute, int src_dim, cudaStream_t stream = 0);
+
+template <typename scalar_t>
+cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa,
+                              cublasOperation_t transb, int m, int n, int k,
+                              const scalar_t* alpha, const scalar_t* A, int lda,
+                              const scalar_t* B, int ldb, const scalar_t* beta,
+                              scalar_t* C, int ldc) {
+  return CUBLAS_STATUS_INTERNAL_ERROR;
+}
 
 #endif  // TRT_CUDA_HELPER_HPP

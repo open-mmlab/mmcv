@@ -1,7 +1,7 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -23,7 +23,8 @@ class TensorboardLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner):
         super(TensorboardLoggerHook, self).before_run(runner)
-        if TORCH_VERSION < '1.1' or TORCH_VERSION == 'parrots':
+        if (TORCH_VERSION == 'parrots'
+                or digit_version(TORCH_VERSION) < digit_version('1.1')):
             try:
                 from tensorboardX import SummaryWriter
             except ImportError:

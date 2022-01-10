@@ -1,8 +1,9 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
 import tempfile
 
+import cv2
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -51,10 +52,11 @@ def test_flowwrite():
     flow = np.random.rand(100, 100, 2).astype(np.float32)
 
     # write to a .flo file
-    _, filename = tempfile.mkstemp()
+    tmp_filehandler, filename = tempfile.mkstemp()
     mmcv.flowwrite(flow, filename)
     flow_from_file = mmcv.flowread(filename)
     assert_array_equal(flow, flow_from_file)
+    os.close(tmp_filehandler)
     os.remove(filename)
 
     # write to two .jpg files
@@ -244,3 +246,46 @@ def test_make_color_wheel():
                  [1. , 0. , 1. ],  # noqa
                  [1. , 0. , 0.5]], dtype=np.float32))  # noqa
     # yapf: enable
+
+
+def test_flow_from_bytes():
+    data_dir = osp.join(osp.dirname(__file__), '../data')
+    flow_shape = (60, 80, 2)
+    flow_file = osp.join(data_dir, 'optflow.flo')
+
+    # read .flo file
+    flow_fromfile = mmcv.flowread(flow_file)
+
+    with open(flow_file, 'rb') as f:
+        flow_bytes = f.read()
+    flow_frombytes = mmcv.flow_from_bytes(flow_bytes)
+
+    assert flow_frombytes.shape == flow_shape
+    assert np.all(flow_frombytes == flow_fromfile)
+
+
+def test_sparse_flow_from_bytes():
+    data_dir = osp.join(osp.dirname(__file__), '../data')
+    flow_file = osp.join(data_dir, 'sparse_flow.png')
+
+    with open(flow_file, 'rb') as f:
+        flow_bytes = f.read()
+    # read flow from bytes
+    flow_frombytes, valid_frombytes = mmcv.sparse_flow_from_bytes(flow_bytes)
+
+    # test flow shape is [H, W, 2] and valid shape is [H, W]
+    assert flow_frombytes.shape[:2] == valid_frombytes.shape
+    assert flow_frombytes.shape[2] == 2
+
+    def read_sparse_flow_from_file():
+        flow = cv2.imread(flow_file, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_COLOR)
+        flow = flow[:, :, ::-1].astype(np.float32)
+        flow, valid = flow[:, :, :2], flow[:, :, 2]
+        flow = (flow - 2**15) / 64.0
+        return flow, valid
+
+    # read flow from file
+    flow_flowfile, valid_fromfile = read_sparse_flow_from_file()
+
+    assert np.all(flow_frombytes == flow_flowfile)
+    assert np.all(valid_frombytes == valid_fromfile)

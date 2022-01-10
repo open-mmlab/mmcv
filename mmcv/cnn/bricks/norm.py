@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 
 import torch.nn as nn
@@ -82,9 +83,9 @@ def build_norm_layer(cfg, num_features, postfix=''):
             to create named layer.
 
     Returns:
-        (str, nn.Module): The first element is the layer name consisting of
-            abbreviation and postfix, e.g., bn1, gn. The second element is the
-            created norm layer.
+        tuple[str, nn.Module]: The first element is the layer name consisting
+        of abbreviation and postfix, e.g., bn1, gn. The second element is the
+        created norm layer.
     """
     if not isinstance(cfg, dict):
         raise TypeError('cfg must be a dict')
@@ -106,7 +107,7 @@ def build_norm_layer(cfg, num_features, postfix=''):
     cfg_.setdefault('eps', 1e-5)
     if layer_type != 'GN':
         layer = norm_layer(num_features, **cfg_)
-        if layer_type == 'SyncBN':
+        if layer_type == 'SyncBN' and hasattr(layer, '_specify_ddp_gpu_num'):
             layer._specify_ddp_gpu_num(1)
     else:
         assert 'num_groups' in cfg_

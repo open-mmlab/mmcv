@@ -6,11 +6,13 @@ CommandLine:
 """
 import logging
 import os.path as osp
+import platform
+import random
 import re
 import shutil
 import sys
 import tempfile
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
 import torch
@@ -18,17 +20,105 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.runner import (CheckpointHook, EMAHook, IterTimerHook,
-                         MlflowLoggerHook, NeptuneLoggerHook, PaviLoggerHook,
-                         WandbLoggerHook, build_runner)
+from mmcv.fileio.file_client import PetrelBackend
+from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
+                         Fp16OptimizerHook,
+                         GradientCumulativeFp16OptimizerHook,
+                         GradientCumulativeOptimizerHook, IterTimerHook,
+                         MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
+                         PaviLoggerHook, WandbLoggerHook, build_runner)
+from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
+                                          FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 
+sys.modules['petrel_client'] = MagicMock()
+sys.modules['petrel_client.client'] = MagicMock()
 
-def test_checkpoint_hook():
+
+def test_optimizerhook():
+
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.conv1 = nn.Conv2d(
+                in_channels=1,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+            self.conv2 = nn.Conv2d(
+                in_channels=2,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+            self.conv3 = nn.Conv2d(
+                in_channels=1,
+                out_channels=2,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+                dilation=1)
+
+        def forward(self, x):
+            x1 = self.conv1(x)
+            x2 = self.conv2(x1)
+            return x1, x2
+
+    model = Model()
+    x = torch.rand(1, 1, 3, 3)
+
+    dummy_runner = Mock()
+    dummy_runner.optimizer.zero_grad = Mock(return_value=None)
+    dummy_runner.optimizer.step = Mock(return_value=None)
+    dummy_runner.model = model
+    dummy_runner.outputs = dict()
+
+    dummy_runner.outputs['num_samples'] = 0
+
+    class DummyLogger():
+
+        def __init__(self):
+            self.msg = ''
+
+        def log(self, msg=None, **kwargs):
+            self.msg += msg
+
+    dummy_runner.logger = DummyLogger()
+    optimizer_hook = OptimizerHook(
+        dict(max_norm=2), detect_anomalous_params=True)
+
+    dummy_runner.outputs['loss'] = model(x)[0].sum()
+    optimizer_hook.after_train_iter(dummy_runner)
+    # assert the parameters of conv2 and conv3 are not in the
+    # computational graph which is with x1.sum() as root.
+    assert 'conv2.weight' in dummy_runner.logger.msg
+    assert 'conv2.bias' in dummy_runner.logger.msg
+    assert 'conv3.weight' in dummy_runner.logger.msg
+    assert 'conv3.bias' in dummy_runner.logger.msg
+    assert 'conv1.weight' not in dummy_runner.logger.msg
+    assert 'conv1.bias' not in dummy_runner.logger.msg
+
+    dummy_runner.outputs['loss'] = model(x)[1].sum()
+    dummy_runner.logger.msg = ''
+    optimizer_hook.after_train_iter(dummy_runner)
+    # assert the parameters of conv3 are not in the computational graph
+    assert 'conv3.weight' in dummy_runner.logger.msg
+    assert 'conv3.bias' in dummy_runner.logger.msg
+    assert 'conv2.weight' not in dummy_runner.logger.msg
+    assert 'conv2.bias' not in dummy_runner.logger.msg
+    assert 'conv1.weight' not in dummy_runner.logger.msg
+    assert 'conv1.bias' not in dummy_runner.logger.msg
+
+
+def test_checkpoint_hook(tmp_path):
     """xdoctest -m tests/test_runner/test_hooks.py test_checkpoint_hook."""
 
     # test epoch based runner
@@ -42,6 +132,25 @@ def test_checkpoint_hook():
         runner.work_dir, 'epoch_1.pth')
     shutil.rmtree(runner.work_dir)
 
+    # test petrel oss when the type of runner is `EpochBasedRunner`
+    runner = _build_demo_runner('EpochBasedRunner', max_epochs=4)
+    runner.meta = dict()
+    out_dir = 's3://user/data'
+    with patch.object(PetrelBackend, 'put') as mock_put, \
+         patch.object(PetrelBackend, 'remove') as mock_remove, \
+         patch.object(PetrelBackend, 'isfile') as mock_isfile:
+        checkpointhook = CheckpointHook(
+            interval=1, out_dir=out_dir, by_epoch=True, max_keep_ckpts=2)
+        runner.register_hook(checkpointhook)
+        runner.run([loader], [('train', 1)])
+        basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+        assert runner.meta['hook_msgs']['last_ckpt'] == \
+            '/'.join([out_dir, basename, 'epoch_4.pth'])
+    mock_put.assert_called()
+    mock_remove.assert_called()
+    mock_isfile.assert_called()
+    shutil.rmtree(runner.work_dir)
+
     # test iter based runner
     runner = _build_demo_runner(
         'IterBasedRunner', max_iters=1, max_epochs=None)
@@ -51,6 +160,26 @@ def test_checkpoint_hook():
     runner.run([loader], [('train', 1)])
     assert runner.meta['hook_msgs']['last_ckpt'] == osp.join(
         runner.work_dir, 'iter_1.pth')
+    shutil.rmtree(runner.work_dir)
+
+    # test petrel oss when the type of runner is `IterBasedRunner`
+    runner = _build_demo_runner(
+        'IterBasedRunner', max_iters=4, max_epochs=None)
+    runner.meta = dict()
+    out_dir = 's3://user/data'
+    with patch.object(PetrelBackend, 'put') as mock_put, \
+         patch.object(PetrelBackend, 'remove') as mock_remove, \
+         patch.object(PetrelBackend, 'isfile') as mock_isfile:
+        checkpointhook = CheckpointHook(
+            interval=1, out_dir=out_dir, by_epoch=False, max_keep_ckpts=2)
+        runner.register_hook(checkpointhook)
+        runner.run([loader], [('train', 1)])
+        basename = osp.basename(runner.work_dir.rstrip(osp.sep))
+        assert runner.meta['hook_msgs']['last_ckpt'] == \
+            '/'.join([out_dir, basename, 'iter_4.pth'])
+    mock_put.assert_called()
+    mock_remove.assert_called()
+    mock_isfile.assert_called()
     shutil.rmtree(runner.work_dir)
 
 
@@ -150,9 +279,26 @@ def test_custom_hook():
     shutil.rmtree(runner.work_dir)
 
     runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
+    # test custom_hooks with string priority setting
+    priority_ranks = [
+        'HIGHEST', 'VERY_HIGH', 'HIGH', 'ABOVE_NORMAL', 'NORMAL',
+        'BELOW_NORMAL', 'LOW', 'VERY_LOW', 'LOWEST'
+    ]
+    random_priority_ranks = priority_ranks.copy()
+    random.shuffle(random_priority_ranks)
+    custom_hooks_cfg = [
+        dict(type='ToyHook', priority=rank, info=rank)
+        for rank in random_priority_ranks
+    ]
+    runner.register_custom_hooks(custom_hooks_cfg)
+    assert [hook.info for hook in runner.hooks] == priority_ranks
+    shutil.rmtree(runner.work_dir)
+
+    runner = _build_demo_runner_without_hook('EpochBasedRunner', max_epochs=1)
     # test register_training_hooks order
     custom_hooks_cfg = [
         dict(type='ToyHook', priority=1, info='custom 1'),
+        dict(type='ToyHook', priority='NORMAL', info='custom normal'),
         dict(type='ToyHook', priority=89, info='custom 89')
     ]
     runner.register_training_hooks(
@@ -163,9 +309,11 @@ def test_custom_hook():
         momentum_config=ToyHook('momentum'),
         timer_config=ToyHook('timer'),
         custom_hooks_config=custom_hooks_cfg)
+    # If custom hooks have same priority with default hooks, custom hooks
+    # will be triggered after default hooks.
     hooks_order = [
-        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint', 'timer',
-        'custom 89', 'log'
+        'custom 1', 'lr', 'momentum', 'optimizer', 'checkpoint',
+        'custom normal', 'timer', 'custom 89', 'log'
     ]
     assert [hook.info for hook in runner.hooks] == hooks_order
     shutil.rmtree(runner.work_dir)
@@ -187,9 +335,14 @@ def test_pavi_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     }, 1)
+    # in windows environment, the latest checkpoint is copied from epoch_1.pth
+    if platform.system() == 'Windows':
+        snapshot_file_path = osp.join(runner.work_dir, 'latest.pth')
+    else:
+        snapshot_file_path = osp.join(runner.work_dir, 'epoch_1.pth')
     hook.writer.add_snapshot_file.assert_called_with(
         tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
+        snapshot_file_path=snapshot_file_path,
         iteration=1)
 
 
@@ -352,6 +505,147 @@ def test_cosine_runner_hook(multi_optimziers):
                     'momentum': 0.9890211303259032
                 }, 10)
         ]
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+
+@pytest.mark.parametrize('multi_optimziers, by_epoch', [(False, False),
+                                                        (True, False),
+                                                        (False, True),
+                                                        (True, True)])
+def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
+    """xdoctest -m tests/test_hooks.py test_flat_cosine_runner_hook."""
+    sys.modules['pavi'] = MagicMock()
+    loader = DataLoader(torch.ones((10, 2)))
+    max_epochs = 10 if by_epoch else 1
+    runner = _build_demo_runner(
+        multi_optimziers=multi_optimziers, max_epochs=max_epochs)
+
+    with pytest.raises(ValueError):
+        # start_percent: expected float between 0 and 1
+        FlatCosineAnnealingLrUpdaterHook(start_percent=-0.1, min_lr_ratio=0)
+
+    # add LR scheduler
+    hook_cfg = dict(
+        type='FlatCosineAnnealingLrUpdaterHook',
+        by_epoch=by_epoch,
+        min_lr_ratio=0,
+        warmup='linear',
+        warmup_iters=10 if by_epoch else 2,
+        warmup_ratio=0.9,
+        start_percent=0.5)
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+    runner.register_hook(IterTimerHook())
+    # add pavi hook
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    # TODO: use a more elegant way to check values
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        if by_epoch:
+            calls = [
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018000000000000002,
+                        'learning_rate/model2': 0.009000000000000001,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 1),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.02,
+                        'learning_rate/model2': 0.01,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 11),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018090169943749474,
+                        'learning_rate/model2': 0.009045084971874737,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 61),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.0019098300562505265,
+                        'learning_rate/model2': 0.0009549150281252633,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9,
+                    }, 100)
+            ]
+        else:
+            calls = [
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018000000000000002,
+                        'learning_rate/model2': 0.009000000000000001,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 1),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.02,
+                        'learning_rate/model2': 0.01,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 6),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.018090169943749474,
+                        'learning_rate/model2': 0.009045084971874737,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 7),
+                call(
+                    'train', {
+                        'learning_rate/model1': 0.0019098300562505265,
+                        'learning_rate/model2': 0.0009549150281252633,
+                        'momentum/model1': 0.95,
+                        'momentum/model2': 0.9
+                    }, 10)
+            ]
+    else:
+        if by_epoch:
+            calls = [
+                call('train', {
+                    'learning_rate': 0.018000000000000002,
+                    'momentum': 0.95
+                }, 1),
+                call('train', {
+                    'learning_rate': 0.02,
+                    'momentum': 0.95
+                }, 11),
+                call('train', {
+                    'learning_rate': 0.018090169943749474,
+                    'momentum': 0.95
+                }, 61),
+                call('train', {
+                    'learning_rate': 0.0019098300562505265,
+                    'momentum': 0.95
+                }, 100)
+            ]
+        else:
+            calls = [
+                call('train', {
+                    'learning_rate': 0.018000000000000002,
+                    'momentum': 0.95
+                }, 1),
+                call('train', {
+                    'learning_rate': 0.02,
+                    'momentum': 0.95
+                }, 6),
+                call('train', {
+                    'learning_rate': 0.018090169943749474,
+                    'momentum': 0.95
+                }, 7),
+                call('train', {
+                    'learning_rate': 0.0019098300562505265,
+                    'momentum': 0.95
+                }, 10)
+            ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
@@ -925,6 +1219,7 @@ def test_neptune_hook():
     sys.modules['neptune.new'] = MagicMock()
     runner = _build_demo_runner()
     hook = NeptuneLoggerHook()
+
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
@@ -934,6 +1229,39 @@ def test_neptune_hook():
     hook.neptune.init.assert_called_with()
     hook.run['momentum'].log.assert_called_with(0.95, step=6)
     hook.run.stop.assert_called_with()
+
+
+def test_dvclive_hook():
+    sys.modules['dvclive'] = MagicMock()
+    runner = _build_demo_runner()
+
+    hook = DvcliveLoggerHook()
+    dvclive_mock = hook.dvclive
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    dvclive_mock.set_step.assert_called_with(6)
+    dvclive_mock.log.assert_called_with('momentum', 0.95)
+
+
+def test_dvclive_hook_model_file(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    runner = _build_demo_runner()
+
+    hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
+    runner.register_hook(hook)
+
+    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+
+    assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
+
+    shutil.rmtree(runner.work_dir)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
@@ -1037,3 +1365,224 @@ def test_runner_with_revise_keys():
         key_stripped = re.sub(r'^backbone\.', '', key)
         assert torch.equal(model.state_dict()[key_stripped], state_dict[key])
     os.remove(checkpoint_path)
+
+
+def test_get_triggered_stages():
+
+    class ToyHook(Hook):
+        # test normal stage
+        def before_run():
+            pass
+
+        # test the method mapped to multi stages.
+        def after_epoch():
+            pass
+
+    hook = ToyHook()
+    # stages output have order, so here is list instead of set.
+    expected_stages = ['before_run', 'after_train_epoch', 'after_val_epoch']
+    assert hook.get_triggered_stages() == expected_stages
+
+
+def test_gradient_cumulative_optimizer_hook():
+
+    class ToyModel(nn.Module):
+
+        def __init__(self, with_norm=False):
+            super().__init__()
+            self.fp16_enabled = False
+            self.fc = nn.Linear(3, 2)
+            nn.init.constant_(self.fc.weight, 1.)
+            nn.init.constant_(self.fc.bias, 1.)
+            self.with_norm = with_norm
+            if with_norm:
+                self.norm = nn.BatchNorm1d(2)
+
+        def forward(self, x):
+            x = self.fc(x)
+            if self.with_norm:
+                x = self.norm(x)
+            return x
+
+        def train_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+        def val_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+    def build_toy_runner(config=dict(type='EpochBasedRunner', max_epochs=3)):
+        model = ToyModel()
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.02)
+        tmp_dir = tempfile.mkdtemp()
+
+        runner = build_runner(
+            config,
+            default_args=dict(
+                model=model,
+                work_dir=tmp_dir,
+                optimizer=optimizer,
+                logger=logging.getLogger(),
+                meta=dict()))
+        return runner
+
+    with pytest.raises(AssertionError):
+        # cumulative_iters only accepts int
+        GradientCumulativeOptimizerHook(cumulative_iters='str')
+
+    with pytest.raises(AssertionError):
+        # cumulative_iters only accepts positive number
+        GradientCumulativeOptimizerHook(cumulative_iters=-1)
+
+    # test epoch based runner
+    data = torch.rand((6, 3))
+    # optimize with cumulative_iters
+    loader_1 = DataLoader(data, batch_size=1)
+    runner_1 = build_toy_runner()
+    optimizer_hook = GradientCumulativeOptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    runner_1.register_hook(optimizer_hook)
+    runner_1.run([loader_1], [('train', 1)])
+
+    # optimize without cumulative_iters
+    loader_2 = DataLoader(data, batch_size=3)
+    runner_2 = build_toy_runner()
+    optimizer_hook = OptimizerHook(grad_clip=dict(max_norm=0.2))
+    runner_2.register_hook(optimizer_hook)
+    runner_2.run([loader_2], [('train', 1)])
+
+    # test optimizer works well
+    assert (runner_1.model.fc.weight < 1).all()
+    assert (runner_1.model.fc.bias < 1).all()
+    # test optimizer with cumulative_iters gets the same results
+    assert torch.allclose(runner_1.model.fc.weight, runner_2.model.fc.weight)
+    assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
+    shutil.rmtree(runner_1.work_dir)
+    shutil.rmtree(runner_2.work_dir)
+
+    # test iter based runner
+    data = torch.rand((8, 3))
+    # optimize with cumulative_iters
+    loader_1 = DataLoader(data, batch_size=1)
+    runner_1 = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    optimizer_hook = GradientCumulativeOptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    runner_1.register_hook(optimizer_hook)
+    runner_1.run([loader_1], [('train', 1)])
+
+    # optimize without cumulative_iters
+    loader_2_divisible = DataLoader(data[:6], batch_size=3)
+    loader_2_remainder = DataLoader(data[6:], batch_size=2)
+    runner_2 = build_toy_runner(dict(type='IterBasedRunner', max_iters=3))
+    optimizer_hook = OptimizerHook(grad_clip=dict(max_norm=0.2))
+    runner_2.register_hook(optimizer_hook)
+    runner_2.run([loader_2_divisible, loader_2_remainder], [('train', 2),
+                                                            ('train', 1)])
+
+    # test optimizer works well
+    assert (runner_1.model.fc.weight < 1).all()
+    assert (runner_1.model.fc.bias < 1).all()
+    # test optimizer with cumulative_iters gets the same results
+    assert torch.allclose(runner_1.model.fc.weight, runner_2.model.fc.weight)
+    assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
+    shutil.rmtree(runner_1.work_dir)
+    shutil.rmtree(runner_2.work_dir)
+
+    # test has_batch_norm
+    model = ToyModel(with_norm=True)
+    optimizer_hook = GradientCumulativeOptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    assert optimizer_hook.has_batch_norm(model)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
+def test_gradient_cumulative_fp16_optimizer_hook():
+
+    class ToyModel(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.fp16_enabled = False
+            self.fc = nn.Linear(3, 2)
+            nn.init.constant_(self.fc.weight, 1.)
+            nn.init.constant_(self.fc.bias, 1.)
+
+        @auto_fp16(apply_to=('x', ))
+        def forward(self, x):
+            x = self.fc(x)
+            return x
+
+        def train_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+        def val_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+    def build_toy_runner(config=dict(type='EpochBasedRunner', max_epochs=3)):
+        model = ToyModel().cuda()
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.02)
+        tmp_dir = tempfile.mkdtemp()
+
+        runner = build_runner(
+            config,
+            default_args=dict(
+                model=model,
+                work_dir=tmp_dir,
+                optimizer=optimizer,
+                logger=logging.getLogger(),
+                meta=dict()))
+        return runner
+
+    # test epoch based runner
+    data = torch.rand((6, 3)).cuda()
+    # optimize with cumulative_iters
+    loader_1 = DataLoader(data, batch_size=1)
+    runner_1 = build_toy_runner()
+    optimizer_hook = GradientCumulativeFp16OptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    runner_1.register_hook(optimizer_hook)
+    runner_1.run([loader_1], [('train', 1)])
+
+    # optimize without cumulative_iters
+    loader_2 = DataLoader(data, batch_size=3)
+    runner_2 = build_toy_runner()
+    optimizer_hook = Fp16OptimizerHook(grad_clip=dict(max_norm=0.2))
+    runner_2.register_hook(optimizer_hook)
+    runner_2.run([loader_2], [('train', 1)])
+
+    # test optimizer works well
+    assert (runner_1.model.fc.weight < 1).all()
+    assert (runner_1.model.fc.bias < 1).all()
+    # test optimizer with cumulative_iters gets the same results
+    assert torch.allclose(runner_1.model.fc.weight, runner_2.model.fc.weight)
+    assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
+    shutil.rmtree(runner_1.work_dir)
+    shutil.rmtree(runner_2.work_dir)
+
+    # test iter based runner
+    data = torch.rand((8, 3)).cuda()
+    # optimize with cumulative_iters
+    loader_1 = DataLoader(data, batch_size=1)
+    runner_1 = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    optimizer_hook = GradientCumulativeFp16OptimizerHook(
+        grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+    runner_1.register_hook(optimizer_hook)
+    runner_1.run([loader_1], [('train', 1)])
+
+    # optimize without cumulative_iters
+    loader_2_divisible = DataLoader(data[:6], batch_size=3)
+    loader_2_remainder = DataLoader(data[6:], batch_size=2)
+    runner_2 = build_toy_runner(dict(type='IterBasedRunner', max_iters=3))
+    optimizer_hook = Fp16OptimizerHook(grad_clip=dict(max_norm=0.2))
+    runner_2.register_hook(optimizer_hook)
+    runner_2.run([loader_2_divisible, loader_2_remainder], [('train', 2),
+                                                            ('train', 1)])
+
+    # test optimizer works well
+    assert (runner_1.model.fc.weight < 1).all()
+    assert (runner_1.model.fc.bias < 1).all()
+    # test optimizer with cumulative_iters gets the same results
+    assert torch.allclose(runner_1.model.fc.weight, runner_2.model.fc.weight)
+    assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
+    shutil.rmtree(runner_1.work_dir)
+    shutil.rmtree(runner_2.work_dir)

@@ -1,5 +1,6 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 from .base import LoggerHook
+from .dvclive import DvcliveLoggerHook
 from .mlflow import MlflowLoggerHook
 from .neptune import NeptuneLoggerHook
 from .pavi import PaviLoggerHook
@@ -10,5 +11,5 @@ from .wandb import WandbLoggerHook
 __all__ = [
     'LoggerHook', 'MlflowLoggerHook', 'PaviLoggerHook',
     'TensorboardLoggerHook', 'TextLoggerHook', 'WandbLoggerHook',
-    'NeptuneLoggerHook'
+    'NeptuneLoggerHook', 'DvcliveLoggerHook'
 ]

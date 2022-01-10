@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
 import cv2
@@ -46,6 +46,55 @@ class TestGeometric:
         # resize backend must be 'cv2' or 'pillow'
         with pytest.raises(ValueError):
             mmcv.imresize(self.img, (1000, 600), backend='not support')
+
+    def test_imresize_to_multiple(self):
+        # test size and keep_ratio = False
+        resized_img = mmcv.imresize_to_multiple(
+            self.img, divisor=16, size=(511, 513), keep_ratio=False)
+        assert resized_img.shape == (528, 512, 3)
+        resized_img = mmcv.imresize_to_multiple(
+            self.img, divisor=(16, 32), size=(511, 513), keep_ratio=False)
+        assert resized_img.shape == (544, 512, 3)
+
+        # test size, keep_ratio = True, and return_scale
+        resized_img, w_scale, h_scale = mmcv.imresize_to_multiple(
+            self.img,
+            divisor=16,
+            size=(1000, 600),
+            keep_ratio=True,
+            return_scale=True)
+        assert resized_img.shape == (
+            608, 800, 3) and h_scale == 608 / 300 and w_scale == 800 / 400
+        resized_img, w_scale, h_scale = mmcv.imresize_to_multiple(
+            self.img,
+            divisor=(18, 16),
+            size=(1000, 600),
+            keep_ratio=True,
+            return_scale=True)
+        assert resized_img.shape == (
+            608, 810, 3) and h_scale == 608 / 300 and w_scale == 810 / 400
+
+        # test scale_factor and return_scale
+        resized_img, w_scale, h_scale = mmcv.imresize_to_multiple(
+            self.img, divisor=16, scale_factor=2, return_scale=True)
+        assert resized_img.shape == (
+            608, 800, 3) and h_scale == 608 / 300 and w_scale == 800 / 400
+        resized_img, w_scale, h_scale = mmcv.imresize_to_multiple(
+            self.img, divisor=16, scale_factor=(2, 3), return_scale=True)
+        assert resized_img.shape == (
+            912, 800, 3) and h_scale == 912 / 300 and w_scale == 800 / 400
+        resized_img, w_scale, h_scale = mmcv.imresize_to_multiple(
+            self.img, divisor=(18, 16), scale_factor=(2, 3), return_scale=True)
+        assert resized_img.shape == (
+            912, 810, 3) and h_scale == 912 / 300 and w_scale == 810 / 400
+
+        # one of size and scale_factor should be given
+        with pytest.raises(ValueError):
+            mmcv.imresize_to_multiple(
+                self.img, divisor=16, size=(1000, 600), scale_factor=2)
+        with pytest.raises(ValueError):
+            mmcv.imresize_to_multiple(
+                self.img, divisor=16, size=None, scale_factor=None)
 
     def test_imresize_like(self):
         a = np.zeros((100, 200, 3))

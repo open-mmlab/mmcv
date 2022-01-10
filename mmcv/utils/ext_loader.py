@@ -1,6 +1,8 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 import os
 import pkgutil
+import warnings
 from collections import namedtuple
 
 import torch
@@ -14,6 +16,7 @@ if torch.__version__ != 'parrots':
         return ext
 else:
     from parrots import extension
+    from parrots.base import ParrotsException
 
     has_return_value_ops = [
         'nms',
@@ -31,13 +34,15 @@ else:
         'fused_bias_leakyrelu',
         'upfirdn2d',
         'ms_deform_attn_forward',
+        'pixel_group',
+        'contour_expand',
     ]
 
-    def get_fake_func(name):
+    def get_fake_func(name, e):
 
         def fake_func(*args, **kwargs):
-            raise RuntimeError(
-                '{} is not supported in parrots now'.format(name))
+            warnings.warn(f'{name} is not supported in parrots now')
+            raise e
 
         return fake_func
 
@@ -48,8 +53,10 @@ else:
         for fun in funcs:
             try:
                 ext_fun = extension.load(fun, name, lib_dir=lib_root)
-            except Exception:
-                ext_fun = get_fake_func(fun)
+            except ParrotsException as e:
+                if 'No element registered' not in e.message:
+                    warnings.warn(e.message)
+                ext_fun = get_fake_func(fun, e)
                 ext_list.append(ext_fun)
             else:
                 if fun in has_return_value_ops:

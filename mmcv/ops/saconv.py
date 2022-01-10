@@ -1,18 +1,20 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
 from mmcv.ops.deform_conv import deform_conv2d
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 
 
 @CONV_LAYERS.register_module(name='SAC')
 class SAConv2d(ConvAWS2d):
     """SAC (Switchable Atrous Convolution)
 
-    This is an implementation of SAC in DetectoRS
-    (https://arxiv.org/pdf/2006.02334.pdf).
+    This is an implementation of `DetectoRS: Detecting Objects with Recursive
+    Feature Pyramid and Switchable Atrous Convolution
+    <https://arxiv.org/abs/2006.02334>`_.
 
     Args:
         in_channels (int): Number of channels in the input image
@@ -98,13 +100,20 @@ class SAConv2d(ConvAWS2d):
         switch = self.switch(avg_x)
         # sac
         weight = self._get_weight(self.weight)
+        zero_bias = torch.zeros(
+            self.out_channels, device=weight.device, dtype=weight.dtype)
+
         if self.use_deform:
             offset = self.offset_s(avg_x)
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+            if (TORCH_VERSION == 'parrots'
+                    or digit_version(TORCH_VERSION) < digit_version('1.5.0')):
                 out_s = super().conv2d_forward(x, weight)
+            elif digit_version(TORCH_VERSION) >= digit_version('1.8.0'):
+                # bias is a required argument of _conv_forward in torch 1.8.0
+                out_s = super()._conv_forward(x, weight, zero_bias)
             else:
                 out_s = super()._conv_forward(x, weight)
         ori_p = self.padding
@@ -117,10 +126,15 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if TORCH_VERSION < '1.5.0' or TORCH_VERSION == 'parrots':
+            if (TORCH_VERSION == 'parrots'
+                    or digit_version(TORCH_VERSION) < digit_version('1.5.0')):
                 out_l = super().conv2d_forward(x, weight)
+            elif digit_version(TORCH_VERSION) >= digit_version('1.8.0'):
+                # bias is a required argument of _conv_forward in torch 1.8.0
+                out_l = super()._conv_forward(x, weight, zero_bias)
             else:
                 out_l = super()._conv_forward(x, weight)
+
         out = switch * out_s + (1 - switch) * out_l
         self.padding = ori_p
         self.dilation = ori_d

@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #ifndef ONNXRUNTIME_ROI_ALIGN_H
 #define ONNXRUNTIME_ROI_ALIGN_H
 
@@ -38,7 +39,7 @@ struct MMCVRoiAlignKernel {
 
 struct MMCVRoiAlignCustomOp
     : Ort::CustomOpBase<MMCVRoiAlignCustomOp, MMCVRoiAlignKernel> {
-  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MMCVRoiAlignKernel(api, info);
   }
   const char* GetName() const { return "MMCVRoiAlign"; }

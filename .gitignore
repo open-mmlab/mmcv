@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# PyTorch checkpoint
+*.pth
+
 # Distribution / packaging
 .Python
 build/
@@ -64,7 +67,8 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/en/_build/
+docs/zh_cn/_build/
 
 # PyBuilder
 target/
@@ -109,3 +113,9 @@ venv.bak/
 
 # custom
 .DS_Store
+
+# datasets and logs and checkpoints
+data/
+work_dir/
+
+src/

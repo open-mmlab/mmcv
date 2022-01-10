@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from collections import OrderedDict
 
@@ -50,15 +50,14 @@ class VideoReader:
     the second time, there is no need to decode again if it is stored in the
     cache.
 
-    :Example:
-
-    >>> import mmcv
-    >>> v = mmcv.VideoReader('sample.mp4')
-    >>> len(v)  # get the total frame number with `len()`
-    120
-    >>> for img in v:  # v is iterable
-    >>>     mmcv.imshow(img)
-    >>> v[5]  # get the 6th frame
+    Examples:
+        >>> import mmcv
+        >>> v = mmcv.VideoReader('sample.mp4')
+        >>> len(v)  # get the total frame number with `len()`
+        120
+        >>> for img in v:  # v is iterable
+        >>>     mmcv.imshow(img)
+        >>> v[5]  # get the 6th frame
     """
 
     def __init__(self, filename, cache_capacity=10):
@@ -189,7 +188,7 @@ class VideoReader:
 
         Returns:
             ndarray or None: If the video is fresh, return None, otherwise
-                return the frame.
+            return the frame.
         """
         if self._position == 0:
             return None

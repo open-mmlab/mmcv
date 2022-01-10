@@ -1,15 +1,16 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import json
 import os
 import os.path as osp
 import shutil
 import tempfile
+from pathlib import Path
 
 import pytest
 import yaml
 
-from mmcv import Config, DictAction, dump, load
+from mmcv import Config, ConfigDict, DictAction, dump, load
 
 data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 
@@ -66,10 +67,14 @@ def test_construct():
 
     # test h.py
     cfg_file = osp.join(data_path, 'config/h.py')
-    cfg_dict = dict(
-        item1='h.py',
-        item2=f'{osp.dirname(__file__)}/data/config',
-        item3='abc_h')
+    path = osp.join(osp.dirname(__file__), 'data', 'config')
+    # the value of osp.dirname(__file__) may be `D:\a\xxx` in windows
+    # environment. When dumping the cfg_dict to file, `D:\a\xxx` will be
+    # converted to `D:\x07\xxx` and it will cause unexpected result when
+    # checking whether `D:\a\xxx` equals to `D:\x07\xxx`. Therefore, we forcely
+    # convert a string representation of the path with forward slashes (/)
+    path = Path(path).as_posix()
+    cfg_dict = dict(item1='h.py', item2=path, item3='abc_h')
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -96,7 +101,7 @@ def test_construct():
 
     # test p.yaml
     cfg_file = osp.join(data_path, 'config/p.yaml')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -115,7 +120,7 @@ def test_construct():
 
     # test o.json
     cfg_file = osp.join(data_path, 'config/o.json')
-    cfg_dict = dict(item1=f'{osp.dirname(__file__)}/data/config')
+    cfg_dict = dict(item1=osp.join(osp.dirname(__file__), 'data', 'config'))
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
@@ -224,6 +229,81 @@ def test_merge_from_multiple_bases():
         Config.fromfile(osp.join(data_path, 'config/m.py'))
 
 
+def test_base_variables():
+    for file in ['t.py', 't.json', 't.yaml']:
+        cfg_file = osp.join(data_path, f'config/{file}')
+        cfg = Config.fromfile(cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        # cfg.field
+        assert cfg.item1 == [1, 2]
+        assert cfg.item2.a == 0
+        assert cfg.item3 is False
+        assert cfg.item4 == 'test'
+        assert cfg.item5 == dict(a=0, b=1)
+        assert cfg.item6 == [dict(a=0), dict(b=1)]
+        assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
+        assert cfg.item8 == file
+        assert cfg.item9 == dict(a=0)
+        assert cfg.item10 == [3.1, 4.2, 5.3]
+
+    # test nested base
+    for file in ['u.py', 'u.json', 'u.yaml']:
+        cfg_file = osp.join(data_path, f'config/{file}')
+        cfg = Config.fromfile(cfg_file)
+        assert isinstance(cfg, Config)
+        assert cfg.filename == cfg_file
+        # cfg.field
+        assert cfg.base == '_base_.item8'
+        assert cfg.item1 == [1, 2]
+        assert cfg.item2.a == 0
+        assert cfg.item3 is False
+        assert cfg.item4 == 'test'
+        assert cfg.item5 == dict(a=0, b=1)
+        assert cfg.item6 == [dict(a=0), dict(b=1)]
+        assert cfg.item7 == dict(a=[0, 1, 2], b=dict(c=[3.1, 4.2, 5.3]))
+        assert cfg.item8 == 't.py'
+        assert cfg.item9 == dict(a=0)
+        assert cfg.item10 == [3.1, 4.2, 5.3]
+        assert cfg.item11 == 't.py'
+        assert cfg.item12 == dict(a=0)
+        assert cfg.item13 == [3.1, 4.2, 5.3]
+        assert cfg.item14 == [1, 2]
+        assert cfg.item15 == dict(
+            a=dict(b=dict(a=0)),
+            b=[False],
+            c=['test'],
+            d=[[{
+                'e': 0
+            }], [{
+                'a': 0
+            }, {
+                'b': 1
+            }]],
+            e=[1, 2])
+
+    # test reference assignment for py
+    cfg_file = osp.join(data_path, 'config/v.py')
+    cfg = Config.fromfile(cfg_file)
+    assert isinstance(cfg, Config)
+    assert cfg.filename == cfg_file
+    assert cfg.item21 == 't.py'
+    assert cfg.item22 == 't.py'
+    assert cfg.item23 == [3.1, 4.2, 5.3]
+    assert cfg.item24 == [3.1, 4.2, 5.3]
+    assert cfg.item25 == dict(
+        a=dict(b=[3.1, 4.2, 5.3]),
+        b=[[3.1, 4.2, 5.3]],
+        c=[[{
+            'e': 't.py'
+        }], [{
+            'a': 0
+        }, {
+            'b': 1
+        }]],
+        e='t.py')
+
+
 def test_merge_recursive_bases():
     cfg_file = osp.join(data_path, 'config/f.py')
     cfg = Config.fromfile(cfg_file)
@@ -267,11 +347,15 @@ def test_merge_delete():
     cfg_file = osp.join(data_path, 'config/delete.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
-    assert cfg.item1 == [1, 2]
-    assert cfg.item2 == dict(b=0)
+    assert cfg.item1 == dict(a=0)
+    assert cfg.item2 == dict(a=0, b=0)
     assert cfg.item3 is True
     assert cfg.item4 == 'test'
     assert '_delete_' not in cfg.item2
+
+    # related issue: https://github.com/open-mmlab/mmcv/issues/1570
+    assert type(cfg.item1) == ConfigDict
+    assert type(cfg.item2) == ConfigDict
 
 
 def test_merge_intermediate_variable():
@@ -415,17 +499,19 @@ def test_reserved_key():
 
 
 def test_syntax_error():
-    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py')
+    # the name can not be used to open the file a second time in windows,
+    # so `delete` should be set as `False` and we need to manually remove it
+    # more details can be found at https://github.com/open-mmlab/mmcv/pull/1077
+    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp_cfg_path = temp_cfg_file.name
     # write a file with syntax error
     with open(temp_cfg_path, 'w') as f:
         f.write('a=0b=dict(c=1)')
     with pytest.raises(
-            SyntaxError,
-            match='There are syntax errors in config '
-            f'file {temp_cfg_path}'):
+            SyntaxError, match='There are syntax errors in config file'):
         Config.fromfile(temp_cfg_path)
     temp_cfg_file.close()
+    os.remove(temp_cfg_path)
 
 
 def test_pickle_support():
@@ -438,3 +524,15 @@ def test_pickle_support():
         pkl_cfg = load(pkl_cfg_filename)
 
     assert pkl_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_deprecation():
+    deprecated_cfg_files = [
+        osp.join(data_path, 'config/deprecated.py'),
+        osp.join(data_path, 'config/deprecated_as_base.py')
+    ]
+
+    for cfg_file in deprecated_cfg_files:
+        with pytest.warns(DeprecationWarning):
+            cfg = Config.fromfile(cfg_file)
+        assert cfg.item1 == 'expected'
