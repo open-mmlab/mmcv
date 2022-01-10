@@ -26,7 +26,8 @@ from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          GradientCumulativeFp16OptimizerHook,
                          GradientCumulativeOptimizerHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                         PaviLoggerHook, WandbLoggerHook, build_runner)
+                         PaviLoggerHook, SegmindLoggerHook, WandbLoggerHook,
+                         build_runner)
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
@@ -1187,6 +1188,25 @@ def test_mlflow_hook(log_model):
             runner.model, 'models')
     else:
         assert not hook.mlflow_pytorch.log_model.called
+
+
+def test_segmind_hook():
+    sys.modules['segmind'] = MagicMock()
+    runner = _build_demo_runner()
+    hook = SegmindLoggerHook()
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.segmind.init.assert_called_with()
+    hook.segmind.log.assert_called_with(
+        {
+            'learning_rate': 0.02,
+            'momentum': 0.95
+        }, step=6, commit=True)
+    hook.segmind.join.assert_called_with()
 
 
 def test_wandb_hook():
