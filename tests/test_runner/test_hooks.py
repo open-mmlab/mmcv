@@ -21,13 +21,11 @@ from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
 from mmcv.fileio.file_client import PetrelBackend
-from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
-                         Fp16OptimizerHook,
-                         GradientCumulativeFp16OptimizerHook,
-                         GradientCumulativeOptimizerHook, IterTimerHook,
-                         MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                         PaviLoggerHook, SegmindLoggerHook, WandbLoggerHook,
-                         build_runner)
+from mmcv.runner import (
+    CheckpointHook, DvcliveLoggerHook, EMAHook, Fp16OptimizerHook,
+    GradientCumulativeFp16OptimizerHook, GradientCumulativeOptimizerHook,
+    IterTimerHook, MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
+    PaviLoggerHook, SegmindLoggerHook, WandbLoggerHook, build_runner)
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
