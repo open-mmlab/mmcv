@@ -9,6 +9,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - CARAFE
 - CrissCrossAttention
 - ContextBlock
+- ConvexIoU
 - CornerPool
 - Deformable Convolution v1/v2
 - Deformable RoIPool
