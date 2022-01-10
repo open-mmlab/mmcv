@@ -1,4 +1,4 @@
-# Copyright (c) Open-MMLab. All rights reserved.
+# Copyright (c) OpenMMLab. All rights reserved.
 import numbers
 from math import cos, pi
 
@@ -279,6 +279,60 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
 
 
 @HOOKS.register_module()
+class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
+    """Flat + Cosine lr schedule.
+
+    Modified from https://github.com/fastai/fastai/blob/master/fastai/callback/schedule.py#L128 # noqa: E501
+
+    Args:
+        start_percent (float): When to start annealing the learning rate
+            after the percentage of the total training steps.
+            The value should be in range [0, 1).
+            Default: 0.75
+        min_lr (float, optional): The minimum lr. Default: None.
+        min_lr_ratio (float, optional): The ratio of minimum lr to the base lr.
+            Either `min_lr` or `min_lr_ratio` should be specified.
+            Default: None.
+    """
+
+    def __init__(self,
+                 start_percent=0.75,
+                 min_lr=None,
+                 min_lr_ratio=None,
+                 **kwargs):
+        assert (min_lr is None) ^ (min_lr_ratio is None)
+        if start_percent < 0 or start_percent > 1 or not isinstance(
+                start_percent, float):
+            raise ValueError(
+                'expected float between 0 and 1 start_percent, but '
+                f'got {start_percent}')
+        self.start_percent = start_percent
+        self.min_lr = min_lr
+        self.min_lr_ratio = min_lr_ratio
+        super(FlatCosineAnnealingLrUpdaterHook, self).__init__(**kwargs)
+
+    def get_lr(self, runner, base_lr):
+        if self.by_epoch:
+            start = round(runner.max_epochs * self.start_percent)
+            progress = runner.epoch - start
+            max_progress = runner.max_epochs - start
+        else:
+            start = round(runner.max_iters * self.start_percent)
+            progress = runner.iter - start
+            max_progress = runner.max_iters - start
+
+        if self.min_lr_ratio is not None:
+            target_lr = base_lr * self.min_lr_ratio
+        else:
+            target_lr = self.min_lr
+
+        if progress < 0:
+            return base_lr
+        else:
+            return annealing_cos(base_lr, target_lr, progress / max_progress)
+
+
+@HOOKS.register_module()
 class CosineRestartLrUpdaterHook(LrUpdaterHook):
     """Cosine annealing with restarts learning rate scheme.
 
@@ -367,11 +421,11 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
 
     Args:
         by_epoch (bool, optional): Whether to update LR by epoch.
-        target_ratio (tuple[float], optional): Relative ratio of the highest LR and the
-            lowest LR to the initial LR.
+        target_ratio (tuple[float], optional): Relative ratio of the highest LR
+            and the lowest LR to the initial LR.
         cyclic_times (int, optional): Number of cycles during training
-        step_ratio_up (float, optional): The ratio of the increasing process of LR in
-            the total cycle.
+        step_ratio_up (float, optional): The ratio of the increasing process of
+            LR in the total cycle.
         anneal_strategy (str, optional): {'cos', 'linear'}
             Specifies the annealing strategy: 'cos' for cosine annealing,
             'linear' for linear annealing. Default: 'cos'.
@@ -426,27 +480,26 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         # initiate lr_phases
         # total lr_phases are separated as up and down
         self.max_iter_per_phase = runner.max_iters // self.cyclic_times
-        iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
-        self.lr_phases.append(
-            [0, iter_up_phase, 1, self.target_ratio[0]])
+        iter_up_phase = int(self.step_ratio_up * self.max_iter_per_phase)
+        self.lr_phases.append([0, iter_up_phase, 1, self.target_ratio[0]])
         self.lr_phases.append([
-            iter_up_phase, self.max_iter_per_phase,
-            self.target_ratio[0], self.target_ratio[1]
+            iter_up_phase, self.max_iter_per_phase, self.target_ratio[0],
+            self.target_ratio[1]
         ])
 
     def get_lr(self, runner, base_lr):
         curr_iter = runner.iter % self.max_iter_per_phase
         curr_cycle = runner.iter // self.max_iter_per_phase
-        scale = self.gamma ** curr_cycle
+        # Update weight decay
+        scale = self.gamma**curr_cycle
 
-        for (start_iter, end_iter, start_ratio,
-             end_ratio) in self.lr_phases:
+        for (start_iter, end_iter, start_ratio, end_ratio) in self.lr_phases:
             if start_iter <= curr_iter < end_iter:
                 # Apply cycle scaling to gradually reduce max_lr.
                 if end_ratio > start_ratio:
-                    end_ratio *= gamma
+                    end_ratio *= scale
                 else:
-                    start_ratio *= gamma
+                    start_ratio *= scale
 
                 progress = curr_iter - start_iter
                 return self.anneal_func(base_lr * start_ratio,
