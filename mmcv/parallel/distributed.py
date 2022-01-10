@@ -64,8 +64,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if ('parrots' not in TORCH_VERSION
-                    and digit_version(TORCH_VERSION) > digit_version('1.2')):
+            if 'parrots' not in TORCH_VERSION:
                 self.require_forward_param_sync = False
         return output
 
@@ -106,7 +105,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if ('parrots' not in TORCH_VERSION
-                    and digit_version(TORCH_VERSION) > digit_version('1.2')):
+            if 'parrots' not in TORCH_VERSION:
                 self.require_forward_param_sync = False
         return output

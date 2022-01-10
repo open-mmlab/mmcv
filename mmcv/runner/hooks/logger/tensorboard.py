@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import TORCH_VERSION
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -23,8 +23,7 @@ class TensorboardLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner):
         super(TensorboardLoggerHook, self).before_run(runner)
-        if (TORCH_VERSION == 'parrots'
-                or digit_version(TORCH_VERSION) < digit_version('1.1')):
+        if TORCH_VERSION == 'parrots':
             try:
                 from tensorboardX import SummaryWriter
             except ImportError:
@@ -35,9 +34,7 @@ class TensorboardLoggerHook(LoggerHook):
                 from torch.utils.tensorboard import SummaryWriter
             except ImportError:
                 raise ImportError(
-                    'Please run "pip install future tensorboard" to install '
-                    'the dependencies to use torch.utils.tensorboard '
-                    '(applicable to PyTorch 1.1 or higher)')
+                    'Please upgrade your PyTorch to 1.5 or higher')
 
         if self.log_dir is None:
             self.log_dir = osp.join(runner.work_dir, 'tf_logs')
