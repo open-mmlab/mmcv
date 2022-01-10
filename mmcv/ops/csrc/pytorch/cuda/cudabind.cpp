@@ -1500,3 +1500,12 @@ void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
 
 REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, CUDA,
                      points_in_polygons_forward_cuda);
+
+void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
+
+void min_area_polygons_cuda(const Tensor pointsets, Tensor polygons) {
+  MinAreaPolygonsCUDAKernelLauncher(pointsets, polygons);
+}
+
+void min_area_polygons_impl(const Tensor pointsets, Tensor polygons);
+REGISTER_DEVICE_IMPL(min_area_polygons_impl, CUDA, min_area_polygons_cuda);
