@@ -11,9 +11,8 @@ ext_module = ext_loader.load_ext(
 
 
 class ActiveRotatedFilterFunction(Function):
-    """Encoding the orientation information and then produces orientation-
-    sensitive and orientation-invariant features to alleviate the inconsistency
-    between classification score and localization accuracy.
+    """Encoding the orientation information and generating orientation-
+    sensitive features.
 
     The details are described in the paper `Align Deep Features for Oriented
     Object Detection  <https://arxiv.org/abs/2008.09397>_`.
