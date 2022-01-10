@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
-
+import warnings
 from .registry import ACTIVATION_LAYERS
 
 
@@ -26,6 +26,10 @@ class HSigmoid(nn.Module):
 
     def __init__(self, bias=3.0, divisor=6.0, min_value=0.0, max_value=1.0):
         super(HSigmoid, self).__init__()
+        warnings.warn(
+            'In MMCV v1.4.3, we modified the default value of args to align with PyTorch official. '
+            'Previous Implementation: Hsigmoid(x) = min(max((x + 1) / 2, 0), 1). '
+            'Current Implementation: Hsigmoid(x) = min(max((x + 3) / 6, 0), 1).')
         self.bias = bias
         self.divisor = divisor
         assert self.divisor != 0
