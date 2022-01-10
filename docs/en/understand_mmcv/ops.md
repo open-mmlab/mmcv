@@ -20,6 +20,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - GroupPoints
 - KNN
 - MaskedConv
+- MinAreaPolygon
 - NMS
 - PointsInPolygons
 - PSAMask

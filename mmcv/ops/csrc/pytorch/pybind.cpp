@@ -363,6 +363,8 @@ void riroi_align_rotated_backward(Tensor top_grad, Tensor rois,
 
 void points_in_polygons_forward(Tensor points, Tensor polygons, Tensor output);
 
+void min_area_polygons(const Tensor pointsets, Tensor polygons);
+
 void active_rotated_filter_forward(const Tensor input, const Tensor indices,
                                    Tensor output);
 
@@ -737,6 +739,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("points_in_polygons_forward", &points_in_polygons_forward,
         "points_in_polygons_forward", py::arg("points"), py::arg("polygons"),
         py::arg("output"));
+  m.def("min_area_polygons", &min_area_polygons, "min_area_polygons",
+        py::arg("pointsets"), py::arg("polygons"));
   m.def("active_rotated_filter_forward", &active_rotated_filter_forward,
         "active_rotated_filter_forward", py::arg("input"), py::arg("indices"),
         py::arg("output"));
