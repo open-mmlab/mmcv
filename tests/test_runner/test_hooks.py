@@ -1198,13 +1198,13 @@ def test_segmind_hook():
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.segmind.init.assert_called_with()
-    hook.segmind.log.assert_called_with(
-        {
+    hook.segmind_mlflow_log.assert_called_with(
+        hook.segmind_log_metrics, {
             'learning_rate': 0.02,
             'momentum': 0.95
-        }, step=6, commit=True)
-    hook.segmind.join.assert_called_with()
+        },
+        step=runner.epoch,
+        epoch=runner.epoch)
 
 
 def test_wandb_hook():
