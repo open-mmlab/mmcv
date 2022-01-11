@@ -528,6 +528,20 @@ class Config:
     def __getstate__(self):
         return (self._cfg_dict, self._filename, self._text)
 
+    def __deepcopy__(self, memo):
+        other = self.__class__()
+        memo[id(self)] = other
+
+        _cfg_dict = copy.deepcopy(self._cfg_dict, memo)
+        _filename = copy.deepcopy(self._filename, memo)
+        _text = copy.deepcopy(self._text, memo)
+
+        super(Config, other).__setattr__('_cfg_dict', _cfg_dict)
+        super(Config, other).__setattr__('_filename', _filename)
+        super(Config, other).__setattr__('_text', _text)
+
+        return other
+
     def __setstate__(self, state):
         _cfg_dict, _filename, _text = state
         super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
