@@ -10,7 +10,7 @@
 
 #define MAXN 100
 #define NMAX 512
-const double EPS = 1E-8;
+__device__ const double EPS = 1E-8;
 
 __device__ inline int sig(double d) { return (d > EPS) - (d < -EPS); }
 
