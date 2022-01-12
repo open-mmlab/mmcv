@@ -235,7 +235,6 @@ std::vector<torch::Tensor> GetIndicePairsBackwardCUDAKernelLauncher(
   }
 }
 
-template <typename scalar_t>
 torch::Tensor IndiceConvForwardCUDAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
     torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
@@ -275,23 +274,33 @@ torch::Tensor IndiceConvForwardCUDAKernelLauncher(
     if (nHot <= 0 || (subM && i == indicePairMaxOffset)) {
       continue;
     }
-    auto outputBufferBlob = torch::from_blob(outputBuffer.data_ptr<scalar_t>(),
-                                             {nHot, numOutPlanes}, options);
-    auto inputBufferBlob = torch::from_blob(inputBuffer.data_ptr<scalar_t>(),
-                                            {nHot, numInPlanes}, options);
+    AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      outputBuffer.scalar_type(), "Buffer", [&] {
+        auto outputBufferBlob = torch::from_blob(outputBuffer.data_ptr<scalar_t>(),
+                                                {nHot, numOutPlanes}, options);
+        auto inputBufferBlob = torch::from_blob(inputBuffer.data_ptr<scalar_t>(),
+                                                {nHot, numInPlanes}, options);
+        torch::mm_out(outputBufferBlob, inputBufferBlob, filters[i]);
+      });
 
     if (device == torch::kCPU) {
-      functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtor;
-      gatherFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputBuffer),
-                 tv::torch2tv<const scalar_t>(features),
-                 tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                 nHot);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseGatherFunctor", [&] {
+          functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtor;
+          gatherFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputBuffer),
+                     tv::torch2tv<const scalar_t>(features),
+                     tv::torch2tv<const int>(indicePairs).subview(i, inverse),
+                     nHot);
+        });
     } else {
-      functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtor;
-      gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
-                 tv::torch2tv<const scalar_t>(features),
-                 tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                 nHot);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseGatherFunctor", [&] {
+          functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtor;
+          gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
+                     tv::torch2tv<const scalar_t>(features),
+                     tv::torch2tv<const int>(indicePairs).subview(i, inverse),
+                     nHot);
+        });
       TV_CHECK_CUDA_ERR();
       /* slower than SparseGatherFunctor, may due to int->long conversion
       auto indicePairLong = indicePairs[i][inverse].to(torch::kInt64);
@@ -299,27 +308,31 @@ torch::Tensor IndiceConvForwardCUDAKernelLauncher(
       {nHot}, indicePairOptions); torch::index_select_out(inputBufferBlob,
       features, 0, indicePairBlob);*/
     }
-    torch::mm_out(outputBufferBlob, inputBufferBlob, filters[i]);
 
     if (device == torch::kCPU) {
-      functor::SparseScatterAddFunctor<tv::CPU, scalar_t, int> scatterFtor;
-      scatterFtor(tv::CPU(), tv::torch2tv<scalar_t>(output),
-                  tv::torch2tv<const scalar_t>(outputBuffer),
-                  tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
-                  nHot, true);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseScatterAddFunctor", [&] {
+          functor::SparseScatterAddFunctor<tv::CPU, scalar_t, int> scatterFtor;
+          scatterFtor(tv::CPU(), tv::torch2tv<scalar_t>(output),
+                      tv::torch2tv<const scalar_t>(outputBuffer),
+                      tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+                      nHot, true);
+        });
     } else {
-      functor::SparseScatterAddFunctor<tv::GPU, scalar_t, int> scatterFtor;
-      scatterFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
-                  tv::torch2tv<const scalar_t>(outputBuffer),
-                  tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
-                  nHot, true);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseScatterAddFunctor", [&] {
+          functor::SparseScatterAddFunctor<tv::GPU, scalar_t, int> scatterFtor;
+          scatterFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
+                      tv::torch2tv<const scalar_t>(outputBuffer),
+                      tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+                      nHot, true);
+        });
       TV_CHECK_CUDA_ERR();
     }
   }
   return output;
 }
 
-template <typename scalar_t>
 std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
@@ -362,50 +375,65 @@ std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
       continue;
     }
     if (device == torch::kCPU) {
-      functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtor;
-      functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtorOut;
-      gatherFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputBuffer),
-                 tv::torch2tv<const scalar_t>(features),
-                 tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                 nHot);
-      gatherFtorOut(tv::CPU(), tv::torch2tv<scalar_t>(outputBuffer),
-                    tv::torch2tv<const scalar_t>(outGrad),
-                    tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseGatherFunctor", [&] {
+          functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtor;
+          functor::SparseGatherFunctor<tv::CPU, scalar_t, int> gatherFtorOut;
+          gatherFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputBuffer),
+                    tv::torch2tv<const scalar_t>(features),
+                    tv::torch2tv<const int>(indicePairs).subview(i, inverse),
                     nHot);
+          gatherFtorOut(tv::CPU(), tv::torch2tv<scalar_t>(outputBuffer),
+                        tv::torch2tv<const scalar_t>(outGrad),
+                        tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+                        nHot);
+        });
     } else {
-      functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtor;
-      functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtorOut;
-      gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
-                 tv::torch2tv<const scalar_t>(features),
-                 tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                 nHot);
-      TV_CHECK_CUDA_ERR();
-      gatherFtorOut(tv::TorchGPU(), tv::torch2tv<scalar_t>(outputBuffer),
-                    tv::torch2tv<const scalar_t>(outGrad),
-                    tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseGatherFunctor", [&] {
+          functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtor;
+          functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtorOut;
+          gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
+                    tv::torch2tv<const scalar_t>(features),
+                    tv::torch2tv<const int>(indicePairs).subview(i, inverse),
                     nHot);
+          TV_CHECK_CUDA_ERR();
+          gatherFtorOut(tv::TorchGPU(), tv::torch2tv<scalar_t>(outputBuffer),
+                        tv::torch2tv<const scalar_t>(outGrad),
+                        tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
+                        nHot);
+        });
       TV_CHECK_CUDA_ERR();
     }
     auto filterGradSub = filtersGrad[i];
-    auto outputBufferBlob = torch::from_blob(outputBuffer.data_ptr<scalar_t>(),
-                                             {nHot, numOutPlanes}, options);
-    auto inputBufferBlob = torch::from_blob(inputBuffer.data_ptr<scalar_t>(),
-                                            {nHot, numInPlanes}, options);
+    AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+      outputBuffer.scalar_type(), "Buffer", [&] {
+        auto outputBufferBlob = torch::from_blob(outputBuffer.data_ptr<scalar_t>(),
+                                                {nHot, numOutPlanes}, options);
+        auto inputBufferBlob = torch::from_blob(inputBuffer.data_ptr<scalar_t>(),
+                                                {nHot, numInPlanes}, options);
+        torch::mm_out(filterGradSub, inputBufferBlob.t(), outputBufferBlob);
+        torch::mm_out(inputBufferBlob, outputBufferBlob, filters[i].t());
+      });
 
-    torch::mm_out(filterGradSub, inputBufferBlob.t(), outputBufferBlob);
-    torch::mm_out(inputBufferBlob, outputBufferBlob, filters[i].t());
     if (device == torch::kCPU) {
-      functor::SparseScatterAddFunctor<tv::CPU, scalar_t, int> scatterFtor;
-      scatterFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputGrad),
-                  tv::torch2tv<const scalar_t>(inputBuffer),
-                  tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                  nHot);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseScatterAddFunctor", [&] {
+          functor::SparseScatterAddFunctor<tv::CPU, scalar_t, int> scatterFtor;
+          scatterFtor(tv::CPU(), tv::torch2tv<scalar_t>(inputGrad),
+                      tv::torch2tv<const scalar_t>(inputBuffer),
+                      tv::torch2tv<const int>(indicePairs).subview(i, inverse),
+                      nHot);
+        });
     } else {
-      functor::SparseScatterAddFunctor<tv::GPU, scalar_t, int> scatterFtor;
-      scatterFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputGrad),
-                  tv::torch2tv<const scalar_t>(inputBuffer),
-                  tv::torch2tv<const int>(indicePairs).subview(i, inverse),
-                  nHot);
+      AT_DISPATCH_FLOATING_TYPES_AND_HALF(
+        features.scalar_type(), "SparseScatterAddFunctor", [&] {
+          functor::SparseScatterAddFunctor<tv::GPU, scalar_t, int> scatterFtor;
+          scatterFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputGrad),
+                      tv::torch2tv<const scalar_t>(inputBuffer),
+                      tv::torch2tv<const int>(indicePairs).subview(i, inverse),
+                      nHot);
+        });
       TV_CHECK_CUDA_ERR();
     }
   }
@@ -446,26 +474,3 @@ template std::vector<torch::Tensor> GetIndicePairsBackwardCUDAKernelLauncher<3>(
     std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
     std::vector<int64_t> padding, std::vector<int64_t> dilation,
     std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
-
-template torch::Tensor IndiceConvForwardCUDAKernelLauncher<float>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
-    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
-    int64_t _subM);
-
-template torch::Tensor IndiceConvForwardCUDAKernelLauncher<at::Half>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
-    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
-    int64_t _subM);
-
-template std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher<float>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
-    int64_t _subM);
-
-template std::vector<torch::Tensor>
-IndiceConvBackwardCUDAKernelLauncher<at::Half>(torch::Tensor features,
-                                               torch::Tensor filters,
-                                               torch::Tensor outGrad,
-                                               torch::Tensor indicePairs,
-                                               torch::Tensor indiceNum,
-                                               int64_t _inverse, int64_t _subM);

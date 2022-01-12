@@ -19,12 +19,10 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', [
     'get_indice_pairs_2d_forward', 'get_indice_pairs_3d_forward',
     'get_indice_pairs_4d_forward', 'get_indice_pairs_2d_backward',
-    'get_indice_pairs_3d_backward', 'indice_conv_fp32_forward',
-    'indice_conv_half_forward', 'fused_indice_conv_half_forward',
-    'fused_indice_conv_fp32_forward', 'indice_conv_fp32_backward',
-    'indice_conv_half_backward', 'indice_maxpool_fp32_forward',
-    'indice_maxpool_half_forward', 'indice_maxpool_fp32_backward',
-    'indice_maxpool_half_backward'
+    'get_indice_pairs_3d_backward', 'indice_conv_forward',
+    'indice_conv_backward', 'fused_indice_conv_forward',
+    'indice_maxpool_fp32_forward', 'indice_maxpool_half_forward',
+    'indice_maxpool_fp32_backward', 'indice_maxpool_half_backward'
 ])
 
 
@@ -123,28 +121,19 @@ def indice_conv(features,
                 num_activate_out,
                 inverse=False,
                 subm=False):
-    if filters.dtype == torch.float32:
-        return ext_module.indice_conv_fp32_forward(features, filters,
-                                                   indice_pairs,
-                                                   indice_pair_num,
-                                                   num_activate_out,
-                                                   int(inverse), int(subm))
-    elif filters.dtype == torch.half:
-        return ext_module.indice_conv_half_forward(features, filters,
-                                                   indice_pairs,
-                                                   indice_pair_num,
-                                                   num_activate_out,
-                                                   int(inverse), int(subm))
+    if filters.dtype == torch.float32 or filters.dtype == torch.half:
+        return ext_module.indice_conv_forward(features, filters, indice_pairs,
+                                              indice_pair_num,
+                                              num_activate_out, int(inverse),
+                                              int(subm))
     else:
         raise NotImplementedError
 
 
 def fused_indice_conv(features, filters, bias, indice_pairs, indice_pair_num,
                       num_activate_out, inverse, subm):
-    if features.dtype == torch.half:
-        func = ext_module.fused_indice_conv_half_forward
-    elif filters.dtype == torch.float32:
-        func = ext_module.fused_indice_conv_fp32_forward
+    if features.dtype == torch.half or filters.dtypes == torch.float32:
+        func = ext_module.fused_indice_conv_forward
     else:
         raise NotImplementedError
 
@@ -159,16 +148,10 @@ def indice_conv_backward(features,
                          indice_pair_num,
                          inverse=False,
                          subm=False):
-    if filters.dtype == torch.float32:
-        return ext_module.indice_conv_fp32_backward(features, filters, out_bp,
-                                                    indice_pairs,
-                                                    indice_pair_num,
-                                                    int(inverse), int(subm))
-    elif filters.dtype == torch.half:
-        return ext_module.indice_conv_half_backward(features, filters, out_bp,
-                                                    indice_pairs,
-                                                    indice_pair_num,
-                                                    int(inverse), int(subm))
+    if filters.dtype == torch.float32 or filters.dtype == torch.half:
+        return ext_module.indice_conv_backward(features, filters, out_bp,
+                                               indice_pairs, indice_pair_num,
+                                               int(inverse), int(subm))
     else:
         raise NotImplementedError
 

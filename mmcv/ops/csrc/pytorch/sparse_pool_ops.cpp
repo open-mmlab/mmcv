@@ -13,100 +13,36 @@
 // limitations under the License.
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 #ifdef MMCV_WITH_CUDA
-template <typename scalar_t>
-torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
-                                                     torch::Tensor indicePairs,
-                                                     torch::Tensor indiceNum,
-                                                     int64_t numAct);
-
-template <typename scalar_t>
-torch::Tensor indice_maxpool_forward_cuda(torch::Tensor features,
+torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
                                           torch::Tensor indicePairs,
-                                          torch::Tensor indiceNum,
-                                          int64_t numAct) {
-  return IndiceMaxpoolForwardCUDAKernelLauncher<scalar_t>(features, indicePairs,
-                                                   indiceNum, numAct);
-};
+                                          torch::Tensor indiceNum, int64_t numAct) {
+  DISPATCH_DEVICE_IMPL(indice_maxpool_forward_impl, features,
+                       indicePairs, indiceNum, numAct);
+}
 
-template <typename scalar_t>
-torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
-                                                      torch::Tensor outFeatures,
-                                                      torch::Tensor outGrad,
-                                                      torch::Tensor indicePairs,
-                                                      torch::Tensor indiceNum);
-
-template <typename scalar_t>
-torch::Tensor indice_maxpool_backward_cuda(torch::Tensor features,
-                                           torch::Tensor outFeatures,
-                                           torch::Tensor outGrad,
-                                           torch::Tensor indicePairs,
-                                           torch::Tensor indiceNum) {
-  return IndiceMaxpoolBackwardCUDAKernelLauncher<scalar_t>(
-      features, outFeatures, outGrad, indicePairs, indiceNum);
-};
-#endif
-
-template <typename scalar_t>
 torch::Tensor indice_maxpool_forward(torch::Tensor features,
                                      torch::Tensor indicePairs,
                                      torch::Tensor indiceNum, int64_t numAct) {
-  if (features.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(features);
-    CHECK_CUDA_INPUT(indicePairs);
-    CHECK_CUDA_INPUT(indiceNum);
-
-    return indice_maxpool_forward_cuda<scalar_t>(features, indicePairs, indiceNum,
-                                          numAct);
-#else
-    AT_ERROR("indice_maxpool is not compiled with GPU support");
-#endif
-  } else {
-    AT_ERROR("indice_maxpool is not implemented on CPU");
-  }
+  indice_maxpool_forward_impl(features, indicePairs, indiceNum, numAct);
 }
 
-template <typename scalar_t>
+torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum){
+  DISPATCH_DEVICE_IMPL(indice_maxpool_backward_impl, features, outFeatures,
+                       outGrad, indicePairs, indiceNum);
+}
+
 torch::Tensor indice_maxpool_backward(torch::Tensor features,
                                       torch::Tensor outFeatures,
                                       torch::Tensor outGrad,
                                       torch::Tensor indicePairs,
                                       torch::Tensor indiceNum) {
-  if (features.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(features);
-    CHECK_CUDA_INPUT(outFeatures);
-    CHECK_CUDA_INPUT(outGrad);
-    CHECK_CUDA_INPUT(indicePairs);
-    CHECK_CUDA_INPUT(indiceNum);
-
-    return indice_maxpool_backward_cuda<scalar_t>(features, outFeatures, outGrad,
-                                           indicePairs, indiceNum);
-#else
-    AT_ERROR("indice_maxpool is not compiled with GPU support");
-#endif
-  } else {
-    AT_ERROR("indice_maxpool is not implemented on CPU");
-  }
+  indice_maxpool_backward_impl(features, outFeatures, outGrad, indicePairs, indiceNum);
 }
-
-template torch::Tensor indice_maxpool_forward<float>(torch::Tensor features,
-                                                     torch::Tensor indicePairs,
-                                                     torch::Tensor indiceNum,
-                                                     int64_t numAct);
-
-template torch::Tensor indice_maxpool_forward<at::Half>(
-    torch::Tensor features, torch::Tensor indicePairs, torch::Tensor indiceNum,
-    int64_t numAct);
-
-template torch::Tensor indice_maxpool_backward<float>(torch::Tensor features,
-                                                      torch::Tensor outFeatures,
-                                                      torch::Tensor outGrad,
-                                                      torch::Tensor indicePairs,
-                                                      torch::Tensor indiceNum);
-
-template torch::Tensor indice_maxpool_backward<at::Half>(
-    torch::Tensor features, torch::Tensor outFeatures, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum);
+#endif

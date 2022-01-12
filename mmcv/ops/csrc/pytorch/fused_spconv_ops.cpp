@@ -13,55 +13,22 @@
 // limitations under the License.
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
-template <typename scalar_t>
-torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
-    int64_t _inverse, int64_t _subM);
-
-template <typename scalar_t>
-torch::Tensor fused_indice_conv_batchnorm_forward_cuda(
+torch::Tensor fused_indice_conv_batchnorm_forward_impl(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  return FusedIndiceConvBatchnormCUDAKernelLauncher<scalar_t>(
-      features, filters, bias, indicePairs, indiceNum, numActOut, _inverse,
-      _subM);
-};
-#endif
+  DISPATCH_DEVICE_IMPL(fused_indice_conv_batchnorm_forward_impl, features,
+                       filters, bias, indicePairs, indiceNum, numActOut,
+                       _inverse, _subM);
+}
 
-template <typename scalar_t>
 torch::Tensor fused_indice_conv_batchnorm_forward(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  if (features.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(features);
-    CHECK_CUDA_INPUT(filters);
-    CHECK_CUDA_INPUT(bias);
-    CHECK_CUDA_INPUT(indicePairs);
-    CHECK_CUDA_INPUT(indiceNum);
-
-    return fused_indice_conv_batchnorm_forward_cuda<scalar_t>(
-        features, filters, bias, indicePairs, indiceNum, numActOut, _inverse,
-        _subM);
-#else
-    AT_ERROR("fused_indice_conv_batchnorm is not compiled with GPU support");
-#endif
-  } else {
-    AT_ERROR("fused_indice_conv_batchnorm is not implemented on CPU");
-  }
+  fused_indice_conv_batchnorm_forward_impl(features, filters, bias,
+                                           indicePairs, indiceNum, numActOut,
+                                           _inverse, _subM);
 }
-
-template torch::Tensor fused_indice_conv_batchnorm_forward<float>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
-    int64_t _inverse, int64_t _subM);
-
-template torch::Tensor fused_indice_conv_batchnorm_forward<at::Half>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
-    int64_t _inverse, int64_t _subM);

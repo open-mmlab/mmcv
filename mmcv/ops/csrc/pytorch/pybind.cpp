@@ -257,28 +257,23 @@ std::vector<Tensor> get_indice_pairs_backward(
     std::vector<int64_t> padding, std::vector<int64_t> dilation,
     std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
 
-template <typename T>
 Tensor indice_conv_forward(Tensor features, Tensor filters, Tensor indicePairs,
                            Tensor indiceNum, int64_t numActOut,
                            int64_t _inverse, int64_t _subM);
 
-template <typename T>
 std::vector<Tensor> indice_conv_backward(Tensor features, Tensor filters,
                                          Tensor outGrad, Tensor indicePairs,
                                          Tensor indiceNum, int64_t _inverse,
                                          int64_t _subM);
 
-template <typename T>
 Tensor fused_indice_conv_batchnorm_forward(Tensor features, Tensor filters,
                                            Tensor bias, Tensor indicePairs,
                                            Tensor indiceNum, int64_t numActOut,
                                            int64_t _inverse, int64_t _subM);
 
-template <typename T>
 Tensor indice_maxpool_forward(Tensor features, Tensor indicePairs,
                               Tensor indiceNum, int64_t numAct);
 
-template <typename T>
 Tensor indice_maxpool_backward(Tensor features, Tensor outFeatures,
                                Tensor outGrad, Tensor indicePairs,
                                Tensor indiceNum);
@@ -663,46 +658,25 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
         py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
         py::arg("_subM"), py::arg("_transpose"));
-  m.def("indice_conv_fp32_forward", &indice_conv_forward<float>,
-        "indice_conv_fp32_forward", py::arg("features"), py::arg("filters"),
+  m.def("indice_conv_forward", &indice_conv_forward,
+        "indice_conv_forward", py::arg("features"), py::arg("filters"),
         py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numActOut"),
         py::arg("_inverse"), py::arg("_subM"));
-  m.def("indice_conv_fp32_backward", &indice_conv_backward<float>,
-        "indice_conv_fp32_backward", py::arg("features"), py::arg("filters"),
+  m.def("indice_conv_backward", &indice_conv_backward,
+        "indice_conv_backward", py::arg("features"), py::arg("filters"),
         py::arg("outGrad"), py::arg("indicePairs"), py::arg("indiceNum"),
         py::arg("_inverse"), py::arg("_subM"));
-  m.def("indice_conv_half_forward", &indice_conv_forward<at::Half>,
-        "indice_conv_half_forward", py::arg("features"), py::arg("filters"),
-        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numActOut"),
-        py::arg("_inverse"), py::arg("_subM"));
-  m.def("indice_conv_half_backward", &indice_conv_backward<at::Half>,
-        "indice_conv_half_backward", py::arg("features"), py::arg("filters"),
-        py::arg("outGrad"), py::arg("indicePairs"), py::arg("indiceNum"),
-        py::arg("_inverse"), py::arg("_subM"));
-  m.def("fused_indice_conv_fp32_forward",
-        &fused_indice_conv_batchnorm_forward<float>,
-        "fused_indice_conv_fp32_forward", py::arg("features"),
+  m.def("fused_indice_conv_forward",
+        &fused_indice_conv_batchnorm_forward,
+        "fused_indice_conv_forward", py::arg("features"),
         py::arg("filters"), py::arg("bias"), py::arg("indicePairs"),
         py::arg("indiceNum"), py::arg("numActOut"), py::arg("_inverse"),
         py::arg("_subM"));
-  m.def("fused_indice_conv_half_forward",
-        &fused_indice_conv_batchnorm_forward<at::Half>,
-        "fused_indice_conv_half_forward", py::arg("features"),
-        py::arg("filters"), py::arg("bias"), py::arg("indicePairs"),
-        py::arg("indiceNum"), py::arg("numActOut"), py::arg("_inverse"),
-        py::arg("_subM"));
-  m.def("indice_maxpool_fp32_forward", &indice_maxpool_forward<float>,
-        "indice_maxpool_fp32_forward", py::arg("features"),
+  m.def("indice_maxpool_forward", &indice_maxpool_forward,
+        "indice_maxpool_forward", py::arg("features"),
         py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numAct"));
-  m.def("indice_maxpool_fp32_backward", &indice_maxpool_backward<float>,
-        "indice_maxpool_fp32_backward", py::arg("features"),
-        py::arg("outFeatures"), py::arg("outGrad"), py::arg("indicePairs"),
-        py::arg("indiceNum"));
-  m.def("indice_maxpool_half_forward", &indice_maxpool_forward<at::Half>,
-        "indice_maxpool_half_forward", py::arg("features"),
-        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numAct"));
-  m.def("indice_maxpool_half_backward", &indice_maxpool_backward<at::Half>,
-        "indice_maxpool_half_backward", py::arg("features"),
+  m.def("indice_maxpool_backward", &indice_maxpool_backward,
+        "indice_maxpool_backward", py::arg("features"),
         py::arg("outFeatures"), py::arg("outGrad"), py::arg("indicePairs"),
         py::arg("indiceNum"));
   m.def("psamask_forward", &psamask_forward, "PSAMASK forward (CPU/CUDA)",

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "pytorch_cpp_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 #ifdef MMCV_WITH_CUDA
 template <unsigned NDim>
@@ -54,39 +55,6 @@ std::vector<torch::Tensor> get_indice_pairs_backward_cuda(
       indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
       stride, padding, dilation, outPadding, _subM, _transpose);
 };
-
-template <typename scalar_t>
-torch::Tensor IndiceConvForwardCUDAKernelLauncher(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
-    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
-    int64_t _subM);
-
-template <typename scalar_t>
-torch::Tensor indice_conv_forward_cuda(torch::Tensor features,
-                                       torch::Tensor filters,
-                                       torch::Tensor indicePairs,
-                                       torch::Tensor indiceNum,
-                                       int64_t numActOut, int64_t _inverse,
-                                       int64_t _subM) {
-  return IndiceConvForwardCUDAKernelLauncher<scalar_t>(
-      features, filters, indicePairs, indiceNum, numActOut, _inverse, _subM);
-};
-
-template <typename scalar_t>
-std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
-    int64_t _subM);
-
-template <typename scalar_t>
-std::vector<torch::Tensor> indice_conv_backward_cuda(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
-    int64_t _subM) {
-  return IndiceConvBackwardCUDAKernelLauncher<scalar_t>(
-      features, filters, outGrad, indicePairs, indiceNum, _inverse, _subM);
-};
-#endif
 
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
@@ -133,49 +101,37 @@ std::vector<torch::Tensor> get_indice_pairs_backward(
   }
 }
 
-template <typename scalar_t>
+torch::Tensor indice_conv_forward_impl(torch::Tensor features, torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum, int64_t numActOut,
+                                       int64_t _inverse, int64_t _subM) {
+  DISPATCH_DEVICE_IMPL(indice_conv_forward_impl, features, filters,
+                       indicePairs, indiceNum, numActOut,
+                       _inverse, _subM);
+}
+
 torch::Tensor indice_conv_forward(torch::Tensor features, torch::Tensor filters,
                                   torch::Tensor indicePairs,
                                   torch::Tensor indiceNum, int64_t numActOut,
                                   int64_t _inverse, int64_t _subM) {
-  if (features.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(features);
-    CHECK_CUDA_INPUT(filters);
-    CHECK_CUDA_INPUT(indicePairs);
-    CHECK_CUDA_INPUT(indiceNum);
-
-    return indice_conv_forward_cuda<scalar_t>(features, filters, indicePairs,
-                                       indiceNum, numActOut, _inverse, _subM);
-#else
-    AT_ERROR("indice_conv is not compiled with GPU support");
-#endif
-  } else {
-    AT_ERROR("indice_conv is not implemented on CPU");
-  }
+  indice_conv_forward_impl(features, filters, indicePairs, indiceNum,
+                           numActOut, _inverse, _subM);
 }
 
-template <typename scalar_t>
+std::vector<torch::Tensor> indice_conv_backward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM) {
+  DISPATCH_DEVICE_IMPL(indice_conv_backward_impl, features, filters, outGrad,
+                       indicePairs, indiceNum, _inverse, _subM);
+}
+
 std::vector<torch::Tensor> indice_conv_backward(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM) {
-  if (features.device().is_cuda()) {
-#ifdef MMCV_WITH_CUDA
-    CHECK_CUDA_INPUT(features);
-    CHECK_CUDA_INPUT(filters);
-    CHECK_CUDA_INPUT(outGrad);
-    CHECK_CUDA_INPUT(indicePairs);
-    CHECK_CUDA_INPUT(indiceNum);
-
-    return indice_conv_backward_cuda<scalar_t>(features, filters, outGrad, indicePairs,
-                                        indiceNum, _inverse, _subM);
-#else
-    AT_ERROR("indice_conv is not compiled with GPU support");
-#endif
-  } else {
-    AT_ERROR("indice_conv is not implemented on CPU");
-  }
+  indice_conv_backward_impl(features, filters, outGrad, indicePairs, indiceNum,
+                            _inverse, _subM);
 }
 
 template std::vector<torch::Tensor> get_indice_pairs_forward<2>(
@@ -212,23 +168,4 @@ template std::vector<torch::Tensor> get_indice_pairs_backward<3>(
     std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
     std::vector<int64_t> padding, std::vector<int64_t> dilation,
     std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
-
-template torch::Tensor indice_conv_forward<float>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
-    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
-    int64_t _subM);
-
-template torch::Tensor indice_conv_forward<at::Half>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
-    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
-    int64_t _subM);
-
-template std::vector<torch::Tensor> indice_conv_backward<float>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
-    int64_t _subM);
-
-template std::vector<torch::Tensor> indice_conv_backward<at::Half>(
-    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
-    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
-    int64_t _subM);
+#endif
