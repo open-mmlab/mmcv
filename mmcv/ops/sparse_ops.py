@@ -21,8 +21,7 @@ ext_module = ext_loader.load_ext('_ext', [
     'get_indice_pairs_4d_forward', 'get_indice_pairs_2d_backward',
     'get_indice_pairs_3d_backward', 'indice_conv_forward',
     'indice_conv_backward', 'fused_indice_conv_forward',
-    'indice_maxpool_fp32_forward', 'indice_maxpool_half_forward',
-    'indice_maxpool_fp32_backward', 'indice_maxpool_half_backward'
+    'indice_maxpool_forward', 'indice_maxpool_backward'
 ])
 
 
@@ -157,27 +156,19 @@ def indice_conv_backward(features,
 
 
 def indice_maxpool(features, indice_pairs, indice_pair_num, num_activate_out):
-    if features.dtype == torch.float32:
-        return ext_module.indice_maxpool_fp32_forward(features, indice_pairs,
-                                                      indice_pair_num,
-                                                      num_activate_out)
-    elif features.dtype == torch.half:
-        return ext_module.indice_maxpool_half_forward(features, indice_pairs,
-                                                      indice_pair_num,
-                                                      num_activate_out)
+    if features.dtype == torch.float32 or features.dtype == torch.half:
+        return ext_module.indice_maxpool_forward(features, indice_pairs,
+                                                 indice_pair_num,
+                                                 num_activate_out)
     else:
         raise NotImplementedError
 
 
 def indice_maxpool_backward(features, out_features, out_bp, indice_pairs,
                             indice_pair_num):
-    if features.dtype == torch.float32:
-        return ext_module.indice_maxpool_fp32_backward(features, out_features,
-                                                       out_bp, indice_pairs,
-                                                       indice_pair_num)
-    elif features.dtype == torch.half:
-        return ext_module.indice_maxpool_half_backward(features, out_features,
-                                                       out_bp, indice_pairs,
-                                                       indice_pair_num)
+    if features.dtype == torch.float32 or features.dtype == torch.half:
+        return ext_module.indice_maxpool_backward(features, out_features,
+                                                  out_bp, indice_pairs,
+                                                  indice_pair_num)
     else:
         raise NotImplementedError
