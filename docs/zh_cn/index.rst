@@ -13,6 +13,12 @@
 
 .. toctree::
    :maxdepth: 2
+   :caption: 教程
+
+   tutorials/aws_file_client.md
+
+.. toctree::
+   :maxdepth: 2
    :caption: 深入理解 MMCV
 
    understand_mmcv/config.md

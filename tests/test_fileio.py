@@ -178,8 +178,11 @@ def test_list_from_file():
         assert filelist == ['1.jpg', '2.jpg', '3.jpg']
 
     # get list from aws
-    with package_mock('boto3', 'botocore.exceptions'), patch.object(
-            AWSBackend, 'get_text', return_value='1.jpg\n2.jpg\n3.jpg'):
+    with package_mock('boto3', 'boto3.s3', 'boto3.s3.transfer', 'botocore',
+                      'botocore.exceptions'), patch.object(
+                          AWSBackend,
+                          'get_text',
+                          return_value='1.jpg\n2.jpg\n3.jpg'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         filelist = mmcv.list_from_file(
@@ -229,8 +232,11 @@ def test_dict_from_file():
         assert mapping == {'1': 'cat', '2': ['dog', 'cow'], '3': 'panda'}
 
     # get dict from aws
-    with package_mock('boto3', 'botocore.exceptions'), patch.object(
-            AWSBackend, 'get_text', return_value='1 cat\n2 dog cow\n3 panda'):
+    with package_mock('boto3', 'boto3.s3', 'boto3.s3.transfer', 'botocore',
+                      'botocore.exceptions'), patch.object(
+                          AWSBackend,
+                          'get_text',
+                          return_value='1 cat\n2 dog cow\n3 panda'):
         mmcv.FileClient._instances = {}
         filename = 's3://path/of/your/file'
         mapping = mmcv.dict_from_file(

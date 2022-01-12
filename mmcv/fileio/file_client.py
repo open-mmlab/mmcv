@@ -418,6 +418,9 @@ class AWSBackend(BaseStorageBackend):
     It relies on awscli and boto3, you must install and run ``aws configure``
     in advance to use it.
 
+    Note:
+        In v1.4.4 and later, AWSBackend is a new feature that is supported.
+
     Args:
         path_mapping (dict, optional): Path mapping dict from local path to
             Petrel path. When ``path_mapping={'src': 'dst'}``, ``src`` in
@@ -433,17 +436,20 @@ class AWSBackend(BaseStorageBackend):
     def __init__(self, path_mapping: Optional[dict] = None):
         try:
             import boto3
-            from botocore.exceptions import ClientError
+            import boto3.s3.transfer
+            import botocore.exceptions
         except ImportError:
             raise ImportError('Please install boto3 to enable AWSBackend '
                               'by "pip install boto3".')
 
         self._client = boto3.client('s3')
+        self.transfer_config = boto3.s3.transfer.TransferConfig(
+            use_threads=True)
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
         # Use to parse bucket and obj_name
         self.parse_bucket = re.compile('s3://(.+?)/(.+)')
-        self.check_exception = ClientError
+        self.check_exception = botocore.exceptions.ClientError
 
     def _map_path(self, filepath: Union[str, Path]) -> str:
         """Map ``filepath`` to a string path whose prefix will be replaced by
@@ -534,7 +540,8 @@ class AWSBackend(BaseStorageBackend):
         """
         bucket, obj_name = self._parse_path(filepath)
         value = io.BytesIO()
-        self._client.download_fileobj(bucket, obj_name, value)
+        self._client.download_fileobj(
+            bucket, obj_name, value, Config=self.transfer_config)
         value_buf = memoryview(value.getvalue())
         return value_buf
 
@@ -564,7 +571,8 @@ class AWSBackend(BaseStorageBackend):
         if not self._check_bucket(bucket):
             raise ValueError(f"This bucket '{bucket}' is not found.")
         with io.BytesIO(obj) as buff:
-            self._client.upload_fileobj(buff, bucket, obj_name)
+            self._client.upload_fileobj(
+                buff, bucket, obj_name, Config=self.transfer_config)
 
     def put_text(self,
                  obj: str,
