@@ -1162,11 +1162,11 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters, gamma,
                 'momentum': 0.95
             }, 4),
             call('train', {
-                'learning_rate': 0.06,
+                'learning_rate': 0.065,
                 'momentum': 0.95
             }, 6),
             call('train', {
-                'learning_rate': 0.1,
+                'learning_rate': 0.11,
                 'momentum': 0.95
             }, 7),
         ]

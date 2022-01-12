@@ -500,10 +500,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             if start_iter <= curr_iter < end_iter:
                 # Apply cycle scaling to gradually reduce max_lr.
                 if end_ratio > start_ratio:
-                    end_ratio *= scale
+                    end_ratio = 1 - scale + end_ratio * scale
                 else:
-                    start_ratio *= scale
-
+                    start_ratio = 1 - scale + start_ratio * scale
                 progress = curr_iter - start_iter
                 return self.anneal_func(base_lr * start_ratio,
                                         base_lr * end_ratio,
