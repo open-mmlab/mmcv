@@ -430,6 +430,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             Specifies the annealing strategy: 'cos' for cosine annealing,
             'linear' for linear annealing. Default: 'cos'.
         gamma (float, optional): Cycle decay ratio. Default: 1.
+            It takes values in the range (0, 1]. The maximum value of the
+            learning rate decreases periodically when it is less than 1.
+            `New in version 1.4.4.`
     """
 
     def __init__(self,
