@@ -10,27 +10,25 @@ from .dist_utils import (allreduce_grads, allreduce_params, get_dist_info,
                          init_dist, master_only)
 from .epoch_based_runner import EpochBasedRunner, Runner
 from .fp16_utils import LossScaler, auto_fp16, force_fp32, wrap_fp16_model
-from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
-                    DistSamplerSeedHook, DvcliveLoggerHook, EMAHook, EvalHook,
+# yapf: disable
+from .hooks import (HOOKS, CheckpointHook, ClosureHook,
+                    CosineAnnealingLrUpdaterHook,
+                    CosineAnnealingMomentumUpdaterHook,
+                    CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
+                    CyclicMomentumUpdaterHook, DistEvalHook,
+                    DistSamplerSeedHook, DvcliveLoggerHook, EMAHook,
+                    EmptyCacheHook, EvalHook, ExpLrUpdaterHook,
+                    FixedLrUpdaterHook, FlatCosineAnnealingLrUpdaterHook,
                     Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
-                    GradientCumulativeOptimizerHook, Hook, IterTimerHook,
-                    LoggerHook, MlflowLoggerHook, NeptuneLoggerHook,
-                    OptimizerHook, PaviLoggerHook, SyncBuffersHook,
-                    TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
-from .hooks.lr_updater import StepLrUpdaterHook  # noqa
-from .hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
-                               CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
-                               ExpLrUpdaterHook, FixedLrUpdaterHook,
-                               FlatCosineAnnealingLrUpdaterHook,
-                               InvLrUpdaterHook, LrUpdaterHook,
-                               OneCycleLrUpdaterHook, PolyLrUpdaterHook)
-from .hooks.memory import EmptyCacheHook
-from .hooks.momentum_updater import (CosineAnnealingMomentumUpdaterHook,
-                                     CyclicMomentumUpdaterHook,
-                                     MomentumUpdaterHook,
-                                     OneCycleMomentumUpdaterHook,
-                                     StepMomentumUpdaterHook)
-from .hooks.profiler import ProfilerHook
+                    GradientCumulativeOptimizerHook, Hook, InvLrUpdaterHook,
+                    IterTimerHook, LoggerHook, LrUpdaterHook, MlflowLoggerHook,
+                    MomentumUpdaterHook, NeptuneLoggerHook,
+                    OneCycleLrUpdaterHook, OneCycleMomentumUpdaterHook,
+                    OptimizerHook, PaviLoggerHook, PolyLrUpdaterHook,
+                    ProfilerHook, StepLrUpdaterHook, StepMomentumUpdaterHook,
+                    SyncBuffersHook, TensorboardLoggerHook, TextLoggerHook,
+                    WandbLoggerHook)
+# yapf: enable
 from .iter_based_runner import IterBasedRunner, IterLoader
 from .log_buffer import LogBuffer
 from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
