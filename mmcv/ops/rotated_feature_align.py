@@ -41,7 +41,9 @@ class RotatedFeatureAlignFunction(Function):
         assert points in [1, 5]
         output = torch.zeros_like(features)
         ext_module.rotated_feature_align_forward(features, best_rbboxes,
-                                                 output, spatial_scale, points)
+                                                 output,
+                                                 spatial_scale=spatial_scale,
+                                                 points=points)
         return output
 
     @staticmethod
@@ -61,9 +63,9 @@ class RotatedFeatureAlignFunction(Function):
         grad_input = None
         if ctx.needs_input_grad[0]:
             grad_input = torch.zeros_like(grad_output)
-            ext_module.rotated_feature_align_backward(grad_output.contiguous(),
-                                                      best_rbboxes, grad_input,
-                                                      spatial_scale, points)
+            ext_module.rotated_feature_align_backward(
+                grad_output.contiguous(), best_rbboxes, grad_input,
+                spatial_scale=spatial_scale, points=points)
         return grad_input, None, None, None
 
 
