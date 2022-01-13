@@ -8,7 +8,7 @@ from .base import LoggerHook
 class NeptuneLoggerHook(LoggerHook):
     """Class to log metrics to NeptuneAI.
 
-    It requires `neptune-client` to be installed.
+    It requires `Neptune`_ to be installed.
 
     Args:
         init_kwargs (dict): a dict contains the initialization keys as below:
@@ -28,13 +28,20 @@ class NeptuneLoggerHook(LoggerHook):
             Check https://docs.neptune.ai/api-reference/neptune#init for more
             init arguments.
         interval (int): Logging interval (every k iterations).
+            Default: 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`.
-        reset_flag (bool): Whether to clear the output buffer after logging
+            Default: True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default: True.
+        with_step (bool): If True, the step will be logged from
+            ``self.get_iters``. Otherwise, step will not be logged.
+            Default: True.
         by_epoch (bool): Whether EpochBasedRunner is used.
+            Default: True.
 
-    .. _NeptuneAI:
-        https://docs.neptune.ai/you-should-know/logging-metadata
+    .. _Neptune:
+        https://docs.neptune.ai
     """
 
     def __init__(self,

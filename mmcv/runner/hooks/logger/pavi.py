@@ -15,6 +15,10 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
+    """Class to visual model, log metrics, etc to Pavi.
+
+    Used within OpenMMLab organization only.
+    """
 
     def __init__(self,
                  init_kwargs=None,

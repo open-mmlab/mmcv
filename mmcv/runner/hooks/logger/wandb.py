@@ -15,6 +15,8 @@ class WandbLoggerHook(LoggerHook):
 
 
     Args:
+        init_kwargs (dict): a dict contains the initialization keys. Check
+            https://docs.wandb.ai/ref/python/init for more init arguments.
         interval (int): Logging interval (every k iterations).
             Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
@@ -22,6 +24,11 @@ class WandbLoggerHook(LoggerHook):
             Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
+        commit (bool): Save the metrics dict to the wandb server and increment
+            the step. If false ``wandb.log`` just updates the current metrics
+            dict with the row argument and metrics won't be saved until
+            ``wandb.log`` is called with ``commit=True``.
+            Default: True.
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
         with_step (bool): If True, the step will be logged from
