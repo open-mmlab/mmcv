@@ -30,7 +30,7 @@ class NeptuneLoggerHook(LoggerHook):
         interval (int): Logging interval (every k iterations).
             Default: 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
+            if less than ``interval``.
             Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: True.

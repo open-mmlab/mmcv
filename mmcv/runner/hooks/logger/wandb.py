@@ -11,7 +11,7 @@ from .base import LoggerHook
 class WandbLoggerHook(LoggerHook):
     """Class to log metrics with wandb.
 
-    It requires `wandb` to be installed.
+    It requires `wandb`_ to be installed.
 
 
     Args:
@@ -42,6 +42,9 @@ class WandbLoggerHook(LoggerHook):
             ``out_suffix`` will be uploaded to wandb.
             Default: ('.log.json', '.log', '.py').
             `New in version 1.4.3.`
+
+    .. _wandb:
+        https://docs.wandb.ai
     """
 
     def __init__(self,
