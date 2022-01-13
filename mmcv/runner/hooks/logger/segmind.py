@@ -10,7 +10,7 @@ class SegmindLoggerHook(LoggerHook):
 
     It requires `Segmind`_ to be installed.
 
-    .. Segmind:
+    .. _Segmind:
         https://docs.segmind.com/python-library
     """
 
