@@ -31,12 +31,6 @@ class SegmindLoggerHook(LoggerHook):
         self.segmind_mlflow_log = try_mlflow_log
 
     @master_only
-    def before_run(self, runner):
-        super(SegmindLoggerHook, self).before_run(runner)
-        if self.segmind is None:
-            self.import_segmind()
-
-    @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         if tags:
