@@ -24,6 +24,15 @@ except ImportError:
 def cast_tensor_type(inputs, src_type, dst_type):
     """Recursively convert Tensor in inputs from src_type to dst_type.
 
+    Note:
+        In v1.4.4 and later, ``cast_tersor_type`` will only convert the
+        torch.Tensor which is consistent with ``src_type`` to the ``dis_type``.
+        Before v1.4.4, it ignores the ``src_type`` argument, leading to some
+        potential problems. For example, invoking
+        ``cast_tensor_type(inputs, torch.float, torch.half)`` will convert all
+        tensors in inputs to ``torch.half``, but this will cause ``torch.Int``
+        or other types to also be to ``torch.half``, which is not expected.
+
     Args:
         inputs: Inputs that to be casted.
         src_type (torch.dtype): Source type..
