@@ -430,9 +430,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             Specifies the annealing strategy: 'cos' for cosine annealing,
             'linear' for linear annealing. Default: 'cos'.
         gamma (float, optional): Cycle decay ratio. Default: 1.
-            It takes values in the range (0, 1]. The maximum value of the
-            learning rate decreases periodically when it is less than 1.
-            `New in version 1.4.4.`
+            It takes values in the range (0, 1]. The difference between the
+            maximum learning rate and the minimum learning rate decreases
+            periodically when it is less than 1. `New in version 1.4.4.`
     """
 
     def __init__(self,
@@ -498,7 +498,10 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
 
         for (start_iter, end_iter, start_ratio, end_ratio) in self.lr_phases:
             if start_iter <= curr_iter < end_iter:
-                # Apply cycle scaling to gradually reduce max_lr.
+                # Apply cycle scaling to gradually reduce the difference
+                # between max_lr and base lr. The target end_ratio can be
+                # expressed as:
+                # end_ratio = (base_lr + scale * (max_lr - base_lr)) / base_lr
                 if end_ratio > start_ratio:
                     end_ratio = 1 - scale + end_ratio * scale
                 else:
