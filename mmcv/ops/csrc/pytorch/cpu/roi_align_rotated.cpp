@@ -395,7 +395,6 @@ void ROIAlignRotatedBackwardCPULauncher(Tensor grad_output, Tensor rois,
                                         int aligned_width, float spatial_scale,
                                         int sampling_ratio, bool aligned,
                                         bool clockwise) {
-  int output_size = grad_output.numel();
   int channels = grad_input.size(1);
   int height = grad_input.size(2);
   int width = grad_input.size(3);
@@ -431,8 +430,6 @@ void roi_align_rotated_backward_cpu(Tensor top_grad, Tensor rois,
                                     int aligned_width, float spatial_scale,
                                     int sampling_ratio, bool aligned,
                                     bool clockwise) {
-  // Number of ROIs
-  int num_rois = rois.size(0);
   int size_rois = rois.size(1);
   if (size_rois != 6) {
     AT_ERROR("wrong roi size");
