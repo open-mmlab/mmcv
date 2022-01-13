@@ -42,9 +42,15 @@ class RiRoIAlignRotatedFunction(Function):
         output = features.new_zeros(num_rois, num_channels, out_h, out_w)
 
         ext_module.riroi_align_rotated_forward(
-            features, rois, output, pooled_height=out_h, pooled_width=out_w,
-            spatial_scale=spatial_scale, num_samples=num_samples,
-            num_orientations=num_orientations, clockwise=clockwise)
+            features,
+            rois,
+            output,
+            pooled_height=out_h,
+            pooled_width=out_w,
+            spatial_scale=spatial_scale,
+            num_samples=num_samples,
+            num_orientations=num_orientations,
+            clockwise=clockwise)
         return output
 
     @staticmethod
@@ -67,10 +73,15 @@ class RiRoIAlignRotatedFunction(Function):
             grad_input = rois.new_zeros(batch_size, num_channels, feature_h,
                                         feature_w)
             ext_module.riroi_align_rotated_backward(
-                grad_output.contiguous(), rois, grad_input,
-                pooled_height=out_h, pooled_width=out_w,
-                spatial_scale=spatial_scale, num_samples=num_samples,
-                num_orientations=num_orientations, clockwise=clockwise)
+                grad_output.contiguous(),
+                rois,
+                grad_input,
+                pooled_height=out_h,
+                pooled_width=out_w,
+                spatial_scale=spatial_scale,
+                num_samples=num_samples,
+                num_orientations=num_orientations,
+                clockwise=clockwise)
 
             return grad_input, grad_rois, None, None, None, None, None
 
