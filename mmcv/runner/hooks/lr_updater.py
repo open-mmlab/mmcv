@@ -502,8 +502,10 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                 # between max_lr and base lr. The target end_ratio can be
                 # expressed as:
                 # end_ratio = (base_lr + scale * (max_lr - base_lr)) / base_lr
-                if end_ratio > start_ratio:
+                # iteration: 0-iter_up_phase:
+                if start_iter == 0:
                     end_ratio = 1 - scale + end_ratio * scale
+                # iteration: iter_up_phase-self.max_iter_per_phase
                 else:
                     start_ratio = 1 - scale + start_ratio * scale
                 progress = curr_iter - start_iter
