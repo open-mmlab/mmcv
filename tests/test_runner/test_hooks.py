@@ -354,20 +354,23 @@ def test_sync_buffers_hook():
     shutil.rmtree(runner.work_dir)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_momentum_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers, max_iters, gamma, cyclic_times',
+                         [(True, 8, 1, 1), (False, 8, 0.5, 2)])
+def test_momentum_runner_hook(multi_optimizers, max_iters, gamma,
+                              cyclic_times):
     """xdoctest -m tests/test_hooks.py test_momentum_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimziers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
         type='CyclicMomentumUpdaterHook',
         by_epoch=False,
         target_ratio=(0.85 / 0.95, 1),
-        cyclic_times=1,
-        step_ratio_up=0.4)
+        cyclic_times=cyclic_times,
+        step_ratio_up=0.4,
+        gamma=gamma)
     runner.register_hook_from_cfg(hook_cfg)
 
     # add momentum LR scheduler
@@ -388,7 +391,7 @@ def test_momentum_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -419,13 +422,17 @@ def test_momentum_runner_hook(multi_optimziers):
                 'momentum': 0.95
             }, 1),
             call('train', {
-                'learning_rate': 0.2,
+                'learning_rate': 0.11,
                 'momentum': 0.85
-            }, 5),
+            }, 3),
             call('train', {
-                'learning_rate': 0.155,
-                'momentum': 0.875
-            }, 7),
+                'learning_rate': 0.1879422863405995,
+                'momentum': 0.95
+            }, 6),
+            call('train', {
+                'learning_rate': 0.11000000000000001,
+                'momentum': 0.9
+            }, 8),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
