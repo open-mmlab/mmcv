@@ -158,6 +158,7 @@ def plot_lr_curve(json_file, cfg):
                 'bottom',
                 functions=(lambda x: x / cfg.num_iters * cfg.log_interval,
                            lambda y: y * cfg.num_iters / cfg.log_interval))
+            sec_ax.tick_params(labelsize=font_size)
             sec_ax.set_xlabel('Epochs', fontsize=font_size)
         else:
             # plt.subplot(2, 1, index + 1)
@@ -178,8 +179,7 @@ def plot_lr_curve(json_file, cfg):
         ax.set_title(title, fontsize=font_size)
         ax.grid()
         # set tick font size
-        ax.xaxis.set_tick_params(labelsize=font_size)
-        ax.yaxis.set_tick_params(labelsize=font_size)
+        ax.tick_params(labelsize=font_size)
     save_path = osp.join(cfg.work_dir, 'visualization-result')
     plt.savefig(save_path)
     print(f'The learning rate graph is saved at {save_path}')
