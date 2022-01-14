@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
@@ -7,6 +8,7 @@ from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .contour_expand import contour_expand
+from .convex_iou import convex_giou, convex_iou
 from .corner_pool import CornerPool
 from .correlation import Correlation
 from .deform_conv import DeformConv2d, DeformConv2dPack, deform_conv2d
@@ -28,6 +30,7 @@ from .info import (get_compiler_version, get_compiling_cuda_version,
 from .iou3d import boxes_iou_bev, nms_bev, nms_normal_bev
 from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
+from .min_area_polygons import min_area_polygons
 from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
@@ -92,5 +95,6 @@ __all__ = [
     'SubMConv2d', 'SubMConv3d', 'SparseModule', 'SparseSequential',
     'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
-    'points_in_polygons'
+    'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
+    'convex_iou', 'convex_giou'
 ]

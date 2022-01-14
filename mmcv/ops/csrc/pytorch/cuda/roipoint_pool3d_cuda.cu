@@ -24,7 +24,7 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), boxes_num, batch_size);
+  dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), boxes_num, batch_size);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -38,14 +38,14 @@ void RoIPointPool3dForwardCUDAKernelLauncher(
                              boxes3d.options().dtype(at::kInt));
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks2(DIVUP(boxes_num, THREADS_PER_BLOCK), batch_size);
+  dim3 blocks2(GET_BLOCKS(boxes_num, THREADS_PER_BLOCK), batch_size);
 
   get_pooled_idx<<<blocks2, threads, 0, stream>>>(
       batch_size, pts_num, boxes_num, sampled_pts_num,
       pts_assign.data_ptr<int>(), pts_idx.data_ptr<int>(),
       pooled_empty_flag.data_ptr<int>());
 
-  dim3 blocks_pool(DIVUP(sampled_pts_num, THREADS_PER_BLOCK), boxes_num,
+  dim3 blocks_pool(GET_BLOCKS(sampled_pts_num, THREADS_PER_BLOCK), boxes_num,
                    batch_size);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

@@ -21,7 +21,7 @@ void PointsInBoxesPartForwardCUDAKernelLauncher(int batch_size, int boxes_num,
   at::cuda::CUDAGuard device_guard(boxes.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), batch_size);
+  dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), batch_size);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -47,7 +47,7 @@ void PointsInBoxesAllForwardCUDAKernelLauncher(int batch_size, int boxes_num,
   at::cuda::CUDAGuard device_guard(boxes.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 blocks(DIVUP(pts_num, THREADS_PER_BLOCK), batch_size);
+  dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), batch_size);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

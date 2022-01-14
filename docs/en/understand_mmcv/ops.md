@@ -2,12 +2,14 @@
 
 We implement common CUDA ops used in detection, segmentation, etc.
 
+- ActiveRotatedFilter
 - AssignScoreWithK
 - BallQuery
 - BBoxOverlaps
 - CARAFE
 - CrissCrossAttention
 - ContextBlock
+- ConvexIoU
 - CornerPool
 - Deformable Convolution v1/v2
 - Deformable RoIPool
@@ -19,6 +21,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - GroupPoints
 - KNN
 - MaskedConv
+- MinAreaPolygon
 - NMS
 - PointsInPolygons
 - PSAMask
