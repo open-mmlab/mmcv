@@ -15,18 +15,17 @@
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
 torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
                                           torch::Tensor indicePairs,
                                           torch::Tensor indiceNum, int64_t numAct) {
-  DISPATCH_DEVICE_IMPL(indice_maxpool_forward_impl, features,
-                       indicePairs, indiceNum, numAct);
+  return DISPATCH_DEVICE_IMPL(indice_maxpool_forward_impl, features,
+                              indicePairs, indiceNum, numAct);
 }
 
 torch::Tensor indice_maxpool_forward(torch::Tensor features,
                                      torch::Tensor indicePairs,
                                      torch::Tensor indiceNum, int64_t numAct) {
-  indice_maxpool_forward_impl(features, indicePairs, indiceNum, numAct);
+  return indice_maxpool_forward_impl(features, indicePairs, indiceNum, numAct);
 }
 
 torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
@@ -34,8 +33,8 @@ torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
                                            torch::Tensor outGrad,
                                            torch::Tensor indicePairs,
                                            torch::Tensor indiceNum){
-  DISPATCH_DEVICE_IMPL(indice_maxpool_backward_impl, features, outFeatures,
-                       outGrad, indicePairs, indiceNum);
+  return DISPATCH_DEVICE_IMPL(indice_maxpool_backward_impl, features, outFeatures,
+                              outGrad, indicePairs, indiceNum);
 }
 
 torch::Tensor indice_maxpool_backward(torch::Tensor features,
@@ -43,6 +42,5 @@ torch::Tensor indice_maxpool_backward(torch::Tensor features,
                                       torch::Tensor outGrad,
                                       torch::Tensor indicePairs,
                                       torch::Tensor indiceNum) {
-  indice_maxpool_backward_impl(features, outFeatures, outGrad, indicePairs, indiceNum);
+  return indice_maxpool_backward_impl(features, outFeatures, outGrad, indicePairs, indiceNum);
 }
-#endif

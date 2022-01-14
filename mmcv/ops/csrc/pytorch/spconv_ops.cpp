@@ -15,7 +15,6 @@
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_CUDA
 template <unsigned NDim>
 std::vector<torch::Tensor> GetIndicePairsForwardCUDAKernelLauncher(
     torch::Tensor indices, int64_t batchSize,
@@ -105,33 +104,33 @@ torch::Tensor indice_conv_forward_impl(torch::Tensor features, torch::Tensor fil
                                        torch::Tensor indicePairs,
                                        torch::Tensor indiceNum, int64_t numActOut,
                                        int64_t _inverse, int64_t _subM) {
-  DISPATCH_DEVICE_IMPL(indice_conv_forward_impl, features, filters,
-                       indicePairs, indiceNum, numActOut,
-                       _inverse, _subM);
+  return DISPATCH_DEVICE_IMPL(indice_conv_forward_impl, features, filters,
+                              indicePairs, indiceNum, numActOut,
+                              _inverse, _subM);
 }
 
 torch::Tensor indice_conv_forward(torch::Tensor features, torch::Tensor filters,
                                   torch::Tensor indicePairs,
                                   torch::Tensor indiceNum, int64_t numActOut,
                                   int64_t _inverse, int64_t _subM) {
-  indice_conv_forward_impl(features, filters, indicePairs, indiceNum,
-                           numActOut, _inverse, _subM);
+  return indice_conv_forward_impl(features, filters, indicePairs, indiceNum,
+                                  numActOut, _inverse, _subM);
 }
 
 std::vector<torch::Tensor> indice_conv_backward_impl(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM) {
-  DISPATCH_DEVICE_IMPL(indice_conv_backward_impl, features, filters, outGrad,
-                       indicePairs, indiceNum, _inverse, _subM);
+  return DISPATCH_DEVICE_IMPL(indice_conv_backward_impl, features, filters, outGrad,
+                              indicePairs, indiceNum, _inverse, _subM);
 }
 
 std::vector<torch::Tensor> indice_conv_backward(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM) {
-  indice_conv_backward_impl(features, filters, outGrad, indicePairs, indiceNum,
-                            _inverse, _subM);
+  return indice_conv_backward_impl(features, filters, outGrad, indicePairs, indiceNum,
+                                   _inverse, _subM);
 }
 
 template std::vector<torch::Tensor> get_indice_pairs_forward<2>(
@@ -168,4 +167,3 @@ template std::vector<torch::Tensor> get_indice_pairs_backward<3>(
     std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
     std::vector<int64_t> padding, std::vector<int64_t> dilation,
     std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
-#endif
