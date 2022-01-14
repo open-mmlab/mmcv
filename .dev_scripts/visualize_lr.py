@@ -4,9 +4,12 @@ import os
 import os.path as osp
 import time
 import warnings
+from collections import OrderedDict
 from unittest.mock import Mock, patch
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 import torch.nn as nn
 from torch.optim import SGD
 from torch.utils.data import DataLoader
@@ -48,11 +51,57 @@ class SimpleModel(nn.Module):
         return dict()
 
 
+def _momentum_log(self, runner):
+    if 'eval_iter_num' in runner.log_buffer.output:
+        # this doesn't modify runner.iter and is regardless of by_epoch
+        cur_iter = runner.log_buffer.output.pop('eval_iter_num')
+    else:
+        cur_iter = self.get_iter(runner, inner_iter=True)
+
+    log_dict = OrderedDict(
+        mode=self.get_mode(runner),
+        epoch=self.get_epoch(runner),
+        iter=cur_iter)
+
+    # only record lr of the first param group
+    cur_lr = runner.current_lr()
+    if isinstance(cur_lr, list):
+        log_dict['lr'] = cur_lr[0]
+    else:
+        assert isinstance(cur_lr, dict)
+        log_dict['lr'] = {}
+        for k, lr_ in cur_lr.items():
+            assert isinstance(lr_, list)
+            log_dict['lr'].update({k: lr_[0]})
+
+    if 'time' in runner.log_buffer.output:
+        # statistic memory
+        if torch.cuda.is_available():
+            log_dict['memory'] = self._get_max_memory(runner)
+
+    cur_momentum = runner.current_momentum()
+    if isinstance(cur_momentum, list):
+        log_dict['momentum'] = cur_momentum[0]
+    else:
+        assert isinstance(cur_momentum, dict)
+        log_dict['momentum'] = {}
+        for k, lr_ in cur_momentum.items():
+            assert isinstance(lr_, list)
+            log_dict['momentum'].update({k: lr_[0]})
+    log_dict = dict(log_dict, **runner.log_buffer.output)
+    self._log_info(log_dict, runner)
+    self._dump_log(log_dict, runner)
+    return log_dict
+
+
 @patch('mmcv.runner.EpochBasedRunner.run_iter', Mock())
+@patch('mmcv.runner.hooks.TextLoggerHook.log', _momentum_log)
 def run(cfg, logger):
-    assert cfg.get('lr_config')
+    momentum_config = cfg.get('momentum_config')
+    lr_config = cfg.get('lr_config')
+
     model = SimpleModel()
-    optimizer = SGD(model.parameters(), 0.1)
+    optimizer = SGD(model.parameters(), 0.1, momentum=0.8)
     cfg.work_dir = cfg.get('work_dir', './')
     workflow = [('train', 1)]
 
@@ -74,45 +123,64 @@ def run(cfg, logger):
             work_dir=cfg.work_dir,
             logger=logger,
             meta=None))
-    lr_config = cfg.lr_config
     log_config = dict(
         interval=cfg.log_interval, hooks=[
             dict(type='TextLoggerHook'),
         ])
+
     runner.register_training_hooks(lr_config, log_config=log_config)
+    runner.register_momentum_hook(momentum_config)
     runner.run([fake_dataloader], workflow)
 
 
 def plot_lr_curve(json_file, cfg):
-    lr_list = []
+    data_dict = dict(LearningRate=[], Momentum=[])
     assert os.path.isfile(json_file)
     with open(json_file, 'r') as f:
         for line in f:
             log = json.loads(line.strip())
-            lr_list.append(log['lr'])
+            data_dict['LearningRate'].append(log['lr'])
+            data_dict['Momentum'].append(log['momentum'])
+
     wind_w, wind_h = [int(size) for size in cfg.window_size.split('*')]
-    plt.figure(figsize=(wind_w, wind_h))
     # if legend is None, use {filename}_{key} as legend
-
-    ax: plt.Axes = plt.subplot()
-
-    ax.plot(lr_list, linewidth=1)
-    if cfg.runner.type == 'EpochBasedRunner':
-        ax.xaxis.tick_top()
-        ax.set_xlabel('Iters')
-        ax.xaxis.set_label_position('top')
-        sec_ax = ax.secondary_xaxis(
-            'bottom',
-            functions=(lambda x: x / cfg.num_iters * cfg.log_interval,
-                       lambda y: y * cfg.num_iters * cfg.log_interval))
-        sec_ax.set_xlabel('Epochs')
-    else:
-        plt.xlabel('Iters')
-    plt.ylabel('Learning Rate')
-    title = cfg.lr_config.type
-    plt.title(title)
-
-    save_path = osp.join(cfg.work_dir, title)
+    fig, axes = plt.subplots(2, 1, figsize=(12, 14))
+    plt.subplots_adjust(hspace=0.5)
+    font_size = 20
+    for index, (mode, data_list) in enumerate(data_dict.items()):
+        ax = axes[index]
+        if cfg.runner.type == 'EpochBasedRunner':
+            ax.plot(data_list, linewidth=1)
+            ax.xaxis.tick_top()
+            ax.set_xlabel('Iters', fontsize=font_size)
+            ax.xaxis.set_label_position('top')
+            sec_ax = ax.secondary_xaxis(
+                'bottom',
+                functions=(lambda x: x / cfg.num_iters * cfg.log_interval,
+                           lambda y: y * cfg.num_iters / cfg.log_interval))
+            sec_ax.set_xlabel('Epochs', fontsize=font_size)
+        else:
+            # plt.subplot(2, 1, index + 1)
+            x_list = np.arange(len(data_list)) * cfg.log_interval
+            ax.plot(x_list, data_list)
+            ax.set_xlabel('Iters', fontsize=font_size)
+        ax.set_ylabel(mode, fontsize=font_size)
+        if mode == 'LearningRate':
+            if cfg.get('lr_config'):
+                title = cfg.lr_config.type
+            else:
+                title = 'No learning rate schedule'
+        else:
+            if cfg.get('momentum_config'):
+                title = cfg.momentum_config.type
+            else:
+                title = 'No momentum schedule'
+        ax.set_title(title, fontsize=font_size)
+        ax.grid()
+        # set tick font size
+        ax.xaxis.set_tick_params(labelsize=font_size)
+        ax.yaxis.set_tick_params(labelsize=font_size)
+    save_path = osp.join(cfg.work_dir, 'visualization-result')
     plt.savefig(save_path)
     print(f'The learning rate graph is saved at {save_path}')
     plt.show()
