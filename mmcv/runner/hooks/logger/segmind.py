@@ -24,7 +24,6 @@ class SegmindLoggerHook(LoggerHook):
         except ImportError:
             raise ImportError(
                 "Please run 'pip install segmind' to install segmind")
-        self.segmind = segmind
         self.segmind_log_metrics = segmind.tracking.fluent.log_metrics
         self.segmind_mlflow_log = segmind.utils.logging_utils.try_mlflow_log
 
