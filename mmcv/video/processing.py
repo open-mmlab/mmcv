@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import subprocess
 import tempfile
+import warnings
 
 from mmcv.utils import requires_executable
 
@@ -48,7 +49,20 @@ def convert_video(in_file,
           f'{out_file}'
     if print_cmd:
         print(cmd)
-    subprocess.call(cmd, shell=True)
+    try:
+        subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+        return
+    except subprocess.CalledProcessError as e:
+        output_bytes = str(e.output)  # Output generated before error
+    # If your ffmpeg is too old, using --strict -2 before output
+    if '-strict -2' in output_bytes:
+        warnings.warn(
+            'Your ffmepg is too old, try to using --strict -2 option')
+        cmd = f'ffmpeg -y {pre_options} -i {in_file} {" ".join(options)} ' \
+              f'-strict -2 {out_file}'
+        subprocess.call(cmd, shell=True)
+    else:
+        raise ValueError(f'Conver video failed: {output_bytes}')
 
 
 @requires_executable('ffmpeg')
