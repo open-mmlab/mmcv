@@ -15,7 +15,7 @@ void ConvexIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       pointsets.scalar_type(), "convex_iou_cuda_kernel", ([&] {
         convex_iou_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK / 2, 0, stream>>>(
                 num_pointsets, num_polygons, pointsets.data_ptr<scalar_t>(),
                 polygons.data_ptr<scalar_t>(), ious.data_ptr<scalar_t>());
       }));
