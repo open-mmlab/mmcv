@@ -107,7 +107,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 def get_torchvision_models():
     model_urls = dict()
-    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__, prefix='models.'):
+    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__,
+                                                prefix='models.'):
         if ispkg:
             continue
         _zoo = import_module(f'torchvision.{name}')
