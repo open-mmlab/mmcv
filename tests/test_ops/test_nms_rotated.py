@@ -26,8 +26,17 @@ class TestNmsRotated:
         boxes = torch.from_numpy(np_boxes).cuda()
         labels = torch.from_numpy(np_labels).cuda()
 
+        # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5, labels)
 
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test ccw angle definition
+        boxes[..., -2] *= -1
+        dets, keep_inds = nms_rotated(
+            boxes[:, :5], boxes[:, -1], 0.5, labels, clockwise=False)
+        dets[..., -2] *= -1
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
@@ -47,6 +56,15 @@ class TestNmsRotated:
 
         boxes = torch.from_numpy(np_boxes).cuda()
 
+        # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5)
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test ccw angle definition
+        boxes[..., -2] *= -1
+        dets, keep_inds = nms_rotated(
+            boxes[:, :5], boxes[:, -1], 0.5, clockwise=False)
+        dets[..., -2] *= -1
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)

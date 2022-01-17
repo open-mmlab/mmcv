@@ -378,9 +378,13 @@ setup(
     url='https://github.com/open-mmlab/mmcv',
     author='MMCV Contributors',
     author_email='openmmlab@gmail.com',
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
     install_requires=install_requires,
+    extras_require={
+        'all': parse_requirements('requirements.txt'),
+        'tests': parse_requirements('requirements/test.txt'),
+        'build': parse_requirements('requirements/build.txt'),
+        'optional': parse_requirements('requirements/optional.txt'),
+    },
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)

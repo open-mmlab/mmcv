@@ -20,17 +20,17 @@ __global__ void three_interpolate_forward_cuda_kernel(
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  CUDA_1D_KERNEL_LOOP(pt_idx, n) {
+    if (bs_idx >= b || c_idx >= c) return;
 
-  if (bs_idx >= b || c_idx >= c || pt_idx >= n) return;
+    weight += bs_idx * n * 3 + pt_idx * 3;
+    points += bs_idx * c * m + c_idx * m;
+    idx += bs_idx * n * 3 + pt_idx * 3;
+    out += bs_idx * c * n + c_idx * n;
 
-  weight += bs_idx * n * 3 + pt_idx * 3;
-  points += bs_idx * c * m + c_idx * m;
-  idx += bs_idx * n * 3 + pt_idx * 3;
-  out += bs_idx * c * n + c_idx * n;
-
-  out[pt_idx] = weight[0] * points[idx[0]] + weight[1] * points[idx[1]] +
-                weight[2] * points[idx[2]];
+    out[pt_idx] = weight[0] * points[idx[0]] + weight[1] * points[idx[1]] +
+                  weight[2] * points[idx[2]];
+  }
 }
 
 template <typename T>
@@ -44,18 +44,18 @@ __global__ void three_interpolate_backward_cuda_kernel(
 
   int bs_idx = blockIdx.z;
   int c_idx = blockIdx.y;
-  int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  CUDA_1D_KERNEL_LOOP(pt_idx, n) {
+    if (bs_idx >= b || c_idx >= c) return;
 
-  if (bs_idx >= b || c_idx >= c || pt_idx >= n) return;
+    grad_out += bs_idx * c * n + c_idx * n + pt_idx;
+    weight += bs_idx * n * 3 + pt_idx * 3;
+    grad_points += bs_idx * c * m + c_idx * m;
+    idx += bs_idx * n * 3 + pt_idx * 3;
 
-  grad_out += bs_idx * c * n + c_idx * n + pt_idx;
-  weight += bs_idx * n * 3 + pt_idx * 3;
-  grad_points += bs_idx * c * m + c_idx * m;
-  idx += bs_idx * n * 3 + pt_idx * 3;
-
-  atomicAdd(grad_points + idx[0], grad_out[0] * weight[0]);
-  atomicAdd(grad_points + idx[1], grad_out[0] * weight[1]);
-  atomicAdd(grad_points + idx[2], grad_out[0] * weight[2]);
+    atomicAdd(grad_points + idx[0], grad_out[0] * weight[0]);
+    atomicAdd(grad_points + idx[1], grad_out[0] * weight[1]);
+    atomicAdd(grad_points + idx[2], grad_out[0] * weight[2]);
+  }
 }
 
 #endif  // THREE_INTERPOLATE_CUDA_KERNEL_CUH
