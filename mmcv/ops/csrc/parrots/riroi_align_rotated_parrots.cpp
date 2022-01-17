@@ -8,8 +8,8 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 void riroi_align_rotated_forward_cuda_parrots(
-    CudaContext& ctx, const SSElement& attr,
-    const OperatorBase::in_list_t& ins, OperatorBase::out_list_t& outs) {
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -28,14 +28,14 @@ void riroi_align_rotated_forward_cuda_parrots(
   auto input = buildATensor(ctx, ins[0]);
   auto rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
-  riroi_align_rotated_forward(input, rois, output, pooled_height,
-                              pooled_width, spatial_scale, sample_num,
-                              num_orientations, clockwise);
+  riroi_align_rotated_forward(input, rois, output, pooled_height, pooled_width,
+                              spatial_scale, sample_num, num_orientations,
+                              clockwise);
 }
 
 void riroi_align_rotated_backward_cuda_parrots(
-    CudaContext& ctx, const SSElement& attr,
-    const OperatorBase::in_list_t& ins, OperatorBase::out_list_t& outs) {
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;

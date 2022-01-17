@@ -11,7 +11,6 @@ using namespace parrots;
 void min_area_polygons_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                     const OperatorBase::in_list_t& ins,
                                     OperatorBase::out_list_t& outs) {
-
   auto pointsets = buildATensor(ctx, ins[0]);
 
   auto polygons = buildATensor(ctx, outs[0]);

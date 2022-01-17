@@ -6,8 +6,7 @@ using namespace at;
 
 void rotated_feature_align_forward(const Tensor features,
                                    const Tensor best_bboxes, Tensor output,
-                                   const float spatial_scale,
-                                   const int points);
+                                   const float spatial_scale, const int points);
 
 void rotated_feature_align_backward(const Tensor top_grad,
                                     const Tensor best_bboxes,
