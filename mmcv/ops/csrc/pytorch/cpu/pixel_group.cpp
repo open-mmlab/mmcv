@@ -103,7 +103,7 @@ std::vector<std::vector<float>> pixel_group_cpu(
 
       float dis = 0;
       auto ptr_embedding_tmp = ptr_embedding + tmpy * width * embedding_dim;
-      for (size_t i = 0; i < embedding_dim; i++) {
+      for (size_t i = 0; i < size_t(embedding_dim); i++) {
         dis +=
             pow(kernel_cv[i] - ptr_embedding_tmp[tmpx * embedding_dim + i], 2);
         // ignore further computing if dis is big enough
