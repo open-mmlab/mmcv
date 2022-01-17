@@ -61,9 +61,8 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     CommandLine:
         python -c "import setup; print(setup.parse_requirements())"
     """
-    from os.path import exists
-
     import sys
+    from os.path import exists
     require_fpath = fname
 
     def parse_line(line):
@@ -324,8 +323,8 @@ def get_extensions():
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
         ext_name = 'mmcv._ext_ort'
-        import onnxruntime
         from torch.utils.cpp_extension import include_paths, library_paths
+        import onnxruntime
         library_dirs = []
         libraries = []
         include_dirs = []
