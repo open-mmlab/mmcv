@@ -73,4 +73,4 @@ class Scatter:
         if streams is not None:
             synchronize_stream(outputs, target_gpus, streams)
 
-        return tuple(outputs) if isinstance(outputs,list) else (outputs,)
+        return tuple(outputs) if isinstance(outputs, list) else (outputs, )
