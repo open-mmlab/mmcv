@@ -310,9 +310,10 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
                 in self.momentum_phases:
             if start_iter <= curr_iter < end_iter:
                 # Apply cycle scaling to gradually reduce the difference
-                # between max_lr and base lr. The target end_ratio can be
-                # expressed as:
-                # end_ratio = (base_lr + scale * (max_lr - base_lr)) / base_lr
+                # between max_momentum and base momentum. The target end_ratio
+                # can be expressed as:
+                # end_ratio = (base_momentum + scale * \
+                # (max_momentum - base_momentum)) / base_momentum
                 # iteration: 0-iter_up_phase:
                 if start_iter == 0:
                     end_ratio = 1 - scale + end_ratio * scale
