@@ -49,6 +49,46 @@ spatial_scale = 1.0
 sampling_ratio = 2
 
 
+def _test_roialign_rotated_deprecated_parameters():
+    try:
+        from mmcv.ops import RoIAlignRotated
+    except ModuleNotFoundError:
+        pytest.skip('test requires compilation')
+
+    device = 'cpu'
+    dtype = torch.float
+
+    pool_h = 2
+    pool_w = 2
+    spatial_scale = 1.0
+    sampling_ratio = 2
+
+    for case in inputs:
+        np_input = np.array(case[0])
+        np_rois = np.array(case[1])
+
+        x = torch.tensor(
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        rois = torch.tensor(np_rois, dtype=dtype, device=device)
+
+        roi_align_rotated_module_deprecated = RoIAlignRotated(
+            out_size=(pool_h, pool_w),
+            spatial_scale=spatial_scale,
+            sample_num=sampling_ratio)
+
+        output_v1 = roi_align_rotated_module_deprecated(x, rois)
+
+        roi_align_rotated_module_new = RoIAlignRotated(
+            output_size=(pool_h, pool_w),
+            spatial_scale=spatial_scale,
+            sampling_ratio=sampling_ratio)
+
+        output_v2 = roi_align_rotated_module_new(x, rois)
+        assert np.allclose(
+            output_v1.data.type(torch.float).cpu().numpy(),
+            output_v2.data.type(torch.float).cpu().numpy())
+
+
 def _test_roialign_rotated_gradcheck(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('unittest does not support GPU yet.')
@@ -114,3 +154,4 @@ def test_roialign_rotated(device, dtype):
     if (dtype is torch.double):
         _test_roialign_rotated_gradcheck(device=device, dtype=dtype)
     _test_roialign_rotated_allclose(device=device, dtype=dtype)
+    _test_roialign_rotated_deprecated_parameters()
