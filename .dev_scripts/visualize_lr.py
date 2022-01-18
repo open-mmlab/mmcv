@@ -20,7 +20,9 @@ from mmcv.utils import get_logger
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Visualize the given config of learning rate and momentum')
+    parser = argparse.ArgumentParser(description='Visualize the given config'
+                                     'of learning rate and '
+                                     'momentum')
     parser.add_argument('config', help='train config file path')
     parser.add_argument(
         '--work-dir', default='./', help='the dir to save logs and models')
