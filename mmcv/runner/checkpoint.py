@@ -106,7 +106,9 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def get_torchvision_models():
-    model_urls = dict()
+    model_urls = dict()    
+    # Add a prefix to avoid returning wrong directories
+    # More details at https://github.com/open-mmlab/mmcv/pull/1668
     for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__,
                                                 prefix='models.'):
         if ispkg:
