@@ -15,7 +15,7 @@ class MlflowLoggerHook(LoggerHook):
             Default None. If not None, set the active experiment.
             If experiment does not exist, an experiment with provided name
             will be created.
-        tags (dict of str: str, optional): Tags for the current run.
+        tags (Dict[str], optional): Tags for the current run.
             Default None. If not None, set tags for the current run.
         log_model (bool, optional): Whether to log an MLflow artifact.
             Default True. If True, log runner.model as an MLflow artifact
