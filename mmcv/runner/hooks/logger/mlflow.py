@@ -12,26 +12,20 @@ class MlflowLoggerHook(LoggerHook):
 
     Args:
         exp_name (str, optional): Name of the experiment to be used.
-            Default None.
-            If not None, set the active experiment.
+            Default None. If not None, set the active experiment.
             If experiment does not exist, an experiment with provided name
             will be created.
         tags (dict of str: str, optional): Tags for the current run.
-            Default None.
-            If not None, set tags for the current run.
+            Default None. If not None, set tags for the current run.
         log_model (bool, optional): Whether to log an MLflow artifact.
-            Default True.
-            If True, log runner.model as an MLflow artifact
+            Default True. If True, log runner.model as an MLflow artifact
             for the current run.
-        interval (int): Logging interval (every k iterations).
-            Default: 10.
+        interval (int): Logging interval (every k iterations). Default: 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-            Default: True.
+            if less than `interval`. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
-        by_epoch (bool): Whether EpochBasedRunner is used.
-            Default: True.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
 
     .. _MLflow:
         https://www.mlflow.org/docs/latest/index.html

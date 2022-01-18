@@ -27,18 +27,15 @@ class NeptuneLoggerHook(LoggerHook):
 
             Check https://docs.neptune.ai/api-reference/neptune#init for more
             init arguments.
-        interval (int): Logging interval (every k iterations).
-            Default: 10.
+        interval (int): Logging interval (every k iterations). Default: 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than ``interval``.
-            Default: True.
+            if less than ``interval``. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: True.
         with_step (bool): If True, the step will be logged from
             ``self.get_iters``. Otherwise, step will not be logged.
             Default: True.
-        by_epoch (bool): Whether EpochBasedRunner is used.
-            Default: True.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
 
     .. _Neptune:
         https://docs.neptune.ai

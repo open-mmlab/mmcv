@@ -12,19 +12,14 @@ class TensorboardLoggerHook(LoggerHook):
     """Class to log metrics to Tensorboard.
 
     Args:
-        log_dir (string): Save directory location.
-            Default: None.
-            If default values are used, directory location is
-            ``runner.work_dir``/tf_logs.
-        interval (int): Logging interval (every k iterations).
-            Default: True.
+        log_dir (string): Save directory location. Default: None. If default
+            values are used, directory location is ``runner.work_dir``/tf_logs.
+        interval (int): Logging interval (every k iterations). Default: True.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-            Default: True.
+            if less than `interval`. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
-        by_epoch (bool): Whether EpochBasedRunner is used.
-            Default: True.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
     """
 
     def __init__(self,
