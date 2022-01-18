@@ -14,15 +14,18 @@ try:
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
+    if platform.system() != 'Windows':
 
-    class MMCVBuildExtension(BuildExtension):
+        class MMCVBuildExtension(BuildExtension):
 
-        def build_extensions(self):
-            if '-Wstrict-prototypes' in self.compiler.compiler_so:
-                self.compiler.compiler_so.remove('-Wstrict-prototypes')
-            super().build_extensions()
+            def build_extensions(self):
+                if '-Wstrict-prototypes' in self.compiler.compiler_so:
+                    self.compiler.compiler_so.remove('-Wstrict-prototypes')
+                super().build_extensions()
 
-    cmd_class = {'build_ext': MMCVBuildExtension}
+        cmd_class = {'build_ext': MMCVBuildExtension}
+    else:
+        cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
