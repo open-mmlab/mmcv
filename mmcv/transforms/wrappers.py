@@ -34,7 +34,7 @@ class Compose(BaseTransform):
 
     Args:
         transforms (list[dict | callable]): Either config
-          dicts of transforms or transform objects.
+            dicts of transforms or transform objects.
     """
 
     def __init__(self, transforms: List[Union[Dict, Callable[[Dict], Dict]]]):
@@ -44,7 +44,7 @@ class Compose(BaseTransform):
             if isinstance(transform, dict):
                 transform = TRANSFORMS.build(transform)
                 self.transforms.append(transform)
-            elif callable(transform):
+            elif isinstance(transform, callable):
                 self.transforms.append(transform)
             else:
                 raise TypeError('transform must be callable or a dict, but got'
@@ -54,7 +54,7 @@ class Compose(BaseTransform):
         """Allow easy iteration over the transform sequence."""
         return iter(self.transforms)
 
-    def transform(self, results):
+    def transform(self, results: Dict) -> Optional[Dict]:
         """Call function to apply transforms sequentially.
 
         Args:

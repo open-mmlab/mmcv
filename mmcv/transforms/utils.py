@@ -12,6 +12,16 @@ from .base import BaseTransform
 
 
 class cacheable_method:
+    """Decorator that mark a method of a transform class as a cacheable method.
+
+    This decorator is usually used together with the context-manager
+    cache_random_params. In this context, a cacheable method will cache its
+    return value(s) at the first time being invoked, and always return the
+    cached values when being invoked again.
+
+    .. note::
+        only a instance method can be decorated as a cacheable_method.
+    """
 
     def __init__(self, func):
 
