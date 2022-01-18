@@ -14,7 +14,7 @@ void ActiveRotatedFilterForwardCUDAKernelLauncher(const Tensor input,
   int kW = input.size(4);
   int num_rotations = indices.size(3);
   int nEntry = num_orientations * kH * kW;
-  int output_size = output.numel();
+  int output_size = input.numel();
 
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
