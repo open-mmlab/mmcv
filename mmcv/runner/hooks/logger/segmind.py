@@ -10,12 +10,15 @@ class SegmindLoggerHook(LoggerHook):
 
     It requires `Segmind`_ to be installed.
 
+    Args:
+    interval (int): Logging interval (every k iterations). Default: 10.
+
     .. _Segmind:
         https://docs.segmind.com/python-library
     """
 
-    def __init__(self):
-        super(SegmindLoggerHook, self).__init__()
+    def __init__(self, interval=10):
+        super(SegmindLoggerHook, self).__init__(interval=10)
         self.import_segmind()
 
     def import_segmind(self):
