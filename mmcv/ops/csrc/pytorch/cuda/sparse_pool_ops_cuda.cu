@@ -67,7 +67,8 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
                 backwardFtor;
             backwardFtor(tv::CPU(), tv::torch2tv<const scalar_t>(outFeatures),
                          tv::torch2tv<const scalar_t>(features),
-                         tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
+                         tv::torch2tv<const scalar_t>(outGrad),
+                         tv::torch2tv<scalar_t>(inputGrad),
                          tv::torch2tv<const int>(indicePairs).subview(i), nHot);
           } else {
             functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, int>
@@ -75,7 +76,8 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
             backwardFtor(tv::TorchGPU(),
                          tv::torch2tv<const scalar_t>(outFeatures),
                          tv::torch2tv<const scalar_t>(features),
-                         tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
+                         tv::torch2tv<const scalar_t>(outGrad),
+                         tv::torch2tv<scalar_t>(inputGrad),
                          tv::torch2tv<const int>(indicePairs).subview(i), nHot);
             TV_CHECK_CUDA_ERR();
           }
