@@ -30,11 +30,11 @@ except ImportError:
 
 @TRANSFORMS.register_module()
 class Compose(BaseTransform):
-    """Compose a data pipeline with a sequence of transforms.
+    """Compose multiple transforms sequentially.
 
     Args:
-        transforms (list[dict | callable]): Either config
-            dicts of transforms or transform objects.
+        transforms (list[dict | callable]): Sequence of transform object or
+            config dict to be composed.
     """
 
     def __init__(self, transforms: List[Union[Dict, Callable[[Dict], Dict]]]):
@@ -61,7 +61,7 @@ class Compose(BaseTransform):
             results (dict): A result dict contains the results to transform.
 
         Returns:
-            dict: Transformed results.
+            dict or None: Transformed results.
         """
         for t in self.transforms:
             results = t(results)
@@ -84,16 +84,58 @@ class Remap(BaseTransform):
     wrapped transforms (or sub-pipeline).
 
     Args:
-        transforms (list[dict|callable]):
+        transforms (list[dict | callable]): Sequence of transform object or
+            config dict to be wrapped.
         input_mapping (dict): A dict that defines the input key mapping.
-            The keys corresponds to the inner key (i.e. kwargs of the
-            `transform` method), and the values corresponds to the outer
-            keys (i.e. the keys of the data/results).
+            The keys corresponds to the inner key (i.e., kwargs of the
+            `transform` method), and should be string type. The values
+            corresponds to the outer keys (i.e., the keys of the
+            data/results), and should have a type of string, list or dict.
+            None means not applying input mapping. Default: None.
         output_mapping(dict): A dict that defines the output key mapping.
-            The keys corresponds to the inner key (i.e. the keys of the
-            output dict of the `transform` method), and the values
-            corresponds to the outer keys (i.e. the keys of the
-            data/results).
+            The keys and values have the same meanings and rules as in the
+            `input_mapping`. Default: None.
+        inplace (bool): If True, an inverse of the input_mapping will be used
+            as the output_mapping. Note that if inplace is set True,
+            output_mapping should be None and strict should be True.
+            Default: False.
+        strict (bool): If True, the outer keys in the input_mapping must exist
+            in the input data, or an excaption will be raised. If False,
+            the missing keys will be assigned a special value `NotInResults`
+            during input remapping. Default: True.
+
+    Examples:
+        >>> # Example 1: Remap 'gt_img' to 'img'
+        >>> pipeline = [
+        >>>     # Use Remap to convert outer (original) field name 'gt_img'
+        >>>     # to inner (used by inner transforms) filed name 'img'
+        >>>     dict(type='Remap',
+        >>>         input_mapping=dict(img='gt_img'),
+        >>>         # inplace=True means output key mapping is the revert of
+        >>>         # the input key mapping, e.g. inner 'img' will be mapped
+        >>>         # back to outer 'gt_img'
+        >>>         inplace=True,
+        >>>         transforms=[
+        >>>             # In all transforms' implementation just use 'img'
+        >>>             # as a standard field name
+        >>>             dict(type='Crop', crop_size=(384, 384)),
+        >>>             dict(type='Normalize'),
+        >>>         ])
+        >>> ]
+        >>> # Example 2: Collect and structure multiple items
+        >>> pipeline = [
+        >>>     # The inner field 'imgs' will be a dict with keys 'img_src'
+        >>>     # and 'img_tar', whose values are outer fields 'img1' and
+        >>>     # 'img2' respectively.
+        >>>     dict(type='Remap',
+        >>>         dict(
+        >>>             type='Remap',
+        >>>             input_mapping=dict(
+        >>>                 imgs=dict(
+        >>>                     img_src='img1',
+        >>>                     img_tar='img2')),
+        >>>         transforms=...)
+        >>> ]
     """
 
     def __init__(self,
@@ -107,14 +149,14 @@ class Remap(BaseTransform):
         self.strict = strict
         self.input_mapping = input_mapping
 
-        if inplace:
+        if self.inplace:
             if not self.strict:
                 raise ValueError('Remap: `strict` must be set True if'
                                  '`inplace` is set True.')
 
             if output_mapping is not None:
-                raise ValueError('Remap: the output_mapping must be None '
-                                 'if `inplace` is set True.')
+                raise ValueError('Remap: `output_mapping` must be None if'
+                                 '`inplace` is set True.')
             self.output_mapping = input_mapping
         else:
             self.output_mapping = output_mapping
@@ -126,8 +168,12 @@ class Remap(BaseTransform):
         data items according to the input_mapping.
 
         Args:
-            data (dict): The original data dictionary of the pipeline
-            input_mapping(dict):
+            data (dict): The original input data
+            input_mapping(dict): The input key mapping. See the document of
+                mmcv.transforms.wrappers.Remap` for details.
+        Returns:
+            dict: The input data with remapped keys. This will be the actual
+                input of the wrapped pipeline.
         """
 
         def _remap(data, m):
@@ -158,7 +204,16 @@ class Remap(BaseTransform):
 
     def remap_output(self, data: Dict, output_mapping: Dict) -> Dict[str, Any]:
         """Remap outputs from the wrapped transforms by gathering and renaming
-        data items according to the output_mapping."""
+        data items according to the output_mapping.
+
+        Args:
+            data (dict): The output of the wrapped pipeline.
+            input_mapping(dict): The output key mapping. See the document of
+                `mmcv.transforms.wrappers.Remap` for details.
+
+        Returns:
+            dict: The output with remapped keys.
+        """
 
         def _remap(data, m):
             if isinstance(m, dict):
@@ -203,6 +258,80 @@ class Remap(BaseTransform):
 
 @TRANSFORMS.register_module()
 class ApplyToMultiple(Remap):
+    """A transform wrapper to apply the wrapped transforms to multiple data
+    items. For example, apply Resize to multiple images.
+
+    Args:
+        transforms (list[dict | callable]): Sequence of transform object or
+            config dict to be wrapped.
+        input_mapping (dict): A dict that defines the input key mapping.
+            Note that to apply the transforms to multiple data items, the
+            outer keys of the target items should be remapped as a list with
+            the standard inner key (The key required by the wrapped transform).
+            See the following example and the document of
+            `mmcv.transforms.wrappers.Remap` for details.
+        output_mapping(dict): A dict that defines the output key mapping.
+            The keys and values have the same meanings and rules as in the
+            `input_mapping`. Default: None.
+        inplace (bool): If True, an inverse of the input_mapping will be used
+            as the output_mapping. Note that if inplace is set True,
+            output_mapping should be None and strict should be True.
+            Default: False.
+        strict (bool): If True, the outer keys in the input_mapping must exist
+            in the input data, or an excaption will be raised. If False,
+            the missing keys will be assigned a special value `NotInResults`
+            during input remapping. Default: True.
+        share_random_params (bool): If True, the random transform
+            (e.g., RandomFlip) will be conducted in a deterministic way and
+            have the same behavior on all data items. For example, to randomly
+            flip either both input image and ground-truth image, or none.
+            Default: False.
+
+    .. note::
+        To apply the transforms to each elements of a list or tuple, instead
+        of separate data items, you can remap the outer key of the target
+        sequence to the standard inner key. See example 2.
+        example.
+
+    Examples:
+        >>> # Example 1:
+        >>> pipeline = [
+        >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
+        >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
+        >>>     # ApplyToMultiple maps multiple outer fields to standard the
+        >>>     # inner field and process them with wrapped transforms
+        >>>     # respectively
+        >>>     dict(type='ApplyToMultiple',
+        >>>         # case 1: from multiple outer fields
+        >>>         input_mapping=dict(img=['lq', 'gt']),
+        >>>         inplace=True,
+        >>>         # share_random_param=True means using identical random
+        >>>         # parameters in every processing
+        >>>         share_random_param=True,
+        >>>         transforms=[
+        >>>             dict(type='Crop', crop_size=(384, 384)),
+        >>>             dict(type='Normalize'),
+        >>>         ])
+        >>> ]
+        >>> # Example 2:
+        >>> pipeline = [
+        >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
+        >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
+        >>>     # ApplyToMultiple maps multiple outer fields to standard the
+        >>>     # inner field and process them with wrapped transforms
+        >>>     # respectively
+        >>>     dict(type='ApplyToMultiple',
+        >>>         # case 2: from one outer field that contains multiple
+        >>>         # data elements (e.g. a list)
+        >>>         # input_mapping=dict(img='images'),
+        >>>         inplace=True,
+        >>>         share_random_param=True,
+        >>>         transforms=[
+        >>>             dict(type='Crop', crop_size=(384, 384)),
+        >>>             dict(type='Normalize'),
+        >>>         ])
+        >>> ]
+    """
 
     def __init__(self,
                  transforms: List[Union[Dict, Callable[[Dict], Dict]]],
@@ -286,6 +415,17 @@ class RandomChoice(BaseTransform):
             with each pipeline. The length should be equal to the pipeline
             number and the sum should be 1. If not given, a uniform
             distribution will be assumed.
+
+    Examples:
+        >>> # config
+        >>> pipeline = [
+        >>>     dict(type='RandomChoice',
+        >>>         pipelines=[
+        >>>             [dict(type='RandomHorizontalFlip')],  # subpipeline 1
+        >>>             [dict(type='RandomRotate')],  # subpipeline 2
+        >>>         ]
+        >>>     )
+        >>> ]
     """
 
     def __init__(self,

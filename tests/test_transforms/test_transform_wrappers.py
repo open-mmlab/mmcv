@@ -154,6 +154,13 @@ def test_remap():
     np.testing.assert_equal(results['v22'], 5)
     np.testing.assert_equal(results['v3'], 6)
 
+    # Test repr
+    pipeline = Remap(
+        transforms=[AddToValue(constant_addend=1)],
+        input_mapping=dict(value='v_in'),
+        output_mapping=dict(value='v_out'))
+    _ = str(pipeline)
+
 
 def test_apply_to_multiple():
 
@@ -167,3 +174,6 @@ def test_apply_to_multiple():
     results = pipeline(results)
 
     np.testing.assert_equal(results['values'], [2, 3])
+
+    # Test repr
+    _ = str(pipeline)
