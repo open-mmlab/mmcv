@@ -15,7 +15,7 @@ class WandbLoggerHook(LoggerHook):
 
 
     Args:
-        init_kwargs (dict): a dict contains the initialization keys. Check
+        init_kwargs (dict): A dict contains the initialization keys. Check
             https://docs.wandb.ai/ref/python/init for more init arguments.
         interval (int): Logging interval (every k iterations).
             Default 10.
