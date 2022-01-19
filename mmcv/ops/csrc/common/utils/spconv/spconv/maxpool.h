@@ -28,7 +28,8 @@ template <typename Device, typename scalar_t, typename Index>
 struct SparseMaxPoolBackwardFunctor {
   void operator()(const Device& d, tv::TensorView<const scalar_t> outFeatures,
                   tv::TensorView<const scalar_t> inFeatures,
-                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
+                  tv::TensorView<const scalar_t> fout,
+                  tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size);
 };
 }  // namespace functor

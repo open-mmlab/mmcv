@@ -19,9 +19,9 @@ torch::Tensor fused_indice_conv_batchnorm_forward_impl(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  return DISPATCH_DEVICE_IMPL(fused_indice_conv_batchnorm_forward_impl, features,
-                              filters, bias, indicePairs, indiceNum, numActOut,
-                              _inverse, _subM);
+  return DISPATCH_DEVICE_IMPL(fused_indice_conv_batchnorm_forward_impl,
+                              features, filters, bias, indicePairs, indiceNum,
+                              numActOut, _inverse, _subM);
 }
 
 torch::Tensor fused_indice_conv_batchnorm_forward(
@@ -29,6 +29,6 @@ torch::Tensor fused_indice_conv_batchnorm_forward(
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
   return fused_indice_conv_batchnorm_forward_impl(features, filters, bias,
-                                                  indicePairs, indiceNum, numActOut,
-                                                  _inverse, _subM);
+                                                  indicePairs, indiceNum,
+                                                  numActOut, _inverse, _subM);
 }

@@ -1,8 +1,8 @@
 #include <cuda_runtime_api.h>
-#include <utils/spconv/spconv/maxpool.h>
-#include "../spconv_utils.h"
 #include <torch/script.h>
+#include <utils/spconv/spconv/maxpool.h>
 
+#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
@@ -23,20 +23,20 @@ torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
       continue;
     }
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.scalar_type(), "IndiceMaxpoolForwardKernel", [&] {
-        if (device == torch::kCPU) {
-          functor::SparseMaxPoolForwardFunctor<tv::CPU, scalar_t, int> forwardFtor;
-          forwardFtor(tv::CPU(), tv::torch2tv<scalar_t>(output),
-                      tv::torch2tv<const scalar_t>(features),
-                      tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-        } else {
-          functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, int> forwardFtor;
-          forwardFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
-                      tv::torch2tv<const scalar_t>(features),
-                      tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-          TV_CHECK_CUDA_ERR();
-        }
-      });
+        features.scalar_type(), "IndiceMaxpoolForwardKernel", [&] {
+          if (device == torch::kCPU) {
+            functor::SparseMaxPoolForwardFunctor<tv::CPU, scalar_t, int> forwardFtor;
+            forwardFtor(tv::CPU(), tv::torch2tv<scalar_t>(output),
+                        tv::torch2tv<const scalar_t>(features),
+                        tv::torch2tv<const int>(indicePairs).subview(i), nHot);
+          } else {
+            functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, int> forwardFtor;
+            forwardFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
+                        tv::torch2tv<const scalar_t>(features),
+                        tv::torch2tv<const int>(indicePairs).subview(i), nHot);
+            TV_CHECK_CUDA_ERR();
+          }
+        });
   }
   return output;
 }
@@ -59,22 +59,22 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
       continue;
     }
     AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      features.scalar_type(), "IndiceMaxpoolBackwardKernel", [&] {
-        if (device == torch::kCPU) {
-          functor::SparseMaxPoolBackwardFunctor<tv::CPU, scalar_t, int> backwardFtor;
-          backwardFtor(tv::CPU(), tv::torch2tv<const scalar_t>(outFeatures),
-                      tv::torch2tv<const scalar_t>(features),
-                      tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
-                      tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-        } else {
-          functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, int> backwardFtor;
-          backwardFtor(tv::TorchGPU(), tv::torch2tv<const scalar_t>(outFeatures),
-                      tv::torch2tv<const scalar_t>(features),
-                      tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
-                      tv::torch2tv<const int>(indicePairs).subview(i), nHot);
-          TV_CHECK_CUDA_ERR();
-        }
-      });
+        features.scalar_type(), "IndiceMaxpoolBackwardKernel", [&] {
+          if (device == torch::kCPU) {
+            functor::SparseMaxPoolBackwardFunctor<tv::CPU, scalar_t, int> backwardFtor;
+            backwardFtor(tv::CPU(), tv::torch2tv<const scalar_t>(outFeatures),
+                        tv::torch2tv<const scalar_t>(features),
+                        tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
+                        tv::torch2tv<const int>(indicePairs).subview(i), nHot);
+          } else {
+            functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, int> backwardFtor;
+            backwardFtor(tv::TorchGPU(), tv::torch2tv<const scalar_t>(outFeatures),
+                        tv::torch2tv<const scalar_t>(features),
+                        tv::torch2tv<const scalar_t>(outGrad), tv::torch2tv<scalar_t>(inputGrad),
+                        tv::torch2tv<const int>(indicePairs).subview(i), nHot);
+            TV_CHECK_CUDA_ERR();
+          }
+        });
   }
   return inputGrad;
 }

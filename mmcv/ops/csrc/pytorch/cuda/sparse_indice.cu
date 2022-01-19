@@ -13,17 +13,17 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
-#include <spconv/indice.cuh>
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/mp_helper.h>
 #include <utils/spconv/tensorview/helper_launch.h>
 #include <utils/spconv/tensorview/tensorview.h>
-#include "../spconv_utils.h"
 
 #include <chrono>
 #include <limits>
+#include <spconv/indice.cuh>
 #include <type_traits>
 
+#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 namespace functor {

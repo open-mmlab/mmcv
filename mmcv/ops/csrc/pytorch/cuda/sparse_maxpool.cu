@@ -15,19 +15,20 @@
 #include <ATen/ATen.h>
 #include <utils/spconv/spconv/maxpool.h>
 #include <utils/spconv/spconv/mp_helper.h>
-#include <utils/spconv/tensorview/helper_kernel.cuh>
 #include <utils/spconv/tensorview/helper_launch.h>
 #include <utils/spconv/tensorview/tensorview.h>
-#include "../spconv_utils.h"
 
 #include <chrono>
 #include <limits>
 #include <type_traits>
+#include <utils/spconv/tensorview/helper_kernel.cuh>
 
+#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolFwdBlockKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
+__global__ void maxPoolFwdBlockKernel(scalar_t *outFeatures,
+                                      const scalar_t *inFeatures,
                                       const Index *indicesIn,
                                       const Index *indicesOut, int numHot,
                                       int numPlanes) {
@@ -88,8 +89,10 @@ __global__ void maxPoolFwdGenericBlockKernel(scalar_t *outFeatures,
   }
 }
 
-template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
-__global__ void maxPoolFwdVecBlockKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
+template <typename scalar_t, typename Index, int NumTLP, int NumILP,
+          typename VecType>
+__global__ void maxPoolFwdVecBlockKernel(scalar_t *outFeatures,
+                                         const scalar_t *inFeatures,
                                          const Index *indicesIn,
                                          const Index *indicesOut, int numHot,
                                          int numPlanes) {
@@ -126,7 +129,8 @@ __global__ void maxPoolFwdVecBlockKernel(scalar_t *outFeatures, const scalar_t *
 }
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolFwdGenericKernel(scalar_t *outFeatures, const scalar_t *inFeatures,
+__global__ void maxPoolFwdGenericKernel(scalar_t *outFeatures,
+                                        const scalar_t *inFeatures,
                                         const Index *indicesIn,
                                         const Index *indicesOut, int numHot,
                                         int numPlanes) {
@@ -161,7 +165,8 @@ __global__ void maxPoolFwdGenericKernel(scalar_t *outFeatures, const scalar_t *i
 }
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolBwdBlockKernel(const scalar_t *outFeatures, const scalar_t *inFeatures,
+__global__ void maxPoolBwdBlockKernel(const scalar_t *outFeatures,
+                                      const scalar_t *inFeatures,
                                       const scalar_t *fout, scalar_t *fin,
                                       const Index *indicesIn,
                                       const Index *indicesOut, int numHot,
@@ -194,11 +199,10 @@ __global__ void maxPoolBwdBlockKernel(const scalar_t *outFeatures, const scalar_
 }
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
-__global__ void maxPoolBwdGenericBlockKernel(const scalar_t *outFeatures,
-                                             const scalar_t *inFeatures, const scalar_t *fout,
-                                             scalar_t *fin, const Index *indicesIn,
-                                             const Index *indicesOut,
-                                             int numHot, int numPlanes) {
+__global__ void maxPoolBwdGenericBlockKernel(
+    const scalar_t *outFeatures, const scalar_t *inFeatures,
+    const scalar_t *fout, scalar_t *fin, const Index *indicesIn,
+    const Index *indicesOut, int numHot, int numPlanes) {
   int ILPStrideX[NumILP];
   Index RI[NumILP];
   Index RO[NumILP];
@@ -225,10 +229,12 @@ __global__ void maxPoolBwdGenericBlockKernel(const scalar_t *outFeatures,
   }
 }
 
-template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
+template <typename scalar_t, typename Index, int NumTLP, int NumILP,
+          typename VecType>
 __global__ void maxPoolBwdVecBlockKernel(const scalar_t *outFeatures,
-                                         const scalar_t *inFeatures, const scalar_t *fout,
-                                         scalar_t *fin, const Index *indicesIn,
+                                         const scalar_t *inFeatures,
+                                         const scalar_t *fout, scalar_t *fin,
+                                         const Index *indicesIn,
                                          const Index *indicesOut, int numHot,
                                          int numPlanes) {
   int ILPStrideY[NumILP];
@@ -272,8 +278,9 @@ __global__ void maxPoolBwdVecBlockKernel(const scalar_t *outFeatures,
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
 __global__ void maxPoolBwdGenericKernel(const scalar_t *outFeatures,
-                                        const scalar_t *inFeatures, const scalar_t *fout,
-                                        scalar_t *fin, const Index *indicesIn,
+                                        const scalar_t *inFeatures,
+                                        const scalar_t *fout, scalar_t *fin,
+                                        const Index *indicesIn,
                                         const Index *indicesOut, int numHot,
                                         int numPlanes) {
   int ILPStrideX[NumILP];
@@ -387,7 +394,8 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index> {
   using kernel_block_t = mp_list_c<int, 64, 32, 16>;
   void operator()(const tv::GPU &d, tv::TensorView<const scalar_t> outFeatures,
                   tv::TensorView<const scalar_t> inFeatures,
-                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
+                  tv::TensorView<const scalar_t> fout,
+                  tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size) {
     if (size <= 0) return;
     int numPlanes = inFeatures.dim(1);
@@ -458,9 +466,11 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index> {
 
 }  // namespace functor
 
-#define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                                \
-  template struct functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, Index>; \
-  template struct functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index>;
+#define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                         \
+  template struct functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t,  \
+                                                       Index>;             \
+  template struct functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, \
+                                                        Index>;
 
 #define DECLARE_GPU_SPECS(scalar_t) DECLARE_GPU_SPECS_T_INDEX(scalar_t, int);
 

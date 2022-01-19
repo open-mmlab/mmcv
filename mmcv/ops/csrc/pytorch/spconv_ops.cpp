@@ -100,13 +100,15 @@ std::vector<torch::Tensor> get_indice_pairs_backward(
   }
 }
 
-torch::Tensor indice_conv_forward_impl(torch::Tensor features, torch::Tensor filters,
+torch::Tensor indice_conv_forward_impl(torch::Tensor features,
+                                       torch::Tensor filters,
                                        torch::Tensor indicePairs,
-                                       torch::Tensor indiceNum, int64_t numActOut,
-                                       int64_t _inverse, int64_t _subM) {
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM) {
   return DISPATCH_DEVICE_IMPL(indice_conv_forward_impl, features, filters,
-                              indicePairs, indiceNum, numActOut,
-                              _inverse, _subM);
+                              indicePairs, indiceNum, numActOut, _inverse,
+                              _subM);
 }
 
 torch::Tensor indice_conv_forward(torch::Tensor features, torch::Tensor filters,
@@ -121,16 +123,16 @@ std::vector<torch::Tensor> indice_conv_backward_impl(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM) {
-  return DISPATCH_DEVICE_IMPL(indice_conv_backward_impl, features, filters, outGrad,
-                              indicePairs, indiceNum, _inverse, _subM);
+  return DISPATCH_DEVICE_IMPL(indice_conv_backward_impl, features, filters,
+                              outGrad, indicePairs, indiceNum, _inverse, _subM);
 }
 
 std::vector<torch::Tensor> indice_conv_backward(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM) {
-  return indice_conv_backward_impl(features, filters, outGrad, indicePairs, indiceNum,
-                                   _inverse, _subM);
+  return indice_conv_backward_impl(features, filters, outGrad, indicePairs,
+                                   indiceNum, _inverse, _subM);
 }
 
 template std::vector<torch::Tensor> get_indice_pairs_forward<2>(

@@ -124,7 +124,8 @@ struct SimpleVector {
     }
     mSize = arr.size();
   }
-  TV_HOST_DEVICE_INLINE SimpleVector(const SimpleVector<scalar_t, MaxDim> &arr) {
+  TV_HOST_DEVICE_INLINE SimpleVector(
+      const SimpleVector<scalar_t, MaxDim> &arr) {
     TV_ASSERT(arr.size() <= MaxDim);
     for (size_t i = 0; i < arr.size(); ++i) {
       mArray[i] = arr[i];
@@ -764,7 +765,8 @@ struct TensorView {
     return mPtr[(i1 * mShape[1] + i2) * mShape[2] + i3];
   }
   template <class T1, class T2, class T3, class T4>
-  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1, T2 i2, T3 i3, T4 i4) const {
+  TV_HOST_DEVICE_INLINE const scalar_t &operator()(T1 i1, T2 i2, T3 i3,
+                                                   T4 i4) const {
 #ifdef TV_DEBUG
 #if defined(__CUDA_ARCH__)
     TV_DEVICE_REQUIRE(mShape.ndim() == 4,
@@ -836,7 +838,8 @@ struct TensorView {
     return *this;
   }
   template <class... Inds>
-  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> view(Inds... newShapes) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> view(
+      Inds... newShapes) const {
     Shape shapes{int(newShapes)...};
     for (size_t i = 0; i < shapes.ndim(); ++i) {
       if (shapes[i] == -1) {
@@ -861,12 +864,13 @@ struct TensorView {
   TV_HOST_DEVICE_INLINE size_t size() const { return mShape.size(); }
 
   template <class... Slices>
-  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(Slice slice,
-                                                    Slices... slices) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(
+      Slice slice, Slices... slices) const {
     return subview<float, Slice, Slices...>(slice, slices...);
   }
   template <class T2 = float, class... Slices>
-  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(Slices... slices) const {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(
+      Slices... slices) const {
     Slice slice_vec[sizeof...(Slices)] = {to_slice(slices)...};
     Shape new_shape{to_slice(slices)[0]...};
     Shape start{to_slice(slices)[0]...};
@@ -907,13 +911,14 @@ struct TensorView {
   }
 
   template <class... Integers>
-  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(int id, Integers... ints) {
+  TV_HOST_DEVICE_INLINE TensorView<scalar_t, Rank> subview(int id,
+                                                           Integers... ints) {
     Shape start = {id, ints...};
     for (int i = 1 + sizeof...(ints); i < ndim(); ++i) {
       start.push_back(0);
     }
     return TensorView<scalar_t, Rank>(mPtr + rowArrayIdx(mShape, start),
-                               mShape.subshape(sizeof...(ints) + 1));
+                                      mShape.subshape(sizeof...(ints) + 1));
   }
 
   std::string repr() const {

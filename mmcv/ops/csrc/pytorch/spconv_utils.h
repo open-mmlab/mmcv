@@ -15,8 +15,8 @@
 #pragma once
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
-#include <utils/spconv/tensorview/tensorview.h>
 #include <torch/script.h>
+#include <utils/spconv/tensorview/tensorview.h>
 
 #include "pytorch_cuda_helper.hpp"
 
@@ -73,6 +73,7 @@ tv::TensorView<scalar_t> torch2tv(const torch::Tensor &tensor) {
   for (auto i : tensor.sizes()) {
     shape.push_back(i);
   }
-  return tv::TensorView<scalar_t>(tensor.data_ptr<std::remove_const_t<scalar_t>>(), shape);
+  return tv::TensorView<scalar_t>(
+      tensor.data_ptr<std::remove_const_t<scalar_t>>(), shape);
 }
 }  // namespace tv

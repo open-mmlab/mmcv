@@ -17,7 +17,8 @@
 
 torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
                                           torch::Tensor indicePairs,
-                                          torch::Tensor indiceNum, int64_t numAct) {
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct) {
   return DISPATCH_DEVICE_IMPL(indice_maxpool_forward_impl, features,
                               indicePairs, indiceNum, numAct);
 }
@@ -32,9 +33,9 @@ torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
                                            torch::Tensor outFeatures,
                                            torch::Tensor outGrad,
                                            torch::Tensor indicePairs,
-                                           torch::Tensor indiceNum){
-  return DISPATCH_DEVICE_IMPL(indice_maxpool_backward_impl, features, outFeatures,
-                              outGrad, indicePairs, indiceNum);
+                                           torch::Tensor indiceNum) {
+  return DISPATCH_DEVICE_IMPL(indice_maxpool_backward_impl, features,
+                              outFeatures, outGrad, indicePairs, indiceNum);
 }
 
 torch::Tensor indice_maxpool_backward(torch::Tensor features,
@@ -42,5 +43,6 @@ torch::Tensor indice_maxpool_backward(torch::Tensor features,
                                       torch::Tensor outGrad,
                                       torch::Tensor indicePairs,
                                       torch::Tensor indiceNum) {
-  return indice_maxpool_backward_impl(features, outFeatures, outGrad, indicePairs, indiceNum);
+  return indice_maxpool_backward_impl(features, outFeatures, outGrad,
+                                      indicePairs, indiceNum);
 }

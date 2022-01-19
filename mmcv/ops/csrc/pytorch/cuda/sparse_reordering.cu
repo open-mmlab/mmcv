@@ -14,17 +14,17 @@
 
 #include <ATen/ATen.h>
 #include <utils/spconv/spconv/mp_helper.h>
-#include <spconv/reordering.cuh>
 #include <utils/spconv/spconv/reordering.h>
-#include <utils/spconv/tensorview/helper_kernel.cuh>
 #include <utils/spconv/tensorview/helper_launch.h>
 #include <utils/spconv/tensorview/tensorview.h>
-#include "../spconv_utils.h"
 
 #include <chrono>
 #include <limits>
+#include <spconv/reordering.cuh>
 #include <type_traits>
+#include <utils/spconv/tensorview/helper_kernel.cuh>
 
+#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 namespace functor {
@@ -47,7 +47,8 @@ struct SparseGatherFunctor<tv::GPU, scalar_t, Index> {
       if (notFound) {
         if (numPlanes % NumTLP == 0) {
           if (nHotBlock >= NumTLP) {
-            gatherVecBlockKernel<scalar_t, Index, int(NumTLP), NumILP, vecload_type_t>
+            gatherVecBlockKernel<scalar_t, Index, int(NumTLP), NumILP,
+                                 vecload_type_t>
                 <<<dim3(numPlanes / NumTLP, size / NumTLP),
                    dim3(NumTLP / vecloadFactor, NumTLP / NumILP), 0,
                    d.getStream()>>>(buffer.data(), features.data(),
@@ -57,7 +58,8 @@ struct SparseGatherFunctor<tv::GPU, scalar_t, Index> {
             TV_CHECK_CUDA_ERR();
           }
           if (size - nHotBlock > 0) {
-            gatherVecKernel<scalar_t, Index, int(NumTLP), NumILP, vecload_type_t>
+            gatherVecKernel<scalar_t, Index, int(NumTLP), NumILP,
+                            vecload_type_t>
                 <<<dim3(1, numPlanes / NumTLP),
                    dim3(NumTLP / NumILP, NumTLP / vecloadFactor), 0,
                    d.getStream()>>>(buffer.data() + nHotBlock * numPlanes,

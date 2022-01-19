@@ -1511,12 +1511,13 @@ torch::Tensor indice_maxpool_forward_cuda(torch::Tensor features,
                                           torch::Tensor indiceNum,
                                           int64_t numAct) {
   return IndiceMaxpoolForwardCUDAKernelLauncher(features, indicePairs,
-                                                   indiceNum, numAct);
+                                                indiceNum, numAct);
 };
 
 torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
                                           torch::Tensor indicePairs,
-                                          torch::Tensor indiceNum, int64_t numAct);
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct);
 REGISTER_DEVICE_IMPL(indice_maxpool_forward_impl, CUDA,
                      indice_maxpool_forward_cuda);
 
@@ -1531,8 +1532,8 @@ torch::Tensor indice_maxpool_backward_cuda(torch::Tensor features,
                                            torch::Tensor outGrad,
                                            torch::Tensor indicePairs,
                                            torch::Tensor indiceNum) {
-  return IndiceMaxpoolBackwardCUDAKernelLauncher(
-      features, outFeatures, outGrad, indicePairs, indiceNum);
+  return IndiceMaxpoolBackwardCUDAKernelLauncher(features, outFeatures, outGrad,
+                                                 indicePairs, indiceNum);
 };
 
 torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
@@ -1566,8 +1567,7 @@ torch::Tensor indice_conv_forward_impl(torch::Tensor features,
                                        int64_t numActOut, int64_t _inverse,
                                        int64_t _subM);
 
-REGISTER_DEVICE_IMPL(indice_conv_forward_impl, CUDA,
-                     indice_conv_forward_cuda);
+REGISTER_DEVICE_IMPL(indice_conv_forward_impl, CUDA, indice_conv_forward_cuda);
 
 std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
@@ -1599,9 +1599,9 @@ torch::Tensor fused_indice_conv_batchnorm_forward_cuda(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  return FusedIndiceConvBatchnormCUDAKernelLauncher(
-      features, filters, bias, indicePairs, indiceNum, numActOut, _inverse,
-      _subM);
+  return FusedIndiceConvBatchnormCUDAKernelLauncher(features, filters, bias,
+                                                    indicePairs, indiceNum,
+                                                    numActOut, _inverse, _subM);
 };
 
 torch::Tensor fused_indice_conv_batchnorm_forward_impl(

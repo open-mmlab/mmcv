@@ -1,9 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved
 // It is modified from https://github.com/WenmuZhou/PAN.pytorch
 
+#include <queue>
+
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
-#include <queue>
 
 std::vector<std::vector<float>> estimate_confidence(int32_t* label,
                                                     float* score, int label_num,

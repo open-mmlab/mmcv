@@ -43,7 +43,8 @@ __global__ void gatherGenericKernel(scalar_t *buffer, const scalar_t *features,
   }
 }
 
-template <typename scalar_t, typename Index, int NumTLP, int NumILP, typename VecType>
+template <typename scalar_t, typename Index, int NumTLP, int NumILP,
+          typename VecType>
 __global__ void gatherVecKernel(scalar_t *buffer, const scalar_t *features,
                                 const Index *indices, int size, int numPlanes) {
   int ILPStrideX[NumILP];
@@ -95,7 +96,8 @@ __global__ void gatherVecBlockKernel(scalar_t *buffer, const scalar_t *features,
 }
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
-__global__ void scatterAddGenericKernel(scalar_t *outFeatures, const scalar_t *buffer,
+__global__ void scatterAddGenericKernel(scalar_t *outFeatures,
+                                        const scalar_t *buffer,
                                         const Index *indices, int size,
                                         int numPlanes) {
   int ILPStrideX[NumILP];
@@ -123,7 +125,8 @@ __global__ void scatterAddGenericKernel(scalar_t *outFeatures, const scalar_t *b
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP,
           typename VecType = int4>
-__global__ void scatterAddVecBlockKernel(scalar_t *outFeatures, const scalar_t *buffer,
+__global__ void scatterAddVecBlockKernel(scalar_t *outFeatures,
+                                         const scalar_t *buffer,
                                          const Index *indices, int size,
                                          int numPlanes) {
   int ILPStrideY[NumILP];

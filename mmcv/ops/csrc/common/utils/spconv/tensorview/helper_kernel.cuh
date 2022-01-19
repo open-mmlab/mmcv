@@ -30,7 +30,8 @@ class KernelLoop {
   };
 
  public:
-  __forceinline__ __device__ KernelLoop(scalar_t begin, scalar_t delta, scalar_t end)
+  __forceinline__ __device__ KernelLoop(scalar_t begin, scalar_t delta,
+                                        scalar_t end)
       : begin_(begin), delta_(delta), end_(end) {}
 
   __forceinline__ __device__ Iterator begin() const {
@@ -47,17 +48,19 @@ class KernelLoop {
 }  // namespace detail
 
 template <typename scalar_t, int NumILP = 1>
-__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopX(scalar_t count) {
+__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopX(
+    scalar_t count) {
   return detail::KernelLoop<scalar_t>(blockIdx.x * blockDim.x + threadIdx.x,
-                               gridDim.x * blockDim.x * NumILP, count);
+                                      gridDim.x * blockDim.x * NumILP, count);
 }
 
 // Helper to visit indices in the range 0 <= i < count using the y-coordinate.
 // Usage: for(int i : KernelLoopY(count)) { visit(i); }
 template <typename scalar_t, int NumILP = 1>
-__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopY(scalar_t count) {
+__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopY(
+    scalar_t count) {
   return detail::KernelLoop<scalar_t>(blockIdx.y * blockDim.y + threadIdx.y,
-                               gridDim.y * blockDim.y * NumILP, count);
+                                      gridDim.y * blockDim.y * NumILP, count);
 }
 
 // Helper to visit indices in the range 0 <= i < count using the z-coordinate.

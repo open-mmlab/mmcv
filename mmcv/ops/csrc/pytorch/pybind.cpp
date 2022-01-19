@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#include "pytorch_cpp_helper.hpp"
 #include <torch/extension.h>
+
+#include "pytorch_cpp_helper.hpp"
 
 std::string get_compiler_version();
 std::string get_compiling_cuda_version();
@@ -670,27 +671,24 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
         py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
         py::arg("_subM"), py::arg("_transpose"));
-  m.def("indice_conv_forward", &indice_conv_forward,
-        "indice_conv_forward", py::arg("features"), py::arg("filters"),
-        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numActOut"),
-        py::arg("_inverse"), py::arg("_subM"));
-  m.def("indice_conv_backward", &indice_conv_backward,
-        "indice_conv_backward", py::arg("features"), py::arg("filters"),
-        py::arg("outGrad"), py::arg("indicePairs"), py::arg("indiceNum"),
-        py::arg("_inverse"), py::arg("_subM"));
-  m.def("fused_indice_conv_forward",
-        &fused_indice_conv_batchnorm_forward,
-        "fused_indice_conv_forward", py::arg("features"),
-        py::arg("filters"), py::arg("bias"), py::arg("indicePairs"),
+  m.def("indice_conv_forward", &indice_conv_forward, "indice_conv_forward",
+        py::arg("features"), py::arg("filters"), py::arg("indicePairs"),
         py::arg("indiceNum"), py::arg("numActOut"), py::arg("_inverse"),
         py::arg("_subM"));
+  m.def("indice_conv_backward", &indice_conv_backward, "indice_conv_backward",
+        py::arg("features"), py::arg("filters"), py::arg("outGrad"),
+        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("_inverse"),
+        py::arg("_subM"));
+  m.def("fused_indice_conv_forward", &fused_indice_conv_batchnorm_forward,
+        "fused_indice_conv_forward", py::arg("features"), py::arg("filters"),
+        py::arg("bias"), py::arg("indicePairs"), py::arg("indiceNum"),
+        py::arg("numActOut"), py::arg("_inverse"), py::arg("_subM"));
   m.def("indice_maxpool_forward", &indice_maxpool_forward,
-        "indice_maxpool_forward", py::arg("features"),
-        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("numAct"));
+        "indice_maxpool_forward", py::arg("features"), py::arg("indicePairs"),
+        py::arg("indiceNum"), py::arg("numAct"));
   m.def("indice_maxpool_backward", &indice_maxpool_backward,
-        "indice_maxpool_backward", py::arg("features"),
-        py::arg("outFeatures"), py::arg("outGrad"), py::arg("indicePairs"),
-        py::arg("indiceNum"));
+        "indice_maxpool_backward", py::arg("features"), py::arg("outFeatures"),
+        py::arg("outGrad"), py::arg("indicePairs"), py::arg("indiceNum"));
   m.def("psamask_forward", &psamask_forward, "PSAMASK forward (CPU/CUDA)",
         py::arg("input"), py::arg("output"), py::arg("psa_type"),
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),

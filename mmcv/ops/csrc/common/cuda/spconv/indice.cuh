@@ -15,8 +15,9 @@
 #ifndef INDICE_CU_H_
 #define INDICE_CU_H_
 #include <utils/spconv/spconv/geometry.h>
-#include <utils/spconv/tensorview/helper_kernel.cuh>
 #include <utils/spconv/tensorview/tensorview.h>
+
+#include <utils/spconv/tensorview/helper_kernel.cuh>
 
 template <typename Index, typename IndexGrid, unsigned NDim,
           int KernelMaxVolume = 256>
