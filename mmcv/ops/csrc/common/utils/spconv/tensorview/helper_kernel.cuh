@@ -66,9 +66,10 @@ __forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopY(
 // Helper to visit indices in the range 0 <= i < count using the z-coordinate.
 // Usage: for(int i : KernelLoopZ(count)) { visit(i); }
 template <typename scalar_t, int NumILP = 1>
-__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopZ(scalar_t count) {
+__forceinline__ __device__ detail::KernelLoop<scalar_t> KernelLoopZ(
+    scalar_t count) {
   return detail::KernelLoop<scalar_t>(blockIdx.z * blockDim.z + threadIdx.z,
-                               gridDim.z * blockDim.z * NumILP, count);
+                                      gridDim.z * blockDim.z * NumILP, count);
 }
 
 }  // namespace tv
