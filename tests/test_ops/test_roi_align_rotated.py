@@ -80,7 +80,7 @@ def _test_roialign_rotated_allclose(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('unittest does not support GPU yet.')
     try:
-        from mmcv.ops import roi_align_rotated
+        from mmcv.ops import roi_align_rotated, RoIAlignRotated
     except ModuleNotFoundError:
         pytest.skip('test requires compilation')
     pool_h = 2
@@ -133,4 +133,3 @@ def test_roialign_rotated(device, dtype):
     if (dtype is torch.double):
         _test_roialign_rotated_gradcheck(device=device, dtype=dtype)
     _test_roialign_rotated_allclose(device=device, dtype=dtype)
-    _test_roialign_rotated_deprecated_parameters()
