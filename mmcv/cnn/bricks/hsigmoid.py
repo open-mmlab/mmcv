@@ -13,7 +13,7 @@ class HSigmoid(nn.Module):
     Default: Hsigmoid(x) = min(max((x + 3) / 6, 0), 1)
 
     Note:
-        In MMCV v1.4.3, we modified the default value of args to align with
+        In MMCV v1.4.4, we modified the default value of args to align with
         PyTorch official.
 
     Args:
@@ -29,7 +29,7 @@ class HSigmoid(nn.Module):
     def __init__(self, bias=3.0, divisor=6.0, min_value=0.0, max_value=1.0):
         super(HSigmoid, self).__init__()
         warnings.warn(
-            'In MMCV v1.4.3, we modified the default value of args to align '
+            'In MMCV v1.4.4, we modified the default value of args to align '
             'with PyTorch official. Previous Implementation: '
             'Hsigmoid(x) = min(max((x + 1) / 2, 0), 1). '
             'Current Implementation: '
