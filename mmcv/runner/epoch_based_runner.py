@@ -161,7 +161,7 @@ class EpochBasedRunner(BaseRunner):
             # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
             # there will be problems with resumed checkpoints.
             # More details in https://github.com/open-mmlab/mmcv/pull/1108
-        meta.update(epoch=self.epoch + 1, iter=self.iter + 1)
+        meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(out_dir, filename)

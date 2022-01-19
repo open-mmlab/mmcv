@@ -17,10 +17,12 @@ from .utils import get_host_info
 
 class IterLoader:
 
-    def __init__(self, dataloader):
+    def __init__(self, dataloader, epoch=0):
         self._dataloader = dataloader
         self.iter_loader = iter(self._dataloader)
-        self._epoch = 0
+        self._epoch = epoch
+        if hasattr(self._dataloader.sampler, 'set_epoch'):
+            self._dataloader.sampler.set_epoch(self._epoch)
 
     @property
     def epoch(self):
@@ -54,6 +56,7 @@ class IterBasedRunner(BaseRunner):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
+        self.iter_per_epoch = len(data_loader)
         self._epoch = data_loader.epoch
         data_batch = next(data_loader)
         self.call_hook('before_train_iter')
@@ -114,7 +117,7 @@ class IterBasedRunner(BaseRunner):
                          self._max_iters)
         self.call_hook('before_run')
 
-        iter_loaders = [IterLoader(x) for x in data_loaders]
+        iter_loaders = [IterLoader(x, self._epoch) for x in data_loaders]
 
         self.call_hook('before_epoch')
 
@@ -166,8 +169,11 @@ class IterBasedRunner(BaseRunner):
             # meta.update(epoch=self.epoch + 1, iter=self.iter) otherwise
             # there will be problems with resumed checkpoints.
             # More details in https://github.com/open-mmlab/mmcv/pull/1108
-        meta.update(epoch=self.epoch + 1, iter=self.iter + 1)
-
+        if hasattr(self, 'iter_per_epoch') and (self.iter +
+                                                1) % self.iter_per_epoch == 0:
+            meta.update(epoch=self.epoch + 1, iter=self.iter + 1)
+        else:
+            meta.update(epoch=self.epoch, iter=self.iter + 1)
         filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)
         optimizer = self.optimizer if save_optimizer else None
