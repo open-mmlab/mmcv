@@ -140,15 +140,15 @@ def test_checkpoint_hook(tmp_path):
     runner.meta = dict()
     out_dir = 's3://user/data'
     with patch.object(PetrelBackend, 'put') as mock_put, \
-         patch.object(PetrelBackend, 'remove') as mock_remove, \
-         patch.object(PetrelBackend, 'isfile') as mock_isfile:
+            patch.object(PetrelBackend, 'remove') as mock_remove, \
+            patch.object(PetrelBackend, 'isfile') as mock_isfile:
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=True, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-            '/'.join([out_dir, basename, 'epoch_4.pth'])
+               '/'.join([out_dir, basename, 'epoch_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -171,15 +171,15 @@ def test_checkpoint_hook(tmp_path):
     runner.meta = dict()
     out_dir = 's3://user/data'
     with patch.object(PetrelBackend, 'put') as mock_put, \
-         patch.object(PetrelBackend, 'remove') as mock_remove, \
-         patch.object(PetrelBackend, 'isfile') as mock_isfile:
+            patch.object(PetrelBackend, 'remove') as mock_remove, \
+            patch.object(PetrelBackend, 'isfile') as mock_isfile:
         checkpointhook = CheckpointHook(
             interval=1, out_dir=out_dir, by_epoch=False, max_keep_ckpts=2)
         runner.register_hook(checkpointhook)
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-            '/'.join([out_dir, basename, 'iter_4.pth'])
+               '/'.join([out_dir, basename, 'iter_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -338,7 +338,7 @@ def test_pavi_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     }, 1)
-    # in windows environment, the latest checkpoint is copied from epoch_1.pth
+    # in Windows environment, the latest checkpoint is copied from epoch_1.pth
     if platform.system() == 'Windows':
         snapshot_file_path = osp.join(runner.work_dir, 'latest.pth')
     else:
@@ -432,6 +432,198 @@ def test_momentum_runner_hook(multi_optimziers):
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
+    # test constant momentum warmup
+    sys.modules['pavi'] = MagicMock()
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='StepMomentumUpdaterHook',
+        by_epoch=False,
+        warmup='constant',
+        warmup_iters=5,
+        warmup_ratio=0.5,
+        step=[10],
+    )
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.9,
+                    'momentum/model2': 1.8,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.9,
+                    'momentum/model2': 1.8,
+                }, 5),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 10),
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.9
+            }, 1),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.9
+            }, 5),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 10),
+        ]
+
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+    # test linear momentum warmup
+    sys.modules['pavi'] = MagicMock()
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='StepMomentumUpdaterHook',
+        by_epoch=False,
+        warmup='linear',
+        warmup_iters=5,
+        warmup_ratio=0.5,
+        step=[10],
+    )
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.9,
+                    'momentum/model2': 1.8,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.3571428571428572,
+                    'momentum/model2': 1.2857142857142858,
+                }, 3),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 10),
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.9
+            }, 1),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.3571428571428572
+            }, 3),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 10),
+        ]
+
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+    # test exponentially momentum warmup
+    sys.modules['pavi'] = MagicMock()
+    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+
+    # add momentum scheduler
+    hook_cfg = dict(
+        type='StepMomentumUpdaterHook',
+        by_epoch=False,
+        warmup='exp',
+        warmup_iters=5,
+        warmup_ratio=0.5,
+        step=[10],
+    )
+    runner.register_hook_from_cfg(hook_cfg)
+    runner.register_hook_from_cfg(dict(type='IterTimerHook'))
+
+    hook = PaviLoggerHook(interval=1, add_graph=False, add_last_ckpt=True)
+    runner.register_hook(hook)
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    if multi_optimziers:
+        calls = [
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.9,
+                    'momentum/model2': 1.8,
+                }, 1),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 1.4399307381848783,
+                    'momentum/model2': 1.3641449098593583,
+                }, 3),
+            call(
+                'train', {
+                    'learning_rate/model1': 0.02,
+                    'learning_rate/model2': 0.01,
+                    'momentum/model1': 0.95,
+                    'momentum/model2': 0.9,
+                }, 10),
+        ]
+    else:
+        calls = [
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.9
+            }, 1),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 1.4399307381848783
+            }, 3),
+            call('train', {
+                'learning_rate': 0.02,
+                'momentum': 0.95
+            }, 10),
+        ]
+
+    hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
 
 @pytest.mark.parametrize('multi_optimziers', (True, False))
 def test_cosine_runner_hook(multi_optimziers):
@@ -441,7 +633,6 @@ def test_cosine_runner_hook(multi_optimziers):
     runner = _build_demo_runner(multi_optimziers=multi_optimziers)
 
     # add momentum scheduler
-
     hook_cfg = dict(
         type='CosineAnnealingMomentumUpdaterHook',
         min_momentum_ratio=0.99 / 0.95,
@@ -1214,11 +1405,12 @@ def test_segmind_hook():
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = WandbLoggerHook()
+    hook = WandbLoggerHook(log_artifact=True)
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
+
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
@@ -1228,6 +1420,7 @@ def test_wandb_hook():
     },
                                       step=6,
                                       commit=True)
+    hook.wandb.log_artifact.assert_called()
     hook.wandb.join.assert_called_with()
 
 
@@ -1331,7 +1524,6 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
                        max_epochs=1,
                        max_iters=None,
                        multi_optimziers=False):
-
     log_config = dict(
         interval=1, hooks=[
             dict(type='TextLoggerHook'),
@@ -1346,7 +1538,6 @@ def _build_demo_runner(runner_type='EpochBasedRunner',
 
 
 def test_runner_with_revise_keys():
-
     import os
 
     class Model(nn.Module):

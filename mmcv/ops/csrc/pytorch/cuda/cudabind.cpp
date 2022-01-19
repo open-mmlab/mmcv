@@ -1500,3 +1500,67 @@ void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
 
 REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, CUDA,
                      points_in_polygons_forward_cuda);
+
+void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
+
+void min_area_polygons_cuda(const Tensor pointsets, Tensor polygons) {
+  MinAreaPolygonsCUDAKernelLauncher(pointsets, polygons);
+}
+
+void min_area_polygons_impl(const Tensor pointsets, Tensor polygons);
+
+REGISTER_DEVICE_IMPL(min_area_polygons_impl, CUDA, min_area_polygons_cuda);
+
+void ActiveRotatedFilterForwardCUDAKernelLauncher(const Tensor input,
+                                                  const Tensor indices,
+                                                  Tensor output);
+
+void ActiveRotatedFilterBackwardCUDAKernelLauncher(const Tensor grad_out,
+                                                   const Tensor indices,
+                                                   Tensor grad_in);
+
+void active_rotated_filter_forward_cuda(const Tensor input,
+                                        const Tensor indices, Tensor output) {
+  ActiveRotatedFilterForwardCUDAKernelLauncher(input, indices, output);
+};
+
+void active_rotated_filter_backward_cuda(const Tensor grad_out,
+                                         const Tensor indices, Tensor grad_in) {
+  ActiveRotatedFilterBackwardCUDAKernelLauncher(grad_out, indices, grad_in);
+};
+
+void active_rotated_filter_forward_impl(const Tensor input,
+                                        const Tensor indices, Tensor output);
+
+void active_rotated_filter_backward_impl(const Tensor grad_out,
+                                         const Tensor indices, Tensor grad_in);
+
+REGISTER_DEVICE_IMPL(active_rotated_filter_forward_impl, CUDA,
+                     active_rotated_filter_forward_cuda);
+REGISTER_DEVICE_IMPL(active_rotated_filter_backward_impl, CUDA,
+                     active_rotated_filter_backward_cuda);
+
+void ConvexIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
+                                 Tensor ious);
+
+void ConvexGIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
+                                  Tensor output);
+
+void convex_iou_cuda(const Tensor pointsets, const Tensor polygons,
+                     Tensor ious) {
+  ConvexIoUCUDAKernelLauncher(pointsets, polygons, ious);
+}
+
+void convex_giou_cuda(const Tensor pointsets, const Tensor polygons,
+                      Tensor output) {
+  ConvexGIoUCUDAKernelLauncher(pointsets, polygons, output);
+}
+
+void convex_iou_impl(const Tensor pointsets, const Tensor polygons,
+                     Tensor ious);
+
+void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
+                      Tensor output);
+
+REGISTER_DEVICE_IMPL(convex_iou_impl, CUDA, convex_iou_cuda);
+REGISTER_DEVICE_IMPL(convex_giou_impl, CUDA, convex_giou_cuda);

@@ -13,21 +13,15 @@ class DvcliveLoggerHook(LoggerHook):
     It requires `dvclive`_ to be installed.
 
     Args:
-        model_file (str):
-            Default None.
-            If not None, after each epoch the model will
-            be saved to {model_file}.
-        interval (int): Logging interval (every k iterations).
-            Default 10.
+        model_file (str): Default None. If not None, after each epoch the
+            model will be saved to {model_file}.
+        interval (int): Logging interval (every k iterations). Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-            Default: True.
+            if less than `interval`. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
-        by_epoch (bool): Whether EpochBasedRunner is used.
-            Default: True.
-        kwargs:
-            Arguments for instantiating `Live`_
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
+        kwargs: Arguments for instantiating `Live`_.
 
     .. _dvclive:
         https://dvc.org/doc/dvclive
