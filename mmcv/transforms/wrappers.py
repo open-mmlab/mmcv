@@ -44,7 +44,7 @@ class Compose(BaseTransform):
             if isinstance(transform, dict):
                 transform = TRANSFORMS.build(transform)
                 self.transforms.append(transform)
-            elif isinstance(transform, callable):
+            elif callable(transform):
                 self.transforms.append(transform)
             else:
                 raise TypeError('transform must be callable or a dict, but got'
