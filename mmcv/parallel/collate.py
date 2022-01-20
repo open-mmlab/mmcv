@@ -25,22 +25,15 @@ def collate(batch, samples_per_gpu=1):
 
     if isinstance(batch[0], DataContainer):
         stacked = []
-        if batch[0].cpu_only:
-            for i in range(0, len(batch), samples_per_gpu):
-                stacked.append(
-                    [sample.data for sample in batch[i:i + samples_per_gpu]])
-            return DataContainer(
-                stacked, batch[0].stack, batch[0].padding_value, cpu_only=True)
-        elif batch[0].stack:
+        # in theory, when cpu_only is True, stack must be False
+        if batch[0].stack:
             for i in range(0, len(batch), samples_per_gpu):
                 assert isinstance(batch[i].data, torch.Tensor)
 
-                if batch[i].pad_dims is not None:
+                if batch[i].pad_dims is not None and batch[i].pad_dims < batch[
+                        i].dim():
                     ndim = batch[i].dim()
-                    assert ndim > batch[i].pad_dims
                     max_shape = [0 for _ in range(batch[i].pad_dims)]
-                    for dim in range(1, batch[i].pad_dims + 1):
-                        max_shape[dim - 1] = batch[i].size(-dim)
                     for sample in batch[i:i + samples_per_gpu]:
                         for dim in range(0, ndim - batch[i].pad_dims):
                             assert batch[i].size(dim) == sample.size(dim)
@@ -65,14 +58,20 @@ def collate(batch, samples_per_gpu=1):
                         ]))
                 else:
                     raise ValueError(
-                        'pad_dims should be either None or integers (1-3)')
-
+                        'pad_dims should be either None or less than dim')
         else:
             for i in range(0, len(batch), samples_per_gpu):
                 stacked.append(
                     [sample.data for sample in batch[i:i + samples_per_gpu]])
-        return DataContainer(stacked, batch[0].stack, batch[0].padding_value)
-    elif isinstance(batch[0], Sequence):
+        return DataContainer(
+            stacked,
+            batch[0].stack,
+            batch[0].padding_value,
+            cpu_only=batch[0].cpu_only)
+    # check whether batch[0] is a string to avoid infinite loop
+    # because str is also a kind of Sequence
+    # More details at https://github.com/open-mmlab/mmcv/issues/1387.
+    elif isinstance(batch[0], Sequence) and not isinstance(batch[0], str):
         transposed = zip(*batch)
         return [collate(samples, samples_per_gpu) for samples in transposed]
     elif isinstance(batch[0], Mapping):

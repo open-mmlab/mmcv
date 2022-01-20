@@ -1,11 +1,13 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
 import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
-                           MMDistributedDataParallel, is_module_wrapper)
+from mmcv.parallel import (MODULE_WRAPPERS, DataContainer, MMDataParallel,
+                           MMDistributedDataParallel, collate,
+                           is_module_wrapper)
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
@@ -64,3 +66,108 @@ def test_is_module_wrapper():
 
     module_wraper = ModuleWrapper(model)
     assert is_module_wrapper(module_wraper)
+
+
+def test_collate():
+    batch = [{
+        'img_metas':
+        DataContainer(
+            data={
+                'flip': False,
+                'flip_direction': 'horizontal'
+            },
+            stack=False,
+            padding_value=0,
+            cpu_only=True,
+            pad_dims=None),
+        'img':
+        DataContainer(
+            data=torch.rand(3, 4, 5),
+            stack=True,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=2),
+        'gt_bboxes':
+        DataContainer(
+            data=torch.randint(0, 4, (2, 4)),
+            stack=False,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=None),
+        'gt_labels':
+        [torch.randint(0, 10, (1, )),
+         torch.randint(0, 10, (1, ))],
+        'filename':
+        '/tmp/x1'
+    }, {
+        'img_metas':
+        DataContainer(
+            data={
+                'flip': False,
+                'flip_direction': 'horizontal'
+            },
+            stack=False,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=None),
+        'img':
+        DataContainer(
+            data=torch.rand(3, 6, 7),
+            stack=True,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=2),
+        'gt_bboxes':
+        DataContainer(
+            data=torch.randint(0, 4, (2, 4)),
+            stack=False,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=None),
+        'gt_labels':
+        [torch.randint(0, 10, (1, )),
+         torch.randint(0, 10, (1, ))],
+        'filename':
+        '/tmp/y1'
+    }]
+    result = collate(batch, samples_per_gpu=2)
+    assert result['img'].data[0].shape == torch.Size([2, 3, 6, 7])
+    assert len(result['img_metas'].data[0]) == 2
+    assert len(result['gt_bboxes'].data[0]) == 2
+    assert len(result['gt_labels']) == 2
+    assert result['filename'] == ['/tmp/x1', '/tmp/y1']
+    batch = [{
+        'img_metas':
+        DataContainer(
+            data={
+                'flip': False,
+                'flip_direction': 'horizontal'
+            },
+            stack=False,
+            padding_value=0,
+            cpu_only=True,
+            pad_dims=None),
+        'img':
+        DataContainer(
+            data=torch.rand(3, 4, 5),
+            stack=True,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=3),
+        'gt_bboxes':
+        DataContainer(
+            data=torch.randint(0, 4, (2, 4)),
+            stack=False,
+            padding_value=0,
+            cpu_only=False,
+            pad_dims=None),
+        'gt_labels':
+        [torch.randint(0, 10, (1, )),
+         torch.randint(0, 10, (1, ))],
+        'filename':
+        '/tmp/z1'
+    }]
+    with pytest.raises(
+            ValueError,
+            match='pad_dims should be either None or less than dim'):
+        collate(batch, samples_per_gpu=1)
