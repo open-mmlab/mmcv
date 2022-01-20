@@ -21,12 +21,15 @@ from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
 from mmcv.fileio.file_client import PetrelBackend
+# yapf: disable
 from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          Fp16OptimizerHook,
                          GradientCumulativeFp16OptimizerHook,
                          GradientCumulativeOptimizerHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                         PaviLoggerHook, WandbLoggerHook, build_runner)
+                         PaviLoggerHook, TensorboardLoggerHook,
+                         WandbLoggerHook, build_runner)
+# yapf: enable
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
@@ -1464,13 +1467,17 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
             self.linear = nn.Linear(2, 1)
             self.conv = nn.Conv2d(3, 3, 3)
 
-        def forward(self, x):
+        def forward(self, x, img_metas=None, return_loss=False):
             return self.linear(x)
 
         def train_step(self, x, optimizer, **kwargs):
+            if isinstance(x, dict):
+                x = x['img']
             return dict(loss=self(x))
 
         def val_step(self, x, optimizer, **kwargs):
+            if isinstance(x, dict):
+                x = x['img']
             return dict(loss=self(x))
 
     model = Model()
@@ -1772,3 +1779,21 @@ def test_gradient_cumulative_fp16_optimizer_hook():
     assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
     shutil.rmtree(runner_1.work_dir)
     shutil.rmtree(runner_2.work_dir)
+
+
+@pytest.mark.parametrize('runner_type, max_epochs, max_iters',
+                         [('EpochBasedRunner', 1, None)])
+def test_tensorboard_hook(runner_type, max_epochs, max_iters):
+    sys.modules['torch.utils.tensorboard'] = MagicMock()
+
+    loader = DataLoader(dataset=[{'img': torch.ones((5, 2))}])
+    runner = _build_demo_runner(
+        runner_type=runner_type, max_epochs=max_epochs, max_iters=max_iters)
+    runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
+    hook = TensorboardLoggerHook(add_graph=True)
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+    hook.writer.add_graph.assert_called_once()

@@ -15,11 +15,11 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
-    """Class to visual model, log metrics (for internal use).
+    """Class to visualize model, log metrics (for internal use).
 
     Args:
         init_kwargs (dict): A dict contains the initialization keys.
-        add_graph (bool): Whether to visual model. Default: False.
+        add_graph (bool): Whether to visualize model. Default: False.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
         interval (int): Logging interval (every k iterations). Default: True.
