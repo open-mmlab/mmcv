@@ -1,55 +1,62 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-import platform
-import shutil
-import time
-import warnings
 from abc import ABCMeta, abstractmethod
-# import poptorch
+import warnings
 
-import mmcv
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
-from .checkpoint import save_checkpoint
-from .utils import get_host_info
-
-
-def parse_ipu_options(ipu_options):
-    return ipu_options
-
-
-def wrap_model(model, opts, optimizer):
-    # model = poptorch.trainingModel(model, options=opts, optimizer=optimizer)
-    return model
-
-
-def wrap_data_loader(data_loader, opts):
-    pass
-    return data_loader
-
+from .hooks import HOOKS
+from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, IPU_MODE
 
 class IpuBaseRunner(metaclass=ABCMeta):
     def __init__(self,ipu_options=None,**kwargs):
         super(IpuBaseRunner, self).__init__(**kwargs)
         # process options of ipu
-        self.ipu_options = parse_ipu_options(ipu_options)
-        # self.data_loader = wrap_data_loader(self.data_loader)
-        self.model = wrap_model(self.model, self.ipu_options, self.optimizer)
-        self.ipu_data_loaders_mappin = {}
-
+        if IPU_MODE:
+            self.ipu_options = parse_ipu_options(ipu_options)
+            # self.data_loader = wrap_data_loader(self.data_loader)
+            self.model = wrap_model(self.model, self.ipu_options, self.optimizer)
+            self.ipu_data_loaders_mappin = {} # may have bug in multi-processer
+        else:
+            warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
 
     def run(self, data_loaders, *args, **kwargs):
         # map data_loader to ipu data_loader
-        ipu_data_loaders = []
-        for data_loader in data_loaders:
-            if data_loader not in self.ipu_data_loaders_mappin:
-                ipu_data_loader = wrap_data_loader(data_loader)
-                self.ipu_data_loaders_mappin[data_loader] = ipu_data_loader
+        if IPU_MODE:
+            ipu_data_loaders = []
+            for data_loader in data_loaders:
+                if data_loader not in self.ipu_data_loaders_mappin:
+                    ipu_data_loader = wrap_data_loader(data_loader, self.ipu_options)
+                    self.ipu_data_loaders_mappin[data_loader] = ipu_data_loader
+                else:
+                    ipu_data_loader = self.ipu_data_loaders_mappin[data_loader]
+                ipu_data_loaders.append(ipu_data_loader)
+                data_loaders = ipu_data_loaders
+        super().run(data_loaders, *args, **kwargs)
+
+    def register_lr_hook(self, lr_config):
+        if IPU_MODE:
+            if lr_config is None:
+                raise NotImplementedError
+            elif isinstance(lr_config, dict):
+                assert 'policy' in lr_config
+                policy_type = lr_config.pop('policy')
+                # If the type of policy is all in lower case, e.g., 'cyclic',
+                # then its first letter will be capitalized, e.g., to be 'Cyclic'.
+                # This is for the convenient usage of Lr updater.
+                # Since this is not applicable for `
+                # CosineAnnealingLrUpdater`,
+                # the string will not be changed if it contains capital letters.
+                if policy_type == policy_type.lower():
+                    policy_type = policy_type.title()
+                hook_type = policy_type + 'LrUpdaterHook'
+                lr_config['type'] = hook_type
+                hook = build_from_cfg_with_wrapper(lr_config, HOOKS, wrap_lr_update_hook)
             else:
-                ipu_data_loader = self.ipu_data_loaders_mappin[data_loader]
-            ipu_data_loaders.append(ipu_data_loader)
-        super().run(ipu_data_loaders, *args, **kwargs)
+                raise NotImplementedError
+            self.register_hook(hook, priority='VERY_HIGH')
+        else:
+            super().register_lr_hook(lr_config)
 
 
 @RUNNERS.register_module()
@@ -68,4 +75,3 @@ class IpuIterBasedRunner(IpuBaseRunner, IterBasedRunner):
     This runner train models iteration by iteration.
     """
     pass
-

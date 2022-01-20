@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../mmclassification"
+		},
+		{
+			"path": "../mmdetection"
+		}
+	],
+	"settings": {}
+}
