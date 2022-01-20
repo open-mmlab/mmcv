@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
+
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -73,4 +75,7 @@ class MlflowLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner):
         if self.log_model:
-            self.mlflow_pytorch.log_model(runner.model, 'models')
+            self.mlflow_pytorch.log_model(
+                runner.model,
+                'models',
+                pip_requirements=[f'torch=={torch.__version__}'])
