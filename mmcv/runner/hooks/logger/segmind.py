@@ -11,14 +11,24 @@ class SegmindLoggerHook(LoggerHook):
     It requires `Segmind`_ to be installed.
 
     Args:
-    interval (int): Logging interval (every k iterations). Default: 10.
+        interval (int): Logging interval (every k iterations). Default: 10.
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`. Default True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default False.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default True.
 
     .. _Segmind:
         https://docs.segmind.com/python-library
     """
 
-    def __init__(self, interval=10):
-        super(SegmindLoggerHook, self).__init__(interval=10)
+    def __init__(self,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=False,
+                 by_epoch=True):
+        super(SegmindLoggerHook, self).__init__(interval, ignore_last,
+                                                reset_flag, by_epoch)
         self.import_segmind()
 
     def import_segmind(self):
