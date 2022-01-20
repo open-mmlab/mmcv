@@ -5,7 +5,7 @@ import os.path as osp
 import time
 import warnings
 from collections import OrderedDict
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,10 +29,10 @@ def parse_args():
     parser.add_argument(
         '--num-iters', default=300, help='The number of iters per epoch')
     parser.add_argument(
-        '--num-epochs', default=10, help='Only used in EpochBasedRinner')
+        '--num-epochs', default=300, help='Only used in EpochBasedRinner')
     parser.add_argument(
         '--window-size',
-        default='12*7',
+        default='12*14',
         help='Size of the window to display images, in format of "$W*$H".')
     parser.add_argument(
         '--log-interval', default=1, help='The iterval of TextLoggerHook')
@@ -53,7 +53,30 @@ class SimpleModel(nn.Module):
         return dict()
 
 
-def _momentum_log(self, runner):
+def iter_train(self, data_loader, **kwargs):
+    self.mode = 'train'
+    self.call_hook('before_train_iter')
+    self.call_hook('after_train_iter')
+    self._inner_iter += 1
+    self._iter += 1
+
+
+def epoch_train(self, data_loader, **kwargs):
+    self.model.train()
+    self.mode = 'train'
+    self.data_loader = data_loader
+    self._max_iters = self._max_epochs * len(self.data_loader)
+    self.call_hook('before_train_epoch')
+    for i, data_batch in enumerate(self.data_loader):
+        self._inner_iter = i
+        self.call_hook('before_train_iter')
+        self.call_hook('after_train_iter')
+        self._iter += 1
+    self.call_hook('after_train_epoch')
+    self._epoch += 1
+
+
+def log(self, runner):
     if 'eval_iter_num' in runner.log_buffer.output:
         # this doesn't modify runner.iter and is regardless of by_epoch
         cur_iter = runner.log_buffer.output.pop('eval_iter_num')
@@ -96,8 +119,9 @@ def _momentum_log(self, runner):
     return log_dict
 
 
-@patch('mmcv.runner.EpochBasedRunner.run_iter', Mock())
-@patch('mmcv.runner.hooks.TextLoggerHook.log', _momentum_log)
+@patch('mmcv.runner.EpochBasedRunner.train', epoch_train)
+@patch('mmcv.runner.IterBasedRunner.train', iter_train)
+@patch('mmcv.runner.hooks.TextLoggerHook.log', log)
 def run(cfg, logger):
     momentum_config = cfg.get('momentum_config')
     lr_config = cfg.get('lr_config')
@@ -146,7 +170,7 @@ def plot_lr_curve(json_file, cfg):
 
     wind_w, wind_h = [int(size) for size in cfg.window_size.split('*')]
     # if legend is None, use {filename}_{key} as legend
-    fig, axes = plt.subplots(2, 1, figsize=(12, 14))
+    fig, axes = plt.subplots(2, 1, figsize=(wind_w, wind_h))
     plt.subplots_adjust(hspace=0.5)
     font_size = 20
     for index, (mode, data_list) in enumerate(data_dict.items()):
