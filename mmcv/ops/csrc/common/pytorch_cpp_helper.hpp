@@ -6,8 +6,6 @@
 
 using namespace at;
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-
 #define CHECK_CUDA(x) \
   TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CPU(x) \

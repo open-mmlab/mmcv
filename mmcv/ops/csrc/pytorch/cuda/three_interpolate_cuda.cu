@@ -23,7 +23,7 @@ void ThreeInterpolateForwardCUDAKernelLauncher(int b, int c, int m, int n,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c, b);
+  dim3 blocks(GET_BLOCKS(n, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
@@ -51,7 +51,7 @@ void ThreeInterpolateBackwardCUDAKernelLauncher(int b, int c, int n, int m,
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
-  dim3 blocks(DIVUP(n, THREADS_PER_BLOCK), c, b);
+  dim3 blocks(GET_BLOCKS(n, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(

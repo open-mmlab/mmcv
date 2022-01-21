@@ -25,10 +25,21 @@ class TestBoxIoURotated(object):
         boxes1 = torch.from_numpy(np_boxes1)
         boxes2 = torch.from_numpy(np_boxes2)
 
+        # test cw angle definition
         ious = box_iou_rotated(boxes1, boxes2)
         assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
 
         ious = box_iou_rotated(boxes1, boxes2, aligned=True)
+        assert np.allclose(
+            ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
+
+        # test ccw angle definition
+        boxes1[..., -1] *= -1
+        boxes2[..., -1] *= -1
+        ious = box_iou_rotated(boxes1, boxes2, clockwise=False)
+        assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+
+        ious = box_iou_rotated(boxes1, boxes2, aligned=True, clockwise=False)
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
@@ -54,10 +65,21 @@ class TestBoxIoURotated(object):
         boxes1 = torch.from_numpy(np_boxes1).cuda()
         boxes2 = torch.from_numpy(np_boxes2).cuda()
 
+        # test cw angle definition
         ious = box_iou_rotated(boxes1, boxes2)
         assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
 
         ious = box_iou_rotated(boxes1, boxes2, aligned=True)
+        assert np.allclose(
+            ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
+
+        # test ccw angle definition
+        boxes1[..., -1] *= -1
+        boxes2[..., -1] *= -1
+        ious = box_iou_rotated(boxes1, boxes2, clockwise=False)
+        assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+
+        ious = box_iou_rotated(boxes1, boxes2, aligned=True, clockwise=False)
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
@@ -81,9 +103,20 @@ class TestBoxIoURotated(object):
         boxes1 = torch.from_numpy(np_boxes1)
         boxes2 = torch.from_numpy(np_boxes2)
 
+        # test cw angle definition
         ious = box_iou_rotated(boxes1, boxes2, mode='iof')
         assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
         ious = box_iou_rotated(boxes1, boxes2, mode='iof', aligned=True)
+        assert np.allclose(
+            ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
+
+        # test ccw angle definition
+        boxes1[..., -1] *= -1
+        boxes2[..., -1] *= -1
+        ious = box_iou_rotated(boxes1, boxes2, mode='iof', clockwise=False)
+        assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+        ious = box_iou_rotated(
+            boxes1, boxes2, mode='iof', aligned=True, clockwise=False)
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
@@ -109,9 +142,21 @@ class TestBoxIoURotated(object):
         boxes1 = torch.from_numpy(np_boxes1).cuda()
         boxes2 = torch.from_numpy(np_boxes2).cuda()
 
+        # test cw angle definition
         ious = box_iou_rotated(boxes1, boxes2, mode='iof')
         assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
 
         ious = box_iou_rotated(boxes1, boxes2, mode='iof', aligned=True)
+        assert np.allclose(
+            ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
+
+        # test ccw angle definition
+        boxes1[..., -1] *= -1
+        boxes2[..., -1] *= -1
+        ious = box_iou_rotated(boxes1, boxes2, mode='iof', clockwise=False)
+        assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+
+        ious = box_iou_rotated(
+            boxes1, boxes2, mode='iof', aligned=True, clockwise=False)
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)

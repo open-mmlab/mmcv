@@ -74,18 +74,18 @@ class MomentumUpdaterHook(Hook):
             if self.warmup == 'constant':
                 warmup_momentum = [
                     _momentum / self.warmup_ratio
-                    for _momentum in self.regular_momentum
+                    for _momentum in regular_momentum
                 ]
             elif self.warmup == 'linear':
                 k = (1 - cur_iters / self.warmup_iters) * (1 -
                                                            self.warmup_ratio)
                 warmup_momentum = [
-                    _momentum / (1 - k) for _momentum in self.regular_mom
+                    _momentum / (1 - k) for _momentum in regular_momentum
                 ]
             elif self.warmup == 'exp':
                 k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
                 warmup_momentum = [
-                    _momentum / k for _momentum in self.regular_mom
+                    _momentum / k for _momentum in regular_momentum
                 ]
             return warmup_momentum
 
@@ -128,15 +128,15 @@ class MomentumUpdaterHook(Hook):
     def before_train_epoch(self, runner):
         if not self.by_epoch:
             return
-        self.regular_mom = self.get_regular_momentum(runner)
-        self._set_momentum(runner, self.regular_mom)
+        self.regular_momentum = self.get_regular_momentum(runner)
+        self._set_momentum(runner, self.regular_momentum)
 
     def before_train_iter(self, runner):
         cur_iter = runner.iter
         if not self.by_epoch:
-            self.regular_mom = self.get_regular_momentum(runner)
+            self.regular_momentum = self.get_regular_momentum(runner)
             if self.warmup is None or cur_iter >= self.warmup_iters:
-                self._set_momentum(runner, self.regular_mom)
+                self._set_momentum(runner, self.regular_momentum)
             else:
                 warmup_momentum = self.get_warmup_momentum(cur_iter)
                 self._set_momentum(runner, warmup_momentum)
@@ -144,7 +144,7 @@ class MomentumUpdaterHook(Hook):
             if self.warmup is None or cur_iter > self.warmup_iters:
                 return
             elif cur_iter == self.warmup_iters:
-                self._set_momentum(runner, self.regular_mom)
+                self._set_momentum(runner, self.regular_momentum)
             else:
                 warmup_momentum = self.get_warmup_momentum(cur_iter)
                 self._set_momentum(runner, warmup_momentum)

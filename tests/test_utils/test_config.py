@@ -533,6 +533,6 @@ def test_deprecation():
     ]
 
     for cfg_file in deprecated_cfg_files:
-        with pytest.warns(UserWarning):
+        with pytest.warns(DeprecationWarning):
             cfg = Config.fromfile(cfg_file)
         assert cfg.item1 == 'expected'
