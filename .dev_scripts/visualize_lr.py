@@ -21,8 +21,8 @@ from mmcv.utils import get_logger
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize the given config'
-                                     'of learning rate and '
-                                     'momentum')
+                                     'of learning rate and momentum, and this'
+                                     'script will overwrite the log_config')
     parser.add_argument('config', help='train config file path')
     parser.add_argument(
         '--work-dir', default='./', help='the dir to save logs and models')
@@ -35,7 +35,7 @@ def parse_args():
         default='12*14',
         help='Size of the window to display images, in format of "$W*$H".')
     parser.add_argument(
-        '--log-interval', default=1, help='The iterval of TextLoggerHook')
+        '--log-interval', default=10, help='The iterval of TextLoggerHook')
     args = parser.parse_args()
     return args
 
@@ -55,6 +55,7 @@ class SimpleModel(nn.Module):
 
 def iter_train(self, data_loader, **kwargs):
     self.mode = 'train'
+    self.data_loader = data_loader
     self.call_hook('before_train_iter')
     self.call_hook('after_train_iter')
     self._inner_iter += 1
@@ -139,7 +140,12 @@ def run(cfg, logger):
         warnings.warn(
             'config is now expected to have a `runner` section, '
             'please set `runner` in your config.', UserWarning)
-    fake_dataloader = DataLoader(list(range(cfg.num_iters)), batch_size=1)
+    batch_size = 1
+    data = cfg.get('data')
+    if data:
+        batch_size = data.get('samples_per_gpu')
+    fake_dataloader = DataLoader(
+        list(range(cfg.num_iters)), batch_size=batch_size)
     runner = build_runner(
         cfg.runner,
         default_args=dict(
