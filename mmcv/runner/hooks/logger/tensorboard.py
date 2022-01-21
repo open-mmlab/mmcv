@@ -3,7 +3,6 @@ import os.path as osp
 from functools import partial
 
 import torch
-from torch.utils.data import IterableDataset
 
 from ....parallel import DataContainer
 from ....parallel.utils import is_module_wrapper
@@ -99,18 +98,12 @@ class TensorboardLoggerHook(LoggerHook):
             dataloader = runner.data_loader._dataloader
         else:
             dataloader = runner.data_loader
-        if isinstance(dataloader.dataset, IterableDataset):
-            data = next(iter(dataloader))
-        else:
-            data = dataloader.dataset[0]
+        data = dataloader.collate_fn([next(iter(dataloader.dataset))])
         image = data[self.img_key]
         img_metas = data['img_metas']
         if isinstance(image, DataContainer):
             image = image.data
         image = image.to(device)
-        # if data is from __next__(), image.dim() == 4
-        # if data is from __getitem__(), image.dim() == 3
-        image = image.unsqueeze(0) if image.dim() == 3 else image
         origin_forward = _model.forward
         _model.forward = partial(
             _model.forward, img_metas=img_metas, return_loss=False)
