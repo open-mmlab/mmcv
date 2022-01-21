@@ -31,10 +31,6 @@ class TensorboardLoggerHook(LoggerHook):
         img_key (string): Used to visualize model, get image data from Dataset.
             Default: 'img'.
             `New in version 1.4.4.`
-        img_metas (List[List[dict]]): Used to visualize model, the outer list
-            indicates test-time augs (multiscale, flip, etc.) and the inner
-            list indicates images in a batch.
-            `New in version 1.4.4.`
         verbose (bool): Used to visualize model, Whether to print graph
             structure in console. Default: False.
             `New in version 1.4.4.`
@@ -48,14 +44,12 @@ class TensorboardLoggerHook(LoggerHook):
                  by_epoch=True,
                  add_graph=False,
                  img_key='img',
-                 img_metas=None,
                  verbose=False):
         super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
                                                     reset_flag, by_epoch)
         self.log_dir = log_dir
         self.add_graph = add_graph
         self.img_key = img_key
-        self.img_metas = img_metas
         self.verbose = verbose
 
     @master_only
@@ -110,12 +104,16 @@ class TensorboardLoggerHook(LoggerHook):
         else:
             data = dataloader.dataset[0]
         image = data[self.img_key]
+        img_metas = data['img_metas']
         if isinstance(image, DataContainer):
             image = image.data
-        image = image.to(device).unsqueeze(0)
+        image = image.to(device)
+        # if data is from __next__(), image.dim() == 4
+        # if data is from __getitem__(), image.dim() == 3
+        image = image.unsqueeze(0) if image.dim() == 3 else image
         origin_forward = _model.forward
         _model.forward = partial(
-            _model.forward, img_metas=self.img_metas, return_loss=False)
+            _model.forward, img_metas=img_metas, return_loss=False)
         with torch.no_grad():
             self.writer.add_graph(_model, image, verbose=self.verbose)
         _model.forward = origin_forward
