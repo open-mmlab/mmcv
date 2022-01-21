@@ -364,7 +364,7 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         # Use the default backend first
         file_client = FileClient(backend=backend)
     except ImportError:
-        # Use the prefix to auto select the installed client.
+        # Use the prefix to automatically select the installed client.
         file_client = FileClient(prefix='s3')
 
     with io.BytesIO(file_client.get(filename)) as buffer:

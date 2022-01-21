@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 
 @contextmanager
-def package_mock(*package_name):
+def mock_package(*package_name):
     try:
         for name in package_name:
             sys.modules[name] = MagicMock()

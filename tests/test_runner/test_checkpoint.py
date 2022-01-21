@@ -7,7 +7,7 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tests.pytest_util import package_mock
+from tests.pytest_util import mock_package
 from torch.nn.parallel import DataParallel
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -426,14 +426,14 @@ def test_save_checkpoint(tmp_path):
     save_checkpoint(model, filename, file_client_args={'backend': 'disk'})
 
     # 2. save to petrel oss
-    with package_mock('petrel_client', 'petrel_client.client'), patch.object(
+    with mock_package('petrel_client', 'petrel_client.client'), patch.object(
             PetrelBackend, 'put') as mock_method:
         FileClient._instances = {}
         filename = 's3://path/of/your/checkpoint1.pth'
         save_checkpoint(model, filename)
     mock_method.assert_called()
 
-    with package_mock('petrel_client', 'petrel_client.client'), patch.object(
+    with mock_package('petrel_client', 'petrel_client.client'), patch.object(
             PetrelBackend, 'put') as mock_method:
         FileClient._instances = {}
         filename = 's3://path//of/your/checkpoint2.pth'

@@ -1,16 +1,23 @@
-## 基于 Amazon S3 训练
+## 使用 S3 的数据训练模型
 
 本教程的目的是为了展示如何使用 Amazon Simple Storage Service (Amazon S3) 作为存储后端进行模型的训练与存储。
 
 > 该特性从v1.4.4版本开始支持
 
-### AWS配置
+### AWS 配置
 
-如果你从未使用过AWS服务，你需要先注册[AWS账号](https://aws.amazon.com/)并配置好[S3存储桶](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html)。
-**注意**：为了支持在你的个人电脑对AWS服务进行访问，你需要安装AWS提供的awscli和python sdk `boto3`。具体步骤如下:
+如果你从未使用过 AWS 服务，你需要先注册 [AWS账号](https://aws.amazon.com/) 并配置好 [S3存储桶](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html)。
+为了支持在你的个人电脑对AWS服务进行访问，你需要安装AWS提供的awscli和python sdk `boto3`。具体步骤如下:
+- 安装依赖库
+
 ```bash
 pip install awscli
 pip install boto3
+```
+
+- 配置 aws
+
+```bash
 # configure your aws credentials
 # Note that region must match your bucket region.
 aws configure
@@ -20,7 +27,7 @@ aws configure
 # Default output format [json]:
 ```
 
-### 使用mmcv从S3读写数据
+### 读写 S3 数据
 
 ```python
 import mmcv
@@ -30,27 +37,26 @@ with open(img_path, 'rb') as f:
     img_buff = f.read()
 
 s3_path = 's3://yourbucket/demo/img.jpg'
-# infer client by prefix
+# 根据文件前缀自动推理处理的文件后端
 file_client = mmcv.FileClient.infer_client(uri=s3_path)
 
-# infer client by args
-# file_client = mmcv.FileClient.infer_client(file_client_args={'backend': 'aws'})
-
-# instantiation by args
+# 使用 backend 参数指定处理的文件后端
 # file_client = mmcv.FileClient(backend='aws')
+
+# 使用 prefix 参数指定处理的路径前缀，FileClient 根据前缀选择对应的文件后端
 # file_client = mmcv.FileClient(prefix='s3')
 
-# write img to s3
+# 将图像写入 s3
 file_client.put(img_buff, s3_path)
 
-# read img from s3
+# 从 s3 读取图像
 img_buff_with_s3 = file_client.get(s3_path).tobytes()
 assert img_buff == img_buff_with_s3
 
-# remove img from s3
+# 删除 s3 路径的文件
 file_client.remove(s3_path)
 
-# list files from s3
+# 列出指定目录的子目录和文件
 print(list(file_client.list_dir_or_file('s3://yourbucket')))
 ```
 
@@ -102,7 +108,7 @@ log_config = dict(
     ])  # yapf:enable
 ```
 
-也可以通过设置keep_local = False，则会在备份至指定的 S3 路径后删除本地训练日志
+也可以通过设置 `keep_local = False`，则会在备份至指定的 S3 路径后删除本地的训练日志
 ```python
 log_config = dict(
     interval=50,
@@ -112,9 +118,9 @@ log_config = dict(
     ])# yapf:enable
 ```
 
-#### 从 S3 读取训练数据
+#### 读取 S3 的训练数据
 
-在不改动 MMDetection 原有config的情况下，可以通过解析标签文件获得数据路径，在读取数据的时候将本地路径映射为 S3 路径即可。
+在不改动 MMDetection 原有 config 的情况下，可以通过解析标签文件获得数据路径，在读取数据的时候将本地路径映射为 S3 路径即可。
 
 ```python
 file_client_args = dict(
@@ -171,9 +177,9 @@ data = dict(
         file_client_args=file_client_args))
 ```
 
-#### 在 Amazon S3 训练faster_rcnn
+#### 使用 S3 上的数据训练 faster_rcnn
 
-配置文件由 MMDetection 中的 [faster_rcnn_r50_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py) 修改得到，主要展示了如果通过修改配置文件实现使用 Amazon S3 作为文件后端训练模型。
+配置文件由 MMDetection 中的 [faster_rcnn_r50_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py) 修改得到，主要展示了如何通过修改配置文件实现使用 S3 的数据训练模型。
 
 ```python
 _base_ = [
@@ -185,8 +191,8 @@ _base_ = [
 file_client_args = dict(
     backend='aws',
     path_mapping=dict({
-        'data/coco/': 's3://wwcbucket/demo/data/coco/',
-        'data/coco/': 's3://wwcbucket/demo/data/coco/'
+        'data/coco/': 's3://yourbucket/demo/data/coco/',
+        'data/coco/': 's3://yourbucket/demo/data/coco/'
     }))
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -227,26 +233,26 @@ data = dict(
     test=dict(pipeline=test_pipeline, file_client_args=file_client_args))
 
 evaluation = dict(
-    interval=1, save_best='mAP', out_dir='s3://wwcbucket/demo/ckpt/')
+    interval=1, save_best='bbox', out_dir='s3://yourbucket/demo/ckpt/')
 
 model = dict(
     backbone=dict(
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='s3://wwcbucket/demo/pretrained/resnet50_batch256_imagenet_20200708-cfb998bf.pth'
+            checkpoint='s3://yourbucket/demo/pretrained/resnet50_batch256_imagenet_20200708-cfb998bf.pth'
         )))
 
 # finetune
-load_from = 's3://wwcbucket/demo/pretrained/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+load_from = 's3://yourbucket/demo/pretrained/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
 
 # checkpoint saving
 checkpoint_config = dict(
-    interval=1, max_keep_ckpts=2, out_dir='s3://wwcbucket/demo/ckpt/')
+    interval=1, max_keep_ckpts=2, out_dir='s3://yourbucket/demo/ckpt/')
 
 log_config = dict(
     interval=1,
     hooks=[
-        dict(type='TextLoggerHook', out_dir='s3://wwcbucket/demo/logs/'),
+        dict(type='TextLoggerHook', out_dir='s3://yourbucket/demo/logs/'),
         # dict(type='TensorboardLoggerHook')
     ])  # yapf:enable
 

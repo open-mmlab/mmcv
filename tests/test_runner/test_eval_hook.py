@@ -9,7 +9,7 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tests.pytest_util import package_mock
+from tests.pytest_util import mock_package
 from torch.utils.data import DataLoader, Dataset
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -333,7 +333,7 @@ def test_eval_hook():
     eval_hook = EvalHook(
         data_loader, interval=1, save_best='auto', out_dir=out_dir)
 
-    with package_mock('petrel_client', 'petrel_client.client'), \
+    with mock_package('petrel_client', 'petrel_client.client'), \
          patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile, \

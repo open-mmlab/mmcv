@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 import pytest
 import torch
 import torch.nn as nn
-from tests.pytest_util import package_mock
+from tests.pytest_util import mock_package
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
@@ -134,7 +134,7 @@ def test_checkpoint_hook(tmp_path):
     runner = _build_demo_runner('EpochBasedRunner', max_epochs=4)
     runner.meta = dict()
     out_dir = 's3://user/data'
-    with package_mock('petrel_client', 'petrel_client.client'), \
+    with mock_package('petrel_client', 'petrel_client.client'), \
          patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile:
@@ -167,7 +167,7 @@ def test_checkpoint_hook(tmp_path):
         'IterBasedRunner', max_iters=4, max_epochs=None)
     runner.meta = dict()
     out_dir = 's3://user/data'
-    with package_mock('petrel_client', 'petrel_client.client'), \
+    with mock_package('petrel_client', 'petrel_client.client'), \
          patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile:

@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from tests.pytest_util import package_mock
+from tests.pytest_util import mock_package
 
 import mmcv
 from mmcv import BaseStorageBackend, FileClient
@@ -107,19 +107,10 @@ class MockAWSClient:
         pass
 
     def head_bucket(self, Bucket):
-        if Bucket in {
-                's3://user/data/test.jpg', 's3://user/data', 's3://user/data/'
-        }:
-            return True
-        else:
-            raise Exception
+        return True
 
     def head_object(self, Bucket, Key):
-        if Key in {
-                's3://user/data/test.jpg', 's3://user/data', 's3://user/data/'
-        }:
-            return True
-        raise Exception
+        return True
 
     def download_fileobj(self, bucket, obj_name, value, *args, **kwargs):
         with open(bucket, 'rb') as f:
@@ -132,27 +123,32 @@ class MockAWSClient:
     def delete_object(self, *args, **kwargs):
         pass
 
-    def list_objects_v2(self, Bucket, MaxKeys, Prefix, *args, **kwargs):
-        dir_path = os.path.join(Bucket, Prefix)
-        paths = []
-        for root, dirs, files in os.walk(dir_path):
-            for name in files:
-                paths.append(os.path.join(root, name))
-            for name in dirs:
-                paths.append(os.path.join(root, name) + '/')
-        response = {
-            'ResponseMetadata': {
-                'HTTPStatusCode': 200
-            },
-            'Contents': [{
-                'Key': path
-            } for path in paths]
-        }
-        return response
+    def get_paginator(self, type='list_objects_v2'):
+
+        class Paginator:
+
+            @staticmethod
+            def paginate(Bucket, Prefix, *args, **kwargs):
+                dir_path = Prefix
+                paths = []
+                for root, dirs, files in os.walk(dir_path):
+                    for name in files:
+                        paths.append(os.path.join(root, name))
+                response = {
+                    'ResponseMetadata': {
+                        'HTTPStatusCode': 200
+                    },
+                    'Contents': [{
+                        'Key': path.replace('\\', '/')
+                    } for path in paths]
+                }
+                return [response]
+
+        return Paginator
 
     @staticmethod
     def _parse_path(obj, filepath):
-        return filepath, filepath
+        return str(filepath), str(filepath)
 
 
 class MockMemcachedClient:
@@ -174,11 +170,12 @@ class TestFileClient:
         cls.img_shape = (300, 400, 3)
         cls.text_path = cls.test_data_dir / 'filelist.txt'
         # mock some uninstalled packages
-        cls.packages = package_mock('ceph', 'petrel_client',
+        cls.packages = mock_package('ceph', 'petrel_client',
                                     'petrel_client.client', 'mc', 'boto3',
                                     'boto3.s3', 'boto3.s3.transfer',
                                     'botocore', 'botocore.exceptions')
         cls.packages.__enter__()
+        FileClient._instances = {}
 
     @classmethod
     def teardown_class(cls):
@@ -698,21 +695,20 @@ class TestFileClient:
 
         # test `list_dir_or_file`
         with build_temporary_directory() as tmp_dir:
-            tmp_dir = f's3:///{tmp_dir}'
             # 1. list directories and files
             assert set(aws_backend.list_dir_or_file(tmp_dir)) == set(
-                ['dir1', 'dir2', 'text1.txt', 'text2.txt'])
+                ['dir1/', 'dir2/', 'text1.txt', 'text2.txt'])
             # 2. list directories and files recursively
             assert set(aws_backend.list_dir_or_file(
                 tmp_dir, recursive=True)) == set([
-                    'dir1', '/'.join(('dir1', 'text3.txt')), 'dir2', '/'.join(
-                        ('dir2', 'dir3')), '/'.join(
-                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
-                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
+                    'dir1/', '/'.join(('dir1', 'text3.txt')), 'dir2/',
+                    '/'.join(('dir2', 'dir3/')), '/'.join(
+                        ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                            ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
                 ])
             # 3. only list directories
             assert set(aws_backend.list_dir_or_file(
-                tmp_dir, list_file=False)) == set(['dir1', 'dir2'])
+                tmp_dir, list_file=False)) == set(['dir1/', 'dir2/'])
             with pytest.raises(
                     TypeError,
                     match=('`list_dir` should be False when `suffix` is not '
@@ -725,7 +721,7 @@ class TestFileClient:
             assert set(
                 aws_backend.list_dir_or_file(
                     tmp_dir, list_file=False, recursive=True)) == set(
-                        ['dir1', 'dir2', '/'.join(('dir2', 'dir3'))])
+                        ['dir1/', 'dir2/', '/'.join(('dir2', 'dir3/'))])
             # 5. only list files
             assert set(aws_backend.list_dir_or_file(
                 tmp_dir, list_dir=False)) == set(['text1.txt', 'text2.txt'])
@@ -1092,10 +1088,3 @@ class TestFileClient:
         example_backend = FileClient('example6', prefix='example4_prefix')
         assert example_backend.get(self.img_path) == b'bytes8'
         assert example_backend.get_text(self.text_path) == 'text8'
-
-
-if __name__ == '__main__':
-    a = TestFileClient()
-    a.setup_class()
-    a.test_aws_backend('aws', None)
-    a.teardown_class()
