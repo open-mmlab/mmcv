@@ -122,16 +122,10 @@ class TensorboardLoggerHook(LoggerHook):
 
     @master_only
     def before_epoch(self, runner):
-        if runner.epoch == 0 and self.add_graph:
-            # avoid circular dependencies
-            from ....runner import EpochBasedRunner
-            if isinstance(runner, EpochBasedRunner):
-                self.visual_model(runner)
+        if runner.epoch == 0 and self.add_graph and self.by_epoch:
+            self.visual_model(runner)
 
     @master_only
     def before_iter(self, runner):
-        if runner.iter == 0 and self.add_graph:
-            # avoid circular dependencies
-            from ....runner import IterBasedRunner
-            if isinstance(runner, IterBasedRunner):
-                self.visual_model(runner)
+        if runner.iter == 0 and self.add_graph and not self.by_epoch:
+            self.visual_model(runner)
