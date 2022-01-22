@@ -76,13 +76,14 @@ def test_get_input_device():
     assert get_input_device(inputs) == -1
 
     # if the device is GPU, return the index of device
-    input = torch.zeros([1, 3, 3, 3]).cuda()
-    assert get_input_device(input) == 0
-    inputs = [
-        torch.zeros([1, 3, 3, 3]).cuda(),
-        torch.zeros([1, 4, 4, 4]).cuda()
-    ]
-    assert get_input_device(inputs) == 0
+    if torch.cuda.is_available():
+        input = torch.zeros([1, 3, 3, 3]).cuda()
+        assert get_input_device(input) == 0
+        inputs = [
+            torch.zeros([1, 3, 3, 3]).cuda(),
+            torch.zeros([1, 4, 4, 4]).cuda()
+        ]
+        assert get_input_device(inputs) == 0
 
     # input should be a tensor or list of tensor
     with pytest.raises(Exception):
