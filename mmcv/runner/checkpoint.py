@@ -352,9 +352,14 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    allowed_backends = ['ceph', 'petrel', 'aws']
-    if backend not in allowed_backends:
-        raise ValueError(f'Load from Backend {backend} is not supported.')
+    assert backend in FileClient._backends, \
+        f'Backend {backend} is not supported.'
+    allowed_backends = FileClient._prefix_to_backends['s3']
+    if not isinstance(allowed_backends, list):
+        allowed_backends = [allowed_backends]
+    assert FileClient._backends[
+        backend] in allowed_backends, f'Backend {backend} is not allowed. ' \
+        f'Currently allowed ones are {allowed_backends}'
 
     if backend == 'ceph':
         warnings.warn(

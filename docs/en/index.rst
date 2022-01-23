@@ -13,6 +13,12 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 2
+   :caption: Tutorials
+
+   tutorials/aws_file_client.md
+
+.. toctree::
+   :maxdepth: 2
    :caption: Understand MMCV
 
    understand_mmcv/config.md
