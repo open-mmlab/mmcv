@@ -61,7 +61,6 @@ class MaskedConv2dFunction(Function):
                 kernel_w=kernel_w,
                 pad_h=pad_h,
                 pad_w=pad_w)
-
             masked_output = torch.addmm(1, bias[:, None], 1,
                                         weight.view(out_channel, -1), data_col)
             ext_module.masked_col2im_forward(

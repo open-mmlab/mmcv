@@ -389,10 +389,10 @@ def nms_match(dets, iou_threshold):
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
     else:
-        return [np.array(m, dtype=np.int) for m in matched]
+        return [np.array(m, dtype=int) for m in matched]
 
 
-def nms_rotated(dets, scores, iou_threshold, labels=None):
+def nms_rotated(dets, scores, iou_threshold, labels=None, clockwise=True):
     """Performs non-maximum suppression (NMS) on the rotated boxes according to
     their intersection-over-union (IoU).
 
@@ -400,11 +400,14 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     IoU greater than iou_threshold with another (higher scoring) rotated box.
 
     Args:
-        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to
+        dets (Tensor):  Rotated boxes in shape (N, 5). They are expected to
             be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor): boxes' label in shape (N,).
+        clockwise (bool): flag indicating whether the positive angular
+            orientation is clockwise. default True.
+            `New in version 1.4.3.`
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the
@@ -412,11 +415,17 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     """
     if dets.shape[0] == 0:
         return dets, None
+    if not clockwise:
+        flip_mat = dets.new_ones(dets.shape[-1])
+        flip_mat[-1] = -1
+        dets_cw = dets * flip_mat
+    else:
+        dets_cw = dets
     multi_label = labels is not None
     if multi_label:
-        dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
+        dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)
     else:
-        dets_wl = dets
+        dets_wl = dets_cw
     _, order = scores.sort(0, descending=True)
     dets_sorted = dets_wl.index_select(0, order)
 

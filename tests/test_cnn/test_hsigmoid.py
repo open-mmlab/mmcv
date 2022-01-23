@@ -15,7 +15,7 @@ def test_hsigmoid():
     input = torch.randn(input_shape)
     output = act(input)
     expected_output = torch.min(
-        torch.max((input + 1) / 2, torch.zeros(input_shape)),
+        torch.max((input + 3) / 6, torch.zeros(input_shape)),
         torch.ones(input_shape))
     # test output shape
     assert output.shape == expected_output.shape
@@ -23,12 +23,12 @@ def test_hsigmoid():
     assert torch.equal(output, expected_output)
 
     # test with designated parameters
-    act = HSigmoid(3, 6, 0, 1)
+    act = HSigmoid(1, 2, 0, 1)
     input_shape = torch.Size([1, 3, 64, 64])
     input = torch.randn(input_shape)
     output = act(input)
     expected_output = torch.min(
-        torch.max((input + 3) / 6, torch.zeros(input_shape)),
+        torch.max((input + 1) / 2, torch.zeros(input_shape)),
         torch.ones(input_shape))
     # test output shape
     assert output.shape == expected_output.shape

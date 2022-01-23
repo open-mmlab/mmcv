@@ -6,4 +6,4 @@ onnxruntime>=1.8.0
 pytest
 PyTurboJPEG
 scipy
-tiffile
+tifffile
