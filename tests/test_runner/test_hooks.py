@@ -1375,7 +1375,9 @@ def test_mlflow_hook(log_model):
         }, step=6)
     if log_model:
         hook.mlflow_pytorch.log_model.assert_called_with(
-            runner.model, 'models')
+            runner.model,
+            'models',
+            pip_requirements=[f'torch=={torch.__version__}'])
     else:
         assert not hook.mlflow_pytorch.log_model.called
 
