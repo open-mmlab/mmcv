@@ -6,16 +6,16 @@ from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
 from .hooks import HOOKS
-from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, IPU_MODE
+from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, wrap_optimizer_hook, IPU_MODE
 
 class IpuBaseRunner(metaclass=ABCMeta):
-    def __init__(self,ipu_options=None,**kwargs):
+    def __init__(self,ipu_options={},**kwargs):
         super(IpuBaseRunner, self).__init__(**kwargs)
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
             # self.data_loader = wrap_data_loader(self.data_loader)
-            self.model = wrap_model(self.model, self.ipu_options, self.optimizer)
+            self.model = wrap_model(self.model, self.ipu_options, self.optimizer, self.logger)
             self.ipu_data_loaders_mappin = {} # may have bug in multi-processer
         else:
             warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
@@ -57,6 +57,16 @@ class IpuBaseRunner(metaclass=ABCMeta):
             self.register_hook(hook, priority='VERY_HIGH')
         else:
             super().register_lr_hook(lr_config)
+
+    def register_optimizer_hook(self, optimizer_config):
+        if optimizer_config is None:
+            raise RuntimeError('ipu need to wrap optimzier hook, but no optimizer hook set')
+        if isinstance(optimizer_config, dict):
+            optimizer_config.setdefault('type', 'OptimizerHook')
+            hook = build_from_cfg_with_wrapper(optimizer_config, HOOKS, wrap_optimizer_hook)
+        else:
+            raise RuntimeError('ipu need to wrap optimzier hook before inittialization, but seems optimzier hook is initilized')
+        self.register_hook(hook, priority='ABOVE_NORMAL')
 
 
 @RUNNERS.register_module()

@@ -4,15 +4,14 @@ from abc import ABCMeta, abstractmethod
 from torch.utils.data import RandomSampler
 try:
     import poptorch
-    from .model_converter import trainingModel
     IPU_MODE = True
 except ImportError:
     IPU_MODE = False
-
 from ..builder import RUNNERS
-from ..hooks import HOOKS, LrUpdaterHook
+from ..hooks import HOOKS, LrUpdaterHook, OptimizerHook
 from ...utils import Registry
-
+if IPU_MODE:
+    from .model_converter import trainingModel
 
 def build_from_cfg_with_wrapper(cfg, registry, wrapper_func, default_args=None):
     """Build a module from config dict and wrap module with "wrapper_func"
@@ -88,12 +87,12 @@ def parse_ipu_options(ipu_options):
     return opts
 
 
-def wrap_model(model, opts, optimizer):
+def wrap_model(model, opts, optimizer, logger=None):
     # three things need to do
     # wrap model with poptorch
     # set mixed-precision
     # set model partition
-    model = trainingModel(model, options=opts, optimizer=optimizer)
+    model = trainingModel(model, options=opts, optimizer=optimizer, logger=logger)
     # TODO set mixed-precision
     # TODO set model partition
     return model
@@ -123,3 +122,13 @@ def wrap_lr_update_hook(lr_hook_class,):
             runner.model.setOptimizer(runner.optimizer)
     return ipu_lr_hook_class
 
+
+def wrap_optimizer_hook(optimizer_hook_class,):
+    assert optimizer_hook_class == OptimizerHook, "OptimizerHook type used is:{}, not supported now".format(str(optimizer_hook_class))
+    class ipu_optimizer_hook_class(OptimizerHook):
+        def after_train_iter(self, runner):
+            if self.detect_anomalous_params:
+                self.detect_anomalous_parameters(runner.outputs['loss'], runner)
+            if self.grad_clip is not None:
+                raise NotImplementedError('IPU not supports gradient clip now')
+    return ipu_optimizer_hook_class
