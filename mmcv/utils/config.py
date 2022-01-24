@@ -356,9 +356,11 @@ class Config:
     @staticmethod
     def fromfile(filename,
                  use_predefined_variables=True,
+                 use_environment_variables=True,
                  import_custom_modules=True):
         cfg_dict, cfg_text = Config._file2dict(filename,
-                                               use_predefined_variables)
+                                               use_predefined_variables,
+                                               use_environment_variables)
         if import_custom_modules and cfg_dict.get('custom_imports', None):
             import_modules_from_strings(**cfg_dict['custom_imports'])
         return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
