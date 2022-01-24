@@ -163,7 +163,7 @@ class ConvModule(nn.Module):
             self.activate = build_activation_layer(act_cfg_)
 
         # Use msra init by default
-        self.init_weights()
+        self._init_default_weights()
 
     @property
     def norm(self):
@@ -172,7 +172,7 @@ class ConvModule(nn.Module):
         else:
             return None
 
-    def init_weights(self):
+    def _init_default_weights(self):
         # 1. It is mainly for customized conv layers with their own
         #    initialization manners by calling their own ``init_weights()``,
         #    and we do not want ConvModule to override the initialization.
