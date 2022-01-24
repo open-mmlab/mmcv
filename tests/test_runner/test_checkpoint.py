@@ -146,8 +146,24 @@ def test_get_state_dict():
                         wrapped_model.module.conv.module.bias)
 
 
-def test_load_pavimodel_dist():
+def test_get_torchvision_models():
+    # Check if wrong model paths are given
+    # More details at https://github.com/open-mmlab/mmcv/pull/1668
+    import pkgutil
+    import torchvision
+    from importlib import import_module
 
+    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__,
+                                                prefix='torchvision.models.'):
+        if ispkg:
+            continue
+        try:
+            _zoo = import_module(name)
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError(name)
+
+
+def test_load_pavimodel_dist():
     sys.modules['pavi'] = MagicMock()
     sys.modules['pavi.modelcloud'] = MagicMock()
     pavimodel = Mockpavimodel()
@@ -213,14 +229,16 @@ def test_load_checkpoint():
 
     # add prefix
     torch.save(model.state_dict(), checkpoint_path)
-    state_dict = load_checkpoint(
-        pmodel, checkpoint_path, revise_keys=[(r'^', 'backbone.')])
+    state_dict = load_checkpoint(pmodel,
+                                 checkpoint_path,
+                                 revise_keys=[(r'^', 'backbone.')])
     for key in pmodel.backbone.state_dict().keys():
         assert torch.equal(pmodel.backbone.state_dict()[key], state_dict[key])
     # strip prefix
     torch.save(pmodel.state_dict(), checkpoint_path)
-    state_dict = load_checkpoint(
-        model, checkpoint_path, revise_keys=[(r'^backbone\.', '')])
+    state_dict = load_checkpoint(model,
+                                 checkpoint_path,
+                                 revise_keys=[(r'^backbone\.', '')])
 
     for key in state_dict.keys():
         key_stripped = re.sub(r'^backbone\.', '', key)
@@ -435,8 +453,9 @@ def test_save_checkpoint(tmp_path):
 
     with patch.object(PetrelBackend, 'put') as mock_method:
         filename = 's3://path//of/your/checkpoint2.pth'
-        save_checkpoint(
-            model, filename, file_client_args={'backend': 'petrel'})
+        save_checkpoint(model,
+                        filename,
+                        file_client_args={'backend': 'petrel'})
     mock_method.assert_called()
 
 
