@@ -26,12 +26,12 @@ def cast_tensor_type(inputs, src_type, dst_type):
 
     Note:
         In v1.4.4 and later, ``cast_tersor_type`` will only convert the
-        torch.Tensor which is consistent with ``src_type`` to the ``dis_type``.
+        torch.Tensor which is consistent with ``src_type`` to the ``dst_type``.
         Before v1.4.4, it ignores the ``src_type`` argument, leading to some
-        potential problems. For example, invoking
+        potential problems. For example,
         ``cast_tensor_type(inputs, torch.float, torch.half)`` will convert all
-        tensors in inputs to ``torch.half``, but this will cause ``torch.Int``
-        or other types to also be to ``torch.half``, which is not expected.
+        tensors in inputs to ``torch.half`` including those originally in
+        ``torch.Int`` or other types, which is not expected.
 
     Args:
         inputs: Inputs that to be casted.
@@ -44,8 +44,8 @@ def cast_tensor_type(inputs, src_type, dst_type):
     if isinstance(inputs, nn.Module):
         return inputs
     elif isinstance(inputs, torch.Tensor):
-        # we need to confirm the type of inputs to be casted is the same as the
-        # argument `src_type`.
+        # we need to ensure that the type of inputs to be casted are the same
+        # as the argument `src_type`.
         return inputs.to(dst_type) if inputs.dtype == src_type else inputs
     elif isinstance(inputs, str):
         return inputs
