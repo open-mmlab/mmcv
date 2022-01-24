@@ -723,7 +723,7 @@ class BaseTransformerLayer(BaseModule):
         index = 0
         for operation_name in operation_order:
             if operation_name in ['self_attn', 'cross_attn']:
-                if 'batch_first' in attn_cfgs[index]:
+                if attn_cfgs[index].get('batch_first'):
                     assert self.batch_first == attn_cfgs[index]['batch_first']
                 else:
                     attn_cfgs[index]['batch_first'] = self.batch_first
@@ -744,7 +744,7 @@ class BaseTransformerLayer(BaseModule):
             ffn_cfgs = [copy.deepcopy(ffn_cfgs) for _ in range(num_ffns)]
         assert len(ffn_cfgs) == num_ffns
         for ffn_index in range(num_ffns):
-            if 'embed_dims' not in ffn_cfgs[ffn_index]:
+            if not ffn_cfgs[ffn_index].get('embed_dims'):
                 ffn_cfgs[ffn_index]['embed_dims'] = self.embed_dims
             else:
                 assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims

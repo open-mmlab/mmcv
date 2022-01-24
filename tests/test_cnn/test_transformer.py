@@ -575,8 +575,17 @@ def test_basetransformerlayer_cuda():
         assert x.shape == torch.Size([2, 10, 256])
 
 
-def test_basetransformerlayer():
+@pytest.mark.parametrize('embed_dims', [None, 256])
+def test_basetransformerlayer(embed_dims):
     attn_cfgs = dict(type='MultiheadAttention', embed_dims=256, num_heads=8),
+    ffn_cfgs = dict(
+        type='FFN',
+        embed_dims=embed_dims,
+        feedforward_channels=1024,
+        num_fcs=2,
+        ffn_drop=0.,
+        act_cfg=dict(type='ReLU', inplace=True),
+    )
     feedforward_channels = 2048
     ffn_dropout = 0.1
     operation_order = ('self_attn', 'norm', 'ffn', 'norm')
@@ -584,6 +593,7 @@ def test_basetransformerlayer():
     # test deprecated_args
     baselayer = BaseTransformerLayer(
         attn_cfgs=attn_cfgs,
+        ffn_cfgs=ffn_cfgs,
         feedforward_channels=feedforward_channels,
         ffn_dropout=ffn_dropout,
         operation_order=operation_order)
