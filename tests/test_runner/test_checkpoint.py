@@ -158,7 +158,7 @@ def test_get_torchvision_models():
         if ispkg:
             continue
         try:
-            _zoo = import_module(name)
+            import_module(name)
         except ModuleNotFoundError:
             raise ModuleNotFoundError(name)
 
