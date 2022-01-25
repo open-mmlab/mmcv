@@ -11,17 +11,17 @@ from mmcv.runner import (FlatCosineAnnealingLrUpdaterHook, IterTimerHook,
                          PaviLoggerHook)
 
 
-@pytest.mark.parametrize('multi_optimziers, by_epoch', [(False, False),
+@pytest.mark.parametrize('multi_optimizers, by_epoch', [(False, False),
                                                         (True, False),
                                                         (False, True),
                                                         (True, True)])
-def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
+def test_flat_cosine_runner_hook(multi_optimizers, by_epoch):
     """xdoctest -m tests/test_hooks.py test_flat_cosine_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     max_epochs = 10 if by_epoch else 1
     runner = _build_demo_runner(
-        multi_optimziers=multi_optimziers, max_epochs=max_epochs)
+        multi_optimizers=multi_optimizers, max_epochs=max_epochs)
 
     with pytest.raises(ValueError):
         # start_percent: expected float between 0 and 1
@@ -47,7 +47,7 @@ def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         if by_epoch:
             calls = [
                 call(

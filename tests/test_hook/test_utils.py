@@ -15,7 +15,7 @@ sys.modules['petrel_client.client'] = MagicMock()
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
                                     max_epochs=1,
                                     max_iters=None,
-                                    multi_optimziers=False):
+                                    multi_optimizers=False):
 
     class Model(nn.Module):
 
@@ -35,7 +35,7 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
 
     model = Model()
 
-    if multi_optimziers:
+    if multi_optimizers:
         optimizer = {
             'model1':
             torch.optim.SGD(model.linear.parameters(), lr=0.02, momentum=0.95),
@@ -61,14 +61,14 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
 def _build_demo_runner(runner_type='EpochBasedRunner',
                        max_epochs=1,
                        max_iters=None,
-                       multi_optimziers=False):
+                       multi_optimizers=False):
     log_config = dict(
         interval=1, hooks=[
             dict(type='TextLoggerHook'),
         ])
 
     runner = _build_demo_runner_without_hook(runner_type, max_epochs,
-                                             max_iters, multi_optimziers)
+                                             max_iters, multi_optimizers)
 
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)

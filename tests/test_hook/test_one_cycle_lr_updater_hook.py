@@ -10,10 +10,10 @@ from torch.utils.data import DataLoader
 from mmcv.runner import IterTimerHook, OneCycleLrUpdaterHook, PaviLoggerHook
 
 
-@pytest.mark.parametrize('multi_optimziers, max_iters', [(True, 10), (True, 2),
+@pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 10), (True, 2),
                                                          (False, 10),
                                                          (False, 2)])
-def test_one_cycle_runner_hook(multi_optimziers, max_iters):
+def test_one_cycle_runner_hook(multi_optimizers, max_iters):
     """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
     with pytest.raises(AssertionError):
         # by_epoch should be False
@@ -29,7 +29,7 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
 
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -61,7 +61,7 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {

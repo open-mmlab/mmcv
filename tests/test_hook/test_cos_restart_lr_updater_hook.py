@@ -11,8 +11,8 @@ from mmcv.runner import (CosineRestartLrUpdaterHook, IterTimerHook,
                          PaviLoggerHook)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_cosine_restart_lr_update_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_cosine_restart_lr_update_hook(multi_optimizers):
     """Test CosineRestartLrUpdaterHook."""
     with pytest.raises(AssertionError):
         # either `min_lr` or `min_lr_ratio` should be specified
@@ -54,7 +54,7 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
 
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add cosine restart LR scheduler
     hook = CosineRestartLrUpdaterHook(
@@ -73,7 +73,7 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {

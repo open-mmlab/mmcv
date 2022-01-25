@@ -10,8 +10,8 @@ from torch.utils.data import DataLoader
 from mmcv.runner import IterTimerHook, PaviLoggerHook, StepLrUpdaterHook
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_step_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_step_runner_hook(multi_optimizers):
     """Test StepLrUpdaterHook."""
     with pytest.raises(TypeError):
         # `step` should be specified
@@ -26,7 +26,7 @@ def test_step_runner_hook(multi_optimziers):
     # test StepLrUpdaterHook with int `step` value
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((30, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -50,7 +50,7 @@ def test_step_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -127,7 +127,7 @@ def test_step_runner_hook(multi_optimziers):
     # test StepLrUpdaterHook with list[int] `step` value
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -150,7 +150,7 @@ def test_step_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
