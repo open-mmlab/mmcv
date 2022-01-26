@@ -532,13 +532,8 @@ class Config:
         other = self.__class__()
         memo[id(self)] = other
 
-        _cfg_dict = copy.deepcopy(self._cfg_dict, memo)
-        _filename = copy.deepcopy(self._filename, memo)
-        _text = copy.deepcopy(self._text, memo)
-
-        super(Config, other).__setattr__('_cfg_dict', _cfg_dict)
-        super(Config, other).__setattr__('_filename', _filename)
-        super(Config, other).__setattr__('_text', _text)
+        for key, value in self.__dict__.items():
+            super(Config, other).__setattr__(key, copy.deepcopy(value, memo))
 
         return other
 
