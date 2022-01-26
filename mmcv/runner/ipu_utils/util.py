@@ -11,7 +11,7 @@ from ..builder import RUNNERS
 from ..hooks import HOOKS, LrUpdaterHook, OptimizerHook
 from ...utils import Registry
 if IPU_MODE:
-    from .model_converter import trainingModel
+    from .model_converter import TrainEvalModel
 
 def build_from_cfg_with_wrapper(cfg, registry, wrapper_func, default_args=None):
     """Build a module from config dict and wrap module with "wrapper_func"
@@ -92,7 +92,7 @@ def wrap_model(model, opts, optimizer, logger=None):
     # wrap model with poptorch
     # set mixed-precision
     # set model partition
-    model = trainingModel(model, options=opts, optimizer=optimizer, logger=logger)
+    model = TrainEvalModel(model, options=opts, optimizer=optimizer, logger=logger)
     # TODO set mixed-precision
     # TODO set model partition
     return model

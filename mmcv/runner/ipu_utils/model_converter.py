@@ -140,17 +140,21 @@ def wrap_model(model, inputs_tree_manager, outputs_tree_manager):
             self.model = model
             self.inputs_tree_manager = inputs_tree_manager
             self.outputs_tree_manager = outputs_tree_manager
+            self.training = model.training
 
         def forward(self, inputs_tuple):
             # convert tuple back to kwargs
             self.inputs_tree_manager.set_tensors(list(inputs_tuple))
             kwargs = {**(self.inputs_tree_manager.get_tree())}
-            optimizer = kwargs.pop('optimizer')
-            data = kwargs
-            outputs = self.model.train_step(data,optimizer)
-
-            # tell poptorch which loss will be used finally
-            identity_loss(outputs['loss'],reduction='none')
+            if self.training:
+                outputs = self.forward_train(kwargs)
+                # tell poptorch which loss will be used finally
+                identity_loss(outputs['loss'],reduction='none')
+            else:
+                outputs = self.forward_eval(kwargs)
+                
+            if isinstance(outputs, torch.Tensor):
+                return outputs
             # record all the places of return tensors in the converting stage
             # while in the real run stage, all the tensor are changed inplace
             # that means the output can be obtained directly outside this functioon
@@ -158,24 +162,40 @@ def wrap_model(model, inputs_tree_manager, outputs_tree_manager):
             plain_outputs = self.outputs_tree_manager.get_tensors()
             return plain_outputs
 
+        def forward_train(self, kwargs):
+            optimizer = kwargs.pop('optimizer')
+            data = kwargs
+            outputs = self.model.train_step(data,optimizer)
+            return outputs
+        
+        def forward_eval(self, kwargs):
+            img = kwargs.pop('img')
+            img_metas = kwargs.pop('img_metas')
+            return_loss = kwargs.pop('return_loss')
+            assert not return_loss
+            outputs = self.model(img, img_metas=img_metas, return_loss=return_loss)
+            return outputs
+
     return Net(model, inputs_tree_manager, outputs_tree_manager)
 
 
 class PoplarExecutorForMMCV(PoplarExecutor):
-    def __init__(self, model, logger=None, *args, **kwargs):
+    def __init__(self, model, logger=None, training=True, *args, **kwargs):
         self.inputs_tree_manager = TreeManager(logger=logger) # wrapped model only accept and output tuple, so TreeManager will convert dictionary to tuple and convert them back
         self.outputs_tree_manager = TreeManager(logger=logger)
         model = wrap_model(model, self.inputs_tree_manager, self.outputs_tree_manager) # make torch.jit.trace convert self._model
-        super().__init__(model, *args, **kwargs)
+        super().__init__(model, training=training, *args, **kwargs)
         self._args_parser = None # overwrite self._args_parser in train_step or val_step
+        if training:
+            assert self.training
+        else:
+            assert not self.training
 
-    def train_step(self, data, optimizer=None, **kwargs):
-        assert len(kwargs) == 0 # TODO, support later if necessary
-
-        data['optimizer'] = None # TODO we will ignore optimizer for it will not be used in model, support later if necessary
+    def run_model(self, data_dict):
+        # this function used to parse input_dict and convert to output_dict
 
         # get tensors out of data and put them in a tuple
-        self.inputs_tree_manager.set_tree(data)
+        self.inputs_tree_manager.set_tree(data_dict)
         inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
 
         # parser args for first iter
@@ -188,6 +208,16 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         self.outputs_tree_manager.set_tensors(plain_outputs)
         # get the real output dictionary from self.outputs_tree_manager
         output_dic = self.outputs_tree_manager.get_tree()
+        return output_dic
+
+    def train_step(self, data, optimizer=None, **kwargs):
+        # arguments from mmcls/models/classifiers/base.py:BaseClassifier.train_step
+        assert self.training
+        assert len(kwargs) == 0 # TODO, support later if necessary
+
+        data['optimizer'] = None # TODO we will ignore optimizer for it will not be used in model, support later if necessary
+
+        output_dic = self.run_model(data)
 
         # outputs contained loss, log_vars, num_samples, only loss(torch.tensor) has been updated
         # remove all unchanged vars, left torch.tensor
@@ -199,6 +229,97 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
 
         return final_output_dic
+    
+    def tmp_ussage_for_eval_call(self, img, img_metas, return_loss=True, **kwargs):
+        # arguments from mmdet/models/detectors/base.py:BaseDetector.forward
+        # tmp usssage for eval mode
+        assert not self.training
+        assert len(kwargs) == 0 # TODO, support later if necessary
+        assert not return_loss
+        data = {'img':img,'img_metas':img_metas,'return_loss':return_loss}
+
+        output_dic = self.run_model(data)
+
+        return output_dic
+
+    def detachFromDevice(self,):
+        if self.isCompiled() and self._is_attached:
+            super().detachFromDevice()
+    
+    def attachToDevice(self,):
+        if self.isCompiled() and not self._is_attached:
+            super().attachToDevice()
+
+
+class TrainEvalModel:
+    def __init__(self, model, options, optimizer, logger=None):
+        self.train_executor = trainingModel(model.train(), options=options, optimizer=optimizer, logger=logger)
+        self.eval_executor = inferenceModel(model.eval(), options=options, logger=logger)
+        self.training = True
+        self._user_model = model # self._user_model, self.train_executor._user_model and self.eval_executor._user_model use the same model
+
+    def train(self, mode: bool = True):
+        r"""Sets the module in training mode.
+
+        This has any effect only on certain modules. See documentations of
+        particular modules for details of their behaviors in training/evaluation
+        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
+        etc.
+
+        Args:
+            mode (bool): whether to set training mode (``True``) or evaluation
+                         mode (``False``). Default: ``True``.
+
+        Returns:
+            Module: self
+        """
+        if not isinstance(mode, bool):
+            raise ValueError("training mode is expected to be boolean")
+        self.training = mode
+        self._user_model.train(mode)
+        if mode:
+            # training mode
+            self.eval_executor.detachFromDevice()
+            self.train_executor.attachToDevice()
+        else:
+            # eval mode
+            self.train_executor.detachFromDevice()
+            self.eval_executor.attachToDevice()
+        return self
+
+    def eval(self):
+        r"""Sets the module in evaluation mode.
+
+        This has any effect only on certain modules. See documentations of
+        particular modules for details of their behaviors in training/evaluation
+        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
+        etc.
+
+        This is equivalent with :meth:`self.train(False) <torch.nn.Module.train>`.
+
+        See :ref:`locally-disable-grad-doc` for a comparison between
+        `.eval()` and several similar mechanisms that may be confused with it.
+
+        Returns:
+            Module: self
+        """
+        return self.train(False)
+
+    def train_step(self, data, optimizer=None, **kwargs):
+        return self.train_executor.train_step(data, optimizer, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        if self.training:
+            raise NotImplementedError('currently the training call is implemented on function train_step')
+        else:
+            # self._args_parser = DictArgsParser({'args':inputs_tuple}) if self._args_parser is None else self._args_parser
+            return self.eval_executor.tmp_ussage_for_eval_call(*args, **kwargs)
+    
+    def __getattr__(self, attr):
+        if self.training:
+            return getattr(self.train_executor, attr)
+        else:
+            return getattr(self.eval_executor, attr)
 
 
 def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
@@ -247,3 +368,34 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
                           optimizer=optimizer,
                           user_model=model,
                           poptorch_version=__version__,)
+
+
+def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
+                   options: Optional['poptorch.Options'] = None,
+                   logger = None
+                   ) -> 'poptorch.PoplarExecutor':
+    """Create a PopTorch inference model, from a PyTorch model, to run on IPU
+    hardware in inference mode.
+
+    .. note:: PopTorch makes a shallow copy of the model. Changes to the
+        parameters in the returned inference model affect the original model
+        and vice versa. However, primitive variable types are not synced: for
+        example calling ``model.eval()`` on the original model will not alter
+        the model returned by this function. You may need to call
+        ``model.eval()`` on your model before you call this function for correct
+        behaviour.
+
+    :param model: The PyTorch model to wrap.
+    :param options: The IPU specific options
+    :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
+        of ``model``.
+    """
+
+    if isinstance(model, PoplarExecutor):
+        model = model._user_model  # pylint: disable=protected-access
+
+    return PoplarExecutorForMMCV(model=copy.copy(model),
+                          logger=logger,
+                          options=options,
+                          training=False,
+                          poptorch_version=__version__)

@@ -2,10 +2,12 @@
 from abc import ABCMeta, abstractmethod
 import warnings
 
+from ..engine import single_gpu_test
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
 from .hooks import HOOKS
+from .hooks.evaluation import EvalHook
 from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, wrap_optimizer_hook, IPU_MODE
 
 class IpuBaseRunner(metaclass=ABCMeta):
@@ -67,6 +69,21 @@ class IpuBaseRunner(metaclass=ABCMeta):
         else:
             raise RuntimeError('ipu need to wrap optimzier hook before inittialization, but seems optimzier hook is initilized')
         self.register_hook(hook, priority='ABOVE_NORMAL')
+
+    def convert_eval_model(self,): 
+        # temp ussage to convert eval function used in the runner.evalhook
+        # step 1: find the evalhook in runner.hooks
+        evalhook = None
+        for hook in self.hooks:
+            if isinstance (hook, EvalHook):
+                evalhook = hook
+                break
+        assert evalhook is not None, "only .hooks.evaluation.EvalHook is implemented, but not found it"
+        # step 2: check the evalhook.test_fn, currently only implemented mmcv.engine.single_gpu_test on IPU
+        assert type(evalhook.test_fn) == type(single_gpu_test)
+        # step 3: convert evalhook.test_fn
+        
+                
 
 
 @RUNNERS.register_module()
