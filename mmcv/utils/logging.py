@@ -45,9 +45,10 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
     # unexpectedly show up on the console, creating much unwanted clutter.
     # To fix this issue, we set the root logger's StreamHandler, if any, to log
     # at the ERROR level.
-    for handler in logger.root.handlers:
-        if type(handler) is logging.StreamHandler:
-            handler.setLevel(logging.ERROR)
+    if dist.is_available() and dist.is_initialized() and dist.get_rank() > 0:
+        for handler in logger.root.handlers:
+            if type(handler) is logging.StreamHandler:
+                handler.setLevel(logging.ERROR)
 
     stream_handler = logging.StreamHandler()
     handlers = [stream_handler]
