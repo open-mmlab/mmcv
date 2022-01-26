@@ -318,6 +318,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = eval(nms_type)
+    score_dim = 5 if 'rotated' in nms_type else 4
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
@@ -329,7 +330,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         # the last dimension is score.
         # TODO: more elegant way to handle the dimension issue.
         # Some type of nms would reweight the score, such as SoftNMS
-        scores = dets[:, 4]
+        scores = dets[:, score_dim]
     else:
         max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
