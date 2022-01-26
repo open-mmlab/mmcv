@@ -29,6 +29,7 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)
+    
     if name in logger_initialized:
         return logger
     # handle hierarchical names
@@ -38,20 +39,7 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
         if name.startswith(logger_name):
             return logger
 
-    # handle duplicate logs to the console
-    # Starting in 1.8.0, PyTorch DDP attaches a StreamHandler <stderr> (NOTSET)
-    # to the root logger. As logger.propagate is True by default, this root
-    # level handler causes logging messages from rank>0 processes to
-    # unexpectedly show up on the console, creating much unwanted clutter.
-    # To fix this issue, we set the root logger's StreamHandler, if any, to log
-    # at the ERROR level.
-    for handler in logger.root.handlers:
-        if type(handler) is logging.StreamHandler:
-            handler.setLevel(logging.ERROR)
-    else:
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(logging.ERROR)
-        logger.root.handlers.append(stream_handler)
+    logger.propagate = False
 
     stream_handler = logging.StreamHandler()
     handlers = [stream_handler]
