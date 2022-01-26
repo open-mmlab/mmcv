@@ -13,4 +13,4 @@ item15:
         - [e: {{ _base_.item5.a }}]
         - {{ _base_.item6 }}
     e: {{ _base_.item1 }}
-item99: "{{ _base_.item88 }}"
+item99: {{ _base_.item88 }}

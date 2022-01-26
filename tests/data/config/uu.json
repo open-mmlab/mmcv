@@ -23,5 +23,5 @@
         {{ _base_.item6 }}],
         "e": {{ _base_.item1 }}
     },
-    "item99": "{{ _base_.item88 }}"
+    "item99": {{ _base_.item88 }}
 }
