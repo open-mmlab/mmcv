@@ -42,6 +42,9 @@ class WandbLoggerHook(LoggerHook):
             ``out_suffix`` will be uploaded to wandb.
             Default: ('.log.json', '.log', '.py').
             `New in version 1.4.3.`
+        best_log_dict:
+            If specified like: {'accuracy': 'max', 'loss': 'min'}, then maximum
+             of accuracies and minimum of losses will be logged to wandb.
 
     .. _wandb:
         https://docs.wandb.ai
@@ -56,7 +59,8 @@ class WandbLoggerHook(LoggerHook):
                  by_epoch=True,
                  with_step=True,
                  log_artifact=True,
-                 out_suffix=('.log.json', '.log', '.py')):
+                 out_suffix=('.log.json', '.log', '.py'),
+                 best_log_dict={}):
         super(WandbLoggerHook, self).__init__(interval, ignore_last,
                                               reset_flag, by_epoch)
         self.import_wandb()
@@ -65,6 +69,8 @@ class WandbLoggerHook(LoggerHook):
         self.with_step = with_step
         self.log_artifact = log_artifact
         self.out_suffix = out_suffix
+        self.best_log_dict = best_log_dict
+        self.best_metrics = {}
 
     def import_wandb(self):
         try:
@@ -87,6 +93,21 @@ class WandbLoggerHook(LoggerHook):
     @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
+
+        # log best metric
+        for k, v in list(tags.items()):
+            for bk, bv in self.best_log_dict.items():
+                if bk in k:
+                    if (
+                            k not in self.best_metrics
+                    ) or (
+                            (bv == 'max') and (v > self.best_metrics[k])
+                    ) or (
+                            (bv == 'min') and (v < self.best_metrics[k])
+                    ):
+                        self.best_metrics[k] = v
+                        tags[f'{k}_best'] = v
+
         if tags:
             if self.with_step:
                 self.wandb.log(
