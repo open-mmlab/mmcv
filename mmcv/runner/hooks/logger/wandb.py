@@ -98,13 +98,9 @@ class WandbLoggerHook(LoggerHook):
         for k, v in list(tags.items()):
             for bk, bv in self.best_log_dict.items():
                 if bk in k:
-                    if (
-                            k not in self.best_metrics
-                    ) or (
-                            (bv == 'max') and (v > self.best_metrics[k])
-                    ) or (
-                            (bv == 'min') and (v < self.best_metrics[k])
-                    ):
+                    if (k not in self.best_metrics) or (
+                        (bv == 'max') and (v > self.best_metrics[k])) or (
+                            (bv == 'min') and (v < self.best_metrics[k])):
                         self.best_metrics[k] = v
                         tags[f'{k}_best'] = v
 
