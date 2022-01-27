@@ -95,14 +95,20 @@ class WandbLoggerHook(LoggerHook):
         tags = self.get_loggable_tags(runner)
 
         # log best metric
-        for k, v in list(tags.items()):
-            for bk, bv in self.best_log_dict.items():
-                if bk in k:
-                    if (k not in self.best_metrics) or (
-                        (bv == 'max') and (v > self.best_metrics[k])) or (
-                            (bv == 'min') and (v < self.best_metrics[k])):
-                        self.best_metrics[k] = v
-                        tags[f'{k}_best'] = v
+        for tag_keys, tag_values in list(tags.items()):
+            for metric_keys, best_metric_values in self.best_log_dict.items():
+                if metric_keys in tag_keys:
+                    if tag_keys not in self.best_metrics:
+                        self.best_metrics[tag_keys] = tag_values
+                        tags[f'{tag_keys}_best'] = tag_values
+                    if (best_metric_values == 'max') and (
+                            metric_keys > self.best_metrics[tag_keys]):
+                        self.best_metrics[tag_keys] = tag_values
+                        tags[f'{tag_keys}_best'] = tag_values
+                    if (best_metric_values == 'min') and (
+                            metric_keys < self.best_metrics[tag_keys]):
+                        self.best_metrics[tag_keys] = tag_values
+                        tags[f'{tag_keys}_best'] = tag_values
 
         if tags:
             if self.with_step:
