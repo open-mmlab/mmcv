@@ -442,15 +442,15 @@ void roi_align_rotated_backward_cpu(Tensor top_grad, Tensor rois,
       sampling_ratio, aligned, clockwise);
 }
 
-void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_impl(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise);
 
 void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise);
 REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CPU,
                      roi_align_rotated_forward_cpu);
