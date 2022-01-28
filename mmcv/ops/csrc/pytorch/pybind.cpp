@@ -279,7 +279,8 @@ void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
 void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
                                 int pooled_width, float spatial_scale,
-                                int sampling_ratio, bool aligned, bool clockwise);
+                                int sampling_ratio, bool aligned,
+                                bool clockwise);
 
 std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
     const torch::Tensor &feats, const torch::Tensor &coors,

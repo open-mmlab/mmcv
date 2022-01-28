@@ -924,7 +924,7 @@ REGISTER_DEVICE_IMPL(roi_align_forward_impl, CUDA, roi_align_forward_cuda);
 REGISTER_DEVICE_IMPL(roi_align_backward_impl, CUDA, roi_align_backward_cuda);
 
 void ROIAlignRotatedForwardCUDAKernelLauncher(
-    const at::Tensor input , const at::Tensor rois, const float spatial_scale,
+    const at::Tensor input, const at::Tensor rois, const float spatial_scale,
     const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor output);
