@@ -20,7 +20,8 @@ class IpuBaseRunner(metaclass=ABCMeta):
             self.model = wrap_model(self.model, self.ipu_options, self.optimizer, self.logger)
             self.ipu_data_loaders_mappin = {} # may have bug in multi-processer
         else:
-            warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
+            # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
+            raise NotImplementedError('cpu mode on IpuRunner still has bug')
 
     def run(self, data_loaders, *args, **kwargs):
         # map data_loader to ipu data_loader

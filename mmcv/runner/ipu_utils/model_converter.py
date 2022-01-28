@@ -38,7 +38,11 @@ class TreeManager:
     def set_tree(self, _tree):
         # _tree: A composite data type containing dictionaries, lists, tensors and basic python data types
         if hasattr(self,'_tree'):
-            self.update(_tree)
+            if isinstance(_tree, torch.Tensor):
+                assert type(self._tree) == torch.Tensor
+                self._tree = _tree
+            else:
+                self.update(_tree)
         else:
             self._tree = _tree
     
@@ -85,7 +89,10 @@ class TreeManager:
     def get_tensors(self,):
         # get a list of tensor from self._tree
         tensors = []
-        self._get_tensors(self._tree, tensors)
+        if type(self._tree) == torch.Tensor:
+            tensors = [self._tree]
+        else:
+            self._get_tensors(self._tree, tensors)
         return tensors
 
     def _get_tensors(self, _tree, tensors):
@@ -109,7 +116,12 @@ class TreeManager:
             raise NotImplementedError('not supported datatype:{}'.format(str(_tree)))
     
     def set_tensors(self, tensors):
-        self._set_tensors(self._tree, tensors)
+        if type(self._tree) == torch.Tensor:
+            assert len(tensors) == 1
+            assert type(tensors[0]) == torch.Tensor
+            self._tree = tensors[0]
+        else:
+            self._set_tensors(self._tree, tensors)
         return self._tree
     
     def _set_tensors(self, _tree, tensors):
@@ -133,63 +145,72 @@ class TreeManager:
             raise NotImplementedError('not supported datatype:{}'.format(str(_tree)))   
 
 
-def wrap_model(model, inputs_tree_manager, outputs_tree_manager):
-    class Net(torch.nn.Module):
-        def __init__(self, model, inputs_tree_manager, outputs_tree_manager):
-            super().__init__()
-            self.model = model
-            self.inputs_tree_manager = inputs_tree_manager
-            self.outputs_tree_manager = outputs_tree_manager
-            self.training = model.training
+class WrappedNet(torch.nn.Module):
+    def __init__(self, model, inputs_tree_manager, outputs_tree_manager):
+        super().__init__()
+        self.model = model
+        self.inputs_tree_manager = inputs_tree_manager
+        self.outputs_tree_manager = outputs_tree_manager
+        self.training = model.training
 
-        def forward(self, inputs_tuple):
-            # convert tuple back to kwargs
-            self.inputs_tree_manager.set_tensors(list(inputs_tuple))
-            kwargs = {**(self.inputs_tree_manager.get_tree())}
-            if self.training:
-                outputs = self.forward_train(kwargs)
-                # tell poptorch which loss will be used finally
-                identity_loss(outputs['loss'],reduction='none')
-            else:
-                outputs = self.forward_eval(kwargs)
-                
-            if isinstance(outputs, torch.Tensor):
-                return outputs
-            # record all the places of return tensors in the converting stage
-            # while in the real run stage, all the tensor are changed inplace
-            # that means the output can be obtained directly outside this functioon
-            self.outputs_tree_manager.set_tree(outputs)
-            plain_outputs = self.outputs_tree_manager.get_tensors()
-            return plain_outputs
+    def forward(self, inputs_tuple):
+        # convert tuple back to kwargs
+        self.inputs_tree_manager.set_tensors(list(inputs_tuple))
+        kwargs = {**(self.inputs_tree_manager.get_tree())}
+        if self.training:
+            outputs = self.forward_train(kwargs)
+            # tell poptorch which loss will be used finally
+            identity_loss(outputs['loss'],reduction='none')
+        else:
+            outputs = self.forward_eval(kwargs)
+            
+        if isinstance(outputs, torch.Tensor):
+            # currently not support single tensor output, need to wrap it with a dictionary, use a key word to identify this situation
+            outputs = {'output of WrappedNet: single tensor': outputs}
 
-        def forward_train(self, kwargs):
-            optimizer = kwargs.pop('optimizer')
-            data = kwargs
-            outputs = self.model.train_step(data,optimizer)
-            return outputs
-        
-        def forward_eval(self, kwargs):
-            img = kwargs.pop('img')
-            img_metas = kwargs.pop('img_metas')
-            return_loss = kwargs.pop('return_loss')
-            assert not return_loss
-            outputs = self.model(img, img_metas=img_metas, return_loss=return_loss)
-            return outputs
+        # record all the places of return tensors in the converting stage
+        # while in the real run stage, all the tensor are changed inplace
+        # that means the output can be obtained directly outside this functioon
+        self.outputs_tree_manager.set_tree(outputs)
+        plain_outputs = self.outputs_tree_manager.get_tensors()
+        return plain_outputs
 
-    return Net(model, inputs_tree_manager, outputs_tree_manager)
+    def forward_train(self, kwargs):
+        optimizer = kwargs.pop('optimizer')
+        data = kwargs
+        outputs = self.model.train_step(data,optimizer)
+        return outputs
+    
+    def forward_eval(self, kwargs):
+        img = kwargs.pop('img')
+        img_metas = kwargs.pop('img_metas')
+        return_loss = kwargs.pop('return_loss')
+        assert not return_loss
+        # TODO Temporarily hard-code to close post_process, otherwise, in the third trace, that is, _check_trace, post_process cannot detect the tracing state of jit, resulting in the automatic conversion of output tensor to numpy array, resulting in _check_trace failure
+        outputs = self.model(img, img_metas=img_metas, return_loss=return_loss, post_process=False)
+        return outputs
 
 
 class PoplarExecutorForMMCV(PoplarExecutor):
     def __init__(self, model, logger=None, training=True, *args, **kwargs):
+        # self.model == self._user_model: input pytorch model
+        # self._model: wrapped model which is used to compile and update weights
+        # these two models use same weights
         self.inputs_tree_manager = TreeManager(logger=logger) # wrapped model only accept and output tuple, so TreeManager will convert dictionary to tuple and convert them back
         self.outputs_tree_manager = TreeManager(logger=logger)
-        model = wrap_model(model, self.inputs_tree_manager, self.outputs_tree_manager) # make torch.jit.trace convert self._model
+        self.logger = logger
+        model = WrappedNet(model, self.inputs_tree_manager, self.outputs_tree_manager) # make torch.jit.trace convert self._model
         super().__init__(model, training=training, *args, **kwargs)
         self._args_parser = None # overwrite self._args_parser in train_step or val_step
         if training:
             assert self.training
         else:
             assert not self.training
+
+    @property
+    def training(self,):
+        # If trying to get the attribute training of self, since the class has no training attribute, it will automatically look for the training attribute of self.model. However, the real attribute we want to check is self._training, self.model.training  and self._training are often inconsistent. It is not clear whether it is a Poptorch bug or a special design, temporarily use this function to fix the problem
+        return self._training # comes from self.model._training
 
     def run_model(self, data_dict):
         # this function used to parse input_dict and convert to output_dict
@@ -208,6 +229,12 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         self.outputs_tree_manager.set_tensors(plain_outputs)
         # get the real output dictionary from self.outputs_tree_manager
         output_dic = self.outputs_tree_manager.get_tree()
+
+        if 'output of WrappedNet: single tensor' in output_dic:
+            assert len(output_dic) == 1
+            assert type(output_dic['output of WrappedNet: single tensor']) == torch.Tensor
+            output_dic = output_dic['output of WrappedNet: single tensor']
+
         return output_dic
 
     def train_step(self, data, optimizer=None, **kwargs):
@@ -250,13 +277,28 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         if self.isCompiled() and not self._is_attached:
             super().attachToDevice()
 
+    # def copyWeightsToDevice(self,):
+    #     if self.isCompiled():
+    #         super().copyWeightsToDevice()
+    #     else:
+    #         if self.logger is None:
+    #             raise('model not complied')
+    #         else:
+    #             self.logger.warning('model not complied， so the weights are not copied to the IPU')
+
 
 class TrainEvalModel:
     def __init__(self, model, options, optimizer, logger=None):
-        self.train_executor = trainingModel(model.train(), options=options, optimizer=optimizer, logger=logger)
-        self.eval_executor = inferenceModel(model.eval(), options=options, logger=logger)
+        self._train_executor = trainingModel(copy.copy(model), options=options, optimizer=optimizer, logger=logger)
+        self._eval_executor = inferenceModel(copy.copy(model), options=options, logger=logger)
         self.training = True
-        self._user_model = model # self._user_model, self.train_executor._user_model and self.eval_executor._user_model use the same model
+
+    @property
+    def executor(self,):
+        if self.training:
+            return self._train_executor
+        else:
+            return self._eval_executor
 
     def train(self, mode: bool = True):
         r"""Sets the module in training mode.
@@ -275,17 +317,18 @@ class TrainEvalModel:
         """
         if not isinstance(mode, bool):
             raise ValueError("training mode is expected to be boolean")
-        self.training = mode
-        self._user_model.train(mode)
-        if mode:
-            # training mode
-            self.eval_executor.detachFromDevice()
-            self.train_executor.attachToDevice()
+        if mode == self.training:
+            return self
         else:
-            # eval mode
-            self.train_executor.detachFromDevice()
-            self.eval_executor.attachToDevice()
-        return self
+            self.copyWeightsToHost() # copy weights from IPU to cpu before off-load current session
+            self.detachFromDevice() # detach the current session before change the mode, if is training mode and weights are updated, poptorch will copy weights from IPU to host
+
+            self.training = mode # session will changed with mode changing
+            self.model.train(mode)
+
+            self.attachToDevice() # after changing mode, attach the current new session, and this function will copy weights of model to device
+            # self.copyWeightsToDevice() # new session is loaded, then copy weights from cpu back to IPU(two modes correspond to two IPU sessions with two copy of weights on IPU)
+            return self
 
     def eval(self):
         r"""Sets the module in evaluation mode.
@@ -305,21 +348,21 @@ class TrainEvalModel:
         """
         return self.train(False)
 
+    # TODO Unified training and eval interface, merge train_step(train) and __call__(eval) together
     def train_step(self, data, optimizer=None, **kwargs):
-        return self.train_executor.train_step(data, optimizer, **kwargs)
+        assert self.training, "not supported train_step on eval mode"
+        return self._train_executor.train_step(data, optimizer, **kwargs)
 
+    # TODO Unified training and eval interface, merge train_step(train) and __call__(eval) together
     def __call__(self, *args, **kwargs):
         if self.training:
             raise NotImplementedError('currently the training call is implemented on function train_step')
         else:
             # self._args_parser = DictArgsParser({'args':inputs_tuple}) if self._args_parser is None else self._args_parser
-            return self.eval_executor.tmp_ussage_for_eval_call(*args, **kwargs)
+            return self._eval_executor.tmp_ussage_for_eval_call(*args, **kwargs)
     
     def __getattr__(self, attr):
-        if self.training:
-            return getattr(self.train_executor, attr)
-        else:
-            return getattr(self.eval_executor, attr)
+        return getattr(self.executor, attr)
 
 
 def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
