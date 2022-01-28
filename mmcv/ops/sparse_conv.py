@@ -343,7 +343,7 @@ class SparseInverseConv2d(SparseConvolution):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 indice_key,
+                 indice_key=None,
                  bias=True):
         super(SparseInverseConv2d, self).__init__(
             2,
@@ -362,7 +362,7 @@ class SparseInverseConv3d(SparseConvolution):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 indice_key,
+                 indice_key=None,
                  bias=True):
         super(SparseInverseConv3d, self).__init__(
             3,

@@ -59,6 +59,9 @@ def test_build_conv_layer():
     assert layer.groups == kwargs['groups']
     assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
 
+    # some of sparse conv do not have arguments 'dilation' and 'group'
+    kwargs = dict(in_channels=4, out_channels=8, kernel_size=3)
+
     for type_name, module in CONV_LAYERS.module_dict.items():
         cfg = dict(type=type_name)
         layer = build_conv_layer(cfg, **kwargs)
