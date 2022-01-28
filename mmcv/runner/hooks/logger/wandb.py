@@ -11,10 +11,12 @@ from .base import LoggerHook
 class WandbLoggerHook(LoggerHook):
     """Class to log metrics with wandb.
 
-    It requires `wandb` to be installed.
+    It requires `wandb`_ to be installed.
 
 
     Args:
+        init_kwargs (dict): A dict contains the initialization keys. Check
+            https://docs.wandb.ai/ref/python/init for more init arguments.
         interval (int): Logging interval (every k iterations).
             Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
@@ -22,6 +24,11 @@ class WandbLoggerHook(LoggerHook):
             Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
+        commit (bool): Save the metrics dict to the wandb server and increment
+            the step. If false ``wandb.log`` just updates the current metrics
+            dict with the row argument and metrics won't be saved until
+            ``wandb.log`` is called with ``commit=True``.
+            Default: True.
         by_epoch (bool): Whether EpochBasedRunner is used.
             Default: True.
         with_step (bool): If True, the step will be logged from
@@ -35,6 +42,9 @@ class WandbLoggerHook(LoggerHook):
             ``out_suffix`` will be uploaded to wandb.
             Default: ('.log.json', '.log', '.py').
             `New in version 1.4.3.`
+
+    .. _wandb:
+        https://docs.wandb.ai
     """
 
     def __init__(self,

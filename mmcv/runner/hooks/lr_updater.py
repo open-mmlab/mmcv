@@ -420,15 +420,19 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
     3D detection area.
 
     Args:
-        by_epoch (bool): Whether to update LR by epoch.
-        target_ratio (tuple[float]): Relative ratio of the highest LR and the
-            lowest LR to the initial LR.
-        cyclic_times (int): Number of cycles during training
-        step_ratio_up (float): The ratio of the increasing process of LR in
-            the total cycle.
-        anneal_strategy (str): {'cos', 'linear'}
+        by_epoch (bool, optional): Whether to update LR by epoch.
+        target_ratio (tuple[float], optional): Relative ratio of the highest LR
+            and the lowest LR to the initial LR.
+        cyclic_times (int, optional): Number of cycles during training
+        step_ratio_up (float, optional): The ratio of the increasing process of
+            LR in the total cycle.
+        anneal_strategy (str, optional): {'cos', 'linear'}
             Specifies the annealing strategy: 'cos' for cosine annealing,
             'linear' for linear annealing. Default: 'cos'.
+        gamma (float, optional): Cycle decay ratio. Default: 1.
+            It takes values in the range (0, 1]. The difference between the
+            maximum learning rate and the minimum learning rate decreases
+            periodically when it is less than 1. `New in version 1.4.4.`
     """
 
     def __init__(self,
@@ -437,6 +441,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
                  cyclic_times=1,
                  step_ratio_up=0.4,
                  anneal_strategy='cos',
+                 gamma=1,
                  **kwargs):
         if isinstance(target_ratio, float):
             target_ratio = (target_ratio, target_ratio / 1e5)
@@ -451,10 +456,14 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             '"target_ratio" must be list or tuple of two floats'
         assert 0 <= step_ratio_up < 1.0, \
             '"step_ratio_up" must be in range [0,1)'
+        assert 0 < gamma <= 1, \
+            '"gamma" must be in range (0, 1]'
 
         self.target_ratio = target_ratio
         self.cyclic_times = cyclic_times
         self.step_ratio_up = step_ratio_up
+        self.gamma = gamma
+        self.max_iter_per_phase = None
         self.lr_phases = []  # init lr_phases
         # validate anneal_strategy
         if anneal_strategy not in ['cos', 'linear']:
@@ -473,21 +482,32 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         super(CyclicLrUpdaterHook, self).before_run(runner)
         # initiate lr_phases
         # total lr_phases are separated as up and down
-        max_iter_per_phase = runner.max_iters // self.cyclic_times
-        iter_up_phase = int(self.step_ratio_up * max_iter_per_phase)
-        self.lr_phases.append(
-            [0, iter_up_phase, max_iter_per_phase, 1, self.target_ratio[0]])
+        self.max_iter_per_phase = runner.max_iters // self.cyclic_times
+        iter_up_phase = int(self.step_ratio_up * self.max_iter_per_phase)
+        self.lr_phases.append([0, iter_up_phase, 1, self.target_ratio[0]])
         self.lr_phases.append([
-            iter_up_phase, max_iter_per_phase, max_iter_per_phase,
-            self.target_ratio[0], self.target_ratio[1]
+            iter_up_phase, self.max_iter_per_phase, self.target_ratio[0],
+            self.target_ratio[1]
         ])
 
     def get_lr(self, runner, base_lr):
-        curr_iter = runner.iter
-        for (start_iter, end_iter, max_iter_per_phase, start_ratio,
-             end_ratio) in self.lr_phases:
-            curr_iter %= max_iter_per_phase
+        curr_iter = runner.iter % self.max_iter_per_phase
+        curr_cycle = runner.iter // self.max_iter_per_phase
+        # Update weight decay
+        scale = self.gamma**curr_cycle
+
+        for (start_iter, end_iter, start_ratio, end_ratio) in self.lr_phases:
             if start_iter <= curr_iter < end_iter:
+                # Apply cycle scaling to gradually reduce the difference
+                # between max_lr and base lr. The target end_ratio can be
+                # expressed as:
+                # end_ratio = (base_lr + scale * (max_lr - base_lr)) / base_lr
+                # iteration: 0-iter_up_phase:
+                if start_iter == 0:
+                    end_ratio = 1 - scale + end_ratio * scale
+                # iteration: iter_up_phase-self.max_iter_per_phase
+                else:
+                    start_ratio = 1 - scale + start_ratio * scale
                 progress = curr_iter - start_iter
                 return self.anneal_func(base_lr * start_ratio,
                                         base_lr * end_ratio,
