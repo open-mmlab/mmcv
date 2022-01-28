@@ -318,7 +318,6 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = eval(nms_type)
-    score_dim = 5 if 'rotated' in nms_type else 4
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
@@ -326,10 +325,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
         # -1 indexing works abnormal in TensorRT
-        # This assumes `dets` has 5 dimensions where
+
+        # This assumes `dets` has arbitrary dimensions where
         # the last dimension is score.
+        # Currently it supports bounding boxes [x1, y1, x2, y2, score] and
+        # rotated boxes [cx, cy, w, h, angle_radian, score].
         # TODO: more elegant way to handle the dimension issue.
         # Some type of nms would reweight the score, such as SoftNMS
+
+        score_dim = dets.size(1) - 1
         scores = dets[:, score_dim]
     else:
         max_num = nms_cfg_.pop('max_num', -1)
