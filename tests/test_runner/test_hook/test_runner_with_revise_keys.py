@@ -3,7 +3,7 @@ import tempfile
 
 import torch
 import torch.nn as nn
-from tests.test_hook.test_utils import _build_demo_runner
+from tests.test_runner.test_hook.test_utils import _build_demo_runner
 
 
 def test_runner_with_revise_keys():

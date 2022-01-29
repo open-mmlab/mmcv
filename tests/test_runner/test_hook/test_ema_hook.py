@@ -2,7 +2,7 @@ import shutil
 
 import torch
 import torch.nn as nn
-from tests.test_hook.test_utils import _build_demo_runner
+from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 

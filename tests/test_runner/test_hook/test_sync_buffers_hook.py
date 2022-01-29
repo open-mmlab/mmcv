@@ -1,7 +1,7 @@
 import shutil
 
 import torch
-from tests.test_hook.test_utils import _build_demo_runner
+from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.utils.data import DataLoader
 
 

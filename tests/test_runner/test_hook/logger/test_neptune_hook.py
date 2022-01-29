@@ -3,7 +3,7 @@ import sys
 from unittest.mock import MagicMock
 
 import torch
-from tests.test_hook.test_utils import _build_demo_runner
+from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.utils.data import DataLoader
 
 from mmcv.runner.hooks import NeptuneLoggerHook
