@@ -1,10 +1,10 @@
 _base_ = ['./py_base.py']
-item12 = item8
-item13 = item9
-item14 = item1
+item12 = _base_.item8
+item13 = _base_.item9
+item14 = _base_.item1
 item15 = dict(
-    a=dict(b=item2),
-    b=[item3],
-    c=[item4],
-    d=[[dict(e=item5['a'])], item6],
-    e=item1)
+    a=dict(b=_base_.item2),
+    b=[_base_.item3],
+    c=[_base_.item4],
+    d=[[dict(e=_base_.item5['a'])], _base_.item6],
+    e=_base_.item1)

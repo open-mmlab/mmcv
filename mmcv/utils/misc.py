@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import ast
 import collections.abc
 import functools
 import itertools
@@ -375,3 +376,21 @@ def has_method(obj: object, method: str) -> bool:
         bool: True if the object has the method else False.
     """
     return hasattr(obj, method) and callable(getattr(obj, method))
+
+
+class RemoveAssignFromAST(ast.NodeTransformer):
+    """Remove Assign node if the target's name match the key.
+
+    Args:
+        key (str): The target name of the Assign node.
+    """
+
+    def __init__(self, key):
+        self.key = key
+
+    def visit_Assign(self, node):
+        if (isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == self.key):
+            return None
+        else:
+            return node

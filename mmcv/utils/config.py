@@ -14,7 +14,7 @@ from collections import abc
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
-from .misc import import_modules_from_strings
+from .misc import RemoveAssignFromAST, import_modules_from_strings
 from .path import check_file_exist
 
 if platform.system() == 'Windows':
@@ -223,7 +223,7 @@ class Config:
                 temp_config_file.name, temp_config_file.name)
 
             # Handle base files
-            base_cfg_dict = dict()
+            base_cfg_dict = ConfigDict()
             cfg_text_list = list()
             for f in Config.parse_base_files(temp_config_file.name):
                 _cfg_dict, _cfg_text = Config._file2dict(osp.join(cfg_dir, f))
@@ -237,9 +237,10 @@ class Config:
             if filename.endswith('.py'):
                 cfg_dict = {}
                 with open(temp_config_file.name, 'r') as f:
-                    content = f.read()
-                codeobj = compile(content, '', mode='exec')
-                eval(codeobj, base_cfg_dict, cfg_dict)
+                    codes = ast.parse(f.read())
+                    codes = RemoveAssignFromAST(BASE_KEY).visit(codes)
+                codeobj = compile(codes, '', mode='exec')
+                eval(codeobj, {'_base_': base_cfg_dict}, cfg_dict)
             elif filename.endswith(('.yml', '.yaml', '.json')):
                 import mmcv
                 cfg_dict = mmcv.load(temp_config_file.name)
