@@ -1,0 +1,7 @@
+addict
+numpy
+packaging
+Pillow
+pyyaml
+regex;sys_platform=='win32'
+yapf

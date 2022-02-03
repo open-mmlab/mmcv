@@ -1,0 +1,6 @@
+.git
+.gitignore
+*.egg-info
+.eggs/
+.mypy-cache
+pip-wheel-metadata
