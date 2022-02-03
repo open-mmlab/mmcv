@@ -30,8 +30,8 @@ def _get_mmcv_home():
     mmcv_home = os.path.expanduser(
         os.getenv(
             ENV_MMCV_HOME,
-            os.path.join(os.getenv(ENV_XDG_CACHE_HOME, DEFAULT_CACHE_DIR),
-                         'mmcv')))
+            os.path.join(
+                os.getenv(ENV_XDG_CACHE_HOME, DEFAULT_CACHE_DIR), 'mmcv')))
 
     mkdir_or_exist(mmcv_home)
     return mmcv_home
@@ -109,8 +109,8 @@ def get_torchvision_models():
     model_urls = dict()
     # Add a prefix to avoid returning wrong paths
     # More details at https://github.com/open-mmlab/mmcv/pull/1668
-    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__,
-                                                prefix='torchvision.models.'):
+    for _, name, ispkg in pkgutil.walk_packages(
+            torchvision.models.__path__, prefix='torchvision.models.'):
         if ispkg:
             continue
         _zoo = import_module(name)
@@ -289,15 +289,13 @@ def load_from_http(filename, map_location=None, model_dir=None):
     """
     rank, world_size = get_dist_info()
     if rank == 0:
-        checkpoint = load_url(filename,
-                              model_dir=model_dir,
-                              map_location=map_location)
+        checkpoint = load_url(
+            filename, model_dir=model_dir, map_location=map_location)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
-            checkpoint = load_url(filename,
-                                  model_dir=model_dir,
-                                  map_location=map_location)
+            checkpoint = load_url(
+                filename, model_dir=model_dir, map_location=map_location)
     return checkpoint
 
 
@@ -460,8 +458,8 @@ def load_from_mmcls(filename, map_location=None):
 
     model_urls = get_mmcls_models()
     model_name = filename[8:]
-    checkpoint = load_from_http(model_urls[model_name],
-                                map_location=map_location)
+    checkpoint = load_from_http(
+        model_urls[model_name], map_location=map_location)
     checkpoint = _process_mmcls_checkpoint(checkpoint)
     return checkpoint
 
@@ -641,10 +639,8 @@ def get_state_dict(module, destination=None, prefix='', keep_vars=False):
     _save_to_state_dict(module, destination, prefix, keep_vars)
     for name, child in module._modules.items():
         if child is not None:
-            get_state_dict(child,
-                           destination,
-                           prefix + name + '.',
-                           keep_vars=keep_vars)
+            get_state_dict(
+                child, destination, prefix + name + '.', keep_vars=keep_vars)
     for hook in module._state_dict_hooks.values():
         hook_result = hook(module, destination, prefix, local_metadata)
         if hook_result is not None:
