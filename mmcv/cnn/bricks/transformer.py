@@ -745,7 +745,7 @@ class BaseTransformerLayer(BaseModule):
         assert len(ffn_cfgs) == num_ffns
         for ffn_index in range(num_ffns):
             if 'embed_dims' not in ffn_cfgs[ffn_index]:
-                ffn_cfgs['embed_dims'] = self.embed_dims
+                ffn_cfgs[ffn_index]['embed_dims'] = self.embed_dims
             else:
                 assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims
             self.ffns.append(
