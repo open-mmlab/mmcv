@@ -34,6 +34,7 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
+from mmcv.utils import TORCH_VERSION
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -1377,7 +1378,7 @@ def test_mlflow_hook(log_model):
         hook.mlflow_pytorch.log_model.assert_called_with(
             runner.model,
             'models',
-            pip_requirements=[f'torch=={torch.__version__}'])
+            pip_requirements=[f'torch=={TORCH_VERSION}'])
     else:
         assert not hook.mlflow_pytorch.log_model.called
 
