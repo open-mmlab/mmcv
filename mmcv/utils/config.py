@@ -529,7 +529,8 @@ class Config:
         return (self._cfg_dict, self._filename, self._text)
 
     def __deepcopy__(self, memo):
-        other = self.__class__()
+        cls = self.__class__
+        other = cls.__new__(cls)
         memo[id(self)] = other
 
         for key, value in self.__dict__.items():
