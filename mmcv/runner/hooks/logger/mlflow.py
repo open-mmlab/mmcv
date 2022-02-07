@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
-
+from mmcv.utils import TORCH_VERSION
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -78,4 +77,4 @@ class MlflowLoggerHook(LoggerHook):
             self.mlflow_pytorch.log_model(
                 runner.model,
                 'models',
-                pip_requirements=[f'torch=={torch.__version__}'])
+                pip_requirements=[f'torch=={TORCH_VERSION}'])
