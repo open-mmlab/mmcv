@@ -655,6 +655,9 @@ def test_modulated_deform_conv2d():
         pytest.skip('modulated_deform_conv op is not successfully compiled')
 
     ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
     # modulated deform conv config
     in_channels = 3
     out_channels = 64

@@ -257,26 +257,10 @@ def get_extensions():
         except ImportError:
             pass
 
-        project_dir = 'mmcv/ops/csrc/'
-        if is_rocm_pytorch:
-            from torch.utils.hipify import hipify_python
-
-            hipify_python.hipify(
-                project_directory=project_dir,
-                output_directory=project_dir,
-                includes='mmcv/ops/csrc/*',
-                show_detailed=True,
-                is_pytorch_extension=True,
-            )
-            define_macros += [('MMCV_WITH_CUDA', None)]
-            define_macros += [('HIP_DIFF', None)]
-            cuda_args = os.getenv('MMCV_CUDA_ARGS')
-            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*') \
-                + glob.glob('./mmcv/ops/csrc/pytorch/cpu/hip/*')
-            extension = CUDAExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
-        elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+        if is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
+                'FORCE_CUDA', '0') == '1':
+            if is_rocm_pytorch:
+                define_macros += [('HIP_DIFF', None)]
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
