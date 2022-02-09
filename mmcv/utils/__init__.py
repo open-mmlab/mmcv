@@ -37,16 +37,20 @@ except ImportError:
     ]
 else:
     from .env import collect_env
+    from .hub import load_url
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
-    from .parrots_wrapper import (
-        TORCH_VERSION, BuildExtension, CppExtension, CUDAExtension, DataLoader,
-        PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
-        _AvgPoolNd, _BatchNorm, _ConvNd, _ConvTransposeMixin, _InstanceNorm,
-        _MaxPoolNd, get_build_config, is_rocm_pytorch, _get_cuda_home)
+    # yapf: disable
+    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
+                                  CUDAExtension, DataLoader, PoolDataLoader,
+                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
+                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
+                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+                                  _InstanceNorm, _MaxPoolNd, get_build_config,
+                                  is_rocm_pytorch)
+    # yapf: enable
     from .registry import Registry, build_from_cfg
     from .trace import is_jit_tracing
-    from .hub import load_url
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
         'print_log', 'is_str', 'iter_cast', 'list_cast', 'tuple_cast',
