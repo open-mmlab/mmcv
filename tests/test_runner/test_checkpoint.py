@@ -197,7 +197,6 @@ def test_load_checkpoint_with_prefix():
 
 def test_load_checkpoint():
     import os
-
     import re
     import tempfile
 
@@ -230,7 +229,6 @@ def test_load_checkpoint():
 
 def test_load_checkpoint_metadata():
     import os
-
     import tempfile
 
     from mmcv.runner import load_checkpoint, save_checkpoint
@@ -301,7 +299,6 @@ def test_load_checkpoint_metadata():
 
 def test_load_classes_name():
     import os
-
     import tempfile
 
     from mmcv.runner import load_checkpoint, save_checkpoint
@@ -335,7 +332,6 @@ def test_load_classes_name():
 
 def test_checkpoint_loader():
     import os
-
     import tempfile
 
     from mmcv.runner import CheckpointLoader, _load_checkpoint, save_checkpoint
