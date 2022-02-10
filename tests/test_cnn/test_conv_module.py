@@ -140,7 +140,7 @@ def test_conv_module():
     # HSwish
     conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='HSwish'))
     if (TORCH_VERSION == 'parrots'
-            or digit_version(TORCH_VERSION) < digit_version('1.6')):
+            or digit_version(TORCH_VERSION) < digit_version('1.7')):
         assert isinstance(conv.activate, HSwish)
     else:
         assert isinstance(conv.activate, nn.Hardswish)
