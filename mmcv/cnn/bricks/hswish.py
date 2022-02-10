@@ -30,7 +30,7 @@ class HSwish(nn.Module):
 
 
 if (TORCH_VERSION == 'parrots'
-        or digit_version(TORCH_VERSION) < digit_version('1.6')):
+        or digit_version(TORCH_VERSION) < digit_version('1.7')):
     ACTIVATION_LAYERS.register_module(module=HSwish)
 else:
     ACTIVATION_LAYERS.register_module(module=nn.Hardswish, name='HSwish')
