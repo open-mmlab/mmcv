@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 
+from mmcv.utils import TORCH_VERSION, digit_version
 from .registry import ACTIVATION_LAYERS
 
 
-@ACTIVATION_LAYERS.register_module()
 class HSwish(nn.Module):
     """Hard Swish Module.
 
@@ -27,3 +27,10 @@ class HSwish(nn.Module):
 
     def forward(self, x):
         return x * self.act(x + 3) / 6
+
+
+if (TORCH_VERSION == 'parrots'
+        or digit_version(TORCH_VERSION) < digit_version('1.6')):
+    ACTIVATION_LAYERS.register_module(module=HSwish)
+else:
+    ACTIVATION_LAYERS.register_module(module=nn.Hardswish, name='HSwish')
