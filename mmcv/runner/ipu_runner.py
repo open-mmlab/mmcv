@@ -11,13 +11,13 @@ from .hooks.evaluation import EvalHook
 from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, wrap_optimizer_hook, IPU_MODE
 
 class IpuBaseRunner(metaclass=ABCMeta):
-    def __init__(self,ipu_options={},**kwargs):
+    def __init__(self,ipu_options={},modules_to_record=[],**kwargs):
         super(IpuBaseRunner, self).__init__(**kwargs)
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
             # self.data_loader = wrap_data_loader(self.data_loader)
-            self.model = wrap_model(self.model, self.ipu_options, self.optimizer, self.logger)
+            self.model = wrap_model(self.model, self.ipu_options, self.optimizer, self.logger, modules_to_record=modules_to_record)
             self.ipu_data_loaders_mappin = {} # may have bug in multi-processer
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)

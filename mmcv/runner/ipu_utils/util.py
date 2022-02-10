@@ -87,12 +87,12 @@ def parse_ipu_options(ipu_options):
     return opts
 
 
-def wrap_model(model, opts, optimizer, logger=None):
+def wrap_model(model, opts, optimizer, logger=None, modules_to_record=[]):
     # three things need to do
     # wrap model with poptorch
     # set mixed-precision
     # set model partition
-    model = TrainEvalModel(model, options=opts, optimizer=optimizer, logger=logger)
+    model = TrainEvalModel(model, options=opts, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
     # TODO set mixed-precision
     # TODO set model partition
     return model
