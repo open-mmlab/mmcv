@@ -76,6 +76,7 @@ pip install $TENSORRT_DIR/graphsurgeon/graphsurgeon-0.4.5-py2.py3-none-any.whl
 For more detailed information of installing TensorRT using tar, please refer to [Nvidia' website](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-721/install-guide/index.html#installing-tar).
 
 - Install cuDNN
+
 Install cuDNN 8 following [Nvidia' website](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html#installlinux-tar).
 
 #### Build on Linux
