@@ -184,7 +184,7 @@ def _test_tinshift_assert(device, dtype):
     except ModuleNotFoundError:
         pytest.skip('TINShift op is not successfully compiled')
 
-    inputs = [torch.rand(2, 3, 4, 2), torch.rand(2, 3, 4, 2)]
+    inputs = [torch.rand(2, 3, 4, 2), torch.rand(2, 3, 4, 2), torch.rand(1, 3, 4, 2)]
     shifts = [torch.rand(2, 3), torch.rand(2, 5)]
 
     for x, shift in zip(inputs, shifts):
