@@ -325,12 +325,13 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        # -1 indexing works abnormal in TensorRT
-        # This assumes `dets` has 5 dimensions where
+
+        # This assumes `dets` has arbitrary dimensions where
         # the last dimension is score.
-        # TODO: more elegant way to handle the dimension issue.
-        # Some type of nms would reweight the score, such as SoftNMS
-        scores = dets[:, 4]
+        # Currently it supports bounding boxes [x1, y1, x2, y2, score] or
+        # rotated boxes [cx, cy, w, h, angle_radian, score].
+
+        scores = dets[:, -1]
     else:
         max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
