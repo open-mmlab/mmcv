@@ -14,70 +14,90 @@ __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
                                           const int num_bbox2, const int mode,
                                           const bool aligned,
                                           const int offset) {
-  if (aligned) {
-    CUDA_1D_KERNEL_LOOP(index, num_bbox1) {
-      int b1 = index;
-      int b2 = index;
+  const int num_output = aligned ? num_bbox1 : num_bbox1 * num_bbox2;
+  CUDA_1D_KERNEL_LOOP(index, num_output) {
+    const int b1 = aligned ? index : index / num_bbox2;
+    const int b2 = aligned ? index : index % num_bbox2;
 
-      int base1 = b1 * 4;
-      T b1_x1 = bbox1[base1];
-      T b1_y1 = bbox1[base1 + 1];
-      T b1_x2 = bbox1[base1 + 2];
-      T b1_y2 = bbox1[base1 + 3];
-      T b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset);
+    const int base1 = b1 * 4;
+    const T b1_x1 = bbox1[base1];
+    const T b1_y1 = bbox1[base1 + 1];
+    const T b1_x2 = bbox1[base1 + 2];
+    const T b1_y2 = bbox1[base1 + 3];
+    const T b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset);
 
-      int base2 = b2 * 4;
-      T b2_x1 = bbox2[base2];
-      T b2_y1 = bbox2[base2 + 1];
-      T b2_x2 = bbox2[base2 + 2];
-      T b2_y2 = bbox2[base2 + 3];
-      T b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset);
+    const int base2 = b2 * 4;
+    const T b2_x1 = bbox2[base2];
+    const T b2_y1 = bbox2[base2 + 1];
+    const T b2_x2 = bbox2[base2 + 2];
+    const T b2_y2 = bbox2[base2 + 3];
+    const T b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset);
 
-      T left = fmaxf(b1_x1, b2_x1), right = fminf(b1_x2, b2_x2);
-      T top = fmaxf(b1_y1, b2_y1), bottom = fminf(b1_y2, b2_y2);
-      T width = fmaxf(right - left + offset, 0.f);
-      T height = fmaxf(bottom - top + offset, 0.f);
-      T interS = width * height;
-      T baseS = 1.0;
-      if (mode == 0) {
-        baseS = fmaxf(b1_area + b2_area - interS, T(offset));
-      } else if (mode == 1) {
-        baseS = fmaxf(b1_area, T(offset));
-      }
-      ious[index] = interS / baseS;
-    }
-  } else {
-    CUDA_1D_KERNEL_LOOP(index, num_bbox1 * num_bbox2) {
-      int b1 = index / num_bbox2;
-      int b2 = index % num_bbox2;
+    const T left = fmaxf(b1_x1, b2_x1), right = fminf(b1_x2, b2_x2);
+    const T top = fmaxf(b1_y1, b2_y1), bottom = fminf(b1_y2, b2_y2);
+    const T width = fmaxf(right - left + offset, 0.f);
+    const T height = fmaxf(bottom - top + offset, 0.f);
+    const T interS = width * height;
 
-      int base1 = b1 * 4;
-      T b1_x1 = bbox1[base1];
-      T b1_y1 = bbox1[base1 + 1];
-      T b1_x2 = bbox1[base1 + 2];
-      T b1_y2 = bbox1[base1 + 3];
-      T b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset);
+    const T baseS =
+        fmaxf(mode == 0 ? b1_area + b2_area - interS : b1_area, T(offset));
+    ious[index] = interS / baseS;
+  }
+}
 
-      int base2 = b2 * 4;
-      T b2_x1 = bbox2[base2];
-      T b2_y1 = bbox2[base2 + 1];
-      T b2_x2 = bbox2[base2 + 2];
-      T b2_y2 = bbox2[base2 + 3];
-      T b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset);
+__device__ __forceinline__ __half __half_area(const __half x1, const __half y1,
+                                              const __half x2, const __half y2,
+                                              const __half offset) {
+  const __half half_w = __hadd(__hsub(x2, x1), offset);
+  const __half half_h = __hadd(__hsub(y2, y1), offset);
+  return __hmul(half_w, half_h);
+}
 
-      T left = fmaxf(b1_x1, b2_x1), right = fminf(b1_x2, b2_x2);
-      T top = fmaxf(b1_y1, b2_y1), bottom = fminf(b1_y2, b2_y2);
-      T width = fmaxf(right - left + offset, 0.f);
-      T height = fmaxf(bottom - top + offset, 0.f);
-      T interS = width * height;
-      T baseS = 1.0;
-      if (mode == 0) {
-        baseS = fmaxf(b1_area + b2_area - interS, T(offset));
-      } else if (mode == 1) {
-        baseS = fmaxf(b1_area, T(offset));
-      }
-      ious[index] = interS / baseS;
-    }
+__device__ __forceinline__ __half __half_max(const __half a, const __half b) {
+  return __hge(a, b) ? a : b;
+}
+
+__device__ __forceinline__ __half __half_min(const __half a, const __half b) {
+  return __hle(a, b) ? a : b;
+}
+
+__device__ void bbox_overlaps_cuda_kernel_half(
+    const __half* bbox1, const __half* bbox2, __half* ious, const int num_bbox1,
+    const int num_bbox2, const int mode, const bool aligned, const int offset) {
+  const int num_output = aligned ? num_bbox1 : num_bbox1 * num_bbox2;
+  const __half h_offset = __int2half_rn(offset);
+  CUDA_1D_KERNEL_LOOP(index, num_output) {
+    const int b1 = aligned ? index : index / num_bbox2;
+    const int b2 = aligned ? index : index % num_bbox2;
+
+    const int base1 = b1 * 4;
+    const __half b1_x1 = bbox1[base1];
+    const __half b1_y1 = bbox1[base1 + 1];
+    const __half b1_x2 = bbox1[base1 + 2];
+    const __half b1_y2 = bbox1[base1 + 3];
+    const __half b1_area = __half_area(b1_x1, b1_y1, b1_x2, b1_y2, h_offset);
+
+    const int base2 = b2 * 4;
+    const __half b2_x1 = bbox2[base2];
+    const __half b2_y1 = bbox2[base2 + 1];
+    const __half b2_x2 = bbox2[base2 + 2];
+    const __half b2_y2 = bbox2[base2 + 3];
+    const __half b2_area = __half_area(b2_x1, b2_y1, b2_x2, b2_y2, h_offset);
+
+    const __half left = __half_max(b1_x1, b2_x1),
+                 right = __half_min(b1_x2, b2_x2);
+    const __half top = __half_max(b1_y1, b2_y1),
+                 bottom = __half_min(b1_y2, b2_y2);
+    const __half width =
+        __half_max(__hadd(__hsub(right, left), h_offset), __float2half(0.f));
+    const __half height =
+        __half_max(__hadd(__hsub(bottom, top), h_offset), __float2half(0.f));
+    const __half interS = __hmul(width, height);
+
+    const __half baseS = __half_max(
+        mode == 0 ? __hsub(__hadd(b1_area, b2_area), interS) : b1_area,
+        h_offset);
+    ious[index] = __hdiv(interS, baseS);
   }
 }
 
