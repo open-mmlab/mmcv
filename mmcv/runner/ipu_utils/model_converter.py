@@ -3,6 +3,7 @@ import numpy as np
 import inspect
 import copy
 from typing import Any, Callable, Dict, Iterator, Optional, Union
+from collections import OrderedDict
 from poptorch import PoplarExecutor, poptorch_core, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
 from mmcv.parallel.data_container import DataContainer
@@ -202,9 +203,62 @@ class WrappedNet(torch.nn.Module):
     def forward_train(self, kwargs):
         optimizer = kwargs.pop('optimizer')
         data = kwargs
-        outputs = self.model.train_step(data,optimizer)
+        outputs = self.train_step(data,optimizer)
         return outputs
-    
+
+    def train_step(self, data, optimizer=None, **kwargs):
+        """The iteration step during training.
+
+        This method defines an iteration step during training, except for the
+        back propagation and optimizer updating, which are done in an optimizer
+        hook. Note that in some complicated cases or models, the whole process
+        including back propagation and optimizer updating are also defined in
+        this method, such as GAN.
+
+        Args:
+            data (dict): The output of dataloader.
+            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
+                optimizer of runner is passed to ``train_step()``. This
+                argument is unused and reserved.
+
+        Returns:
+            dict: Dict of outputs. The following fields are contained.
+                - loss (torch.Tensor): A tensor for back propagation, which \
+                    can be a weighted sum of multiple losses.
+                - log_vars (dict): Dict contains all the variables to be sent \
+                    to the logger.
+                - num_samples (int): Indicates the batch size (when the model \
+                    is DDP, it means the batch size on each GPU), which is \
+                    used for averaging the logs.
+        """
+        losses = self.model(**data)
+        loss, log_vars = self._parse_losses(losses)
+
+        outputs = dict(
+            loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
+
+        return outputs
+
+    def _parse_losses(self, losses):
+        log_vars = OrderedDict()
+        for loss_name, loss_value in losses.items():
+            if isinstance(loss_value, torch.Tensor):
+                log_vars[loss_name] = loss_value.mean()
+            elif isinstance(loss_value, list):
+                log_vars[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            elif isinstance(loss_value, dict):
+                for name, value in loss_value.items():
+                    log_vars[name] = value
+            else:
+                raise TypeError(
+                    f'{loss_name} is not a tensor or list of tensors')
+
+        loss = sum(_value for _key, _value in log_vars.items()
+                   if 'loss' in _key)
+        log_vars['loss'] = loss
+        
+        return loss, log_vars
+
     def forward_eval(self, kwargs):
         img = kwargs.pop('img')
         img_metas = kwargs.pop('img_metas')
