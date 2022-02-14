@@ -49,26 +49,28 @@ class TreeManager:
     def get_tree(self,):
         return self._tree
 
-    def update(self, treeA, treeB='TreeManagerNone', strict=True, key=None):
+    def update(self, treeA, treeB='TreeManagerNone', strict=True, key=None, address='data'):
         treeB = self._tree if treeB == 'TreeManagerNone' else treeB
         # Update with a tree with the same structure but different values(tensors and basic python data types)
         if isinstance(treeA, (tuple,list)):
             for idx in range(len(treeA)):
-                assert isinstance(treeA[idx],type(treeB[idx])), 'data structure changed'
+                new_address = address+'[{}]'.format(str(idx))
+                assert isinstance(treeA[idx],type(treeB[idx])), 'data structure changed: {}'.format(new_address)
                 if isinstance(treeA[idx],torch.Tensor):
                     treeB[idx] = treeA[idx]
                 else:
-                    self.update(treeA[idx], treeB[idx], strict)
+                    self.update(treeA[idx], treeB[idx], strict, address=new_address)
         elif isinstance(treeA, dict):
             for k,v in treeA.items():
-                assert isinstance(treeA[k],type(treeB[k])), 'data structure changed'
+                new_address = address + '[{}]'.format(str(k))
+                assert isinstance(treeA[k],type(treeB[k])), 'data structure changed: {}'.format(new_address)
                 if isinstance(v,torch.Tensor):
                     treeB[k] = treeA[k]
                 else:
-                    self.update(treeA[k], treeB[k], strict, key)
+                    self.update(treeA[k], treeB[k], strict, key, address=new_address)
         elif isinstance(treeA, self.fixed_data_types):
             if strict:
-                assert treeA==treeB, 'all data except torch.Tensor should be same!!!'
+                assert treeA==treeB, 'all data except torch.Tensor should be same, but data({}) is changed'.format(address)
             elif self.logger_on:
                 if key is None and not self.data_not_in_dict_changed:
                     self.logger.info('find a non-torch.Tensor data changed')
@@ -82,7 +84,8 @@ class TreeManager:
                 raise RuntimeError("find a non-torch.Tensor data changed, and no logger record this problem")
         elif isinstance(treeA, DataContainer):
             assert isinstance(treeB, DataContainer)
-            self.update(treeA.data, treeB.data, False)
+            new_address = address + '.data'
+            self.update(treeA.data, treeB.data, False, address=new_address)
         else:
             raise NotImplementedError('not supported datatype:{}'.format(str(treeA)))
     
