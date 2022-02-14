@@ -12,9 +12,9 @@ from torch.nn.parallel import DataParallel
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
-                                    get_state_dict, load_checkpoint,
-                                    load_from_local, load_from_pavi,
-                                    save_checkpoint)
+                                    get_state_dict, get_torchvision_models,
+                                    load_checkpoint, load_from_local,
+                                    load_from_pavi, save_checkpoint)
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -149,18 +149,7 @@ def test_get_state_dict():
 def test_get_torchvision_models():
     # Check if wrong model paths are given
     # More details at https://github.com/open-mmlab/mmcv/pull/1668
-    import pkgutil
-    import torchvision
-    from importlib import import_module
-
-    for _, name, ispkg in pkgutil.walk_packages(
-            torchvision.models.__path__, prefix='torchvision.models.'):
-        if ispkg:
-            continue
-        try:
-            import_module(name)
-        except ModuleNotFoundError:
-            raise ModuleNotFoundError(name)
+    get_torchvision_models()
 
 
 def test_load_pavimodel_dist():
