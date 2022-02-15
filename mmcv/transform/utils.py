@@ -12,11 +12,12 @@ from .base import BaseTransform
 
 
 class cacheable_method:
-    """Decorator that mark a method of a transform class as a cacheable method.
+    """Decorator that marks a method of a transform class as a cacheable
+    method.
 
     This decorator is usually used together with the context-manager
     :func`:cache_random_params`. In this context, a cacheable method will
-    cache its return value(s) at the first time being invoked, and always
+    cache its return value(s) at the first time of being invoked, and always
     return the cached values when being invoked again.
 
     .. note::
@@ -91,7 +92,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
     """
 
     # key2method stores the original methods that are replaced by the wrapped
-    # ones. These method will be restituted when exiting the context.
+    # ones. These methods will be restituted when exiting the context.
     key2method = dict()
 
     # key2counter stores the usage number of each cacheable_method. This is

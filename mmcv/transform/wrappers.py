@@ -35,6 +35,16 @@ class Compose(BaseTransform):
     Args:
         transforms (list[dict | callable]): Sequence of transform object or
             config dict to be composed.
+    
+    Examples:
+        >>> pipeline = [
+        >>>     dict(type='Compose',
+        >>>         transforms=[
+        >>>             dict(type='LoadImageFromFile'),
+        >>>             dict(type='Normalize')
+        >>>         ]
+        >>>     )
+        >>> ]
     """
 
     def __init__(self, transforms: List[Union[Dict, Callable[[Dict], Dict]]]):
@@ -92,7 +102,7 @@ class Remap(BaseTransform):
             corresponds to the outer keys (i.e., the keys of the
             data/results), and should have a type of string, list or dict.
             None means not applying input mapping. Default: None.
-        output_mapping(dict): A dict that defines the output key mapping.
+        output_mapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
             `input_mapping`. Default: None.
         inplace (bool): If True, an inverse of the input_mapping will be used
@@ -100,7 +110,7 @@ class Remap(BaseTransform):
             output_mapping should be None and strict should be True.
             Default: False.
         strict (bool): If True, the outer keys in the input_mapping must exist
-            in the input data, or an excaption will be raised. If False,
+            in the input data, or an exception will be raised. If False,
             the missing keys will be assigned a special value `NotInResults`
             during input remapping. Default: True.
 
@@ -169,8 +179,9 @@ class Remap(BaseTransform):
 
         Args:
             data (dict): The original input data
-            input_mapping(dict): The input key mapping. See the document of
+            input_mapping (dict): The input key mapping. See the document of
                 mmcv.transforms.wrappers.Remap` for details.
+
         Returns:
             dict: The input data with remapped keys. This will be the actual
                 input of the wrapped pipeline.
@@ -181,7 +192,10 @@ class Remap(BaseTransform):
                 # m is a dict {inner_key:outer_key, ...}
                 return {k_in: _remap(data, k_out) for k_in, k_out in m.items()}
             if isinstance(m, (tuple, list)):
-                # m is a list [outer_key1, outer_key2, ...]
+                # m is a list or tuple [outer_key1, outer_key2, ...]
+                # This is the case when we collect items from the original
+                # data to form a list or tuple to feed to the wrapped
+                # transforms.
                 return m.__class__(_remap(data, e) for e in m)
 
             # m is an outer_key
@@ -208,7 +222,7 @@ class Remap(BaseTransform):
 
         Args:
             data (dict): The output of the wrapped pipeline.
-            input_mapping(dict): The output key mapping. See the document of
+            output_mapping (dict): The output key mapping. See the document of
                 `mmcv.transforms.wrappers.Remap` for details.
 
         Returns:
@@ -231,7 +245,7 @@ class Remap(BaseTransform):
                     results.update(_remap(d_i, m_i))
                 return results
 
-            if data == NotInResults:
+            if data is NotInResults:
                 raise ValueError(
                     f'Attempt to assign `NotInResults` to output key {m}.'
                     '`NotInResults` just serves as a placeholder for missing '
@@ -270,7 +284,7 @@ class ApplyToMultiple(Remap):
             the standard inner key (The key required by the wrapped transform).
             See the following example and the document of
             `mmcv.transforms.wrappers.Remap` for details.
-        output_mapping(dict): A dict that defines the output key mapping.
+        output_mapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
             `input_mapping`. Default: None.
         inplace (bool): If True, an inverse of the input_mapping will be used
@@ -278,7 +292,7 @@ class ApplyToMultiple(Remap):
             output_mapping should be None and strict should be True.
             Default: False.
         strict (bool): If True, the outer keys in the input_mapping must exist
-            in the input data, or an excaption will be raised. If False,
+            in the input data, or an exception will be raised. If False,
             the missing keys will be assigned a special value `NotInResults`
             during input remapping. Default: True.
         share_random_params (bool): If True, the random transform
@@ -289,7 +303,7 @@ class ApplyToMultiple(Remap):
 
     .. note::
         To apply the transforms to each elements of a list or tuple, instead
-        of separate data items, you can remap the outer key of the target
+        of separating data items, you can remap the outer key of the target
         sequence to the standard inner key. See example 2.
         example.
 
@@ -349,7 +363,7 @@ class ApplyToMultiple(Remap):
         # infer split number from input
         seq_len = 0
         key_rep = None
-        for key in self.input_mapping.keys():
+        for key in self.input_mapping:
 
             assert isinstance(data[key], Sequence)
             if seq_len:
@@ -369,7 +383,7 @@ class ApplyToMultiple(Remap):
         scatters = []
         for i in range(seq_len):
             scatter = data.copy()
-            for key in self.input_mapping.keys():
+            for key in self.input_mapping:
                 scatter[key] = data[key][i]
             scatters.append(scatter)
         return scatters
@@ -381,19 +395,23 @@ class ApplyToMultiple(Remap):
         # Scatter sequential inputs into a list
         inputs = self.scatter_sequence(inputs)
 
-        # Control random parameter sharing with a contextmanager
+        # Control random parameter sharing with a context manager
         if self.share_random_params:
-            cm = cache_random_params
+            # The context manager  :func`:cache_random_params` will let
+            # cacheable method of the transforms cache their outputs. Thus
+            # the random parameters will only generated once and shared
+            # by all data items.
+            ctx = cache_random_params
         else:
-            cm = nullcontext
+            ctx = nullcontext
 
-        with cm(self.transforms):
+        with ctx(self.transforms):
             outputs = [self.transforms(_input) for _input in inputs]
 
         # Collate output scatters (list of dict to dict of list)
         outputs = {
             key: [_output[key] for _output in outputs]
-            for key in outputs[0].keys()
+            for key in outputs[0]
         }
 
         # Apply output remapping

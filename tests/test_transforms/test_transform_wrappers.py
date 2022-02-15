@@ -4,9 +4,9 @@ import warnings
 import numpy as np
 import pytest
 
-from mmcv.transforms.base import BaseTransform
-from mmcv.transforms.utils import cache_random_params, cacheable_method
-from mmcv.transforms.wrappers import ApplyToMultiple, Remap
+from mmcv.transform.base import BaseTransform
+from mmcv.transform.utils import cache_random_params, cacheable_method
+from mmcv.transform.wrappers import ApplyToMultiple, Remap
 
 
 class AddToValue(BaseTransform):
