@@ -151,8 +151,11 @@ def get_extensions():
 
         include_path = os.path.abspath('./mmcv/ops/csrc/common/cuda')
         include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
+        tensorview_path = os.path.abspath(
+            './mmcv/ops/csrc/common/utils/spconv')
         include_dirs.append(include_path)
         include_dirs.append(include_trt_path)
+        include_dirs.append(tensorview_path)
         include_dirs.append(os.path.join(tensorrt_path, 'include'))
         include_dirs += include_paths(cuda=True)
 
@@ -193,6 +196,8 @@ def get_extensions():
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+        include_dirs.append(
+            os.path.abspath('./mmcv/ops/csrc/common/utils/spconv'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
@@ -287,6 +292,8 @@ def get_extensions():
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+            include_dirs.append(
+                os.path.abspath('./mmcv/ops/csrc/common/utils/spconv'))
         else:
             print(f'Compiling {ext_name} without CUDA')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
