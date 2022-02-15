@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2021 Cambricon.
+ * Copyright (C) 2022 Cambricon.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -73,16 +73,22 @@ void TINShiftForwardMLUKernelLauncher(Tensor input, Tensor shift,
   // params check
   TORCH_CHECK(
       input.scalar_type() == at::kFloat || input.scalar_type() == at::kHalf,
-      "input type should be Float or Half, got ", input.scalar_type());
+      "input type should be Float or Half, got ", input.scalar_type(), ".");
   TORCH_CHECK(input.dim() == 4, "input should be a 4d tensor, got ",
-              input.dim(), "D");
+              input.dim(), "d.");
   TORCH_CHECK(shift.dim() == 2, "shift should be a 2d tensor, got ",
-              shift.dim(), "D");
+              shift.dim(), "d.");
   TORCH_CHECK(
       input.size(0) == shift.size(0),
-      "input batch size should be the same as shift's. input batch size is ",
-      input.size(0), " and shift batch size is ", shift.size(0));
-
+      "input batch size should be the same as shift's, input batch size is ",
+      input.size(0), " and shift batch size is ", shift.size(0), ".");
+  TORCH_CHECK(input.size(0) != 0,
+              "Input batch size should not be zero.");
+  TORCH_CHECK(input.size(3) != 0,
+              "The last dim size of input should not be zero.");
+  if (input.size(1) == 0) {
+    return;
+  }
   cnrtDim3_t k_dim;
   cnrtFunctionType_t k_type;
   int channel_per_core = 0;
@@ -125,16 +131,22 @@ void TINShiftBackwardMLUKernelLauncher(Tensor grad_output, Tensor shift,
   TORCH_CHECK(grad_output.scalar_type() == at::kFloat ||
                   grad_output.scalar_type() == at::kHalf,
               "grad_output type should be Float or Half, got ",
-              grad_output.scalar_type());
+              grad_output.scalar_type(), ".");
   TORCH_CHECK(grad_output.dim() == 4, "grad_output should be a 4d tensor, got ",
-              grad_output.dim(), "D");
+              grad_output.dim(), "d.");
   TORCH_CHECK(shift.dim() == 2, "shift should be a 2d tensor, got ",
-              shift.dim(), "D");
+              shift.dim(), "d.");
   TORCH_CHECK(grad_output.size(0) == shift.size(0),
-              "grad_output batch size should be the same as shift's. "
+              "grad_output batch size should be the same as shift's, "
               "grad_output batch size is ",
-              grad_output.size(0), ", shift batch size is ", shift.size(0));
-
+              grad_output.size(0), ", shift batch size is ", shift.size(0), ".");
+  TORCH_CHECK(grad_output.size(0) != 0,
+              "grad_output batch size should not be zero.");
+  TORCH_CHECK(grad_output.size(3) != 0,
+              "The last dim size of grad_output should not be zero.");
+  if (grad_output.size(1) == 0) {
+    return;
+  }
   cnrtDim3_t k_dim;
   cnrtFunctionType_t k_type;
   int channel_per_core = 0;
