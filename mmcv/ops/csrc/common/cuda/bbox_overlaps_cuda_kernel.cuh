@@ -9,6 +9,26 @@
 #endif
 
 template <typename T>
+__device__ __forceinline__ void load_bbox(const T* bbox, const int base, T& x1,
+                                          T& y1, T& x2, T& y2) {
+  x1 = bbox[base];
+  y1 = bbox[base + 1];
+  x2 = bbox[base + 2];
+  y2 = bbox[base + 3];
+}
+
+template <>
+__device__ __forceinline__ void load_bbox<float>(const float* bbox,
+                                                 const int base, float& x1,
+                                                 float& y1, float& x2,
+                                                 float& y2) {
+  const float* bbox_offset = bbox + base;
+  asm volatile("ld.v4.f32 {%0, %1, %2, %3}, [%4];\n"
+               : "=f"(x1), "=f"(y1), "=f"(x2), "=f"(y2)
+               : "l"(bbox_offset));
+}
+
+template <typename T>
 __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
                                           T* ious, const int num_bbox1,
                                           const int num_bbox2, const int mode,
@@ -16,21 +36,17 @@ __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
                                           const int offset) {
   if (aligned) {
     CUDA_1D_KERNEL_LOOP(index, num_bbox1) {
-      const int b1 = aligned;
-      const int b2 = aligned;
+      const int b1 = index;
+      const int b2 = index;
 
       const int base1 = b1 << 2;  // b1 * 4
-      const T b1_x1 = bbox1[base1];
-      const T b1_y1 = bbox1[base1 + 1];
-      const T b1_x2 = bbox1[base1 + 2];
-      const T b1_y2 = bbox1[base1 + 3];
+      T b1_x1, b1_y1, b1_x2, b1_y2;
+      load_bbox<T>(bbox1, base1, b1_x1, b1_y1, b1_x2, b1_y2);
       const T b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset);
 
       const int base2 = b2 << 2;  // b2 * 4
-      const T b2_x1 = bbox2[base2];
-      const T b2_y1 = bbox2[base2 + 1];
-      const T b2_x2 = bbox2[base2 + 2];
-      const T b2_y2 = bbox2[base2 + 3];
+      T b2_x1, b2_y1, b2_x2, b2_y2;
+      load_bbox<T>(bbox2, base2, b2_x1, b2_y1, b2_x2, b2_y2);
       const T b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset);
 
       const T left = fmaxf(b1_x1, b2_x1), right = fminf(b1_x2, b2_x2);
@@ -49,17 +65,13 @@ __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
       const int b2 = index % num_bbox2;
 
       const int base1 = b1 << 2;  // b1 * 4
-      const T b1_x1 = bbox1[base1];
-      const T b1_y1 = bbox1[base1 + 1];
-      const T b1_x2 = bbox1[base1 + 2];
-      const T b1_y2 = bbox1[base1 + 3];
+      T b1_x1, b1_y1, b1_x2, b1_y2;
+      load_bbox<T>(bbox1, base1, b1_x1, b1_y1, b1_x2, b1_y2);
       const T b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset);
 
       const int base2 = b2 << 2;  // b2 * 4
-      const T b2_x1 = bbox2[base2];
-      const T b2_y1 = bbox2[base2 + 1];
-      const T b2_x2 = bbox2[base2 + 2];
-      const T b2_y2 = bbox2[base2 + 3];
+      T b2_x1, b2_y1, b2_x2, b2_y2;
+      load_bbox<T>(bbox2, base2, b2_x1, b2_y1, b2_x2, b2_y2);
       const T b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset);
 
       const T left = fmaxf(b1_x1, b2_x1), right = fminf(b1_x2, b2_x2);
@@ -101,17 +113,13 @@ __device__ void bbox_overlaps_cuda_kernel_half(
     const int b2 = aligned ? index : index % num_bbox2;
 
     const int base1 = b1 * 4;
-    const __half b1_x1 = bbox1[base1];
-    const __half b1_y1 = bbox1[base1 + 1];
-    const __half b1_x2 = bbox1[base1 + 2];
-    const __half b1_y2 = bbox1[base1 + 3];
+    __half b1_x1, b1_y1, b1_x2, b1_y2;
+    load_bbox<__half>(bbox1, base1, b1_x1, b1_y1, b1_x2, b1_y2);
     const __half b1_area = __half_area(b1_x1, b1_y1, b1_x2, b1_y2, h_offset);
 
     const int base2 = b2 * 4;
-    const __half b2_x1 = bbox2[base2];
-    const __half b2_y1 = bbox2[base2 + 1];
-    const __half b2_x2 = bbox2[base2 + 2];
-    const __half b2_y2 = bbox2[base2 + 3];
+    __half b2_x1, b2_y1, b2_x2, b2_y2;
+    load_bbox<__half>(bbox2, base2, b2_x1, b2_y1, b2_x2, b2_y2);
     const __half b2_area = __half_area(b2_x1, b2_y1, b2_x2, b2_y2, h_offset);
 
     const __half left = __half_max(b1_x1, b2_x1),
