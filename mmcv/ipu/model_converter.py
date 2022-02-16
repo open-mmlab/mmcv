@@ -2,11 +2,14 @@ import torch
 import numpy as np
 import inspect
 import copy
+import warnings
 from typing import Any, Callable, Dict, Iterator, Optional, Union
 from collections import OrderedDict
 from poptorch import PoplarExecutor, poptorch_core, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
 from mmcv.parallel.data_container import DataContainer
+from .fp16_utils import auto_fp16
+
 
 class DictArgsParser(ArgsParser):
     def __init__(self, inputs):
@@ -280,6 +283,10 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         self.hooked_features = {}
         self.hooked_features_ipu = {}
         self.compare_with_cpu = True if len(modules_to_record)>0 else False
+        # move model.fp16_enabled to self.fp16_enabled, modify the position where the input is automatically casted to half
+        if getattr(model, 'fp16_enabled', False):
+            model.fp16_enabled = False
+            self.fp16_enabled = True
         model = WrappedNet(model, self.inputs_tree_manager, self.outputs_tree_manager, modules_to_record=modules_to_record, hooked_features=self.hooked_features) # make torch.jit.trace convert self._model
         super().__init__(model, training=training, *args, **kwargs)
         self._args_parser = None # overwrite self._args_parser in train_step or val_step
@@ -293,6 +300,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # If trying to get the attribute training of self, since the class has no training attribute, it will automatically look for the training attribute of self.model. However, the real attribute we want to check is self._training, self.model.training  and self._training are often inconsistent. It is not clear whether it is a Poptorch bug or a special design, temporarily use this function to fix the problem
         return self._training # comes from self.model._training
 
+    @auto_fp16()
     def run_model(self, data_dict):
         # this function used to parse input_dict and convert to output_dict
 
@@ -385,8 +393,8 @@ def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
 
 class TrainEvalModel:
     def __init__(self, model, options, optimizer, modules_to_record=[], logger=None):
-        self._train_executor = trainingModel(copy.copy(model), options=options, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
-        self._eval_executor = inferenceModel(copy.copy(model), options=options, logger=logger)
+        self._train_executor = trainingModel(copy.copy(model), options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+        self._eval_executor = inferenceModel(copy.copy(model), options=options['inference'], logger=logger)
         self.training = True
 
     @property

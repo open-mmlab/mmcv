@@ -3,39 +3,50 @@ from abc import ABCMeta, abstractmethod
 import warnings
 
 from ..engine import single_gpu_test
+from ..ipu import parse_ipu_options, build_from_cfg_with_wrapper, IPU_MODE, ipu_model_wrapper, add_split_edges, wrap_optimizer_hook, IpuFp16OptimizerHook
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
-from .hooks import HOOKS
+from .hooks import HOOKS, LrUpdaterHook
 from .hooks.evaluation import EvalHook
-from .ipu_utils.util import parse_ipu_options, wrap_model, wrap_data_loader, build_from_cfg_with_wrapper, wrap_lr_update_hook, wrap_optimizer_hook, IPU_MODE
+
+
+def wrap_lr_update_hook(lr_hook_class,):
+    assert issubclass(lr_hook_class, LrUpdaterHook)
+    class ipu_lr_hook_class(lr_hook_class):
+        def _set_lr(self, runner, *args, **kwargs):
+            result = super()._set_lr(runner, *args, **kwargs)
+            assert result is None # _set_lr should return nothing
+            runner.model.setOptimizer(runner.optimizer)
+    return ipu_lr_hook_class
+
 
 class IpuBaseRunner(metaclass=ABCMeta):
-    def __init__(self,ipu_options={},modules_to_record=[],**kwargs):
+    def __init__(self,ipu_options={},modules_to_record=[],pipeline_cfg={},fp16_cfg=None,**kwargs):
         super(IpuBaseRunner, self).__init__(**kwargs)
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
             # self.data_loader = wrap_data_loader(self.data_loader)
-            self.model = wrap_model(self.model, self.ipu_options, self.optimizer, self.logger, modules_to_record=modules_to_record)
+            self.model = ipu_model_wrapper(self.model, self.ipu_options, self.optimizer, self.logger, modules_to_record=modules_to_record, pipeline_cfg=pipeline_cfg, fp16_cfg=fp16_cfg)
             self.ipu_data_loaders_mappin = {} # may have bug in multi-processer
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
             raise NotImplementedError('cpu mode on IpuRunner still has bug')
 
-    def run(self, data_loaders, *args, **kwargs):
-        # map data_loader to ipu data_loader
-        if IPU_MODE:
-            ipu_data_loaders = []
-            for data_loader in data_loaders:
-                if data_loader not in self.ipu_data_loaders_mappin:
-                    ipu_data_loader = wrap_data_loader(data_loader, self.ipu_options)
-                    self.ipu_data_loaders_mappin[data_loader] = ipu_data_loader
-                else:
-                    ipu_data_loader = self.ipu_data_loaders_mappin[data_loader]
-                ipu_data_loaders.append(ipu_data_loader)
-                data_loaders = ipu_data_loaders
-        super().run(data_loaders, *args, **kwargs)
+    # def run(self, data_loaders, *args, **kwargs):
+    #     # map data_loader to ipu data_loader
+    #     if IPU_MODE:
+    #         ipu_data_loaders = []
+    #         for data_loader in data_loaders:
+    #             if data_loader not in self.ipu_data_loaders_mappin:
+    #                 ipu_data_loader = wrap_data_loader(data_loader, self.ipu_options)
+    #                 self.ipu_data_loaders_mappin[data_loader] = ipu_data_loader
+    #             else:
+    #                 ipu_data_loader = self.ipu_data_loaders_mappin[data_loader]
+    #             ipu_data_loaders.append(ipu_data_loader)
+    #             data_loaders = ipu_data_loaders
+    #     super().run(data_loaders, *args, **kwargs)
 
     def register_lr_hook(self, lr_config):
         if IPU_MODE:
@@ -67,6 +78,8 @@ class IpuBaseRunner(metaclass=ABCMeta):
         if isinstance(optimizer_config, dict):
             optimizer_config.setdefault('type', 'OptimizerHook')
             hook = build_from_cfg_with_wrapper(optimizer_config, HOOKS, wrap_optimizer_hook)
+        elif isinstance(optimizer_config, IpuFp16OptimizerHook):
+            hook = optimizer_config
         else:
             raise RuntimeError('ipu need to wrap optimzier hook before inittialization, but seems optimzier hook is initilized')
         self.register_hook(hook, priority='ABOVE_NORMAL')
@@ -83,8 +96,6 @@ class IpuBaseRunner(metaclass=ABCMeta):
         # step 2: check the evalhook.test_fn, currently only implemented mmcv.engine.single_gpu_test on IPU
         assert type(evalhook.test_fn) == type(single_gpu_test)
         # step 3: convert evalhook.test_fn
-        
-                
 
 
 @RUNNERS.register_module()

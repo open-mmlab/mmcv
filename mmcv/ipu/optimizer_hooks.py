@@ -1,0 +1,87 @@
+import warnings
+
+from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.runner.hooks import HOOKS, OptimizerHook
+# TODO import optimizer hook from mmcv and delete them from mmcls
+try:
+    from mmcv.runner import Fp16OptimizerHook
+except ImportError:
+    warnings.warn('DeprecationWarning: FP16OptimizerHook from mmcls will be '
+                  'deprecated. Please install mmcv>=1.1.4.')
+    from mmcls.core import Fp16OptimizerHook
+
+def wrap_optimizer_hook(optimizer_hook_class,):
+    assert optimizer_hook_class == OptimizerHook, "OptimizerHook type used is:{}, not supported now".format(str(optimizer_hook_class))
+    class ipu_optimizer_hook_class(OptimizerHook):
+        def after_train_iter(self, runner):
+            if self.detect_anomalous_params:
+                self.detect_anomalous_parameters(runner.outputs['loss'], runner)
+            if self.grad_clip is not None:
+                raise NotImplementedError('IPU not supports gradient clip now')
+    return ipu_optimizer_hook_class
+
+
+if (TORCH_VERSION != 'parrots'
+        and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
+    @HOOKS.register_module()
+    class IpuFp16OptimizerHook(OptimizerHook):
+        """FP16 optimizer hook (using PyTorch's implementation).
+
+        If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,
+        to take care of the optimization procedure.
+
+        Args:
+            loss_scale (float | str | dict): Scale factor configuration.
+                If loss_scale is a float, static loss scaling will be used with
+                the specified scale. If loss_scale is a string, it must be
+                'dynamic', then dynamic loss scaling will be used.
+                It can also be a dict containing arguments of GradScalar.
+                Defaults to 512. For Pytorch >= 1.6, mmcv uses official
+                implementation of GradScaler. If you use a dict version of
+                loss_scale to create GradScaler, please refer to:
+                https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler
+                for the parameters.
+
+        Examples:
+            >>> loss_scale = dict(
+            ...     init_scale=65536.0,
+            ...     growth_factor=2.0,
+            ...     backoff_factor=0.5,
+            ...     growth_interval=2000
+            ... )
+            >>> optimizer_hook = Fp16OptimizerHook(loss_scale=loss_scale)
+        """
+
+        def __init__(self,
+                     grad_clip=None,
+                     coalesce=True,
+                     bucket_size_mb=-1,
+                     loss_scale=512.,
+                     distributed=True):
+            assert grad_clip is None, 'IPU mode not support grad_clip currently'
+            assert coalesce, 'implemented all reduce in distributed training currently'
+            assert bucket_size_mb == -1, "no bucket_size_mb can be set in IPU mode"
+            self.distributed = distributed
+            self._scale_update_param = None
+            if loss_scale == 'dynamic':
+                raise NotImplementedError('IPU mode not support dynamic loss scale currently')
+            elif isinstance(loss_scale, float):
+                self.loss_scale = loss_scale
+            elif isinstance(loss_scale, dict):
+                raise NotImplementedError('IPU mode support single scale currently')
+            else:
+                raise ValueError('loss_scale must be of type float, dict, or '
+                                 f'"dynamic", got {loss_scale}')
+
+        # def before_run(self, runner):
+        #     """Preparing steps before Mixed Precision Training."""
+        #     # wrap model mode to fp16
+        #     wrap_fp16_model(runner.model)
+        #     runner.model.half()
+        #     # runner.model.fp16_enabled = True
+
+        def after_train_iter(self, runner):
+            pass
+        
+else:
+    raise RuntimeError('The IPU mode only supports torch1.10 and above')

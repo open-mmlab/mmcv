@@ -1,17 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import inspect
+import torch
+import poptorch
 from abc import ABCMeta, abstractmethod
 from torch.utils.data import RandomSampler
-try:
-    import poptorch
-    IPU_MODE = True
-except ImportError:
-    IPU_MODE = False
-from ..builder import RUNNERS
-from ..hooks import HOOKS, LrUpdaterHook, OptimizerHook
-from ...utils import Registry
-if IPU_MODE:
-    from .model_converter import TrainEvalModel
+from mmcv.runner.fp16_utils import wrap_fp16_model
+from ..utils import Registry
+from .model_converter import TrainEvalModel
+
 
 def build_from_cfg_with_wrapper(cfg, registry, wrapper_func, default_args=None):
     """Build a module from config dict and wrap module with "wrapper_func"
@@ -70,7 +67,7 @@ def _opts_assigner(_cfg, opts_node):
     if isinstance(_cfg, dict):
         for _key in _cfg:
             _opts_assigner(_cfg[_key],getattr(opts_node,_key))
-    elif isinstance(_cfg, (int,float,str)):
+    elif isinstance(_cfg, (int,float,str,list)):
         if callable(opts_node):
             opts_node(_cfg)
         else:
@@ -82,19 +79,45 @@ def _opts_assigner(_cfg, opts_node):
 
 
 def parse_ipu_options(ipu_options):
+    training_ipu_options = ipu_options
+    inference_ipu_options = copy.deepcopy(ipu_options)
+    if 'Inference' in training_ipu_options: training_ipu_options.pop('Inference')
+    if 'Training' in inference_ipu_options: inference_ipu_options.pop('Training')
+    opts = {'training':_parse_ipu_options(training_ipu_options),
+            'inference':_parse_ipu_options(inference_ipu_options)}
+    return opts
+
+
+def _parse_ipu_options(ipu_options):
     opts = poptorch.Options()
+    if 'availableMemoryProportion' in ipu_options:
+        availableMemoryProportion = ipu_options.pop('availableMemoryProportion')
+        mem_prop = {f'IPU{i}': availableMemoryProportion[i] for i in range(len(availableMemoryProportion))}
+        opts.setAvailableMemoryProportion(mem_prop)
+    if 'executionStrategy' in ipu_options:
+        executionStrategy = ipu_options.pop('executionStrategy')
+        opts.setExecutionStrategy(poptorch.PipelinedExecution(getattr(poptorch.AutoStage,executionStrategy)))
+    if 'partialsType' in ipu_options:
+        partialsType = ipu_options.pop('partialsType')
+        opts.Precision.setPartialsType(getattr(torch, partialsType)) # half or float
     _opts_assigner(ipu_options, opts)
     return opts
 
 
-def wrap_model(model, opts, optimizer, logger=None, modules_to_record=[]):
-    # three things need to do
-    # wrap model with poptorch
+def ipu_model_wrapper(model, opts, optimizer, logger=None, modules_to_record=[], pipeline_cfg={}, fp16_cfg=None):
+    # TrainEvalModel will shallow copy the model, so any changes to the model must be placed before TrainEvalModel
     # set mixed-precision
+    if fp16_cfg is not None:
+        loss_scale = fp16_cfg['loss_scale']
+        wrap_fp16_model(model)
+        model.half()
+
     # set model partition
+    model = add_split_edges(model, pipeline_cfg) # split model into multi-ipus if specified
+    
+    # wrap model for compilation
     model = TrainEvalModel(model, options=opts, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
-    # TODO set mixed-precision
-    # TODO set model partition
+
     return model
 
 
@@ -113,22 +136,15 @@ def wrap_data_loader(data_loader, opts):
     return data_loader
 
 
-def wrap_lr_update_hook(lr_hook_class,):
-    assert issubclass(lr_hook_class, LrUpdaterHook)
-    class ipu_lr_hook_class(lr_hook_class):
-        def _set_lr(self, runner, *args, **kwargs):
-            result = super()._set_lr(runner, *args, **kwargs)
-            assert result is None # _set_lr should return nothing
-            runner.model.setOptimizer(runner.optimizer)
-    return ipu_lr_hook_class
+def add_split_edges(model, pipeline_cfg):
+    if len(pipeline_cfg) == 0: return model
+    assert isinstance(pipeline_cfg, dict)
+    spilt_edges_dic = {ele['layer_to_call']:ele for ele in pipeline_cfg['split_edges']}
+    for idx, (_name, _module) in enumerate(model.named_modules()):
+        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic), "The same layer is referenced twice while doing model partition: idx is {} and name is {}".format(idx, _name)
+        edge = spilt_edges_dic.get(_name, None)
+        edge = spilt_edges_dic.get(idx, edge)
+        if edge is not None:
+            poptorch.BeginBlock(_module, edge.get('user_id',_name), edge['ipu_id'])
 
-
-def wrap_optimizer_hook(optimizer_hook_class,):
-    assert optimizer_hook_class == OptimizerHook, "OptimizerHook type used is:{}, not supported now".format(str(optimizer_hook_class))
-    class ipu_optimizer_hook_class(OptimizerHook):
-        def after_train_iter(self, runner):
-            if self.detect_anomalous_params:
-                self.detect_anomalous_parameters(runner.outputs['loss'], runner)
-            if self.grad_clip is not None:
-                raise NotImplementedError('IPU not supports gradient clip now')
-    return ipu_optimizer_hook_class
+    return model
