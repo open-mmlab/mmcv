@@ -35,7 +35,7 @@ class Compose(BaseTransform):
     Args:
         transforms (list[dict | callable]): Sequence of transform object or
             config dict to be composed.
-    
+
     Examples:
         >>> pipeline = [
         >>>     dict(type='Compose',
