@@ -83,10 +83,11 @@ def _opts_assigner(_cfg, opts_node):
 
 def parse_ipu_options(ipu_options):
     # set ipu options for inference and training by config
-    train_cfgs = ipu_options.pop('train_cfgs',{})
-    eval_cfgs = ipu_options.pop('eval_cfgs',{})
-    training_ipu_options = {**ipu_options, **train_cfgs} # overwrite default ipu options with specified train cfgs
-    inference_ipu_options = {**ipu_options, **eval_cfgs} # overwrite default ipu options with specified eval cfgs
+    train_cfgs = ipu_options.pop('train_cfgs', {})
+    eval_cfgs = ipu_options.pop('eval_cfgs', {})
+    eval_cfgs['replicationFactor'] = 1  # eval mode only use one ipu
+    training_ipu_options = {**ipu_options, **train_cfgs}  # overwrite default ipu options with specified train cfgs
+    inference_ipu_options = {**ipu_options, **eval_cfgs}  # overwrite default ipu options with specified eval cfgs
 
     opts = {'training': _parse_ipu_options(training_ipu_options),
             'inference': _parse_ipu_options(inference_ipu_options)}
@@ -160,15 +161,16 @@ def model_sharding(model, split_edges):
                     separate and distinct from the device ids used by
                     ``gc-info``.
     """
-    if len(split_edges) == 0: return model
+    if len(split_edges) == 0:
+        return model
     assert isinstance(split_edges, list)
-    spilt_edges_dic = {ele['layer_to_call']:ele for ele in split_edges}
+    spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
     for idx, (_name, _module) in enumerate(model.named_modules()):
-        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic), "The same layer is referenced twice while doing model partition: idx is {} and name is {}".format(idx, _name)
+        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),  "The same layer is referenced twice while doing model partition: idx is {} and name is {}".format(idx, _name)
         edge = spilt_edges_dic.pop(_name, None)
         edge = spilt_edges_dic.pop(idx, edge)
         if edge is not None:
-            poptorch.BeginBlock(_module, edge.get('user_id',_name), edge['ipu_id'])
+            poptorch.BeginBlock(_module, edge.get('user_id', _name), edge['ipu_id'])
     # check all split_edges are used
-    assert len(spilt_edges_dic)==0, 'split_edges: {} are not contained in the model'.format(list(spilt_edges_dic.keys()))
+    assert len(spilt_edges_dic) == 0, 'split_edges: {} are not contained in the model'.format(list(spilt_edges_dic.keys()))
     return model
