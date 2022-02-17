@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <utils/spconv/spconv/maxpool.h>
 #include <torch/script.h>
+#include <utils/spconv/spconv/maxpool.h>
 
 #include "pytorch_cpp_helper.hpp"
 
@@ -43,7 +43,8 @@ template <typename scalar_t, typename Index>
 struct SparseMaxPoolBackwardFunctor<tv::CPU, scalar_t, Index> {
   void operator()(const tv::CPU &d, tv::TensorView<const scalar_t> outFeatures,
                   tv::TensorView<const scalar_t> inFeatures,
-                  tv::TensorView<const scalar_t> fout, tv::TensorView<scalar_t> fin,
+                  tv::TensorView<const scalar_t> fout,
+                  tv::TensorView<scalar_t> fin,
                   tv::TensorView<const Index> indices, int size) {
     int stride = outFeatures.dim(1);
     auto outFeaturesData = outFeatures.data();
