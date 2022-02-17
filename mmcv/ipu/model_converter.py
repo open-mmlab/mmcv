@@ -4,9 +4,11 @@ import inspect
 import copy
 import warnings
 from typing import Any, Callable, Dict, Iterator, Optional, Union
+from types import MethodType
 from collections import OrderedDict
-from poptorch import PoplarExecutor, poptorch_core, __version__, identity_loss
+from poptorch import PoplarExecutor, poptorch_core, __version__, identity_loss, _optimizer_attributes
 from poptorch._args_parser import ArgsParser
+from poptorch.optim import Optimizer
 from mmcv.parallel.data_container import DataContainer
 from .fp16_utils import auto_fp16
 
@@ -392,9 +394,9 @@ def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
 
 
 class TrainEvalModel:
-    def __init__(self, model, options, optimizer, modules_to_record=[], logger=None):
-        self._train_executor = trainingModel(copy.copy(model), options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
-        self._eval_executor = inferenceModel(copy.copy(model), options=options['inference'], logger=logger)
+    def __init__(self, train_model, eval_model, options, optimizer, modules_to_record=[], logger=None):
+        self._train_executor = trainingModel(train_model, options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+        self._eval_executor = inferenceModel(eval_model, options=options['inference'], logger=logger)
         self.training = True
 
     @property

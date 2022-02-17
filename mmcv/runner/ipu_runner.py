@@ -3,12 +3,15 @@ from abc import ABCMeta, abstractmethod
 import warnings
 
 from ..engine import single_gpu_test
-from ..ipu import parse_ipu_options, build_from_cfg_with_wrapper, IPU_MODE, ipu_model_wrapper, add_split_edges, wrap_optimizer_hook, IpuFp16OptimizerHook
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
 from .hooks import HOOKS, LrUpdaterHook
 from .hooks.evaluation import EvalHook
+
+from ..ipu import IPU_MODE
+if IPU_MODE:
+    from ..ipu import parse_ipu_options, build_from_cfg_with_wrapper, IPU_MODE, ipu_model_wrapper, model_sharding, wrap_optimizer_hook, IpuFp16OptimizerHook
 
 
 def wrap_lr_update_hook(lr_hook_class,):
