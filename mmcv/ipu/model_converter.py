@@ -183,6 +183,8 @@ class WrappedNet(torch.nn.Module):
         self.inputs_tree_manager.set_tensors(list(inputs_tuple))
         kwargs = {**(self.inputs_tree_manager.get_tree())}
         if self.training:
+            # TODO tmp ussage to save some memory
+            kwargs['img'] = kwargs['img'].float()
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
             identity_loss(outputs['loss'],reduction='none')
@@ -341,13 +343,16 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         assert self.training
         assert len(kwargs) == 0 # TODO, support later if necessary
 
+        # TODO tmp ussage to save some memory
+        data['img'] = data['img'].half()
+
         data['optimizer'] = None # TODO we will ignore optimizer for it will not be used in model, support later if necessary
 
         output_dic = self.run_model(data)
 
         # outputs contained loss, log_vars, num_samples, only loss(torch.tensor) has been updated
         # remove all unchanged vars, left torch.tensor
-        neat_output_dic = {'loss':output_dic['loss']}
+        neat_output_dic = {'loss': output_dic['loss']}
 
         # re-parse outputs, get back log_vars and num_samples
         loss, log_vars = self.model._parse_losses(neat_output_dic)
