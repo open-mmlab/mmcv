@@ -315,11 +315,11 @@ __global__ void maxPoolBwdGenericKernel(const scalar_t *outFeatures,
 
 namespace functor {
 template <typename scalar_t, typename Index>
-struct SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, Index> {
+struct SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, Index> {
   using vecload_type_t =
       std::conditional_t<std::is_same<scalar_t, at::Half>::value, int2, int4>;
   using kernel_block_t = mp_list_c<int, 64, 32, 16>;
-  void operator()(const tv::GPU &d, tv::TensorView<scalar_t> outFeatures,
+  void operator()(const tv::TorchGPU &d, tv::TensorView<scalar_t> outFeatures,
                   tv::TensorView<const scalar_t> inFeatures,
                   tv::TensorView<const Index> indices, int size) {
     if (size <= 0) return;
@@ -388,11 +388,11 @@ struct SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, Index> {
 };
 
 template <typename scalar_t, typename Index>
-struct SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index> {
+struct SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, Index> {
   using vecload_type_t =
       std::conditional_t<std::is_same<scalar_t, at::Half>::value, int2, int4>;
   using kernel_block_t = mp_list_c<int, 64, 32, 16>;
-  void operator()(const tv::GPU &d, tv::TensorView<const scalar_t> outFeatures,
+  void operator()(const tv::TorchGPU &d, tv::TensorView<const scalar_t> outFeatures,
                   tv::TensorView<const scalar_t> inFeatures,
                   tv::TensorView<const scalar_t> fout,
                   tv::TensorView<scalar_t> fin,
@@ -467,9 +467,9 @@ struct SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, Index> {
 }  // namespace functor
 
 #define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                         \
-  template struct functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t,  \
+  template struct functor::SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t,  \
                                                        Index>;             \
-  template struct functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, \
+  template struct functor::SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, \
                                                         Index>;
 
 #define DECLARE_GPU_SPECS(scalar_t) DECLARE_GPU_SPECS_T_INDEX(scalar_t, int);

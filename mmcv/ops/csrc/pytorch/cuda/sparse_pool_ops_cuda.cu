@@ -9,6 +9,7 @@ torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
                                                      torch::Tensor indicePairs,
                                                      torch::Tensor indiceNum,
                                                      int64_t numAct) {
+  at::cuda::CUDAGuard device_guard(features.device());
   auto device = features.device().type();
   auto kernelVolume = indicePairs.size(0);
   auto numInPlanes = features.size(1);
@@ -31,7 +32,7 @@ torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
                         tv::torch2tv<const scalar_t>(features),
                         tv::torch2tv<const int>(indicePairs).subview(i), nHot);
           } else {
-            functor::SparseMaxPoolForwardFunctor<tv::GPU, scalar_t, int>
+            functor::SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, int>
                 forwardFtor;
             forwardFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
                         tv::torch2tv<const scalar_t>(features),
@@ -48,6 +49,7 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
                                                       torch::Tensor outGrad,
                                                       torch::Tensor indicePairs,
                                                       torch::Tensor indiceNum) {
+  at::cuda::CUDAGuard device_guard(features.device());
   auto device = features.device().type();
   auto numInPlanes = features.size(1);
   auto indicePairNumCpu = indiceNum.to({torch::kCPU});
@@ -71,7 +73,7 @@ torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
                          tv::torch2tv<scalar_t>(inputGrad),
                          tv::torch2tv<const int>(indicePairs).subview(i), nHot);
           } else {
-            functor::SparseMaxPoolBackwardFunctor<tv::GPU, scalar_t, int>
+            functor::SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, int>
                 backwardFtor;
             backwardFtor(tv::TorchGPU(),
                          tv::torch2tv<const scalar_t>(outFeatures),

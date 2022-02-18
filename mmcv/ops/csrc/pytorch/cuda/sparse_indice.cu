@@ -28,8 +28,8 @@
 
 namespace functor {
 template <typename Index, typename IndexGrid, unsigned NDim>
-struct CreateConvIndicePairFunctorP1<tv::GPU, Index, IndexGrid, NDim> {
-  Index operator()(const tv::GPU &d, tv::TensorView<const Index> indicesIn,
+struct CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, IndexGrid, NDim> {
+  Index operator()(const tv::TorchGPU &d, tv::TensorView<const Index> indicesIn,
                    tv::TensorView<Index> indicesOut,
                    tv::TensorView<IndexGrid> gridsOut,
                    tv::TensorView<Index> indicePairs,
@@ -62,8 +62,8 @@ struct CreateConvIndicePairFunctorP1<tv::GPU, Index, IndexGrid, NDim> {
 };
 
 template <typename Index, typename IndexGrid, unsigned NDim>
-struct CreateConvIndicePairFunctorP2<tv::GPU, Index, IndexGrid, NDim> {
-  Index operator()(const tv::GPU &d, tv::TensorView<const Index> indicesIn,
+struct CreateConvIndicePairFunctorP2<tv::TorchGPU, Index, IndexGrid, NDim> {
+  Index operator()(const tv::TorchGPU &d, tv::TensorView<const Index> indicesIn,
                    tv::TensorView<Index> indicesOut,
                    tv::TensorView<IndexGrid> gridsOut,
                    tv::TensorView<Index> indicePairs,
@@ -98,8 +98,8 @@ struct CreateConvIndicePairFunctorP2<tv::GPU, Index, IndexGrid, NDim> {
 };
 
 template <typename Index, typename IndexGrid, unsigned NDim>
-struct CreateSubMIndicePairFunctor<tv::GPU, Index, IndexGrid, NDim> {
-  Index operator()(const tv::GPU &d, tv::TensorView<const Index> indicesIn,
+struct CreateSubMIndicePairFunctor<tv::TorchGPU, Index, IndexGrid, NDim> {
+  Index operator()(const tv::TorchGPU &d, tv::TensorView<const Index> indicesIn,
                    tv::TensorView<IndexGrid> gridsOut,
                    tv::TensorView<Index> indicePairs,
                    tv::TensorView<Index> indiceNum,
@@ -135,13 +135,13 @@ struct CreateSubMIndicePairFunctor<tv::GPU, Index, IndexGrid, NDim> {
 }  // namespace functor
 
 #define DECLARE_GPU_SPECS_INDEX_NDIM(Index, NDIM)                             \
-  template struct functor::CreateConvIndicePairFunctor<tv::GPU, Index, int,   \
+  template struct functor::CreateConvIndicePairFunctor<tv::TorchGPU, Index, int,   \
                                                        NDIM>;                 \
-  template struct functor::CreateConvIndicePairFunctorP1<tv::GPU, Index, int, \
+  template struct functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, int, \
                                                          NDIM>;               \
-  template struct functor::CreateConvIndicePairFunctorP2<tv::GPU, Index, int, \
+  template struct functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, Index, int, \
                                                          NDIM>;               \
-  template struct functor::CreateSubMIndicePairFunctor<tv::GPU, Index, int,   \
+  template struct functor::CreateSubMIndicePairFunctor<tv::TorchGPU, Index, int,   \
                                                        NDIM>;
 
 #define DECLARE_GPU_INDEX(Index)          \

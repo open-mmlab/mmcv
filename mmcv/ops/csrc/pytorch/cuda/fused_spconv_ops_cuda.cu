@@ -10,6 +10,7 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
+  at::cuda::CUDAGuard device_guard(features.device());
   bool subM = _subM != 0;
   bool inverse = _inverse != 0;
   auto device = features.device().type();
@@ -62,7 +63,7 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),
                        nHot);
           } else {
-            functor::SparseGatherFunctor<tv::GPU, scalar_t, int> gatherFtor;
+            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int> gatherFtor;
             gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
                        tv::torch2tv<const scalar_t>(features),
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),
@@ -86,7 +87,7 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
                 tv::torch2tv<const int>(indicePairs).subview(i, !inverse), nHot,
                 true);
           } else {
-            functor::SparseScatterAddFunctor<tv::GPU, scalar_t, int>
+            functor::SparseScatterAddFunctor<tv::TorchGPU, scalar_t, int>
                 scatterFtor;
             scatterFtor(
                 tv::TorchGPU(), tv::torch2tv<scalar_t>(output),
