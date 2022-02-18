@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
+#include <torch/extension.h>
+
 #include "pytorch_cpp_helper.hpp"
 
 std::string get_compiler_version();
@@ -239,6 +241,43 @@ void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
+
+template <unsigned NDim>
+std::vector<torch::Tensor> get_indice_pairs_forward(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template <unsigned NDim>
+std::vector<Tensor> get_indice_pairs_backward(
+    Tensor indices, Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+Tensor indice_conv_forward(Tensor features, Tensor filters, Tensor indicePairs,
+                           Tensor indiceNum, int64_t numActOut,
+                           int64_t _inverse, int64_t _subM);
+
+std::vector<Tensor> indice_conv_backward(Tensor features, Tensor filters,
+                                         Tensor outGrad, Tensor indicePairs,
+                                         Tensor indiceNum, int64_t _inverse,
+                                         int64_t _subM);
+
+Tensor fused_indice_conv_batchnorm_forward(Tensor features, Tensor filters,
+                                           Tensor bias, Tensor indicePairs,
+                                           Tensor indiceNum, int64_t numActOut,
+                                           int64_t _inverse, int64_t _subM);
+
+Tensor indice_maxpool_forward(Tensor features, Tensor indicePairs,
+                              Tensor indiceNum, int64_t numAct);
+
+Tensor indice_maxpool_backward(Tensor features, Tensor outFeatures,
+                               Tensor outGrad, Tensor indicePairs,
+                               Tensor indiceNum);
 
 Tensor bottom_pool_forward(Tensor input);
 
@@ -602,6 +641,54 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "sync_bn backward_data", py::arg("grad_output"), py::arg("weight"),
         py::arg("grad_weight"), py::arg("grad_bias"), py::arg("norm"),
         py::arg("std"), py::arg("grad_input"));
+  m.def("get_indice_pairs_2d_forward", &get_indice_pairs_forward<2>,
+        "get_indice_pairs_2d_forward", py::arg("indices"), py::arg("batchSize"),
+        py::arg("outSpatialShape"), py::arg("spatialShape"),
+        py::arg("kernelSize"), py::arg("stride"), py::arg("padding"),
+        py::arg("dilation"), py::arg("outPadding"), py::arg("_subM"),
+        py::arg("_transpose"));
+  m.def("get_indice_pairs_3d_forward", &get_indice_pairs_forward<3>,
+        "get_indice_pairs_3d_forward", py::arg("indices"), py::arg("batchSize"),
+        py::arg("outSpatialShape"), py::arg("spatialShape"),
+        py::arg("kernelSize"), py::arg("stride"), py::arg("padding"),
+        py::arg("dilation"), py::arg("outPadding"), py::arg("_subM"),
+        py::arg("_transpose"));
+  m.def("get_indice_pairs_4d_forward", &get_indice_pairs_forward<4>,
+        "get_indice_pairs_4d_forward", py::arg("indices"), py::arg("batchSize"),
+        py::arg("outSpatialShape"), py::arg("spatialShape"),
+        py::arg("kernelSize"), py::arg("stride"), py::arg("padding"),
+        py::arg("dilation"), py::arg("outPadding"), py::arg("_subM"),
+        py::arg("_transpose"));
+  m.def("get_indice_pairs_2d_backward", &get_indice_pairs_backward<2>,
+        "get_indice_pairs_2d_backward", py::arg("indices"), py::arg("gridOut"),
+        py::arg("batchSize"), py::arg("outSpatialShape"),
+        py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
+        py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
+        py::arg("_subM"), py::arg("_transpose"));
+  m.def("get_indice_pairs_3d_backward", &get_indice_pairs_backward<3>,
+        "get_indice_pairs_3d_backward", py::arg("indices"), py::arg("gridOut"),
+        py::arg("batchSize"), py::arg("outSpatialShape"),
+        py::arg("spatialShape"), py::arg("kernelSize"), py::arg("stride"),
+        py::arg("padding"), py::arg("dilation"), py::arg("outPadding"),
+        py::arg("_subM"), py::arg("_transpose"));
+  m.def("indice_conv_forward", &indice_conv_forward, "indice_conv_forward",
+        py::arg("features"), py::arg("filters"), py::arg("indicePairs"),
+        py::arg("indiceNum"), py::arg("numActOut"), py::arg("_inverse"),
+        py::arg("_subM"));
+  m.def("indice_conv_backward", &indice_conv_backward, "indice_conv_backward",
+        py::arg("features"), py::arg("filters"), py::arg("outGrad"),
+        py::arg("indicePairs"), py::arg("indiceNum"), py::arg("_inverse"),
+        py::arg("_subM"));
+  m.def("fused_indice_conv_forward", &fused_indice_conv_batchnorm_forward,
+        "fused_indice_conv_forward", py::arg("features"), py::arg("filters"),
+        py::arg("bias"), py::arg("indicePairs"), py::arg("indiceNum"),
+        py::arg("numActOut"), py::arg("_inverse"), py::arg("_subM"));
+  m.def("indice_maxpool_forward", &indice_maxpool_forward,
+        "indice_maxpool_forward", py::arg("features"), py::arg("indicePairs"),
+        py::arg("indiceNum"), py::arg("numAct"));
+  m.def("indice_maxpool_backward", &indice_maxpool_backward,
+        "indice_maxpool_backward", py::arg("features"), py::arg("outFeatures"),
+        py::arg("outGrad"), py::arg("indicePairs"), py::arg("indiceNum"));
   m.def("psamask_forward", &psamask_forward, "PSAMASK forward (CPU/CUDA)",
         py::arg("input"), py::arg("output"), py::arg("psa_type"),
         py::arg("num_"), py::arg("h_feature"), py::arg("w_feature"),
