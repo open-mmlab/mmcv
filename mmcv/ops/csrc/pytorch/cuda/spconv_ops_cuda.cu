@@ -98,9 +98,11 @@ std::vector<torch::Tensor> GetIndicePairsForwardCUDAKernelLauncher(
           transpose);
     } else {
       auto getIndicePairFtorP1 =
-          functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, int, int, NDim>();
+          functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, int, int,
+                                                 NDim>();
       auto getIndicePairFtorP2 =
-          functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, int, int, NDim>();
+          functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, int, int,
+                                                 NDim>();
       numActOut = getIndicePairFtorP1(
           tv::TorchGPU(), tv::torch2tv<const int>(indices),
           tv::torch2tv<int>(outInds), tv::torch2tv<int>(gridOut),
@@ -213,9 +215,11 @@ std::vector<torch::Tensor> GetIndicePairsBackwardCUDAKernelLauncher(
       gridOut.fill_(-1);
     } else {
       auto getIndicePairFtorP1 =
-          functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, int, int, NDim>();
+          functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, int, int,
+                                                 NDim>();
       auto getIndicePairFtorP2 =
-          functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, int, int, NDim>();
+          functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, int, int,
+                                                 NDim>();
       numActOut = getIndicePairFtorP1(
           tv::TorchGPU(), tv::torch2tv<const int>(indices),
           tv::torch2tv<int>(outInds), tv::torch2tv<int>(gridOut),
@@ -292,7 +296,8 @@ torch::Tensor IndiceConvForwardCUDAKernelLauncher(
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),
                        nHot);
           } else {
-            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int> gatherFtor;
+            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int>
+                gatherFtor;
             gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
                        tv::torch2tv<const scalar_t>(features),
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),
@@ -388,8 +393,10 @@ std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
                 tv::torch2tv<const int>(indicePairs).subview(i, !inverse),
                 nHot);
           } else {
-            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int> gatherFtor;
-            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int> gatherFtorOut;
+            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int>
+                gatherFtor;
+            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int>
+                gatherFtorOut;
             gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
                        tv::torch2tv<const scalar_t>(features),
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),

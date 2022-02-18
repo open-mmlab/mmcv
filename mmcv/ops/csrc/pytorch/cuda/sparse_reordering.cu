@@ -142,9 +142,10 @@ struct SparseScatterAddFunctor<tv::TorchGPU, scalar_t, Index> {
 
 }  // namespace functor
 
-#define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                        \
+#define DECLARE_GPU_SPECS_T_INDEX(scalar_t, Index)                             \
   template struct functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, Index>; \
-  template struct functor::SparseScatterAddFunctor<tv::TorchGPU, scalar_t, Index>;
+  template struct functor::SparseScatterAddFunctor<tv::TorchGPU, scalar_t,     \
+                                                   Index>;
 
 #define DECLARE_GPU_SPECS(scalar_t) DECLARE_GPU_SPECS_T_INDEX(scalar_t, int);
 

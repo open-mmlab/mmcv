@@ -63,7 +63,8 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),
                        nHot);
           } else {
-            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int> gatherFtor;
+            functor::SparseGatherFunctor<tv::TorchGPU, scalar_t, int>
+                gatherFtor;
             gatherFtor(tv::TorchGPU(), tv::torch2tv<scalar_t>(inputBuffer),
                        tv::torch2tv<const scalar_t>(features),
                        tv::torch2tv<const int>(indicePairs).subview(i, inverse),

@@ -135,14 +135,14 @@ struct CreateSubMIndicePairFunctor<tv::TorchGPU, Index, IndexGrid, NDim> {
 }  // namespace functor
 
 #define DECLARE_GPU_SPECS_INDEX_NDIM(Index, NDIM)                             \
-  template struct functor::CreateConvIndicePairFunctor<tv::TorchGPU, Index, int,   \
-                                                       NDIM>;                 \
-  template struct functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, int, \
-                                                         NDIM>;               \
-  template struct functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, Index, int, \
-                                                         NDIM>;               \
-  template struct functor::CreateSubMIndicePairFunctor<tv::TorchGPU, Index, int,   \
-                                                       NDIM>;
+  template struct functor::CreateConvIndicePairFunctor<tv::TorchGPU, Index,   \
+                                                       int, NDIM>;            \
+  template struct functor::CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, \
+                                                         int, NDIM>;          \
+  template struct functor::CreateConvIndicePairFunctorP2<tv::TorchGPU, Index, \
+                                                         int, NDIM>;          \
+  template struct functor::CreateSubMIndicePairFunctor<tv::TorchGPU, Index,   \
+                                                       int, NDIM>;
 
 #define DECLARE_GPU_INDEX(Index)          \
   DECLARE_GPU_SPECS_INDEX_NDIM(Index, 1); \
