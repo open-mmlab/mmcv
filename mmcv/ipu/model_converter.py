@@ -184,7 +184,7 @@ class WrappedNet(torch.nn.Module):
         kwargs = {**(self.inputs_tree_manager.get_tree())}
         if self.training:
             # TODO tmp ussage to save some memory
-            kwargs['img'] = kwargs['img'].float()
+            # kwargs['img'] = kwargs['img'].float()
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
             identity_loss(outputs['loss'],reduction='none')
@@ -344,7 +344,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         assert len(kwargs) == 0 # TODO, support later if necessary
 
         # TODO tmp ussage to save some memory
-        data['img'] = data['img'].half()
+        # data['img'] = data['img'].half()
 
         data['optimizer'] = None # TODO we will ignore optimizer for it will not be used in model, support later if necessary
 

@@ -86,6 +86,7 @@ def parse_ipu_options(ipu_options):
     train_cfgs = ipu_options.pop('train_cfgs', {})
     eval_cfgs = ipu_options.pop('eval_cfgs', {})
     eval_cfgs['replicationFactor'] = 1  # eval mode only use one ipu
+    eval_cfgs['executionStrategy'] = 'ShardedExecution'
     training_ipu_options = {**ipu_options, **train_cfgs}  # overwrite default ipu options with specified train cfgs
     inference_ipu_options = {**ipu_options, **eval_cfgs}  # overwrite default ipu options with specified eval cfgs
 
@@ -103,7 +104,12 @@ def _parse_ipu_options(ipu_options):
         opts.setAvailableMemoryProportion(mem_prop)
     if 'executionStrategy' in ipu_options:
         executionStrategy = ipu_options.pop('executionStrategy')
-        opts.setExecutionStrategy(poptorch.PipelinedExecution(getattr(poptorch.AutoStage,executionStrategy)))
+        if executionStrategy == 'SameAsIpu':
+            opts.setExecutionStrategy(poptorch.PipelinedExecution(getattr(poptorch.AutoStage, executionStrategy)))
+        elif executionStrategy == 'ShardedExecution':
+            opts.setExecutionStrategy(poptorch.ShardedExecution())
+        else:
+            raise NotImplementedError
     if 'partialsType' in ipu_options:
         partialsType = ipu_options.pop('partialsType')
         opts.Precision.setPartialsType(getattr(torch, partialsType)) # half or float
@@ -122,8 +128,8 @@ def ipu_model_wrapper(model, opts, optimizer, logger=None, modules_to_record=[],
         optimizer.loss_scaling = loss_scale
 
     # set model partition
-    train_model = model_sharding(copy.copy(model), pipeline_cfg.get('train_split_edges',[])) # split model into multi-ipus if specified
-    eval_model = model_sharding(copy.copy(model), pipeline_cfg.get('eval_split_edges',[])) # split model into multi-ipus if specified
+    train_model = model_sharding(copy.copy(model), pipeline_cfg.get('train_split_edges', []))  # split model into multi-ipus if specified
+    eval_model = model_sharding(copy.copy(model), pipeline_cfg.get('eval_split_edges', []))  # split model into multi-ipus if specified
     
     # wrap model for compilation
     model = TrainEvalModel(train_model, eval_model, options=opts, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
