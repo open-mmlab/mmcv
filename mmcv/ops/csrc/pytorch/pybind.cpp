@@ -312,13 +312,14 @@ Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
 
 void roi_align_rotated_forward(Tensor input, Tensor rois, Tensor output,
                                int pooled_height, int pooled_width,
-                               float spatial_scale, int sample_num,
+                               float spatial_scale, int sampling_ratio,
                                bool aligned, bool clockwise);
 
 void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 Tensor grad_input, int pooled_height,
                                 int pooled_width, float spatial_scale,
-                                int sample_num, bool aligned, bool clockwise);
+                                int sampling_ratio, bool aligned,
+                                bool clockwise);
 
 std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
     const torch::Tensor &feats, const torch::Tensor &coors,
@@ -736,13 +737,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),
         py::arg("output"), py::arg("pooled_height"), py::arg("pooled_width"),
-        py::arg("spatial_scale"), py::arg("sample_num"), py::arg("aligned"),
+        py::arg("spatial_scale"), py::arg("sampling_ratio"), py::arg("aligned"),
         py::arg("clockwise"));
   m.def("roi_align_rotated_backward", &roi_align_rotated_backward,
         "roi_align_rotated backward", py::arg("rois"), py::arg("grad_input"),
         py::arg("grad_output"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
-        py::arg("sample_num"), py::arg("aligned"), py::arg("clockwise"));
+        py::arg("sampling_ratio"), py::arg("aligned"), py::arg("clockwise"));
   m.def("dynamic_point_to_voxel_forward", &dynamic_point_to_voxel_forward,
         "dynamic_point_to_voxel_forward", py::arg("feats"), py::arg("coors"),
         py::arg("reduce_type"));
