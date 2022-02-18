@@ -53,6 +53,12 @@ from .roipoint_pool3d import RoIPointPool3d
 from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
 from .scatter_points import DynamicScatter, dynamic_scatter
+from .sparse_conv import (SparseConv2d, SparseConv3d, SparseConvTranspose2d,
+                          SparseConvTranspose3d, SparseInverseConv2d,
+                          SparseInverseConv3d, SubMConv2d, SubMConv3d)
+from .sparse_modules import SparseModule, SparseSequential
+from .sparse_pool import SparseMaxPool2d, SparseMaxPool3d
+from .sparse_structure import SparseConvTensor, scatter_nd
 from .sync_bn import SyncBatchNorm
 from .three_interpolate import three_interpolate
 from .three_nn import three_nn
@@ -84,6 +90,10 @@ __all__ = [
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'Voxelization',
     'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
+    'SparseConv2d', 'SparseConv3d', 'SparseConvTranspose2d',
+    'SparseConvTranspose3d', 'SparseInverseConv2d', 'SparseInverseConv3d',
+    'SubMConv2d', 'SubMConv3d', 'SparseModule', 'SparseSequential',
+    'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
     'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
     'convex_iou', 'convex_giou'

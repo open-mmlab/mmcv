@@ -35,6 +35,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - SigmoidFocalLoss
 - SoftmaxFocalLoss
 - SoftNMS
+- Sparse Convolution
 - Synchronized BatchNorm
 - Voxelization
 - ThreeInterpolate
