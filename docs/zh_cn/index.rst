@@ -20,6 +20,7 @@
    understand_mmcv/runner.md
    understand_mmcv/io.md
    understand_mmcv/data_process.md
+   understand_mmcv/data_transform.md
    understand_mmcv/visualization.md
    understand_mmcv/cnn.md
    understand_mmcv/ops.md
