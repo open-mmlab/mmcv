@@ -80,7 +80,7 @@ def _test_roialign_rotated_allclose(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('unittest does not support GPU yet.')
     try:
-        from mmcv.ops import roi_align_rotated, RoIAlignRotated
+        from mmcv.ops import RoIAlignRotated, roi_align_rotated
     except ModuleNotFoundError:
         pytest.skip('test requires compilation')
     pool_h = 2
