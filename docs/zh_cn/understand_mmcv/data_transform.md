@@ -104,7 +104,7 @@ dataset = dict(
 
 ## 自定义数据变换类
 
-要实现一个新的数据变换类，需要继承 `BaseTransform`，并实现 `transform` 方法。这里，我们使用一个简单的随机翻转变换（`MyRandomFlip`）作为示例：
+要实现一个新的数据变换类，需要继承 `BaseTransform`，并实现 `transform` 方法。这里，我们使用一个简单的翻转变换（`MyFlip`）作为示例：
 
 ```python
 import random
@@ -112,41 +112,39 @@ import mmcv
 from mmcv.transforms import BaseTransform, TRANSFORMS
 
 @TRANSFORMS.register_module()
-class MyRandomFlip(BaseTransform):
-    def __init__(self, prob: float):
+class MyFlip(BaseTransform):
+    def __init__(self, direction: str):
         super().__init__()
-        self.prob = prob
+        self.direction = direction
 
     def transform(self, results: dict) -> dict:
         img = results['img']
-        flip = True if random.random() > self.prob else False
-        if flip:
-            results['img'] = mmcv.imflip(img)
+        results['img'] = mmcv.imflip(img, direction=self.direction)
         return results
 ```
 
-从而，我们可以实例化一个 `MyRandomFlip` 对象，并将之作为一个可调用对象，来处理我们的数据字典。
+从而，我们可以实例化一个 `MyFlip` 对象，并将之作为一个可调用对象，来处理我们的数据字典。
 
 ```python
 import numpy as np
 
-transform = MyRandomFlip(prob=1.0)
+transform = MyFlip(direction='horizontal')
 data_dict = {'img': np.random.rand(224, 224, 3)}
 data_dict = transform(data_dict)
 processed_img = data_dict['img']
 ```
 
-又或者，在配置文件的 pipeline 中使用 `MyRandomFlip` 变换
+又或者，在配置文件的 pipeline 中使用 `MyFlip` 变换
 
 ```python
 pipeline = [
     ...
-    dict(type='MyRandomFlip', prob=0.5),
+    dict(type='MyFlip', direction='horizontal'),
     ...
 ]
 ```
 
-需要注意的是，如需在配置文件中使用，需要保证 `MyRandomFlip` 类所在的文件在运行时能够被导入。
+需要注意的是，如需在配置文件中使用，需要保证 `MyFlip` 类所在的文件在运行时能够被导入。
 
 ## 变换包装
 
@@ -229,7 +227,7 @@ pipeline = [
 
 2. 应用于一个字段的一组目标
 
-   假设我们需要将数据变换应用于 `"images"` 字段中一个 list 的图像。
+   假设我们需要将数据变换应用于 `"images"` 字段，该字段为一个图像组成的 list。
 
    ```python
    pipeline = [
@@ -249,16 +247,17 @@ pipeline = [
 
 在 `ApplyToMultiple` 中，我们提供了 `share_random_param` 选项来支持在多次数据变换中共享随机状态。例如，在超分辨率任务中，我们希望将随机变换**同步**作用于低分辨率图像和原始图像。如果我们希望在自定义的数据变换类中使用这一功能，我们需要在类中标注哪些随机变量是支持共享的。
 
-以上文中的 `MyRandomFlip` 为例：
+以上文中的 `MyFlip` 为例，我们希望以一定的概率随机执行翻转：
 
 ```python
 from mmcv.transforms.utils import cacheable_method
 
 @TRANSFORMS.register_module()
 class MyRandomFlip(BaseTransform):
-    def __init__(self, prob: float):
+    def __init__(self, prob: float, direction: str):
         super().__init__()
         self.prob = prob
+        self.direction = direction
 
     @cacheable_method  # 标注该方法的输出为可共享的随机变量
     def do_flip(self):
@@ -268,7 +267,7 @@ class MyRandomFlip(BaseTransform):
     def transform(self, results: dict) -> dict:
         img = results['img']
         if self.do_flip():
-            results['img'] = mmcv.imflip(img)
+            results['img'] = mmcv.imflip(img, direction=self.direction)
         return results
 ```
 
