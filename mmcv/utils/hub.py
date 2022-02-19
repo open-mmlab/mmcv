@@ -10,12 +10,13 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         '1.7.0'):
     # Modified from https://github.com/pytorch/pytorch/blob/master/torch/hub.py
     import os
-    import torch
-    import warnings
-    from urllib.parse import urlparse
     import sys
+    import warnings
     import zipfile
-    from torch.hub import download_url_to_file, _get_torch_home, HASH_REGEX
+    from urllib.parse import urlparse
+
+    import torch
+    from torch.hub import HASH_REGEX, _get_torch_home, download_url_to_file
 
     # Hub used to support automatically extracts from zipfile manually
     # compressed by users. The legacy zip format expects only one file from

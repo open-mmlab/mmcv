@@ -213,6 +213,8 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
     Args:
         content (bytes): Image bytes got from files or other streams.
         flag (str): Same as :func:`imread`.
+        channel_order (str): The channel order of the output, candidates
+            are 'bgr' and 'rgb'. Default to 'bgr'.
         backend (str | None): The image decoding backend type. Options are
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`. If backend is
             None, the global imread_backend specified by ``mmcv.use_backend()``

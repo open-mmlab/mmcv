@@ -1,6 +1,6 @@
 #ifndef PYTORCH_CPP_HELPER
 #define PYTORCH_CPP_HELPER
-#include <torch/extension.h>
+#include <torch/types.h>
 
 #include <vector>
 
