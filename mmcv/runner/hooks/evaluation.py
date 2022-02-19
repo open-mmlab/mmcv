@@ -344,8 +344,8 @@ class EvalHook(Hook):
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
 
             runner.save_checkpoint(
-                self.out_dir, 
-                filename_tmpl=best_ckpt_name, 
+                self.out_dir,
+                filename_tmpl=best_ckpt_name,
                 create_symlink=False
             )
             runner.logger.info(
