@@ -22,10 +22,11 @@ __device__ __forceinline__ void load_bbox<float>(const float* bbox,
                                                  const int base, float& x1,
                                                  float& y1, float& x2,
                                                  float& y2) {
-  const float* bbox_offset = bbox + base;
-  asm volatile("ld.v4.f32 {%0, %1, %2, %3}, [%4];\n"
-               : "=f"(x1), "=f"(y1), "=f"(x2), "=f"(y2)
-               : "l"(bbox_offset));
+  const float4 bbox_offset = reinterpret_cast<const float4*>(bbox + base)[0];
+  x1 = bbox_offset.x;
+  y1 = bbox_offset.y;
+  x2 = bbox_offset.z;
+  y2 = bbox_offset.w;
 }
 
 template <typename T>
@@ -112,12 +113,12 @@ __device__ void bbox_overlaps_cuda_kernel_half(
     const int b1 = aligned ? index : index / num_bbox2;
     const int b2 = aligned ? index : index % num_bbox2;
 
-    const int base1 = b1 * 4;
+    const int base1 = b1 << 2;
     __half b1_x1, b1_y1, b1_x2, b1_y2;
     load_bbox<__half>(bbox1, base1, b1_x1, b1_y1, b1_x2, b1_y2);
     const __half b1_area = __half_area(b1_x1, b1_y1, b1_x2, b1_y2, h_offset);
 
-    const int base2 = b2 * 4;
+    const int base2 = b2 << 2;
     __half b2_x1, b2_y1, b2_x2, b2_y2;
     load_bbox<__half>(bbox2, base2, b2_x1, b2_y1, b2_x2, b2_y2);
     const __half b2_area = __half_area(b2_x1, b2_y1, b2_x2, b2_y2, h_offset);
