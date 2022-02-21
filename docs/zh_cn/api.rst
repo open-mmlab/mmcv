@@ -47,3 +47,8 @@ ops
 ------
 .. automodule:: mmcv.ops
     :members:
+
+transform
+---------
+.. automodule:: mmcv.transform
+    :members:
