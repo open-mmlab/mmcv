@@ -27,6 +27,9 @@ class cacheable_method:
     def __init__(self, func):
 
         # Check `func` is to be bound as an instance method
+        if not inspect.isfunction(func):
+            raise TypeError('Unsupport callable to decorate with'
+                            '@cacheable_method.')
         func_args = inspect.getfullargspec(func).args
         if len(func_args) == 0 or func_args[0] != 'self':
             raise TypeError(
@@ -44,6 +47,8 @@ class cacheable_method:
         owner._cacheable_methods.append(self.__name__)
 
     def __call__(self, *args, **kwargs):
+        # Get the transform instance whose method is decorated
+        # by cacheable_method
         instance = self.instance_ref()
         name = self.__name__
 
@@ -70,8 +75,7 @@ class cacheable_method:
             return self.func(instance, *args, **kwargs)
 
     def __get__(self, obj, cls):
-        if self.instance_ref is None:
-            self.instance_ref = weakref.ref(obj)
+        self.instance_ref = weakref.ref(obj)
         return self
 
 
@@ -125,6 +129,8 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
     def _end_cache(t: BaseTransform):
         # Remove cache enabled flag
         del t._cache_enabled
+        if hasattr(t, '_cache'):
+            del t._cache
 
         # Restore the original method
         if hasattr(t, '_cacheable_methods'):
@@ -145,7 +151,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
         if isinstance(t, BaseTransform):
             if hasattr(t, '_cacheable_methods'):
                 func(t)
-        else:
+        if isinstance(t, Iterable):
             for _t in t:
                 _apply(_t, func)
 

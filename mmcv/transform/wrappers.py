@@ -28,7 +28,6 @@ except ImportError:
             pass
 
 
-@TRANSFORMS.register_module()
 class Compose(BaseTransform):
     """Compose multiple transforms sequentially.
 
@@ -173,6 +172,10 @@ class Remap(BaseTransform):
 
         self.transforms = Compose(transforms)
 
+    def __iter__(self):
+        """Allow easy iteration over the transform sequence."""
+        return iter(self.transforms)
+
     def remap_input(self, data: Dict, input_mapping: Dict) -> Dict[str, Any]:
         """Remap inputs for the wrapped transforms by gathering and renaming
         data items according to the input_mapping.
@@ -180,7 +183,7 @@ class Remap(BaseTransform):
         Args:
             data (dict): The original input data
             input_mapping (dict): The input key mapping. See the document of
-                mmcv.transforms.wrappers.Remap` for details.
+                `mmcv.transforms.wrappers.Remap` for details.
 
         Returns:
             dict: The input data with remapped keys. This will be the actual
@@ -245,12 +248,6 @@ class Remap(BaseTransform):
                     results.update(_remap(d_i, m_i))
                 return results
 
-            if data is NotInResults:
-                raise ValueError(
-                    f'Attempt to assign `NotInResults` to output key {m}.'
-                    '`NotInResults` just serves as a placeholder for missing '
-                    'keys in non-strict input mapping. It should not be '
-                    'assigned to any output.')
             return {m: data}
 
         # Note that unmapped items are not retained, which is different from
@@ -361,12 +358,12 @@ class ApplyToMultiple(Remap):
 
     def scatter_sequence(self, data: Dict) -> List[Dict]:
         # infer split number from input
-        seq_len = 0
+        seq_len = None
         key_rep = None
         for key in self.input_mapping:
 
             assert isinstance(data[key], Sequence)
-            if seq_len:
+            if seq_len is not None:
                 if len(data[key]) != seq_len:
                     raise ValueError('Got inconsistent sequence length: '
                                      f'{seq_len} ({key_rep}) vs. '
@@ -374,11 +371,6 @@ class ApplyToMultiple(Remap):
             else:
                 seq_len = len(data[key])
                 key_rep = key
-
-        if not seq_len:
-            raise RuntimeError(
-                'Fail to infer the sequence length. Please ensure that '
-                'the input items are sequences with the same length.')
 
         scatters = []
         for i in range(seq_len):
@@ -397,7 +389,7 @@ class ApplyToMultiple(Remap):
 
         # Control random parameter sharing with a context manager
         if self.share_random_params:
-            # The context manager  :func`:cache_random_params` will let
+            # The context manager :func`:cache_random_params` will let
             # cacheable method of the transforms cache their outputs. Thus
             # the random parameters will only generated once and shared
             # by all data items.
