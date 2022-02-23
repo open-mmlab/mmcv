@@ -1,23 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
+from typing import Optional, Sequence, Tuple, Union
+
 import numpy as np
-from typing import Sequence, Optional, Tuple, Union
-from .builder import TRANSFORMS
-from .base import BaseTransform
+
+import mmcv
 from mmcv.image.geometric import _scale_size
+from .base import BaseTransform
+from .builder import TRANSFORMS
 
 
 @TRANSFORMS.register_module()
 class Normalize(BaseTransform):
     """Normalize the image.
 
-    Required Key:
+    Required Keys:
 
     - img
 
-    Added Key:
+    Added Keys:
 
     - img_norm_cfg
+
         - mean
         - std
         - to_rgb
@@ -71,14 +74,14 @@ class Resize(BaseTransform):
     `scale_factor`. Bboxes, seg map and keypoints are then resized with the
     same scale factor.
 
-    Required Key:
+    Required Keys:
 
     - img
     - gt_bboxes (optional)
     - gt_semantic_seg (optional)
     - gt_keypoints (optional)
 
-    Modified Key:
+    Modified Keys:
 
     - img
     - gt_bboxes
@@ -87,7 +90,7 @@ class Resize(BaseTransform):
     - height
     - width
 
-    Added Key:
+    Added Keys:
 
     - scale
     - scale_factor
@@ -118,7 +121,7 @@ class Resize(BaseTransform):
                  keep_ratio: bool = False,
                  bbox_clip_border: bool = True,
                  backend: str = 'cv2',
-                 interpolation="bilinear") -> None:
+                 interpolation='bilinear') -> None:
         assert scale is not None or scale_factor is not None, (
             '`scale` and'
             '`scale_factor` can not both be `None`')
@@ -221,6 +224,7 @@ class Resize(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Transform function to resize images, bounding boxes, semantic
         segmentation map and keypoints.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
@@ -259,20 +263,20 @@ class Pad(BaseTransform):
     minimum size that is divisible by some number. and (3)pad to square. Also,
     pad to square and pad to the minimum size can be used as the same time.
 
-    Required Key:
+    Required Keys:
 
     - img
     - gt_bboxes (optional)
     - gt_semantic_seg (optional)
 
-    Modified Key:
+    Modified Keys:
 
     - img
     - gt_semantic_seg
     - height
     - width
 
-    Added Key:
+    Added Keys:
 
     - pad_shape
     - pad_fixed_size

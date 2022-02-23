@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os.path as osp
+
 import numpy as np
-import mmcv
-from mmcv.transforms import Normalize, Resize, Pad
 import pytest
+
+import mmcv
+from mmcv.transforms import Normalize, Pad, Resize
 
 
 class TestNormalize:
@@ -87,6 +89,14 @@ class TestResize:
         assert (results['gt_keypoints'] == np.array([[[30, 100, 1]]])).all()
         assert results['gt_semantic_seg'].shape[:2] == (2666, 1200)
 
+        # test bbox_clip_border = False
+        data_info = dict(
+            img=np.random.random((300, 400, 3)),
+            gt_bboxes=np.array([[200, 150, 600, 450]]))
+        transform = Resize(scale=(200, 150), bbox_clip_border=False)
+        results = transform(data_info)
+        assert (results['gt_bboxes'] == np.array([100, 75, 300, 225])).all()
+
     def test_repr(self):
         transform = Resize(scale=(2000, 2000), keep_ratio=True)
         assert repr(transform) == ('Resize(scale=(2000, 2000), '
@@ -98,7 +108,7 @@ class TestResize:
 class TestPad:
 
     def test_pad(self):
-        # test p
+        # test assertion
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), size_divisor=2)
         with pytest.raises(AssertionError):
@@ -163,5 +173,5 @@ class TestPad:
     def test_repr(self):
         trans = Pad(pad_to_square=True, size_divisor=11, padding_mode='edge')
         assert repr(trans) == (
-            "Pad(size=None, size_divisor=11, pad_to_square=True, "
+            'Pad(size=None, size_divisor=11, pad_to_square=True, '
             "pad_val={'img': 0, 'seg': 255}), padding_mode=edge)")

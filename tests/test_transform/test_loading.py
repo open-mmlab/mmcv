@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os.path as osp
+
 import numpy as np
 
-from mmcv.transforms import LoadImageFromFile, LoadAnnotation
+from mmcv.transforms import LoadAnnotation, LoadImageFromFile
 
 
 class TestLoadImageFromFile:
@@ -49,16 +50,16 @@ class TestLoadAnnotation:
         data_prefix = osp.join(osp.dirname(__file__), '../data')
         seg_map = osp.join(data_prefix, 'grayscale.jpg')
         cls.results = {
-            "seg_map":
+            'seg_map':
             seg_map,
-            "instances": [{
-                "bbox": [0, 0, 10, 20],
-                "bbox_label": 1,
-                "keypoints": [1, 2, 3]
+            'instances': [{
+                'bbox': [0, 0, 10, 20],
+                'bbox_label': 1,
+                'keypoints': [1, 2, 3]
             }, {
-                "bbox": [10, 10, 110, 120],
-                "bbox_label": 2,
-                "keypoints": [4, 5, 6]
+                'bbox': [10, 10, 110, 120],
+                'bbox_label': 2,
+                'keypoints': [4, 5, 6]
             }]
         }
 
@@ -74,7 +75,7 @@ class TestLoadAnnotation:
         assert (results['gt_bboxes'] == np.array([[0, 0, 10, 20],
                                                   [10, 10, 110, 120]])).all()
 
-    def test_load_lables(self):
+    def test_load_labels(self):
         transform = LoadAnnotation(
             with_bbox=False,
             with_label=True,
@@ -115,7 +116,7 @@ class TestLoadAnnotation:
             with_seg=False,
             with_kps=False,
         )
-        assert repr(transform) == ("LoadAnnotation(with_bbox=True, "
-                                   "with_label=False, with_seg=False, "
+        assert repr(transform) == ('LoadAnnotation(with_bbox=True, '
+                                   'with_label=False, with_seg=False, '
                                    "with_kps=False, imdecode_backend='cv2', "
                                    "file_client_args={'backend': 'disk'})")

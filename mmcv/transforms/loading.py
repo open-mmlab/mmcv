@@ -1,19 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
-from .builder import TRANSFORMS
+
+import mmcv
 from .base import BaseTransform
+from .builder import TRANSFORMS
 
 
 @TRANSFORMS.register_module()
 class LoadImageFromFile(BaseTransform):
     """Load an image from file.
 
-    Required Key:
+    Required Keys:
 
     - img_path
 
-    Modified Key:
+    Modified Keys:
 
     - img
     - width
@@ -29,7 +30,7 @@ class LoadImageFromFile(BaseTransform):
             Defaults to 'color'.
         imdecode_backend (str): The image decoding backend type. The backend
             argument for :func:`mmcv.imfrombytes`.
-            See :fun:`mmcv.imfrombytes` for details.
+            See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details.
@@ -87,55 +88,62 @@ class LoadImageFromFile(BaseTransform):
 
 
 class LoadAnnotation(BaseTransform):
-    """ Load and process the `instances` and `seg_map` annotation provided by
+    """Load and process the `instances` and `seg_map` annotation provided by
     dataset. `LoadAnnotation` loads only one image annotation.
 
     The annotation format is as the following:
 
-    ```python
-    {
-        'instances':
-        [
-            {
-            # List of 4 numbers representing the bounding box of the
-            # instance, in (x1, y1, x2, y2) order.
-            'bbox': [x1, y1, x2, y2],
+    .. code-block:: python
 
-            # Label of image classification.
-            'bbox_label': 1,
+        {
+            'instances':
+            [
+                {
+                # List of 4 numbers representing the bounding box of the
+                # instance, in (x1, y1, x2, y2) order.
+                'bbox': [x1, y1, x2, y2],
 
-            # Used in key point detection.
-            # Can only load the format of [x1, y1, v1,…, xn, yn, vn]. v[i]
-            # means the visibility of this keypoint. n must be equal to the
-            # number of keypoint categories.
-            'keypoints': [x1, y1, v1, ..., xn, yn, vn]
-            }
-        ]
-        # Filename of semantic or panoptic segmentation ground truth file.
-        'seg_map': 'a/b/c'
-    }
-    ```
+                # Label of image classification.
+                'bbox_label': 1,
+
+                # Used in key point detection.
+                # Can only load the format of [x1, y1, v1,…, xn, yn, vn]. v[i]
+                # means the visibility of this keypoint. n must be equal to the
+                # number of keypoint categories.
+                'keypoints': [x1, y1, v1, ..., xn, yn, vn]
+                }
+            ]
+            # Filename of semantic or panoptic segmentation ground truth file.
+            'seg_map': 'a/b/c'
+        }
+
     After load and process:
 
-    ```python
-    {
-        'gt_bboxes': np.ndarray(N, 4) # In (x1, y1, x2, y2) order, float type.
-        'gt_bboxes_labels': np.ndarray(N, ) # In int type.
-        'gt_semantic_seg': np.ndarray (H, W) # In uint8 type.
-        'gt_keypoints': np.ndarray(N, NK, 3) # in (x, y, v) order, float type.
+    .. code-block:: python
 
-    }
-    ```
+        {
+            # In (x1, y1, x2, y2) order, float type. N is the number of bboxes
+            # in an image
+            'gt_bboxes': np.ndarray(N, 4)
+             # In int type.
+            'gt_bboxes_labels': np.ndarray(N, )
+             # In uint8 type.
+            'gt_semantic_seg': np.ndarray (H, W)
+             # in (x, y, v) order, float type.
+            'gt_keypoints': np.ndarray(N, NK, 3)
 
-    Required Key:
+        }
+
+    Required Keys:
 
     - instances
-        - bbox (optional)
-        - bbox_label (optional)
-        - keypoints
-    - seg_map
 
-    Added Key:
+        - bbox (optional)
+        - bbox_label
+        - keypoints (optional)
+    - seg_map (optional)
+
+    Added Keys:
 
     - gt_bboxes
     - gt_bboxes_labels
@@ -144,13 +152,13 @@ class LoadAnnotation(BaseTransform):
 
     Args:
         with_bbox (bool): Whether to parse and load the bbox annotation.
-             Default: True.
+             Defaults to True.
         with_label (bool): Whether to parse and load the label annotation.
-            Default: True.
+            Defaults to True.
         with_seg (bool): Whether to parse and load the semantic segmentation
-            annotation. Default: False.
+            annotation. Defaults to False.
         with_kps (bool): Whether to parse and load the keypoints annotation.
-             Default: False.
+             Defaults to False.
         imdecode_backend (str): The image decoding backend type. The backend
             argument for :func:`mmcv.imfrombytes`.
             See :fun:`mmcv.imfrombytes` for details.
@@ -246,7 +254,7 @@ class LoadAnnotation(BaseTransform):
 
         Returns:
             dict: The dict contains loaded bounding box, label and
-                semantic segmentation and keypoints annotations.
+            semantic segmentation and keypoints annotations.
         """
 
         if self.with_bbox:
