@@ -132,7 +132,6 @@ def test_requires_executable(capsys):
 def test_import_modules_from_strings():
     # multiple imports
     import os.path as osp_
-
     import sys as sys_
     osp, sys = mmcv.import_modules_from_strings(['os.path', 'sys'])
     assert osp == osp_

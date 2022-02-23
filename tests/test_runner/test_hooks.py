@@ -37,6 +37,7 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           FlatCosineAnnealingLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
+from mmcv.utils import TORCH_VERSION
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -357,20 +358,23 @@ def test_sync_buffers_hook():
     shutil.rmtree(runner.work_dir)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_momentum_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers, max_iters, gamma, cyclic_times',
+                         [(True, 8, 1, 1), (False, 8, 0.5, 2)])
+def test_momentum_runner_hook(multi_optimizers, max_iters, gamma,
+                              cyclic_times):
     """xdoctest -m tests/test_hooks.py test_momentum_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
         type='CyclicMomentumUpdaterHook',
         by_epoch=False,
         target_ratio=(0.85 / 0.95, 1),
-        cyclic_times=1,
-        step_ratio_up=0.4)
+        cyclic_times=cyclic_times,
+        step_ratio_up=0.4,
+        gamma=gamma)
     runner.register_hook_from_cfg(hook_cfg)
 
     # add momentum LR scheduler
@@ -391,7 +395,7 @@ def test_momentum_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -422,19 +426,23 @@ def test_momentum_runner_hook(multi_optimziers):
                 'momentum': 0.95
             }, 1),
             call('train', {
-                'learning_rate': 0.2,
+                'learning_rate': 0.11,
                 'momentum': 0.85
-            }, 5),
+            }, 3),
             call('train', {
-                'learning_rate': 0.155,
-                'momentum': 0.875
-            }, 7),
+                'learning_rate': 0.1879422863405995,
+                'momentum': 0.95
+            }, 6),
+            call('train', {
+                'learning_rate': 0.11000000000000001,
+                'momentum': 0.9
+            }, 8),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
     # test constant momentum warmup
     sys.modules['pavi'] = MagicMock()
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -454,7 +462,7 @@ def test_momentum_runner_hook(multi_optimziers):
     shutil.rmtree(runner.work_dir)
 
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -498,7 +506,7 @@ def test_momentum_runner_hook(multi_optimziers):
 
     # test linear momentum warmup
     sys.modules['pavi'] = MagicMock()
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -518,7 +526,7 @@ def test_momentum_runner_hook(multi_optimziers):
     shutil.rmtree(runner.work_dir)
 
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -562,7 +570,7 @@ def test_momentum_runner_hook(multi_optimziers):
 
     # test exponentially momentum warmup
     sys.modules['pavi'] = MagicMock()
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -582,7 +590,7 @@ def test_momentum_runner_hook(multi_optimziers):
     shutil.rmtree(runner.work_dir)
 
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -625,12 +633,12 @@ def test_momentum_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_cosine_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_cosine_runner_hook(multi_optimizers):
     """xdoctest -m tests/test_hooks.py test_cosine_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -659,7 +667,7 @@ def test_cosine_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -702,17 +710,17 @@ def test_cosine_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers, by_epoch', [(False, False),
+@pytest.mark.parametrize('multi_optimizers, by_epoch', [(False, False),
                                                         (True, False),
                                                         (False, True),
                                                         (True, True)])
-def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
+def test_flat_cosine_runner_hook(multi_optimizers, by_epoch):
     """xdoctest -m tests/test_hooks.py test_flat_cosine_runner_hook."""
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
     max_epochs = 10 if by_epoch else 1
     runner = _build_demo_runner(
-        multi_optimziers=multi_optimziers, max_epochs=max_epochs)
+        multi_optimizers=multi_optimizers, max_epochs=max_epochs)
 
     with pytest.raises(ValueError):
         # start_percent: expected float between 0 and 1
@@ -738,7 +746,7 @@ def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         if by_epoch:
             calls = [
                 call(
@@ -843,10 +851,10 @@ def test_flat_cosine_runner_hook(multi_optimziers, by_epoch):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers, max_iters', [(True, 10), (True, 2),
+@pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 10), (True, 2),
                                                          (False, 10),
                                                          (False, 2)])
-def test_one_cycle_runner_hook(multi_optimziers, max_iters):
+def test_one_cycle_runner_hook(multi_optimizers, max_iters):
     """Test OneCycleLrUpdaterHook and OneCycleMomentumUpdaterHook."""
     with pytest.raises(AssertionError):
         # by_epoch should be False
@@ -862,7 +870,7 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
 
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -894,7 +902,7 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -971,8 +979,8 @@ def test_one_cycle_runner_hook(multi_optimziers, max_iters):
         assert lr_target[-1] == lr_last[0]
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_cosine_restart_lr_update_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_cosine_restart_lr_update_hook(multi_optimizers):
     """Test CosineRestartLrUpdaterHook."""
     with pytest.raises(AssertionError):
         # either `min_lr` or `min_lr_ratio` should be specified
@@ -1014,7 +1022,7 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
 
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add cosine restart LR scheduler
     hook = CosineRestartLrUpdaterHook(
@@ -1033,7 +1041,7 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -1075,8 +1083,8 @@ def test_cosine_restart_lr_update_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_step_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_step_runner_hook(multi_optimizers):
     """Test StepLrUpdaterHook."""
     with pytest.raises(TypeError):
         # `step` should be specified
@@ -1091,7 +1099,7 @@ def test_step_runner_hook(multi_optimziers):
     # test StepLrUpdaterHook with int `step` value
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((30, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -1115,7 +1123,7 @@ def test_step_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -1192,7 +1200,7 @@ def test_step_runner_hook(multi_optimziers):
     # test StepLrUpdaterHook with list[int] `step` value
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimziers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
     hook_cfg = dict(
@@ -1215,7 +1223,7 @@ def test_step_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
@@ -1270,25 +1278,30 @@ def test_step_runner_hook(multi_optimziers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 8),
-                                                         (False, 8)])
-def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
+@pytest.mark.parametrize('multi_optimizers, max_iters, gamma, cyclic_times',
+                         [(True, 8, 1, 1), (False, 8, 0.5, 2)])
+def test_cyclic_lr_update_hook(multi_optimizers, max_iters, gamma,
+                               cyclic_times):
     """Test CyclicLrUpdateHook."""
     with pytest.raises(AssertionError):
         # by_epoch should be False
         CyclicLrUpdaterHook(by_epoch=True)
 
     with pytest.raises(AssertionError):
-        # target_ratio" must be either float or tuple/list of two floats
+        # target_ratio must be either float or tuple/list of two floats
         CyclicLrUpdaterHook(by_epoch=False, target_ratio=(10.0, 0.1, 0.2))
 
     with pytest.raises(AssertionError):
-        # step_ratio_up" must be in range [0,1)
+        # step_ratio_up must be in range [0,1)
         CyclicLrUpdaterHook(by_epoch=False, step_ratio_up=1.4)
 
     with pytest.raises(ValueError):
         # anneal_strategy must be one of "cos" or "linear"
         CyclicLrUpdaterHook(by_epoch=False, anneal_strategy='sin')
+
+    with pytest.raises(AssertionError):
+        # gamma must be in range (0, 1]
+        CyclicLrUpdaterHook(by_epoch=False, gamma=0)
 
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
@@ -1296,16 +1309,17 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
         runner_type='IterBasedRunner',
         max_epochs=None,
         max_iters=max_iters,
-        multi_optimziers=multi_optimizers)
+        multi_optimizers=multi_optimizers)
 
     # add cyclic LR scheduler
-    hook = CyclicLrUpdaterHook(
+    schedule_hook = CyclicLrUpdaterHook(
         by_epoch=False,
         target_ratio=(10.0, 1.0),
-        cyclic_times=1,
+        cyclic_times=cyclic_times,
         step_ratio_up=0.5,
-        anneal_strategy='linear')
-    runner.register_hook(hook)
+        anneal_strategy='linear',
+        gamma=gamma)
+    runner.register_hook(schedule_hook)
     runner.register_hook_from_cfg(dict(type='IterTimerHook'))
     runner.register_hook(IterTimerHook())
     # add pavi hook
@@ -1346,13 +1360,17 @@ def test_cyclic_lr_update_hook(multi_optimizers, max_iters):
                 'momentum': 0.95
             }, 1),
             call('train', {
-                'learning_rate': 0.155,
+                'learning_rate': 0.11,
                 'momentum': 0.95
             }, 4),
             call('train', {
-                'learning_rate': 0.155,
+                'learning_rate': 0.065,
                 'momentum': 0.95
             }, 6),
+            call('train', {
+                'learning_rate': 0.11,
+                'momentum': 0.95
+            }, 7),
         ]
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
@@ -1378,7 +1396,9 @@ def test_mlflow_hook(log_model):
         }, step=6)
     if log_model:
         hook.mlflow_pytorch.log_model.assert_called_with(
-            runner.model, 'models')
+            runner.model,
+            'models',
+            pip_requirements=[f'torch=={TORCH_VERSION}'])
     else:
         assert not hook.mlflow_pytorch.log_model.called
 
@@ -1393,8 +1413,8 @@ def test_segmind_hook():
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.segmind_mlflow_log.assert_called_with(
-        hook.segmind_log_metrics, {
+    hook.mlflow_log.assert_called_with(
+        hook.log_metrics, {
             'learning_rate': 0.02,
             'momentum': 0.95
         },
@@ -1477,7 +1497,7 @@ def test_dvclive_hook_model_file(tmp_path):
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
                                     max_epochs=1,
                                     max_iters=None,
-                                    multi_optimziers=False):
+                                    multi_optimizers=False):
 
     class Model(nn.Module):
 
@@ -1497,7 +1517,7 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
 
     model = Model()
 
-    if multi_optimziers:
+    if multi_optimizers:
         optimizer = {
             'model1':
             torch.optim.SGD(model.linear.parameters(), lr=0.02, momentum=0.95),
@@ -1523,14 +1543,14 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
 def _build_demo_runner(runner_type='EpochBasedRunner',
                        max_epochs=1,
                        max_iters=None,
-                       multi_optimziers=False):
+                       multi_optimizers=False):
     log_config = dict(
         interval=1, hooks=[
             dict(type='TextLoggerHook'),
         ])
 
     runner = _build_demo_runner_without_hook(runner_type, max_epochs,
-                                             max_iters, multi_optimziers)
+                                             max_iters, multi_optimizers)
 
     runner.register_checkpoint_hook(dict(interval=1))
     runner.register_logger_hooks(log_config)
