@@ -85,7 +85,7 @@ def parse_ipu_options(ipu_options):
     # set ipu options for inference and training by config
     train_cfgs = ipu_options.pop('train_cfgs', {})
     eval_cfgs = ipu_options.pop('eval_cfgs', {})
-    eval_cfgs['replicationFactor'] = 1  # eval mode only use one ipu
+    eval_cfgs['replicationFactor'] = 1  # eval mode only use one replica
     eval_cfgs['executionStrategy'] = 'ShardedExecution'
     training_ipu_options = {**ipu_options, **train_cfgs}  # overwrite default ipu options with specified train cfgs
     inference_ipu_options = {**ipu_options, **eval_cfgs}  # overwrite default ipu options with specified eval cfgs

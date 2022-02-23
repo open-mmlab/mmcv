@@ -431,8 +431,9 @@ class TrainEvalModel:
         if mode == self.training:
             return self
         else:
-            self.copyWeightsToHost() # copy weights from IPU to cpu before off-load current session
-            self.detachFromDevice() # detach the current session before change the mode, if is training mode and weights are updated, poptorch will copy weights from IPU to host
+            if self.isCompiled():
+                self.copyWeightsToHost() # copy weights from IPU to cpu before off-load current session
+                self.detachFromDevice() # detach the current session before change the mode, if is training mode and weights are updated, poptorch will copy weights from IPU to host
 
             self.training = mode # session will changed with mode changing
             self.model.train(mode)
