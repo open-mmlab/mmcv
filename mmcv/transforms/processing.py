@@ -116,8 +116,9 @@ class Resize(BaseTransform):
     """
 
     def __init__(self,
-                 scale: Optional[Union[int, Tuple[int]]] = None,
-                 scale_factor: Optional[Union[float, Tuple[float]]] = None,
+                 scale: Optional[Union[int, Tuple[int, int]]] = None,
+                 scale_factor: Optional[Union[float, Tuple[float,
+                                                           float]]] = None,
                  keep_ratio: bool = False,
                  bbox_clip_border: bool = True,
                  backend: str = 'cv2',
@@ -308,7 +309,7 @@ class Pad(BaseTransform):
     """
 
     def __init__(self,
-                 size: Optional[tuple] = None,
+                 size: Optional[Tuple[int, int]] = None,
                  size_divisor: Optional[int] = None,
                  pad_to_square: bool = False,
                  pad_val: Union[int, dict] = dict(img=0, seg=255),

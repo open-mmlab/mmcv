@@ -48,7 +48,7 @@ class LoadImageFromFile(BaseTransform):
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
         self.file_client_args = file_client_args.copy()
-        self.file_client = None
+        self.file_client = mmcv.FileClient(**self.file_client_args)
 
     def transform(self, results: dict) -> dict:
         """Functions to load image.
@@ -59,9 +59,6 @@ class LoadImageFromFile(BaseTransform):
         Returns:
             dict: The dict contains loaded image and meta information.
         """
-
-        if self.file_client is None:
-            self.file_client = mmcv.FileClient(**self.file_client_args)
 
         filename = results['img_path']
         img_bytes = self.file_client.get(filename)
@@ -185,7 +182,7 @@ class LoadAnnotation(BaseTransform):
         self.with_kps = with_kps
         self.imdecode_backend = imdecode_backend
         self.file_client_args = file_client_args.copy()
-        self.file_client = None
+        self.file_client = mmcv.FileClient(**self.file_client_args)
 
     def _load_bboxes(self, results: dict) -> None:
         """Private function to load bounding box annotations.
@@ -199,7 +196,6 @@ class LoadAnnotation(BaseTransform):
         for instance in results['instances']:
             gt_bboxes.append(instance['bbox'])
         results['gt_bboxes'] = np.array(gt_bboxes)
-        return results
 
     def _load_labels(self, results: dict) -> None:
         """Private function to load label annotations.
@@ -214,7 +210,6 @@ class LoadAnnotation(BaseTransform):
         for instance in results['instances']:
             gt_bboxes_labels.append(instance['bbox_label'])
         results['gt_bboxes_labels'] = np.array(gt_bboxes_labels)
-        return results
 
     def _load_semantic_seg(self, results: dict) -> None:
         """Private function to load semantic segmentation annotations.
@@ -225,8 +220,6 @@ class LoadAnnotation(BaseTransform):
         Returns:
             dict: The dict contains loaded semantic segmentation annotations.
         """
-        if self.file_client is None:
-            self.file_client = mmcv.FileClient(**self.file_client_args)
 
         img_bytes = self.file_client.get(results['seg_map'])
         results['gt_semantic_seg'] = mmcv.imfrombytes(
