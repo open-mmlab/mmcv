@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # The 1.6 release of PyTorch switched torch.save to use a new zipfile-based
 # file format. It will cause RuntimeError when a checkpoint was saved in
 # torch >= 1.6.0 but loaded in torch < 1.7.0.
