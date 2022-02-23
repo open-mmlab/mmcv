@@ -45,7 +45,7 @@ class SegmindLoggerHook(LoggerHook):
         tags = self.get_loggable_tags(runner)
         if tags:
             # logging metrics to segmind
-            self.segmind_mlflow_log(
+            self.mlflow_log(
                 self.segmind_log_metrics,
                 tags,
                 step=runner.epoch,
