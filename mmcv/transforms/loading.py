@@ -138,9 +138,10 @@ class LoadAnnotation(BaseTransform):
 
     - instances
 
-        - bbox (optional)
-        - bbox_label
-        - keypoints (optional)
+      - bbox (optional)
+      - bbox_label
+      - keypoints (optional)
+
     - seg_map (optional)
 
     Added Keys:

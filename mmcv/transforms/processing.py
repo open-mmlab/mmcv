@@ -21,9 +21,9 @@ class Normalize(BaseTransform):
 
     - img_norm_cfg
 
-        - mean
-        - std
-        - to_rgb
+      - mean
+      - std
+      - to_rgb
 
 
     Args:
@@ -366,13 +366,14 @@ class Pad(BaseTransform):
     def _pad_seg(self, results: dict) -> None:
         """Pad semantic segmentation map according to
         ``results['pad_shape']``."""
-        pad_val = self.pad_val.get('seg', 255)
+        if results.get('gt_semantic_seg', None) is not None:
+            pad_val = self.pad_val.get('seg', 255)
 
-        results['gt_semantic_seg'] = mmcv.impad(
-            results['gt_semantic_seg'],
-            shape=results['pad_shape'][:2],
-            pad_val=pad_val,
-            padding_mode=self.padding_mode)
+            results['gt_semantic_seg'] = mmcv.impad(
+                results['gt_semantic_seg'],
+                shape=results['pad_shape'][:2],
+                pad_val=pad_val,
+                padding_mode=self.padding_mode)
 
     def transform(self, results: dict) -> dict:
         """Call function to pad images, masks, semantic segmentation maps.
