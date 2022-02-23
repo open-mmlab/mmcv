@@ -30,8 +30,8 @@ class Normalize(BaseTransform):
         mean (sequence): Mean values of 3 channels.
         std (sequence): Std values of 3 channels.
         to_rgb (bool): Whether to convert the image from BGR to RGB before
-            normlizing the image. If `to_rgb=True`, the order of mean and std
-             should be RGB and if `to_rgb=False`, the order of mean and std
+            normlizing the image. If ``to_rgb=True``, the order of mean and std
+             should be RGB and if ``to_rgb=False``, the order of mean and std
              should be BGR. Defaults to True.
     """
 
@@ -70,8 +70,8 @@ class Normalize(BaseTransform):
 class Resize(BaseTransform):
     """Resize images & bbox & seg & keypoints.
 
-    This transform resizes the input image according to `scale` or
-    `scale_factor`. Bboxes, seg map and keypoints are then resized with the
+    This transform resizes the input image according to ``scale`` or
+    ``scale_factor``. Bboxes, seg map and keypoints are then resized with the
     same scale factor.
 
     Required Keys:
@@ -290,8 +290,8 @@ class Pad(BaseTransform):
         pad_to_square (bool): Whether to pad the image into a square.
             Currently only used for YOLOX. Defaults to False.
         pad_val (int or dict, optional): A dict for padding value.
-            if `type(pad_val) == int`, the val to pad seg is 255. Defaults to
-        `dict(img=0, seg=255)`.
+            if ``type(pad_val) == int``, the val to pad seg is 255. Defaults to
+        ``dict(img=0, seg=255)``.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Defaults to 'constant'.
             - constant: pads with a constant value, this value is specified

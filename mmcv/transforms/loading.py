@@ -26,11 +26,11 @@ class LoadImageFromFile(BaseTransform):
         to_float32 (bool): Whether to convert the loaded image to a float32
             numpy array. If set to False, the loaded image is an uint8 array.
             Defaults to False.
-        color_type (str): The flag argument for :func:`mmcv.imfrombytes`.
+        color_type (str): The flag argument for :func:``mmcv.imfrombytes``.
             Defaults to 'color'.
         imdecode_backend (str): The image decoding backend type. The backend
-            argument for :func:`mmcv.imfrombytes`.
-            See :func:`mmcv.imfrombytes` for details.
+            argument for :func:``mmcv.imfrombytes``.
+            See :func:``mmcv.imfrombytes`` for details.
             Defaults to 'cv2'.
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details.
@@ -54,7 +54,7 @@ class LoadImageFromFile(BaseTransform):
         """Functions to load image.
 
         Args:
-            results (dict): Result dict from :obj:`mmdet.CustomDataset`.
+            results (dict): Result dict from :obj:``mmdet.CustomDataset``.
 
         Returns:
             dict: The dict contains loaded image and meta information.
@@ -88,8 +88,8 @@ class LoadImageFromFile(BaseTransform):
 
 
 class LoadAnnotation(BaseTransform):
-    """Load and process the `instances` and `seg_map` annotation provided by
-    dataset. `LoadAnnotation` loads only one image annotation.
+    """Load and process the ``instances`` and ``seg_map`` annotation provided
+    by dataset. ``LoadAnnotation`` loads only one image annotation.
 
     The annotation format is as the following:
 
@@ -161,11 +161,11 @@ class LoadAnnotation(BaseTransform):
         with_kps (bool): Whether to parse and load the keypoints annotation.
              Defaults to False.
         imdecode_backend (str): The image decoding backend type. The backend
-            argument for :func:`mmcv.imfrombytes`.
-            See :fun:`mmcv.imfrombytes` for details.
+            argument for :func:``mmcv.imfrombytes``.
+            See :fun:``mmcv.imfrombytes`` for details.
             Defaults to 'cv2'.
         file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details.
+            See :class:``mmcv.fileio.FileClient`` for details.
             Defaults to ``dict(backend='disk')``.
     """
 
@@ -191,7 +191,7 @@ class LoadAnnotation(BaseTransform):
         """Private function to load bounding box annotations.
 
         Args:
-            results (dict): Result dict from :obj:`mmcv.BaseDataset`.
+            results (dict): Result dict from :obj:``mmcv.BaseDataset``.
         Returns:
             dict: The dict contains loaded bounding box annotations.
         """
@@ -205,7 +205,7 @@ class LoadAnnotation(BaseTransform):
         """Private function to load label annotations.
 
         Args:
-            results (dict): Result dict from :obj :obj:`mmcv.BaseDataset`.
+            results (dict): Result dict from :obj :obj:``mmcv.BaseDataset``.
 
         Returns:
             dict: The dict contains loaded label annotations.
@@ -220,7 +220,7 @@ class LoadAnnotation(BaseTransform):
         """Private function to load semantic segmentation annotations.
 
         Args:
-            results (dict): Result dict from :obj:`mmcv.BaseDataset`.
+            results (dict): Result dict from :obj:``mmcv.BaseDataset``.
 
         Returns:
             dict: The dict contains loaded semantic segmentation annotations.
@@ -237,7 +237,7 @@ class LoadAnnotation(BaseTransform):
         """Private function to load keypoints annotations.
 
         Args:
-            results (dict): Result dict from :obj:`mmcv.BaseDataset`.
+            results (dict): Result dict from :obj:``mmcv.BaseDataset``.
         Returns:
             dict: The dict contains loaded keypoints annotations.
         """
@@ -251,7 +251,7 @@ class LoadAnnotation(BaseTransform):
         """Function to load multiple types annotations.
 
         Args:
-            results (dict): Result dict from :obj:`mmcv.BaseDataset`.
+            results (dict): Result dict from :obj:``mmcv.BaseDataset``.
 
         Returns:
             dict: The dict contains loaded bounding box, label and
