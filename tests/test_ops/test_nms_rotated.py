@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
@@ -68,3 +69,17 @@ class TestNmsRotated:
         dets[..., -2] *= -1
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test batched_nms with nms_rotated
+        from mmcv.ops import batched_nms
+
+        nms_cfg = dict(type='nms_rotated', iou_threshold=0.5)
+
+        boxes, keep = batched_nms(
+            torch.from_numpy(np_boxes[:, :5]),
+            torch.from_numpy(np_boxes[:, -1]),
+            torch.from_numpy(np.array([0, 0, 0, 0])),
+            nms_cfg,
+            class_agnostic=False)
+        assert np.allclose(boxes.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep.cpu().numpy(), np_expect_keep_inds)

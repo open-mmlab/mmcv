@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 
 import numpy as np
@@ -51,7 +52,7 @@ def _test_border_align_allclose(device, dtype, pool_size):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
     try:
-        from mmcv.ops import border_align, BorderAlign
+        from mmcv.ops import BorderAlign, border_align
     except ModuleNotFoundError:
         pytest.skip('BorderAlign op is not successfully compiled')
 
