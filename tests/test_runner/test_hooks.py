@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 """Tests the hooks with runners.
 
 CommandLine:
