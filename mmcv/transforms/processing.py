@@ -73,6 +73,8 @@ class Resize(BaseTransform):
     This transform resizes the input image according to ``scale`` or
     ``scale_factor``. Bboxes, seg map and keypoints are then resized with the
     same scale factor.
+    if ``scale`` and ``scale_factor`` are both set, it will use ``scale`` to
+    resize.
 
     Required Keys:
 
@@ -102,10 +104,10 @@ class Resize(BaseTransform):
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to False.
-        bbox_clip_border (bool, optional): Whether to clip the objects outside
-            the border of the image. In some dataset like MOT17, the gt bboxes
-            are allowed to cross the border of images. Therefore, we don't
-            need to clip the gt bboxes in these cases. Defaults to True.
+        clip_object_border (bool, optional): Whether to clip the objects
+            outside the border of the image. In some dataset like MOT17, the gt
+            bboxes are allowed to cross the border of images. Therefore, we
+            don't need to clip the gt bboxes in these cases. Defaults to True.
         backend (str): Image resize backend, choices are 'cv2' and 'pillow'.
             These two backends generates slightly different results. Defaults
             to 'cv2'.
@@ -120,7 +122,7 @@ class Resize(BaseTransform):
                  scale_factor: Optional[Union[float, Tuple[float,
                                                            float]]] = None,
                  keep_ratio: bool = False,
-                 bbox_clip_border: bool = True,
+                 clip_object_border: bool = True,
                  backend: str = 'cv2',
                  interpolation='bilinear') -> None:
         assert scale is not None or scale_factor is not None, (
@@ -137,7 +139,7 @@ class Resize(BaseTransform):
         self.backend = backend
         self.interpolation = interpolation
         self.keep_ratio = keep_ratio
-        self.bbox_clip_border = bbox_clip_border
+        self.clip_object_border = clip_object_border
         if scale_factor is None:
             self.scale_factor = None
         elif isinstance(scale_factor, float):
@@ -185,7 +187,7 @@ class Resize(BaseTransform):
         if results.get('gt_bboxes', None) is not None:
             bboxes = results['gt_bboxes'] * np.tile(
                 np.array(results['scale_factor']), 2)
-            if self.bbox_clip_border:
+            if self.clip_object_border:
                 bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, results['width'])
                 bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0,
                                           results['height'])
@@ -215,7 +217,7 @@ class Resize(BaseTransform):
 
             keypoints[:, :, :2] = keypoints[:, :, :2] * np.array(
                 results['scale_factor'])
-            if self.bbox_clip_border:
+            if self.clip_object_border:
                 keypoints[:, :, 0] = np.clip(keypoints[:, :, 0], 0,
                                              results['width'])
                 keypoints[:, :, 1] = np.clip(keypoints[:, :, 1], 0,
@@ -250,7 +252,7 @@ class Resize(BaseTransform):
         repr_str += f'(scale={self.scale}, '
         repr_str += f'scale_factor={self.scale_factor}, '
         repr_str += f'keep_ratio={self.keep_ratio}, '
-        repr_str += f'bbox_clip_border={self.bbox_clip_border}), '
+        repr_str += f'clip_object_border={self.clip_object_border}), '
         repr_str += f'backend={self.backend}), '
         repr_str += f'interpolation={self.interpolation})'
         return repr_str

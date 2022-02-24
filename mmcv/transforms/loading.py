@@ -114,7 +114,7 @@ class LoadAnnotation(BaseTransform):
             'seg_map': 'a/b/c'
         }
 
-    After load and process:
+    After this module, the annotation has been changed to the format below:
 
     .. code-block:: python
 
@@ -150,13 +150,13 @@ class LoadAnnotation(BaseTransform):
 
     Args:
         with_bbox (bool): Whether to parse and load the bbox annotation.
-             Defaults to True.
+            Defaults to True.
         with_label (bool): Whether to parse and load the label annotation.
             Defaults to True.
         with_seg (bool): Whether to parse and load the semantic segmentation
             annotation. Defaults to False.
         with_kps (bool): Whether to parse and load the keypoints annotation.
-             Defaults to False.
+            Defaults to False.
         imdecode_backend (str): The image decoding backend type. The backend
             argument for :func:``mmcv.imfrombytes``.
             See :fun:``mmcv.imfrombytes`` for details.
