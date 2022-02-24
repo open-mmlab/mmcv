@@ -2,7 +2,7 @@
 
 The purpose of this tutorial is to show how to use Amazon Simple Storage Service (Amazon S3) as the storage backend for model training and storage.
 
-> In v1.4.4 and later, AWSBackend is provided to support reading and writing data from s3.
+> In v1.4.7 and later, AWSBackend is provided to support reading and writing data from s3.
 
 ### Installation
 

@@ -434,7 +434,7 @@ class AWSBackend(BaseStorageBackend):
         # Default output format [json]:
 
     Note:
-        In v1.4.4 and later, AWSBackend is provided to support reading and
+        In v1.4.7 and later, AWSBackend is provided to support reading and
         writing data to s3.
 
     Args:

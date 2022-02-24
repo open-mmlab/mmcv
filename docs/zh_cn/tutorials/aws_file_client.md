@@ -2,7 +2,7 @@
 
 本教程的目的是为了展示如何使用 Amazon Simple Storage Service (Amazon S3) 作为存储后端进行模型的训练与存储。
 
-> 该特性从v1.4.4版本开始支持
+> 该特性从 v1.4.7 版本开始支持
 
 ### AWS 配置
 
