@@ -54,7 +54,7 @@ class LoadImageFromFile(BaseTransform):
         """Functions to load image.
 
         Args:
-            results (dict): Result dict from :obj:``mmdet.CustomDataset``.
+            results (dict): Result dict from :obj:``mmcv.BaseDataset``.
 
         Returns:
             dict: The dict contains loaded image and meta information.
@@ -86,7 +86,7 @@ class LoadImageFromFile(BaseTransform):
 
 class LoadAnnotation(BaseTransform):
     """Load and process the ``instances`` and ``seg_map`` annotation provided
-    by dataset. ``LoadAnnotation`` loads only one image annotation.
+    by dataset.
 
     The annotation format is as the following:
 
@@ -128,7 +128,6 @@ class LoadAnnotation(BaseTransform):
             'gt_semantic_seg': np.ndarray (H, W)
              # in (x, y, v) order, float type.
             'gt_keypoints': np.ndarray(N, NK, 3)
-
         }
 
     Required Keys:

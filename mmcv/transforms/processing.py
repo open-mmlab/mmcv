@@ -31,8 +31,8 @@ class Normalize(BaseTransform):
         std (sequence): Std values of 3 channels.
         to_rgb (bool): Whether to convert the image from BGR to RGB before
             normlizing the image. If ``to_rgb=True``, the order of mean and std
-             should be RGB and if ``to_rgb=False``, the order of mean and std
-             should be BGR. Defaults to True.
+            should be RGB. If ``to_rgb=False``, the order of mean and std
+            should be BGR. Defaults to True.
     """
 
     def __init__(self,
@@ -50,8 +50,8 @@ class Normalize(BaseTransform):
             results (dict): Result dict from loading pipeline.
 
         Returns:
-            dict: Normalized results, 'img_norm_cfg' key is added into
-                result dict.
+            dict: Normalized results, key 'img_norm_cfg' key is added in to
+            result dict.
         """
 
         results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std,
@@ -232,8 +232,8 @@ class Resize(BaseTransform):
             results (dict): Result dict from loading pipeline.
         Returns:
             dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
-                'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
-                and 'keep_ratio' keys are updated in result dict.
+            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
+            and 'keep_ratio' keys are updated in result dict.
         """
 
         if self.scale:
@@ -294,9 +294,10 @@ class Pad(BaseTransform):
             Currently only used for YOLOX. Defaults to False.
         pad_val (int or dict, optional): A dict for padding value.
             if ``type(pad_val) == int``, the val to pad seg is 255. Defaults to
-        ``dict(img=0, seg=255)``.
+            ``dict(img=0, seg=255)``.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Defaults to 'constant'.
+
             - constant: pads with a constant value, this value is specified
               with pad_val.
             - edge: pads with the last value at the edge of the image.

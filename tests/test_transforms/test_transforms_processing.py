@@ -89,11 +89,11 @@ class TestResize:
         assert (results['gt_keypoints'] == np.array([[[30, 100, 1]]])).all()
         assert results['gt_semantic_seg'].shape[:2] == (2666, 1200)
 
-        # test bbox_clip_border = False
+        # test clip_object_border = False
         data_info = dict(
             img=np.random.random((300, 400, 3)),
             gt_bboxes=np.array([[200, 150, 600, 450]]))
-        transform = Resize(scale=(200, 150), bbox_clip_border=False)
+        transform = Resize(scale=(200, 150), clip_object_border=False)
         results = transform(data_info)
         assert (results['gt_bboxes'] == np.array([100, 75, 300, 225])).all()
 
@@ -101,22 +101,30 @@ class TestResize:
         transform = Resize(scale=(2000, 2000), keep_ratio=True)
         assert repr(transform) == ('Resize(scale=(2000, 2000), '
                                    'scale_factor=None, keep_ratio=True, '
-                                   'bbox_clip_border=True), backend=cv2), '
+                                   'clip_object_border=True), backend=cv2), '
                                    'interpolation=bilinear)')
 
 
 class TestPad:
 
     def test_pad(self):
-        # test assertion
+        # test size and size_divisor are both set
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), size_divisor=2)
+
+        # test size and size_divisor are both None
         with pytest.raises(AssertionError):
             Pad(size=None, size_divisor=None)
+
+        # test size and pad_to_square are both None
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), pad_to_square=True)
+
+        # test pad_val is not int or tuple
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), pad_val=[])
+
+        # test padding_mode is not 'constant', 'edge', 'reflect' or 'symmetric'
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), padding_mode='edg')
 
