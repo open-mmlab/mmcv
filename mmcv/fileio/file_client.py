@@ -910,7 +910,7 @@ class FileClient:
                 if prefix not in cls._prefix_to_backends:
                     cls._prefix_to_backends[prefix] = backend
                 elif (prefix in cls._prefix_to_backends) and force:
-                    clear_backend = cls._prefix_to_backends[name]
+                    clear_backend = cls._prefix_to_backends[prefix]
                     if isinstance(clear_backend, list):
                         clear_backend = tuple(clear_backend)
                     clear_key = [
