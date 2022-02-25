@@ -58,7 +58,7 @@ class TestToTensor:
 
         # Test multi-level key and single-level key (multi-level key is
         # not in results)
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             results = {'instances': {'label': [1]}, 'img_label': [1]}
             results_tensor = TRANSFORMS.transform(copy.deepcopy(results))
             assert isinstance(results_tensor['instances']['label'], list)

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-from typing import Optional, Sequence, Union
+from typing import Sequence, Union
 
 import numpy as np
 import torch
@@ -66,36 +65,18 @@ class ToTensor(BaseTransform):
             dict: `keys` in results will be updated.
         """
         for key in self.keys:
-            data = self._fetch_data(results, key)
-            if data is None:
-                raise ValueError(
-                    f'Can not convert {type(data)} to torch.Tensor')
 
             key_list = key.split('.')
             cur_item = results
             for i in range(len(key_list)):
+                if key_list[i] not in cur_item:
+                    raise KeyError(f'Can not find key {key}')
                 if i == len(key_list) - 1:
-                    cur_item[key_list[i]] = to_tensor(data)
+                    cur_item[key_list[i]] = to_tensor(cur_item[key_list[i]])
                     break
                 cur_item = cur_item[key_list[i]]
 
         return results
-
-    def _fetch_data(
-        self, results: dict, key: str
-    ) -> Optional[Union[torch.Tensor, np.ndarray, Sequence, int, float]]:
-        # convert multi-level key to list
-        key_list = key.split('.')
-        current_item = results
-        for single_level_key in key_list:
-            # if current key not in current item, return None
-            if single_level_key not in current_item:
-                warnings.warn(f'{self.__class__.__name__}: {key} '
-                              f'is not in the input dict.')
-                return None
-            current_item = current_item[single_level_key]
-
-        return current_item
 
     def __repr__(self) -> str:
         return self.__class__.__name__ + f'(keys={self.keys})'
