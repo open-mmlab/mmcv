@@ -804,19 +804,22 @@ class FileClient:
             arg_key += f':{key}:{value}'
 
         # if a backend was overridden, it will create a new object
-        if (arg_key in cls._instances
-                and backend not in cls._overridden_backends
-                and prefix not in cls._overridden_prefixes):
-            _instance = cls._instances[arg_key]
-        else:
-            # create a new object and put it to _instance
-            _instance = super().__new__(cls)
-            if backend is not None:
-                _instance.client = cls._backends[backend](**kwargs)
+        if arg_key in cls._instances:
+            if backend in cls._overridden_backends:
+                cls._overridden_backends.pop(backend)
+            elif prefix in cls._overridden_prefixes:
+                cls._overridden_prefixes.pop(prefix)
             else:
-                _instance.client = cls._prefix_to_backends[prefix](**kwargs)
+                return cls._instances[arg_key]
 
-            cls._instances[arg_key] = _instance
+        # create a new object and put it to _instance
+        _instance = super().__new__(cls)
+        if backend is not None:
+            _instance.client = cls._backends[backend](**kwargs)
+        else:
+            _instance.client = cls._prefix_to_backends[prefix](**kwargs)
+
+        cls._instances[arg_key] = _instance
 
         return _instance
 
