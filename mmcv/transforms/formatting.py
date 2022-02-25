@@ -14,6 +14,7 @@ def to_tensor(
     data: Union[torch.Tensor, np.ndarray, Sequence, int,
                 float]) -> torch.Tensor:
     """Convert objects of various python types to :obj:`torch.Tensor`.
+
     Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,
     :class:`Sequence`, :class:`int` and :class:`float`.
     Args:
@@ -39,8 +40,9 @@ def to_tensor(
 
 @TRANSFORMS.register_module()
 class ToTensor(BaseTransform):
-    """Convert some results to :obj:`torch.Tensor` by given keys.
-    Modified Keys:
+    """Convert some results to :obj:`torch.Tensor` by given keys. Modified
+    Keys:
+
         - all these keys in `keys`
     Args:
         keys (Sequence[str]): Keys that need to be converted to Tensor.
@@ -51,6 +53,7 @@ class ToTensor(BaseTransform):
 
     def transform(self, results: dict) -> dict:
         """Transform function to convert data to `torch.Tensor`.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
@@ -93,8 +96,8 @@ class ToTensor(BaseTransform):
 
 @TRANSFORMS.register_module()
 class ImageToTensor(BaseTransform):
-    """Convert image to :obj:`torch.Tensor` by given keys.
-    Modified Keys:
+    """Convert image to :obj:`torch.Tensor` by given keys. Modified Keys:
+
         - all these keys in `keys`
     The dimension order of input image is (H, W, C). The pipeline will convert
     it to (C, H, W). If only 2 dimension (H, W) is given, the output would be

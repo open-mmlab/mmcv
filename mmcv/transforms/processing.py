@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
-from typing import Dict, List, Optional, Sequence, Tuple, Union, Iterable
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -414,12 +414,12 @@ class CenterCrop(BaseTransform):
     the original image and ``pad_mode`` is not None, then pad the original
     image first.
 
-    Required Key:
+    Required Keys:
 
     - img
     - gt_semantic_seg
 
-    Modified Key:
+    Modified Keys:
 
     - img
     - height
@@ -541,7 +541,7 @@ class RandomGrayscale(BaseTransform):
 
     - img
 
-    Added Key:
+    Added Keys:
 
     - grayscale
     - grayscale_weights
@@ -653,10 +653,10 @@ class MultiScaleFlipAug(BaseTransform):
             ...
         )
 
-    Required Key: Depending on the requirements of the ``transforms``
+    Required Keys: Depending on the requirements of the ``transforms``
         parameter.
 
-    Modified Key: All output keys of each transform.
+    Modified Keys: All output keys of each transform.
 
     Args:
         transforms (list[dict]): Transforms to apply in each augmentation.
@@ -763,14 +763,14 @@ class RandomMultiscaleResize(BaseTransform):
         uniformally.
     - if `scale` is a tuple, the target scale will be set to the tuple.
 
-    Required Key:
+    Required Keys:
 
     - img
     - gt_bboxes
     - gt_semantic_seg
     - gt_keypoints
 
-    Modified Key:
+    Modified Keys:
 
     - img
     - height
@@ -779,7 +779,7 @@ class RandomMultiscaleResize(BaseTransform):
     - gt_semantic_seg
     - gt_keypoints
 
-    Added Key:
+    Added Keys:
 
     - scale
     - scale_factor
@@ -791,8 +791,8 @@ class RandomMultiscaleResize(BaseTransform):
         scales (Union[list, Tuple]): Images scales for resizing.
         keep_ratio (bool, optional): Whether to keep the aspect ratio when
             resizing the image. Defaults to False.
-        clip_object_border (bool, optional): Whether clip the objects outside the
-            border of the image.  Defaults to True.
+        clip_object_border (bool, optional): Whether clip the objects outside
+            the border of the image.  Defaults to True.
         backend (str, optional): Image resize backend, choices are "cv2" and
             "pillow". These two backends generates slightly different results.
             Defaults to 'cv2'.
@@ -804,7 +804,7 @@ class RandomMultiscaleResize(BaseTransform):
     def __init__(self,
                  scales: Union[list, Tuple],
                  keep_ratio: bool = False,
-                 clip_object_border:bool=True,
+                 clip_object_border: bool = True,
                  backend: str = 'cv2',
                  interpolation: str = 'bilinear'):
         super().__init__()
@@ -869,6 +869,7 @@ class RandomMultiscaleResize(BaseTransform):
         repr_str += f', backend={self.backend}'
         repr_str += f', interpolation={self.interpolation}'
         return repr_str
+
 
 @TRANSFORMS.register_module()
 class RandomFlip(BaseTransform):
@@ -945,6 +946,7 @@ class RandomFlip(BaseTransform):
     def bbox_flip(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
+
         Args:
             bboxes (numpy.ndarray): Bounding boxes, shape (..., 4*k)
             img_shape (tuple[int]): Image shape (height, width)
@@ -979,6 +981,7 @@ class RandomFlip(BaseTransform):
     def keypoints_flip(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
                        direction: str) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagnally.
+
         Args:
             keypoints (numpy.ndarray): Keypoints, shape (..., 2)
             img_shape (tuple[int]): Image shape (height, width)
@@ -1070,6 +1073,7 @@ class RandomFlip(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Transform function to flip images, bounding boxes, semantic
         segmentation map and keypoints.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:

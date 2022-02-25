@@ -566,4 +566,3 @@ class TestRandomMultiscaleResize:
         assert results['img'].shape == (150, 200, 3)
         assert np.equal(results['gt_bboxes'], np.array([[100, 75, 300,
                                                          225]])).all()
-
