@@ -3,35 +3,22 @@ import numpy as np
 import inspect
 import copy
 import warnings
-from typing import Any, Callable, Dict, Iterator, Optional, Union
-from types import MethodType
+from typing import Optional, Union
 from collections import OrderedDict
-from poptorch import PoplarExecutor, poptorch_core, __version__, identity_loss, _optimizer_attributes
+from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
-from poptorch.optim import Optimizer
 from mmcv.parallel.data_container import DataContainer
 from .fp16_utils import auto_fp16
 
 
 class DictArgsParser(ArgsParser):
-    def __init__(self, inputs):
+    def __init__(self,inputs):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
         self._varnames = list(inputs.keys())
         self._defaults = [inspect.Parameter.empty for _ in self._varnames]
         self._warned_not_contiguous_input = False
 
-
-# def get_train_step_wrapper(user_model,not_traced_inputs,traced_input_keys):
-#     def train_step_wrapper(inputs_tuple):
-#         # convert tuple back to kwargs
-#         kwargs = {_key:_val for _key,_val in zip(traced_input_keys,inputs_tuple)}
-#         kwargs = {**kwargs, **not_traced_inputs} # add back all inputs that will not be traced
-#         optimizer = kwargs.pop('optimizer')
-#         data = kwargs
-#         outputs = user_model.train_step(data,optimizer)
-#         return outputs
-#     return train_step_wrapper
 
 class TreeManager:
     def __init__(self, logger=None):
