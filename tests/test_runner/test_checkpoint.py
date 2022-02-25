@@ -8,7 +8,6 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tests.pytest_util import mock_package
 from torch.nn.parallel import DataParallel
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -17,6 +16,7 @@ from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
                                     load_from_local, load_from_pavi,
                                     save_checkpoint)
+from tests.pytest_util import mock_package
 
 
 @MODULE_WRAPPERS.register_module()

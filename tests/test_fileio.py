@@ -5,10 +5,10 @@ import tempfile
 from unittest.mock import patch
 
 import pytest
-from tests.pytest_util import mock_package
 
 import mmcv
 from mmcv.fileio.file_client import AWSBackend, HTTPBackend, PetrelBackend
+from tests.pytest_util import mock_package
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):

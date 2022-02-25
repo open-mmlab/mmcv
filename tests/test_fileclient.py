@@ -8,11 +8,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from tests.pytest_util import mock_package
 
 import mmcv
 from mmcv import BaseStorageBackend, FileClient
 from mmcv.utils import has_method
+from tests.pytest_util import mock_package
 
 
 @contextmanager

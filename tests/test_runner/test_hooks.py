@@ -18,7 +18,6 @@ from unittest.mock import MagicMock, Mock, call, patch
 import pytest
 import torch
 import torch.nn as nn
-from tests.pytest_util import mock_package
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
@@ -37,6 +36,7 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 from mmcv.utils import TORCH_VERSION
+from tests.pytest_util import mock_package
 
 
 def test_optimizerhook():

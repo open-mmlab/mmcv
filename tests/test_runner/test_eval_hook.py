@@ -10,7 +10,6 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tests.pytest_util import mock_package
 from torch.utils.data import DataLoader, Dataset
 
 from mmcv.fileio.file_client import FileClient, PetrelBackend
@@ -19,6 +18,7 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner import EvalHook as BaseEvalHook
 from mmcv.runner import IterBasedRunner
 from mmcv.utils import get_logger, scandir
+from tests.pytest_util import mock_package
 
 
 class ExampleDataset(Dataset):
