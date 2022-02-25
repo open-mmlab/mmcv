@@ -26,13 +26,16 @@ void dynamic_voxelize_forward_cpu_kernel(
       coor[ndim_minus_1 - j] = c;
     }
 
-    if (failed)
-      memset(&coors[i][0], -1, NDim * sizeof(T_int));
-    else
-      memcpy(&coors[i][0], &coor[0], NDim * sizeof(T_int));
+    for (int k = 0; k < NDim; ++k) {
+      if (failed)
+        coors[i][k] = -1;
+      else
+        coors[i][k] = coor[k];
+    }
   }
 
   delete[] coor;
+  return;
 }
 
 template <typename T, typename T_int>
@@ -72,14 +75,17 @@ void hard_voxelize_forward_cpu_kernel(
       voxel_num += 1;
 
       coor_to_voxelidx[coor[i][0]][coor[i][1]][coor[i][2]] = voxelidx;
-      memcpy(&coors[voxelidx][0], &coor[i][0], NDim * sizeof(T_int));
+      for (int k = 0; k < NDim; ++k) {
+        coors[voxelidx][k] = coor[i][k];
+      }
     }
 
     // put points into voxel
     num = num_points_per_voxel[voxelidx];
     if (max_points == -1 || num < max_points) {
-      memcpy(&voxels[voxelidx][num][0], &points[i][0],
-             num_features * sizeof(T));
+      for (int k = 0; k < num_features; ++k) {
+        voxels[voxelidx][num][k] = points[i][k];
+      }
       num_points_per_voxel[voxelidx] += 1;
     }
   }
