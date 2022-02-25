@@ -943,7 +943,7 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def bbox_flip(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+    def flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
@@ -978,7 +978,7 @@ class RandomFlip(BaseTransform):
                   or 'diagnal', but got '{direction}'")
         return flipped
 
-    def keypoints_flip(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
+    def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
                        direction: str) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagnally.
 
@@ -1043,13 +1043,13 @@ class RandomFlip(BaseTransform):
 
         # flip bboxes
         if results.get('gt_bboxes', None) is not None:
-            results['gt_bboxes'] = self.bbox_flip(results['gt_bboxes'],
+            results['gt_bboxes'] = self.flip_bbox(results['gt_bboxes'],
                                                   img_shape,
                                                   results['flip_direction'])
 
         # flip keypoints
         if results.get('gt_keypoints', None) is not None:
-            results['gt_keypoints'] = self.keypoints_flip(
+            results['gt_keypoints'] = self.flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip segs
