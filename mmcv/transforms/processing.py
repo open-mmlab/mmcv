@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence, Tuple, Union, Iterable, List
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -477,6 +477,7 @@ class RandomFlip(BaseTransform):
     def bbox_flip(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
+
         Args:
             bboxes (numpy.ndarray): Bounding boxes, shape (..., 4*k)
             img_shape (tuple[int]): Image shape (height, width)
@@ -511,6 +512,7 @@ class RandomFlip(BaseTransform):
     def keypoints_flip(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
                        direction: str) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagnally.
+
         Args:
             keypoints (numpy.ndarray): Keypoints, shape (..., 2)
             img_shape (tuple[int]): Image shape (height, width)
@@ -602,6 +604,7 @@ class RandomFlip(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Transform function to flip images, bounding boxes, semantic
         segmentation map and keypoints.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
@@ -694,6 +697,7 @@ class RandomResize(BaseTransform):
     @staticmethod
     def _random_sample(scales: Sequence[Tuple[int, int]]) -> Tuple[int, int]:
         """Private function to randomly sample a scale from a list of tuples.
+
         Args:
             scales (list[tuple]): Images scale range for sampling.
                 There must be two tuples in scales, which specify the lower
@@ -714,6 +718,7 @@ class RandomResize(BaseTransform):
     def _random_sample_ratio(
             scale: tuple, ratio_range: Tuple[float, float]) -> Tuple[int, int]:
         """Private function to randomly sample a scale from a tuple.
+
         A ratio will be randomly sampled from the range specified by
         ``ratio_range``. Then it would be multiplied with ``scale`` to
         generate sampled scale.
@@ -735,6 +740,7 @@ class RandomResize(BaseTransform):
     def _random_scale(self, results: dict) -> None:
         """Private function to randomly sample an scale according to the type
         of `scale`.
+
         Args:
             results (dict): Result dict from :obj:`dataset`.
         Returns:
@@ -757,6 +763,7 @@ class RandomResize(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Transform function to resize images, bounding boxes, semantic
         segmentation map.
+
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
