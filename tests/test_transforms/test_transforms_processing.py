@@ -18,8 +18,6 @@ else:
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from PIL import Image
 
-from mmcv.utils.registry import build_from_cfg
-
 
 class TestNormalize:
 
@@ -217,27 +215,27 @@ class TestCenterCrop:
         # test assertion if size is smaller than 0
         with pytest.raises(AssertionError):
             transform = dict(type='CenterCrop', crop_size=-1)
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
         # test assertion if size is tuple but one value is smaller than 0
         with pytest.raises(AssertionError):
             transform = dict(type='CenterCrop', crop_size=(224, -1))
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
         # test assertion if size is tuple and len(size) < 2
         with pytest.raises(AssertionError):
             transform = dict(type='CenterCrop', crop_size=(224, ))
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
         # test assertion if size is tuple len(size) > 2
         with pytest.raises(AssertionError):
             transform = dict(type='CenterCrop', crop_size=(224, 224, 3))
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
     def test_repr(self):
         # test repr
         transform = dict(type='CenterCrop', crop_size=224)
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         assert isinstance(repr(center_crop_module), str)
 
     def test_transform(self):
@@ -246,7 +244,7 @@ class TestCenterCrop:
 
         # test CenterCrop when size is int
         transform = dict(type='CenterCrop', crop_size=224)
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = center_crop_module(results)
         assert results['height'] == 224
         assert results['width'] == 224
@@ -254,7 +252,7 @@ class TestCenterCrop:
 
         # test CenterCrop when size is tuple
         transform = dict(type='CenterCrop', crop_size=(224, 224))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 224
@@ -263,7 +261,7 @@ class TestCenterCrop:
 
         # test CenterCrop when crop_height != crop_width
         transform = dict(type='CenterCrop', crop_size=(256, 224))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 256
@@ -273,7 +271,7 @@ class TestCenterCrop:
         # test CenterCrop when crop_size is equal to img.shape
         img_height, img_width, _ = self.original_img.shape
         transform = dict(type='CenterCrop', crop_size=(img_height, img_width))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 300
@@ -283,7 +281,7 @@ class TestCenterCrop:
         # test CenterCrop when crop_size is larger than img.shape
         transform = dict(
             type='CenterCrop', crop_size=(img_height * 2, img_width * 2))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 300
@@ -296,7 +294,7 @@ class TestCenterCrop:
             crop_size=(img_height * 2, img_width // 2),
             pad_mode='constant',
             pad_val=12)
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 600
@@ -308,7 +306,7 @@ class TestCenterCrop:
             crop_size=(img_height * 2, img_width // 2),
             pad_mode='constant',
             pad_val=dict(img=33, seg=33))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 600
@@ -318,7 +316,7 @@ class TestCenterCrop:
         # test CenterCrop when crop_width is smaller than img_width
         transform = dict(
             type='CenterCrop', crop_size=(img_height, img_width // 2))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == img_height
@@ -328,7 +326,7 @@ class TestCenterCrop:
         # test CenterCrop when crop_height is smaller than img_height
         transform = dict(
             type='CenterCrop', crop_size=(img_height // 2, img_width))
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == img_height // 2
@@ -341,7 +339,7 @@ class TestCenterCrop:
         # compare results with torchvision
         results = {}
         transform = dict(type='CenterCrop', crop_size=224)
-        center_crop_module = build_from_cfg(transform, TRANSFORMS)
+        center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         center_crop_module = torchvision.transforms.CenterCrop(size=224)
@@ -365,7 +363,7 @@ class TestRandomGrayscale:
             prob=2,
             channel_weights=(0.299, 0.587, 0.114),
             keep_channel=True)
-        random_gray_scale_module = build_from_cfg(transform, TRANSFORMS)
+        random_gray_scale_module = TRANSFORMS.build(transform)
         assert isinstance(repr(random_gray_scale_module), str)
 
     def test_transform(self):
@@ -377,7 +375,7 @@ class TestRandomGrayscale:
             channel_weights=(0.299, 0.587, 0.114),
             keep_channel=True)
 
-        random_gray_scale_module = build_from_cfg(transform, TRANSFORMS)
+        random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
         img = random_gray_scale_module(results)['img']
         computed_gray = (
@@ -389,7 +387,7 @@ class TestRandomGrayscale:
 
         # test rgb2gray, return the original image with p=-1
         transform = dict(type='RandomGrayscale', prob=-1)
-        random_gray_scale_module = build_from_cfg(transform, TRANSFORMS)
+        random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
         img = random_gray_scale_module(results)['img']
         assert_array_equal(img, self.img)
@@ -398,7 +396,7 @@ class TestRandomGrayscale:
         # test image with one channel
         transform = dict(type='RandomGrayscale', prob=2)
         results['img'] = self.img[:, :, 0:1]
-        random_gray_scale_module = build_from_cfg(transform, TRANSFORMS)
+        random_gray_scale_module = TRANSFORMS.build(transform)
         img = random_gray_scale_module(results)['img']
         assert_array_equal(img, self.img[:, :, 0:1])
         assert img.shape == (10, 10, 1)
@@ -417,13 +415,13 @@ class TestMultiScaleFlipAug:
         with pytest.raises(AssertionError):
             transform = dict(
                 type='MultiScaleFlipAug', img_scale=None, transforms=[])
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
         # test assertion if img_scale is not tuple or list of tuple
         with pytest.raises(AssertionError):
             transform = dict(
                 type='MultiScaleFlipAug', img_scale=[1333, 800], transforms=[])
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
         # test assertion if flip_direction is not str or list of str
         with pytest.raises(AssertionError):
@@ -432,7 +430,7 @@ class TestMultiScaleFlipAug:
                 img_scale=[(1333, 800)],
                 flip_direction=1,
                 transforms=[])
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
     @pytest.mark.skipif(
         condition=torch is None, reason='No torch in current env')
@@ -444,7 +442,7 @@ class TestMultiScaleFlipAug:
             img_scale=[(1333, 800), (800, 600), (640, 480)],
             flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
-        multi_scale_flip_aug_module = build_from_cfg(transform, TRANSFORMS)
+        multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
         results = multi_scale_flip_aug_module(results)
@@ -457,7 +455,7 @@ class TestMultiScaleFlipAug:
             img_scale=[(1333, 800), (800, 600), (640, 480)],
             flip=False,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
-        multi_scale_flip_aug_module = build_from_cfg(transform, TRANSFORMS)
+        multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
         results = multi_scale_flip_aug_module(results)
@@ -479,7 +477,7 @@ class TestMultiScaleFlipAug:
             img_scale=[(1333, 800), (800, 600), (640, 480)],
             flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
-        multi_scale_flip_aug_module = build_from_cfg(transform, TRANSFORMS)
+        multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
         results = multi_scale_flip_aug_module(results)
@@ -502,20 +500,20 @@ class TestRandomMultiscaleResize:
         # test repr
         transform = dict(
             type='RandomMultiscaleResize', scales=[(1333, 800), (1333, 600)])
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         assert isinstance(repr(random_multiscale_resize), str)
 
     def test_error(self):
         # test assertion if size is smaller than 0
         with pytest.raises(AssertionError):
             transform = dict(type='RandomMultiscaleResize', scales=[0.5, 1, 2])
-            build_from_cfg(transform, TRANSFORMS)
+            TRANSFORMS.build(transform)
 
     def test_random_multiscale_resize(self):
         results = dict()
         # test with one scale
         transform = dict(type='RandomMultiscaleResize', scales=[(1333, 800)])
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
         assert results['img'].shape == (800, 1333, 3)
@@ -523,7 +521,7 @@ class TestRandomMultiscaleResize:
         # test with multi scales
         _scale_choice = [(1333, 800), (1333, 600)]
         transform = dict(type='RandomMultiscaleResize', scales=_scale_choice)
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
         assert (results['img'].shape[1],
@@ -534,7 +532,7 @@ class TestRandomMultiscaleResize:
             type='RandomMultiscaleResize',
             scales=[(900, 600)],
             keep_ratio=True)
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         _input_ratio = results['img'].shape[0] / results['img'].shape[1]
         results = random_multiscale_resize(results)
@@ -547,7 +545,7 @@ class TestRandomMultiscaleResize:
             type='RandomMultiscaleResize',
             scales=[(200, 150)],
             clip_object_border=True)
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
         results = random_multiscale_resize(results)
@@ -559,7 +557,7 @@ class TestRandomMultiscaleResize:
             type='RandomMultiscaleResize',
             scales=[(200, 150)],
             clip_object_border=False)
-        random_multiscale_resize = build_from_cfg(transform, TRANSFORMS)
+        random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
         results = random_multiscale_resize(results)
