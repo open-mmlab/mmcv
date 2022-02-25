@@ -11,7 +11,7 @@ def test_dynamic_scatter():
     feats = torch.rand(
         size=(200000, 3), dtype=torch.float32, device='cuda') * 100 - 50
     coors = torch.randint(
-        low=-1, high=20, size=(200000, 3), dtype=torch.int32, device='cuda')
+        low=0, high=20, size=(200000, 3), dtype=torch.int32, device='cuda')
 
     dsmean = DynamicScatter([0.32, 0.32, 6],
                             [-74.88, -74.88, -2, 74.88, 74.88, 4], True)
