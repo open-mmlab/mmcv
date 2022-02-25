@@ -252,13 +252,13 @@ class TestRandomFlip:
         # flip direction is invalid in bbox flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.bbox_flip(results['gt_bboxes'],
+            results_update = TRANSFORMS.flip_bbox(results['gt_bboxes'],
                                                   (224, 224), 'invalid')
 
         # flip direction is invalid in keypoints flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.keypoints_flip(results['gt_keypoints'],
+            results_update = TRANSFORMS.flip_keypoints(results['gt_keypoints'],
                                                        (224, 224), 'invalid')
 
     def test_repr(self):

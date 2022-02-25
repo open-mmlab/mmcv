@@ -40,10 +40,16 @@ def to_tensor(
 
 @TRANSFORMS.register_module()
 class ToTensor(BaseTransform):
-    """Convert some results to :obj:`torch.Tensor` by given keys. Modified
-    Keys:
+    """Convert some results to :obj:`torch.Tensor` by given keys.
 
-        - all these keys in `keys`
+    Required keys:
+
+    - all these keys in `keys`
+
+    Modified Keys:
+
+    - all these keys in `keys`
+
     Args:
         keys (Sequence[str]): Keys that need to be converted to Tensor.
     """
@@ -62,7 +68,8 @@ class ToTensor(BaseTransform):
         for key in self.keys:
             data = self._fetch_data(results, key)
             if data is None:
-                continue
+                raise ValueError(
+                    f'Can not convert {type(data)} to torch.Tensor')
 
             key_list = key.split('.')
             cur_item = results
@@ -84,7 +91,7 @@ class ToTensor(BaseTransform):
             # if current key not in current item, return None
             if single_level_key not in current_item:
                 warnings.warn(f'{self.__class__.__name__}: {key} '
-                              f'is not in input dict.')
+                              f'is not in the input dict.')
                 return None
             current_item = current_item[single_level_key]
 
@@ -96,12 +103,20 @@ class ToTensor(BaseTransform):
 
 @TRANSFORMS.register_module()
 class ImageToTensor(BaseTransform):
-    """Convert image to :obj:`torch.Tensor` by given keys. Modified Keys:
+    """Convert image to :obj:`torch.Tensor` by given keys.
 
-        - all these keys in `keys`
     The dimension order of input image is (H, W, C). The pipeline will convert
     it to (C, H, W). If only 2 dimension (H, W) is given, the output would be
     (1, H, W).
+
+    Required keys:
+
+    - all these keys in `keys`
+
+    Modified Keys:
+
+    - all these keys in `keys`
+
     Args:
         keys (Sequence[str]): Key of images to be converted to Tensor.
     """
@@ -116,7 +131,7 @@ class ImageToTensor(BaseTransform):
             results (dict): Result dict contains the image data to convert.
         Returns:
             dict: The result dict contains the image converted
-            to :obj:`torch.Tensor` and transposed to (C, H, W) order.
+            to :obj:``torch.Tensor`` and transposed to (C, H, W) order.
         """
         for key in self.keys:
             img = results[key]

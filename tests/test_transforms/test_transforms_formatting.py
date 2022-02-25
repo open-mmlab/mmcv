@@ -54,14 +54,15 @@ class TestToTensor:
         assert TRANSFORM.keys == ['img_label']
 
     def test_transform(self):
-        TRANSFORMS = ToTensor(['instances.bbox', 'img_label', 'bbox'])
+        TRANSFORMS = ToTensor(['instances.bbox', 'img_label'])
 
         # Test multi-level key and single-level key (multi-level key is
         # not in results)
-        results = {'instances': {'label': [1]}, 'img_label': [1]}
-        results_tensor = TRANSFORMS.transform(copy.deepcopy(results))
-        assert isinstance(results_tensor['instances']['label'], list)
-        assert isinstance(results_tensor['img_label'], torch.Tensor)
+        with pytest.raises(ValueError):
+            results = {'instances': {'label': [1]}, 'img_label': [1]}
+            results_tensor = TRANSFORMS.transform(copy.deepcopy(results))
+            assert isinstance(results_tensor['instances']['label'], list)
+            assert isinstance(results_tensor['img_label'], torch.Tensor)
 
         # Test multi-level key (multi-level key is in results)
         results = {'instances': {'bbox': [[0, 0, 10, 10]]}, 'img_label': [1]}

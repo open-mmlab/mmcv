@@ -404,38 +404,51 @@ class Pad(BaseTransform):
 
 @TRANSFORMS.register_module()
 class RandomFlip(BaseTransform):
-    """Flip the image & bbox & keypoints & segmentation map. Added or Updated
-    keys: flip, flip_direction, img, gt_bboxes, gt_semantic_seg, and
-    gt_keypoints. There are 3 flip modes:
-     - ``prob`` is float, ``direction`` is string: the image will be
-         ``direction``ly flipped with probability of ``prob`` .
-         E.g., ``prob=0.5``, ``direction='horizontal'``,
-         then image will be horizontally flipped with probability of 0.5.
-     - ``prob`` is float, ``direction`` is list of string: the image will
-         be ``direction[i]``ly flipped with probability of
-         ``prob/len(direction)``.
-         E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
-         then image will be horizontally flipped with probability of 0.25,
-         vertically with probability of 0.25.
-     - ``prob`` is list of float, ``direction`` is list of string:
-         given ``len(prob) == len(direction)``, the image will
-         be ``direction[i]``ly flipped with probability of ``prob[i]``.
-         E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
-         'vertical']``, then image will be horizontally flipped with
-         probability of 0.3, vertically with probability of 0.5.
+    """Flip the image & bbox & keypoints & segmentation map.
+
+    There are 3 flip modes:
+
+    - ``prob`` is float, ``direction`` is string
+
+        the image will be ``direction`` ly flipped with probability
+        of ``prob`` . E.g., ``prob=0.5``, ``direction='horizontal'``,
+        then image will be horizontally flipped with probability of 0.5.
+
+    - ``prob`` is float, ``direction`` is list of string
+
+        the image will be ``direction[i]`` ly flipped with probability of
+        ``prob/len(direction)``. E.g., ``prob=0.5``,
+        ``direction=['horizontal', 'vertical']``, then image will be
+        horizontally flipped with probability of 0.25, vertically with
+        probability of 0.25.
+
+    - ``prob`` is list of float, ``direction`` is list of string
+
+        given ``len(prob) == len(direction)``, the image will
+        be ``direction[i]`` ly flipped with probability of ``prob[i]``.
+        E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
+        'vertical']``, then image will be horizontally flipped with
+        probability of 0.3, vertically with probability of 0.5.
+
     Required Keys:
-        - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+
+    - img
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
     Modified Keys:
-        - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+
+    - img
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
     Added Keys:
-        - flip
-        - flip_direction
+
+    - flip
+    - flip_direction
+
     Args:
          prob (float | list[float], optional): The flipping probability.
              Defaults to None.
@@ -474,7 +487,7 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def bbox_flip(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+    def flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
@@ -488,17 +501,14 @@ class RandomFlip(BaseTransform):
         """
         assert bboxes.shape[-1] % 4 == 0
         flipped = bboxes.copy()
+        h, w = img_shape
         if direction == 'horizontal':
-            w = img_shape[1]
             flipped[..., 0::4] = w - bboxes[..., 2::4]
             flipped[..., 2::4] = w - bboxes[..., 0::4]
         elif direction == 'vertical':
-            h = img_shape[0]
             flipped[..., 1::4] = h - bboxes[..., 3::4]
             flipped[..., 3::4] = h - bboxes[..., 1::4]
         elif direction == 'diagonal':
-            w = img_shape[1]
-            h = img_shape[0]
             flipped[..., 0::4] = w - bboxes[..., 2::4]
             flipped[..., 1::4] = h - bboxes[..., 3::4]
             flipped[..., 2::4] = w - bboxes[..., 0::4]
@@ -509,7 +519,7 @@ class RandomFlip(BaseTransform):
                   or 'diagnal', but got '{direction}'")
         return flipped
 
-    def keypoints_flip(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
+    def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
                        direction: str) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagnally.
 
@@ -574,13 +584,13 @@ class RandomFlip(BaseTransform):
 
         # flip bboxes
         if results.get('gt_bboxes', None) is not None:
-            results['gt_bboxes'] = self.bbox_flip(results['gt_bboxes'],
+            results['gt_bboxes'] = self.flip_bbox(results['gt_bboxes'],
                                                   img_shape,
                                                   results['flip_direction'])
 
         # flip keypoints
         if results.get('gt_keypoints', None) is not None:
-            results['gt_keypoints'] = self.keypoints_flip(
+            results['gt_keypoints'] = self.flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip segs
@@ -627,10 +637,12 @@ class RandomFlip(BaseTransform):
 @TRANSFORMS.register_module()
 class RandomResize(BaseTransform):
     """Random resize images & bbox & keypoints.
+
     Added or updated keys: scale, scale_factor, keep_ratio, img, height, width,
     gt_bboxes, gt_semantic_seg, and gt_keypoints.
     How to choose the target scale to resize the image will follow the rules
     below:
+
     - if `scale` is a list of tuple, the first value of the target scale is
       sampled from [`scale[0][0]`, `scale[1][0]`] uniformally and the second
       value of the target scale is sampled from [`scale[0][1]`, `scale[1][1]`]
@@ -638,20 +650,27 @@ class RandomResize(BaseTransform):
     - if `scale` is a tuple, the first and second values of the target scale
       is equal to the first and second values of `scale` multiplied by a value
       sampled from [`ratio_range[0]`, `ratio_range[1]`] uniformally.
+
     Required Keys:
-        - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+
+    - img
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
     Modified Keys:
-        - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+
+    - img
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
     Added Keys:
-        - scale
-        - scale_factor
-        - keep_ratio
+
+    - scale
+    - scale_factor
+    - keep_ratio
+
     Args:
         scale (tuple or list[tuple]): Images scales for resizing.
             Defaults to None.
