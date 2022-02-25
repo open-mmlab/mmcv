@@ -4,11 +4,11 @@ import warnings
 import numpy as np
 import pytest
 
-from mmcv.transform.base import BaseTransform
-from mmcv.transform.builder import TRANSFORMS
-from mmcv.transform.utils import cache_random_params, cacheable_method
-from mmcv.transform.wrappers import (ApplyToMultiple, Compose, RandomChoice,
-                                     Remap)
+from mmcv.transforms.base import BaseTransform
+from mmcv.transforms.builder import TRANSFORMS
+from mmcv.transforms.utils import cache_random_params, cacheable_method
+from mmcv.transforms.wrappers import (ApplyToMultiple, Compose, RandomChoice,
+                                      Remap)
 
 
 @TRANSFORMS.register_module()
