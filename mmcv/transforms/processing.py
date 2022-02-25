@@ -1,12 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence, Tuple, Union
+import random
+import warnings
+from typing import Dict, List, Optional, Sequence, Tuple, Union, Iterable
 
 import numpy as np
 
 import mmcv
 from mmcv.image.geometric import _scale_size
+from mmcv.utils.registry import build_from_cfg
 from .base import BaseTransform
 from .builder import TRANSFORMS
+from .wrappers import Compose
+
+Number = Union[int, float]
 
 
 @TRANSFORMS.register_module()
@@ -399,4 +405,685 @@ class Pad(BaseTransform):
         repr_str += f'pad_to_square={self.pad_to_square}, '
         repr_str += f'pad_val={self.pad_val}), '
         repr_str += f'padding_mode={self.padding_mode})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class CenterCrop(BaseTransform):
+    """Center crop the image and segmentation mask. If the crop area exceeds
+    the original image and ``pad_mode`` is not None, then pad the original
+    image first.
+
+    Required Key:
+
+    - img
+    - gt_semantic_seg
+
+    Modified Key:
+
+    - img
+    - height
+    - width
+    - gt_semantic_seg
+
+    Added Key:
+
+    - pad_shape
+
+
+    Args:
+        crop_size (Union[int, Tuple[int, int]]):  Expected size after cropping
+            with the format of (h, w). If set to an integer, then cropping
+            height and width are equal to this integer.
+        pad_val (Union[Number, Dict[str, Number]], optional): A dict for
+            padding value. To specify how to set this argument, please see
+            the docstring of class ``Pad``. Defaults to dict(img=0, seg=255).
+        pad_mode (str, optional): Type of padding. Should be: 'constant',
+            'edge', 'reflect' or 'symmetric'. For details, please see the
+            docstring of class ``Pad``. Defaults to 'constant'.
+    """
+
+    def __init__(self,
+                 crop_size: Union[int, Tuple[int, int]],
+                 pad_val: Union[Number, Dict[str,
+                                             Number]] = dict(img=0, seg=255),
+                 pad_mode: Optional[str] = None):
+        super().__init__()
+        assert isinstance(crop_size, int) or (
+            isinstance(crop_size, tuple) and len(crop_size) == 2
+        ), 'The expected crop_size is an integer, or a tuple containing two '
+        'intergers'
+
+        if isinstance(crop_size, int):
+            crop_size = (crop_size, crop_size)
+        assert crop_size[0] > 0 and crop_size[1] > 0
+        self.crop_size = crop_size
+        self.pad_val = pad_val
+        self.pad_mode = pad_mode
+
+    def _crop_img(self, results: dict, bboxes: np.ndarray):
+        if results.get('img', None) is not None:
+            img = mmcv.imcrop(results['img'], bboxes=bboxes)
+            img_shape = img.shape
+            results['img'] = img
+            results['height'] = img_shape[0]
+            results['width'] = img_shape[1]
+            results['pad_shape'] = img_shape
+
+    def _crop_seg_map(self, results: dict, bboxes: np.ndarray):
+        if results.get('gt_semantic_seg', None) is not None:
+            img = mmcv.imcrop(results['gt_semantic_seg'], bboxes=bboxes)
+            results['gt_semantic_seg'] = img
+
+    def transform(self, results: dict) -> dict:
+        """Apply center crop on results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+           dict: Results with CenterCropped image and semantic segmentation
+                map.
+        """
+        crop_height, crop_width = self.crop_size[0], self.crop_size[1]
+
+        assert results.get('img', None) is not None
+        img = results['img']
+        # img.shape has length 2 for grayscale, length 3 for color
+        img_height, img_width = img.shape[:2]
+
+        if crop_height > img_height or crop_width > img_width:
+            if self.pad_mode is not None:
+                # pad the area
+                img_height = max(img_height, crop_height)
+                img_width = max(img_width, crop_width)
+                pad_size = (img_width, img_height)
+                pad_transform = build_from_cfg(
+                    dict(
+                        type='Pad',
+                        size=pad_size,
+                        pad_val=self.pad_val,
+                        padding_mode=self.pad_mode), TRANSFORMS)
+                results = pad_transform(results)
+            else:
+                crop_height = min(crop_height, img_height)
+                crop_width = min(crop_width, img_width)
+
+        y1 = max(0, int(round((img_height - crop_height) / 2.)))
+        x1 = max(0, int(round((img_width - crop_width) / 2.)))
+        y2 = min(img_height, y1 + crop_height) - 1
+        x2 = min(img_width, x1 + crop_width) - 1
+        bboxes = np.array([x1, y1, x2, y2])
+
+        # crop the image
+        self._crop_img(results, bboxes)
+        # crop the gt_semantic_seg
+        self._crop_seg_map(results, bboxes)
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f', crop_size = {self.crop_size}'
+        repr_str += f', pad_val = {self.pad_val}'
+        repr_str += f', pad_mode = {self.pad_mode}'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class RandomGrayscale(BaseTransform):
+    """Randomly convert image to grayscale with a probability.
+
+    Required Key:
+
+    - img
+
+    Modified Key:
+
+    - img
+
+    Added Key:
+
+    - grayscale
+    - grayscale_weights
+
+    Args:
+        prob (float, optional): Probability that image should be converted to
+            grayscale. Defaults to 0.1.
+        keep_channel (bool, optional): Whether keep channel number the same as
+            input. Defaults to False.
+        channel_weights (tuple, optional): Channel weights to compute gray
+            image. Defaults to (1., 1., 1.).
+        color_format (str, optional): Color format set to be any of 'bgr',
+            'rgb', 'hsv' . Defaults to 'bgr'.
+    """
+
+    def __init__(self,
+                 prob: float = 0.1,
+                 keep_channel: bool = False,
+                 channel_weights: Sequence[float] = (1., 1., 1.),
+                 color_format: str = 'bgr'):
+        super().__init__()
+        self.prob = prob
+        self.keep_channel = keep_channel
+        self.channel_weights = channel_weights
+        assert color_format in ['bgr', 'rgb', 'hsv']
+        self.color_format = color_format
+
+    def transform(self, results: dict) -> dict:
+        """Apply random grayscale on results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+           dict: Results with grayscale image.
+        """
+        img = results['img']
+        # convert hsv to bgr
+        if self.color_format == 'hsv':
+            img = mmcv.hsv2bgr(img)
+        num_output_channels = img.shape[2]
+        if random.random() < self.prob:
+            if num_output_channels > 1:
+                assert num_output_channels == len(self.channel_weights)
+                normalized_weights = (np.array(self.channel_weights) /
+                                      sum(self.channel_weights)).reshape(
+                                          1, 1, num_output_channels)
+                img = (normalized_weights * img).sum(axis=2)
+                if self.keep_channel:
+                    img = img[:, :, None]
+                    results['img'] = np.dstack(
+                        [img for _ in range(num_output_channels)])
+                else:
+                    results['img'] = img
+                return results
+        results['img'] = img
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f', prob = {self.prob}'
+        repr_str += f', keep_channel = {self.keep_channel}'
+        repr_str += f', channel_weights = {self.channel_weights}'
+        repr_str += f', color_format = {self.color_format}'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class MultiScaleFlipAug(BaseTransform):
+    """Test-time augmentation with multiple scales and flipping.
+
+    An example configuration is as followed:
+
+    .. code-block::
+
+        dict(
+            type='MultiScaleFlipAug',
+            img_scale=[(1333, 400), (1333, 800)],
+            flip=True,
+            transforms=[
+                dict(type='Normalize', **img_norm_cfg),
+                dict(type='Pad', size_divisor=1),
+                dict(type='ImageToTensor', keys=['img']),
+                dict(type='Collect', keys=['img'])
+            ])
+
+    ``results`` will be resized using all the sizes in ``img_scale``.
+    If ``flip`` is True, then flipped results will also be added into output
+    list.
+
+    For the above configuration, there are four combinations of resize
+    and flip:
+
+    - Resize to (1333, 400) + no flip
+    - Resize to (1333, 400) + flip
+    - Resize to (1333, 800) + no flip
+    - resize to (1333, 800) + flip
+
+    The four results are then transformed with ``transforms`` argument.
+    After that, results are wrapped into lists of the same length as followed:
+
+    .. code-block::
+
+        dict(
+            img=[...],
+            img_shape=[...],
+            scale=[(1333, 400), (1333, 400), (1333, 800), (1333, 800)]
+            flip=[False, True, False, True]
+            ...
+        )
+
+    Required Key: Depending on the requirements of the ``transforms``
+        parameter.
+
+    Modified Key: All output keys of each transform.
+
+    Args:
+        transforms (list[dict]): Transforms to apply in each augmentation.
+        img_scale (tuple | list[tuple] | None): Images scales for resizing.
+        flip (bool): Whether apply flip augmentation. Default: False.
+        flip_direction (str | list[str]): Flip augmentation directions,
+            options are "horizontal", "vertical" and "diagonal". If
+            flip_direction is a list, multiple flip augmentations will be
+            applied. It has no effect when flip == False. Default:
+            "horizontal".
+        resize_cfg (dict, optional):Base config for resizing. Defaults to
+            dict(type='Resize', keep_ratio=True).
+        flip_cfg (dict, optional): Base config for flipping. Defaults to
+            dict(type='RandomFlip').
+    """
+
+    def __init__(self,
+                 transforms: List[dict],
+                 img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
+                 flip: bool = False,
+                 flip_direction: Union[str, List[str]] = 'horizontal',
+                 resize_cfg: dict = dict(type='Resize', keep_ratio=True),
+                 flip_cfg: dict = dict(type='RandomFlip')):
+        super().__init__()
+        self.transforms = Compose(transforms)  # type: ignore
+        assert img_scale is not None
+        self.img_scale = img_scale if isinstance(img_scale,
+                                                 list) else [img_scale]
+        self.scale_key = 'scale'
+        assert mmcv.is_list_of(self.img_scale, tuple)
+
+        self.flip = flip
+        self.flip_direction = flip_direction if isinstance(
+            flip_direction, list) else [flip_direction]
+        assert mmcv.is_list_of(self.flip_direction, str)
+        if not self.flip and self.flip_direction != ['horizontal']:
+            warnings.warn(
+                'flip_direction has no effect when flip is set to False')
+        self.resize_cfg = resize_cfg
+        self.flip_cfg = flip_cfg
+
+    def transform(self, results: dict) -> dict:
+        """Apply test time augment transforms on results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+           dict[str: list]: The augmented data, where each value is wrapped
+               into a list.
+        """
+
+        aug_data = []
+        flip_args = [(False, '')]
+        if self.flip:
+            flip_args += [(True, direction)
+                          for direction in self.flip_direction]
+        for scale in self.img_scale:
+            for flip, direction in flip_args:
+                _resize_cfg = self.resize_cfg.copy()
+                _resize_cfg.update(scale=scale)
+                _resize_flip = [_resize_cfg]
+
+                if flip:
+                    _flip_cfg = self.flip_cfg.copy()
+                    _flip_cfg.update(prob=1.0, direction=direction)
+                    _resize_flip.append(_flip_cfg)
+                else:
+                    results['flip'] = False
+                    results['flip_direction'] = None
+
+                resize_flip = Compose(_resize_flip)
+                _results = results.copy()
+                _results = resize_flip(_results)
+                data = self.transforms(_results)
+                aug_data.append(data)
+        # list of dict to dict of list
+        aug_data_dict = {key: [] for key in aug_data[0]}
+        for data in aug_data:
+            for key, val in data.items():
+                aug_data_dict[key].append(val)
+        return aug_data_dict
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f', transforms={self.transforms}'
+        repr_str += f', img_scale={self.img_scale}'
+        repr_str += f', flip={self.flip}'
+        repr_str += f', flip_direction={self.flip_direction}'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class RandomMultiscaleResize(BaseTransform):
+    """Resize images & bbox & mask from a list of multiple scales.
+
+    This transform resizes the input image to some scale. Bboxes and masks are
+    then resized with the same scale factor. Resize scale will be randomly
+    selected from ``scales``.
+
+    How to choose the target scale to resize the image will follow the rules
+    below:
+    - if `scale` is a list of tuple, the target scale is sampled from the list
+        uniformally.
+    - if `scale` is a tuple, the target scale will be set to the tuple.
+
+    Required Key:
+
+    - img
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
+    Modified Key:
+
+    - img
+    - height
+    - width
+    - gt_bboxes
+    - gt_semantic_seg
+    - gt_keypoints
+
+    Added Key:
+
+    - scale
+    - scale_factor
+    - scale_idx
+    - keep_ratio
+
+
+    Args:
+        scales (Union[list, Tuple]): Images scales for resizing.
+        keep_ratio (bool, optional): Whether to keep the aspect ratio when
+            resizing the image. Defaults to False.
+        clip_object_border (bool, optional): Whether clip the objects outside the
+            border of the image.  Defaults to True.
+        backend (str, optional): Image resize backend, choices are "cv2" and
+            "pillow". These two backends generates slightly different results.
+            Defaults to 'cv2'.
+        interpolation (str, optional): The mode of interpolation, support
+            "bilinear", "bicubic", "nearest". Defaults to "bilinear".
+            Defaults to 'bilinear'.
+    """
+
+    def __init__(self,
+                 scales: Union[list, Tuple],
+                 keep_ratio: bool = False,
+                 clip_object_border:bool=True,
+                 backend: str = 'cv2',
+                 interpolation: str = 'bilinear'):
+        super().__init__()
+        if isinstance(scales, list):
+            self.scales = scales
+        else:
+            self.scales = [scales]
+        assert mmcv.is_list_of(self.scales, tuple)
+        self.keep_ratio = keep_ratio
+        self.clip_object_border = clip_object_border
+        self.backend = backend
+        self.interpolation = interpolation
+
+    @staticmethod
+    def random_select(scales: List[Tuple]) -> Tuple[Number, int]:
+        """Randomly select an img_scale from given candidates.
+
+        Args:
+            scales (list[tuple]): Images scales for selection.
+
+        Returns:
+            (tuple, int): Returns a tuple ``(img_scale, scale_dix)``, \
+                where ``img_scale`` is the selected image scale and \
+                ``scale_idx`` is the selected index in the given candidates.
+        """
+
+        assert mmcv.is_list_of(scales, tuple)
+        scale_idx = np.random.randint(len(scales))
+        scale = scales[scale_idx]
+        return scale, scale_idx
+
+    def transform(self, results: dict) -> dict:
+        """Apply resize transforms on results from a list of scales.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+           dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+                'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
+                and 'keep_ratio' keys are updated in result dict.
+        """
+
+        target_scale, scale_idx = self.random_select(self.scales)
+        resize_transform = build_from_cfg(
+            dict(
+                type='Resize',
+                scale=target_scale,
+                keep_ratio=self.keep_ratio,
+                clip_object_border=self.clip_object_border,
+                backend=self.backend,
+                interpolation=self.interpolation), TRANSFORMS)
+        results = resize_transform(results)
+        results['scale_idx'] = scale_idx
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f', scales={self.scales}'
+        repr_str += f', keep_ratio={self.keep_ratio}'
+        repr_str += f', clip_object_border={self.clip_object_border}'
+        repr_str += f', backend={self.backend}'
+        repr_str += f', interpolation={self.interpolation}'
+        return repr_str
+
+@TRANSFORMS.register_module()
+class RandomFlip(BaseTransform):
+    """Flip the image & bbox & keypoints & segmentation map. Added or Updated
+    keys: flip, flip_direction, img, gt_bboxes, gt_semantic_seg, and
+    gt_keypoints. There are 3 flip modes:
+     - ``prob`` is float, ``direction`` is string: the image will be
+         ``direction``ly flipped with probability of ``prob`` .
+         E.g., ``prob=0.5``, ``direction='horizontal'``,
+         then image will be horizontally flipped with probability of 0.5.
+     - ``prob`` is float, ``direction`` is list of string: the image will
+         be ``direction[i]``ly flipped with probability of
+         ``prob/len(direction)``.
+         E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
+         then image will be horizontally flipped with probability of 0.25,
+         vertically with probability of 0.25.
+     - ``prob`` is list of float, ``direction`` is list of string:
+         given ``len(prob) == len(direction)``, the image will
+         be ``direction[i]``ly flipped with probability of ``prob[i]``.
+         E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
+         'vertical']``, then image will be horizontally flipped with
+         probability of 0.3, vertically with probability of 0.5.
+    Required Keys:
+        - img
+        - gt_bboxes
+        - gt_semantic_seg
+        - gt_keypoints
+    Modified Keys:
+        - img
+        - gt_bboxes
+        - gt_semantic_seg
+        - gt_keypoints
+    Added Keys:
+        - flip
+        - flip_direction
+    Args:
+         prob (float | list[float], optional): The flipping probability.
+             Defaults to None.
+         direction(str | list[str], optional): The flipping direction. Options
+             If input is a list, the length must equal ``prob``. Each
+             element in ``prob`` indicates the flip probability of
+             corresponding direction. Defaults to horizontal.
+    """
+
+    def __init__(
+            self,
+            prob: Optional[Union[float, Iterable[float]]] = None,
+            direction: Union[str,
+                             Sequence[Optional[str]]] = 'horizontal') -> None:
+        if isinstance(prob, list):
+            assert mmcv.is_list_of(prob, float)
+            assert 0 <= sum(prob) <= 1
+        elif isinstance(prob, float):
+            assert 0 <= prob <= 1
+        else:
+            raise ValueError(f"probs must be float or list of float, but \
+                              got '{type(prob)}'.")
+        self.prob = prob
+
+        valid_directions = ['horizontal', 'vertical', 'diagonal']
+        if isinstance(direction, str):
+            assert direction in valid_directions
+        elif isinstance(direction, list):
+            assert mmcv.is_list_of(direction, str)
+            assert set(direction).issubset(set(valid_directions))
+        else:
+            raise ValueError(f"direction must be either str or list of str, \
+                               but got '{type(direction)}'.")
+        self.direction = direction
+
+        if isinstance(prob, list):
+            assert len(prob) == len(self.direction)
+
+    def bbox_flip(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+                  direction: str) -> np.ndarray:
+        """Flip bboxes horizontally.
+        Args:
+            bboxes (numpy.ndarray): Bounding boxes, shape (..., 4*k)
+            img_shape (tuple[int]): Image shape (height, width)
+            direction (str): Flip direction. Options are 'horizontal',
+                'vertical'.
+        Returns:
+            numpy.ndarray: Flipped bounding boxes.
+        """
+        assert bboxes.shape[-1] % 4 == 0
+        flipped = bboxes.copy()
+        if direction == 'horizontal':
+            w = img_shape[1]
+            flipped[..., 0::4] = w - bboxes[..., 2::4]
+            flipped[..., 2::4] = w - bboxes[..., 0::4]
+        elif direction == 'vertical':
+            h = img_shape[0]
+            flipped[..., 1::4] = h - bboxes[..., 3::4]
+            flipped[..., 3::4] = h - bboxes[..., 1::4]
+        elif direction == 'diagonal':
+            w = img_shape[1]
+            h = img_shape[0]
+            flipped[..., 0::4] = w - bboxes[..., 2::4]
+            flipped[..., 1::4] = h - bboxes[..., 3::4]
+            flipped[..., 2::4] = w - bboxes[..., 0::4]
+            flipped[..., 3::4] = h - bboxes[..., 1::4]
+        else:
+            raise ValueError(
+                f"Flipping direction must be 'horizontal', 'vertical', \
+                  or 'diagnal', but got '{direction}'")
+        return flipped
+
+    def keypoints_flip(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
+                       direction: str) -> np.ndarray:
+        """Flip keypoints horizontally, vertically or diagnally.
+        Args:
+            keypoints (numpy.ndarray): Keypoints, shape (..., 2)
+            img_shape (tuple[int]): Image shape (height, width)
+            direction (str): Flip direction. Options are 'horizontal',
+                'vertical'.
+        Returns:
+            numpy.ndarray: Flipped keypoints.
+        """
+
+        meta_info = keypoints[..., 2:]
+        keypoints = keypoints[..., :2]
+        flipped = keypoints.copy()
+        h, w = img_shape
+        if direction == 'horizontal':
+            flipped[..., 0::2] = w - keypoints[..., 0::2]
+        elif direction == 'vertical':
+            flipped[..., 1::2] = h - keypoints[..., 1::2]
+        elif direction == 'diagonal':
+            flipped[..., 0::2] = w - keypoints[..., 0::2]
+            flipped[..., 1::2] = h - keypoints[..., 1::2]
+        else:
+            raise ValueError(
+                f"Flipping direction must be 'horizontal', 'vertical', \
+                  or 'diagnal', but got '{direction}'")
+        flipped = np.concatenate([keypoints, meta_info], axis=-1)
+        return flipped
+
+    def _choose_direction(self) -> str:
+        """Choose the flip direction according to `prob` and `direction`"""
+        if isinstance(self.direction,
+                      Sequence) and not isinstance(self.direction, str):
+            # None means non-flip
+            direction_list: list = list(self.direction) + [None]
+        elif isinstance(self.direction, str):
+            # None means non-flip
+            direction_list = [self.direction, None]
+
+        if isinstance(self.prob, list):
+            non_prob: float = 1 - sum(self.prob)
+            prob_list = self.prob + [non_prob]
+        elif isinstance(self.prob, float):
+            non_prob = 1. - self.prob
+            # exclude non-flip
+            single_ratio = self.prob / (len(direction_list) - 1)
+            prob_list = [single_ratio] * (len(direction_list) - 1) + [non_prob]
+
+        cur_dir = np.random.choice(direction_list, p=prob_list)
+
+        return cur_dir
+
+    def _flip(self, results: dict) -> None:
+        """Flip images, bounding boxes, semantic segmentation map and
+        keypoints."""
+        # flip image
+        results['img'] = mmcv.imflip(
+            results['img'], direction=results['flip_direction'])
+
+        img_shape = results['img'].shape[:2]
+
+        # flip bboxes
+        if results.get('gt_bboxes', None) is not None:
+            results['gt_bboxes'] = self.bbox_flip(results['gt_bboxes'],
+                                                  img_shape,
+                                                  results['flip_direction'])
+
+        # flip keypoints
+        if results.get('gt_keypoints', None) is not None:
+            results['gt_keypoints'] = self.keypoints_flip(
+                results['gt_keypoints'], img_shape, results['flip_direction'])
+
+        # flip segs
+        if results.get('gt_semantic_seg', None) is not None:
+            results['gt_semantic_seg'] = mmcv.imflip(
+                results['gt_semantic_seg'],
+                direction=results['flip_direction'])
+
+    def _flip_with_flip_direction(self, results: dict) -> None:
+        """Function to flip images, bounding boxes, semantic segmentation map
+        and keypoints."""
+        cur_dir = self._choose_direction()
+        if cur_dir is None:
+            results['flip'] = False
+            results['flip_direction'] = None
+        else:
+            results['flip'] = True
+            results['flip_direction'] = cur_dir
+            self._flip(results)
+
+    def transform(self, results: dict) -> dict:
+        """Transform function to flip images, bounding boxes, semantic
+        segmentation map and keypoints.
+        Args:
+            results (dict): Result dict from loading pipeline.
+        Returns:
+            dict: Flipped results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+            'gt_keypoints', 'flip', and 'flip_direction' keys are
+            updated in result dict.
+        """
+        self._flip_with_flip_direction(results)
+
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(scale={self.prob}, '
+        repr_str += f'interpolation={self.direction})'
+
         return repr_str
