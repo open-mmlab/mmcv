@@ -771,17 +771,12 @@ class FileClient:
         'petrel': PetrelBackend,
         'http': HTTPBackend,
     }
-    # This collection is used to record the overridden backends, and when a
-    # backend appears in the collection, the singleton pattern is disabled for
-    # that backend, because if the singleton pattern is used, then the object
-    # returned will be the backend before overwriting
-    _overridden_backends = set()
+
     _prefix_to_backends = {
         's3': PetrelBackend,
         'http': HTTPBackend,
         'https': HTTPBackend,
     }
-    _overridden_prefixes = set()
 
     _instances = {}
 
@@ -805,21 +800,16 @@ class FileClient:
 
         # if a backend was overridden, it will create a new object
         if arg_key in cls._instances:
-            if backend in cls._overridden_backends:
-                cls._overridden_backends.pop(backend)
-            elif prefix in cls._overridden_prefixes:
-                cls._overridden_prefixes.pop(prefix)
-            else:
-                return cls._instances[arg_key]
-
-        # create a new object and put it to _instance
-        _instance = super().__new__(cls)
-        if backend is not None:
-            _instance.client = cls._backends[backend](**kwargs)
+            _instance = cls._instances[arg_key]
         else:
-            _instance.client = cls._prefix_to_backends[prefix](**kwargs)
+            # create a new object and put it to _instance
+            _instance = super().__new__(cls)
+            if backend is not None:
+                _instance.client = cls._backends[backend](**kwargs)
+            else:
+                _instance.client = cls._prefix_to_backends[prefix](**kwargs)
 
-        cls._instances[arg_key] = _instance
+            cls._instances[arg_key] = _instance
 
         return _instance
 
@@ -903,7 +893,12 @@ class FileClient:
                 'add "force=True" if you want to override it')
 
         if name in cls._backends and force:
-            cls._overridden_backends.add(name)
+            clear_key = [
+                arg_key for arg_key, instance in cls._instances.items()
+                if isinstance(instance, cls._backends[name])
+            ]
+            for key in clear_key:
+                cls._instances.pop(key)
         cls._backends[name] = backend
 
         if prefixes is not None:
@@ -915,7 +910,16 @@ class FileClient:
                 if prefix not in cls._prefix_to_backends:
                     cls._prefix_to_backends[prefix] = backend
                 elif (prefix in cls._prefix_to_backends) and force:
-                    cls._overridden_prefixes.add(prefix)
+                    clear_backend = cls._prefix_to_backends[name]
+                    if isinstance(clear_backend, list):
+                        clear_backend = tuple(clear_backend)
+                    clear_key = [
+                        arg_key
+                        for arg_key, instance in cls._instances.items()
+                        if isinstance(instance, clear_backend)
+                    ]
+                    for key in clear_key:
+                        cls._instances.pop(key)
                     cls._prefix_to_backends[prefix] = backend
                 else:
                     raise KeyError(
