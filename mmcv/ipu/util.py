@@ -117,7 +117,7 @@ def _parse_ipu_options(ipu_options):
     return opts
 
 
-def ipu_model_wrapper(model, opts, optimizer, logger=None, modules_to_record=[], pipeline_cfg={}, fp16_cfg=None):
+def ipu_model_wrapper(model, opts, optimizer=None, logger=None, modules_to_record=[], pipeline_cfg={}, fp16_cfg=None):
     # TrainEvalModel will shallow copy the model, so any changes to the model must be placed before TrainEvalModel
     # set mixed-precision
     if fp16_cfg is not None:
@@ -128,8 +128,11 @@ def ipu_model_wrapper(model, opts, optimizer, logger=None, modules_to_record=[],
         optimizer.loss_scaling = loss_scale
 
     # set model partition
-    train_model = model_sharding(copy.copy(model), pipeline_cfg.get('train_split_edges', []))  # split model into multi-ipus if specified
-    eval_model = model_sharding(copy.copy(model), pipeline_cfg.get('eval_split_edges', []))  # split model into multi-ipus if specified
+    if optimizer is None:
+        train_model = None
+    else:
+        train_model = model_sharding(copy.copy(model).train(), pipeline_cfg.get('train_split_edges', []))  # split model into multi-ipus if specified
+    eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get('eval_split_edges', []))  # split model into multi-ipus if specified
     
     # wrap model for compilation
     model = TrainEvalModel(train_model, eval_model, options=opts, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)

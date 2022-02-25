@@ -36,10 +36,20 @@ class DictArgsParser(ArgsParser):
 class TreeManager:
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
-        self.logger = logger
-        self.logger_on = False if logger is None else True 
+        self.warning = warnings.warn if logger is None else logger.warning
+        # self.logger_on = False if logger is None else True 
         self.keys_of_changed_vals = []
-        self.data_not_in_dict_changed = False
+        self.non_dict_element_changed = False
+        self.logger_on = True
+
+    def logger_off(self,):
+        self.logger_on = False
+    
+    def compare_fixed_type(self, a, b):
+        if isinstance(a, np.ndarray):
+            return np.all(a==b)
+        else:
+            return a==b
 
     def set_tree(self, _tree):
         # _tree: A composite data type containing dictionaries, lists, tensors and basic python data types
@@ -75,25 +85,18 @@ class TreeManager:
                 else:
                     self.update(treeA[k], treeB[k], strict, key, address=new_address)
         elif isinstance(treeA, self.fixed_data_types):
-            if strict:
-                assert treeA==treeB, 'all data except torch.Tensor should be same, but data({}) is changed'.format(address)
-            elif self.logger_on:
-                if key is None and not self.data_not_in_dict_changed:
-                    self.logger.info('find a non-torch.Tensor data changed')
-                    self.data_not_in_dict_changed = True
-                elif key not in self.keys_of_changed_vals:
-                    self.logger.warning('find a non-torch.Tensor data changed, and the key is {}'.format(str(key)))
-                    self.keys_of_changed_vals.append(key)
+            if self.logger_on:
+                is_equal = self.compare_fixed_type(treeA, treeB)
+                if strict:
+                    assert is_equal, 'all data except torch.Tensor should be same, but data({}) is changed'.format(address)
                 else:
-                    pass
-            else:
-                raise RuntimeError("find a non-torch.Tensor data changed, and no logger record this problem")
+                    self.warning('find a non-torch.Tensor data({}) changed, and the adress is {}'.format(str(type(treeA)),str(address)))
         elif isinstance(treeA, DataContainer):
             assert isinstance(treeB, DataContainer)
             new_address = address + '.data'
             self.update(treeA.data, treeB.data, False, address=new_address)
         else:
-            raise NotImplementedError('not supported datatype:{}'.format(str(treeA)))
+            raise NotImplementedError('not supported datatype:{}, address is {}'.format(str(treeA), address))
     
     def get_tensors(self,):
         # get a list of tensor from self._tree
@@ -336,6 +339,10 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             assert type(mmcv_model_output['output of WrappedNet: single tensor']) == torch.Tensor
             mmcv_model_output = mmcv_model_output['output of WrappedNet: single tensor']
 
+        # turn logger in tree manager off after compilation
+        self.inputs_tree_manager.logger_off()
+        self.outputs_tree_manager.logger_off()
+
         return mmcv_model_output
 
     def train_step(self, data, optimizer=None, **kwargs):
@@ -400,9 +407,13 @@ def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
 
 class TrainEvalModel:
     def __init__(self, train_model, eval_model, options, optimizer, modules_to_record=[], logger=None):
-        self._train_executor = trainingModel(train_model, options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+        if train_model is None:
+            self._train_executor = None
+            self.training = False
+        else:
+            self._train_executor = trainingModel(train_model, options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+            self.training = True
         self._eval_executor = inferenceModel(eval_model, options=options['inference'], logger=logger)
-        self.training = True
 
     @property
     def executor(self,):
@@ -428,6 +439,8 @@ class TrainEvalModel:
         """
         if not isinstance(mode, bool):
             raise ValueError("training mode is expected to be boolean")
+        if self._train_executor is None and mode is True:
+            raise RuntimeError('The train_executor is not initialized. If you want to initialize train_executor, you need to input optimizer when converting pytorch model')
         if mode == self.training:
             return self
         else:
