@@ -1,21 +1,17 @@
-import warnings
-
 from mmcv.utils import TORCH_VERSION, digit_version
 from mmcv.runner.hooks import HOOKS, OptimizerHook
-# TODO import optimizer hook from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import Fp16OptimizerHook
-except ImportError:
-    warnings.warn('DeprecationWarning: FP16OptimizerHook from mmcls will be '
-                  'deprecated. Please install mmcv>=1.1.4.')
-    from mmcls.core import Fp16OptimizerHook
+
 
 def wrap_optimizer_hook(optimizer_hook_class,):
-    assert optimizer_hook_class == OptimizerHook, "OptimizerHook type used is:{}, not supported now".format(str(optimizer_hook_class))
+    assert optimizer_hook_class == OptimizerHook,\
+        "OptimizerHook type used is:{}, not supported now".format(
+            str(optimizer_hook_class))
+
     class ipu_optimizer_hook_class(OptimizerHook):
         def after_train_iter(self, runner):
             if self.detect_anomalous_params:
-                self.detect_anomalous_parameters(runner.outputs['loss'], runner)
+                self.detect_anomalous_parameters(
+                    runner.outputs['loss'], runner)
             if self.grad_clip is not None:
                 raise NotImplementedError('IPU not supports gradient clip now')
     return ipu_optimizer_hook_class
@@ -58,17 +54,22 @@ if (TORCH_VERSION != 'parrots'
                      bucket_size_mb=-1,
                      loss_scale=512.,
                      distributed=True):
-            assert grad_clip is None, 'IPU mode not support grad_clip currently'
-            assert coalesce, 'implemented all reduce in distributed training currently'
-            assert bucket_size_mb == -1, "no bucket_size_mb can be set in IPU mode"
+            assert grad_clip is None,\
+                'IPU mode not support grad_clip currently'
+            assert coalesce,\
+                'implemented all reduce in distributed training currently'
+            assert bucket_size_mb == -1,\
+                "no bucket_size_mb can be set in IPU mode"
             self.distributed = distributed
             self._scale_update_param = None
             if loss_scale == 'dynamic':
-                raise NotImplementedError('IPU mode not support dynamic loss scale currently')
+                raise NotImplementedError(
+                    'IPU mode not support dynamic loss scale currently')
             elif isinstance(loss_scale, float):
                 self.loss_scale = loss_scale
             elif isinstance(loss_scale, dict):
-                raise NotImplementedError('IPU mode support single scale currently')
+                raise NotImplementedError(
+                    'IPU mode support single scale currently')
             else:
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
@@ -82,6 +83,6 @@ if (TORCH_VERSION != 'parrots'
 
         def after_train_iter(self, runner):
             pass
-        
+
 else:
     raise RuntimeError('The IPU mode only supports torch1.10 and above')

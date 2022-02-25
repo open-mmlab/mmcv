@@ -1,4 +1,5 @@
 import torch
+import poptorch
 import numpy as np
 import inspect
 import copy
@@ -12,7 +13,7 @@ from .fp16_utils import auto_fp16
 
 
 class DictArgsParser(ArgsParser):
-    def __init__(self,inputs):
+    def __init__(self, inputs):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
         self._varnames = list(inputs.keys())
@@ -24,23 +25,24 @@ class TreeManager:
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
-        # self.logger_on = False if logger is None else True 
+        # self.logger_on = False if logger is None else True
         self.keys_of_changed_vals = []
         self.non_dict_element_changed = False
         self.logger_on = True
 
     def logger_off(self,):
         self.logger_on = False
-    
+
     def compare_fixed_type(self, a, b):
         if isinstance(a, np.ndarray):
-            return np.all(a==b)
+            return np.all(a == b)
         else:
-            return a==b
+            return a == b
 
     def set_tree(self, _tree):
-        # _tree: A composite data type containing dictionaries, lists, tensors and basic python data types
-        if hasattr(self,'_tree'):
+        # _tree: A composite data type containing dictionaries, lists,
+        # tensors and basic python data types
+        if hasattr(self, '_tree'):
             if isinstance(_tree, torch.Tensor):
                 assert type(self._tree) == torch.Tensor
                 self._tree = _tree
@@ -48,43 +50,61 @@ class TreeManager:
                 self.update(_tree)
         else:
             self._tree = _tree
-    
+
     def get_tree(self,):
         return self._tree
 
-    def update(self, treeA, treeB='TreeManagerNone', strict=True, key=None, address='data'):
+    def update(
+            self,
+            treeA,
+            treeB='TreeManagerNone',
+            strict=True,
+            key=None,
+            address='data'
+            ):
         treeB = self._tree if treeB == 'TreeManagerNone' else treeB
-        # Update with a tree with the same structure but different values(tensors and basic python data types)
-        if isinstance(treeA, (tuple,list)):
+        # Update with a tree with the same structure
+        # but different values(tensors and basic python data types)
+        if isinstance(treeA, (tuple, list)):
             for idx in range(len(treeA)):
                 new_address = address+'[{}]'.format(str(idx))
-                assert isinstance(treeA[idx],type(treeB[idx])), 'data structure changed: {}'.format(new_address)
-                if isinstance(treeA[idx],torch.Tensor):
+                assert isinstance(treeA[idx], type(treeB[idx])),\
+                    'data structure changed: {}'.format(new_address)
+                if isinstance(treeA[idx], torch.Tensor):
                     treeB[idx] = treeA[idx]
                 else:
-                    self.update(treeA[idx], treeB[idx], strict, address=new_address)
+                    self.update(treeA[idx], treeB[idx],
+                                strict, address=new_address)
         elif isinstance(treeA, dict):
-            for k,v in treeA.items():
+            for k, v in treeA.items():
                 new_address = address + '[{}]'.format(str(k))
-                assert isinstance(treeA[k],type(treeB[k])), 'data structure changed: {}'.format(new_address)
-                if isinstance(v,torch.Tensor):
+                assert isinstance(treeA[k], type(treeB[k])),\
+                    'data structure changed: {}'.format(new_address)
+                if isinstance(v, torch.Tensor):
                     treeB[k] = treeA[k]
                 else:
-                    self.update(treeA[k], treeB[k], strict, key, address=new_address)
+                    self.update(treeA[k], treeB[k], strict,
+                                key, address=new_address)
         elif isinstance(treeA, self.fixed_data_types):
             if self.logger_on:
                 is_equal = self.compare_fixed_type(treeA, treeB)
                 if strict:
-                    assert is_equal, 'all data except torch.Tensor should be same, but data({}) is changed'.format(address)
+                    assert is_equal, 'all data except torch.Tensor '\
+                        'should be same, but data({}) is changed'.\
+                        format(address)
                 else:
-                    self.warning('find a non-torch.Tensor data({}) changed, and the adress is {}'.format(str(type(treeA)),str(address)))
+                    self.warning('find a non-torch.Tensor data({}) '
+                                 'changed, and the adress is {}'.format(
+                                     str(type(treeA)), str(address)))
         elif isinstance(treeA, DataContainer):
             assert isinstance(treeB, DataContainer)
             new_address = address + '.data'
             self.update(treeA.data, treeB.data, False, address=new_address)
         else:
-            raise NotImplementedError('not supported datatype:{}, address is {}'.format(str(treeA), address))
-    
+            raise NotImplementedError(
+                'not supported datatype:{}, address is {}'
+                .format(str(treeA), address))
+
     def get_tensors(self,):
         # get a list of tensor from self._tree
         tensors = []
@@ -95,25 +115,26 @@ class TreeManager:
         return tensors
 
     def _get_tensors(self, _tree, tensors):
-        if isinstance(_tree, (tuple,list)):
+        if isinstance(_tree, (tuple, list)):
             for idx in range(len(_tree)):
-                if isinstance(_tree[idx],torch.Tensor):
+                if isinstance(_tree[idx], torch.Tensor):
                     tensors.append(_tree[idx])
                 else:
-                    self._get_tensors(_tree[idx],tensors)
+                    self._get_tensors(_tree[idx], tensors)
         elif isinstance(_tree, dict):
-            for k,v in _tree.items():
-                if isinstance(v,torch.Tensor):
+            for k, v in _tree.items():
+                if isinstance(v, torch.Tensor):
                     tensors.append(_tree[k])
                 else:
-                    self._get_tensors(_tree[k],tensors)
+                    self._get_tensors(_tree[k], tensors)
         elif isinstance(_tree, self.fixed_data_types):
             pass
         elif isinstance(_tree, DataContainer):
-            self._get_tensors(_tree.data,tensors)
+            self._get_tensors(_tree.data, tensors)
         else:
-            raise NotImplementedError('not supported datatype:{}'.format(str(_tree)))
-    
+            raise NotImplementedError(
+                'not supported datatype:{}'.format(str(_tree)))
+
     def set_tensors(self, tensors):
         if type(self._tree) == torch.Tensor:
             assert len(tensors) == 1
@@ -122,40 +143,50 @@ class TreeManager:
         else:
             self._set_tensors(self._tree, tensors)
         return self._tree
-    
+
     def _set_tensors(self, _tree, tensors):
-        if isinstance(_tree, (tuple,list)):
+        if isinstance(_tree, (tuple, list)):
             for idx in range(len(_tree)):
-                if isinstance(_tree[idx],torch.Tensor):
+                if isinstance(_tree[idx], torch.Tensor):
                     _tree[idx] = tensors.pop(0)
                 else:
-                    self._set_tensors(_tree[idx],tensors)
+                    self._set_tensors(_tree[idx], tensors)
         elif isinstance(_tree, dict):
-            for k,v in _tree.items():
-                if isinstance(v,torch.Tensor):
+            for k, v in _tree.items():
+                if isinstance(v, torch.Tensor):
                     _tree[k] = tensors.pop(0)
                 else:
-                    self._set_tensors(_tree[k],tensors)
+                    self._set_tensors(_tree[k], tensors)
         elif isinstance(_tree, self.fixed_data_types):
             pass
         elif isinstance(_tree, DataContainer):
-            self._set_tensors(_tree.data,tensors)
+            self._set_tensors(_tree.data, tensors)
         else:
-            raise NotImplementedError('not supported datatype:{}'.format(str(_tree)))   
+            raise NotImplementedError(
+                'not supported datatype:{}'.format(str(_tree)))
 
 
 class WrappedNet(torch.nn.Module):
-    def __init__(self, model, inputs_tree_manager, outputs_tree_manager, modules_to_record=[],hooked_features={}):
+    def __init__(
+            self,
+            model,
+            inputs_tree_manager,
+            outputs_tree_manager,
+            modules_to_record=[],
+            hooked_features={}
+            ):
         super().__init__()
         self.model = model
         self.inputs_tree_manager = inputs_tree_manager
         self.outputs_tree_manager = outputs_tree_manager
         self.training = model.training
-        # Register a hook function to capture the intermediate features generated by the network to align the outputs between ipu and cpu
+        # Register a hook function to capture the intermediate features
+        # generated by the network to align the outputs between ipu and cpu
         self.hooked_features = hooked_features
         for idx, (_name, _module) in enumerate(model.named_modules()):
             if _name in modules_to_record or idx in modules_to_record:
-                _features_hook = self.get_input_output_hook(_name, idx, self.hooked_features)
+                _features_hook = self.get_input_output_hook(
+                    _name, idx, self.hooked_features)
                 _module.register_forward_hook(hook=_features_hook)
 
     def get_input_output_hook(self, name, idx, save_dic):
@@ -164,7 +195,7 @@ class WrappedNet(torch.nn.Module):
                 fea_in = list(fea_in)
             if isinstance(fea_out, tuple):
                 fea_out = list(fea_out)
-            save_dic[name] = {'fea_in':fea_in, 'fea_out':fea_out, 'idx': idx}
+            save_dic[name] = {'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
             return None
         return input_output_hook
 
@@ -177,17 +208,18 @@ class WrappedNet(torch.nn.Module):
             # kwargs['img'] = kwargs['img'].float()
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
-            identity_loss(outputs['loss'],reduction='none')
+            identity_loss(outputs['loss'], reduction='none')
         else:
             outputs = self.forward_eval(kwargs)
-            
+
         if isinstance(outputs, torch.Tensor):
-            # currently not support single tensor output, need to wrap it with a dictionary, use a key word to identify this situation
+            # currently not support single tensor output,
+            # need to wrap it with a dictionary,
+            # use a keyword to identify this case
             outputs = {'output of WrappedNet: single tensor': outputs}
 
         # if there are some features need to be record, add extra outputs
         for _name in self.hooked_features:
-            # feat_in, feat_out, idx = _dic['feat_in'], _dic['feat_out'], _dic['idx']
             outputs[_name] = self.hooked_features[_name]
 
         # record all the places of return tensors in the converting stage
@@ -200,7 +232,7 @@ class WrappedNet(torch.nn.Module):
     def forward_train(self, kwargs):
         optimizer = kwargs.pop('optimizer')
         data = kwargs
-        outputs = self.train_step(data,optimizer)
+        outputs = self.train_step(data, optimizer)
         return outputs
 
     def train_step(self, data, optimizer=None, **kwargs):
@@ -253,7 +285,7 @@ class WrappedNet(torch.nn.Module):
         loss = sum(_value for _key, _value in log_vars.items()
                    if 'loss' in _key)
         log_vars['loss'] = loss
-        
+
         return loss, log_vars
 
     def forward_eval(self, kwargs):
@@ -261,29 +293,49 @@ class WrappedNet(torch.nn.Module):
         img_metas = kwargs.pop('img_metas')
         return_loss = kwargs.pop('return_loss')
         assert not return_loss
-        # TODO Temporarily hard-code to close post_process, otherwise, in the third trace, that is, _check_trace, post_process cannot detect the tracing state of jit, resulting in the automatic conversion of output tensor to numpy array, resulting in _check_trace failure
-        outputs = self.model(img, img_metas=img_metas, return_loss=return_loss, post_process=False)
+        # TODO Temporarily hard-code to close post_process,
+        # otherwise, in the third trace(_check_trace),
+        # post_process will convert output tensor to numpy array automaticly,
+        # resulting in _check_trace failure
+        outputs = self.model(img, img_metas=img_metas,
+                             return_loss=return_loss, post_process=False)
         return outputs
 
 
 class PoplarExecutorForMMCV(PoplarExecutor):
-    def __init__(self, model, logger=None, training=True, modules_to_record=[], *args, **kwargs):
+    def __init__(
+            self,
+            model,
+            logger=None,
+            training=True,
+            modules_to_record=[],
+            *args,
+            **kwargs
+            ):
         # self.model == self._user_model: input pytorch model
-        # self._model: wrapped model which is used to compile and update weights
-        # these two models use same weights
-        self.inputs_tree_manager = TreeManager(logger=logger) # wrapped model only accept and output tuple, so TreeManager will convert dictionary to tuple and convert them back
+        # self._model: wrapped model which is used to compile
+        # and update weights, these two models use same weights
+        # wrapped model only accept and output tuple,
+        # so TreeManager will convert dictionary to tuple and convert them back
+        self.inputs_tree_manager = TreeManager(logger=logger)
         self.outputs_tree_manager = TreeManager(logger=logger)
         self.logger = logger
         self.hooked_features = {}
         self.hooked_features_ipu = {}
-        self.compare_with_cpu = True if len(modules_to_record)>0 else False
-        # move model.fp16_enabled to self.fp16_enabled, modify the position where the input is automatically casted to half
+        self.compare_with_cpu = True if len(modules_to_record) > 0 else False
+        # move model.fp16_enabled to self.fp16_enabled,
+        # modify the position where the input is automatically casted to half
         if getattr(model, 'fp16_enabled', False):
             model.fp16_enabled = False
             self.fp16_enabled = True
-        model = WrappedNet(model, self.inputs_tree_manager, self.outputs_tree_manager, modules_to_record=modules_to_record, hooked_features=self.hooked_features) # make torch.jit.trace convert self._model
+        # make torch.jit.trace convert self._model
+        model = WrappedNet(model, self.inputs_tree_manager,
+                           self.outputs_tree_manager,
+                           modules_to_record=modules_to_record,
+                           hooked_features=self.hooked_features)
         super().__init__(model, training=training, *args, **kwargs)
-        self._args_parser = None # overwrite self._args_parser in train_step or val_step
+        # overwrite self._args_parser in train_step or val_step
+        self._args_parser = None
         if training:
             assert self.training
         else:
@@ -291,29 +343,41 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
     @property
     def training(self,):
-        # If trying to get the attribute training of self, since the class has no training attribute, it will automatically look for the training attribute of self.model. However, the real attribute we want to check is self._training, self.model.training  and self._training are often inconsistent. It is not clear whether it is a Poptorch bug or a special design, temporarily use this function to fix the problem
-        return self._training # comes from self.model._training
+        # If trying to get the attribute(training) of self,
+        # since the class has no training attribute,
+        # it will automatically look for the training attribute of self.model.
+        # However, the real attribute we want to check is self._training,
+        # self.model.training  and self._training are often inconsistent.
+        # It is not clear whether it is a Poptorch bug or a special design,
+        # temporarily use this function to fix the problem
+        return self._training  # comes from self.model._training
 
     @auto_fp16()
     def run_model(self, data_dict):
-        # this function used to parse input_dict and convert to output_dict
+        # this function used to parse input_dict
+        # and convert to output_dict
 
         # get tensors out of data and put them in a tuple
         self.inputs_tree_manager.set_tree(data_dict)
         inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
 
         # parser args for first iter
-        self._args_parser = DictArgsParser({'args':inputs_tuple}) if self._args_parser is None else self._args_parser
+        self._args_parser = DictArgsParser(
+            {'args': inputs_tuple}) if self._args_parser is None\
+            else self._args_parser
 
-        # run or convert model, the plain_outputs will be used in converting stage
+        # run or convert model
+        # the plain_outputs will be used in converting stage
         plain_outputs = self(inputs_tuple)
 
-        # put list of tensors back to the output dict according to the same order
+        # put list of tensors back to the output dict
+        # according to the same order
         self.outputs_tree_manager.set_tensors(plain_outputs)
         # get the real output dictionary from self.outputs_tree_manager
         output_dic = self.outputs_tree_manager.get_tree()
 
-        # split output_dic into hooked_features_ipu and output of the torch model
+        # split output_dic into hooked_features_ipu
+        # and output of the torch model
         mmcv_model_output = {}
         for _name in output_dic:
             if _name in self.hooked_features:
@@ -323,8 +387,11 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
         if 'output of WrappedNet: single tensor' in output_dic:
             assert len(mmcv_model_output) == 1
-            assert type(mmcv_model_output['output of WrappedNet: single tensor']) == torch.Tensor
-            mmcv_model_output = mmcv_model_output['output of WrappedNet: single tensor']
+            assert type(
+                mmcv_model_output['output of WrappedNet: single tensor'])\
+                == torch.Tensor
+            mmcv_model_output = \
+                mmcv_model_output['output of WrappedNet: single tensor']
 
         # turn logger in tree manager off after compilation
         self.inputs_tree_manager.logger_off()
@@ -333,18 +400,22 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         return mmcv_model_output
 
     def train_step(self, data, optimizer=None, **kwargs):
-        # arguments from mmcls/models/classifiers/base.py:BaseClassifier.train_step
+        # arguments from mmcls/models/classifiers/base.py:
+        # BaseClassifier.train_step
         assert self.training
-        assert len(kwargs) == 0 # TODO, support later if necessary
+        assert len(kwargs) == 0  # TODO, support later if necessary
 
         # TODO tmp ussage to save some memory
         # data['img'] = data['img'].half()
 
-        data['optimizer'] = None # TODO we will ignore optimizer for it will not be used in model, support later if necessary
+        # TODO we will ignore optimizer for it will not be used in model,
+        # support later if necessary
+        data['optimizer'] = None
 
         output_dic = self.run_model(data)
 
-        # outputs contained loss, log_vars, num_samples, only loss(torch.tensor) has been updated
+        # outputs contained loss, log_vars, num_samples,
+        # only loss(torch.tensor) has been updated
         # remove all unchanged vars, left torch.tensor
         neat_output_dic = {'loss': output_dic['loss']}
 
@@ -354,14 +425,14 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
 
         return final_output_dic
-    
-    def tmp_ussage_for_eval_call(self, img, img_metas, return_loss=True, **kwargs):
+
+    def eval_call(self, img, img_metas, return_loss=True, **kwargs):
         # arguments from mmdet/models/detectors/base.py:BaseDetector.forward
         # tmp usssage for eval mode
         assert not self.training
-        assert len(kwargs) == 0 # TODO, support later if necessary
+        assert len(kwargs) == 0  # TODO, support later if necessary
         assert not return_loss
-        data = {'img':img,'img_metas':img_metas,'return_loss':return_loss}
+        data = {'img': img, 'img_metas': img_metas, 'return_loss': return_loss}
 
         output_dic = self.run_model(data)
 
@@ -370,37 +441,38 @@ class PoplarExecutorForMMCV(PoplarExecutor):
     def detachFromDevice(self,):
         if self.isCompiled() and self._is_attached:
             super().detachFromDevice()
-    
+
     def attachToDevice(self,):
         if self.isCompiled() and not self._is_attached:
             super().attachToDevice()
 
-    # def copyWeightsToDevice(self,):
-    #     if self.isCompiled():
-    #         super().copyWeightsToDevice()
-    #     else:
-    #         if self.logger is None:
-    #             raise('model not complied')
-    #         else:
-    #             self.logger.warning('model not complied， so the weights are not copied to the IPU')
-
 
 def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
     try:
-        np.testing.assert_allclose(featA,featB,rtol=rtol,atol=atol)
+        np.testing.assert_allclose(featA, featB, rtol=rtol, atol=atol)
     except AssertionError as e:
         print(e)
 
 
 class TrainEvalModel:
-    def __init__(self, train_model, eval_model, options, optimizer, modules_to_record=[], logger=None):
+    def __init__(
+            self,
+            train_model,
+            eval_model,
+            options,
+            optimizer,
+            modules_to_record=[],
+            logger=None):
         if train_model is None:
             self._train_executor = None
             self.training = False
         else:
-            self._train_executor = trainingModel(train_model, options=options['training'], optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+            self._train_executor = trainingModel(
+                train_model, options=options['training'], optimizer=optimizer,
+                logger=logger, modules_to_record=modules_to_record)
             self.training = True
-        self._eval_executor = inferenceModel(eval_model, options=options['inference'], logger=logger)
+        self._eval_executor = inferenceModel(
+            eval_model, options=options['inference'], logger=logger)
 
     @property
     def executor(self,):
@@ -413,9 +485,9 @@ class TrainEvalModel:
         r"""Sets the module in training mode.
 
         This has any effect only on certain modules. See documentations of
-        particular modules for details of their behaviors in training/evaluation
-        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
-        etc.
+        particular modules for details of their behaviors in
+        training/evaluation mode, if they are affected,
+        e.g. :class:`Dropout`, :class:`BatchNorm`, etc.
 
         Args:
             mode (bool): whether to set training mode (``True``) or evaluation
@@ -427,30 +499,39 @@ class TrainEvalModel:
         if not isinstance(mode, bool):
             raise ValueError("training mode is expected to be boolean")
         if self._train_executor is None and mode is True:
-            raise RuntimeError('The train_executor is not initialized. If you want to initialize train_executor, you need to input optimizer when converting pytorch model')
+            raise RuntimeError(
+                'The train_executor is not initialized.'
+                'If you want to initialize train_executor,'
+                'you need to input optimizer when converting pytorch model')
         if mode == self.training:
             return self
         else:
             if self.isCompiled():
-                self.copyWeightsToHost() # copy weights from IPU to cpu before off-load current session
-                self.detachFromDevice() # detach the current session before change the mode, if is training mode and weights are updated, poptorch will copy weights from IPU to host
+                # copy weights from IPU to cpu before off-load current session
+                self.copyWeightsToHost()
+                # detach the current session before change the mode,
+                # if is training mode and weights are updated,
+                # poptorch will copy weights from IPU to host
+                self.detachFromDevice()
 
-            self.training = mode # session will changed with mode changing
+            self.training = mode  # session will changed with mode changing
             self.model.train(mode)
 
-            self.attachToDevice() # after changing mode, attach the current new session, and this function will copy weights of model to device
-            # self.copyWeightsToDevice() # new session is loaded, then copy weights from cpu back to IPU(two modes correspond to two IPU sessions with two copy of weights on IPU)
+            # after changing mode, attach the current new session,
+            # and this function will copy weights of model to device
+            self.attachToDevice()
             return self
 
     def eval(self):
         r"""Sets the module in evaluation mode.
 
-        This has any effect only on certain modules. See documentations of
-        particular modules for details of their behaviors in training/evaluation
-        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
-        etc.
+        This has any effect only on certain modules.
+        See documentations of particular modules
+        for details of their behaviors in training/evaluation mode,
+        if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`, etc.
 
-        This is equivalent with :meth:`self.train(False) <torch.nn.Module.train>`.
+        This is equivalent with :meth:`self.train(False)
+        <torch.nn.Module.train>`.
 
         See :ref:`locally-disable-grad-doc` for a comparison between
         `.eval()` and several similar mechanisms that may be confused with it.
@@ -460,43 +541,61 @@ class TrainEvalModel:
         """
         return self.train(False)
 
-    def compare_data_between_ipu_and_cpu(self, hooked_features_cpu, hooked_features_ipu):
+    def compare_data_between_ipu_and_cpu(
+            self,
+            hooked_features_cpu,
+            hooked_features_ipu
+            ):
         for _key, _val in hooked_features_cpu.items():
-            fea_in_cpu_list = [_val['fea_in']] if isinstance(_val['fea_in'],torch.Tensor) else _val['fea_in']
-            fea_in_ipu_list = [hooked_features_ipu[_key]['fea_in']] if isinstance(_val['fea_in'],torch.Tensor) else hooked_features_ipu[_key]['fea_in']
-           
-            fea_out_cpu_list = [_val['fea_out']] if isinstance(_val['fea_out'],torch.Tensor) else _val['fea_out']
-            fea_out_ipu_list = [hooked_features_ipu[_key]['fea_out']] if isinstance(_val['fea_out'],torch.Tensor) else hooked_features_ipu[_key]['fea_out']
+            fea_in_cpu_list = [_val['fea_in']] if isinstance(
+                _val['fea_in'], torch.Tensor) else _val['fea_in']
+            fea_in_ipu_list = [hooked_features_ipu[_key]['fea_in']] \
+                if isinstance(_val['fea_in'], torch.Tensor) \
+                else hooked_features_ipu[_key]['fea_in']
+
+            fea_out_cpu_list = [_val['fea_out']] if isinstance(
+                _val['fea_out'], torch.Tensor) else _val['fea_out']
+            fea_out_ipu_list = [hooked_features_ipu[_key]['fea_out']] \
+                if isinstance(_val['fea_out'], torch.Tensor) \
+                else hooked_features_ipu[_key]['fea_out']
 
             print(_key)
-            for idx, (featA, featB) in enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
+            for idx, (featA, featB) in \
+                    enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
                 print('fea_in', idx)
-                compare_feat(featA.detach().numpy(),featB.detach().numpy())
-            for idx, (featA, featB) in enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
+                compare_feat(featA.detach().numpy(), featB.detach().numpy())
+            for idx, (featA, featB) in \
+                    enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
                 print('fea_out', idx)
-                compare_feat(featA.detach().numpy(),featB.detach().numpy())
+                compare_feat(featA.detach().numpy(), featB.detach().numpy())
 
-    # TODO Unified training and eval interface, merge train_step(train) and __call__(eval) together
+    # TODO Unified training and eval interface,
+    # merge train_step(train) and __call__(eval) together
     def train_step(self, data, optimizer=None, **kwargs):
         assert self.training, "not supported train_step on eval mode"
         hooked_features_cpu = {}
-        if self._train_executor.isCompiled() and self._train_executor.compare_with_cpu:
+        if self._train_executor.isCompiled() \
+                and self._train_executor.compare_with_cpu:
             self.copyWeightsToHost()
             self._train_executor.model.train_step(data, optimizer, **kwargs)
             hooked_features_cpu = {**(self._train_executor.hooked_features)}
         result = self._train_executor.train_step(data, optimizer, **kwargs)
-        if self._train_executor.isCompiled() and self._train_executor.compare_with_cpu and len(hooked_features_cpu)>0:
-            self.compare_data_between_ipu_and_cpu(hooked_features_cpu,self._train_executor.hooked_features_ipu)
+        if self._train_executor.isCompiled() \
+            and self._train_executor.compare_with_cpu \
+                and len(hooked_features_cpu) > 0:
+            self.compare_data_between_ipu_and_cpu(
+                hooked_features_cpu, self._train_executor.hooked_features_ipu)
         return result
 
-    # TODO Unified training and eval interface, merge train_step(train) and __call__(eval) together
+    # TODO Unified training and eval interface,
+    # merge train_step(train) and __call__(eval) together
     def __call__(self, *args, **kwargs):
         if self.training:
-            raise NotImplementedError('currently the training call is implemented on function train_step')
+            raise NotImplementedError(
+                'use train_step rather than __call__')
         else:
-            # self._args_parser = DictArgsParser({'args':inputs_tuple}) if self._args_parser is None else self._args_parser
-            return self._eval_executor.tmp_ussage_for_eval_call(*args, **kwargs)
-    
+            return self._eval_executor.eval_call(*args, **kwargs)
+
     def __getattr__(self, attr):
         return getattr(self.executor, attr)
 
@@ -504,8 +603,8 @@ class TrainEvalModel:
 def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
                   options: Optional['poptorch.Options'] = None,
                   optimizer: Optional['torch.optim.Optimizer'] = None,
-                  logger = None,
-                  modules_to_record = []
+                  logger=None,
+                  modules_to_record=[]
                   ) -> 'poptorch.PoplarExecutor':
     """ Create a PopTorch training model, from a PyTorch model, to run on IPU
     hardware in training mode.
@@ -542,18 +641,18 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
     maybe_wrapped_model = copy.copy(model)
 
     return PoplarExecutorForMMCV(model=maybe_wrapped_model,
-                          logger=logger,
-                          options=options,
-                          training=True,
-                          optimizer=optimizer,
-                          user_model=model,
-                          modules_to_record=modules_to_record,
-                          poptorch_version=__version__,)
+                                 logger=logger,
+                                 options=options,
+                                 training=True,
+                                 optimizer=optimizer,
+                                 user_model=model,
+                                 modules_to_record=modules_to_record,
+                                 poptorch_version=__version__,)
 
 
 def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
                    options: Optional['poptorch.Options'] = None,
-                   logger = None
+                   logger=None
                    ) -> 'poptorch.PoplarExecutor':
     """Create a PopTorch inference model, from a PyTorch model, to run on IPU
     hardware in inference mode.
@@ -563,8 +662,8 @@ def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
         and vice versa. However, primitive variable types are not synced: for
         example calling ``model.eval()`` on the original model will not alter
         the model returned by this function. You may need to call
-        ``model.eval()`` on your model before you call this function for correct
-        behaviour.
+        ``model.eval()`` on your model before you call this function for
+        correct behaviour.
 
     :param model: The PyTorch model to wrap.
     :param options: The IPU specific options
@@ -576,7 +675,7 @@ def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
         model = model._user_model  # pylint: disable=protected-access
 
     return PoplarExecutorForMMCV(model=copy.copy(model),
-                          logger=logger,
-                          options=options,
-                          training=False,
-                          poptorch_version=__version__)
+                                 logger=logger,
+                                 options=options,
+                                 training=False,
+                                 poptorch_version=__version__)

@@ -74,8 +74,9 @@ def _opts_assigner(_cfg, opts_node):
         if callable(opts_node):
             opts_node(_cfg)
         else:
-            error_msg = 'opts_node type {} not supported'.format(type(opts_node))
-            raise NotImplementedError(error_msg)      
+            error_msg = 'opts_node type {} not supported'.format(
+                type(opts_node))
+            raise NotImplementedError(error_msg)
     else:
         error_msg = 'cfg type {} not supported'.format(type(_cfg))
         raise NotImplementedError(error_msg)
@@ -87,8 +88,10 @@ def parse_ipu_options(ipu_options):
     eval_cfgs = ipu_options.pop('eval_cfgs', {})
     eval_cfgs['replicationFactor'] = 1  # eval mode only use one replica
     eval_cfgs['executionStrategy'] = 'ShardedExecution'
-    training_ipu_options = {**ipu_options, **train_cfgs}  # overwrite default ipu options with specified train cfgs
-    inference_ipu_options = {**ipu_options, **eval_cfgs}  # overwrite default ipu options with specified eval cfgs
+    # overwrite default ipu options with specified train cfgs
+    training_ipu_options = {**ipu_options, **train_cfgs}
+    # overwrite default ipu options with specified eval cfgs
+    inference_ipu_options = {**ipu_options, **eval_cfgs}
 
     opts = {'training': _parse_ipu_options(training_ipu_options),
             'inference': _parse_ipu_options(inference_ipu_options)}
@@ -96,46 +99,66 @@ def parse_ipu_options(ipu_options):
 
 
 def _parse_ipu_options(ipu_options):
-    # If it cannot be directly assigned, use if statement to parse it, and if it can be directly assigned, use _opts_assigner to assign
+    # If it cannot be directly assigned, use if statement to parse it,
+    # and if it can be directly assigned, use _opts_assigner to assign
     opts = poptorch.Options()
     if 'availableMemoryProportion' in ipu_options:
-        availableMemoryProportion = ipu_options.pop('availableMemoryProportion')
-        mem_prop = {f'IPU{i}': availableMemoryProportion[i] for i in range(len(availableMemoryProportion))}
+        availableMemoryProportion = ipu_options.pop(
+            'availableMemoryProportion')
+        mem_prop = {f'IPU{i}': availableMemoryProportion[i]
+                    for i in range(len(availableMemoryProportion))}
         opts.setAvailableMemoryProportion(mem_prop)
     if 'executionStrategy' in ipu_options:
         executionStrategy = ipu_options.pop('executionStrategy')
         if executionStrategy == 'SameAsIpu':
-            opts.setExecutionStrategy(poptorch.PipelinedExecution(getattr(poptorch.AutoStage, executionStrategy)))
+            opts.setExecutionStrategy(poptorch.PipelinedExecution(
+                getattr(poptorch.AutoStage, executionStrategy)))
         elif executionStrategy == 'ShardedExecution':
             opts.setExecutionStrategy(poptorch.ShardedExecution())
         else:
             raise NotImplementedError
     if 'partialsType' in ipu_options:
         partialsType = ipu_options.pop('partialsType')
-        opts.Precision.setPartialsType(getattr(torch, partialsType)) # half or float
+        opts.Precision.setPartialsType(
+            getattr(torch, partialsType))  # half or float
     _opts_assigner(ipu_options, opts)
     return opts
 
 
-def ipu_model_wrapper(model, opts, optimizer=None, logger=None, modules_to_record=[], pipeline_cfg={}, fp16_cfg=None):
-    # TrainEvalModel will shallow copy the model, so any changes to the model must be placed before TrainEvalModel
+def ipu_model_wrapper(
+        model,
+        opts,
+        optimizer=None,
+        logger=None,
+        modules_to_record=[],
+        pipeline_cfg={},
+        fp16_cfg=None
+        ):
+    # TrainEvalModel will shallow copy the model,
+    # so any changes to the model must be placed before TrainEvalModel
     # set mixed-precision
     if fp16_cfg is not None:
         loss_scale = fp16_cfg['loss_scale']
         wrap_fp16_model(model)
         model.half()
-        #TODO tmp ussage to set loss scaling for torch original optimzier
+        # TODO tmp ussage to set loss scaling for torch original optimzier
         optimizer.loss_scaling = loss_scale
 
     # set model partition
     if optimizer is None:
         train_model = None
     else:
-        train_model = model_sharding(copy.copy(model).train(), pipeline_cfg.get('train_split_edges', []))  # split model into multi-ipus if specified
-    eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get('eval_split_edges', []))  # split model into multi-ipus if specified
-    
+        # split model into multi-ipus if specified
+        train_model = model_sharding(copy.copy(model).train(),
+                                     pipeline_cfg.get('train_split_edges', []))
+    # split model into multi-ipus if specified
+    eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get(
+        'eval_split_edges', []))
+
     # wrap model for compilation
-    model = TrainEvalModel(train_model, eval_model, options=opts, optimizer=optimizer, logger=logger, modules_to_record=modules_to_record)
+    model = TrainEvalModel(train_model, eval_model, options=opts,
+                           optimizer=optimizer, logger=logger,
+                           modules_to_record=modules_to_record)
 
     return model
 
@@ -175,11 +198,16 @@ def model_sharding(model, split_edges):
     assert isinstance(split_edges, list)
     spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
     for idx, (_name, _module) in enumerate(model.named_modules()):
-        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),  "The same layer is referenced twice while doing model partition: idx is {} and name is {}".format(idx, _name)
+        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),\
+            "The same layer is referenced twice while doing model partition: "\
+            "idx is {} and name is {}".format(idx, _name)
         edge = spilt_edges_dic.pop(_name, None)
         edge = spilt_edges_dic.pop(idx, edge)
         if edge is not None:
-            poptorch.BeginBlock(_module, edge.get('user_id', _name), edge['ipu_id'])
+            poptorch.BeginBlock(_module, edge.get(
+                'user_id', _name), edge['ipu_id'])
     # check all split_edges are used
-    assert len(spilt_edges_dic) == 0, 'split_edges: {} are not contained in the model'.format(list(spilt_edges_dic.keys()))
+    assert len(spilt_edges_dic) == 0,\
+        'split_edges: {} are not contained in the model'.format(
+                                        list(spilt_edges_dic.keys()))
     return model

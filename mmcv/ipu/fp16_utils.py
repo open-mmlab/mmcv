@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import functools
-import warnings
 from collections import abc
 from inspect import getfullargspec
 
@@ -101,7 +100,7 @@ def auto_fp16(apply_to=None, out_fp32=False):
         def new_func(*args, **kwargs):
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
-            if not isinstance(args[0], (torch.nn.Module,PoplarExecutor)):
+            if not isinstance(args[0], (torch.nn.Module, PoplarExecutor)):
                 raise TypeError('@auto_fp16 can only be used to decorate the '
                                 'method of nn.Module')
             if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
