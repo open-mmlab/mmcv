@@ -895,7 +895,7 @@ class FileClient:
         if name in cls._backends and force:
             clear_key = [
                 arg_key for arg_key, instance in cls._instances.items()
-                if isinstance(instance, cls._backends[name])
+                if isinstance(instance.client, cls._backends[name])
             ]
             for key in clear_key:
                 cls._instances.pop(key)
@@ -916,7 +916,7 @@ class FileClient:
                     clear_key = [
                         arg_key
                         for arg_key, instance in cls._instances.items()
-                        if isinstance(instance, clear_backend)
+                        if isinstance(instance.client, clear_backend)
                     ]
                     for key in clear_key:
                         cls._instances.pop(key)
