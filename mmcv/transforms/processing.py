@@ -410,13 +410,13 @@ class RandomFlip(BaseTransform):
 
     - ``prob`` is float, ``direction`` is string
 
-        the image will be ``direction`` ly flipped with probability
+        the image will be flipped on the given direction with probability
         of ``prob`` . E.g., ``prob=0.5``, ``direction='horizontal'``,
         then image will be horizontally flipped with probability of 0.5.
 
     - ``prob`` is float, ``direction`` is list of string
 
-        the image will be ``direction[i]`` ly flipped with probability of
+        the image will be flipped on the given direction with probability of
         ``prob/len(direction)``. E.g., ``prob=0.5``,
         ``direction=['horizontal', 'vertical']``, then image will be
         horizontally flipped with probability of 0.25, vertically with
