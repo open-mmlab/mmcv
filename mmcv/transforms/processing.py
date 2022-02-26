@@ -452,7 +452,7 @@ class RandomFlip(BaseTransform):
     Args:
          prob (float | list[float], optional): The flipping probability.
              Defaults to None.
-         direction(str | list[str], optional): The flipping direction. Options
+         direction(str | list[str]): The flipping direction. Options
              If input is a list, the length must equal ``prob``. Each
              element in ``prob`` indicates the flip probability of
              corresponding direction. Defaults to horizontal.
@@ -672,12 +672,13 @@ class RandomResize(BaseTransform):
     - keep_ratio
 
     Args:
-        scale (tuple or list[tuple]): Images scales for resizing.
+        scale (tuple or list[tuple], optional): Images scales for resizing.
             Defaults to None.
-        ratio_range (tuple[float]): (min_ratio, max_ratio). Defaults to None.
+        ratio_range (tuple[float], optional): (min_ratio, max_ratio).
+            Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to True.
-        clip_object_border (bool, optional): Whether to clip the objects
+        clip_object_border (bool): Whether to clip the objects
             outside the border of the image. In some dataset like MOT17, the
             gt bboxes are allowed to cross the border of images. Therefore,
             we don't need to clip the gt bboxes in these cases.
