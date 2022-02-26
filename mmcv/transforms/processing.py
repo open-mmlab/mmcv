@@ -599,7 +599,7 @@ class RandomFlip(BaseTransform):
                 results['gt_semantic_seg'],
                 direction=results['flip_direction'])
 
-    def _flip_with_flip_direction(self, results: dict) -> None:
+    def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
         and keypoints."""
         cur_dir = self._choose_direction()
@@ -622,7 +622,7 @@ class RandomFlip(BaseTransform):
             'gt_keypoints', 'flip', and 'flip_direction' keys are
             updated in result dict.
         """
-        self._flip_with_flip_direction(results)
+        self._flip_on_direction(results)
 
         return results
 
