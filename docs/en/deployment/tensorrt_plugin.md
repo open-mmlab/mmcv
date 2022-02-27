@@ -1,8 +1,13 @@
 ## TensorRT Deployment
 
+### <span style="color:red">DeprecationWarning</span>
+
+TensorRT support will be deprecated in the future.
+Welcome to use the unified model deployment toolbox MMDeploy: https://github.com/open-mmlab/mmdeploy
 <!-- TOC -->
 
 - [TensorRT Deployment](#tensorrt-deployment)
+  - [<span style="color:red">DeprecationWarning</span>](#deprecationwarning)
   - [Introduction](#introduction)
   - [List of TensorRT plugins supported in MMCV](#list-of-tensorrt-plugins-supported-in-mmcv)
   - [How to build TensorRT plugins in MMCV](#how-to-build-tensorrt-plugins-in-mmcv)

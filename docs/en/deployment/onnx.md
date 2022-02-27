@@ -1,5 +1,10 @@
 ## Introduction of mmcv.onnx module
 
+### <span style="color:red">DeprecationWarning</span>
+
+ONNX support will be deprecated in the future.
+Welcome to use the unified model deployment toolbox MMDeploy: https://github.com/open-mmlab/mmdeploy
+
 ### register_extra_symbolics
 
 Some extra symbolic functions need to be registered before exporting PyTorch model to ONNX.
