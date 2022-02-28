@@ -443,12 +443,13 @@ class CenterCrop(BaseTransform):
             docstring of class ``Pad``. Defaults to 'constant'.
     """
 
-    def __init__(self,
-                 crop_size: Union[int, Tuple[int, int]],
-                 pad_val: Union[Number, Dict[str,
-                                             Number]] = dict(img=0, seg=255),
-                 pad_mode: Optional[str] = None,
-                 pad_cfg: dict = dict(type='Pad')):
+    def __init__(
+        self,
+        crop_size: Union[int, Tuple[int, int]],
+        pad_val: Union[Number, Dict[str, Number]] = dict(img=0, seg=255),
+        pad_mode: Optional[str] = None,
+        pad_cfg: dict = dict(type='Pad')
+    ) -> None:  # flake8: noqa
         super().__init__()
         assert isinstance(crop_size, int) or (
             isinstance(crop_size, tuple) and len(crop_size) == 2
@@ -463,7 +464,13 @@ class CenterCrop(BaseTransform):
         self.pad_mode = pad_mode
         self.pad_cfg = pad_cfg
 
-    def _crop_img(self, results: dict, bboxes: np.ndarray):
+    def _crop_img(self, results: dict, bboxes: np.ndarray) -> None:
+        """Crop image.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+            bboxes (np.ndarray): Shape (4, ), location of cropped bboxes.
+        """
         if results.get('img', None) is not None:
             img = mmcv.imcrop(results['img'], bboxes=bboxes)
             img_shape = img.shape
@@ -473,6 +480,12 @@ class CenterCrop(BaseTransform):
             results['pad_shape'] = img_shape
 
     def _crop_seg_map(self, results: dict, bboxes: np.ndarray):
+        """Crop semantic segmentation map.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+            bboxes (np.ndarray): Shape (4, ), location of cropped bboxes.
+        """
         if results.get('gt_semantic_seg', None) is not None:
             img = mmcv.imcrop(results['gt_semantic_seg'], bboxes=bboxes)
             results['gt_semantic_seg'] = img
@@ -565,7 +578,7 @@ class RandomGrayscale(BaseTransform):
                  prob: float = 0.1,
                  keep_channel: bool = False,
                  channel_weights: Sequence[float] = (1., 1., 1.),
-                 color_format: str = 'bgr'):
+                 color_format: str = 'bgr') -> None:
         super().__init__()
         self.prob = prob
         self.keep_channel = keep_channel
@@ -586,6 +599,7 @@ class RandomGrayscale(BaseTransform):
         # convert hsv to bgr
         if self.color_format == 'hsv':
             img = mmcv.hsv2bgr(img)
+        img = img[..., None] if img.ndim == 2 else img
         num_output_channels = img.shape[2]
         if random.random() < self.prob:
             if num_output_channels > 1:
@@ -681,13 +695,15 @@ class MultiScaleFlipAug(BaseTransform):
             ``dict(type='RandomFlip')``.
     """
 
-    def __init__(self,
-                 transforms: List[dict],
-                 img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
-                 flip: bool = False,
-                 flip_direction: Union[str, List[str]] = 'horizontal',
-                 resize_cfg: dict = dict(type='Resize', keep_ratio=True),
-                 flip_cfg: dict = dict(type='RandomFlip')):
+    def __init__(
+        self,
+        transforms: List[dict],
+        img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
+        flip: bool = False,
+        flip_direction: Union[str, List[str]] = 'horizontal',
+        resize_cfg: dict = dict(type='Resize', keep_ratio=True),
+        flip_cfg: dict = dict(type='RandomFlip')
+    ) -> None:
         super().__init__()
         self.transforms = Compose(transforms)  # type: ignore
         assert img_scale is not None
@@ -809,13 +825,15 @@ class RandomMultiscaleResize(BaseTransform):
             Defaults to 'bilinear'.
     """
 
-    def __init__(self,
-                 scales: Union[list, Tuple],
-                 keep_ratio: bool = False,
-                 clip_object_border: bool = True,
-                 backend: str = 'cv2',
-                 interpolation: str = 'bilinear',
-                 resize_cfg=dict(type='Resize')):
+    def __init__(
+        self,
+        scales: Union[list, Tuple],
+        keep_ratio: bool = False,
+        clip_object_border: bool = True,
+        backend: str = 'cv2',
+        interpolation: str = 'bilinear',
+        resize_cfg: dict = dict(type='Resize')
+    ) -> None:
         super().__init__()
         if isinstance(scales, list):
             self.scales = scales
@@ -837,8 +855,8 @@ class RandomMultiscaleResize(BaseTransform):
             scales (list[tuple]): Images scales for selection.
 
         Returns:
-            (tuple, int): Returns a tuple ``(img_scale, scale_dix)``, \
-                where ``img_scale`` is the selected image scale and \
+            (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
+                where ``img_scale`` is the selected image scale and
                 ``scale_idx`` is the selected index in the given candidates.
         """
 
@@ -905,16 +923,19 @@ class RandomFlip(BaseTransform):
          E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
          'vertical']``, then image will be horizontally flipped with
          probability of 0.3, vertically with probability of 0.5.
+
     Required Keys:
         - img
         - gt_bboxes
         - gt_semantic_seg
         - gt_keypoints
+
     Modified Keys:
         - img
         - gt_bboxes
         - gt_semantic_seg
         - gt_keypoints
+
     Added Keys:
         - flip
         - flip_direction
@@ -938,8 +959,8 @@ class RandomFlip(BaseTransform):
         elif isinstance(prob, float):
             assert 0 <= prob <= 1
         else:
-            raise ValueError(f"probs must be float or list of float, but \
-                              got '{type(prob)}'.")
+            raise ValueError(f'probs must be float or list of float, but \
+                              got `{type(prob)}`.')
         self.prob = prob
 
         valid_directions = ['horizontal', 'vertical', 'diagonal']
@@ -949,8 +970,8 @@ class RandomFlip(BaseTransform):
             assert mmcv.is_list_of(direction, str)
             assert set(direction).issubset(set(valid_directions))
         else:
-            raise ValueError(f"direction must be either str or list of str, \
-                               but got '{type(direction)}'.")
+            raise ValueError(f'direction must be either str or list of str, \
+                               but got `{type(direction)}`.')
         self.direction = direction
 
         if isinstance(prob, list):

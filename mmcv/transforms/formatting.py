@@ -17,9 +17,11 @@ def to_tensor(
 
     Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,
     :class:`Sequence`, :class:`int` and :class:`float`.
+
     Args:
         data (torch.Tensor | numpy.ndarray | Sequence | int | float): Data to
             be converted.
+
     Returns:
         torch.Tensor: the converted data.
     """
