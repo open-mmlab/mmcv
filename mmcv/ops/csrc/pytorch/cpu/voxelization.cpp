@@ -30,8 +30,7 @@ void dynamic_voxelize_forward_cpu_kernel(
       for (int k = 0; k < NDim; ++k) {
         coors[i][k] = -1;
       }
-    }
-    else {
+    } else {
       for (int k = 0; k < NDim; ++k) {
         coors[i][k] = coor[k];
       }
