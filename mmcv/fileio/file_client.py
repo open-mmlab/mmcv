@@ -473,18 +473,11 @@ class LmdbBackend(BaseStorageBackend):
                  lock=False,
                  readahead=False,
                  **kwargs):
-        try:
-            import lmdb
-        except ImportError:
-            raise ImportError('Please install lmdb to enable LmdbBackend.')
-
         self.db_path = str(db_path)
-        self._client = lmdb.open(
-            self.db_path,
-            readonly=readonly,
-            lock=lock,
-            readahead=readahead,
-            **kwargs)
+        self.readonly = readonly
+        self.lock = lock
+        self.readahead = readahead
+        self.kwargs = kwargs
 
     def get(self, filepath):
         """Get values according to the filepath.
@@ -492,13 +485,34 @@ class LmdbBackend(BaseStorageBackend):
         Args:
             filepath (str | obj:`Path`): Here, filepath is the lmdb key.
         """
-        filepath = str(filepath)
-        with self._client.begin(write=False) as txn:
-            value_buf = txn.get(filepath.encode('ascii'))
-        return value_buf
+        return self[filepath]
 
     def get_text(self, filepath, encoding=None):
         raise NotImplementedError
+
+    def __getitem__(self, index):
+        if not hasattr(self, 'env'):
+            self.env = self._get_env()
+
+        with self.env.begin(write=False) as txn:
+            value_buf = txn.get(str(index).encode('ascii'))
+        return value_buf
+
+    def _get_env(self):
+        try:
+            import lmdb
+        except ImportError:
+            raise ImportError('Please install lmdb to enable LmdbBackend.')
+
+        return lmdb.open(
+            self.db_path,
+            readonly=self.readonly,
+            lock=self.lock,
+            readahead=self.readahead,
+            **self.kwargs)
+
+    def close(self):
+        self.env.close()
 
 
 class HardDiskBackend(BaseStorageBackend):
