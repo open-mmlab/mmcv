@@ -479,7 +479,7 @@ class CenterCrop(BaseTransform):
             results['width'] = img_shape[1]
             results['pad_shape'] = img_shape
 
-    def _crop_seg_map(self, results: dict, bboxes: np.ndarray):
+    def _crop_seg_map(self, results: dict, bboxes: np.ndarray) -> None:
         """Crop semantic segmentation map.
 
         Args:
