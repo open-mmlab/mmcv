@@ -26,6 +26,7 @@ std::vector<at::Tensor> DynamicPointToVoxelForwardCUDAKernelLauncher(
   std::tie(out_coors, coors_map, reduce_count) =
       at::unique_dim(coors_clean, 0, true, true, true);
 
+  // deal with the condition when the input may contain out-of-range coors (full with -1).
   if (out_coors.index({0, 0}).lt(0).item<bool>()) {
     // the first element of out_coors (-1,-1,-1) and should be removed
     out_coors = out_coors.slice(0, 1);
