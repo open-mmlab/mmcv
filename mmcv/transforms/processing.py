@@ -479,7 +479,7 @@ class CenterCrop(BaseTransform):
             results['width'] = img_shape[1]
             results['pad_shape'] = img_shape
 
-    def _crop_seg_map(self, results: dict, bboxes: np.ndarray):
+    def _crop_seg_map(self, results: dict, bboxes: np.ndarray) -> None:
         """Crop semantic segmentation map.
 
         Args:
@@ -497,8 +497,8 @@ class CenterCrop(BaseTransform):
             results (dict): Result dict contains the data to transform.
 
         Returns:
-           dict: Results with CenterCropped image and semantic segmentation
-                map.
+            dict: Results with CenterCropped image and semantic segmentation
+            map.
         """
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
 
@@ -674,10 +674,13 @@ class MultiScaleFlipAug(BaseTransform):
             ...
         )
 
-    Required Keys: Depending on the requirements of the ``transforms``
-        parameter.
+    Required Keys:
 
-    Modified Keys: All output keys of each transform.
+    - Depending on the requirements of the ``transforms`` parameter.
+
+    Modified Keys:
+
+    - All output keys of each transform.
 
     Args:
         transforms (list[dict]): Transforms to be applied to each resized
@@ -729,8 +732,8 @@ class MultiScaleFlipAug(BaseTransform):
             results (dict): Result dict contains the data to transform.
 
         Returns:
-           dict[str: list]: The augmented data, where each value is wrapped
-               into a list.
+            dict: The augmented data, where each value is wrapped
+            into a list.
         """
 
         aug_data = []
@@ -783,8 +786,9 @@ class RandomMultiscaleResize(BaseTransform):
 
     How to choose the target scale to resize the image will follow the rules
     below:
+
     - if `scale` is a list of tuple, the target scale is sampled from the list
-        uniformally.
+      uniformally.
     - if `scale` is a tuple, the target scale will be set to the tuple.
 
     Required Keys:
@@ -856,8 +860,8 @@ class RandomMultiscaleResize(BaseTransform):
 
         Returns:
             (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
-                where ``img_scale`` is the selected image scale and
-                ``scale_idx`` is the selected index in the given candidates.
+            where ``img_scale`` is the selected image scale and
+            ``scale_idx`` is the selected index in the given candidates.
         """
 
         assert mmcv.is_list_of(scales, tuple)
@@ -872,9 +876,9 @@ class RandomMultiscaleResize(BaseTransform):
             results (dict): Result dict contains the data to transform.
 
         Returns:
-           dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
-                'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
-                and 'keep_ratio' keys are updated in result dict.
+            dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
+            and 'keep_ratio' keys are updated in result dict.
         """
 
         target_scale, scale_idx = self.random_select(self.scales)
