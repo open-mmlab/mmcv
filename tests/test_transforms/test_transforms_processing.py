@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 
 import mmcv
-from mmcv.transforms import TRANSFORMS, Normalize, Pad, Resize,  RandomFlip, RandomResize
+from mmcv.transforms import (TRANSFORMS, Normalize, Pad, RandomFlip,
+                             RandomResize, Resize)
 
 try:
     import torch
@@ -196,7 +197,7 @@ class TestPad:
 
 
 class TestCenterCrop:
-    
+
     @classmethod
     def setup_class(cls):
         img = mmcv.imread(
@@ -564,6 +565,8 @@ class TestRandomMultiscaleResize:
         assert results['img'].shape == (150, 200, 3)
         assert np.equal(results['gt_bboxes'], np.array([[100, 75, 300,
                                                          225]])).all()
+
+
 class TestRandomFlip:
 
     def test_init(self):

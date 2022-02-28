@@ -3,7 +3,7 @@ from .builder import TRANSFORMS
 from .loading import LoadAnnotation, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomFlip, RandomGrayscale, RandomMultiscaleResize,
-                         Resize, RandomResize)
+                         RandomResize, Resize)
 from .wrappers import ApplyToMultiple, Compose, RandomChoice, Remap
 
 try:

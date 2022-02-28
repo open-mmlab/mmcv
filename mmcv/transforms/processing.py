@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-<<<<<<< HEAD
 import random
 import warnings
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
-=======
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
->>>>>>> 8d4d09ff8d0d82831004e231bd12d3edb1f389f5
 
 import numpy as np
 
