@@ -379,9 +379,11 @@ class Pad(BaseTransform):
         ``results['pad_shape']``."""
         if results.get('gt_semantic_seg', None) is not None:
             pad_val = self.pad_val.get('seg', 255)
-            if isinstance(pad_val, int) and results['gt_semantic_seg'].ndim == 3:
-                pad_val = tuple(
-                    [pad_val for _ in range(results['gt_semantic_seg'].shape[2])])
+            if isinstance(pad_val,
+                          int) and results['gt_semantic_seg'].ndim == 3:
+                pad_val = tuple([
+                    pad_val for _ in range(results['gt_semantic_seg'].shape[2])
+                ])
             results['gt_semantic_seg'] = mmcv.impad(
                 results['gt_semantic_seg'],
                 shape=results['pad_shape'][:2],
