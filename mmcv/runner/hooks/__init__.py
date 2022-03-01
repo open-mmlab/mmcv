@@ -6,7 +6,8 @@ from .evaluation import DistEvalHook, EvalHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
 from .logger import (DvcliveLoggerHook, LoggerHook, MlflowLoggerHook,
-                     NeptuneLoggerHook, PaviLoggerHook, TensorboardLoggerHook,
+                     NeptuneLoggerHook, PaviLoggerHook,
+                     SMExperimentsLoggerHook, TensorboardLoggerHook,
                      TextLoggerHook, WandbLoggerHook)
 from .lr_updater import (CosineAnnealingLrUpdaterHook,
                          CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
@@ -33,10 +34,11 @@ __all__ = [
     'CyclicLrUpdaterHook', 'OneCycleLrUpdaterHook', 'OptimizerHook',
     'Fp16OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook',
     'EmptyCacheHook', 'LoggerHook', 'MlflowLoggerHook', 'PaviLoggerHook',
-    'TextLoggerHook', 'TensorboardLoggerHook', 'NeptuneLoggerHook',
-    'WandbLoggerHook', 'DvcliveLoggerHook', 'MomentumUpdaterHook',
-    'StepMomentumUpdaterHook', 'CosineAnnealingMomentumUpdaterHook',
-    'CyclicMomentumUpdaterHook', 'OneCycleMomentumUpdaterHook',
-    'SyncBuffersHook', 'EMAHook', 'EvalHook', 'DistEvalHook', 'ProfilerHook',
-    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook'
+    'TextLoggerHook', 'TensorboardLoggerHook', 'SMExperimentsLoggerHook',
+    'NeptuneLoggerHook', 'WandbLoggerHook', 'DvcliveLoggerHook',
+    'MomentumUpdaterHook', 'StepMomentumUpdaterHook',
+    'CosineAnnealingMomentumUpdaterHook', 'CyclicMomentumUpdaterHook',
+    'OneCycleMomentumUpdaterHook', 'SyncBuffersHook', 'EMAHook', 'EvalHook',
+    'DistEvalHook', 'ProfilerHook', 'GradientCumulativeOptimizerHook',
+    'GradientCumulativeFp16OptimizerHook'
 ]
