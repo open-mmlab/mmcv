@@ -6,9 +6,9 @@ from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
 from .hooks import HOOKS, LrUpdaterHook
 
-from ..ipu import IPU_MODE
+from mmcv.ipu import IPU_MODE
 if IPU_MODE:
-    from ..ipu import parse_ipu_options, build_from_cfg_with_wrapper,\
+    from mmcv.ipu import parse_ipu_options, build_from_cfg_with_wrapper,\
         IPU_MODE, ipu_model_wrapper, wrap_optimizer_hook,\
         IpuFp16OptimizerHook
 

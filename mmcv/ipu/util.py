@@ -3,8 +3,7 @@ import copy
 import inspect
 import torch
 import poptorch
-from mmcv.runner.fp16_utils import wrap_fp16_model
-from ..utils import Registry
+from mmcv.utils import Registry
 from .model_converter import TrainEvalModel
 
 
@@ -138,6 +137,7 @@ def ipu_model_wrapper(
     # so any changes to the model must be placed before TrainEvalModel
     # set mixed-precision
     if fp16_cfg is not None:
+        from mmcv.runner.fp16_utils import wrap_fp16_model
         loss_scale = fp16_cfg['loss_scale']
         wrap_fp16_model(model)
         model.half()
