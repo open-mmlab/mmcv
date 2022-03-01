@@ -446,7 +446,7 @@ class TestRandomGrayscale:
 
     def test_transform(self):
         results = dict()
-        # test rgb2gray, return the grayscale image with p>1
+        # test rgb2gray, return the grayscale image with prob = 1.
         transform = dict(
             type='RandomGrayscale',
             prob=1.,
