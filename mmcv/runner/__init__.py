@@ -36,6 +36,7 @@ from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
                         build_optimizer_constructor)
 from .priority import Priority, get_priority
 from .utils import get_host_info, get_time_str, obj_from_dict, set_random_seed
+from .ipu_runner import IpuEpochBasedRunner, IpuIterBasedRunner
 
 __all__ = [
     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
@@ -60,5 +61,6 @@ __all__ = [
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor'
+    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
+    'IpuEpochBasedRunner', 'IpuIterBasedRunner'
 ]
