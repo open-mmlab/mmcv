@@ -203,11 +203,13 @@ class TestCenterCrop:
         img = mmcv.imread(
             osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
         cls.original_img = copy.deepcopy(img)
+        seg = np.random.randint(0, 19, (300, 400)).astype(np.uint8)
+        cls.gt_semantic_map = copy.deepcopy(seg)
 
     @staticmethod
-    def reset_results(results, original_img):
+    def reset_results(results, original_img, gt_semantic_map):
         results['img'] = copy.deepcopy(original_img)
-        results['gt_semantic_seg'] = copy.deepcopy(original_img)
+        results['gt_semantic_seg'] = copy.deepcopy(gt_semantic_map)
         return results
 
     @pytest.mark.skipif(
@@ -241,7 +243,7 @@ class TestCenterCrop:
 
     def test_transform(self):
         results = {}
-        self.reset_results(results, self.original_img)
+        self.reset_results(results, self.original_img, self.gt_semantic_map)
 
         # test CenterCrop when size is int
         transform = dict(type='CenterCrop', crop_size=224)
@@ -249,45 +251,60 @@ class TestCenterCrop:
         results = center_crop_module(results)
         assert results['height'] == 224
         assert results['width'] == 224
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
+        assert (
+            results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
+                                                               88:312]).all()
 
         # test CenterCrop when size is tuple
         transform = dict(type='CenterCrop', crop_size=(224, 224))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 224
         assert results['width'] == 224
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
+        assert (
+            results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
+                                                               88:312]).all()
 
         # test CenterCrop when crop_height != crop_width
         transform = dict(type='CenterCrop', crop_size=(256, 224))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 256
         assert results['width'] == 224
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img[22:278, 88:312, ...]).all()
+        assert (
+            results['gt_semantic_seg'] == self.gt_semantic_map[22:278,
+                                                               88:312]).all()
 
         # test CenterCrop when crop_size is equal to img.shape
         img_height, img_width, _ = self.original_img.shape
         transform = dict(type='CenterCrop', crop_size=(img_height, img_width))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 300
         assert results['width'] == 400
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img).all()
+        assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
 
         # test CenterCrop when crop_size is larger than img.shape
         transform = dict(
             type='CenterCrop', crop_size=(img_height * 2, img_width * 2))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 300
         assert results['width'] == 400
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img).all()
+        assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
 
         # test with padding
         transform = dict(
@@ -296,11 +313,14 @@ class TestCenterCrop:
             pad_mode='constant',
             pad_val=12)
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 600
         assert results['width'] == 200
-        assert results['img'].shape == results['gt_semantic_seg'].shape
+        assert results['img'].shape[:2] == results['gt_semantic_seg'].shape
+        assert (results['img'][300:600, 100:300, ...] == 12).all()
+        assert (results['gt_semantic_seg'][300:600, 100:300] == 255).all()
 
         transform = dict(
             type='CenterCrop',
@@ -308,30 +328,40 @@ class TestCenterCrop:
             pad_mode='constant',
             pad_val=dict(img=13, seg=33))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == 600
         assert results['width'] == 200
+        assert (results['img'][300:600, 100:300, ...] == 13).all()
+        assert (results['gt_semantic_seg'][300:600, 100:300] == 33).all()
 
         # test CenterCrop when crop_width is smaller than img_width
         transform = dict(
             type='CenterCrop', crop_size=(img_height, img_width // 2))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == img_height
         assert results['width'] == img_width // 2
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img[:, 100:300, ...]).all()
+        assert (
+            results['gt_semantic_seg'] == self.gt_semantic_map[:,
+                                                               100:300]).all()
 
         # test CenterCrop when crop_height is smaller than img_height
         transform = dict(
             type='CenterCrop', crop_size=(img_height // 2, img_width))
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         assert results['height'] == img_height // 2
         assert results['width'] == img_width
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        assert (results['img'] == self.original_img[75:225, ...]).all()
+        assert (results['gt_semantic_seg'] == self.gt_semantic_map[75:225,
+                                                                   ...]).all()
 
     @pytest.mark.skipif(
         condition=torch is None, reason='No torch in current env')
@@ -340,14 +370,18 @@ class TestCenterCrop:
         results = {}
         transform = dict(type='CenterCrop', crop_size=224)
         center_crop_module = TRANSFORMS.build(transform)
-        results = self.reset_results(results, self.original_img)
+        results = self.reset_results(results, self.original_img,
+                                     self.gt_semantic_map)
         results = center_crop_module(results)
         center_crop_module = torchvision.transforms.CenterCrop(size=224)
         pil_img = Image.fromarray(self.original_img)
+        pil_seg = Image.fromarray(self.gt_semantic_map)
         cropped_img = center_crop_module(pil_img)
         cropped_img = np.array(cropped_img)
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
+        cropped_seg = center_crop_module(pil_seg)
+        cropped_seg = np.array(cropped_seg)
         assert np.equal(results['img'], cropped_img).all()
+        assert np.equal(results['gt_semantic_seg'], cropped_seg).all()
 
 
 class TestRandomGrayscale:

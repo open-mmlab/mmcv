@@ -359,6 +359,8 @@ class Pad(BaseTransform):
             size = (pad_h, pad_w)
         elif self.size is not None:
             size = self.size[::-1]
+        if isinstance(pad_val, int) and results['img'].ndim == 3:
+            pad_val = tuple([pad_val for _ in range(results['img'].shape[2])])
         padded_img = mmcv.impad(
             results['img'],
             shape=size,
