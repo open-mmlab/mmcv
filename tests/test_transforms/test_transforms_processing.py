@@ -172,7 +172,7 @@ class TestPad:
         assert (results['img'] == np.ones((1333, 1333, 3))).all()
 
         # test pad_val is dict
-        # test rgb image
+        # test rgb image, size=(2000, 2000)
         trans = Pad(
             size=(2000, 2000),
             pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
@@ -185,6 +185,19 @@ class TestPad:
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
         assert (results['gt_semantic_seg'][1333:2000,
                                            800:2000, :] == 255).all()
+
+        # test rgb image, pad_to_square=True
+        trans = Pad(
+            pad_to_square=True,
+            pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][:, 800:1333, :] == 12).all()
+        assert (results['gt_semantic_seg'][:, 800:1333, :] == 10).all()
+
+        trans = Pad(pad_to_square=True, pad_val=dict(img=(12, 12, 12)))
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][:, 800:1333, :] == 12).all()
+        assert (results['gt_semantic_seg'][:, 800:1333, :] == 255).all()
 
         # test pad_val is int
         # test rgb image
