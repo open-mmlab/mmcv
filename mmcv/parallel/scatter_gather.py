@@ -15,6 +15,9 @@ def scatter(inputs, target_gpus, dim=0):
 
     def scatter_map(obj):
         if isinstance(obj, torch.Tensor):
+            if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available() and \
+                target_gpus != [-1]:
+                return obj.to('mlu')
             if target_gpus != [-1]:
                 return OrigScatter.apply(target_gpus, None, dim, obj)
             else:

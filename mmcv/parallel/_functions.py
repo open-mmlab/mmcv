@@ -20,9 +20,11 @@ def scatter(input, devices, streams=None):
         # TODO: copy to a pinned buffer first (if copying from CPU)
         stream = streams[0] if output.numel() > 0 else None
         if devices != [-1]:
-            with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
-                output = output.cuda(devices[0], non_blocking=True)
-
+            if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+                output = output.to('mlu').unsqueeze(0)
+            else:
+                with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
+                    output = output.cuda(devices[0], non_blocking=True)
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')
@@ -53,6 +55,9 @@ def get_input_device(input):
                 return input_device
         return -1
     elif isinstance(input, torch.Tensor):
+        if input.device.type == 'mlu':
+            input_device = 'mlu'
+            return input_device
         return input.get_device() if input.is_cuda else -1
     else:
         raise Exception(f'Unknown type {type(input)}.')
@@ -63,6 +68,8 @@ class Scatter:
     @staticmethod
     def forward(target_gpus, input):
         input_device = get_input_device(input)
+        if input_device == 'mlu':
+            return (input.to('mlu'), )
         streams = None
         if input_device == -1 and target_gpus != [-1]:
             # Perform CPU to GPU copies in a background stream

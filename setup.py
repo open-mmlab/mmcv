@@ -12,6 +12,11 @@ try:
     if torch.__version__ == 'parrots':
         from parrots.utils.build_extension import BuildExtension
         EXT_TYPE = 'parrots'
+    elif (hasattr(torch, "is_mlu_available") and torch.is_mlu_available()) or \
+        os.getenv("FORCE_MLU", "0") == "1":
+        import torch_mlu
+        from torch_mlu.utils.cpp_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
@@ -304,6 +309,20 @@ def get_extensions():
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+        elif (hasattr(torch, "is_mlu_available") and torch.is_mlu_available()) or \
+            os.getenv("FORCE_MLU", "0") == "1":
+            from torch_mlu.utils.cpp_extension import MLUExtension
+            define_macros += [('MMCV_WITH_MLU', None)]
+            mlu_args = os.getenv("MMCV_MLU_ARGS")
+            extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.mlu') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mlu/gen_case/*.cpp')
+            extension = MLUExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
         else:
             print(f'Compiling {ext_name} without CUDA')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
