@@ -2,6 +2,7 @@ import glob
 import os
 import platform
 import re
+import warnings
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
@@ -135,6 +136,21 @@ def get_extensions():
     extensions = []
 
     if os.getenv('MMCV_WITH_TRT', '0') != '0':
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: ' + \
+            'Custom TensorRT Ops will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
+
         ext_name = 'mmcv._ext_trt'
         from torch.utils.cpp_extension import include_paths, library_paths
         library_dirs = []
@@ -314,6 +330,20 @@ def get_extensions():
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: ' + \
+            'Custom ONNXRuntime Ops will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
         ext_name = 'mmcv._ext_ort'
         import onnxruntime
         from torch.utils.cpp_extension import include_paths, library_paths
