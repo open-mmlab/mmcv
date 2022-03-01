@@ -171,12 +171,50 @@ class TestPad:
         results = trans(copy.deepcopy(data_info))
         assert (results['img'] == np.ones((1333, 1333, 3))).all()
 
-        # test pad_val
-        new_img = np.zeros((1333, 800, 3))
-        data_info['img'] = new_img
-        trans = Pad(pad_to_square=True, pad_val=0)
+        # test pad_val is dict
+        # test rgb image, size=(2000, 2000)
+        trans = Pad(
+            size=(2000, 2000),
+            pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
         results = trans(copy.deepcopy(data_info))
-        assert (results['img'] == np.zeros((1333, 1333, 3))).all()
+        assert (results['img'][1333:2000, 800:2000, :] == 12).all()
+        assert (results['gt_semantic_seg'][1333:2000, 800:2000, :] == 10).all()
+
+        trans = Pad(size=(2000, 2000), pad_val=dict(img=(12, 12, 12)))
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][1333:2000, 800:2000, :] == 12).all()
+        assert (results['gt_semantic_seg'][1333:2000,
+                                           800:2000, :] == 255).all()
+
+        # test rgb image, pad_to_square=True
+        trans = Pad(
+            pad_to_square=True,
+            pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][:, 800:1333, :] == 12).all()
+        assert (results['gt_semantic_seg'][:, 800:1333, :] == 10).all()
+
+        trans = Pad(pad_to_square=True, pad_val=dict(img=(12, 12, 12)))
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][:, 800:1333, :] == 12).all()
+        assert (results['gt_semantic_seg'][:, 800:1333, :] == 255).all()
+
+        # test pad_val is int
+        # test rgb image
+        trans = Pad(size=(2000, 2000), pad_val=12)
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][1333:2000, 800:2000, :] == 12).all()
+        assert (results['gt_semantic_seg'][1333:2000,
+                                           800:2000, :] == 255).all()
+        # test gray image
+        new_img = np.random.random((1333, 800))
+        data_info['img'] = new_img
+        new_semantic_seg = np.random.random((1333, 800))
+        data_info['gt_semantic_seg'] = new_semantic_seg
+        trans = Pad(size=(2000, 2000), pad_val=12)
+        results = trans(copy.deepcopy(data_info))
+        assert (results['img'][1333:2000, 800:2000] == 12).all()
+        assert (results['gt_semantic_seg'][1333:2000, 800:2000] == 255).all()
 
     def test_repr(self):
         trans = Pad(pad_to_square=True, size_divisor=11, padding_mode='edge')

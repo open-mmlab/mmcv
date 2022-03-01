@@ -287,7 +287,7 @@ class Pad(BaseTransform):
 
     Args:
         size (tuple, optional): Fixed padding size.
-            Expected padding shape (h, w)Defaults to None.
+            Expected padding shape (w, h). Defaults to None.
         size_divisor (int, optional): The divisor of padded size. Defaults to
             None.
         pad_to_square (bool): Whether to pad the image into a square.
@@ -354,6 +354,8 @@ class Pad(BaseTransform):
             size = (pad_h, pad_w)
         elif self.size is not None:
             size = self.size[::-1]
+        if isinstance(pad_val, int) and results['img'].ndim == 3:
+            pad_val = tuple([pad_val for _ in range(results['img'].shape[2])])
         padded_img = mmcv.impad(
             results['img'],
             shape=size,
@@ -372,7 +374,9 @@ class Pad(BaseTransform):
         ``results['pad_shape']``."""
         if results.get('gt_semantic_seg', None) is not None:
             pad_val = self.pad_val.get('seg', 255)
-
+        if isinstance(pad_val, int) and results['gt_semantic_seg'].ndim == 3:
+            pad_val = tuple(
+                [pad_val for _ in range(results['gt_semantic_seg'].shape[2])])
             results['gt_semantic_seg'] = mmcv.impad(
                 results['gt_semantic_seg'],
                 shape=results['pad_shape'][:2],
