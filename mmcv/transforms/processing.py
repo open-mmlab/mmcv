@@ -441,6 +441,8 @@ class CenterCrop(BaseTransform):
         pad_mode (str, optional): Type of padding. Should be: 'constant',
             'edge', 'reflect' or 'symmetric'. For details, please see the
             docstring of class ``Pad``. Defaults to 'constant'.
+        pad_cfg (str): Base config for padding. Defaults to
+            ``dict(type='Pad')``.
     """
 
     def __init__(
@@ -502,7 +504,7 @@ class CenterCrop(BaseTransform):
         """
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
 
-        assert results.get('img', None) is not None
+        assert 'img' in results, '`img` is not found in results'
         img = results['img']
         # img.shape has length 2 for grayscale, length 3 for color
         img_height, img_width = img.shape[:2]
@@ -580,6 +582,8 @@ class RandomGrayscale(BaseTransform):
                  channel_weights: Sequence[float] = (1., 1., 1.),
                  color_format: str = 'bgr') -> None:
         super().__init__()
+        assert 0. <= prob <= 1., ('The range of ``prob`` value is [0., 1.],' +
+                                  f' but got {prob} instead')
         self.prob = prob
         self.keep_channel = keep_channel
         self.channel_weights = channel_weights
@@ -692,7 +696,7 @@ class MultiScaleFlipAug(BaseTransform):
             flip_direction is a list, multiple flip augmentations will be
             applied. It has no effect when flip == False. Defaults to
             "horizontal".
-        resize_cfg (dict):Base config for resizing. Defaults to
+        resize_cfg (dict): Base config for resizing. Defaults to
             ``dict(type='Resize', keep_ratio=True)``.
         flip_cfg (dict): Base config for flipping. Defaults to
             ``dict(type='RandomFlip')``.
@@ -821,12 +825,11 @@ class RandomMultiscaleResize(BaseTransform):
             resizing the image. Defaults to False.
         clip_object_border (bool): Whether clip the objects outside
             the border of the image.  Defaults to True.
-        backend (str): Image resize backend, choices are "cv2" and
-            "pillow". These two backends generates slightly different results.
+        backend (str): Image resize backend, choices are 'cv2' and
+            'pillow'. These two backends generates slightly different results.
             Defaults to 'cv2'.
         interpolation (str): The mode of interpolation, support
             "bilinear", "bicubic", "nearest". Defaults to "bilinear".
-            Defaults to 'bilinear'.
     """
 
     def __init__(
@@ -930,15 +933,15 @@ class RandomFlip(BaseTransform):
 
     Required Keys:
         - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+        - gt_bboxes (optional)
+        - gt_semantic_seg (optional)
+        - gt_keypoints (optional)
 
     Modified Keys:
         - img
-        - gt_bboxes
-        - gt_semantic_seg
-        - gt_keypoints
+        - gt_bboxes (optional)
+        - gt_semantic_seg (optional)
+        - gt_keypoints (optional)
 
     Added Keys:
         - flip

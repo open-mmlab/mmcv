@@ -306,13 +306,12 @@ class TestCenterCrop:
             type='CenterCrop',
             crop_size=(img_height * 2, img_width // 2),
             pad_mode='constant',
-            pad_val=dict(img=33, seg=33))
+            pad_val=dict(img=13, seg=33))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img)
         results = center_crop_module(results)
         assert results['height'] == 600
         assert results['width'] == 200
-        assert np.equal(results['img'], results['gt_semantic_seg']).all()
 
         # test CenterCrop when crop_width is smaller than img_width
         transform = dict(
@@ -361,18 +360,24 @@ class TestRandomGrayscale:
         # test repr
         transform = dict(
             type='RandomGrayscale',
-            prob=2,
+            prob=1.,
             channel_weights=(0.299, 0.587, 0.114),
             keep_channel=True)
         random_gray_scale_module = TRANSFORMS.build(transform)
         assert isinstance(repr(random_gray_scale_module), str)
+
+    def test_error(self):
+        # test invalid argument
+        transform = dict(type='RandomGrayscale', prob=2)
+        with pytest.raises(AssertionError):
+            TRANSFORMS.build(transform)
 
     def test_transform(self):
         results = dict()
         # test rgb2gray, return the grayscale image with p>1
         transform = dict(
             type='RandomGrayscale',
-            prob=2,
+            prob=1.,
             channel_weights=(0.299, 0.587, 0.114),
             keep_channel=True)
 
@@ -386,8 +391,8 @@ class TestRandomGrayscale:
             assert_array_almost_equal(img[:, :, i], computed_gray, decimal=4)
         assert img.shape == (10, 10, 3)
 
-        # test rgb2gray, return the original image with p=-1
-        transform = dict(type='RandomGrayscale', prob=-1)
+        # test rgb2gray, return the original image with p=0.
+        transform = dict(type='RandomGrayscale', prob=0.)
         random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
         img = random_gray_scale_module(results)['img']
@@ -395,7 +400,7 @@ class TestRandomGrayscale:
         assert img.shape == (10, 10, 3)
 
         # test image with one channel
-        transform = dict(type='RandomGrayscale', prob=2)
+        transform = dict(type='RandomGrayscale', prob=1.)
         results['img'] = self.img[:, :, 0:1]
         random_gray_scale_module = TRANSFORMS.build(transform)
         img = random_gray_scale_module(results)['img']
