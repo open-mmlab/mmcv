@@ -9,8 +9,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-# from mmcv.runner import build_runner
-from mmcv.ipu import parse_ipu_options, build_from_cfg_with_wrapper,\
+from mmcv.runner.ipu import parse_ipu_options, build_from_cfg_with_wrapper,\
     IPU_MODE, ipu_model_wrapper, wrap_optimizer_hook,\
     IpuFp16OptimizerHook
 
