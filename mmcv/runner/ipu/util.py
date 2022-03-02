@@ -135,6 +135,8 @@ def ipu_model_wrapper(
         ):
     # TrainEvalModel will shallow copy the model,
     # so any changes to the model must be placed before TrainEvalModel
+    # hold the training state of model
+    training = model.training if optimizer is not None else False
     # set mixed-precision
     if fp16_cfg is not None:
         from mmcv.runner.fp16_utils import wrap_fp16_model
@@ -142,7 +144,11 @@ def ipu_model_wrapper(
         wrap_fp16_model(model)
         model.half()
         # TODO tmp ussage to set loss scaling for torch original optimzier
-        optimizer.loss_scaling = loss_scale
+        if optimizer is not None:
+            optimizer.loss_scaling = loss_scale
+        # TODO support feature alignment for fp16
+        if len(modules_to_record) > 0:
+            raise NotImplementedError('Feature alignment for fp16 is not implemented')
 
     # set model partition
     if optimizer is None:
@@ -151,6 +157,17 @@ def ipu_model_wrapper(
         # split model into multi-ipus if specified
         train_model = model_sharding(copy.copy(model).train(),
                                      pipeline_cfg.get('train_split_edges', []))
+
+        # TODO support feature alignment for gradient accumulation mode
+        if getattr(opts['training'].Training, 'gradient_accumulation', 1) > 1:
+            assert len(modules_to_record) == 0, \
+                'Feature alignment for gradient accumulation mode is not implemented'
+
+        # TODO support feature alignment for multi-replica mode
+        if getattr(opts['training'], 'replication_factor', 1) > 1:
+            assert len(modules_to_record) == 0, \
+                'Feature alignment for multi-replica mode is not implemented'
+
     # split model into multi-ipus if specified
     eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get(
         'eval_split_edges', []))
@@ -159,7 +176,7 @@ def ipu_model_wrapper(
     model = TrainEvalModel(train_model, eval_model, options=opts,
                            optimizer=optimizer, logger=logger,
                            modules_to_record=modules_to_record)
-
+    model.train(training)
     return model
 
 

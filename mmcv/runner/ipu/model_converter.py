@@ -21,7 +21,7 @@ class DictArgsParser(ArgsParser):
         self._warned_not_contiguous_input = False
 
 
-class TreeManager:
+class ComplexDataManager:
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
@@ -57,12 +57,12 @@ class TreeManager:
     def update(
             self,
             treeA,
-            treeB='TreeManagerNone',
+            treeB='ComplexDataManagerNone',
             strict=True,
             key=None,
             address='data'
             ):
-        treeB = self._tree if treeB == 'TreeManagerNone' else treeB
+        treeB = self._tree if treeB == 'ComplexDataManagerNone' else treeB
         # Update with a tree with the same structure
         # but different values(tensors and basic python data types)
         if isinstance(treeA, (tuple, list)):
@@ -316,9 +316,9 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # self._model: wrapped model which is used to compile
         # and update weights, these two models use same weights
         # wrapped model only accept and output tuple,
-        # so TreeManager will convert dictionary to tuple and convert them back
-        self.inputs_tree_manager = TreeManager(logger=logger)
-        self.outputs_tree_manager = TreeManager(logger=logger)
+        # so ComplexDataManager will convert dictionary to tuple and convert them back
+        self.inputs_tree_manager = ComplexDataManager(logger=logger)
+        self.outputs_tree_manager = ComplexDataManager(logger=logger)
         self.logger = logger
         self.hooked_features = {}
         self.hooked_features_ipu = {}
@@ -503,7 +503,9 @@ class TrainEvalModel:
                 'The train_executor is not initialized.'
                 'If you want to initialize train_executor,'
                 'you need to input optimizer when converting pytorch model')
+
         if mode == self.training:
+            self.model.train(mode)
             return self
         else:
             if self.isCompiled():
@@ -562,11 +564,11 @@ class TrainEvalModel:
             print(_key)
             for idx, (featA, featB) in \
                     enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
-                print('fea_in', idx)
+                print('fea_in, tensor ', idx)
                 compare_feat(featA.detach().numpy(), featB.detach().numpy())
             for idx, (featA, featB) in \
                     enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
-                print('fea_out', idx)
+                print('fea_out, tensor', idx)
                 compare_feat(featA.detach().numpy(), featB.detach().numpy())
 
     # TODO Unified training and eval interface,
@@ -634,8 +636,8 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
     :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
-    if isinstance(model, PoplarExecutor):
-        model = model._user_model  # pylint: disable=protected-access
+    # if isinstance(model, PoplarExecutor):
+    #     model = model._user_model  # pylint: disable=protected-access
 
     # Create a copy of the original model in case it needs to be wrapped
     maybe_wrapped_model = copy.copy(model)
@@ -671,8 +673,8 @@ def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
         of ``model``.
     """
 
-    if isinstance(model, PoplarExecutor):
-        model = model._user_model  # pylint: disable=protected-access
+    # if isinstance(model, PoplarExecutor):
+    #     model = model._user_model  # pylint: disable=protected-access
 
     return PoplarExecutorForMMCV(model=copy.copy(model),
                                  logger=logger,
