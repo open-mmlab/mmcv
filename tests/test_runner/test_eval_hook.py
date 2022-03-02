@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import json
 import os.path as osp
-import sys
 import tempfile
 import unittest.mock as mock
 from collections import OrderedDict
@@ -13,15 +12,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 
-from mmcv.fileio.file_client import PetrelBackend
+from mmcv.fileio.file_client import FileClient, PetrelBackend
 from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner import EvalHook as BaseEvalHook
 from mmcv.runner import IterBasedRunner
 from mmcv.utils import get_logger, scandir
-
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
+from tests.pytest_util import mock_package
 
 
 class ExampleDataset(Dataset):
@@ -337,10 +334,12 @@ def test_eval_hook():
     eval_hook = EvalHook(
         data_loader, interval=1, save_best='auto', out_dir=out_dir)
 
-    with patch.object(PetrelBackend, 'put') as mock_put, \
+    with mock_package('petrel_client', 'petrel_client.client'), \
+         patch.object(PetrelBackend, 'put') as mock_put, \
          patch.object(PetrelBackend, 'remove') as mock_remove, \
          patch.object(PetrelBackend, 'isfile') as mock_isfile, \
          tempfile.TemporaryDirectory() as tmpdir:
+        FileClient._instances = {}
         logger = get_logger('test_eval')
         runner = EpochBasedRunner(model=model, work_dir=tmpdir, logger=logger)
         runner.register_checkpoint_hook(dict(interval=1))

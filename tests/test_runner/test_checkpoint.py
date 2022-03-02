@@ -10,15 +10,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.nn.parallel import DataParallel
 
-from mmcv.fileio.file_client import PetrelBackend
+from mmcv.fileio.file_client import FileClient, PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
                                     load_from_local, load_from_pavi,
                                     save_checkpoint)
-
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
+from tests.pytest_util import mock_package
 
 
 @MODULE_WRAPPERS.register_module()
@@ -425,12 +423,16 @@ def test_save_checkpoint(tmp_path):
     save_checkpoint(model, filename, file_client_args={'backend': 'disk'})
 
     # 2. save to petrel oss
-    with patch.object(PetrelBackend, 'put') as mock_method:
+    with mock_package('petrel_client', 'petrel_client.client'), patch.object(
+            PetrelBackend, 'put') as mock_method:
+        FileClient._instances = {}
         filename = 's3://path/of/your/checkpoint1.pth'
         save_checkpoint(model, filename)
     mock_method.assert_called()
 
-    with patch.object(PetrelBackend, 'put') as mock_method:
+    with mock_package('petrel_client', 'petrel_client.client'), patch.object(
+            PetrelBackend, 'put') as mock_method:
+        FileClient._instances = {}
         filename = 's3://path//of/your/checkpoint2.pth'
         save_checkpoint(
             model, filename, file_client_args={'backend': 'petrel'})

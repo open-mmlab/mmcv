@@ -32,7 +32,7 @@ def list_from_file(filename,
     Examples:
         >>> list_from_file('/path/of/your/file')  # disk
         ['hello', 'world']
-        >>> list_from_file('s3://path/of/your/file')  # ceph or petrel
+        >>> list_from_file('s3://path/of/your/file')  # ceph or petrel or aws
         ['hello', 'world']
 
     Returns:
@@ -79,7 +79,7 @@ def dict_from_file(filename,
     Examples:
         >>> dict_from_file('/path/of/your/file')  # disk
         {'key1': 'value1', 'key2': 'value2'}
-        >>> dict_from_file('s3://path/of/your/file')  # ceph or petrel
+        >>> dict_from_file('s3://path/of/your/file')  # ceph or petrel or aws
         {'key1': 'value1', 'key2': 'value2'}
 
     Returns:

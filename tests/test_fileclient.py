@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import sys
 import tempfile
 from contextlib import contextmanager
 from copy import deepcopy
@@ -13,11 +12,7 @@ import pytest
 import mmcv
 from mmcv import BaseStorageBackend, FileClient
 from mmcv.utils import has_method
-
-sys.modules['ceph'] = MagicMock()
-sys.modules['petrel_client'] = MagicMock()
-sys.modules['petrel_client.client'] = MagicMock()
-sys.modules['mc'] = MagicMock()
+from tests.pytest_util import mock_package
 
 
 @contextmanager
@@ -107,6 +102,56 @@ class MockPetrelClient:
                 yield entry.name + '/'
 
 
+class MockAWSClient:
+
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+    def head_bucket(self, Bucket):
+        return True
+
+    def head_object(self, Bucket, Key):
+        return True
+
+    def download_fileobj(self, bucket, obj_name, value, *args, **kwargs):
+        with open(bucket, 'rb') as f:
+            content = f.read()
+            value.write(content)
+
+    def upload_fileobj(self, buff, bucket, obj_name, *args, **kwargs):
+        pass
+
+    def delete_object(self, *args, **kwargs):
+        pass
+
+    def get_paginator(self, type='list_objects_v2'):
+
+        class Paginator:
+
+            @staticmethod
+            def paginate(Bucket, Prefix, *args, **kwargs):
+                dir_path = Prefix
+                paths = []
+                for root, dirs, files in os.walk(dir_path):
+                    for name in files:
+                        paths.append(os.path.join(root, name))
+                response = {
+                    'ResponseMetadata': {
+                        'HTTPStatusCode': 200
+                    },
+                    'Contents': [{
+                        'Key': path.replace('\\', '/')
+                    } for path in paths]
+                }
+                return [response]
+
+        return Paginator
+
+    @staticmethod
+    def _parse_path(obj, filepath):
+        return str(filepath), str(filepath)
+
+
 class MockMemcachedClient:
 
     def __init__(self, server_list_cfg, client_cfg):
@@ -125,6 +170,20 @@ class TestFileClient:
         cls.img_path = cls.test_data_dir / 'color.jpg'
         cls.img_shape = (300, 400, 3)
         cls.text_path = cls.test_data_dir / 'filelist.txt'
+        # mock some uninstalled packages
+        cls.packages = mock_package('ceph', 'petrel_client',
+                                    'petrel_client.client', 'mc', 'boto3',
+                                    'boto3.s3', 'boto3.s3.transfer',
+                                    'botocore', 'botocore.exceptions')
+        cls.packages.__enter__()
+        FileClient._instances = {}
+
+    @classmethod
+    def teardown_class(cls):
+        # delete mocked packages, avoid to influence other unittest
+        cls.packages.__exit__(None, None, None)
+        # clean instances avoid to influence other unittest
+        FileClient._instances = {}
 
     def test_error(self):
         with pytest.raises(ValueError):
@@ -531,6 +590,177 @@ class TestFileClient:
             # 7. only list files ending with suffix
             assert set(
                 petrel_backend.list_dir_or_file(
+                    tmp_dir,
+                    list_dir=False,
+                    suffix=('.txt', '.jpg'),
+                    recursive=True)) == set([
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
+                    ])
+
+    @patch('boto3.client', MockAWSClient)
+    @patch('botocore.exceptions.ClientError', Exception)
+    @patch('mmcv.fileio.file_client.AWSBackend._parse_path',
+           MockAWSClient._parse_path)
+    @pytest.mark.parametrize('backend,prefix', [('aws', None), (None, 's3')])
+    def test_aws_backend(self, backend, prefix):
+        aws_backend = FileClient(backend=backend, prefix=prefix)
+
+        # test `allow_symlink` attribute
+        assert not aws_backend.allow_symlink
+
+        # input path is Path object
+        img_bytes = aws_backend.get(self.img_path)
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+        # input path is str
+        img_bytes = aws_backend.get(str(self.img_path))
+        img = mmcv.imfrombytes(img_bytes)
+        assert img.shape == self.img_shape
+
+        # `path_mapping` is either None or dict
+        with pytest.raises(AssertionError):
+            FileClient('aws', path_mapping=1)
+
+        # test `_map_path`
+        aws_dir = 's3://user/data'
+        aws_backend = FileClient(
+            'aws', path_mapping={str(self.test_data_dir): aws_dir})
+        assert aws_backend.client._map_path(str(self.img_path)) == \
+            str(self.img_path).replace(str(self.test_data_dir), aws_dir)
+
+        aws_path = f'{aws_dir}/test.jpg'
+        aws_backend = FileClient('aws')
+
+        # test `_format_path`
+        assert aws_backend.client._format_path('s3://user\\data\\test.jpg')\
+            == aws_path
+
+        # test `get_text`
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file_path = osp.join(tmp_dir, 'aws.txt')
+            with open(file_path, 'w', encoding='utf8') as f:
+                f.write('aws')
+            assert aws_backend.get_text(file_path) == 'aws'
+
+        # test `put`
+        with patch.object(aws_backend.client._client,
+                          'upload_fileobj') as mock_put:
+            aws_backend.put(b'aws', aws_path)
+            mock_put.assert_called()
+
+        # test `put_text`
+        with patch.object(aws_backend.client._client,
+                          'upload_fileobj') as mock_put:
+            aws_backend.put_text('aws', aws_path)
+            mock_put.assert_called()
+
+        # test `remove`
+        assert has_method(aws_backend.client._client, 'delete_object')
+        # raise Exception if `delete` is not implemented
+        with patch.object(aws_backend.client._client,
+                          'delete_object') as mock_delete:
+            aws_backend.remove(aws_path)
+            mock_delete.assert_called_once_with(Bucket=aws_path, Key=aws_path)
+
+        # test `exists`
+        assert aws_backend.exists(aws_path)
+
+        # test `isdir`
+        assert aws_backend.isdir(aws_dir + '/')
+
+        # test `isfile`
+        assert aws_backend.isfile(aws_path)
+
+        # test `join_path`
+        assert aws_backend.join_path(aws_dir, 'file') == \
+            f'{aws_dir}/file'
+        assert aws_backend.join_path(f'{aws_dir}/', 'file') == \
+            f'{aws_dir}/file'
+        assert aws_backend.join_path(aws_dir, 'dir', 'file') == \
+            f'{aws_dir}/dir/file'
+
+        # test `get_local_path`
+        with patch.object(
+                aws_backend.client._client, 'head_object', return_value=True
+        ) as mock, tempfile.TemporaryDirectory() as tmp_dir:
+            file_path = osp.join(tmp_dir, 'aws.txt')
+            with open(file_path, 'w', encoding='utf8') as f:
+                f.write('aws')
+            with aws_backend.get_local_path(file_path) as path:
+                assert Path(path).open('rb').read() == b'aws'
+            # exist the with block and path will be released
+            assert not osp.isfile(path)
+            mock.assert_called_once()
+
+        # test `list_dir_or_file`
+        with build_temporary_directory() as tmp_dir:
+            # 1. list directories and files
+            assert set(aws_backend.list_dir_or_file(tmp_dir)) == set(
+                ['dir1/', 'dir2/', 'text1.txt', 'text2.txt'])
+            # 2. list directories and files recursively
+            assert set(aws_backend.list_dir_or_file(
+                tmp_dir, recursive=True)) == set([
+                    'dir1/', '/'.join(('dir1', 'text3.txt')), 'dir2/',
+                    '/'.join(('dir2', 'dir3/')), '/'.join(
+                        ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                            ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
+                ])
+            # 3. only list directories
+            assert set(aws_backend.list_dir_or_file(
+                tmp_dir, list_file=False)) == set(['dir1/', 'dir2/'])
+            with pytest.raises(
+                    TypeError,
+                    match=('`list_dir` should be False when `suffix` is not '
+                           'None')):
+                # Exception is raised among the `list_dir_or_file` of client,
+                # so we need to invode the client to trigger the exception
+                aws_backend.client.list_dir_or_file(
+                    tmp_dir, list_file=False, suffix='.txt')
+            # 4. only list directories recursively
+            assert set(
+                aws_backend.list_dir_or_file(
+                    tmp_dir, list_file=False, recursive=True)) == set(
+                        ['dir1/', 'dir2/', '/'.join(('dir2', 'dir3/'))])
+            # 5. only list files
+            assert set(aws_backend.list_dir_or_file(
+                tmp_dir, list_dir=False)) == set(['text1.txt', 'text2.txt'])
+            # 6. only list files recursively
+            assert set(
+                aws_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, recursive=True)) == set([
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), '/'.join(
+                                ('dir2', 'img.jpg')), 'text1.txt', 'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                aws_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix='.txt')) == set(['text1.txt', 'text2.txt'])
+            assert set(
+                aws_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False,
+                    suffix=('.txt',
+                            '.jpg'))) == set(['text1.txt', 'text2.txt'])
+            with pytest.raises(
+                    TypeError,
+                    match='`suffix` must be a string or tuple of strings'):
+                aws_backend.client.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix=['.txt', '.jpg'])
+            # 8. only list files ending with suffix recursively
+            assert set(
+                aws_backend.list_dir_or_file(
+                    tmp_dir, list_dir=False, suffix='.txt',
+                    recursive=True)) == set([
+                        '/'.join(('dir1', 'text3.txt')), '/'.join(
+                            ('dir2', 'dir3', 'text4.txt')), 'text1.txt',
+                        'text2.txt'
+                    ])
+            # 7. only list files ending with suffix
+            assert set(
+                aws_backend.list_dir_or_file(
                     tmp_dir,
                     list_dir=False,
                     suffix=('.txt', '.jpg'),

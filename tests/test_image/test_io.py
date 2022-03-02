@@ -38,9 +38,12 @@ class TestIO:
         # add mock package
         sys.modules['petrel_client'] = MagicMock()
         sys.modules['petrel_client.client'] = MagicMock()
+        mmcv.FileClient._instances = {}
 
     @classmethod
     def teardown_class(cls):
+        del sys.modules['petrel_client']
+        del sys.modules['petrel_client.client']
         # clean instances avoid to influence other unittest
         mmcv.FileClient._instances = {}
 
@@ -383,3 +386,9 @@ class TestIO:
             mmcv.use_backend('pillow')
 
         mmcv.use_backend('cv2')
+
+
+if __name__ == '__main__':
+    test = TestIO()
+    test.setup_class()
+    test.test_imread()
