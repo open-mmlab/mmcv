@@ -6,8 +6,20 @@ import torch
 
 class Testnms(object):
 
-    def test_nms_allclose(self):
-        if not torch.cuda.is_available():
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                reason='requires MLU support'))
+        ])
+    def test_nms_allclose(self, device):
+        if (not torch.cuda.is_available()) and (not(
+            hasattr(torch, 'is_mlu_available') and torch.is_mlu_available())):
             return
         from mmcv.ops import nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
@@ -24,7 +36,7 @@ class Testnms(object):
         assert np.allclose(dets, np_dets)  # test cpu
         assert np.allclose(inds, np_inds)  # test cpu
         dets, inds = nms(
-            boxes.cuda(), scores.cuda(), iou_threshold=0.3, offset=0)
+            boxes.to(device), scores.to(device), iou_threshold=0.3, offset=0)
         assert np.allclose(dets.cpu().numpy(), np_dets)  # test gpu
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 

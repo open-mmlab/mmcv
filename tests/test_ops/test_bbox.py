@@ -62,4 +62,3 @@ class TestBBox(object):
     def test_bbox_overlaps_half(self, device):
         self._test_bbox_overlaps(dtype=torch.half, device=device)
 
-

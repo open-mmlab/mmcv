@@ -50,3 +50,13 @@ REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, MLU,
 REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, MLU,
                      sigmoid_focal_loss_backward_mlu);
 
+Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
+                             int offset);
+
+Tensor nms_mlu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+  return NMSMLUKernelLauncher(boxes, scores, iou_threshold, offset);
+}
+
+Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset);
+REGISTER_DEVICE_IMPL(nms_impl, MLU, nms_mlu);
+

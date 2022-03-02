@@ -141,8 +141,8 @@ class Testfocalloss(object):
                 not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
                 reason='requires MLU support'))
         ])
-    def test_sigmoid_float(self):
-        self._test_sigmoid(dtype=torch.float)
+    def test_sigmoid_float(self, device):
+        self._test_sigmoid(dtype=torch.float, device=device)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
