@@ -10,7 +10,7 @@ from .model_converter import TrainEvalModel
 def build_from_cfg_with_wrapper(
         cfg,
         registry,
-        wrapper_func,
+        wrapper_func=None,
         default_args=None):
     """Build a module from config dict and wrap module with "wrapper_func"
 
@@ -54,7 +54,8 @@ def build_from_cfg_with_wrapper(
     else:
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
-    wrapped_obj_cls = wrapper_func(obj_cls)
+    wrapped_obj_cls = obj_cls if wrapper_func is None \
+        else wrapper_func(obj_cls)
     try:
         return wrapped_obj_cls(**args)
     except Exception as e:
@@ -148,7 +149,8 @@ def ipu_model_wrapper(
             optimizer.loss_scaling = loss_scale
         # TODO support feature alignment for fp16
         if len(modules_to_record) > 0:
-            raise NotImplementedError('Feature alignment for fp16 is not implemented')
+            raise NotImplementedError(
+                'Feature alignment for fp16 is not implemented')
 
     # set model partition
     if optimizer is None:
@@ -161,12 +163,12 @@ def ipu_model_wrapper(
         # TODO support feature alignment for gradient accumulation mode
         if getattr(opts['training'].Training, 'gradient_accumulation', 1) > 1:
             assert len(modules_to_record) == 0, \
-                'Feature alignment for gradient accumulation mode is not implemented'
+                'Feature alignment for grad-accumulation mode not implemented'
 
         # TODO support feature alignment for multi-replica mode
         if getattr(opts['training'], 'replication_factor', 1) > 1:
             assert len(modules_to_record) == 0, \
-                'Feature alignment for multi-replica mode is not implemented'
+                'Feature alignment for multi-replica mode not implemented'
 
     # split model into multi-ipus if specified
     eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get(

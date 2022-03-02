@@ -9,7 +9,7 @@ from collections import OrderedDict
 from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
 from mmcv.parallel.data_container import DataContainer
-from .fp16_utils import auto_fp16
+from ..fp16_utils import auto_fp16
 
 
 class DictArgsParser(ArgsParser):
@@ -44,7 +44,8 @@ class ComplexDataManager:
         # tensors and basic python data types
         if hasattr(self, '_tree'):
             if isinstance(_tree, torch.Tensor):
-                assert type(self._tree) == torch.Tensor
+                assert type(self._tree) == torch.Tensor, \
+                    'orginal complex data is not torch.tensor'
                 self._tree = _tree
             else:
                 self.update(_tree)
@@ -315,8 +316,8 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # self.model == self._user_model: input pytorch model
         # self._model: wrapped model which is used to compile
         # and update weights, these two models use same weights
-        # wrapped model only accept and output tuple,
-        # so ComplexDataManager will convert dictionary to tuple and convert them back
+        # wrapped model only accept and output tuple, so ComplexDataManager
+        # will convert dictionary to tuple and convert them back
         self.inputs_tree_manager = ComplexDataManager(logger=logger)
         self.outputs_tree_manager = ComplexDataManager(logger=logger)
         self.logger = logger
@@ -352,7 +353,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # temporarily use this function to fix the problem
         return self._training  # comes from self.model._training
 
-    @auto_fp16()
+    @auto_fp16(supported_types=[PoplarExecutor])
     def run_model(self, data_dict):
         # this function used to parse input_dict
         # and convert to output_dict

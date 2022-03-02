@@ -1,5 +1,16 @@
 from mmcv.utils import TORCH_VERSION, digit_version
-from mmcv.runner.hooks import HOOKS, OptimizerHook
+from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
+
+
+def wrap_lr_update_hook(lr_hook_class,):
+    assert issubclass(lr_hook_class, LrUpdaterHook)
+
+    class ipu_lr_hook_class(lr_hook_class):
+        def _set_lr(self, runner, *args, **kwargs):
+            result = super()._set_lr(runner, *args, **kwargs)
+            assert result is None  # _set_lr should return nothing
+            runner.model.setOptimizer(runner.optimizer)
+    return ipu_lr_hook_class
 
 
 def wrap_optimizer_hook(optimizer_hook_class,):

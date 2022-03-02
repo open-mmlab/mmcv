@@ -8,7 +8,7 @@ except ImportError:
 if IPU_MODE:
     from .util import parse_ipu_options, ipu_model_wrapper,\
         build_from_cfg_with_wrapper, model_sharding
-    from .optimizer_hooks import wrap_optimizer_hook, IpuFp16OptimizerHook
+    from .hooks import wrap_optimizer_hook, IpuFp16OptimizerHook
     __all__ = [
         'parse_ipu_options', 'ipu_model_wrapper',
         'build_from_cfg_with_wrapper', 'IPU_MODE',

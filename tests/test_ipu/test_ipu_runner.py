@@ -9,6 +9,7 @@ import pytest
 import torch.nn as nn
 
 from mmcv.runner import build_runner
+from mmcv.runner import ipu_runner
 
 # Most of its functions are inherited from EpochBasedRunner and IterBasedRunner
 # So only do incremental testing on overridden methods
@@ -51,6 +52,14 @@ def test_build_runner():
     runner = build_runner(cfg, default_args=default_args)
     assert runner._max_iters == 1
 
+    ipu_runner.IPU_MODE = False
+    cfg = dict(type='IpuIterBasedRunner', max_iters=1)
+    with pytest.raises(
+            NotImplementedError,
+            match='cpu mode on IpuRunner not supported'):
+        runner = build_runner(cfg, default_args=default_args)
+
+    ipu_runner.IPU_MODE = True
     with pytest.raises(ValueError, match='Only one of'):
         cfg = dict(type='IpuIterBasedRunner', max_epochs=1, max_iters=1)
         runner = build_runner(cfg, default_args=default_args)
