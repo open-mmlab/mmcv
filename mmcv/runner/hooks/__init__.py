@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
+from .early_stopping import EarlyStoppingHook
 from .ema import EMAHook
 from .evaluation import DistEvalHook, EvalHook
 from .hook import HOOKS, Hook
@@ -38,5 +39,6 @@ __all__ = [
     'StepMomentumUpdaterHook', 'CosineAnnealingMomentumUpdaterHook',
     'CyclicMomentumUpdaterHook', 'OneCycleMomentumUpdaterHook',
     'SyncBuffersHook', 'EMAHook', 'EvalHook', 'DistEvalHook', 'ProfilerHook',
-    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook'
+    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook',
+    'EarlyStoppingHook'
 ]

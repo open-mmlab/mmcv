@@ -108,6 +108,10 @@ class EpochBasedRunner(BaseRunner):
         self.call_hook('before_run')
 
         while self.epoch < self._max_epochs:
+            if self.should_stop:
+                self.logger.info('Stop running because should_stop = True')
+                break
+
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
