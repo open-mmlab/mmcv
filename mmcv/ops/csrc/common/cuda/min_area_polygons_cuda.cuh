@@ -86,8 +86,8 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
     float R[2][2];
     float rot_points[2][MAXN];
     R[0][0] = cos(unique_angles[i]);
-    R[0][1] = -sin(unique_angles[i]);
-    R[1][0] = sin(unique_angles[i]);
+    R[0][1] = sin(unique_angles[i]);
+    R[1][0] = -sin(unique_angles[i]);
     R[1][1] = cos(unique_angles[i]);
     // R x Points
     for (int m = 0; m < 2; m++) {
@@ -273,8 +273,8 @@ __device__ inline void Findminbox(T const *const p, T *minpoints) {
   float R[2][2];
 
   R[0][0] = cos(angle);
-  R[0][1] = -sin(angle);
-  R[1][0] = sin(angle);
+  R[0][1] = sin(angle);
+  R[1][0] = -sin(angle);
   R[1][1] = cos(angle);
 
   minpoints[0] = xmax * R[0][0] + ymin * R[1][0];

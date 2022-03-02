@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
@@ -13,6 +14,22 @@ def test_cast_tensor_type():
     outputs = cast_tensor_type(inputs, src_type, dst_type)
     assert isinstance(outputs, torch.Tensor)
     assert outputs.dtype == dst_type
+
+    # convert torch.float to torch.half
+    inputs = torch.FloatTensor([5.])
+    src_type = torch.float
+    dst_type = torch.half
+    outputs = cast_tensor_type(inputs, src_type, dst_type)
+    assert isinstance(outputs, torch.Tensor)
+    assert outputs.dtype == dst_type
+
+    # skip the conversion when the type of input is not the same as src_type
+    inputs = torch.IntTensor([5])
+    src_type = torch.float
+    dst_type = torch.half
+    outputs = cast_tensor_type(inputs, src_type, dst_type)
+    assert isinstance(outputs, torch.Tensor)
+    assert outputs.dtype == inputs.dtype
 
     inputs = 'tensor'
     src_type = str

@@ -30,9 +30,10 @@ class RoIAlignFunction(Function):
                 mode_s=pool_mode,
                 aligned_i=aligned)
         else:
-            from torch.onnx.symbolic_opset9 import sub, squeeze
-            from torch.onnx.symbolic_helper import _slice_helper
             from torch.onnx import TensorProtoDataType
+            from torch.onnx.symbolic_helper import _slice_helper
+            from torch.onnx.symbolic_opset9 import squeeze, sub
+
             # batch_indices = rois[:, 0].long()
             batch_indices = _slice_helper(
                 g, rois, axes=[1], starts=[0], ends=[1])

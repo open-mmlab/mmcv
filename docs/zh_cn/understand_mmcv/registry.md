@@ -86,7 +86,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
 该功能类似于默认的`build_from_cfg`。在大多数情况下，默认就足够了。
 ```
 
-`build_model_from_cfg`也实现了在`nn.Sequentail`中构建PyTorch模块，你可以直接使用它们。
+`build_model_from_cfg`也实现了在`nn.Sequential`中构建PyTorch模块，你可以直接使用它们。
 
 ### 注册器层结构
 

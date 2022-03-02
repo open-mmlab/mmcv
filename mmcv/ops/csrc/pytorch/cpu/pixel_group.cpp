@@ -1,6 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved
 // It is modified from https://github.com/WenmuZhou/PAN.pytorch
 
+#include <queue>
+
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
