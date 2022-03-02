@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
+import pytest
 import torch
 
 _USING_PARROTS = True
@@ -57,8 +58,9 @@ class Testfocalloss(object):
             assert np.allclose(loss.data.cpu().numpy(), output[0], 1e-2)
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
-    def _test_sigmoid(self, dtype=torch.float):
-        if not torch.cuda.is_available():
+    def _test_sigmoid(self, dtype=torch.float, device='cuda'):
+        if (not torch.cuda.is_available()) and (not(
+            hasattr(torch, 'is_mlu_available') and torch.is_mlu_available())):
             return
         from mmcv.ops import sigmoid_focal_loss
         alpha = 0.25
@@ -68,9 +70,9 @@ class Testfocalloss(object):
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
+            x = torch.from_numpy(np_x).to(device).type(dtype)
             x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
+            y = torch.from_numpy(np_y).to(device).long()
 
             loss = sigmoid_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
@@ -128,11 +130,33 @@ class Testfocalloss(object):
     def test_softmax_half(self):
         self._test_softmax(dtype=torch.half)
 
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                reason='requires MLU support'))
+        ])
     def test_sigmoid_float(self):
         self._test_sigmoid(dtype=torch.float)
 
-    def test_sigmoid_half(self):
-        self._test_sigmoid(dtype=torch.half)
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                reason='requires MLU support'))
+        ])
+    def test_sigmoid_half(self, device):
+        self._test_sigmoid(dtype=torch.half, device=device)
 
     def test_grad_softmax_float(self):
         self._test_grad_softmax(dtype=torch.float)
