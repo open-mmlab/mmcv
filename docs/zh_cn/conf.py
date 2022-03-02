@@ -201,3 +201,6 @@ StandaloneHTMLBuilder.supported_image_types = [
 # Ignore >>> when copying code
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
+
+# Enable ::: for my_st
+myst_enable_extensions = ['colon_fence']
