@@ -131,7 +131,7 @@ grads = [
 ]
 
 
-def _test_tinshift_gradcheck(dtype):
+def _test_tinshift_gradcheck(device, dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
@@ -145,15 +145,15 @@ def _test_tinshift_gradcheck(dtype):
         np_shift = np.array(shift)
 
         x = torch.tensor(
-            np_input, dtype=dtype, device='cuda', requires_grad=True)
-        shift = torch.tensor(np_shift, device='cuda').int()
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        shift = torch.tensor(np_shift, device=device).int()
         if torch.__version__ == 'parrots':
             gradcheck(tin_shift, (x, shift))
         else:
             gradcheck(tin_shift, (x, shift), atol=1, rtol=0.1)
 
 
-def _test_tinshift_allclose(dtype):
+def _test_tinshift_allclose(device, dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
@@ -166,8 +166,8 @@ def _test_tinshift_allclose(dtype):
         np_grad = np.array(grad)
 
         x = torch.tensor(
-            np_input, dtype=dtype, device='cuda', requires_grad=True)
-        shift = torch.tensor(np_shift, device='cuda').int()
+            np_input, dtype=dtype, device=device, requires_grad=True)
+        shift = torch.tensor(np_shift, device=device).int()
 
         output = tin_shift(x, shift)
         output.backward(torch.ones_like(output))
@@ -177,7 +177,7 @@ def _test_tinshift_allclose(dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, 1e-3)
 
 
-def _test_tinshift_assert(dtype):
+def _test_tinshift_assert(device, dtype):
     try:
         from mmcv.ops import tin_shift
     except ModuleNotFoundError:
@@ -187,18 +187,33 @@ def _test_tinshift_assert(dtype):
     shifts = [torch.rand(2, 3), torch.rand(2, 5)]
 
     for x, shift in zip(inputs, shifts):
-        x = x.cuda()
-        shift = shift.cuda()
+        x = x.to(device)
+        shift = shift.to(device)
 
         # A ValueError should be raised if ops get inputs with wrong shapes.
         with pytest.raises(ValueError):
             tin_shift(x, shift)
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
-def test_tinshift(dtype):
-    _test_tinshift_allclose(dtype=dtype)
-    _test_tinshift_gradcheck(dtype=dtype)
-    _test_tinshift_assert(dtype=dtype)
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(not (hasattr(torch, 'is_mlu_available') and
+        torch.is_mlu_available()), reason='requires MLU support'))
+    ])
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    torch.double,
+    torch.half
+    ])
+def test_tinshift(device, dtype):
+    if device is 'mlu' and dtype is torch.double:
+         # MLU does not support tinshift for float64
+         return
+    _test_tinshift_allclose(device=device, dtype=dtype)
+    _test_tinshift_gradcheck(device=device, dtype=dtype)
+    _test_tinshift_assert(device=device, dtype=dtype)

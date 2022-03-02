@@ -107,4 +107,24 @@ REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, MLU,
 REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, MLU,
                      sigmoid_focal_loss_backward_mlu);
 
+void TINShiftForwardMLUKernelLauncher(Tensor input, Tensor shift,
+                                       Tensor output);
+
+void TINShiftBackwardMLUKernelLauncher(Tensor grad_output, Tensor shift,
+                                        Tensor grad_input);
+
+void tin_shift_forward_mlu(Tensor input, Tensor shift, Tensor output) {
+  TINShiftForwardMLUKernelLauncher(input, shift, output);
+}
+
+void tin_shift_backward_mlu(Tensor grad_output, Tensor shift,
+                             Tensor grad_input) {
+  TINShiftBackwardMLUKernelLauncher(grad_output, shift, grad_input);
+}
+
+void tin_shift_forward_impl(Tensor input, Tensor shift, Tensor output);
+void tin_shift_backward_impl(Tensor grad_output, Tensor shift,
+                             Tensor grad_input);
+REGISTER_DEVICE_IMPL(tin_shift_forward_impl, MLU, tin_shift_forward_mlu);
+REGISTER_DEVICE_IMPL(tin_shift_backward_impl, MLU, tin_shift_backward_mlu);
 
