@@ -9,22 +9,25 @@ def scatter(input, devices, streams=None):
         streams = [None] * len(devices)
 
     if isinstance(input, list):
-        chunk_size = (len(input) - 1) // len(devices) + 1
-        outputs = [
-            scatter(input[i], [devices[i // chunk_size]],
-                    [streams[i // chunk_size]]) for i in range(len(input))
-        ]
+        if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+            outputs = [scatter(_input, devices, None) for _input in input]
+        else:
+            chunk_size = (len(input) - 1) // len(devices) + 1
+            outputs = [
+                scatter(input[i], [devices[i // chunk_size]],
+                        [streams[i // chunk_size]]) for i in range(len(input))
+            ]
         return outputs
     elif isinstance(input, torch.Tensor):
         output = input.contiguous()
+        if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+            output = output.to('mlu')
+            return output
         # TODO: copy to a pinned buffer first (if copying from CPU)
         stream = streams[0] if output.numel() > 0 else None
         if devices != [-1]:
-            if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
-                output = output.to('mlu').unsqueeze(0)
-            else:
-                with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
-                    output = output.cuda(devices[0], non_blocking=True)
+            with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
+                output = output.cuda(devices[0], non_blocking=True)
         return output
     else:
         raise Exception(f'Unknown type {type(input)}.')
@@ -68,14 +71,17 @@ class Scatter:
     @staticmethod
     def forward(target_gpus, input):
         input_device = get_input_device(input)
-        if input_device == 'mlu':
-            return (input.to('mlu'), )
         streams = None
-        if input_device == -1 and target_gpus != [-1]:
+        if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+            streams = [0]
+            # steams is not supported
+        elif input_device == -1 and target_gpus != [-1]:
             # Perform CPU to GPU copies in a background stream
             streams = [_get_stream(device) for device in target_gpus]
 
         outputs = scatter(input, target_gpus, streams)
+        if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+            return tuple(outputs) if isinstance(outputs, list) else (outputs, )
         # Synchronize with the copy stream
         if streams is not None:
             synchronize_stream(outputs, target_gpus, streams)

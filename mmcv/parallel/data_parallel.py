@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from itertools import chain
 
+import torch
 from torch.nn.parallel import DataParallel
 
 from .scatter_gather import scatter_kwargs
@@ -56,6 +57,9 @@ class MMDataParallel(DataParallel):
         if not self.device_ids:
             # We add the following line thus the module could gather and
             # convert data containers as those in GPU inference
+            if hasattr(torch, 'is_mlu_available') and torch.is_mlu_available():
+                inputs, kwargs = self.scatter(inputs, kwargs, [0])
+                return self.module.train_step(*inputs[0], **kwargs[0])
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module.train_step(*inputs[0], **kwargs[0])
 

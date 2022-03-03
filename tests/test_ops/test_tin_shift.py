@@ -202,18 +202,16 @@ def _test_tinshift_assert(device, dtype):
             not torch.cuda.is_available(), reason='requires CUDA support')),
     pytest.param(
         'mlu',
-        marks=pytest.mark.skipif(not (hasattr(torch, 'is_mlu_available') and
-        torch.is_mlu_available()), reason='requires MLU support'))
-    ])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    torch.double,
-    torch.half
-    ])
+        marks=pytest.mark.skipif(
+            not (hasattr(torch, 'is_mlu_available')
+                 and torch.is_mlu_available()),
+            reason='requires MLU support'))
+])
+@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_tinshift(device, dtype):
-    if device is 'mlu' and dtype is torch.double:
-         # MLU does not support tinshift for float64
-         return
+    if device == 'mlu' and dtype is torch.double:
+        # MLU does not support tinshift for float64
+        return
     _test_tinshift_allclose(device=device, dtype=dtype)
     _test_tinshift_gradcheck(device=device, dtype=dtype)
     _test_tinshift_assert(device=device, dtype=dtype)

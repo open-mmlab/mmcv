@@ -59,8 +59,8 @@ class Testfocalloss(object):
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
     def _test_sigmoid(self, dtype=torch.float, device='cuda'):
-        if (not torch.cuda.is_available()) and (not(
-            hasattr(torch, 'is_mlu_available') and torch.is_mlu_available())):
+        if (not torch.cuda.is_available()) and (not (hasattr(
+                torch, 'is_mlu_available') and torch.is_mlu_available())):
             return
         from mmcv.ops import sigmoid_focal_loss
         alpha = 0.25
@@ -134,13 +134,15 @@ class Testfocalloss(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(), reason='requires CUDA support')),
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                not (hasattr(torch, 'is_mlu_available')
+                     and torch.is_mlu_available()),
                 reason='requires MLU support'))
-        ])
+    ])
     def test_sigmoid_float(self, device):
         self._test_sigmoid(dtype=torch.float, device=device)
 
@@ -148,13 +150,15 @@ class Testfocalloss(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(), reason='requires CUDA support')),
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                not (hasattr(torch, 'is_mlu_available')
+                     and torch.is_mlu_available()),
                 reason='requires MLU support'))
-        ])
+    ])
     def test_sigmoid_half(self, device):
         self._test_sigmoid(dtype=torch.half, device=device)
 

@@ -103,16 +103,14 @@ def _test_roialign_allclose(device, dtype):
             not torch.cuda.is_available(), reason='requires CUDA support')),
     pytest.param(
         'mlu',
-        marks=pytest.mark.skipif(not (hasattr(torch, 'is_mlu_available') and
-        torch.is_mlu_available()), reason='requires MLU support'))
-    ])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    torch.double,
-    torch.half
-    ])
+        marks=pytest.mark.skipif(
+            not (hasattr(torch, 'is_mlu_available')
+                 and torch.is_mlu_available()),
+            reason='requires MLU support'))
+])
+@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_roialign(device, dtype):
-    if dtype is torch.double and device is 'mlu':
+    if dtype is torch.double and device == 'mlu':
         # MLU does not support roialign for float64
         return
     # check double only

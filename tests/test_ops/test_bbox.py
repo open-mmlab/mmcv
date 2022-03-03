@@ -38,13 +38,15 @@ class TestBBox(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(), reason='requires CUDA support')),
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                not (hasattr(torch, 'is_mlu_available')
+                     and torch.is_mlu_available()),
                 reason='requires MLU support'))
-        ])
+    ])
     def test_bbox_overlaps_float(self, device):
         self._test_bbox_overlaps(dtype=torch.float, device=device)
 
@@ -52,13 +54,14 @@ class TestBBox(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(), reason='requires CUDA support')),
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                not (hasattr(torch, 'is_mlu_available')
+                     and torch.is_mlu_available()),
                 reason='requires MLU support'))
-        ])
+    ])
     def test_bbox_overlaps_half(self, device):
         self._test_bbox_overlaps(dtype=torch.half, device=device)
-

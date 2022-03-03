@@ -58,8 +58,6 @@ class IterBasedRunner(BaseRunner):
         self._epoch = data_loader.epoch
         data_batch = next(data_loader)
         self.call_hook('before_train_iter')
-        #XXX TODO tyr
-        print("DEBUG at iter based runner: ", data_batch)
         outputs = self.model.train_step(data_batch, self.optimizer, **kwargs)
         if not isinstance(outputs, dict):
             raise TypeError('model.train_step() must return a dict')

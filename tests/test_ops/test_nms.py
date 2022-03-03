@@ -10,16 +10,18 @@ class Testnms(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(), reason='requires CUDA support')),
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()),
+                not (hasattr(torch, 'is_mlu_available')
+                     and torch.is_mlu_available()),
                 reason='requires MLU support'))
-        ])
+    ])
     def test_nms_allclose(self, device):
-        if (not torch.cuda.is_available()) and (not(
-            hasattr(torch, 'is_mlu_available') and torch.is_mlu_available())):
+        if (not torch.cuda.is_available()) and (not (hasattr(
+                torch, 'is_mlu_available') and torch.is_mlu_available())):
             return
         from mmcv.ops import nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
