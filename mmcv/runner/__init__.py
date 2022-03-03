@@ -15,8 +15,9 @@ from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
                     Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
                     GradientCumulativeOptimizerHook, Hook, IterTimerHook,
                     LoggerHook, MlflowLoggerHook, NeptuneLoggerHook,
-                    OptimizerHook, PaviLoggerHook, SyncBuffersHook,
-                    TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
+                    OptimizerHook, PaviLoggerHook, SegmindLoggerHook,
+                    SyncBuffersHook, TensorboardLoggerHook, TextLoggerHook,
+                    WandbLoggerHook)
 from .hooks.lr_updater import StepLrUpdaterHook  # noqa
 from .hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
                                CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
@@ -60,5 +61,6 @@ __all__ = [
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor'
+    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
+    'SegmindLoggerHook'
 ]
