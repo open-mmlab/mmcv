@@ -248,6 +248,10 @@ class TestCenterCrop:
     def reset_results(results, original_img, gt_semantic_map):
         results['img'] = copy.deepcopy(original_img)
         results['gt_semantic_seg'] = copy.deepcopy(gt_semantic_map)
+        results['gt_bboxes'] = np.array([[0, 0, 210, 160],
+                                         [200, 150, 400, 300]])
+        results['gt_keypoints'] = np.array([[[20, 50, 1]], [[200, 150, 1]],
+                                            [[300, 225, 1]]])
         return results
 
     @pytest.mark.skipif(
@@ -293,6 +297,12 @@ class TestCenterCrop:
         assert (
             results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
                                                                88:312]).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 122, 122], [112, 112, 224,
+                                                     224]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 12, 1]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when size is tuple
         transform = dict(type='CenterCrop', crop_size=(224, 224))
@@ -306,9 +316,15 @@ class TestCenterCrop:
         assert (
             results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
                                                                88:312]).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 122, 122], [112, 112, 224,
+                                                     224]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 12, 1]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when crop_height != crop_width
-        transform = dict(type='CenterCrop', crop_size=(256, 224))
+        transform = dict(type='CenterCrop', crop_size=(224, 256))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -319,10 +335,16 @@ class TestCenterCrop:
         assert (
             results['gt_semantic_seg'] == self.gt_semantic_map[22:278,
                                                                88:312]).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 122, 138], [112, 128, 224,
+                                                     256]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 28, 1]], [[112, 128, 1]], [[212, 203, 1]]])).all()
 
         # test CenterCrop when crop_size is equal to img.shape
         img_height, img_width, _ = self.original_img.shape
-        transform = dict(type='CenterCrop', crop_size=(img_height, img_width))
+        transform = dict(type='CenterCrop', crop_size=(img_width, img_height))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -331,10 +353,16 @@ class TestCenterCrop:
         assert results['width'] == 400
         assert (results['img'] == self.original_img).all()
         assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 210, 160], [200, 150, 400,
+                                                     300]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[20, 50, 1]], [[200, 150, 1]], [[300, 225, 1]]])).all()
 
         # test CenterCrop when crop_size is larger than img.shape
         transform = dict(
-            type='CenterCrop', crop_size=(img_height * 2, img_width * 2))
+            type='CenterCrop', crop_size=(img_width * 2, img_height * 2))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -343,11 +371,17 @@ class TestCenterCrop:
         assert results['width'] == 400
         assert (results['img'] == self.original_img).all()
         assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 210, 160], [200, 150, 400,
+                                                     300]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[20, 50, 1]], [[200, 150, 1]], [[300, 225, 1]]])).all()
 
         # test with padding
         transform = dict(
             type='CenterCrop',
-            crop_size=(img_height * 2, img_width // 2),
+            crop_size=(img_width // 2, img_height * 2),
             pad_mode='constant',
             pad_val=12)
         center_crop_module = TRANSFORMS.build(transform)
@@ -359,10 +393,16 @@ class TestCenterCrop:
         assert results['img'].shape[:2] == results['gt_semantic_seg'].shape
         assert (results['img'][300:600, 100:300, ...] == 12).all()
         assert (results['gt_semantic_seg'][300:600, 100:300] == 255).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 110, 160], [100, 150, 200,
+                                                     300]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
 
         transform = dict(
             type='CenterCrop',
-            crop_size=(img_height * 2, img_width // 2),
+            crop_size=(img_width // 2, img_height * 2),
             pad_mode='constant',
             pad_val=dict(img=13, seg=33))
         center_crop_module = TRANSFORMS.build(transform)
@@ -373,10 +413,16 @@ class TestCenterCrop:
         assert results['width'] == 200
         assert (results['img'][300:600, 100:300, ...] == 13).all()
         assert (results['gt_semantic_seg'][300:600, 100:300] == 33).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 110, 160], [100, 150, 200,
+                                                     300]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
 
         # test CenterCrop when crop_width is smaller than img_width
         transform = dict(
-            type='CenterCrop', crop_size=(img_height, img_width // 2))
+            type='CenterCrop', crop_size=(img_width // 2, img_height))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -387,10 +433,16 @@ class TestCenterCrop:
         assert (
             results['gt_semantic_seg'] == self.gt_semantic_map[:,
                                                                100:300]).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 110, 160], [100, 150, 200,
+                                                     300]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
 
         # test CenterCrop when crop_height is smaller than img_height
         transform = dict(
-            type='CenterCrop', crop_size=(img_height // 2, img_width))
+            type='CenterCrop', crop_size=(img_width, img_height // 2))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -400,6 +452,12 @@ class TestCenterCrop:
         assert (results['img'] == self.original_img[75:225, ...]).all()
         assert (results['gt_semantic_seg'] == self.gt_semantic_map[75:225,
                                                                    ...]).all()
+        assert np.equal(results['gt_bboxes'],
+                        np.array([[0, 0, 210, 85], [200, 75, 400,
+                                                    150]])).all()
+        assert np.equal(
+            results['gt_keypoints'],
+            np.array([[[20, 0, 1]], [[200, 75, 1]], [[300, 150, 1]]])).all()
 
     @pytest.mark.skipif(
         condition=torch is None, reason='No torch in current env')

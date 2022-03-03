@@ -438,8 +438,8 @@ class CenterCrop(BaseTransform):
 
     Args:
         crop_size (Union[int, Tuple[int, int]]):  Expected size after cropping
-            with the format of (h, w). If set to an integer, then cropping
-            height and width are equal to this integer.
+            with the format of (w, h). If set to an integer, then cropping
+            width and height are equal to this integer.
         pad_val (Union[Number, Dict[str, Number]]): A dict for
             padding value. To specify how to set this argument, please see
             the docstring of class ``Pad``. Defaults to
@@ -449,6 +449,11 @@ class CenterCrop(BaseTransform):
             docstring of class ``Pad``. Defaults to 'constant'.
         pad_cfg (str): Base config for padding. Defaults to
             ``dict(type='Pad')``.
+        clip_object_border (bool): Whether to clip the objects
+            outside the border of the image. In some dataset like MOT17, the
+            gt bboxes are allowed to cross the border of images. Therefore,
+            we don't need to clip the gt bboxes in these cases.
+            Defaults to True.
     """
 
     def __init__(
@@ -456,7 +461,8 @@ class CenterCrop(BaseTransform):
         crop_size: Union[int, Tuple[int, int]],
         pad_val: Union[Number, Dict[str, Number]] = dict(img=0, seg=255),
         pad_mode: Optional[str] = None,
-        pad_cfg: dict = dict(type='Pad')
+        pad_cfg: dict = dict(type='Pad'),
+        clip_object_border: bool = True,
     ) -> None:  # flake8: noqa
         super().__init__()
         assert isinstance(crop_size, int) or (
@@ -471,6 +477,7 @@ class CenterCrop(BaseTransform):
         self.pad_val = pad_val
         self.pad_mode = pad_mode
         self.pad_cfg = pad_cfg
+        self.clip_object_border = clip_object_border
 
     def _crop_img(self, results: dict, bboxes: np.ndarray) -> None:
         """Crop image.
@@ -498,6 +505,43 @@ class CenterCrop(BaseTransform):
             img = mmcv.imcrop(results['gt_semantic_seg'], bboxes=bboxes)
             results['gt_semantic_seg'] = img
 
+    def _crop_bboxes(self, results: dict, bboxes: np.ndarray) -> None:
+        """Update bounding boxes according to CenterCrop.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+            bboxes (np.ndarray): Shape (4, ), location of cropped bboxes.
+        """
+        if 'gt_bboxes' in results:
+            offset_w = bboxes[0]
+            offset_h = bboxes[1]
+            bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h])
+            gt_bboxes = results['gt_bboxes'] - bbox_offset
+            if self.clip_object_border:
+                gt_bboxes[:, 0::2] = np.clip(gt_bboxes[:, 0::2], 0,
+                                             results['img'].shape[1])
+                gt_bboxes[:, 1::2] = np.clip(gt_bboxes[:, 1::2], 0,
+                                             results['img'].shape[0])
+            results['gt_bboxes'] = gt_bboxes
+
+    def _crop_keypoints(self, results: dict, bboxes: np.ndarray) -> None:
+        """Update key points according to CenterCrop.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+            bboxes (np.ndarray): Shape (4, ), location of cropped bboxes.
+        """
+        if 'gt_keypoints' in results:
+            offset_w = bboxes[0]
+            offset_h = bboxes[1]
+            keypoints_offset = np.array([offset_w, offset_h, 0])
+            gt_keypoints = results['gt_keypoints'] - keypoints_offset
+            gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
+                                            results['img'].shape[1])
+            gt_keypoints[:, :, 1] = np.clip(gt_keypoints[:, :, 1], 0,
+                                            results['img'].shape[0])
+            results['gt_keypoints'] = gt_keypoints
+
     def transform(self, results: dict) -> dict:
         """Apply center crop on results.
 
@@ -508,7 +552,7 @@ class CenterCrop(BaseTransform):
             dict: Results with CenterCropped image and semantic segmentation
             map.
         """
-        crop_height, crop_width = self.crop_size[0], self.crop_size[1]
+        crop_width, crop_height = self.crop_size[0], self.crop_size[1]
 
         assert 'img' in results, '`img` is not found in results'
         img = results['img']
@@ -543,6 +587,10 @@ class CenterCrop(BaseTransform):
         self._crop_img(results, bboxes)
         # crop the gt_semantic_seg
         self._crop_seg_map(results, bboxes)
+        # crop the bounding box
+        self._crop_bboxes(results, bboxes)
+        # crop the keypoints
+        self._crop_keypoints(results, bboxes)
         return results
 
     def __repr__(self) -> str:
