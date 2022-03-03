@@ -495,7 +495,7 @@ class LmdbBackend(BaseStorageBackend):
             self.env = self._get_env()
 
         with self.env.begin(write=False) as txn:
-            value_buf = txn.get(str(index).encode('ascii'))
+            value_buf = txn.get(str(index).encode('utf-8'))
         return value_buf
 
     def _get_env(self):
