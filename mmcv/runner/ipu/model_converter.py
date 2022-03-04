@@ -205,8 +205,6 @@ class WrappedNet(torch.nn.Module):
         self.inputs_tree_manager.set_tensors(list(inputs_tuple))
         kwargs = {**(self.inputs_tree_manager.get_tree())}
         if self.training:
-            # TODO tmp ussage to save some memory
-            # kwargs['img'] = kwargs['img'].float()
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
             identity_loss(outputs['loss'], reduction='none')
@@ -637,9 +635,6 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
     :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
-    # if isinstance(model, PoplarExecutor):
-    #     model = model._user_model  # pylint: disable=protected-access
-
     # Create a copy of the original model in case it needs to be wrapped
     maybe_wrapped_model = copy.copy(model)
 
@@ -673,9 +668,6 @@ def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
     :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
-
-    # if isinstance(model, PoplarExecutor):
-    #     model = model._user_model  # pylint: disable=protected-access
 
     return PoplarExecutorForMMCV(model=copy.copy(model),
                                  logger=logger,

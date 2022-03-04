@@ -85,17 +85,18 @@ def test_build_model():
             optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
             logger = logging.getLogger()
             modules_to_record = []
-            pipeline_cfg = dict(
+            ipu_model_cfg = dict(
                 train_split_edges=[
                     dict(
                         layer_to_call='conv',
-                        ipu_id=0),
-                ])
+                        ipu_id=0)],
+                train_ckpt_nodes=['bn', 'conv']
+                        )
             fp16_cfg = {'loss_scale': 0.5}
             ipu_model = ipu_model_wrapper(
                         model, ipu_options, optimizer, logger,
                         modules_to_record=modules_to_record,
-                        pipeline_cfg=pipeline_cfg, fp16_cfg=fp16_cfg)
+                        ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
 
             ipu_model.train()
             ipu_model.eval()
@@ -107,15 +108,16 @@ def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)\
         if not only_eval else None
     logger = logging.getLogger()
-    pipeline_cfg = dict(
+    ipu_model_cfg = dict(
         train_split_edges=[
             dict(
                 layer_to_call='conv',
-                ipu_id=0),
-        ])
+                ipu_id=0)],
+        train_ckpt_nodes=['bn', 'conv']
+                )
     ipu_model = ipu_model_wrapper(
                 model, ipu_options, optimizer, logger,
-                modules_to_record=modules_to_record, pipeline_cfg=pipeline_cfg,
+                modules_to_record=modules_to_record, ipu_model_cfg=ipu_model_cfg,
                 fp16_cfg=fp16_cfg)
 
     def get_dummy_input(training):
@@ -183,7 +185,10 @@ def test_run_model():
         eval_cfgs=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
-    fp16_cfg = {'loss_scale': 0.5}
+    fp16_cfg = {
+        'loss_scale': 0.5,
+        'velocity_accum_type': 'half',
+        'accum_type': 'half'}
     modules_to_record = ['bn']
     with pytest.raises(NotImplementedError):
         run_model(ipu_options, fp16_cfg, modules_to_record)

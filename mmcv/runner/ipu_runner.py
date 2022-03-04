@@ -19,7 +19,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
             self,
             ipu_options={},
             modules_to_record=[],
-            pipeline_cfg={},
+            ipu_model_cfg={},
             fp16_cfg=None,
             **kwargs):
         super(IpuBaseRunner, self).__init__(**kwargs)
@@ -29,7 +29,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
             # self.data_loader = wrap_data_loader(self.data_loader)
             self.model = ipu_model_wrapper(
                 self.model, self.ipu_options, self.optimizer, self.logger,
-                modules_to_record=modules_to_record, pipeline_cfg=pipeline_cfg,
+                modules_to_record=modules_to_record, ipu_model_cfg=ipu_model_cfg,
                 fp16_cfg=fp16_cfg)
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)

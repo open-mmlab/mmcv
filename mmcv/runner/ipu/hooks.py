@@ -85,13 +85,6 @@ if (TORCH_VERSION != 'parrots'
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
 
-        # def before_run(self, runner):
-        #     """Preparing steps before Mixed Precision Training."""
-        #     # wrap model mode to fp16
-        #     wrap_fp16_model(runner.model)
-        #     runner.model.half()
-        #     # runner.model.fp16_enabled = True
-
         def after_train_iter(self, runner):
             pass
 

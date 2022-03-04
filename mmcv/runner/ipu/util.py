@@ -131,7 +131,7 @@ def ipu_model_wrapper(
         optimizer=None,
         logger=None,
         modules_to_record=[],
-        pipeline_cfg={},
+        ipu_model_cfg={},
         fp16_cfg=None
         ):
     # TrainEvalModel will shallow copy the model,
@@ -147,6 +147,14 @@ def ipu_model_wrapper(
         # TODO tmp ussage to set loss scaling for torch original optimzier
         if optimizer is not None:
             optimizer.loss_scaling = loss_scale
+            if fp16_cfg.get('velocity_accum_type', False):
+                optimizer.velocity_accum_type =\
+                    torch.half if fp16_cfg['velocity_accum_type'] == 'half'\
+                    else torch.float32
+            if fp16_cfg.get('accum_type', False):
+                optimizer.accum_type =\
+                    torch.half if fp16_cfg['accum_type'] == 'half'\
+                    else torch.float32
         # TODO support feature alignment for fp16
         if len(modules_to_record) > 0:
             raise NotImplementedError(
@@ -157,8 +165,13 @@ def ipu_model_wrapper(
         train_model = None
     else:
         # split model into multi-ipus if specified
-        train_model = model_sharding(copy.copy(model).train(),
-                                     pipeline_cfg.get('train_split_edges', []))
+        train_model = model_sharding(
+            copy.copy(model).train(),
+            ipu_model_cfg.get('train_split_edges', []))
+
+        recomputation_checkpoint(
+            train_model,
+            ipu_model_cfg.get('train_ckpt_nodes', []))
 
         # TODO support feature alignment for gradient accumulation mode
         if getattr(opts['training'].Training, 'gradient_accumulation', 1) > 1:
@@ -171,7 +184,7 @@ def ipu_model_wrapper(
                 'Feature alignment for multi-replica mode not implemented'
 
     # split model into multi-ipus if specified
-    eval_model = model_sharding(copy.copy(model).eval(), pipeline_cfg.get(
+    eval_model = model_sharding(copy.copy(model).eval(), ipu_model_cfg.get(
         'eval_split_edges', []))
 
     # wrap model for compilation
@@ -182,24 +195,9 @@ def ipu_model_wrapper(
     return model
 
 
-# def wrap_data_loader(data_loader, opts):
-#     # get all params need to initialize ipu dataloader
-#     dataset = data_loader.dataset
-#     batch_size = data_loader.batch_size
-#     num_workers = data_loader.num_workers
-#     # dist = data_loader.dist
-#     worker_init_fn = data_loader.worker_init_fn
-#     sampler = data_loader.sampler
-#     shuffle = isinstance(data_loader.sampler,RandomSampler)
-#     collate_fn = data_loader.collate_fn
-#     pin_memory = data_loader.pin_memory
-#     # TODO maybe need to do some changes to data_loader
-#     return data_loader
-
-
 def model_sharding(model, split_edges):
     # shard model into multi-ipus according to the pipeline config
-    # three args needed in pipeline_cfg['split_edges']:
+    # three args needed in ipu_model_cfg['split_edges']:
     """
     :param layer_to_call: model layer name or layer number
     :param user_id: A user defined identifier for the block.
@@ -230,3 +228,24 @@ def model_sharding(model, split_edges):
         'split_edges: {} are not contained in the model'.format(
                                         list(spilt_edges_dic.keys()))
     return model
+
+
+def recomputation_checkpoint(model: torch.nn.Module, module_names=[])\
+     -> torch.utils.hooks.RemovableHandle:
+    """Annotates the output of a module to be checkpointed instead of
+        recomputed"""
+    def recompute_outputs(module, inputs, outputs):
+        if type(outputs) is tuple:
+            return tuple(poptorch.recomputationCheckpoint(y) for y in outputs)
+        else:
+            return poptorch.recomputationCheckpoint(outputs)
+
+    for idx, (_name, _module) in enumerate(model.named_modules()):
+        if _name in module_names:
+            _module.register_forward_hook(recompute_outputs)
+            module_names.remove(_name)
+
+    # check all module_names are used
+    assert len(module_names) == 0,\
+        'split_edges: {} are not contained in the model'.format(
+                                        module_names)
