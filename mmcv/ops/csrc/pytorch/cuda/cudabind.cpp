@@ -924,20 +924,20 @@ REGISTER_DEVICE_IMPL(roi_align_forward_impl, CUDA, roi_align_forward_cuda);
 REGISTER_DEVICE_IMPL(roi_align_backward_impl, CUDA, roi_align_backward_cuda);
 
 void ROIAlignRotatedForwardCUDAKernelLauncher(
-    const at::Tensor features, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const at::Tensor input, const at::Tensor rois, const float spatial_scale,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor output);
 
 void ROIAlignRotatedBackwardCUDAKernelLauncher(
     const at::Tensor top_grad, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor bottom_grad);
 
-void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_cuda(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -947,11 +947,11 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
     AT_ERROR("wrong roi size");
   }
 
-  int num_channels = features.size(1);
-  int data_height = features.size(2);
-  int data_width = features.size(3);
+  int num_channels = input.size(1);
+  int data_height = input.size(2);
+  int data_width = input.size(3);
   ROIAlignRotatedForwardCUDAKernelLauncher(
-      features, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      input, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, output);
 }
@@ -959,7 +959,7 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
 void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -972,20 +972,20 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
   ROIAlignRotatedBackwardCUDAKernelLauncher(
-      top_grad, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      top_grad, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, bottom_grad);
 }
 
-void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_impl(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise);
 
 void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise);
 REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CUDA,
                      roi_align_rotated_forward_cuda);
@@ -1500,6 +1500,117 @@ void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
 
 REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, CUDA,
                      points_in_polygons_forward_cuda);
+
+torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
+                                                     torch::Tensor indicePairs,
+                                                     torch::Tensor indiceNum,
+                                                     int64_t numAct);
+
+torch::Tensor indice_maxpool_forward_cuda(torch::Tensor features,
+                                          torch::Tensor indicePairs,
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct) {
+  return IndiceMaxpoolForwardCUDAKernelLauncher(features, indicePairs,
+                                                indiceNum, numAct);
+};
+
+torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
+                                          torch::Tensor indicePairs,
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct);
+REGISTER_DEVICE_IMPL(indice_maxpool_forward_impl, CUDA,
+                     indice_maxpool_forward_cuda);
+
+torch::Tensor IndiceMaxpoolBackwardCUDAKernelLauncher(torch::Tensor features,
+                                                      torch::Tensor outFeatures,
+                                                      torch::Tensor outGrad,
+                                                      torch::Tensor indicePairs,
+                                                      torch::Tensor indiceNum);
+
+torch::Tensor indice_maxpool_backward_cuda(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum) {
+  return IndiceMaxpoolBackwardCUDAKernelLauncher(features, outFeatures, outGrad,
+                                                 indicePairs, indiceNum);
+};
+
+torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum);
+
+REGISTER_DEVICE_IMPL(indice_maxpool_backward_impl, CUDA,
+                     indice_maxpool_backward_cuda)
+
+torch::Tensor IndiceConvForwardCUDAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+torch::Tensor indice_conv_forward_cuda(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM) {
+  return IndiceConvForwardCUDAKernelLauncher(
+      features, filters, indicePairs, indiceNum, numActOut, _inverse, _subM);
+};
+
+torch::Tensor indice_conv_forward_impl(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM);
+
+REGISTER_DEVICE_IMPL(indice_conv_forward_impl, CUDA, indice_conv_forward_cuda);
+
+std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+std::vector<torch::Tensor> indice_conv_backward_cuda(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM) {
+  return IndiceConvBackwardCUDAKernelLauncher(
+      features, filters, outGrad, indicePairs, indiceNum, _inverse, _subM);
+};
+
+std::vector<torch::Tensor> indice_conv_backward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+REGISTER_DEVICE_IMPL(indice_conv_backward_impl, CUDA,
+                     indice_conv_backward_cuda);
+
+torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+torch::Tensor fused_indice_conv_batchnorm_forward_cuda(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM) {
+  return FusedIndiceConvBatchnormCUDAKernelLauncher(features, filters, bias,
+                                                    indicePairs, indiceNum,
+                                                    numActOut, _inverse, _subM);
+};
+
+torch::Tensor fused_indice_conv_batchnorm_forward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+REGISTER_DEVICE_IMPL(fused_indice_conv_batchnorm_forward_impl, CUDA,
+                     fused_indice_conv_batchnorm_forward_cuda)
 
 void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
 

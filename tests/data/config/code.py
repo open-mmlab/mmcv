@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmcv import Config  # isort:skip
 
 cfg = Config.fromfile('./tests/data/config/a.py')
