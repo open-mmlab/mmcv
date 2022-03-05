@@ -516,6 +516,8 @@ class CenterCrop(BaseTransform):
             offset_w = bboxes[0]
             offset_h = bboxes[1]
             bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h])
+            # gt_bboxes has shape (num_gts, 4) in (tl_x, tl_y, br_x, br_y)
+            # order.
             gt_bboxes = results['gt_bboxes'] - bbox_offset
             if self.clip_object_border:
                 gt_bboxes[:, 0::2] = np.clip(gt_bboxes[:, 0::2], 0,
@@ -535,6 +537,8 @@ class CenterCrop(BaseTransform):
             offset_w = bboxes[0]
             offset_h = bboxes[1]
             keypoints_offset = np.array([offset_w, offset_h, 0])
+            # gt_keypoints has shape (N, NK, 3) in (x, y, visibility) order,
+            # NK = number of points per object
             gt_keypoints = results['gt_keypoints'] - keypoints_offset
             gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
                                             results['img'].shape[1])
@@ -598,6 +602,7 @@ class CenterCrop(BaseTransform):
         repr_str += f', crop_size = {self.crop_size}'
         repr_str += f', pad_val = {self.pad_val}'
         repr_str += f', pad_mode = {self.pad_mode}'
+        repr_str += f',clip_object_border = {self.clip_object_border}'
         return repr_str
 
 
