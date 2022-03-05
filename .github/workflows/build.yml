@@ -111,8 +111,15 @@ jobs:
       # pstuil is an optional package to detect the number of CPU for compiling mmcv
       - name: Install psutil
         run: pip install psutil
-      - name: Build and install
-        run: rm -rf .eggs && pip install -e .
+      - name: Create sdist and untar
+        run: |
+          MMCV_WITH_OPS=1 python setup.py sdist
+          tar zxvf dist/mmcv-full* -C /tmp
+      - name: Build and install from sdist
+        run: |
+          pushd /tmp/mmcv-full*
+          pip install -e .
+          popd
       - name: Validate the installation
         run: python -c "import mmcv"
       - name: Run unittests and generate coverage report
