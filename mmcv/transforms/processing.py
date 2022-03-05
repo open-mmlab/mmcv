@@ -415,14 +415,16 @@ class Pad(BaseTransform):
 
 @TRANSFORMS.register_module()
 class CenterCrop(BaseTransform):
-    """Crop the center of the image and segmentation masks. If the crop area
-    exceeds the original image and ``pad_mode`` is not None, the original image
-    will be padded before cropping.
+    """Crop the center of the image, segmentation masks, bounding boxes and key
+    points. If the crop area exceeds the original image and ``pad_mode`` is not
+    None, the original image will be padded before cropping.
 
     Required Keys:
 
     - img
     - gt_semantic_seg (optional)
+    - gt_bboxes (optional)
+    - gt_keypoints (optional)
 
     Modified Keys:
 
@@ -430,6 +432,8 @@ class CenterCrop(BaseTransform):
     - height
     - width
     - gt_semantic_seg (optional)
+    - gt_bboxes (optional)
+    - gt_keypoints (optional)
 
     Added Key:
 
