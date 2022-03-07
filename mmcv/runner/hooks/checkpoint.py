@@ -118,8 +118,16 @@ class CheckpointHook(Hook):
     @master_only
     def _save_checkpoint(self, runner):
         """Save the current checkpoint and delete unwanted checkpoint."""
+        if self.by_epoch:
+            filename_tmpl = 'epoch_{}.pth'
+        else:
+            filename_tmpl = 'iter_{}.pth'
         runner.save_checkpoint(
-            self.out_dir, save_optimizer=self.save_optimizer, **self.args)
+            self.out_dir,
+            filename_tmpl=filename_tmpl,
+            save_optimizer=self.save_optimizer,
+            by_epoch=self.by_epoch,
+            **self.args)
         if runner.meta is not None:
             if self.by_epoch:
                 cur_ckpt_filename = self.args.get(

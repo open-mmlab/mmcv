@@ -134,7 +134,8 @@ class EpochBasedRunner(BaseRunner):
                         filename_tmpl='epoch_{}.pth',
                         save_optimizer=True,
                         meta=None,
-                        create_symlink=True):
+                        create_symlink=True,
+                        by_epoch=True):
         """Save the checkpoint.
 
         Args:
@@ -163,7 +164,10 @@ class EpochBasedRunner(BaseRunner):
             # More details in https://github.com/open-mmlab/mmcv/pull/1108
         meta.update(epoch=self.epoch + 1, iter=self.iter)
 
-        filename = filename_tmpl.format(self.epoch + 1)
+        if by_epoch:
+            filename = filename_tmpl.format(self.epoch + 1)
+        else:
+            filename = filename_tmpl.format(self.iter + 1)
         filepath = osp.join(out_dir, filename)
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
