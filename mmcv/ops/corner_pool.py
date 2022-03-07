@@ -23,11 +23,12 @@ def _corner_pool(x, dim, flip):
             next_start = 0
             next_len = size - ind
 
-        # cur_temp should be cloned for backward computation
-        cur_temp = output.narrow(dim, cur_start, cur_len).clone()
+        # max_temp should be cloned for backward computation
+        max_temp = output.narrow(dim, cur_start, cur_len).clone()
+        cur_temp = output.narrow(dim, cur_start, cur_len)
         next_temp = output.narrow(dim, next_start, next_len)
 
-        cur_temp[...] = torch.maximum(cur_temp, next_temp)
+        cur_temp[...] = torch.where(max_temp > next_temp, max_temp, next_temp)
 
         ind = ind << 1
 
