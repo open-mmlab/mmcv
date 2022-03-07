@@ -26,6 +26,9 @@ void dynamic_voxelize_forward_cpu_kernel(
       coor[ndim_minus_1 - j] = c;
     }
 
+    // memcpy and memset will cause problem because of the memory distribution
+    // discontinuity of TensorAccessor, so here using loops to replace memcpy
+    // or memset
     if (failed) {
       for (int k = 0; k < NDim; ++k) {
         coors[i][k] = -1;
@@ -78,6 +81,8 @@ void hard_voxelize_forward_cpu_kernel(
       voxel_num += 1;
 
       coor_to_voxelidx[coor[i][0]][coor[i][1]][coor[i][2]] = voxelidx;
+      // memcpy will cause problem because of the memory distribution
+      // discontinuity of TensorAccessor, so here using loops to replace memcpy
       for (int k = 0; k < NDim; ++k) {
         coors[voxelidx][k] = coor[i][k];
       }
@@ -86,6 +91,8 @@ void hard_voxelize_forward_cpu_kernel(
     // put points into voxel
     num = num_points_per_voxel[voxelidx];
     if (max_points == -1 || num < max_points) {
+      // memcpy will cause problem because of the memory distribution
+      // discontinuity of TensorAccessor, so here using loops to replace memcpy
       for (int k = 0; k < num_features; ++k) {
         voxels[voxelidx][num][k] = points[i][k];
       }
