@@ -65,4 +65,4 @@ class DvcliveLoggerHook(LoggerHook):
                 Path(self.model_file).parent,
                 filename_tmpl=Path(self.model_file).name,
                 create_symlink=False,
-            )
+                by_epoch=self.by_epoch)

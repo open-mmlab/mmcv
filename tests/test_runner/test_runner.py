@@ -159,16 +159,21 @@ def test_save_checkpoint(runner_class):
         runner.save_checkpoint('.', meta=list())
 
     with tempfile.TemporaryDirectory() as root:
-        runner.save_checkpoint(root)
+        with pytest.warns(RuntimeWarning):
+            runner.save_checkpoint(
+                root, filename_tmpl='iter_{}.pth', by_epoch=True)
+        with pytest.warns(RuntimeWarning):
+            runner.save_checkpoint(root, by_epoch=False)
+        if isinstance(runner, EpochBasedRunner):
+            runner.save_checkpoint(root, by_epoch=True)
+            first_ckp_path = osp.join(root, 'epoch_1.pth')
+        elif isinstance(runner, IterBasedRunner):
+            runner.save_checkpoint(
+                root, filename_tmpl='iter_{}.pth', by_epoch=False)
+            first_ckp_path = osp.join(root, 'iter_1.pth')
 
         latest_path = osp.join(root, 'latest.pth')
         assert osp.exists(latest_path)
-
-        if isinstance(runner, EpochBasedRunner):
-            first_ckp_path = osp.join(root, 'epoch_1.pth')
-        elif isinstance(runner, IterBasedRunner):
-            first_ckp_path = osp.join(root, 'iter_1.pth')
-
         assert osp.exists(first_ckp_path)
 
         if platform.system() != 'Windows':
@@ -178,6 +183,23 @@ def test_save_checkpoint(runner_class):
             pass
 
         torch.load(latest_path)
+
+        # check EpochBasedRunner and save checkpoint as IterBased
+        if isinstance(runner, EpochBasedRunner):
+            runner.save_checkpoint(
+                root, filename_tmpl='iter_{}.pth', by_epoch=False)
+            first_ckp_path = osp.join(root, 'iter_1.pth')
+            latest_path = osp.join(root, 'latest.pth')
+            assert osp.exists(latest_path)
+            assert osp.exists(first_ckp_path)
+
+            if platform.system() != 'Windows':
+                assert osp.realpath(latest_path) == osp.realpath(
+                    first_ckp_path)
+            else:
+                # use copy instead of symlink on windows
+                pass
+            torch.load(latest_path)
 
 
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())

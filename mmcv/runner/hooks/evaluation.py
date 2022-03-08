@@ -346,7 +346,8 @@ class EvalHook(Hook):
             runner.save_checkpoint(
                 self.out_dir,
                 filename_tmpl=best_ckpt_name,
-                create_symlink=False)
+                create_symlink=False,
+                by_epoch=self.by_epoch)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(
