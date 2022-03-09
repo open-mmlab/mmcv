@@ -150,15 +150,13 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
     at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3) {
-
   at::cuda::CUDAGuard device_guard(points.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   const int num_points = points.size(0);
   const int num_features = points.size(1);
 
-  if (num_points == 0)
-    return 0;
+  if (num_points == 0) return 0;
 
   const float voxel_x = voxel_size[0];
   const float voxel_y = voxel_size[1];
@@ -184,12 +182,12 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
   // 1. link point to corresponding voxel coors
   AT_DISPATCH_ALL_TYPES(
       points.scalar_type(), "hard_voxelize_kernel", ([&] {
-    dynamic_voxelize_kernel<scalar_t, int><<<grid, block, 0, stream>>>(
-        points.contiguous().data_ptr<scalar_t>(),
-        temp_coors.contiguous().data_ptr<int>(), voxel_x, voxel_y, voxel_z,
-        coors_x_min, coors_y_min, coors_z_min, coors_x_max, coors_y_max,
-        coors_z_max, grid_x, grid_y, grid_z, num_points, num_features,
-        NDim);
+        dynamic_voxelize_kernel<scalar_t, int><<<grid, block, 0, stream>>>(
+            points.contiguous().data_ptr<scalar_t>(),
+            temp_coors.contiguous().data_ptr<int>(), voxel_x, voxel_y, voxel_z,
+            coors_x_min, coors_y_min, coors_z_min, coors_x_max, coors_y_max,
+            coors_z_max, grid_x, grid_y, grid_z, num_points, num_features,
+            NDim);
   }));
 
   at::Tensor coors_map;
@@ -217,31 +215,32 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
 
   dim3 cp_grid(std::min(at::cuda::ATenCeilDiv(num_points, 512), 4096));
   dim3 cp_block(512);
-  AT_DISPATCH_ALL_TYPES(points.scalar_type(), "get_assign_pos", ([&] {
-    nondeterministic_get_assign_pos<<<cp_grid, cp_block, 0, stream>>>(
-        num_points, coors_map.contiguous().data_ptr<int32_t>(),
-        pts_id.contiguous().data_ptr<int32_t>(),
-        coors_count.contiguous().data_ptr<int32_t>(),
-        reduce_count.contiguous().data_ptr<int32_t>(),
-        coors_order.contiguous().data_ptr<int32_t>());
-  }));
+  AT_DISPATCH_ALL_TYPES(
+      points.scalar_type(), "get_assign_pos", ([&] {
+        nondeterministic_get_assign_pos<<<cp_grid, cp_block, 0, stream>>>(
+            num_points, coors_map.contiguous().data_ptr<int32_t>(),
+            pts_id.contiguous().data_ptr<int32_t>(),
+            coors_count.contiguous().data_ptr<int32_t>(),
+            reduce_count.contiguous().data_ptr<int32_t>(),
+            coors_order.contiguous().data_ptr<int32_t>());
+      }));
 
   AT_DISPATCH_ALL_TYPES(
       points.scalar_type(), "assign_point_to_voxel", ([&] {
-    nondeterministic_assign_point_voxel<scalar_t>
-    <<<cp_grid, cp_block, 0, stream>>>(
-        num_points, points.contiguous().data_ptr<scalar_t>(),
-        coors_map.contiguous().data_ptr<int32_t>(),
-        pts_id.contiguous().data_ptr<int32_t>(),
-        temp_coors.contiguous().data_ptr<int32_t>(),
-        reduce_count.contiguous().data_ptr<int32_t>(),
-        coors_order.contiguous().data_ptr<int32_t>(),
-        voxels.contiguous().data_ptr<scalar_t>(),
-        coors.contiguous().data_ptr<int32_t>(),
-        num_points_per_voxel.contiguous().data_ptr<int32_t>(),
-        max_voxels, max_points,
-        num_features, NDim);
-  }));
+        nondeterministic_assign_point_voxel<scalar_t>
+            <<<cp_grid, cp_block, 0, stream>>>(
+                num_points, points.contiguous().data_ptr<scalar_t>(),
+                coors_map.contiguous().data_ptr<int32_t>(),
+                pts_id.contiguous().data_ptr<int32_t>(),
+                temp_coors.contiguous().data_ptr<int32_t>(),
+                reduce_count.contiguous().data_ptr<int32_t>(),
+                coors_order.contiguous().data_ptr<int32_t>(),
+                voxels.contiguous().data_ptr<scalar_t>(),
+                coors.contiguous().data_ptr<int32_t>(),
+                num_points_per_voxel.contiguous().data_ptr<int32_t>(),
+                max_voxels, max_points,
+                num_features, NDim);
+      }));
   AT_CUDA_CHECK(cudaGetLastError());
   return max_voxels < num_coors ? max_voxels : num_coors;
 }

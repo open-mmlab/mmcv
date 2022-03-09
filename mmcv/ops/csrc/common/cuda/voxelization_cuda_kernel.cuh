@@ -167,8 +167,8 @@ __global__ void determin_voxel_num(
 }
 
 __global__ void nondeterministic_get_assign_pos(
-    const int nthreads, const int32_t *coors_map, int32_t *pts_id,
-    int32_t *coors_count, int32_t *reduce_count, int32_t *coors_order) {
+    const int nthreads, const int32_t* coors_map, int32_t* pts_id,
+    int32_t* coors_count, int32_t* reduce_count, int32_t* coors_order) {
   CUDA_1D_KERNEL_LOOP(thread_idx, nthreads) {
     int coors_idx = coors_map[thread_idx];
     if (coors_idx > -1) {
@@ -181,13 +181,13 @@ __global__ void nondeterministic_get_assign_pos(
   }
 }
 
-template<typename T>
+template <typename T>
 __global__ void nondeterministic_assign_point_voxel(
-    const int nthreads, const T *points, const int32_t *coors_map,
-    const int32_t *pts_id, const int32_t *coors_in,
-    const int32_t *reduce_count, const int32_t *coors_order,
-    T *voxels, int32_t *coors, int32_t *pts_count, const int max_voxels,
-    const int max_points, const int num_features, const int NDim) {
+    const int nthreads, const T* points, const int32_t* coors_map,
+    const int32_t* pts_id, const int32_t* coors_in, const int32_t* reduce_count,
+    const int32_t* coors_order, T* voxels, int32_t* coors, int32_t* pts_count,
+    const int max_voxels, const int max_points, const int num_features,
+    const int NDim) {
   CUDA_1D_KERNEL_LOOP(thread_idx, nthreads) {
     int coors_idx = coors_map[thread_idx];
     int coors_pts_pos = pts_id[thread_idx];
