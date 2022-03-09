@@ -900,15 +900,8 @@ class RandomMultiscaleResize(BaseTransform):
 
     Args:
         scales (Union[list, Tuple]): Images scales for resizing.
-        keep_ratio (bool): Whether to keep the aspect ratio when
-            resizing the image. Defaults to False.
-        clip_object_border (bool): Whether clip the objects outside
-            the border of the image.  Defaults to True.
-        backend (str): Image resize backend, choices are 'cv2' and
-            'pillow'. These two backends generates slightly different results.
-            Defaults to 'cv2'.
-        interpolation (str): The mode of interpolation, support
-            "bilinear", "bicubic", "nearest". Defaults to "bilinear".
+        resize_cfg (dict): Base config for resizing. Defaults to
+            ``dict(type='Resize')``.
     """
 
     def __init__(
