@@ -10,6 +10,7 @@ from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
 from .wrappers import Compose
+from .utils import cacheable_method
 
 Number = Union[int, float]
 
@@ -1178,6 +1179,7 @@ class RandomFlip(BaseTransform):
                 results['gt_semantic_seg'],
                 direction=results['flip_direction'])
 
+    @cacheable_method
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
         and keypoints."""
@@ -1336,6 +1338,7 @@ class RandomResize(BaseTransform):
         scale = int(scale[0] * ratio), int(scale[1] * ratio)
         return scale
 
+    @cacheable_method
     def _random_scale(self, results: dict) -> None:
         """Private function to randomly sample an scale according to the type
         of `scale`.
