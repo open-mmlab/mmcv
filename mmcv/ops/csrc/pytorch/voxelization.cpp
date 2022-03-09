@@ -15,13 +15,10 @@ int hard_voxelize_forward_impl(const at::Tensor &points, at::Tensor &voxels,
 }
 
 int nondeterministic_hard_voxelize_forward_impl(
-    const at::Tensor &points,
-    at::Tensor &voxels, at::Tensor &coors,
-    at::Tensor &num_points_per_voxel,
-    const std::vector<float> voxel_size,
-    const std::vector<float> coors_range,
-    const int max_points, const int max_voxels,
-    const int NDim = 3) {
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3) {
   return DISPATCH_DEVICE_IMPL(nondeterministic_hard_voxelize_forward_impl,
                               points, voxels, coors, num_points_per_voxel,
                               voxel_size, coors_range, max_points, max_voxels,
@@ -57,8 +54,8 @@ void hard_voxelize_forward(const at::Tensor &points,
         coors_range_v, max_points, max_voxels, NDim);
   } else {
     *voxel_num_data = nondeterministic_hard_voxelize_forward_impl(
-        points, voxels, coors, num_points_per_voxel, voxel_size_v, coors_range_v,
-        max_points, max_voxels, NDim);
+        points, voxels, coors, num_points_per_voxel, voxel_size_v,
+        coors_range_v, max_points, max_voxels, NDim);
   }
 }
 

@@ -188,7 +188,7 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
             coors_x_min, coors_y_min, coors_z_min, coors_x_max, coors_y_max,
             coors_z_max, grid_x, grid_y, grid_z, num_points, num_features,
             NDim);
-  }));
+      }));
 
   at::Tensor coors_map;
   at::Tensor reduce_count;
@@ -238,8 +238,7 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
                 voxels.contiguous().data_ptr<scalar_t>(),
                 coors.contiguous().data_ptr<int32_t>(),
                 num_points_per_voxel.contiguous().data_ptr<int32_t>(),
-                max_voxels, max_points,
-                num_features, NDim);
+                max_voxels, max_points, num_features, NDim);
       }));
   AT_CUDA_CHECK(cudaGetLastError());
   return max_voxels < num_coors ? max_voxels : num_coors;
