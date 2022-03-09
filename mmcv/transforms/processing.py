@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -416,7 +416,7 @@ class Pad(BaseTransform):
 @TRANSFORMS.register_module()
 class CenterCrop(BaseTransform):
     """Crop the center of the image, segmentation masks, bounding boxes and key
-    points. If the crop area exceeds the original image and ``pad_mode`` is not
+    points. If the crop area exceeds the original image and ``do_pad`` is not
     None, the original image will be padded before cropping.
 
     Required Keys:
@@ -444,13 +444,8 @@ class CenterCrop(BaseTransform):
         crop_size (Union[int, Tuple[int, int]]):  Expected size after cropping
             with the format of (w, h). If set to an integer, then cropping
             width and height are equal to this integer.
-        pad_val (Union[Number, Dict[str, Number]]): A dict for
-            padding value. To specify how to set this argument, please see
-            the docstring of class ``Pad``. Defaults to
-            ``dict(img=0, seg=255)``.
-        pad_mode (str, optional): Type of padding. Should be: 'constant',
-            'edge', 'reflect' or 'symmetric'. For details, please see the
-            docstring of class ``Pad``. Defaults to 'constant'.
+        do_pad (bool): Whether to pad the image if it's smaller than the
+            ``crop_size``. Defaults to False.
         pad_cfg (str): Base config for padding. Defaults to
             ``dict(type='Pad')``.
         clip_object_border (bool): Whether to clip the objects
@@ -460,14 +455,14 @@ class CenterCrop(BaseTransform):
             Defaults to True.
     """
 
-    def __init__(
-        self,
-        crop_size: Union[int, Tuple[int, int]],
-        pad_val: Union[Number, Dict[str, Number]] = dict(img=0, seg=255),
-        pad_mode: Optional[str] = None,
-        pad_cfg: dict = dict(type='Pad'),
-        clip_object_border: bool = True,
-    ) -> None:  # flake8: noqa
+    def __init__(self,
+                 crop_size: Union[int, Tuple[int, int]],
+                 do_pad: bool = False,
+                 pad_cfg: dict = dict(
+                     type='Pad',
+                     pad_val=dict(img=0, seg=255),
+                     padding_mode=None),
+                 clip_object_border: bool = True) -> None:
         super().__init__()
         assert isinstance(crop_size, int) or (
             isinstance(crop_size, tuple) and len(crop_size) == 2
@@ -478,9 +473,15 @@ class CenterCrop(BaseTransform):
             crop_size = (crop_size, crop_size)
         assert crop_size[0] > 0 and crop_size[1] > 0
         self.crop_size = crop_size
-        self.pad_val = pad_val
-        self.pad_mode = pad_mode
-        self.pad_cfg = pad_cfg
+        self.do_pad = do_pad
+
+        self.pad_cfg = pad_cfg.copy()
+        # size will be overwritten
+        if 'size' in self.pad_cfg and do_pad:
+            warnings.warn('``size`` is set in ``pad_cfg``,'
+                          'however this argument will be overwritten'
+                          ' according to crop size and image size')
+
         self.clip_object_border = clip_object_border
 
     def _crop_img(self, results: dict, bboxes: np.ndarray) -> None:
@@ -577,17 +578,13 @@ class CenterCrop(BaseTransform):
         img_height, img_width = img.shape[:2]
 
         if crop_height > img_height or crop_width > img_width:
-            if self.pad_mode is not None:
+            if self.do_pad:
                 # pad the area
                 img_height = max(img_height, crop_height)
                 img_width = max(img_width, crop_width)
                 pad_size = (img_width, img_height)
                 _pad_cfg = self.pad_cfg.copy()
-                _pad_cfg.update(
-                    dict(
-                        size=pad_size,
-                        pad_val=self.pad_val,
-                        padding_mode=self.pad_mode))
+                _pad_cfg.update(dict(size=pad_size))
                 pad_transform = TRANSFORMS.build(_pad_cfg)
                 results = pad_transform(results)
             else:
@@ -613,8 +610,8 @@ class CenterCrop(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', crop_size = {self.crop_size}'
-        repr_str += f', pad_val = {self.pad_val}'
-        repr_str += f', pad_mode = {self.pad_mode}'
+        repr_str += f', do_pad={self.do_pad}'
+        repr_str += f', pad_cfg={self.pad_cfg}'
         repr_str += f',clip_object_border = {self.clip_object_border}'
         return repr_str
 
@@ -810,7 +807,7 @@ class MultiScaleFlipAug(BaseTransform):
         if not self.flip and self.flip_direction != ['horizontal']:
             warnings.warn(
                 'flip_direction has no effect when flip is set to False')
-        self.resize_cfg = resize_cfg
+        self.resize_cfg = resize_cfg.copy()
         self.flip_cfg = flip_cfg
 
     def transform(self, results: dict) -> Tuple[List, List]:
@@ -917,10 +914,6 @@ class RandomMultiscaleResize(BaseTransform):
     def __init__(
         self,
         scales: Union[list, Tuple],
-        keep_ratio: bool = False,
-        clip_object_border: bool = True,
-        backend: str = 'cv2',
-        interpolation: str = 'bilinear',
         resize_cfg: dict = dict(type='Resize')
     ) -> None:
         super().__init__()
@@ -929,11 +922,6 @@ class RandomMultiscaleResize(BaseTransform):
         else:
             self.scales = [scales]
         assert mmcv.is_list_of(self.scales, tuple)
-        self.keep_ratio = keep_ratio
-        self.clip_object_border = clip_object_border
-        self.backend = backend
-        self.interpolation = interpolation
-
         self.resize_cfg = resize_cfg
 
     @staticmethod
@@ -968,13 +956,7 @@ class RandomMultiscaleResize(BaseTransform):
 
         target_scale, scale_idx = self.random_select(self.scales)
         _resize_cfg = self.resize_cfg.copy()
-        _resize_cfg.update(
-            dict(
-                scale=target_scale,
-                keep_ratio=self.keep_ratio,
-                clip_object_border=self.clip_object_border,
-                backend=self.backend,
-                interpolation=self.interpolation))
+        _resize_cfg.update(dict(scale=target_scale))
         resize_transform = TRANSFORMS.build(_resize_cfg)
         results = resize_transform(results)
         results['scale_idx'] = scale_idx
@@ -983,10 +965,7 @@ class RandomMultiscaleResize(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', scales={self.scales}'
-        repr_str += f', keep_ratio={self.keep_ratio}'
-        repr_str += f', clip_object_border={self.clip_object_border}'
-        repr_str += f', backend={self.backend}'
-        repr_str += f', interpolation={self.interpolation}'
+        repr_str += f', resize_cfg={self.resize_cfg}'
         return repr_str
 
 

@@ -384,8 +384,8 @@ class TestCenterCrop:
         transform = dict(
             type='CenterCrop',
             crop_size=(img_width // 2, img_height * 2),
-            pad_mode='constant',
-            pad_val=12)
+            do_pad=True,
+            pad_cfg=dict(type='Pad', padding_mode='constant', pad_val=12))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -405,8 +405,11 @@ class TestCenterCrop:
         transform = dict(
             type='CenterCrop',
             crop_size=(img_width // 2, img_height * 2),
-            pad_mode='constant',
-            pad_val=dict(img=13, seg=33))
+            do_pad=True,
+            pad_cfg=dict(
+                type='Pad',
+                padding_mode='constant',
+                pad_val=dict(img=13, seg=33)))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -725,7 +728,7 @@ class TestRandomMultiscaleResize:
         transform = dict(
             type='RandomMultiscaleResize',
             scales=[(900, 600)],
-            keep_ratio=True)
+            resize_cfg=dict(type='Resize', keep_ratio=True))
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         _input_ratio = results['img'].shape[0] / results['img'].shape[1]
@@ -738,7 +741,7 @@ class TestRandomMultiscaleResize:
         transform = dict(
             type='RandomMultiscaleResize',
             scales=[(200, 150)],
-            clip_object_border=True)
+            resize_cfg=dict(type='Resize', clip_object_border=True))
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
@@ -750,7 +753,7 @@ class TestRandomMultiscaleResize:
         transform = dict(
             type='RandomMultiscaleResize',
             scales=[(200, 150)],
-            clip_object_border=False)
+            resize_cfg=dict(type='Resize', clip_object_border=False))
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
