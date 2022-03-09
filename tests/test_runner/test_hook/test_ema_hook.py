@@ -2,11 +2,11 @@ import shutil
 
 import torch
 import torch.nn as nn
-from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
 from mmcv.runner import CheckpointHook, EMAHook
+from .test_utils import _build_demo_runner
 
 
 def test_ema_hook():

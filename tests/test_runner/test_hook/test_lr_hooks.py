@@ -4,13 +4,13 @@ from unittest.mock import MagicMock, call
 
 import pytest
 import torch
-from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.utils.data import DataLoader
 
 from mmcv.runner import (CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
                          FlatCosineAnnealingLrUpdaterHook, IterTimerHook,
                          OneCycleLrUpdaterHook, PaviLoggerHook,
                          StepLrUpdaterHook)
+from .test_utils import _build_demo_runner
 
 
 @pytest.mark.parametrize('multi_optimizers', (True, False))

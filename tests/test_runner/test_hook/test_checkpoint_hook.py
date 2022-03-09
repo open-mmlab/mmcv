@@ -4,11 +4,11 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import torch
-from tests.test_runner.test_hook.test_utils import _build_demo_runner
 from torch.utils.data import DataLoader
 
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.runner import CheckpointHook
+from .test_utils import _build_demo_runner
 
 
 def test_checkpoint_hook(tmp_path):

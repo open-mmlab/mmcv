@@ -1,10 +1,8 @@
 import random
 import shutil
 
-from tests.test_runner.test_hook.test_utils import \
-    _build_demo_runner_without_hook
-
 from mmcv.runner.hooks import HOOKS, Hook
+from .test_utils import _build_demo_runner_without_hook
 
 
 def test_custom_hook():
