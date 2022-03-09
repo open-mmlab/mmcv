@@ -9,8 +9,8 @@ import mmcv
 from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .wrappers import Compose
 from .utils import cacheable_method
+from .wrappers import Compose
 
 Number = Union[int, float]
 
