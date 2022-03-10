@@ -596,4 +596,7 @@ def get_modules_mapping():
         # Deconvolution
         nn.ConvTranspose2d: deconv_flops_counter_hook,
         mmcv.cnn.bricks.ConvTranspose2d: deconv_flops_counter_hook,
+        # PixelShuffle
+        nn.PixelShuffle: pool_flops_counter_hook,
+        nn.PixelUnshuffle: pool_flops_counter_hook
     }
