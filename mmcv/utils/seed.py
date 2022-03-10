@@ -5,8 +5,7 @@ import numpy as np
 import torch
 
 
-def worker_init_fn(worker_id: int, num_workers: int, rank: int, seed: int) \
-        -> None:
+def worker_init_fn(worker_id: int, num_workers: int, rank: int, seed: int):
     """Function to initialize each worker.
 
     The seed of each worker equals to
