@@ -58,7 +58,7 @@ def collect_env():
                 nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
                 nvcc = subprocess.check_output(f'"{nvcc}" -V', shell=True)
                 nvcc = nvcc.decode('utf-8').strip()
-                release = nvcc.rfind('release ')
+                release = nvcc.rfind('Cuda compilation tools ')
                 build = nvcc.rfind('Build ')
                 nvcc = nvcc[release:build].strip()
             except subprocess.SubprocessError:
