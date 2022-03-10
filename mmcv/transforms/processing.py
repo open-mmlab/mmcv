@@ -416,8 +416,8 @@ class Pad(BaseTransform):
 @TRANSFORMS.register_module()
 class CenterCrop(BaseTransform):
     """Crop the center of the image, segmentation masks, bounding boxes and key
-    points. If the crop area exceeds the original image and ``do_pad`` is not
-    None, the original image will be padded before cropping.
+    points. If the crop area exceeds the original image and ``do_pad`` is True,
+    the original image will be padded before cropping.
 
     Required Keys:
 
@@ -446,7 +446,7 @@ class CenterCrop(BaseTransform):
             width and height are equal to this integer.
         do_pad (bool): Whether to pad the image if it's smaller than the
             ``crop_size``. Defaults to False.
-        pad_cfg (str): Base config for padding. Defaults to
+        pad_cfg (dict): Base config for padding. Defaults to
             ``dict(type='Pad')``.
         clip_object_border (bool): Whether to clip the objects
             outside the border of the image. In some dataset like MOT17, the
