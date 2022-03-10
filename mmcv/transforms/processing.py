@@ -1130,6 +1130,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
+    @cacheable_method
     def _choose_direction(self) -> str:
         """Choose the flip direction according to `prob` and `direction`"""
         if isinstance(self.direction,
@@ -1179,7 +1180,6 @@ class RandomFlip(BaseTransform):
                 results['gt_semantic_seg'],
                 direction=results['flip_direction'])
 
-    @cacheable_method
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
         and keypoints."""
@@ -1339,12 +1339,10 @@ class RandomResize(BaseTransform):
         return scale
 
     @cacheable_method
-    def _random_scale(self, results: dict) -> None:
+    def _random_scale(self) -> None:
         """Private function to randomly sample an scale according to the type
         of `scale`.
 
-        Args:
-            results (dict): Result dict from :obj:`dataset`.
         Returns:
             dict: One new key 'scale`is added into ``results``,
             which would be used by subsequent pipelines.
@@ -1360,7 +1358,7 @@ class RandomResize(BaseTransform):
             raise NotImplementedError(f"Do not support sampling function \
                                         for '{self.scale}'")
 
-        results['scale'] = scale
+        return scale
 
     def transform(self, results: dict) -> dict:
         """Transform function to resize images, bounding boxes, semantic
@@ -1373,7 +1371,7 @@ class RandomResize(BaseTransform):
             'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
             and 'keep_ratio' keys are updated in result dict.
         """
-        self._random_scale(results)
+        results['scale'] = self._random_scale()
         self.resize.scale = results['scale']
         results = self.resize.transform(results)
         return results
