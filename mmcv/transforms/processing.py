@@ -1250,15 +1250,19 @@ class RandomResize(BaseTransform):
             to 'cv2'.
         interpolation (str): How to interpolate the original image when
             resizing. Defaults to 'bilinear'.
+        resize_cfg (dict): Config to initialize a 'Resize' object.
     """
 
-    def __init__(self,
-                 scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
-                 ratio_range: Tuple[float, float] = None,
-                 keep_ratio: bool = True,
-                 clip_object_border: bool = True,
-                 backend: str = 'cv2',
-                 interpolation: str = 'bilinear') -> None:
+    def __init__(
+        self,
+        scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
+        ratio_range: Tuple[float, float] = None,
+        keep_ratio: bool = True,
+        clip_object_border: bool = True,
+        backend: str = 'cv2',
+        interpolation: str = 'bilinear',
+        resize_cfg: dict = dict(type='Resize')
+    ) -> None:
 
         assert scale is not None
 
@@ -1270,7 +1274,8 @@ class RandomResize(BaseTransform):
         self.interpolation = interpolation
 
         # create a empty Reisize object
-        self.resize = Resize(0)
+        resize_cfg.update(dict(scale=0))
+        self.resize = TRANSFORMS.build(resize_cfg)
         self.resize.keep_ratio = keep_ratio
         self.resize.clip_object_border = clip_object_border
         self.resize.backend = backend
