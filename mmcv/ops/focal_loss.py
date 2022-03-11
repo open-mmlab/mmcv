@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -10,6 +11,103 @@ ext_module = ext_loader.load_ext('_ext', [
     'sigmoid_focal_loss_forward', 'sigmoid_focal_loss_backward',
     'softmax_focal_loss_forward', 'softmax_focal_loss_backward'
 ])
+
+
+def sigmoid_focal_loss_cpu(input,
+                           target,
+                           gamma=2.0,
+                           alpha=0.25,
+                           weight=None,
+                           reduction='mean'):
+    """Loss used in RetinaNet for dense detection:
+    https://arxiv.org/abs/1708.02002.
+
+    Args:
+        input (torch.Tensor): The prediction probability with shape (N, C),
+            C is the number of classes.
+        target (torch.Tensor): The learning label of the prediction with
+            shape (N,). Stores the binary classification label for each
+            element in inputs. (0 for the negative class and 1 for the
+            positive class).
+        gamma (float, optional): Exponent of the modulating factor (1 - p_t)
+            to balance easy vs hard examples. Default = 2.0
+        alpha (float, optional): Weighting factor in range (0,1) tobalance
+            positive vs negative examples. Default = 0.25
+        weight (torch.Tensor, optional): The weight of loss for each
+            prediction. Defaults to None.
+        reduction: 'none' | 'mean' | 'sum'
+            'none': No reduction will be applied to the output.
+            'mean': The output will be averaged.
+            'sum': The output will be summed.
+            Default = 'mean'
+
+    Returns:
+        Loss tensor with the reduction option applied.
+    """
+
+    if weight is None:
+        weight = torch.ones_like(target)
+
+    p = torch.sigmoid(input)
+    target = F.one_hot(target)
+    p_t = p * target + (1 - p) * (1 - target)
+    alpha_t = alpha * target + (1 - alpha) * (1 - target)
+    ce_loss = -torch.log(p_t)
+    loss = alpha_t * ((1 - p_t)**gamma) * ce_loss
+    loss = loss.sum(dim=1)
+    loss *= weight
+    if reduction == 'mean':
+        loss = loss.mean()
+    elif reduction == 'sum':
+        loss = loss.sum()
+    return loss
+
+
+def softmax_focal_loss_cpu(input,
+                           target,
+                           gamma=2.0,
+                           alpha=0.25,
+                           weight=None,
+                           reduction='mean'):
+    """Focal Loss for multi class.
+
+    Args:
+        input (torch.Tensor): The prediction probability with shape (N, C),
+            C is the number of classes.
+        target (torch.Tensor): The learning label of the prediction with
+            shape (N,). Stores the binary classification label for each
+            element in inputs. (0 for the negative class and 1 for the
+            positive class).
+        gamma (float, optional): Exponent of the modulating factor (1 - p_t)
+            to balance easy vs hard examples. Default = 2.0
+        alpha (float, optional): Weighting factor in range (0,1) tobalance
+            positive vs negative examples. Default = 0.25
+        weight (torch.Tensor, optional): The weight of loss for each
+            prediction. Defaults to None.
+        reduction: 'none' | 'mean' | 'sum'
+            'none': No reduction will be applied to the output.
+            'mean': The output will be averaged.
+            'sum': The output will be summed.
+            Default = 'mean'
+
+    Returns:
+        Loss tensor with the reduction option applied.
+    """
+
+    if weight is None:
+        weight = torch.ones_like(target)
+    channel_stats, _ = torch.max(input, dim=1)
+
+    input_ = input - channel_stats.unsqueeze(1)
+    p = F.softmax(input_, dim=1)
+    range_n = torch.arange(0, input.size(0))
+    p = p[range_n, target]
+    loss = -alpha * (1 - p)**gamma * torch.log(p)
+    if reduction == 'mean':
+        loss = loss.mean()
+    elif reduction == 'sum':
+        loss = loss.sum()
+    return loss
 
 
 class SigmoidFocalLossFunction(Function):
@@ -95,8 +193,13 @@ class SigmoidFocalLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, input, target):
-        return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
-                                  self.weight, self.reduction)
+        if torch.cuda.is_available() and input.is_cuda:
+            return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
+                                      self.weight, self.reduction)
+        else:
+            return sigmoid_focal_loss_cpu(input, target, self.gamma,
+                                          self.alpha, self.weight,
+                                          self.reduction)
 
     def __repr__(self):
         s = self.__class__.__name__
@@ -201,8 +304,13 @@ class SoftmaxFocalLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, input, target):
-        return softmax_focal_loss(input, target, self.gamma, self.alpha,
-                                  self.weight, self.reduction)
+        if torch.cuda.is_available() and input.is_cuda:
+            return softmax_focal_loss(input, target, self.gamma, self.alpha,
+                                      self.weight, self.reduction)
+        else:
+            return softmax_focal_loss_cpu(input, target, self.gamma,
+                                          self.alpha, self.weight,
+                                          self.reduction)
 
     def __repr__(self):
         s = self.__class__.__name__
