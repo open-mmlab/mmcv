@@ -158,8 +158,8 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
 
   if (num_points == 0) return 0;
 
-  dim3 blocks(std::min(
-      at::cuda::ATenCeilDiv(num_points, THREADS_PER_BLOCK), 4096));
+  dim3 blocks(
+      std::min(at::cuda::ATenCeilDiv(num_points, THREADS_PER_BLOCK), 4096));
   dim3 threads(THREADS_PER_BLOCK);
 
   const float voxel_x = voxel_size[0];
