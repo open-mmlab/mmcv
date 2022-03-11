@@ -460,6 +460,10 @@ class TestGeometric:
 
         with pytest.raises(AssertionError):
             mmcv.impad(img, shape=(12, 15), padding=(0, 0, 5, 2))
+        
+        # Pad shape smaller than image shape
+        padded_img = mmcv.impad(img, shape=(8, 8))
+        assert padded_img.shape == (10, 10, 3)
 
     def test_impad_to_multiple(self):
         img = np.random.rand(11, 14, 3).astype(np.float32)
