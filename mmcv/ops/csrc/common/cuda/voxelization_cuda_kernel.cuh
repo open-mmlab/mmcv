@@ -191,9 +191,9 @@ __global__ void nondeterministic_assign_point_voxel(
   CUDA_1D_KERNEL_LOOP(thread_idx, nthreads) {
     int coors_idx = coors_map[thread_idx];
     int coors_pts_pos = pts_id[thread_idx];
-    if (coors_idx > -1) {
+    if (coors_idx > -1 && coors_pts_pos < max_points) {
       int coors_pos = coors_order[coors_idx];
-      if (coors_pos < max_voxels && coors_pts_pos < max_points) {
+      if (coors_pos < max_voxels) {
         auto voxels_offset =
             voxels + (coors_pos * max_points + coors_pts_pos) * num_features;
         auto points_offset = points + thread_idx * num_features;

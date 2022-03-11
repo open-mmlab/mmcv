@@ -158,6 +158,10 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
 
   if (num_points == 0) return 0;
 
+  dim3 blocks(std::min(
+      at::cuda::ATenCeilDiv(num_points, THREADS_PER_BLOCK), 4096));
+  dim3 threads(THREADS_PER_BLOCK);
+
   const float voxel_x = voxel_size[0];
   const float voxel_y = voxel_size[1];
   const float voxel_z = voxel_size[2];
@@ -176,13 +180,10 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
   at::Tensor temp_coors =
       at::zeros({num_points, NDim}, points.options().dtype(at::kInt));
 
-  dim3 grid(std::min(at::cuda::ATenCeilDiv(num_points, 512), 4096));
-  dim3 block(512);
-
   // 1. link point to corresponding voxel coors
   AT_DISPATCH_ALL_TYPES(
       points.scalar_type(), "hard_voxelize_kernel", ([&] {
-        dynamic_voxelize_kernel<scalar_t, int><<<grid, block, 0, stream>>>(
+        dynamic_voxelize_kernel<scalar_t, int><<<blocks, threads, 0, stream>>>(
             points.contiguous().data_ptr<scalar_t>(),
             temp_coors.contiguous().data_ptr<int>(), voxel_x, voxel_y, voxel_z,
             coors_x_min, coors_y_min, coors_z_min, coors_x_max, coors_y_max,
@@ -213,11 +214,9 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
   at::Tensor pts_id = at::zeros({num_points}, coors_map.options());
   reduce_count = at::zeros({num_coors}, coors_map.options());
 
-  dim3 cp_grid(std::min(at::cuda::ATenCeilDiv(num_points, 512), 4096));
-  dim3 cp_block(512);
   AT_DISPATCH_ALL_TYPES(
       points.scalar_type(), "get_assign_pos", ([&] {
-        nondeterministic_get_assign_pos<<<cp_grid, cp_block, 0, stream>>>(
+        nondeterministic_get_assign_pos<<<blocks, threads, 0, stream>>>(
             num_points, coors_map.contiguous().data_ptr<int32_t>(),
             pts_id.contiguous().data_ptr<int32_t>(),
             coors_count.contiguous().data_ptr<int32_t>(),
@@ -228,7 +227,7 @@ int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
   AT_DISPATCH_ALL_TYPES(
       points.scalar_type(), "assign_point_to_voxel", ([&] {
         nondeterministic_assign_point_voxel<scalar_t>
-            <<<cp_grid, cp_block, 0, stream>>>(
+            <<<blocks, threads, 0, stream>>>(
                 num_points, points.contiguous().data_ptr<scalar_t>(),
                 coors_map.contiguous().data_ptr<int32_t>(),
                 pts_id.contiguous().data_ptr<int32_t>(),
