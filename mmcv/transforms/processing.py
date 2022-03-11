@@ -1238,18 +1238,6 @@ class RandomResize(BaseTransform):
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
-        keep_ratio (bool): Whether to keep the aspect ratio when resizing the
-            image. Defaults to True.
-        clip_object_border (bool): Whether to clip the objects
-            outside the border of the image. In some dataset like MOT17, the
-            gt bboxes are allowed to cross the border of images. Therefore,
-            we don't need to clip the gt bboxes in these cases.
-            Defaults to True.
-        backend (str): Image resize backend, choices are 'cv2' and 'pillow'.
-            These two backends generates slightly different results. Defaults
-            to 'cv2'.
-        interpolation (str): How to interpolate the original image when
-            resizing. Defaults to 'bilinear'.
         resize_cfg (dict): Config to initialize a 'Resize' object.
     """
 
@@ -1257,29 +1245,23 @@ class RandomResize(BaseTransform):
         self,
         scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
         ratio_range: Tuple[float, float] = None,
-        keep_ratio: bool = True,
-        clip_object_border: bool = True,
-        backend: str = 'cv2',
-        interpolation: str = 'bilinear',
-        resize_cfg: dict = dict(type='Resize')
+        resize_cfg: dict = dict(
+            type='Resize',
+            keep_ratio=True,
+            clip_object_border=True,
+            backend='cv2',
+            interpolation='bilinear')
     ) -> None:
 
         assert scale is not None
 
         self.scale = scale
         self.ratio_range = ratio_range
-        self.keep_ratio = keep_ratio
-        self.clip_object_border = clip_object_border
-        self.backend = backend
-        self.interpolation = interpolation
+        self.resize_cfg = resize_cfg
 
         # create a empty Reisize object
-        resize_cfg.update(dict(scale=0))
-        self.resize = TRANSFORMS.build(resize_cfg)
-        self.resize.keep_ratio = keep_ratio
-        self.resize.clip_object_border = clip_object_border
-        self.resize.backend = backend
-        self.resize.interpolation = interpolation
+        self.resize_cfg.update(dict(scale=0))
+        self.resize = TRANSFORMS.build(self.resize_cfg)
 
     @staticmethod
     def _random_sample(scales: Sequence[Tuple[int, int]]) -> Tuple[int, int]:
@@ -1366,8 +1348,5 @@ class RandomResize(BaseTransform):
         repr_str = self.__class__.__name__
         repr_str += f'(scale={self.scale}, '
         repr_str += f'ratio_range={self.ratio_range}, '
-        repr_str += f'keep_ratio={self.keep_ratio}, '
-        repr_str += f'bbox_clip_border={self.clip_object_border}, '
-        repr_str += f'backend={self.backend}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f'resize_cfg={self.resize_cfg})'
         return repr_str
