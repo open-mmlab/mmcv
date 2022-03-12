@@ -534,7 +534,7 @@ class Config:
 
         for key, value in self.__dict__.items():
             super(Config, other).__setattr__(key, value)
-        
+
         return other
 
     def __deepcopy__(self, memo):
