@@ -532,8 +532,8 @@ class Config:
         cls = self.__class__
         other = cls.__new__(cls)
 
-        for key,value in self.__dict__.items():
-            super(Config,other).__setattr__(key,value)
+        for key, value in self.__dict__.items():
+            super(Config, other).__setattr__(key, value)
         
         return other
 
