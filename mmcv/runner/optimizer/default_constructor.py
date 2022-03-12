@@ -84,7 +84,7 @@ class DefaultOptimizerConstructor:
         >>> # assume model have attribute model.backbone and model.cls_head
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
         >>> paramwise_cfg = dict(custom_keys={
-                '.backbone': dict(lr_mult=0.1, decay_mult=0.9)})
+                'backbone': dict(lr_mult=0.1, decay_mult=0.9)})
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)
