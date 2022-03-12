@@ -557,7 +557,6 @@ def test_copy():
     new_cfg = copy.copy(cfg)
 
     assert isinstance(new_cfg, Config)
-    assert new_cfg._cfg_dict == cfg._cfg_dict
     assert new_cfg is not cfg
     assert new_cfg._cfg_dict is cfg._cfg_dict
     assert new_cfg._filename == cfg._filename
