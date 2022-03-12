@@ -58,7 +58,7 @@ def collect_env():
                 nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
                 nvcc = subprocess.check_output(f'"{nvcc}" -V', shell=True)
                 nvcc = nvcc.decode('utf-8').strip()
-                release = nvcc.rfind('Cuda compilation tools ')
+                release = nvcc.rfind('Cuda compilation tools')
                 build = nvcc.rfind('Build ')
                 nvcc = nvcc[release:build].strip()
             except subprocess.SubprocessError:
@@ -66,13 +66,23 @@ def collect_env():
             env_info['NVCC'] = nvcc
 
     try:
-        gcc = subprocess.check_output('gcc --version', shell=True)
-        gcc = gcc.decode('utf-8').strip()
-        first_line = gcc.find('\n')
-        gcc = gcc[:first_line].strip()
-        env_info['GCC'] = gcc
-    except subprocess.CalledProcessError:  # gcc is unavailable
-        env_info['GCC'] = 'n/a'
+        import sysconfig
+        cc = sysconfig.get_config_var('CC')
+        if cc:
+            cc = osp.basename(cc.split()[0])
+            cc = subprocess.check_output(f'{cc} --version', shell=True)
+            cc = cc.decode('utf-8').strip()
+            first_line = cc.find('\n')
+            cc = cc[:first_line].strip()
+            env_info['CC'] = cc
+        else:
+            from setuptools._distutils.ccompiler import new_compiler
+            ccompiler = new_compiler()
+            ccompiler.initialize()
+            env_info['CC'] = ccompiler.cc.strip()
+            del ccompiler
+    except subprocess.CalledProcessError:
+        env_info['CC'] = 'n/a'
 
     env_info['PyTorch'] = torch.__version__
     env_info['PyTorch compiling details'] = get_build_config()
