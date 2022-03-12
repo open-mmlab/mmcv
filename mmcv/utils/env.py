@@ -70,16 +70,14 @@ def collect_env():
         cc = sysconfig.get_config_var('CC')
         if cc:
             cc = osp.basename(cc.split()[0])
-            cc = subprocess.check_output(f'{cc} --version', shell=True)
-            cc = cc.decode('utf-8').strip()
-            first_line = cc.find('\n')
-            cc = cc[:first_line].strip()
-            env_info['CC'] = cc
+            cc_info = subprocess.check_output(f'{cc} --version', shell=True)
+            env_info['CC'] = cc_info.decode('utf-8').partition('\n')[0].strip()
         else:
             from setuptools._distutils.ccompiler import new_compiler
             ccompiler = new_compiler()
             ccompiler.initialize()
-            env_info['CC'] = ccompiler.cc.strip()
+            cc = subprocess.check_output(f'{ccompiler.cc}', stderr=subprocess.STDOUT, shell=True)
+            env_info['CC'] = cc.decode('utf-8').partition('\n')[0].strip()
             del ccompiler
     except subprocess.CalledProcessError:
         env_info['CC'] = 'n/a'
