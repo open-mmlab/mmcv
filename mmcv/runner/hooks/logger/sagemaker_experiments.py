@@ -11,8 +11,6 @@ class SMExperimentsLoggerHook(LoggerHook):
     experiments`_ and `boto3`_ to be installed.
 
     Args:
-        log_per_epoch (bool, optional): Whether or not metrics
-           should be logged per epoch separately. Default: False.
         interval (int): Logging interval (every k iterations). Default: 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`. Default: True.
@@ -28,7 +26,6 @@ class SMExperimentsLoggerHook(LoggerHook):
 
     def __init__(
         self,
-        log_per_epoch=False,
         interval=10,
         ignore_last=True,
         reset_flag=False,
@@ -36,7 +33,6 @@ class SMExperimentsLoggerHook(LoggerHook):
     ):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_smexperiments()
-        self.log_per_epoch = log_per_epoch
         self.tracker = None
 
     def import_smexperiments(self):

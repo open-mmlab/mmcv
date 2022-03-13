@@ -1447,13 +1447,12 @@ def test_wandb_hook():
     hook.wandb.join.assert_called_with()
 
 
-@pytest.mark.parametrize('log_per_epoch', (True, False))
-def test_smexperiments_hook(log_per_epoch):
+def test_smexperiments_hook():
     sys.modules['smexperiments'] = MagicMock()
     sys.modules['boto3'] = MagicMock()
 
     runner = _build_demo_runner()
-    hook = SMExperimentsLoggerHook(log_per_epoch=log_per_epoch)
+    hook = SMExperimentsLoggerHook()
 
     loader = DataLoader(torch.ones((5, 2)))
 
