@@ -6,9 +6,10 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class SMExperimentsLoggerHook(LoggerHook):
-    """Class to log metrics to Sagemaker Experiments.
-    Works within sagemaker training job only due to library implementation.
-    It requires `sagemaker-experiments`_ and `boto3`_ to be installed.
+    """Class to log metrics to Sagemaker Experiments. Works within sagemaker
+    training job only due to library implementation. It requires `sagemaker-
+    experiments`_ and `boto3`_ to be installed.
+
     Args:
         log_per_epoch (bool, optional): Whether or not metrics
            should be logged per epoch separately. Default: False.
@@ -18,6 +19,7 @@ class SMExperimentsLoggerHook(LoggerHook):
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
+
     .. _sagemaker-experiments:
         https://sagemaker-experiments.readthedocs.io/
     .. _boto3:
@@ -70,15 +72,3 @@ class SMExperimentsLoggerHook(LoggerHook):
     def after_run(self, runner):
         if self.tracker:
             self.tracker.close()
-
-    @master_only
-    def after_epoch(self, runner):
-        super().after_epoch(runner)
-        if self.log_per_epoch:
-            tags = self.get_loggable_tags(runner)
-            if tags:
-                for tag_name, tag_value in tags.items():
-                    self.tracker.log_metric(
-                        f'{tag_name}/epoch',
-                        tag_value,
-                        iteration_number=self.get_epoch(runner))
