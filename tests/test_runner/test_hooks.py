@@ -28,9 +28,9 @@ from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          GradientCumulativeFp16OptimizerHook,
                          GradientCumulativeOptimizerHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                         PaviLoggerHook, SegmindLoggerHook, WandbLoggerHook,
+                         PaviLoggerHook, SegmindLoggerHook,
+                         SMExperimentsLoggerHook, WandbLoggerHook,
                          build_runner)
-# yapf: enable
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
@@ -39,6 +39,8 @@ from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)
 from mmcv.utils import TORCH_VERSION
+
+# yapf: enable
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -1443,6 +1445,29 @@ def test_wandb_hook():
                                       commit=True)
     hook.wandb.log_artifact.assert_called()
     hook.wandb.join.assert_called_with()
+
+
+@pytest.mark.parametrize('log_per_epoch', (True, False))
+def test_smexperiments_hook(log_per_epoch):
+    sys.modules['smexperiments'] = MagicMock()
+    sys.modules['boto3'] = MagicMock()
+
+    runner = _build_demo_runner()
+    hook = SMExperimentsLoggerHook(log_per_epoch=log_per_epoch)
+
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.smexp_tracker.Tracker.load.assert_called()
+
+    calls = [
+        call('learning_rate', 0.02, iteration_number=6),
+        call('momentum', 0.95, iteration_number=6),
+    ]
+    hook.tracker.log_metric.assert_has_calls(calls, any_order=False)
 
 
 def test_neptune_hook():
