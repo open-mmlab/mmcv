@@ -73,7 +73,7 @@ def collect_env():
             cc_info = subprocess.check_output(f'{cc} --version', shell=True)
             env_info['CC'] = cc_info.decode('utf-8').partition('\n')[0].strip()
         else:
-            from setuptools._distutils.ccompiler import new_compiler
+            from distutils.ccompiler import new_compiler
             ccompiler = new_compiler()
             ccompiler.initialize()
             cc = subprocess.check_output(
