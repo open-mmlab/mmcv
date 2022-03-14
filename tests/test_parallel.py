@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from unittest.mock import MagicMock, patch
+import os
+from unittest.mock import patch
 
 import pytest
 import torch
@@ -46,10 +47,15 @@ def test_is_module_wrapper():
     mmdp = MMDataParallel(model)
     assert is_module_wrapper(mmdp)
 
-    ddp = DistributedDataParallel(model, process_group=MagicMock())
+    os.environ['MASTER_ADDR'] = '127.0.0.1'
+    os.environ['MASTER_PORT'] = '29500'
+    os.environ['WORLD_SIZE'] = '1'
+    os.environ['RANK'] = '0'
+
+    ddp = DistributedDataParallel(model)
     assert is_module_wrapper(ddp)
 
-    mmddp = MMDistributedDataParallel(model, process_group=MagicMock())
+    mmddp = MMDistributedDataParallel(model)
     assert is_module_wrapper(mmddp)
 
     deprecated_mmddp = DeprecatedMMDDP(model)
