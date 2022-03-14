@@ -31,7 +31,7 @@ In the package, we first create a file to implement builders, named `converters/
 ```python
 from mmcv.utils import Registry
 # create a registry for converters
-CONVERTERS = Registry('converter')
+CONVERTERS = Registry('converters')
 ```
 
 Then we can implement different converters in the package. For example, implement `Converter1` in `converters/converter1.py`
