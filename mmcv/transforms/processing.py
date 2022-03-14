@@ -9,6 +9,7 @@ import mmcv
 from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
+from .utils import cacheable_method
 from .wrappers import Compose
 
 Number = Union[int, float]
@@ -446,8 +447,8 @@ class CenterCrop(BaseTransform):
             width and height are equal to this integer.
         do_pad (bool): Whether to pad the image if it's smaller than the
             ``crop_size``. Defaults to False.
-        pad_cfg (dict): Base config for padding. Defaults to
-            ``dict(type='Pad')``.
+        pad_cfg (dict): Base config for padding. Refer to ``mmcv.Pad`` for
+            detail. Defaults to ``dict(type='Pad')``.
         clip_object_border (bool): Whether to clip the objects
             outside the border of the image. In some dataset like MOT17, the
             gt bboxes are allowed to cross the border of images. Therefore,
@@ -659,6 +660,10 @@ class RandomGrayscale(BaseTransform):
         assert color_format in ['bgr', 'rgb', 'hsv']
         self.color_format = color_format
 
+    @cacheable_method
+    def _random_prob(self):
+        return random.random()
+
     def transform(self, results: dict) -> dict:
         """Apply random grayscale on results.
 
@@ -674,7 +679,7 @@ class RandomGrayscale(BaseTransform):
             img = mmcv.hsv2bgr(img)
         img = img[..., None] if img.ndim == 2 else img
         num_output_channels = img.shape[2]
-        if random.random() < self.prob:
+        if self._random_prob() < self.prob:
             if num_output_channels > 1:
                 assert num_output_channels == len(
                     self.channel_weights
@@ -900,7 +905,8 @@ class RandomMultiscaleResize(BaseTransform):
 
     Args:
         scales (Union[list, Tuple]): Images scales for resizing.
-        resize_cfg (dict): Base config for resizing. Defaults to
+        resize_cfg (dict): Base config for resizing. Refer to
+            ``mmcv.Resize`` for detail. Defaults to
             ``dict(type='Resize')``.
     """
 
@@ -917,12 +923,9 @@ class RandomMultiscaleResize(BaseTransform):
         assert mmcv.is_list_of(self.scales, tuple)
         self.resize_cfg = resize_cfg
 
-    @staticmethod
-    def random_select(scales: List[Tuple]) -> Tuple[Number, int]:
+    @cacheable_method
+    def _random_select(self) -> Tuple[Number, int]:
         """Randomly select an img_scale from given candidates.
-
-        Args:
-            scales (list[tuple]): Images scales for selection.
 
         Returns:
             (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
@@ -930,9 +933,9 @@ class RandomMultiscaleResize(BaseTransform):
             ``scale_idx`` is the selected index in the given candidates.
         """
 
-        assert mmcv.is_list_of(scales, tuple)
-        scale_idx = np.random.randint(len(scales))
-        scale = scales[scale_idx]
+        assert mmcv.is_list_of(self.scales, tuple)
+        scale_idx = np.random.randint(len(self.scales))
+        scale = self.scales[scale_idx]
         return scale, scale_idx
 
     def transform(self, results: dict) -> dict:
@@ -947,7 +950,7 @@ class RandomMultiscaleResize(BaseTransform):
             and 'keep_ratio' keys are updated in result dict.
         """
 
-        target_scale, scale_idx = self.random_select(self.scales)
+        target_scale, scale_idx = self._random_select()
         _resize_cfg = self.resize_cfg.copy()
         _resize_cfg.update(dict(scale=target_scale))
         resize_transform = TRANSFORMS.build(_resize_cfg)
