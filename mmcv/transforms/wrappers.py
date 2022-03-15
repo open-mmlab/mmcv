@@ -452,10 +452,13 @@ class RandomChoice(BaseTransform):
         self.pipeline_probs = pipeline_probs
         self.pipelines = [Compose(transforms) for transforms in pipelines]
 
+    def __iter__(self):
+        return iter(self.pipelines)
+
     @cacheable_method
     def random_pipeline_index(self):
         indices = np.arange(len(self.pipelines))
-        return np.random.choice(indices, self.pipeline_probs)
+        return np.random.choice(indices, p=self.pipeline_probs)
 
     def transform(self, results):
         idx = self.random_pipeline_index()
