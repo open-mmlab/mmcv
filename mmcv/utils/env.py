@@ -71,17 +71,19 @@ def collect_env():
         if cc:
             cc = osp.basename(cc.split()[0])
             cc_info = subprocess.check_output(f'{cc} --version', shell=True)
-            env_info['CC'] = cc_info.decode('utf-8').partition('\n')[0].strip()
+            env_info['GCC'] = cc_info.decode('utf-8').partition(
+                '\n')[0].strip()
         else:
             from distutils.ccompiler import new_compiler
             ccompiler = new_compiler()
             ccompiler.initialize()
             cc = subprocess.check_output(
                 f'{ccompiler.cc}', stderr=subprocess.STDOUT, shell=True)
-            env_info['CC'] = cc.decode('utf-8').partition('\n')[0].strip()
+            env_info['MSVC'] = cc.decode('utf-8').partition('\n')[0].strip()
+            env_info['GCC'] = 'n/a'
             del ccompiler
     except subprocess.CalledProcessError:
-        env_info['CC'] = 'n/a'
+        env_info['GCC'] = 'n/a'
 
     env_info['PyTorch'] = torch.__version__
     env_info['PyTorch compiling details'] = get_build_config()
