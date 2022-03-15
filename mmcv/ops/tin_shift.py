@@ -22,7 +22,8 @@ class TINShiftFunction(Function):
         batches_shift = shift.size(0)
         if batches_input != batches_shift:
             raise ValueError('batches_input should be equal to batches_shift, '
-                             f'but got batches_input={batches_input} and batches_shift={batches_shift}.')
+                             f'but got batches_input={batches_input} \
+                             and batches_shift={batches_shift}.')
         C = input.size(2)
         num_segments = shift.size(1)
         if C // num_segments <= 0 or C % num_segments != 0:
