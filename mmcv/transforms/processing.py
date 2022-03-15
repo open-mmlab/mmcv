@@ -804,7 +804,7 @@ class MultiScaleFlipAug(BaseTransform):
         self.resize_cfg = resize_cfg
         self.flip_cfg = flip_cfg
 
-    def transform(self, results: dict) -> dict:
+    def transform(self, results: dict) -> Tuple[List, List]:
         """Apply test time augment transforms on results.
 
         Args:
