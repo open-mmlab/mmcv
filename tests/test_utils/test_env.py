@@ -26,7 +26,9 @@ def test_collect_env():
         for key in ['CUDA_HOME', 'NVCC']:
             assert key in env_info
 
-    assert 'CC' in env_info
+    assert 'GCC' in env_info
+    if sys.platform == 'win32':
+        assert 'MSVC' in env_info
 
     assert env_info['sys.platform'] == sys.platform
     assert env_info['Python'] == sys.version.replace('\n', '')
