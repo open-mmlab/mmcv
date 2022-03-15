@@ -24,8 +24,8 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
   auto trInput1 = input1.permute({0, 2, 3, 1}).contiguous();
   auto trInput2 = input2.permute({0, 2, 3, 1}).contiguous();
 
-  const int threads = THREADS_FORWARD;
-  const dim3 blocks(batch_size, oH, oW);
+  const dim3 threads(WARP_SIZE, 4, 4);
+  const dim3 blocks(batch_size, (oH + 3) >> 2, (oW + 3) >> 2);
 
   at::cuda::CUDAGuard device_guard(input1.device());
 
@@ -57,7 +57,7 @@ void CorrelationBackwardCUDAKernelLauncher(
   const int C = input1.size(1);
 
   const dim3 blocks(C, iH, iW);
-  const dim3 threads(THREADS_BACKWARD, THREADS_BACKWARD);
+  const dim3 threads(WARP_SIZE, THREADS_BACKWARD);
 
   at::cuda::CUDAGuard device_guard(input1.device());
 
