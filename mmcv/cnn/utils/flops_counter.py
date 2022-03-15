@@ -459,7 +459,7 @@ def deconv_flops_counter_hook(conv_module, input, output):
     bias_flops = 0
     if conv_module.bias is not None:
         output_height, output_width = output.shape[2:]
-        bias_flops = out_channels * batch_size * output_height * output_height
+        bias_flops = out_channels * batch_size * output_height * output_width
     overall_flops = overall_conv_flops + bias_flops
 
     conv_module.__flops__ += int(overall_flops)

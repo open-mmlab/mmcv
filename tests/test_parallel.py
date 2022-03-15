@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -30,11 +31,15 @@ def test_is_module_wrapper():
         def forward(self, x):
             return self.conv(x)
 
-    # _verify_model_across_ranks is added in torch1.9.0 so we should check
-    # whether _verify_model_across_ranks is the member of torch.distributed
-    # before mocking
+    # _verify_model_across_ranks is added in torch1.9.0,
+    # _verify_params_across_processes is added in torch1.11.0,
+    # so we should check whether _verify_model_across_ranks
+    # and _verify_params_across_processes are the member of
+    # torch.distributed before mocking
     if hasattr(torch.distributed, '_verify_model_across_ranks'):
         torch.distributed._verify_model_across_ranks = mock
+    if hasattr(torch.distributed, '_verify_params_across_processes'):
+        torch.distributed._verify_params_across_processes = mock
 
     model = Model()
     assert not is_module_wrapper(model)

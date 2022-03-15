@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import sys
 from collections import OrderedDict
 from tempfile import TemporaryDirectory

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 """Tests the hooks with runners.
 
 CommandLine:
@@ -21,12 +22,15 @@ from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
 from mmcv.fileio.file_client import PetrelBackend
+# yapf: disable
 from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          Fp16OptimizerHook,
                          GradientCumulativeFp16OptimizerHook,
                          GradientCumulativeOptimizerHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
-                         PaviLoggerHook, WandbLoggerHook, build_runner)
+                         PaviLoggerHook, SegmindLoggerHook, WandbLoggerHook,
+                         build_runner)
+# yapf: enable
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner.hooks.hook import HOOKS, Hook
 from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
@@ -1398,6 +1402,25 @@ def test_mlflow_hook(log_model):
             pip_requirements=[f'torch=={TORCH_VERSION}'])
     else:
         assert not hook.mlflow_pytorch.log_model.called
+
+
+def test_segmind_hook():
+    sys.modules['segmind'] = MagicMock()
+    runner = _build_demo_runner()
+    hook = SegmindLoggerHook()
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.mlflow_log.assert_called_with(
+        hook.log_metrics, {
+            'learning_rate': 0.02,
+            'momentum': 0.95
+        },
+        step=runner.epoch,
+        epoch=runner.epoch)
 
 
 def test_wandb_hook():

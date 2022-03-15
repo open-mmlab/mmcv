@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 """
 CommandLine:
     pytest tests/test_merge_cells.py

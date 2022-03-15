@@ -351,7 +351,7 @@ class GeneralizedAttention(nn.Module):
                         repeat(n, 1, 1, 1)
 
                     position_feat_x_reshape = position_feat_x.\
-                        view(n, num_heads, w*w_kv, self.qk_embed_dim)
+                        view(n, num_heads, w * w_kv, self.qk_embed_dim)
 
                     position_feat_y_reshape = position_feat_y.\
                         view(n, num_heads, h * h_kv, self.qk_embed_dim)
