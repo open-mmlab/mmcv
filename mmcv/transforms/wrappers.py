@@ -8,7 +8,7 @@ import numpy as np
 import mmcv
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .utils import cache_random_params
+from .utils import cache_random_params, cacheable_method
 
 # Indicator for required but missing keys in results
 NotInResults = object()
@@ -452,6 +452,11 @@ class RandomChoice(BaseTransform):
         self.pipeline_probs = pipeline_probs
         self.pipelines = [Compose(transforms) for transforms in pipelines]
 
+    @cacheable_method
+    def random_pipeline_index(self):
+        indices = np.arange(len(self.pipelines))
+        return np.random.choice(indices, self.pipeline_probs)
+
     def transform(self, results):
-        pipeline = np.random.choice(self.pipelines, p=self.pipeline_probs)
-        return pipeline(results)
+        idx = self.random_pipeline_index()
+        return self.pipelines[idx](results)
