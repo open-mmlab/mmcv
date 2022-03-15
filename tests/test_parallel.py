@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -32,11 +31,15 @@ def test_is_module_wrapper():
         def forward(self, x):
             return self.conv(x)
 
-    # _verify_model_across_ranks is added in torch1.9.0 so we should check
-    # whether _verify_model_across_ranks is the member of torch.distributed
-    # before mocking
+    # _verify_model_across_ranks is added in torch1.9.0,
+    # _verify_params_across_processes is added in torch1.11.0,
+    # so we should check whether _verify_model_across_ranks
+    # and _verify_params_across_processes are the member of
+    # torch.distributed before mocking
     if hasattr(torch.distributed, '_verify_model_across_ranks'):
         torch.distributed._verify_model_across_ranks = mock
+    if hasattr(torch.distributed, '_verify_params_across_processes'):
+        torch.distributed._verify_params_across_processes = mock
 
     model = Model()
     assert not is_module_wrapper(model)
@@ -47,15 +50,10 @@ def test_is_module_wrapper():
     mmdp = MMDataParallel(model)
     assert is_module_wrapper(mmdp)
 
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = '29500'
-    os.environ['WORLD_SIZE'] = '1'
-    os.environ['RANK'] = '0'
-
-    ddp = DistributedDataParallel(model)
+    ddp = DistributedDataParallel(model, process_group=MagicMock())
     assert is_module_wrapper(ddp)
 
-    mmddp = MMDistributedDataParallel(model)
+    mmddp = MMDistributedDataParallel(model, process_group=MagicMock())
     assert is_module_wrapper(mmddp)
 
     deprecated_mmddp = DeprecatedMMDDP(model)
