@@ -2,9 +2,15 @@ import copy
 import pytest
 
 import mmcv
-from mmcv.runner.ipu.util import parse_ipu_options
+from mmcv.utils.ipu_wrapper import IPU_MODE
+if IPU_MODE:
+    from mmcv.runner.ipu.util import parse_ipu_options
+
+skip_no_ipu = pytest.mark.skipif(
+    not IPU_MODE, reason='test case under ipu environment')
 
 
+@skip_no_ipu
 def test_build_from_cfg():
     BACKBONES = mmcv.Registry('backbone')
 
@@ -112,6 +118,7 @@ def test_build_from_cfg():
         model = mmcv.runner.ipu.build_from_cfg_with_wrapper(cfg, BACKBONES)
 
 
+@skip_no_ipu
 def test_parse_ipu_options():
     options_cfg = dict(
         randomSeed=888,

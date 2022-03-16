@@ -105,7 +105,7 @@ def auto_fp16(apply_to=None, out_fp32=False, supported_types=[]):
             _supported_types = tuple([torch.nn.Module] + supported_types)
             if not isinstance(args[0], _supported_types):
                 raise TypeError('@auto_fp16 can only be used to decorate the '
-                                'method of nn.Module andy types you specified')
+                                'method of nn.Module and types you specified')
             if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
 

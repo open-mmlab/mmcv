@@ -2,11 +2,16 @@ import logging
 import numpy as np
 import pytest
 import torch
-
 from mmcv.parallel.data_container import DataContainer
-from mmcv.runner.ipu.model_converter import ComplexDataManager
+from mmcv.utils.ipu_wrapper import IPU_MODE
+if IPU_MODE:
+    from mmcv.runner.ipu.model_converter import ComplexDataManager
+
+skip_no_ipu = pytest.mark.skipif(
+    not IPU_MODE, reason='test case under ipu environment')
 
 
+@skip_no_ipu
 def test_complexdatamanager():
     # test complex data
     complex_data = {

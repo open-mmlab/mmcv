@@ -6,9 +6,14 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.runner.ipu import parse_ipu_options, ipu_model_wrapper
 from mmcv.runner.fp16_utils import auto_fp16
-from mmcv.runner.ipu.model_converter import compare_feat
+from mmcv.utils.ipu_wrapper import IPU_MODE
+if IPU_MODE:
+    from mmcv.runner.ipu import parse_ipu_options, ipu_model_wrapper
+    from mmcv.runner.ipu.model_converter import compare_feat
+
+skip_no_ipu = pytest.mark.skipif(
+    not IPU_MODE, reason='test case under ipu environment')
 
 
 class MyBn(nn.BatchNorm2d):
@@ -52,6 +57,7 @@ class TestModel(nn.Module):
         return outputs
 
 
+@skip_no_ipu
 def test_build_model():
     for executionStrategy in \
             ['SameAsIpu', 'ShardedExecution', 'error_strategy']:
@@ -103,7 +109,11 @@ def test_build_model():
             ipu_model.train()
 
 
-def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
+def run_model(ipu_options,
+              fp16_cfg,
+              modules_to_record,
+              ipu_model_wrapper_func,
+              only_eval=False):
     model = TestModel()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)\
         if not only_eval else None
@@ -115,7 +125,7 @@ def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
                 ipu_id=0)],
         train_ckpt_nodes=['bn', 'conv']
                 )
-    ipu_model = ipu_model_wrapper(
+    ipu_model = ipu_model_wrapper_func(
                 model, ipu_options, optimizer, logger,
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
@@ -142,6 +152,7 @@ def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
     return output, ipu_model
 
 
+@skip_no_ipu
 def test_run_model():
 
     # test feature alignment not support gradientAccumulation mode
@@ -158,7 +169,7 @@ def test_run_model():
     with pytest.raises(
             AssertionError,
             match='Feature alignment'):
-        run_model(ipu_options, None, modules_to_record)
+        run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
     # test feature alignment not support multi-replica mode
     ipu_options = dict(
@@ -174,7 +185,7 @@ def test_run_model():
     with pytest.raises(
             AssertionError,
             match='Feature alignment'):
-        run_model(ipu_options, None, modules_to_record)
+        run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
     # test feature alignment not support fp16 mode
     ipu_options = dict(
@@ -191,7 +202,7 @@ def test_run_model():
         'accum_type': 'half'}
     modules_to_record = ['bn']
     with pytest.raises(NotImplementedError):
-        run_model(ipu_options, fp16_cfg, modules_to_record)
+        run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
 
     # test compile and run
     ipu_options = dict(
@@ -203,7 +214,7 @@ def test_run_model():
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     modules_to_record = ['bn']
-    run_model(ipu_options, None, modules_to_record)
+    run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
     # test feature alignment
     ipu_options = dict(
@@ -216,7 +227,7 @@ def test_run_model():
     ipu_options = parse_ipu_options(ipu_options)
     fp16_cfg = {'loss_scale': 0.5}
     modules_to_record = []
-    run_model(ipu_options, fp16_cfg, modules_to_record)
+    run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
 
     # test inference mode
     ipu_options = dict(
@@ -232,12 +243,16 @@ def test_run_model():
     _, ipu_model = run_model(ipu_options,
                              fp16_cfg,
                              modules_to_record,
+                             ipu_model_wrapper,
                              only_eval=True)
     with pytest.raises(RuntimeError):
         ipu_model.train()
     with pytest.raises(ValueError):
         ipu_model.train(123)
-    _, ipu_model = run_model(ipu_options, fp16_cfg, modules_to_record)
+    _, ipu_model = run_model(ipu_options,
+                             fp16_cfg,
+                             modules_to_record,
+                             ipu_model_wrapper)
 
     # test NotImplementedError in __call__
     ipu_model.train()
@@ -249,5 +264,6 @@ def test_run_model():
         ipu_model._model.model._parse_losses({'loss': None})
 
 
+@skip_no_ipu
 def test_compare_feat():
     compare_feat(np.random.rand(3, 4), np.random.rand(3, 4))

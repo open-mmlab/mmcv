@@ -24,14 +24,14 @@ def wrap_optimizer_hook(optimizer_hook_class,):
                 self.detect_anomalous_parameters(
                     runner.outputs['loss'], runner)
             if self.grad_clip is not None:
-                raise NotImplementedError('IPU not supports gradient clip now')
+                raise NotImplementedError('IPU does not support gradient clip')
     return ipu_optimizer_hook_class
 
 
 if (TORCH_VERSION != 'parrots'
         and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
     @HOOKS.register_module()
-    class IpuFp16OptimizerHook(OptimizerHook):
+    class IPUFp16OptimizerHook(OptimizerHook):
         """FP16 optimizer hook (using PyTorch's implementation).
 
         If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,

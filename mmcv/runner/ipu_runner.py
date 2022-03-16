@@ -11,10 +11,10 @@ if IPU_MODE:
     from mmcv.runner.ipu import parse_ipu_options,\
         build_from_cfg_with_wrapper, IPU_MODE,\
         ipu_model_wrapper, wrap_optimizer_hook,\
-        IpuFp16OptimizerHook, wrap_lr_update_hook
+        IPUFp16OptimizerHook, wrap_lr_update_hook
 
 
-class IpuBaseRunner(metaclass=ABCMeta):
+class IPUBaseRunner(metaclass=ABCMeta):
     def __init__(
             self,
             ipu_options={},
@@ -22,7 +22,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
             ipu_model_cfg={},
             fp16_cfg=None,
             **kwargs):
-        super(IpuBaseRunner, self).__init__(**kwargs)
+        super(IPUBaseRunner, self).__init__(**kwargs)
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
@@ -33,7 +33,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
-            raise NotImplementedError('cpu mode on IpuRunner not supported')
+            raise NotImplementedError('cpu mode on IPURunner not supported')
 
     def register_lr_hook(self, lr_config):
         assert isinstance(lr_config, dict)
@@ -55,7 +55,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
         self.register_hook(hook, priority='VERY_HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
-        assert isinstance(optimizer_config, (dict, IpuFp16OptimizerHook))
+        assert isinstance(optimizer_config, (dict, IPUFp16OptimizerHook))
         if isinstance(optimizer_config, dict):
             optimizer_config.setdefault('type', 'OptimizerHook')
             hook = build_from_cfg_with_wrapper(
@@ -66,7 +66,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
 
 
 @RUNNERS.register_module()
-class IpuEpochBasedRunner(IpuBaseRunner, EpochBasedRunner):
+class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
     """Epoch-based Runner.
 
     This runner train models epoch by epoch.
@@ -75,7 +75,7 @@ class IpuEpochBasedRunner(IpuBaseRunner, EpochBasedRunner):
 
 
 @RUNNERS.register_module()
-class IpuIterBasedRunner(IpuBaseRunner, IterBasedRunner):
+class IPUIterBasedRunner(IPUBaseRunner, IterBasedRunner):
     """Iteration-based Runner.
 
     This runner train models iteration by iteration.

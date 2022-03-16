@@ -9,9 +9,14 @@ import torch
 import pytest
 import torch.nn as nn
 
-from mmcv.runner.ipu import IpuFp16OptimizerHook
-from mmcv.runner import build_runner
 from mmcv.runner.fp16_utils import auto_fp16
+from mmcv.runner import build_runner
+from mmcv.utils.ipu_wrapper import IPU_MODE
+if IPU_MODE:
+    from mmcv.runner.ipu import IPUFp16OptimizerHook
+
+skip_no_ipu = pytest.mark.skipif(
+    not IPU_MODE, reason='test case under ipu environment')
 
 
 # TODO Once the model training and inference interfaces
@@ -49,6 +54,7 @@ class TestModel(nn.Module):
         return outputs
 
 
+@skip_no_ipu
 def test_optimizerhook():
 
     model = TestModel()
@@ -67,7 +73,7 @@ def test_optimizerhook():
         work_dir=osp.join(temp_root, dir_name),
         optimizer=optimizer,
         logger=logging.getLogger())
-    cfg = dict(type='IpuEpochBasedRunner', max_epochs=1)
+    cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
     dummy_runner = build_runner(cfg, default_args=default_args)
 
     # learning policy
@@ -89,7 +95,7 @@ def test_optimizerhook():
 
     with pytest.raises(
             NotImplementedError,
-            match='IPU not supports gradient clip now'):
+            match='IPU does not support gradient clip'):
         dummy_runner.call_hook('after_train_iter')
 
     # test fp16 optimizer hook
@@ -102,22 +108,22 @@ def test_optimizerhook():
     with pytest.raises(
             NotImplementedError,
             match='IPU mode not support'):
-        optimizer_config = IpuFp16OptimizerHook(
+        optimizer_config = IPUFp16OptimizerHook(
             loss_scale='dynamic', distributed=False)
 
     with pytest.raises(
             NotImplementedError,
             match='IPU mode support single'):
-        optimizer_config = IpuFp16OptimizerHook(
+        optimizer_config = IPUFp16OptimizerHook(
             loss_scale={}, distributed=False)
 
     with pytest.raises(
             ValueError,
             match='loss_scale must be'):
-        optimizer_config = IpuFp16OptimizerHook(
+        optimizer_config = IPUFp16OptimizerHook(
             loss_scale=[], distributed=False)
 
-    optimizer_config = IpuFp16OptimizerHook(
+    optimizer_config = IPUFp16OptimizerHook(
         loss_scale=2.0, distributed=False)
 
     dummy_runner.register_training_hooks(
