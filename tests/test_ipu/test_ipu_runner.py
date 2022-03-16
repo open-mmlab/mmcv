@@ -9,7 +9,12 @@ import pytest
 import torch.nn as nn
 
 from mmcv.runner import build_runner
-from mmcv.runner import ipu_runner
+from mmcv.utils.ipu_wrapper import IPU_MODE
+if IPU_MODE:
+    from mmcv.runner import ipu_runner
+
+skip_no_ipu = pytest.mark.skipif(
+    not IPU_MODE, reason='test case under ipu environment')
 
 # Most of its functions are inherited from EpochBasedRunner and IterBasedRunner
 # So only do incremental testing on overridden methods
@@ -35,6 +40,7 @@ class Model(OldStyleModel):
         pass
 
 
+@skip_no_ipu
 def test_build_runner():
     # __init__
     temp_root = tempfile.gettempdir()
@@ -45,21 +51,21 @@ def test_build_runner():
         model=Model(),
         work_dir=osp.join(temp_root, dir_name),
         logger=logging.getLogger())
-    cfg = dict(type='IpuEpochBasedRunner', max_epochs=1)
+    cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
     runner = build_runner(cfg, default_args=default_args)
     assert runner._max_epochs == 1
-    cfg = dict(type='IpuIterBasedRunner', max_iters=1)
+    cfg = dict(type='IPUIterBasedRunner', max_iters=1)
     runner = build_runner(cfg, default_args=default_args)
     assert runner._max_iters == 1
 
     ipu_runner.IPU_MODE = False
-    cfg = dict(type='IpuIterBasedRunner', max_iters=1)
+    cfg = dict(type='IPUIterBasedRunner', max_iters=1)
     with pytest.raises(
             NotImplementedError,
-            match='cpu mode on IpuRunner not supported'):
+            match='cpu mode on IPURunner not supported'):
         runner = build_runner(cfg, default_args=default_args)
 
     ipu_runner.IPU_MODE = True
     with pytest.raises(ValueError, match='Only one of'):
-        cfg = dict(type='IpuIterBasedRunner', max_epochs=1, max_iters=1)
+        cfg = dict(type='IPUIterBasedRunner', max_epochs=1, max_iters=1)
         runner = build_runner(cfg, default_args=default_args)

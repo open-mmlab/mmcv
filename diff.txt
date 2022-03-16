@@ -1,0 +1,788 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index bd50b3f..f1b1e96 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -45,7 +45,7 @@ jobs:
+       - name: Run unittests and generate coverage report
+         run: |
+           pip install -r requirements/test.txt
+-          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py --ignore=tests/test_utils/test_trace.py --ignore=tests/test_utils/test_hub.py
++          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_ipu --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py --ignore=tests/test_utils/test_trace.py --ignore=tests/test_utils/test_hub.py
+ 
+   build_without_ops:
+     runs-on: ubuntu-18.04
+diff --git a/mmcv/runner/__init__.py b/mmcv/runner/__init__.py
+index cdcb110..ae7a3ec 100644
+--- a/mmcv/runner/__init__.py
++++ b/mmcv/runner/__init__.py
+@@ -37,7 +37,7 @@ from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
+                         build_optimizer_constructor)
+ from .priority import Priority, get_priority
+ from .utils import get_host_info, get_time_str, obj_from_dict, set_random_seed
+-from .ipu_runner import IpuEpochBasedRunner, IpuIterBasedRunner
++from .ipu_runner import IPUEpochBasedRunner, IPUIterBasedRunner
+ 
+ __all__ = [
+     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
+@@ -63,5 +63,5 @@ __all__ = [
+     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
+     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
+     'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
+-    'SegmindLoggerHook', 'IpuEpochBasedRunner', 'IpuIterBasedRunner', 'ipu'
++    'SegmindLoggerHook', 'IPUEpochBasedRunner', 'IPUIterBasedRunner'
+ ]
+diff --git a/mmcv/runner/epoch_based_runner.py b/mmcv/runner/epoch_based_runner.py
+index 078e91d..22c91b3 100644
+--- a/mmcv/runner/epoch_based_runner.py
++++ b/mmcv/runner/epoch_based_runner.py
+@@ -12,7 +12,7 @@ from .base_runner import BaseRunner
+ from .builder import RUNNERS
+ from .checkpoint import save_checkpoint
+ from .utils import get_host_info
+-
++import hdDebug
+ 
+ @RUNNERS.register_module()
+ class EpochBasedRunner(BaseRunner):
+@@ -45,11 +45,26 @@ class EpochBasedRunner(BaseRunner):
+         self.call_hook('before_train_epoch')
+         time.sleep(2)  # Prevent possible deadlock during epoch transition
+         for i, data_batch in enumerate(self.data_loader):
++            # hdDebug.stop('for loop')
++            # if i == 2:
++            #     hdDebug.enable()
++            # elif i == 99:
++            #     hdDebug.show_info()
++            #     asd
+             self._inner_iter = i
++            # hdDebug.start('before_train_iter')
+             self.call_hook('before_train_iter')
++            # hdDebug.stop('before_train_iter')
++            # hdDebug.start('run_iter')
+             self.run_iter(data_batch, train_mode=True, **kwargs)
++            # hdDebug.stop('run_iter')
+             self.call_hook('after_train_iter')
+             self._iter += 1
++            # time.sleep(1)
++            # hdDebug.start('del')
++            # del data_batch
++            # hdDebug.stop('del')
++            # hdDebug.start('for loop')
+ 
+         self.call_hook('after_train_epoch')
+         self._epoch += 1
+diff --git a/mmcv/runner/fp16_utils.py b/mmcv/runner/fp16_utils.py
+index 968f58d..2398cc1 100644
+--- a/mmcv/runner/fp16_utils.py
++++ b/mmcv/runner/fp16_utils.py
+@@ -105,7 +105,7 @@ def auto_fp16(apply_to=None, out_fp32=False, supported_types=[]):
+             _supported_types = tuple([torch.nn.Module] + supported_types)
+             if not isinstance(args[0], _supported_types):
+                 raise TypeError('@auto_fp16 can only be used to decorate the '
+-                                'method of nn.Module andy types you specified')
++                                'method of nn.Module and types you specified')
+             if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
+                 return old_func(*args, **kwargs)
+ 
+diff --git a/mmcv/runner/ipu/__init__.py b/mmcv/runner/ipu/__init__.py
+index c48c70a..9040908 100644
+--- a/mmcv/runner/ipu/__init__.py
++++ b/mmcv/runner/ipu/__init__.py
+@@ -1,20 +1,17 @@
+ # Copyright (c) OpenMMLab. All rights reserved.
+-try:
+-    import poptorch
+-    IPU_MODE = True
+-except ImportError:
+-    IPU_MODE = False
++from mmcv.utils.ipu_wrapper import IPU_MODE
+ 
+ if IPU_MODE:
+     from .util import parse_ipu_options, ipu_model_wrapper,\
+         build_from_cfg_with_wrapper, model_sharding,\
+         recomputation_checkpoint
+-    from .hooks import wrap_optimizer_hook, IpuFp16OptimizerHook,\
++    from .hooks import wrap_optimizer_hook, IPUFp16OptimizerHook,\
+         wrap_lr_update_hook
++    from .dataloder import IPUDataloader
+     __all__ = [
+         'parse_ipu_options', 'ipu_model_wrapper',
+         'build_from_cfg_with_wrapper', 'IPU_MODE',
+         'model_sharding', 'wrap_optimizer_hook',
+-        'IpuFp16OptimizerHook', 'wrap_lr_update_hook',
+-        'recomputation_checkpoint'
++        'IPUFp16OptimizerHook', 'wrap_lr_update_hook',
++        'recomputation_checkpoint', 'IPUDataloader'
+     ]
+diff --git a/mmcv/runner/ipu/dataloder.py b/mmcv/runner/ipu/dataloder.py
+new file mode 100644
+index 0000000..8fa321e
+--- /dev/null
++++ b/mmcv/runner/ipu/dataloder.py
+@@ -0,0 +1,81 @@
++# Copyright (c) OpenMMLab. All rights reserved.
++from collections.abc import Mapping, Sequence
++
++import poptorch
++from functools import partial
++from torch.utils.data.dataloader import default_collate
++
++from mmcv.parallel.data_container import DataContainer
++
++
++def collate(batch, samples_per_gpu=1):
++    """Puts each data field into a tensor/DataContainer with outer dimension
++    batch size.
++
++    Extend default_collate to add support for
++    :type:`~mmcv.parallel.DataContainer`. There are 3 cases.
++
++    1. cpu_only = True, e.g., meta data
++    2. cpu_only = False, stack = True, e.g., images tensors
++    3. cpu_only = False, stack = False, e.g., gt bboxes
++    """
++
++    if not isinstance(batch, Sequence):
++        raise TypeError(f'{batch.dtype} is not supported.')
++
++    if isinstance(batch[0], DataContainer):
++        raise TypeError('DataContainer is not supported in ipu dataloder.')
++    elif isinstance(batch[0], Sequence):
++        transposed = zip(*batch)
++        _list = []
++        for samples in transposed:
++            if not isinstance(samples[0], DataContainer):
++                _list.append(collate(samples, samples_per_gpu))
++        return _list
++    elif isinstance(batch[0], Mapping):
++        _dic = {}
++        for key in batch[0]:
++            if not isinstance(batch[0][key], DataContainer):
++                _dic[key] = collate([d[key] for d in batch])
++        return _dic
++    else:
++        return default_collate(batch)
++
++
++class IPUDataloader(poptorch.DataLoader):
++    def __init__(self,
++                 options,
++                 dataset,
++                 batch_size=1,
++                 shuffle=False,
++                 num_workers=0,
++                 drop_last=True,
++                 persistent_workers=True,
++                 auto_distributed_partitioning=True,
++                 mode=poptorch.DataLoaderMode.AsyncRebatched,
++                 **kwargs):
++        # lazy init
++        self.kwargs = {'options': options,
++                       'dataset': dataset,
++                       'batch_size': batch_size,
++                       'shuffle': shuffle,
++                       'num_workers': num_workers,
++                       'drop_last': drop_last,
++                       'persistent_workers': persistent_workers,
++                       'auto_distributed_partitioning':
++                           auto_distributed_partitioning,
++                       'mode': mode,
++                       'collate_fn':
++                       partial(collate, samples_per_gpu=batch_size),
++                       'async_options': {'load_indefinitely': True, "buffer_size": 8},
++                       'rebatched_worker_size': 128,
++                       **kwargs}
++        self.initialized = False
++    
++    def init(self, **kwargs):
++        if not self.initialized:
++            kwargs = {**self.kwargs, **kwargs}
++            super().__init__(**kwargs)
++            self.initialized = True
++
++        return self
+diff --git a/mmcv/runner/ipu/hooks.py b/mmcv/runner/ipu/hooks.py
+index cda30f6..bd70a0e 100644
+--- a/mmcv/runner/ipu/hooks.py
++++ b/mmcv/runner/ipu/hooks.py
+@@ -24,14 +24,14 @@ def wrap_optimizer_hook(optimizer_hook_class,):
+                 self.detect_anomalous_parameters(
+                     runner.outputs['loss'], runner)
+             if self.grad_clip is not None:
+-                raise NotImplementedError('IPU not supports gradient clip now')
++                raise NotImplementedError('IPU does not support gradient clip')
+     return ipu_optimizer_hook_class
+ 
+ 
+ if (TORCH_VERSION != 'parrots'
+         and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
+     @HOOKS.register_module()
+-    class IpuFp16OptimizerHook(OptimizerHook):
++    class IPUFp16OptimizerHook(OptimizerHook):
+         """FP16 optimizer hook (using PyTorch's implementation).
+ 
+         If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,
+diff --git a/mmcv/runner/ipu/model_converter.py b/mmcv/runner/ipu/model_converter.py
+index 50eae44..6df9290 100644
+--- a/mmcv/runner/ipu/model_converter.py
++++ b/mmcv/runner/ipu/model_converter.py
+@@ -28,6 +28,7 @@ class ComplexDataManager:
+         self.keys_of_changed_vals = []
+         self.non_dict_element_changed = False
+         self.quick_mode = False
++        self._tree = None
+ 
+     def quick(self,):
+         self.quick_mode = True
+@@ -41,7 +42,7 @@ class ComplexDataManager:
+     def set_tree(self, _tree):
+         # _tree: A composite data type containing dictionaries, lists,
+         # tensors and basic python data types
+-        if hasattr(self, '_tree'):
++        if self._tree is not None:
+             if isinstance(_tree, torch.Tensor):
+                 assert type(self._tree) == torch.Tensor, \
+                     'orginal complex data is not torch.tensor'
+@@ -110,13 +111,14 @@ class ComplexDataManager:
+                 'not supported datatype:{}, address is {}'
+                 .format(str(treeA), address))
+ 
+-    def get_tensors(self,):
++    def get_tensors(self, target_tree=None):
+         # get a list of tensor from self._tree
++        target_tree = self._tree if target_tree is None else target_tree
+         tensors = []
+-        if type(self._tree) == torch.Tensor:
+-            tensors = [self._tree]
++        if type(target_tree) == torch.Tensor:
++            tensors = [target_tree]
+         else:
+-            self._get_tensors(self._tree, tensors)
++            self._get_tensors(target_tree, tensors)
+         return tensors
+ 
+     def _get_tensors(self, _tree, tensors):
+@@ -170,6 +172,30 @@ class ComplexDataManager:
+             raise NotImplementedError(
+                 'not supported datatype:{}'.format(str(_tree)))
+ 
++    def clean_tensors(self,):
++        self._clean_tensors(self._tree)
++
++    def _clean_tensors(self, _tree):
++        if isinstance(_tree, (tuple, list)):
++            for idx in range(len(_tree)):
++                if isinstance(_tree[idx], torch.Tensor):
++                    _tree[idx] = None
++                else:
++                    self._clean_tensors(_tree[idx])
++        elif isinstance(_tree, dict):
++            for k, v in _tree.items():
++                if isinstance(v, torch.Tensor):
++                    _tree[k] = None
++                else:
++                    self._clean_tensors(_tree[k])
++        elif isinstance(_tree, self.fixed_data_types):
++            pass
++        elif isinstance(_tree, DataContainer):
++            self._clean_tensors(_tree.data)
++        else:
++            raise NotImplementedError(
++                'not supported datatype:{}'.format(str(_tree)))
++
+ 
+ class WrappedNet(torch.nn.Module):
+     def __init__(
+@@ -359,10 +385,16 @@ class PoplarExecutorForMMCV(PoplarExecutor):
+     def run_model(self, data_dict):
+         # this function used to parse input_dict
+         # and convert to output_dict
+-
+-        # get tensors out of data and put them in a tuple
+-        self.inputs_tree_manager.set_tree(data_dict)
+-        inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
++        if self.isCompiled():
++            self.inputs_tree_manager.set_tree(data_dict)
++            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
++        else:
++            # get tensors out of data and put them in a tuple
++            self.inputs_tree_manager.set_tree(data_dict)
++            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
++            # turn logger in tree manager off after compilation
++            self.inputs_tree_manager.quick()
++            self.outputs_tree_manager.quick()
+ 
+         # parser args for first iter
+         self._args_parser = DictArgsParser(
+@@ -373,6 +405,8 @@ class PoplarExecutorForMMCV(PoplarExecutor):
+         # the plain_outputs will be used in converting stage
+         plain_outputs = self(inputs_tuple)
+ 
++        self.inputs_tree_manager.clean_tensors()
++
+         # put list of tensors back to the output dict
+         # according to the same order
+         self.outputs_tree_manager.set_tensors(plain_outputs)
+@@ -396,9 +430,6 @@ class PoplarExecutorForMMCV(PoplarExecutor):
+             mmcv_model_output = \
+                 mmcv_model_output['output of WrappedNet: single tensor']
+ 
+-        # turn logger in tree manager off after compilation
+-        self.inputs_tree_manager.quick()
+-        self.outputs_tree_manager.quick()
+         return mmcv_model_output
+ 
+     def train_step(self, data, optimizer=None, **kwargs):
+@@ -411,6 +442,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
+         # currently, auto_fp16 and ComplexDataManager take too much time on
+         # traverersing datacontainer
+         data['img_metas'] = None
++        num_samples = len(data['img'].data)
+ 
+         # TODO we will ignore optimizer for it will not be used in model,
+         # support later if necessary
+@@ -425,8 +457,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
+         # re-parse outputs, get back log_vars and num_samples
+         loss, log_vars = self.model._parse_losses(neat_output_dic)
+         final_output_dic = dict(
+-            loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
+-
++            loss=loss, log_vars=log_vars, num_samples=num_samples)
+         return final_output_dic
+ 
+     def eval_call(self, img, img_metas, return_loss=True, **kwargs):
+diff --git a/mmcv/runner/ipu_runner.py b/mmcv/runner/ipu_runner.py
+index d17461c..ea571ac 100644
+--- a/mmcv/runner/ipu_runner.py
++++ b/mmcv/runner/ipu_runner.py
+@@ -11,10 +11,10 @@ if IPU_MODE:
+     from mmcv.runner.ipu import parse_ipu_options,\
+         build_from_cfg_with_wrapper, IPU_MODE,\
+         ipu_model_wrapper, wrap_optimizer_hook,\
+-        IpuFp16OptimizerHook, wrap_lr_update_hook
++        IPUFp16OptimizerHook, wrap_lr_update_hook
+ 
+ 
+-class IpuBaseRunner(metaclass=ABCMeta):
++class IPUBaseRunner(metaclass=ABCMeta):
+     def __init__(
+             self,
+             ipu_options={},
+@@ -22,7 +22,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
+             ipu_model_cfg={},
+             fp16_cfg=None,
+             **kwargs):
+-        super(IpuBaseRunner, self).__init__(**kwargs)
++        super(IPUBaseRunner, self).__init__(**kwargs)
+         # process options of ipu
+         if IPU_MODE:
+             self.ipu_options = parse_ipu_options(ipu_options)
+@@ -33,7 +33,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
+                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
+         else:
+             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
+-            raise NotImplementedError('cpu mode on IpuRunner not supported')
++            raise NotImplementedError('cpu mode on IPURunner not supported')
+ 
+     def register_lr_hook(self, lr_config):
+         assert isinstance(lr_config, dict)
+@@ -55,7 +55,7 @@ class IpuBaseRunner(metaclass=ABCMeta):
+         self.register_hook(hook, priority='VERY_HIGH')
+ 
+     def register_optimizer_hook(self, optimizer_config):
+-        assert isinstance(optimizer_config, (dict, IpuFp16OptimizerHook))
++        assert isinstance(optimizer_config, (dict, IPUFp16OptimizerHook))
+         if isinstance(optimizer_config, dict):
+             optimizer_config.setdefault('type', 'OptimizerHook')
+             hook = build_from_cfg_with_wrapper(
+@@ -64,9 +64,20 @@ class IpuBaseRunner(metaclass=ABCMeta):
+             hook = optimizer_config
+         self.register_hook(hook, priority='ABOVE_NORMAL')
+ 
++    def run(self, data_loaders, *args, **kwargs):
++        # map data_loader to ipu data_loader
++        if IPU_MODE:
++            training_opts = self.ipu_options['training']
++            
++            for data_loader in data_loaders:
++                if not getattr(data_loader, 'initialized', True):
++                    data_loader.init(options=training_opts)
++
++        super().run(data_loaders, *args, **kwargs)
++
+ 
+ @RUNNERS.register_module()
+-class IpuEpochBasedRunner(IpuBaseRunner, EpochBasedRunner):
++class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
+     """Epoch-based Runner.
+ 
+     This runner train models epoch by epoch.
+@@ -75,7 +86,7 @@ class IpuEpochBasedRunner(IpuBaseRunner, EpochBasedRunner):
+ 
+ 
+ @RUNNERS.register_module()
+-class IpuIterBasedRunner(IpuBaseRunner, IterBasedRunner):
++class IPUIterBasedRunner(IPUBaseRunner, IterBasedRunner):
+     """Iteration-based Runner.
+ 
+     This runner train models iteration by iteration.
+diff --git a/mmcv/utils/__init__.py b/mmcv/utils/__init__.py
+index 019e77f..82d2388 100644
+--- a/mmcv/utils/__init__.py
++++ b/mmcv/utils/__init__.py
+@@ -17,6 +17,7 @@ from .testing import (assert_attrs_equal, assert_dict_contains_subset,
+                       check_python_script)
+ from .timer import Timer, TimerError, check_time
+ from .version_utils import digit_version, get_git_hash
++from .ipu_wrapper import IPU_MODE
+ 
+ try:
+     import torch
+@@ -33,7 +34,7 @@ except ImportError:
+         'assert_dict_contains_subset', 'assert_attrs_equal',
+         'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
+         'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple',
+-        'is_method_overridden', 'has_method'
++        'is_method_overridden', 'has_method', 'IPU_MODE'
+     ]
+ else:
+     from .env import collect_env
+@@ -70,5 +71,5 @@ else:
+         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
+         'assert_params_all_zeros', 'check_python_script',
+         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
+-        '_get_cuda_home', 'load_url', 'has_method'
++        '_get_cuda_home', 'load_url', 'has_method', 'IPU_MODE'
+     ]
+diff --git a/mmcv/utils/ipu_wrapper.py b/mmcv/utils/ipu_wrapper.py
+new file mode 100644
+index 0000000..8508bec
+--- /dev/null
++++ b/mmcv/utils/ipu_wrapper.py
+@@ -0,0 +1,12 @@
++# Copyright (c) OpenMMLab. All rights reserved.
++
++def get_ipu_mode():
++    try:
++        import poptorch # noqa: E261, F401
++        IPU_MODE = True
++    except ImportError:
++        IPU_MODE = False
++    return IPU_MODE
++
++
++IPU_MODE = get_ipu_mode()
+diff --git a/tests/test_ipu/test_complexdatamanager.py b/tests/test_ipu/test_complexdatamanager.py
+index f63730d..2da7460 100644
+--- a/tests/test_ipu/test_complexdatamanager.py
++++ b/tests/test_ipu/test_complexdatamanager.py
+@@ -2,11 +2,16 @@ import logging
+ import numpy as np
+ import pytest
+ import torch
+-
+ from mmcv.parallel.data_container import DataContainer
+-from mmcv.runner.ipu.model_converter import ComplexDataManager
++from mmcv.utils.ipu_wrapper import IPU_MODE
++if IPU_MODE:
++    from mmcv.runner.ipu.model_converter import ComplexDataManager
++
++skip_no_ipu = pytest.mark.skipif(
++    not IPU_MODE, reason='test case under ipu environment')
+ 
+ 
++@skip_no_ipu
+ def test_complexdatamanager():
+     # test complex data
+     complex_data = {
+diff --git a/tests/test_ipu/test_hooks.py b/tests/test_ipu/test_ipu_hooks.py
+similarity index 86%
+rename from tests/test_ipu/test_hooks.py
+rename to tests/test_ipu/test_ipu_hooks.py
+index b5ced1f..dbf4bb7 100644
+--- a/tests/test_ipu/test_hooks.py
++++ b/tests/test_ipu/test_ipu_hooks.py
+@@ -9,9 +9,14 @@ import torch
+ import pytest
+ import torch.nn as nn
+ 
+-from mmcv.runner.ipu import IpuFp16OptimizerHook
+-from mmcv.runner import build_runner
+ from mmcv.runner.fp16_utils import auto_fp16
++from mmcv.runner import build_runner
++from mmcv.utils.ipu_wrapper import IPU_MODE
++if IPU_MODE:
++    from mmcv.runner.ipu import IPUFp16OptimizerHook
++
++skip_no_ipu = pytest.mark.skipif(
++    not IPU_MODE, reason='test case under ipu environment')
+ 
+ 
+ # TODO Once the model training and inference interfaces
+@@ -49,6 +54,7 @@ class TestModel(nn.Module):
+         return outputs
+ 
+ 
++@skip_no_ipu
+ def test_optimizerhook():
+ 
+     model = TestModel()
+@@ -67,7 +73,7 @@ def test_optimizerhook():
+         work_dir=osp.join(temp_root, dir_name),
+         optimizer=optimizer,
+         logger=logging.getLogger())
+-    cfg = dict(type='IpuEpochBasedRunner', max_epochs=1)
++    cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
+     dummy_runner = build_runner(cfg, default_args=default_args)
+ 
+     # learning policy
+@@ -89,7 +95,7 @@ def test_optimizerhook():
+ 
+     with pytest.raises(
+             NotImplementedError,
+-            match='IPU not supports gradient clip now'):
++            match='IPU does not support gradient clip'):
+         dummy_runner.call_hook('after_train_iter')
+ 
+     # test fp16 optimizer hook
+@@ -102,22 +108,22 @@ def test_optimizerhook():
+     with pytest.raises(
+             NotImplementedError,
+             match='IPU mode not support'):
+-        optimizer_config = IpuFp16OptimizerHook(
++        optimizer_config = IPUFp16OptimizerHook(
+             loss_scale='dynamic', distributed=False)
+ 
+     with pytest.raises(
+             NotImplementedError,
+             match='IPU mode support single'):
+-        optimizer_config = IpuFp16OptimizerHook(
++        optimizer_config = IPUFp16OptimizerHook(
+             loss_scale={}, distributed=False)
+ 
+     with pytest.raises(
+             ValueError,
+             match='loss_scale must be'):
+-        optimizer_config = IpuFp16OptimizerHook(
++        optimizer_config = IPUFp16OptimizerHook(
+             loss_scale=[], distributed=False)
+ 
+-    optimizer_config = IpuFp16OptimizerHook(
++    optimizer_config = IPUFp16OptimizerHook(
+         loss_scale=2.0, distributed=False)
+ 
+     dummy_runner.register_training_hooks(
+diff --git a/tests/test_ipu/test_ipu_model.py b/tests/test_ipu/test_ipu_model.py
+index 343b284..a6e70ad 100644
+--- a/tests/test_ipu/test_ipu_model.py
++++ b/tests/test_ipu/test_ipu_model.py
+@@ -6,9 +6,14 @@ import pytest
+ import torch
+ import torch.nn as nn
+ 
+-from mmcv.runner.ipu import parse_ipu_options, ipu_model_wrapper
+ from mmcv.runner.fp16_utils import auto_fp16
+-from mmcv.runner.ipu.model_converter import compare_feat
++from mmcv.utils.ipu_wrapper import IPU_MODE
++if IPU_MODE:
++    from mmcv.runner.ipu import parse_ipu_options, ipu_model_wrapper
++    from mmcv.runner.ipu.model_converter import compare_feat
++
++skip_no_ipu = pytest.mark.skipif(
++    not IPU_MODE, reason='test case under ipu environment')
+ 
+ 
+ class MyBn(nn.BatchNorm2d):
+@@ -52,6 +57,7 @@ class TestModel(nn.Module):
+         return outputs
+ 
+ 
++@skip_no_ipu
+ def test_build_model():
+     for executionStrategy in \
+             ['SameAsIpu', 'ShardedExecution', 'error_strategy']:
+@@ -103,7 +109,11 @@ def test_build_model():
+             ipu_model.train()
+ 
+ 
+-def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
++def run_model(ipu_options,
++              fp16_cfg,
++              modules_to_record,
++              ipu_model_wrapper_func,
++              only_eval=False):
+     model = TestModel()
+     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)\
+         if not only_eval else None
+@@ -115,7 +125,7 @@ def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
+                 ipu_id=0)],
+         train_ckpt_nodes=['bn', 'conv']
+                 )
+-    ipu_model = ipu_model_wrapper(
++    ipu_model = ipu_model_wrapper_func(
+                 model, ipu_options, optimizer, logger,
+                 modules_to_record=modules_to_record,
+                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
+@@ -142,6 +152,7 @@ def run_model(ipu_options, fp16_cfg, modules_to_record, only_eval=False):
+     return output, ipu_model
+ 
+ 
++@skip_no_ipu
+ def test_run_model():
+ 
+     # test feature alignment not support gradientAccumulation mode
+@@ -158,7 +169,7 @@ def test_run_model():
+     with pytest.raises(
+             AssertionError,
+             match='Feature alignment'):
+-        run_model(ipu_options, None, modules_to_record)
++        run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
+ 
+     # test feature alignment not support multi-replica mode
+     ipu_options = dict(
+@@ -174,7 +185,7 @@ def test_run_model():
+     with pytest.raises(
+             AssertionError,
+             match='Feature alignment'):
+-        run_model(ipu_options, None, modules_to_record)
++        run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
+ 
+     # test feature alignment not support fp16 mode
+     ipu_options = dict(
+@@ -191,7 +202,7 @@ def test_run_model():
+         'accum_type': 'half'}
+     modules_to_record = ['bn']
+     with pytest.raises(NotImplementedError):
+-        run_model(ipu_options, fp16_cfg, modules_to_record)
++        run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
+ 
+     # test compile and run
+     ipu_options = dict(
+@@ -203,7 +214,7 @@ def test_run_model():
+         partialsType='half')
+     ipu_options = parse_ipu_options(ipu_options)
+     modules_to_record = ['bn']
+-    run_model(ipu_options, None, modules_to_record)
++    run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
+ 
+     # test feature alignment
+     ipu_options = dict(
+@@ -216,7 +227,7 @@ def test_run_model():
+     ipu_options = parse_ipu_options(ipu_options)
+     fp16_cfg = {'loss_scale': 0.5}
+     modules_to_record = []
+-    run_model(ipu_options, fp16_cfg, modules_to_record)
++    run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
+ 
+     # test inference mode
+     ipu_options = dict(
+@@ -232,12 +243,16 @@ def test_run_model():
+     _, ipu_model = run_model(ipu_options,
+                              fp16_cfg,
+                              modules_to_record,
++                             ipu_model_wrapper,
+                              only_eval=True)
+     with pytest.raises(RuntimeError):
+         ipu_model.train()
+     with pytest.raises(ValueError):
+         ipu_model.train(123)
+-    _, ipu_model = run_model(ipu_options, fp16_cfg, modules_to_record)
++    _, ipu_model = run_model(ipu_options,
++                             fp16_cfg,
++                             modules_to_record,
++                             ipu_model_wrapper)
+ 
+     # test NotImplementedError in __call__
+     ipu_model.train()
+@@ -249,5 +264,6 @@ def test_run_model():
+         ipu_model._model.model._parse_losses({'loss': None})
+ 
+ 
++@skip_no_ipu
+ def test_compare_feat():
+     compare_feat(np.random.rand(3, 4), np.random.rand(3, 4))
+diff --git a/tests/test_ipu/test_ipu_runner.py b/tests/test_ipu/test_ipu_runner.py
+index efc1fd1..a05a5fa 100644
+--- a/tests/test_ipu/test_ipu_runner.py
++++ b/tests/test_ipu/test_ipu_runner.py
+@@ -9,7 +9,12 @@ import pytest
+ import torch.nn as nn
+ 
+ from mmcv.runner import build_runner
+-from mmcv.runner import ipu_runner
++from mmcv.utils.ipu_wrapper import IPU_MODE
++if IPU_MODE:
++    from mmcv.runner import ipu_runner
++
++skip_no_ipu = pytest.mark.skipif(
++    not IPU_MODE, reason='test case under ipu environment')
+ 
+ # Most of its functions are inherited from EpochBasedRunner and IterBasedRunner
+ # So only do incremental testing on overridden methods
+@@ -35,6 +40,7 @@ class Model(OldStyleModel):
+         pass
+ 
+ 
++@skip_no_ipu
+ def test_build_runner():
+     # __init__
+     temp_root = tempfile.gettempdir()
+@@ -45,21 +51,21 @@ def test_build_runner():
+         model=Model(),
+         work_dir=osp.join(temp_root, dir_name),
+         logger=logging.getLogger())
+-    cfg = dict(type='IpuEpochBasedRunner', max_epochs=1)
++    cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
+     runner = build_runner(cfg, default_args=default_args)
+     assert runner._max_epochs == 1
+-    cfg = dict(type='IpuIterBasedRunner', max_iters=1)
++    cfg = dict(type='IPUIterBasedRunner', max_iters=1)
+     runner = build_runner(cfg, default_args=default_args)
+     assert runner._max_iters == 1
+ 
+     ipu_runner.IPU_MODE = False
+-    cfg = dict(type='IpuIterBasedRunner', max_iters=1)
++    cfg = dict(type='IPUIterBasedRunner', max_iters=1)
+     with pytest.raises(
+             NotImplementedError,
+-            match='cpu mode on IpuRunner not supported'):
++            match='cpu mode on IPURunner not supported'):
+         runner = build_runner(cfg, default_args=default_args)
+ 
+     ipu_runner.IPU_MODE = True
+     with pytest.raises(ValueError, match='Only one of'):
+-        cfg = dict(type='IpuIterBasedRunner', max_epochs=1, max_iters=1)
++        cfg = dict(type='IPUIterBasedRunner', max_epochs=1, max_iters=1)
+         runner = build_runner(cfg, default_args=default_args)
+diff --git a/tests/test_ipu/test_utils.py b/tests/test_ipu/test_ipu_utils.py
+similarity index 95%
+rename from tests/test_ipu/test_utils.py
+rename to tests/test_ipu/test_ipu_utils.py
+index 9e5250e..a9c42a3 100644
+--- a/tests/test_ipu/test_utils.py
++++ b/tests/test_ipu/test_ipu_utils.py
+@@ -2,9 +2,15 @@ import copy
+ import pytest
+ 
+ import mmcv
+-from mmcv.runner.ipu.util import parse_ipu_options
++from mmcv.utils.ipu_wrapper import IPU_MODE
++if IPU_MODE:
++    from mmcv.runner.ipu.util import parse_ipu_options
+ 
++skip_no_ipu = pytest.mark.skipif(
++    not IPU_MODE, reason='test case under ipu environment')
+ 
++
++@skip_no_ipu
+ def test_build_from_cfg():
+     BACKBONES = mmcv.Registry('backbone')
+ 
+@@ -112,6 +118,7 @@ def test_build_from_cfg():
+         model = mmcv.runner.ipu.build_from_cfg_with_wrapper(cfg, BACKBONES)
+ 
+ 
++@skip_no_ipu
+ def test_parse_ipu_options():
+     options_cfg = dict(
+         randomSeed=888,

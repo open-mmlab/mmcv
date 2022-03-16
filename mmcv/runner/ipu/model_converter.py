@@ -28,6 +28,7 @@ class ComplexDataManager:
         self.keys_of_changed_vals = []
         self.non_dict_element_changed = False
         self.quick_mode = False
+        self._tree = None
 
     def quick(self,):
         self.quick_mode = True
@@ -41,10 +42,10 @@ class ComplexDataManager:
     def set_tree(self, _tree):
         # _tree: A composite data type containing dictionaries, lists,
         # tensors and basic python data types
-        if hasattr(self, '_tree'):
+        if self._tree is not None:
             if isinstance(_tree, torch.Tensor):
                 assert type(self._tree) == torch.Tensor, \
-                    'orginal complex data is not torch.tensor'
+                    'original complex data is not torch.tensor'
                 self._tree = _tree
             else:
                 self.update(_tree)
@@ -98,7 +99,7 @@ class ComplexDataManager:
                         format(address)
                 else:
                     self.warning('find a non-torch.Tensor data({}) '
-                                 'changed, and the adress is {}'.format(
+                                 'changed, and the address is {}'.format(
                                      str(type(treeA)), str(address)))
         elif isinstance(treeA, DataContainer):
             if not self.quick_mode:
@@ -110,13 +111,14 @@ class ComplexDataManager:
                 'not supported datatype:{}, address is {}'
                 .format(str(treeA), address))
 
-    def get_tensors(self,):
+    def get_tensors(self, target_tree=None):
         # get a list of tensor from self._tree
+        target_tree = self._tree if target_tree is None else target_tree
         tensors = []
-        if type(self._tree) == torch.Tensor:
-            tensors = [self._tree]
+        if type(target_tree) == torch.Tensor:
+            tensors = [target_tree]
         else:
-            self._get_tensors(self._tree, tensors)
+            self._get_tensors(target_tree, tensors)
         return tensors
 
     def _get_tensors(self, _tree, tensors):
@@ -166,6 +168,30 @@ class ComplexDataManager:
             pass
         elif isinstance(_tree, DataContainer):
             self._set_tensors(_tree.data, tensors)
+        else:
+            raise NotImplementedError(
+                'not supported datatype:{}'.format(str(_tree)))
+
+    def clean_tensors(self,):
+        self._clean_tensors(self._tree)
+
+    def _clean_tensors(self, _tree):
+        if isinstance(_tree, (tuple, list)):
+            for idx in range(len(_tree)):
+                if isinstance(_tree[idx], torch.Tensor):
+                    _tree[idx] = None
+                else:
+                    self._clean_tensors(_tree[idx])
+        elif isinstance(_tree, dict):
+            for k, v in _tree.items():
+                if isinstance(v, torch.Tensor):
+                    _tree[k] = None
+                else:
+                    self._clean_tensors(_tree[k])
+        elif isinstance(_tree, self.fixed_data_types):
+            pass
+        elif isinstance(_tree, DataContainer):
+            self._clean_tensors(_tree.data)
         else:
             raise NotImplementedError(
                 'not supported datatype:{}'.format(str(_tree)))
@@ -226,8 +252,8 @@ class WrappedNet(torch.nn.Module):
             outputs[_name] = self.hooked_features[_name]
 
         # record all the places of return tensors in the converting stage
-        # while in the real run stage, all the tensor are changed inplace
-        # that means the output can be obtained directly outside this functioon
+        # while in the real run stage, all the tensor are changed in-place
+        # that means the output can be obtained directly outside this function
         self.outputs_tree_manager.set_tree(outputs)
         plain_outputs = self.outputs_tree_manager.get_tensors()
         return plain_outputs
@@ -298,7 +324,7 @@ class WrappedNet(torch.nn.Module):
         assert not return_loss
         # TODO Temporarily hard-code to close post_process,
         # otherwise, in the third trace(_check_trace),
-        # post_process will convert output tensor to numpy array automaticly,
+        # post_process will convert output tensor to numpy array automatically,
         # resulting in _check_trace failure
         outputs = self.model(img, img_metas=img_metas,
                              return_loss=return_loss, post_process=False)
@@ -359,10 +385,16 @@ class PoplarExecutorForMMCV(PoplarExecutor):
     def run_model(self, data_dict):
         # this function used to parse input_dict
         # and convert to output_dict
-
-        # get tensors out of data and put them in a tuple
-        self.inputs_tree_manager.set_tree(data_dict)
-        inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
+        if self.isCompiled():
+            self.inputs_tree_manager.set_tree(data_dict)
+            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
+        else:
+            # get tensors out of data and put them in a tuple
+            self.inputs_tree_manager.set_tree(data_dict)
+            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
+            # turn logger in tree manager off after compilation
+            self.inputs_tree_manager.quick()
+            self.outputs_tree_manager.quick()
 
         # parser args for first iter
         self._args_parser = DictArgsParser(
@@ -372,6 +404,8 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # run or convert model
         # the plain_outputs will be used in converting stage
         plain_outputs = self(inputs_tuple)
+
+        self.inputs_tree_manager.clean_tensors()
 
         # put list of tensors back to the output dict
         # according to the same order
@@ -396,9 +430,6 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             mmcv_model_output = \
                 mmcv_model_output['output of WrappedNet: single tensor']
 
-        # turn logger in tree manager off after compilation
-        self.inputs_tree_manager.quick()
-        self.outputs_tree_manager.quick()
         return mmcv_model_output
 
     def train_step(self, data, optimizer=None, **kwargs):
@@ -409,8 +440,9 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
         # TODO support datacontainer as input
         # currently, auto_fp16 and ComplexDataManager take too much time on
-        # traverersing datacontainer
+        # traversing datacontainer
         data['img_metas'] = None
+        num_samples = len(data['img'].data)
 
         # TODO we will ignore optimizer for it will not be used in model,
         # support later if necessary
@@ -425,8 +457,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # re-parse outputs, get back log_vars and num_samples
         loss, log_vars = self.model._parse_losses(neat_output_dic)
         final_output_dic = dict(
-            loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
-
+            loss=loss, log_vars=log_vars, num_samples=num_samples)
         return final_output_dic
 
     def eval_call(self, img, img_metas, return_loss=True, **kwargs):
@@ -620,7 +651,7 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
         example calling ``model.train()`` on the original model, which
         changes the ``training`` bool of the model instance, will not alter the
         model returned by this function. You may need to call ``model.train()``
-        on your model before you call this function for correct behaviour.
+        on your model before you call this function for correct behavior.
 
     :param model: The PyTorch model to wrap.
     :param options: The IPU specific options
@@ -665,7 +696,7 @@ def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
         example calling ``model.eval()`` on the original model will not alter
         the model returned by this function. You may need to call
         ``model.eval()`` on your model before you call this function for
-        correct behaviour.
+        correct behavior.
 
     :param model: The PyTorch model to wrap.
     :param options: The IPU specific options
