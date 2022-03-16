@@ -30,7 +30,6 @@ using namespace torch;
 #define WITHIN_BOUNDS(x, y, H, W) (x >= 0 && x < H && y >= 0 && y < W)
 
 #define WARP_SIZE 32
-#define THREADS_BACKWARD 16
 #define FULL_MASK 0xffffffff
 
 template <typename scalar_t>
@@ -120,19 +119,18 @@ __global__ void correlation_backward_cuda_kernel_input1(
     const int pw = i % patchW;
     int i1 = h + dilation_patchH * (ph - patchRadH);
     int j1 = w + dilation_patchW * (pw - patchRadW);
-    scalar_t grad_val = 0.0f;
 
     if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+      scalar_t grad_val = 0.0f;
       for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
         int i2 = (h_3) / dH;
         if (i2 * dH != h_3) continue;
         for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
           int j2 = (w_3) / dW;
           if (j2 * dW != w_3) continue;
-          if
-            WITHIN_BOUNDS(i2, j2, H, W) {
-              grad_val += grad_output[n][ph][pw][i2][j2];
-            }
+          if (WITHIN_BOUNDS(i2, j2, H, W)) {
+            grad_val += grad_output[n][ph][pw][i2][j2];
+          }
         }
       }
       grad_cache[i] = grad_val;
@@ -184,24 +182,25 @@ __global__ void correlation_backward_cuda_kernel_input2(
     const int ph = i / patchW;
     const int pw = i % patchW;
     int i1 = h - dilation_patchH * (ph - patchRadH);
-    int j1 = w + dilation_patchW * (pw - patchRadW);
-    scalar_t grad_val = 0.0f;
+    int j1 = w - dilation_patchW * (pw - patchRadW);
 
     if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+      scalar_t grad_val = 0.0f;
+
       const int h_2 = i1 + padH;
       const int w_2 = j1 + padW;
       const int min_h = h_2 - dilatedKH;
       const int min_w = w_2 - dilatedKW;
+
       for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
         int i2 = (h_3) / dH;
         if (i2 * dH != h_3) continue;
         for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
           int j2 = (w_3) / dW;
           if (j2 * dW != w_3) continue;
-          if
-            WITHIN_BOUNDS(i2, j2, H, W) {
-              grad_val += grad_output[n][ph][pw][i2][j2];
-            }
+          if (WITHIN_BOUNDS(i2, j2, H, W)) {
+            grad_val += grad_output[n][ph][pw][i2][j2];
+          }
         }
       }
       grad_cache[i] = grad_val;
@@ -212,9 +211,9 @@ __global__ void correlation_backward_cuda_kernel_input2(
   for (int c = threadIdx.x; c < C; c += blockDim.x) {
     scalar_t grad_input_val = 0.0f;
     for (int ph = 0; ph < patchH; ++ph) {
-      int i1 = h + dilation_patchH * (ph - patchRadH);
+      int i1 = h - dilation_patchH * (ph - patchRadH);
       for (int pw = 0; pw < patchW; ++pw) {
-        int j1 = w + dilation_patchW * (pw - patchRadW);
+        int j1 = w - dilation_patchW * (pw - patchRadW);
         if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
           grad_input_val += input1[n][i1][j1][c] * grad_cache[ph * patchW + pw];
         }
