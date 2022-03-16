@@ -56,17 +56,20 @@ void CorrelationBackwardCUDAKernelLauncher(
   const int iW = input1.size(3);
   const int C = input1.size(1);
 
-  const dim3 blocks(C, iH, iW);
-  const dim3 threads(WARP_SIZE, THREADS_BACKWARD);
+  auto trInput1 = input1.permute({0, 2, 3, 1}).contiguous();
+  auto trInput2 = input2.permute({0, 2, 3, 1}).contiguous();
+  const dim3 blocks(batch_size, iH, iW);
+  const dim3 threads(THREADS_PER_BLOCK);
 
   at::cuda::CUDAGuard device_guard(input1.device());
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input1.scalar_type(), "correlation_backward_cuda", ([&] {
+        const int grad_cache_size = patchH * patchW * sizeof(scalar_t);
         TensorAcc4R input1_acc =
-            input1.packed_accessor32<scalar_t, 4, RestrictPtrTraits>();
+            trInput1.packed_accessor32<scalar_t, 4, RestrictPtrTraits>();
         TensorAcc4R input2_acc =
-            input2.packed_accessor32<scalar_t, 4, RestrictPtrTraits>();
+            trInput2.packed_accessor32<scalar_t, 4, RestrictPtrTraits>();
         TensorAcc4R grad_input1_acc =
             grad_input1.packed_accessor32<scalar_t, 4, RestrictPtrTraits>();
         TensorAcc4R grad_input2_acc =
@@ -74,20 +77,18 @@ void CorrelationBackwardCUDAKernelLauncher(
         TensorAcc5R grad_output_acc =
             grad_output.packed_accessor32<scalar_t, 5, RestrictPtrTraits>();
 
-        for (int n = 0; n < batch_size; ++n) {
-          correlation_backward_cuda_kernel_input1<scalar_t>
-              <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
-                  grad_output_acc, input2_acc, grad_input1_acc, kH, kW, patchH,
-                  patchW, padH, padW, dilationH, dilationW, dilation_patchH,
-                  dilation_patchW, dH, dW, n);
-        }
+        correlation_backward_cuda_kernel_input1<scalar_t>
+            <<<blocks, threads, grad_cache_size,
+               at::cuda::getCurrentCUDAStream()>>>(
+                grad_output_acc, input2_acc, grad_input1_acc, kH, kW, patchH,
+                patchW, padH, padW, dilationH, dilationW, dilation_patchH,
+                dilation_patchW, dH, dW);
 
-        for (int n = 0; n < batch_size; ++n) {
-          correlation_backward_cuda_kernel_input2<scalar_t>
-              <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
-                  grad_output_acc, input1_acc, grad_input2_acc, kH, kW, patchH,
-                  patchW, padH, padW, dilationH, dilationW, dilation_patchH,
-                  dilation_patchW, dH, dW, n);
-        }
+        correlation_backward_cuda_kernel_input2<scalar_t>
+            <<<blocks, threads, grad_cache_size,
+               at::cuda::getCurrentCUDAStream()>>>(
+                grad_output_acc, input1_acc, grad_input2_acc, kH, kW, patchH,
+                patchW, padH, padW, dilationH, dilationW, dilation_patchH,
+                dilation_patchW, dH, dW);
       }));
 }

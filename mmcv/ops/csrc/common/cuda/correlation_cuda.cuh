@@ -93,9 +93,10 @@ __global__ void correlation_backward_cuda_kernel_input1(
     TensorAcc4R grad_input1, const int kH, const int kW, const int patchH,
     const int patchW, const int padH, const int padW, const int dilationH,
     const int dilationW, const int dilation_patchH, const int dilation_patchW,
-    const int dH, const int dW, const int batch) {
-  const int iH = input2.size(2);
-  const int iW = input2.size(3);
+    const int dH, const int dW) {
+  const int iH = input2.size(1);
+  const int iW = input2.size(2);
+  const int C = input2.size(3);
 
   const int H = grad_output.size(3);
   const int W = grad_output.size(4);
@@ -103,58 +104,54 @@ __global__ void correlation_backward_cuda_kernel_input1(
   const int patchRadH = (patchH - 1) / 2;
   const int patchRadW = (patchW - 1) / 2;
 
-  const int n = batch;
-  const int c = blockIdx.x;
+  const int n = blockIdx.x;
   const int h = blockIdx.y;
   const int w = blockIdx.z;
-  const int ph_off = threadIdx.x;
-  const int pw_off = threadIdx.y;
 
   const int h_2 = h + padH;
   const int w_2 = w + padW;
   const int min_h = h_2 - kH * dilationH;
   const int min_w = w_2 - kW * dilationW;
 
-  scalar_t prod_sum_val = 0.0f;
-
-  for (int ph = ph_off; ph < patchH; ph += WARP_SIZE) {
+  extern __shared__ __align__(sizeof(4)) unsigned char grad_cache_char[];
+  scalar_t *grad_cache = reinterpret_cast<scalar_t *>(grad_cache_char);
+  for (int i = threadIdx.x; i < patchH * patchW; i += blockDim.x) {
+    const int ph = i / patchW;
+    const int pw = i % patchW;
     int i1 = h + dilation_patchH * (ph - patchRadH);
-    for (int pw = pw_off; pw < patchW; pw += THREADS_BACKWARD) {
-      int j1 = w + dilation_patchW * (pw - patchRadW);
-      if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
-        scalar_t val = input2[n][c][i1][j1];
-        for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
-          int i2 = (h_3) / dH;
-          if (i2 * dH != h_3) continue;
-          for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
-            int j2 = (w_3) / dW;
-            if (j2 * dW != w_3) continue;
-            if
-              WITHIN_BOUNDS(i2, j2, H, W) {
-                prod_sum_val += grad_output[n][ph][pw][i2][j2] * val;
-              }
-          }
+    int j1 = w + dilation_patchW * (pw - patchRadW);
+    scalar_t grad_val = 0.0f;
+
+    if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+      for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
+        int i2 = (h_3) / dH;
+        if (i2 * dH != h_3) continue;
+        for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
+          int j2 = (w_3) / dW;
+          if (j2 * dW != w_3) continue;
+          if
+            WITHIN_BOUNDS(i2, j2, H, W) {
+              grad_val += grad_output[n][ph][pw][i2][j2];
+            }
+        }
+      }
+      grad_cache[i] = grad_val;
+    }
+  }
+  __syncthreads();
+
+  for (int c = threadIdx.x; c < C; c += blockDim.x) {
+    scalar_t grad_input_val = 0.0f;
+    for (int ph = 0; ph < patchH; ++ph) {
+      int i1 = h + dilation_patchH * (ph - patchRadH);
+      for (int pw = 0; pw < patchW; ++pw) {
+        int j1 = w + dilation_patchW * (pw - patchRadW);
+        if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+          grad_input_val += input2[n][i1][j1][c] * grad_cache[ph * patchW + pw];
         }
       }
     }
-  }
-
-  // warp reduce
-  __shared__ scalar_t prod_sum[THREADS_BACKWARD];
-  for (int offset = 16; offset > 0; offset /= 2)
-    prod_sum_val += __shfl_down_sync(FULL_MASK, float(prod_sum_val), offset);
-  if (ph_off == 0) {
-    prod_sum[pw_off] = prod_sum_val;
-  }
-
-  __syncthreads();
-
-  if (ph_off == 0 && pw_off == 0) {
-    scalar_t reduce_sum = 0;
-    for (int pw = 0; pw < THREADS_BACKWARD; ++pw) {
-      reduce_sum += prod_sum[pw];
-    }
-    grad_input1[n][c][h][w] = reduce_sum;
+    grad_input1[n][c][h][w] = grad_input_val;
   }
 }
 
@@ -163,9 +160,10 @@ __global__ void correlation_backward_cuda_kernel_input2(
     const TensorAcc5R grad_output, const TensorAcc4R input1,
     TensorAcc4R grad_input2, int kH, int kW, int patchH, int patchW, int padH,
     int padW, int dilationH, int dilationW, int dilation_patchH,
-    int dilation_patchW, int dH, int dW, int batch) {
-  const int iH = input1.size(2);
-  const int iW = input1.size(3);
+    int dilation_patchW, int dH, int dW) {
+  const int iH = input1.size(1);
+  const int iW = input1.size(2);
+  const int C = input1.size(3);
 
   const int patchRadH = (patchH - 1) / 2;
   const int patchRadW = (patchW - 1) / 2;
@@ -176,60 +174,53 @@ __global__ void correlation_backward_cuda_kernel_input2(
   const int dilatedKH = kH * dilationH;
   const int dilatedKW = kW * dilationW;
 
-  const int n = batch;
-  const int c = blockIdx.x;
+  const int n = blockIdx.x;
   const int h = blockIdx.y;
   const int w = blockIdx.z;
-  const int ph_off = threadIdx.x;
-  const int pw_off = threadIdx.y;
 
-  scalar_t prod_sum_val = 0.0f;
-
-  for (int ph = ph_off; ph < patchH; ph += WARP_SIZE) {
+  extern __shared__ __align__(sizeof(4)) unsigned char grad_cache_char[];
+  scalar_t *grad_cache = reinterpret_cast<scalar_t *>(grad_cache_char);
+  for (int i = threadIdx.x; i < patchH * patchW; i += blockDim.x) {
+    const int ph = i / patchW;
+    const int pw = i % patchW;
     int i1 = h - dilation_patchH * (ph - patchRadH);
-    for (int pw = pw_off; pw < patchW; pw += THREADS_BACKWARD) {
-      int j1 = w - dilation_patchW * (pw - patchRadW);
-      if
-        WITHIN_BOUNDS(i1, j1, iH, iW) {
-          scalar_t val = input1[n][c][i1][j1];
+    int j1 = w + dilation_patchW * (pw - patchRadW);
+    scalar_t grad_val = 0.0f;
 
-          const int h_2 = i1 + padH;
-          const int w_2 = j1 + padW;
-          const int min_h = h_2 - dilatedKH;
-          const int min_w = w_2 - dilatedKW;
-
-          for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
-            int i2 = (h_3) / dH;
-            if (i2 * dH != h_3) continue;
-            for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
-              int j2 = (w_3) / dW;
-              if (j2 * dW != w_3) continue;
-              if
-                WITHIN_BOUNDS(i2, j2, H, W) {
-                  prod_sum_val += grad_output[n][ph][pw][i2][j2] * val;
-                }
+    if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+      const int h_2 = i1 + padH;
+      const int w_2 = j1 + padW;
+      const int min_h = h_2 - dilatedKH;
+      const int min_w = w_2 - dilatedKW;
+      for (int h_3 = h_2; h_3 > min_h; h_3 -= dilationH) {
+        int i2 = (h_3) / dH;
+        if (i2 * dH != h_3) continue;
+        for (int w_3 = w_2; w_3 > min_w; w_3 -= dilationW) {
+          int j2 = (w_3) / dW;
+          if (j2 * dW != w_3) continue;
+          if
+            WITHIN_BOUNDS(i2, j2, H, W) {
+              grad_val += grad_output[n][ph][pw][i2][j2];
             }
-          }
         }
+      }
+      grad_cache[i] = grad_val;
     }
   }
-
-  // warp reduce
-  __shared__ scalar_t prod_sum[THREADS_BACKWARD];
-  for (int offset = 16; offset > 0; offset /= 2)
-    prod_sum_val += __shfl_down_sync(FULL_MASK, float(prod_sum_val), offset);
-  if (ph_off == 0) {
-    prod_sum[pw_off] = prod_sum_val;
-  }
-
   __syncthreads();
 
-  if (ph_off == 0 && pw_off == 0) {
-    scalar_t reduce_sum = 0;
-    for (int pw = 0; pw < THREADS_BACKWARD; ++pw) {
-      reduce_sum += prod_sum[pw];
+  for (int c = threadIdx.x; c < C; c += blockDim.x) {
+    scalar_t grad_input_val = 0.0f;
+    for (int ph = 0; ph < patchH; ++ph) {
+      int i1 = h + dilation_patchH * (ph - patchRadH);
+      for (int pw = 0; pw < patchW; ++pw) {
+        int j1 = w + dilation_patchW * (pw - patchRadW);
+        if (WITHIN_BOUNDS(i1, j1, iH, iW)) {
+          grad_input_val += input1[n][i1][j1][c] * grad_cache[ph * patchW + pw];
+        }
+      }
     }
-    grad_input2[n][c][h][w] = reduce_sum;
+    grad_input2[n][c][h][w] = grad_input_val;
   }
 }
 #endif
