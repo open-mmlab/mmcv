@@ -1396,6 +1396,12 @@ int HardVoxelizeForwardCUDAKernelLauncher(
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3);
 
+int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3);
+
 void DynamicVoxelizeForwardCUDAKernelLauncher(
     const at::Tensor& points, at::Tensor& coors,
     const std::vector<float> voxel_size, const std::vector<float> coors_range,
@@ -1409,6 +1415,16 @@ int hard_voxelize_forward_cuda(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim) {
   return HardVoxelizeForwardCUDAKernelLauncher(
+      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+      max_points, max_voxels, NDim);
+};
+
+int nondeterministic_hard_voxelize_forward_cuda(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim) {
+  return NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
       points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
       max_points, max_voxels, NDim);
 };
@@ -1429,6 +1445,12 @@ int hard_voxelize_forward_impl(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim);
 
+int nondeterministic_hard_voxelize_forward_impl(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim);
+
 void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
                                    const std::vector<float> voxel_size,
                                    const std::vector<float> coors_range,
@@ -1436,6 +1458,8 @@ void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
 
 REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
                      hard_voxelize_forward_cuda);
+REGISTER_DEVICE_IMPL(nondeterministic_hard_voxelize_forward_impl, CUDA,
+                     nondeterministic_hard_voxelize_forward_cuda);
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
 
