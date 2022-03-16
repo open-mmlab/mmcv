@@ -82,8 +82,7 @@ void TINShiftForwardMLUKernelLauncher(Tensor input, Tensor shift,
       input.size(0) == shift.size(0),
       "input batch size should be the same as shift's, input batch size is ",
       input.size(0), " and shift batch size is ", shift.size(0), ".");
-  TORCH_CHECK(input.size(0) != 0,
-              "Input batch size should not be zero.");
+  TORCH_CHECK(input.size(0) != 0, "Input batch size should not be zero.");
   TORCH_CHECK(input.size(3) != 0,
               "The last dim size of input should not be zero.");
   if (input.size(1) == 0) {
@@ -139,7 +138,8 @@ void TINShiftBackwardMLUKernelLauncher(Tensor grad_output, Tensor shift,
   TORCH_CHECK(grad_output.size(0) == shift.size(0),
               "grad_output batch size should be the same as shift's, "
               "grad_output batch size is ",
-              grad_output.size(0), ", shift batch size is ", shift.size(0), ".");
+              grad_output.size(0), ", shift batch size is ", shift.size(0),
+              ".");
   TORCH_CHECK(grad_output.size(0) != 0,
               "grad_output batch size should not be zero.");
   TORCH_CHECK(grad_output.size(3) != 0,
