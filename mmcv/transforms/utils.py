@@ -139,15 +139,17 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
                 key = f'{id(t)}.{name}'
                 if key2counter[key] != key2counter[key_transform]:
                     raise RuntimeError(
-                        'The cacheable method should be called once and only'
-                        f'once during processing one data sample. {t} got'
-                        f'unmatched number of {key2counter[key]} ({name}) vs'
+                        'The cacheable method should be called once and only '
+                        f'once during processing one data sample. {t} got '
+                        f'unmatched number of {key2counter[key]} ({name}) vs '
                         f'{key2counter[key_transform]} (data samples)')
                 setattr(t, name, key2method[key])
             setattr(t, 'transform', key2method[key_transform])
 
     def _apply(t: Union[BaseTransform, Iterable],
                func: Callable[[BaseTransform], None]):
+        # Note that BaseTransform and Iterable are not mutually exclusive,
+        # e.g. Compose, RandomChoice
         if isinstance(t, BaseTransform):
             if hasattr(t, '_cacheable_methods'):
                 func(t)
