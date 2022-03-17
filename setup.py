@@ -241,6 +241,11 @@ def get_extensions():
             num_cpu = len(psutil.Process().cpu_affinity())
             cpu_use = max(4, num_cpu - 1)
         except (ModuleNotFoundError, AttributeError):
+            # for macos, due to psutil.Process() has no method 'cpu_affinity',
+            # due to its own design which aims to
+            # let kernel manage cache affinity well.
+            # Because of that, AttributeError will be invoked,
+            # and here set cpu_use = 4 by default.
             cpu_use = 4
 
         os.environ.setdefault('MAX_JOBS', str(cpu_use))
