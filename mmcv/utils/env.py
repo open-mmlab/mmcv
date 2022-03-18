@@ -26,6 +26,7 @@ def collect_env():
             - CUDA_HOME (optional): The env var ``CUDA_HOME``.
             - NVCC (optional): NVCC version.
             - GCC: GCC version, "n/a" if GCC is not installed.
+            - MSVC: Microsoft Virtual C++ Compiler version, Windows only.
             - PyTorch: PyTorch version.
             - PyTorch compiling details: The output of \
                 ``torch.__config__.show()``.
@@ -66,6 +67,9 @@ def collect_env():
             env_info['NVCC'] = nvcc
 
     try:
+        # Check C++ Compiler.
+        # For Unix-like, sysconfig has 'CC' variable like 'gcc -pthread ...',
+        # indicating the compiler used, we use this to get the compiler name
         import sysconfig
         cc = sysconfig.get_config_var('CC')
         if cc:
@@ -74,6 +78,9 @@ def collect_env():
             env_info['GCC'] = cc_info.decode('utf-8').partition(
                 '\n')[0].strip()
         else:
+            # on Windows, cl.exe is not in PATH. We need to find the path.
+            # distutils.ccompiler.new_compiler() returns a msvccompiler
+            # object and after initialization, path to cl.exe is found.
             from distutils.ccompiler import new_compiler
             ccompiler = new_compiler()
             ccompiler.initialize()
