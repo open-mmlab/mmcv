@@ -9,11 +9,6 @@ from mmcv.ops import DynamicScatter
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_dynamic_scatter():
-    feats = torch.rand(
-        size=(200000, 3), dtype=torch.float32, device='cuda') * 100 - 50
-    coors = torch.randint(
-        low=-1, high=20, size=(200000, 3), dtype=torch.int32, device='cuda')
-
     dsmean = DynamicScatter([0.32, 0.32, 6],
                             [-74.88, -74.88, -2, 74.88, 74.88, 4], True)
     dsmax = DynamicScatter([0.32, 0.32, 6],
@@ -53,6 +48,11 @@ def test_dynamic_scatter():
     assert (empty_o_feats.grad == 0).all()
 
     # test non-empty input
+    feats = torch.rand(
+        size=(200000, 3), dtype=torch.float32, device='cuda') * 100 - 50
+    coors = torch.randint(
+        low=-1, high=20, size=(200000, 3), dtype=torch.int32, device='cuda')
+
     ref_voxel_coors = coors.unique(dim=0, sorted=True)
     ref_voxel_coors = ref_voxel_coors[ref_voxel_coors.min(dim=-1).values >= 0]
     ref_voxel_feats_mean = []
