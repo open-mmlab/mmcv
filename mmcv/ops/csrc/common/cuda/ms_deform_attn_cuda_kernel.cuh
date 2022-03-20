@@ -14,8 +14,6 @@
 #include "common_cuda_helper.hpp"
 #include "pytorch_cuda_helper.hpp"
 
-const int CUDA_NUM_THREADS = 1024;
-
 template <typename scalar_t>
 __device__ scalar_t ms_deform_attn_im2col_bilinear(
     const scalar_t *&bottom_data, const int &height, const int &width,
@@ -307,6 +305,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
+        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
+        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
+        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -395,6 +396,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
+        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
+        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
+        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -486,6 +490,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v1(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
+        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
+        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
+        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -575,6 +582,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
+        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
+        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
+        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -675,6 +685,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2_multi_blocks(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
+        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
+        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
+        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
