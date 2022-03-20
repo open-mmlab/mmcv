@@ -264,10 +264,11 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  __shared__ scalar_t cache_grad_sampling_loc[blockSize * 2];
+  __shared__ scalar_t cache_grad_attn_weight[blockSize];
+  unsigned int tid = threadIdx.x;
+  const int qid_stride = num_heads * channels;
   CUDA_1D_KERNEL_LOOP(index, n) {
-    __shared__ scalar_t cache_grad_sampling_loc[blockSize * 2];
-    __shared__ scalar_t cache_grad_attn_weight[blockSize];
-    unsigned int tid = threadIdx.x;
     int _temp = index;
     const int c_col = _temp % channels;
     _temp /= channels;
@@ -282,11 +283,11 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
-    const int qid_stride = num_heads * channels;
     const int data_value_ptr_init_offset = b_col * spatial_size * qid_stride;
 
     for (int l_col = 0; l_col < num_levels; ++l_col) {
@@ -306,9 +307,6 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
-        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
-        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
-        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -323,23 +321,23 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(
                    _grad_h = cache_grad_sampling_loc[1],
                    _grad_a = cache_grad_attn_weight[0];
           int sid = 2;
-          for (unsigned int tid = 1; tid < blockSize; ++tid) {
+          for (unsigned int _tid = 1; _tid < blockSize; ++_tid) {
             _grad_w += cache_grad_sampling_loc[sid];
             _grad_h += cache_grad_sampling_loc[sid + 1];
-            _grad_a += cache_grad_attn_weight[tid];
+            _grad_a += cache_grad_attn_weight[_tid];
             sid += 2;
           }
 
-          *grad_sampling_loc = _grad_w;
-          *(grad_sampling_loc + 1) = _grad_h;
-          *grad_attn_weight = _grad_a;
+          *grad_sampling_loc_out = _grad_w;
+          *(grad_sampling_loc_out + 1) = _grad_h;
+          *grad_attn_weight_out = _grad_a;
         }
         __syncthreads();
 
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
@@ -354,10 +352,10 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  __shared__ scalar_t cache_grad_sampling_loc[blockSize * 2];
+  __shared__ scalar_t cache_grad_attn_weight[blockSize];
+  unsigned int tid = threadIdx.x;
   CUDA_1D_KERNEL_LOOP(index, n) {
-    __shared__ scalar_t cache_grad_sampling_loc[blockSize * 2];
-    __shared__ scalar_t cache_grad_attn_weight[blockSize];
-    unsigned int tid = threadIdx.x;
     int _temp = index;
     const int c_col = _temp % channels;
     _temp /= channels;
@@ -372,8 +370,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
@@ -396,9 +395,6 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
-        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
-        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
-        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -422,16 +418,16 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v2(
         }
 
         if (tid == 0) {
-          *grad_sampling_loc = cache_grad_sampling_loc[0];
-          *(grad_sampling_loc + 1) = cache_grad_sampling_loc[1];
-          *grad_attn_weight = cache_grad_attn_weight[0];
+          *grad_sampling_loc_out = cache_grad_sampling_loc[0];
+          *(grad_sampling_loc_out + 1) = cache_grad_sampling_loc[1];
+          *grad_attn_weight_out = cache_grad_attn_weight[0];
         }
         __syncthreads();
 
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
@@ -446,11 +442,11 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v1(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  extern __shared__ int _s[];
+  scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
+  scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
+  unsigned int tid = threadIdx.x;
   CUDA_1D_KERNEL_LOOP(index, n) {
-    extern __shared__ int _s[];
-    scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
-    scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
-    unsigned int tid = threadIdx.x;
     int _temp = index;
     const int c_col = _temp % channels;
     _temp /= channels;
@@ -465,8 +461,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v1(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
@@ -489,9 +486,6 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v1(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
-        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
-        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
-        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -506,23 +500,23 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v1(
                    _grad_h = cache_grad_sampling_loc[1],
                    _grad_a = cache_grad_attn_weight[0];
           int sid = 2;
-          for (unsigned int tid = 1; tid < blockDim.x; ++tid) {
+          for (unsigned int _tid = 1; _tid < blockDim.x; ++_tid) {
             _grad_w += cache_grad_sampling_loc[sid];
             _grad_h += cache_grad_sampling_loc[sid + 1];
-            _grad_a += cache_grad_attn_weight[tid];
+            _grad_a += cache_grad_attn_weight[_tid];
             sid += 2;
           }
 
-          *grad_sampling_loc = _grad_w;
-          *(grad_sampling_loc + 1) = _grad_h;
-          *grad_attn_weight = _grad_a;
+          *grad_sampling_loc_out = _grad_w;
+          *(grad_sampling_loc_out + 1) = _grad_h;
+          *grad_attn_weight_out = _grad_a;
         }
         __syncthreads();
 
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
@@ -537,11 +531,11 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  extern __shared__ int _s[];
+  scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
+  scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
+  unsigned int tid = threadIdx.x;
   CUDA_1D_KERNEL_LOOP(index, n) {
-    extern __shared__ int _s[];
-    scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
-    scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
-    unsigned int tid = threadIdx.x;
     int _temp = index;
     const int c_col = _temp % channels;
     _temp /= channels;
@@ -556,8 +550,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
@@ -580,9 +575,6 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
-        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
-        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
-        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -615,16 +607,16 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2(
         }
 
         if (tid == 0) {
-          *grad_sampling_loc = cache_grad_sampling_loc[0];
-          *(grad_sampling_loc + 1) = cache_grad_sampling_loc[1];
-          *grad_attn_weight = cache_grad_attn_weight[0];
+          *grad_sampling_loc_out = cache_grad_sampling_loc[0];
+          *(grad_sampling_loc_out + 1) = cache_grad_sampling_loc[1];
+          *grad_attn_weight_out = cache_grad_attn_weight[0];
         }
         __syncthreads();
 
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
@@ -639,11 +631,11 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2_multi_blocks(
     const int channels, const int num_levels, const int num_query,
     const int num_point, scalar_t *grad_value, scalar_t *grad_sampling_loc,
     scalar_t *grad_attn_weight) {
+  extern __shared__ int _s[];
+  scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
+  scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
+  unsigned int tid = threadIdx.x;
   CUDA_1D_KERNEL_LOOP(index, n) {
-    extern __shared__ int _s[];
-    scalar_t *cache_grad_sampling_loc = reinterpret_cast<scalar_t *>(_s);
-    scalar_t *cache_grad_attn_weight = cache_grad_sampling_loc + 2 * blockDim.x;
-    unsigned int tid = threadIdx.x;
     int _temp = index;
     const int c_col = _temp % channels;
     _temp /= channels;
@@ -658,8 +650,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2_multi_blocks(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
@@ -682,9 +675,6 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2_multi_blocks(
 
         const scalar_t h_im = loc_h * spatial_h - 0.5;
         const scalar_t w_im = loc_w * spatial_w - 0.5;
-        *(cache_grad_sampling_loc + (threadIdx.x << 1)) = 0;
-        *(cache_grad_sampling_loc + ((threadIdx.x << 1) + 1)) = 0;
-        *(cache_grad_attn_weight + threadIdx.x) = 0;
         if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
           ms_deform_attn_col2im_bilinear(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
@@ -717,16 +707,16 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_reduce_v2_multi_blocks(
         }
 
         if (tid == 0) {
-          atomicAdd(grad_sampling_loc, cache_grad_sampling_loc[0]);
-          atomicAdd(grad_sampling_loc + 1, cache_grad_sampling_loc[1]);
-          atomicAdd(grad_attn_weight, cache_grad_attn_weight[0]);
+          atomicAdd(grad_sampling_loc_out, cache_grad_sampling_loc[0]);
+          atomicAdd(grad_sampling_loc_out + 1, cache_grad_sampling_loc[1]);
+          atomicAdd(grad_attn_weight_out, cache_grad_attn_weight[0]);
         }
         __syncthreads();
 
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
@@ -756,8 +746,9 @@ __global__ void ms_deformable_col2im_gpu_kernel_gm(
     int data_weight_ptr = sampling_index * num_levels * num_point;
     int data_loc_w_ptr = data_weight_ptr << 1;
     const int grad_sampling_ptr = data_weight_ptr;
-    grad_sampling_loc += grad_sampling_ptr << 1;
-    grad_attn_weight += grad_sampling_ptr;
+    scalar_t *grad_sampling_loc_out =
+        grad_sampling_loc + (grad_sampling_ptr << 1);
+    scalar_t *grad_attn_weight_out = grad_attn_weight + grad_sampling_ptr;
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
@@ -784,12 +775,12 @@ __global__ void ms_deformable_col2im_gpu_kernel_gm(
           ms_deform_attn_col2im_bilinear_gm(
               data_value_ptr, spatial_h, spatial_w, num_heads, channels, h_im,
               w_im, m_col, c_col, top_grad, weight, grad_value_ptr,
-              grad_sampling_loc, grad_attn_weight);
+              grad_sampling_loc_out, grad_attn_weight_out);
         }
         data_weight_ptr += 1;
         data_loc_w_ptr += 2;
-        grad_attn_weight += grad_weight_stride;
-        grad_sampling_loc += grad_loc_stride;
+        grad_attn_weight_out += grad_weight_stride;
+        grad_sampling_loc_out += grad_loc_stride;
       }
     }
   }
