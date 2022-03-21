@@ -72,4 +72,65 @@ __global__ void nms_cuda(const int n_boxes, const float iou_threshold,
     }
   }
 }
+
+__global__ void gather_keep_from_mask_parallize(
+    bool *keep, const unsigned long long *dev_mask, const int n_boxes) {
+  const int col_blocks = (n_boxes + threadsPerBlock - 1) / threadsPerBlock;
+  const int tid = threadIdx.x;
+
+  extern __shared__ unsigned long long remv[];
+  __shared__ const unsigned long long *p[1];
+  __shared__ bool finish[1];
+  __shared__ int nblock_ptr[1];
+
+  for (int i = tid; i < col_blocks; i += blockDim.x) {
+    remv[i] = 0;
+  }
+  if (tid == 0) {
+    finish[0] = false;
+  }
+  __syncthreads();
+
+  int nblock = 0;
+  int inblock = 0;
+  int i = 0;
+  bool do_sync = false;
+
+  while (!finish[0]) {
+    if (tid == 0) {
+      do_sync = false;
+      for (; nblock < col_blocks; ++nblock) {
+#pragma unroll
+        for (; inblock < threadsPerBlock; ++inblock) {
+          if (i < n_boxes && !(remv[nblock] & (1ULL << inblock))) {
+            keep[i] = true;
+            p[0] = dev_mask + i * col_blocks;
+            i += 1;
+            inblock = (inblock + 1) % threadsPerBlock;
+            nblock_ptr[0] = nblock;
+            nblock += inblock == 0 ? 1 : 0;
+            do_sync = true;
+            break;
+          } else {
+            i += 1;
+          }
+        }
+        if (do_sync) break;
+        inblock = 0;
+      }
+      if (!do_sync) {
+        finish[0] = true;
+      }
+    }
+    __syncthreads();
+
+    if (!finish[0]) {
+      for (int j = tid; j < col_blocks; j += blockDim.x) {
+        if (j >= nblock_ptr[0]) remv[j] |= p[0][j];
+      }
+      __syncthreads();
+    }
+  }
+}
+
 #endif  // NMS_CUDA_KERNEL_CUH
