@@ -23,10 +23,12 @@ from .hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
                                CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
                                ExpLrUpdaterHook, FixedLrUpdaterHook,
                                FlatCosineAnnealingLrUpdaterHook,
-                               InvLrUpdaterHook, LrUpdaterHook,
-                               OneCycleLrUpdaterHook, PolyLrUpdaterHook)
+                               InvLrUpdaterHook, LinearAnnealingLrUpdaterHook,
+                               LrUpdaterHook, OneCycleLrUpdaterHook,
+                               PolyLrUpdaterHook)
 from .hooks.momentum_updater import (CosineAnnealingMomentumUpdaterHook,
                                      CyclicMomentumUpdaterHook,
+                                     LinearAnnealingMomentumUpdaterHook,
                                      MomentumUpdaterHook,
                                      OneCycleMomentumUpdaterHook,
                                      StepMomentumUpdaterHook)
@@ -62,5 +64,6 @@ __all__ = [
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
     'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
-    'SegmindLoggerHook'
+    'SegmindLoggerHook', 'LinearAnnealingMomentumUpdaterHook',
+    'LinearAnnealingLrUpdaterHook'
 ]
