@@ -87,16 +87,17 @@ __global__ void gather_keep_from_mask_parallize(
 
   for (int nblock = 0; nblock < col_blocks; ++nblock) {
     auto remv_val = remv[nblock];
+    __syncthreads();
+    const int i_offset = nblock * threadsPerBlock;
 #pragma unroll
     for (int inblock = 0; inblock < threadsPerBlock; ++inblock) {
-      const int i = nblock * threadsPerBlock + inblock;
+      const int i = i_offset + inblock;
       if (i >= n_boxes) break;
       if (!(remv_val & (1ULL << inblock))) {
         if (tid == 0) {
           keep[i] = true;
         }
         auto p = dev_mask + i * col_blocks;
-        __syncthreads();
         for (int j = tid; j < col_blocks; j += blockDim.x) {
           if (j >= nblock) remv[j] |= p[j];
         }
