@@ -18,7 +18,8 @@ class _Voxelization(Function):
                 voxel_size,
                 coors_range,
                 max_points=35,
-                max_voxels=20000):
+                max_voxels=20000,
+                deterministic=True):
         """Convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -34,6 +35,16 @@ class _Voxelization(Function):
                 for second, 20000 is a good choice. Users should shuffle points
                 before call this function because max_voxels may drop points.
                 Default: 20000.
+            deterministic: bool. whether to invoke the non-deterministic
+                version of hard-voxelization implementations. non-deterministic
+                version is considerablly fast but is not deterministic. only
+                affects hard voxelization. default True. for more information
+                of this argument and the implementation insights, please refer
+                to the following links:
+                https://github.com/open-mmlab/mmdetection3d/issues/894
+                https://github.com/open-mmlab/mmdetection3d/pull/904
+                it is an experimental feature and we will appreciate it if
+                you could share with us the failing cases.
 
         Returns:
             tuple[torch.Tensor]: tuple[torch.Tensor]: A tuple contains three
@@ -69,7 +80,8 @@ class _Voxelization(Function):
                 voxel_num,
                 max_points=max_points,
                 max_voxels=max_voxels,
-                NDim=3)
+                NDim=3,
+                deterministic=deterministic)
             # select the valid voxels
             voxels_out = voxels[:voxel_num]
             coors_out = coors[:voxel_num]
@@ -102,7 +114,27 @@ class Voxelization(nn.Module):
                  voxel_size,
                  point_cloud_range,
                  max_num_points,
-                 max_voxels=20000):
+                 max_voxels=20000,
+                 deterministic=True):
+        """
+        Args:
+            voxel_size (list): list [x, y, z] size of three dimension
+            point_cloud_range (list):
+                [x_min, y_min, z_min, x_max, y_max, z_max]
+            max_num_points (int): max number of points per voxel
+            max_voxels (tuple or int): max number of voxels in
+                (training, testing) time
+            deterministic: bool. whether to invoke the non-deterministic
+                version of hard-voxelization implementations. non-deterministic
+                version is considerablly fast but is not deterministic. only
+                affects hard voxelization. default True. for more information
+                of this argument and the implementation insights, please refer
+                to the following links:
+                https://github.com/open-mmlab/mmdetection3d/issues/894
+                https://github.com/open-mmlab/mmdetection3d/pull/904
+                it is an experimental feature and we will appreciate it if
+                you could share with us the failing cases.
+        """
         super().__init__()
 
         self.voxel_size = voxel_size
@@ -112,6 +144,7 @@ class Voxelization(nn.Module):
             self.max_voxels = max_voxels
         else:
             self.max_voxels = _pair(max_voxels)
+        self.deterministic = deterministic
 
         point_cloud_range = torch.tensor(
             point_cloud_range, dtype=torch.float32)
@@ -132,7 +165,8 @@ class Voxelization(nn.Module):
             max_voxels = self.max_voxels[1]
 
         return voxelization(input, self.voxel_size, self.point_cloud_range,
-                            self.max_num_points, max_voxels)
+                            self.max_num_points, max_voxels,
+                            self.deterministic)
 
     def __repr__(self):
         s = self.__class__.__name__ + '('
@@ -140,5 +174,6 @@ class Voxelization(nn.Module):
         s += ', point_cloud_range=' + str(self.point_cloud_range)
         s += ', max_num_points=' + str(self.max_num_points)
         s += ', max_voxels=' + str(self.max_voxels)
+        s += ', deterministic=' + str(self.deterministic)
         s += ')'
         return s
