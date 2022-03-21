@@ -139,11 +139,25 @@ class Testfocalloss(object):
     def test_sigmoid_float(self, device):
         self._test_sigmoid(torch.float, device)
 
-    def test_softmax_half(self):
-        self._test_softmax(torch.half, 'cuda')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
+    ])
+    def test_softmax_half(self, device):
+        self._test_softmax(torch.half, device)
 
-    def test_sigmoid_half(self):
-        self._test_softmax(torch.half, 'cuda')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(),
+                reason='requires CUDA support')),
+    ])
+    def test_sigmoid_half(self, device):
+        self._test_softmax(torch.half, device)
 
     @pytest.mark.parametrize('device', [
         'cpu',
