@@ -122,7 +122,7 @@ __global__ void point_to_voxelidx_kernel(const T_int* coor,
           point_to_pointidx[index] = i;
         } else if (num >= max_points) {
           // out of boundary
-          continue;
+          break;
         }
       }
     }
