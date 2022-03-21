@@ -37,7 +37,7 @@ def test_complexdatamanager():
     cdm.quick()
 
     with pytest.raises(AssertionError,
-                       match='orginal complex data is not torch.tensor'):
+                       match='original complex data is not torch.tensor'):
         cdm.set_tree(torch.rand(3, 4))
 
     class AuxClass:
