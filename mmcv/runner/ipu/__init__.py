@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.utils.ipu_wrapper import IPU_MODE
 
+
 if IPU_MODE:
     from .util import parse_ipu_options, ipu_model_wrapper,\
         build_from_cfg_with_wrapper, model_sharding,\
