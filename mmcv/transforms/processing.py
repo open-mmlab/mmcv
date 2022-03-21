@@ -1234,7 +1234,7 @@ class RandomResize(BaseTransform):
     - keep_ratio
 
     Args:
-        scale (tuple or list[tuple], optional): Images scales for resizing.
+        scale (tuple or list[tuple]): Images scales for resizing.
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
@@ -1243,7 +1243,7 @@ class RandomResize(BaseTransform):
 
     def __init__(
         self,
-        scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
+        scale: Union[Tuple[int, int], List[Tuple[int, int]]],
         ratio_range: Tuple[float, float] = None,
         resize_cfg: dict = dict(
             type='Resize',
