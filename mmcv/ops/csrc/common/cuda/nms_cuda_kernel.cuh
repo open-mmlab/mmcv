@@ -79,56 +79,30 @@ __global__ void gather_keep_from_mask_parallize(
   const int tid = threadIdx.x;
 
   extern __shared__ unsigned long long remv[];
-  __shared__ const unsigned long long *p[1];
-  __shared__ bool finish[1];
-  __shared__ int nblock_ptr[1];
 
   for (int i = tid; i < col_blocks; i += blockDim.x) {
     remv[i] = 0;
   }
-  if (tid == 0) {
-    finish[0] = false;
-  }
   __syncthreads();
 
-  int nblock = 0;
-  int inblock = 0;
-  int i = 0;
-  bool do_sync = false;
-
-  while (!finish[0]) {
-    if (tid == 0) {
-      do_sync = false;
-      for (; nblock < col_blocks; ++nblock) {
+  for (int nblock = 0; nblock < col_blocks; ++nblock) {
+    auto remv_val = remv[nblock];
 #pragma unroll
-        for (; inblock < threadsPerBlock; ++inblock) {
-          if (i < n_boxes && !(remv[nblock] & (1ULL << inblock))) {
-            keep[i] = true;
-            p[0] = dev_mask + i * col_blocks;
-            i += 1;
-            inblock = (inblock + 1) % threadsPerBlock;
-            nblock_ptr[0] = nblock;
-            nblock += inblock == 0 ? 1 : 0;
-            do_sync = true;
-            break;
-          } else {
-            i += 1;
-          }
+    for (int inblock = 0; inblock < threadsPerBlock; ++inblock) {
+      const int i = nblock * threadsPerBlock + inblock;
+      if (i >= n_boxes) break;
+      if (!(remv_val & (1ULL << inblock))) {
+        if (tid == 0) {
+          keep[i] = true;
         }
-        if (do_sync) break;
-        inblock = 0;
+        auto p = dev_mask + i * col_blocks;
+        __syncthreads();
+        for (int j = tid; j < col_blocks; j += blockDim.x) {
+          if (j >= nblock) remv[j] |= p[j];
+        }
+        __syncthreads();
+        remv_val = remv[nblock];
       }
-      if (!do_sync) {
-        finish[0] = true;
-      }
-    }
-    __syncthreads();
-
-    if (!finish[0]) {
-      for (int j = tid; j < col_blocks; j += blockDim.x) {
-        if (j >= nblock_ptr[0]) remv[j] |= p[0][j];
-      }
-      __syncthreads();
     }
   }
 }
