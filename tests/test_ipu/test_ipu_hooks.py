@@ -22,7 +22,7 @@ skip_no_ipu = pytest.mark.skipif(
 # TODO Once the model training and inference interfaces
 # of MMCLS and MMDET are unified,
 # construct the model according to the unified standards
-class TestModel(nn.Module):
+class ToyModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
@@ -57,7 +57,7 @@ class TestModel(nn.Module):
 @skip_no_ipu
 def test_optimizerhook():
 
-    model = TestModel()
+    model = ToyModel()
     dummy_input = {
         'data': {'img': torch.rand((16, 3, 10, 10)),
                  'gt_label': torch.rand((16, 3, 10, 10))}}

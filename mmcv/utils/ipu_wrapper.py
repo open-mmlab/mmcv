@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+
 def get_ipu_mode():
     try:
         import poptorch # noqa: E261, F401

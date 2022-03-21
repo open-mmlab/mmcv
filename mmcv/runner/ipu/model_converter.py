@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import poptorch
 import numpy as np
@@ -326,8 +327,9 @@ class WrappedNet(torch.nn.Module):
         # otherwise, in the third trace(_check_trace),
         # post_process will convert output tensor to numpy array automatically,
         # resulting in _check_trace failure
-        outputs = self.model(img, img_metas=img_metas,
-                             return_loss=return_loss, post_process=False)
+        outputs = self.model(
+            img, img_metas=img_metas,
+            return_loss=return_loss, post_process=False)
         return outputs
 
 

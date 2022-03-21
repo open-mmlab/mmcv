@@ -25,7 +25,7 @@ class MyBn(nn.BatchNorm2d):
 # TODO Once the model training and inference interfaces
 # of MMCLS and MMDET are unified,
 # construct the model according to the unified standards
-class TestModel(nn.Module):
+class ToyModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
@@ -87,7 +87,7 @@ def test_build_model():
                 partialsType='half')
 
             ipu_options = parse_ipu_options(ipu_options)
-            model = TestModel()
+            model = ToyModel()
             optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
             logger = logging.getLogger()
             modules_to_record = []
@@ -114,7 +114,7 @@ def run_model(ipu_options,
               modules_to_record,
               ipu_model_wrapper_func,
               only_eval=False):
-    model = TestModel()
+    model = ToyModel()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)\
         if not only_eval else None
     logger = logging.getLogger()
