@@ -1175,10 +1175,9 @@ class RandomFlip(BaseTransform):
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip segs
-        if results.get('gt_semantic_seg', None) is not None:
-            results['gt_semantic_seg'] = mmcv.imflip(
-                results['gt_semantic_seg'],
-                direction=results['flip_direction'])
+        if results.get('gt_seg_map', None) is not None:
+            results['gt_seg_map'] = mmcv.imflip(
+                results['gt_seg_map'], direction=results['flip_direction'])
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
@@ -1253,7 +1252,7 @@ class RandomResize(BaseTransform):
     - keep_ratio
 
     Args:
-        scale (tuple or list[tuple], optional): Images scales for resizing.
+        scale (tuple or list[tuple]): Images scales for resizing.
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
@@ -1262,7 +1261,7 @@ class RandomResize(BaseTransform):
 
     def __init__(
         self,
-        scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
+        scale: Union[Tuple[int, int], List[Tuple[int, int]]],
         ratio_range: Tuple[float, float] = None,
         resize_cfg: dict = dict(
             type='Resize',
@@ -1271,8 +1270,6 @@ class RandomResize(BaseTransform):
             backend='cv2',
             interpolation='bilinear')
     ) -> None:
-
-        assert scale is not None
 
         self.scale = scale
         self.ratio_range = ratio_range

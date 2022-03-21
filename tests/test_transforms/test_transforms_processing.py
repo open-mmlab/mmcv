@@ -792,7 +792,7 @@ class TestRandomFlip:
             'img': np.random.random((224, 224, 3)),
             'gt_bboxes': np.array([[0, 1, 100, 101]]),
             'gt_keypoints': np.array([[[100, 100, 1.0]]]),
-            'gt_semantic_seg': np.random.random((224, 224, 3))
+            'gt_seg_map': np.random.random((224, 224, 3))
         }
 
         # horizontal flip
