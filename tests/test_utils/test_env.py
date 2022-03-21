@@ -16,7 +16,7 @@ def test_collect_env():
     env_info = collect_env()
     expected_keys = [
         'sys.platform', 'Python', 'CUDA available', 'PyTorch',
-        'PyTorch compiling details', 'OpenCV', 'MMCV', 'MMCV Compiler',
+        'PyTorch compiling details', 'OpenCV', 'MMCV', 'MMCV Compiler', 'GCC',
         'MMCV CUDA Compiler'
     ]
     for key in expected_keys:
@@ -26,7 +26,6 @@ def test_collect_env():
         for key in ['CUDA_HOME', 'NVCC']:
             assert key in env_info
 
-    assert 'GCC' in env_info
     if sys.platform == 'win32':
         assert 'MSVC' in env_info
 
