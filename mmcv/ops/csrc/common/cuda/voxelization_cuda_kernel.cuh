@@ -101,7 +101,7 @@ __global__ void point_to_voxelidx_kernel(const T_int* coor,
   CUDA_1D_KERNEL_LOOP(index, num_points) {
     auto coor_offset = coor + index * NDim;
     // skip invalid points
-    if (coor_offset[0] == -1) return;
+    if (coor_offset[0] == -1) continue;
 
     int num = 0;
     int coor_x = coor_offset[0];
@@ -122,7 +122,7 @@ __global__ void point_to_voxelidx_kernel(const T_int* coor,
           point_to_pointidx[index] = i;
         } else if (num >= max_points) {
           // out of boundary
-          return;
+          continue;
         }
       }
     }
