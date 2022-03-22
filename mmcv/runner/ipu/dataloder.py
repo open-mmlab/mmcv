@@ -53,6 +53,7 @@ class IPUDataloader(poptorch.DataLoader):
                  persistent_workers=True,
                  auto_distributed_partitioning=True,
                  mode=poptorch.DataLoaderMode.AsyncRebatched,
+                 rebatched_worker_size=128,
                  **kwargs):
         # lazy init
         self.kwargs = {'options': options,
@@ -69,7 +70,7 @@ class IPUDataloader(poptorch.DataLoader):
                        partial(collate, samples_per_gpu=batch_size),
                        'async_options': {
                            'load_indefinitely': True, 'buffer_size': 8},
-                       'rebatched_worker_size': 128,
+                       'rebatched_worker_size': rebatched_worker_size,
                        **kwargs}
         self.initialized = False
 

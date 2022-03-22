@@ -15,6 +15,18 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
 from mmcv.runner.hooks import IterTimerHook
+from mmcv.utils.ipu_wrapper import IPU_MODE
+
+
+def get_runners():
+    module_dict = {}
+    for runner_name, runner_class in RUNNERS.module_dict.items():
+        if IPU_MODE or not runner_name.startswith('IPU'):
+            module_dict[runner_name] = runner_class
+    return module_dict
+
+
+MODULE_DICT = get_runners()
 
 
 class OldStyleModel(nn.Module):
@@ -55,7 +67,7 @@ def test_build_runner():
 
 
 @pytest.mark.parametrize(
-    'runner_name, runner_class', RUNNERS.module_dict.items())
+    'runner_name, runner_class', MODULE_DICT.items())
 def test_epoch_based_runner(runner_name, runner_class):
 
     if runner_name.startswith('IPU'):
@@ -146,7 +158,7 @@ def test_epoch_based_runner(runner_name, runner_class):
 
 
 @pytest.mark.parametrize(
-    'runner_name, runner_class', RUNNERS.module_dict.items())
+    'runner_name, runner_class', MODULE_DICT.items())
 def test_runner_with_parallel(runner_name, runner_class):
 
     def batch_processor():
@@ -180,7 +192,7 @@ def test_runner_with_parallel(runner_name, runner_class):
                 model, batch_processor, logger=logging.getLogger())
 
 
-@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+@pytest.mark.parametrize('runner_class', MODULE_DICT.values())
 def test_save_checkpoint(runner_class):
     model = Model()
     runner = runner_class(model=model, logger=logging.getLogger())
@@ -211,7 +223,7 @@ def test_save_checkpoint(runner_class):
         torch.load(latest_path)
 
 
-@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+@pytest.mark.parametrize('runner_class', MODULE_DICT.values())
 def test_build_lr_momentum_hook(runner_class):
     model = Model()
     runner = runner_class(model=model, logger=logging.getLogger())
@@ -297,7 +309,7 @@ def test_build_lr_momentum_hook(runner_class):
     assert len(runner.hooks) == 8
 
 
-@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+@pytest.mark.parametrize('runner_class', MODULE_DICT.values())
 def test_register_timer_hook(runner_class):
     model = Model()
     runner = runner_class(model=model, logger=logging.getLogger())
