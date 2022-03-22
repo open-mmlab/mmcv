@@ -1156,10 +1156,9 @@ class RandomFlip(BaseTransform):
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip segs
-        if results.get('gt_semantic_seg', None) is not None:
-            results['gt_semantic_seg'] = mmcv.imflip(
-                results['gt_semantic_seg'],
-                direction=results['flip_direction'])
+        if results.get('gt_seg_map', None) is not None:
+            results['gt_seg_map'] = mmcv.imflip(
+                results['gt_seg_map'], direction=results['flip_direction'])
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
