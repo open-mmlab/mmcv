@@ -302,7 +302,7 @@ class TestCenterCrop:
                                                      224]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 12, 1]], [[112, 112, 1]], [[212, 187, 1]]])).all()
+            np.array([[[0, 12, 0]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when size is tuple
         transform = dict(type='CenterCrop', crop_size=(224, 224))
@@ -321,7 +321,7 @@ class TestCenterCrop:
                                                      224]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 12, 1]], [[112, 112, 1]], [[212, 187, 1]]])).all()
+            np.array([[[0, 12, 0]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when crop_height != crop_width
         transform = dict(type='CenterCrop', crop_size=(224, 256))
@@ -340,7 +340,7 @@ class TestCenterCrop:
                                                      256]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 28, 1]], [[112, 128, 1]], [[212, 203, 1]]])).all()
+            np.array([[[0, 28, 0]], [[112, 128, 1]], [[212, 203, 1]]])).all()
 
         # test CenterCrop when crop_size is equal to img.shape
         img_height, img_width, _ = self.original_img.shape
@@ -398,7 +398,7 @@ class TestCenterCrop:
                                                      300]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
+            np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
         transform = dict(
             type='CenterCrop',
@@ -418,7 +418,7 @@ class TestCenterCrop:
                                                      300]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
+            np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
         # test CenterCrop when crop_width is smaller than img_width
         transform = dict(
@@ -438,7 +438,7 @@ class TestCenterCrop:
                                                      300]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[0, 50, 1]], [[100, 150, 1]], [[200, 225, 1]]])).all()
+            np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
         # test CenterCrop when crop_height is smaller than img_height
         transform = dict(
@@ -457,7 +457,7 @@ class TestCenterCrop:
                                                     150]])).all()
         assert np.equal(
             results['gt_keypoints'],
-            np.array([[[20, 0, 1]], [[200, 75, 1]], [[300, 150, 1]]])).all()
+            np.array([[[20, 0, 0]], [[200, 75, 1]], [[300, 150, 0]]])).all()
 
     @pytest.mark.skipif(
         condition=torch is None, reason='No torch in current env')

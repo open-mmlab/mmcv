@@ -531,7 +531,8 @@ class CenterCrop(BaseTransform):
             results['gt_bboxes'] = gt_bboxes
 
     def _crop_keypoints(self, results: dict, bboxes: np.ndarray) -> None:
-        """Update key points according to CenterCrop.
+        """Update key points according to CenterCrop. Keypoints that not in the
+        cropped image will be set invisible.
 
         Args:
             results (dict): Result dict contains the data to transform.
@@ -544,6 +545,14 @@ class CenterCrop(BaseTransform):
             # gt_keypoints has shape (N, NK, 3) in (x, y, visibility) order,
             # NK = number of points per object
             gt_keypoints = results['gt_keypoints'] - keypoints_offset
+            # set gt_kepoints out of the result image invisible
+            height, width = results['img'].shape[:2]
+            valid_pos = (gt_keypoints[:, :, 0] >=
+                          0) * (gt_keypoints[:, :, 0] <
+                                width) * (gt_keypoints[:, :, 1] >= 0) * (
+                                    gt_keypoints[:, :, 1] < height)
+            gt_keypoints[:, :, 2] = np.where(valid_pos, gt_keypoints[:, :, 2],
+                                             0)
             gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
                                             results['img'].shape[1])
             gt_keypoints[:, :, 1] = np.clip(gt_keypoints[:, :, 1], 0,
