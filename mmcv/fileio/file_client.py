@@ -511,7 +511,7 @@ class LmdbBackend(BaseStorageBackend):
             readahead=self.readahead,
             **self.kwargs)
 
-    def close(self):
+    def __del__(self):
         self.env.close()
 
 
