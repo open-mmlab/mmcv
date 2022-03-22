@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta
+import torch
 
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
@@ -17,12 +18,23 @@ if IPU_MODE:
 class IPUBaseRunner(metaclass=ABCMeta):
     def __init__(
             self,
+            model,
             ipu_options={},
             modules_to_record=[],
             ipu_model_cfg={},
             fp16_cfg=None,
+            batch_processor=None,
             **kwargs):
-        super(IPUBaseRunner, self).__init__(**kwargs)
+        assert hasattr(model, 'train_step') and batch_processor is None,\
+            'only support model with train_step'
+        if isinstance(model, torch.nn.parallel.DataParallel):
+            raise TypeError(
+                'if you want to implement data parallelism '
+                'at the module level on IPU, '
+                'use IPU option: replicationFactor')
+
+        super(IPUBaseRunner, self).__init__(model, **kwargs)
+
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
@@ -68,7 +80,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
         # map data_loader to ipu data_loader
         if IPU_MODE:
             training_opts = self.ipu_options['training']
-            
+
             for data_loader in data_loaders:
                 if not getattr(data_loader, 'initialized', True):
                     data_loader.init(options=training_opts)

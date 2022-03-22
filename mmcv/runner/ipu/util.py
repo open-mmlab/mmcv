@@ -98,9 +98,9 @@ def parse_ipu_options(ipu_options):
             'inference': _parse_ipu_options(inference_ipu_options)}
 
     # TODO configure these codes
-    opts['training']._Popart.set("disableGradAccumulationTensorStreams", True)
+    opts['training']._Popart.set('disableGradAccumulationTensorStreams', True)
     opts['training']._Popart.set(
-        "accumulateOuterFragmentSettings.schedule",
+        'accumulateOuterFragmentSettings.schedule',
         int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
     opts['training'].Precision.enableStochasticRounding(True)
 
@@ -153,7 +153,7 @@ def ipu_model_wrapper(
         loss_scale = fp16_cfg['loss_scale']
         wrap_fp16_model(model)
         model.half()
-        # TODO tmp ussage to set loss scaling for torch original optimzier
+        # TODO tmp ussage to set loss scaling for torch original optimizer
         if optimizer is not None:
             optimizer.loss_scaling = loss_scale
             if fp16_cfg.get('velocity_accum_type', False):
@@ -173,7 +173,7 @@ def ipu_model_wrapper(
     if optimizer is None:
         train_model = None
     else:
-        # split model into multi-ipus if specified
+        # split model into multi-IPUs if specified
         train_model = model_sharding(
             copy.copy(model).train(),
             ipu_model_cfg.get('train_split_edges', []))
@@ -192,7 +192,7 @@ def ipu_model_wrapper(
             assert len(modules_to_record) == 0, \
                 'Feature alignment for multi-replica mode not implemented'
 
-    # split model into multi-ipus if specified
+    # split model into multi-IPUs if specified
     eval_model = model_sharding(copy.copy(model).eval(), ipu_model_cfg.get(
         'eval_split_edges', []))
 
@@ -205,7 +205,7 @@ def ipu_model_wrapper(
 
 
 def model_sharding(model, split_edges):
-    # shard model into multi-ipus according to the pipeline config
+    # shard model into multi-IPUs according to the pipeline config
     # three args needed in ipu_model_cfg['split_edges']:
     """
     :param layer_to_call: model layer name or layer number
@@ -225,8 +225,8 @@ def model_sharding(model, split_edges):
     spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
     for idx, (_name, _module) in enumerate(model.named_modules()):
         assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),\
-            "The same layer is referenced twice while doing model partition: "\
-            "idx is {} and name is {}".format(idx, _name)
+            'The same layer is referenced twice while doing model partition: '\
+            'idx is {} and name is {}'.format(idx, _name)
         edge = spilt_edges_dic.pop(_name, None)
         edge = spilt_edges_dic.pop(idx, edge)
         if edge is not None:

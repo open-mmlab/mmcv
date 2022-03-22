@@ -533,7 +533,7 @@ class TrainEvalModel:
             Module: self
         """
         if not isinstance(mode, bool):
-            raise ValueError("training mode is expected to be boolean")
+            raise ValueError('training mode is expected to be boolean')
         if self._train_executor is None and mode is True:
             raise RuntimeError(
                 'The train_executor is not initialized.'
@@ -610,7 +610,7 @@ class TrainEvalModel:
     # TODO Unified training and eval interface,
     # merge train_step(train) and __call__(eval) together
     def train_step(self, data, optimizer=None, **kwargs):
-        assert self.training, "not supported train_step on eval mode"
+        assert self.training, 'not supported train_step on eval mode'
         hooked_features_cpu = {}
         if self._train_executor.isCompiled() \
                 and self._train_executor.compare_with_cpu:

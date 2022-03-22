@@ -72,7 +72,7 @@ class IPUDataloader(poptorch.DataLoader):
                        'rebatched_worker_size': 128,
                        **kwargs}
         self.initialized = False
-    
+
     def init(self, **kwargs):
         if not self.initialized:
             kwargs = {**self.kwargs, **kwargs}

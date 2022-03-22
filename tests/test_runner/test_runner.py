@@ -54,22 +54,38 @@ def test_build_runner():
         runner = build_runner(cfg, default_args=default_args)
 
 
-@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
-def test_epoch_based_runner(runner_class):
+@pytest.mark.parametrize(
+    'runner_name, runner_class', RUNNERS.module_dict.items())
+def test_epoch_based_runner(runner_name, runner_class):
 
-    with pytest.warns(DeprecationWarning):
-        # batch_processor is deprecated
-        model = OldStyleModel()
+    if runner_name.startswith('IPU'):
+        with pytest.raises(AssertionError):
+            # batch_processor is deprecated
+            model = OldStyleModel()
 
-        def batch_processor():
-            pass
+            def batch_processor():
+                pass
 
-        _ = runner_class(model, batch_processor, logger=logging.getLogger())
+            _ = runner_class(model,
+                             batch_processor=batch_processor,
+                             logger=logging.getLogger())
 
-    with pytest.raises(TypeError):
-        # batch_processor must be callable
-        model = OldStyleModel()
-        _ = runner_class(model, batch_processor=0, logger=logging.getLogger())
+    else:
+        with pytest.warns(DeprecationWarning):
+            # batch_processor is deprecated
+            model = OldStyleModel()
+
+            def batch_processor():
+                pass
+
+            _ = runner_class(
+                model, batch_processor, logger=logging.getLogger())
+
+        with pytest.raises(TypeError):
+            # batch_processor must be callable
+            model = OldStyleModel()
+            _ = runner_class(
+                model, batch_processor=0, logger=logging.getLogger())
 
     with pytest.raises(TypeError):
         # optimizer must be a optimizer or a dict of optimizers
@@ -105,14 +121,16 @@ def test_epoch_based_runner(runner_class):
         model = Model()
         _ = runner_class(model, work_dir=1, logger=logging.getLogger())
 
-    with pytest.raises(RuntimeError):
-        # batch_processor and train_step() cannot be both set
+    if not runner_name.startswith('IPU'):
+        with pytest.raises(RuntimeError):
+            # batch_processor and train_step() cannot be both set
 
-        def batch_processor():
-            pass
+            def batch_processor():
+                pass
 
-        model = Model()
-        _ = runner_class(model, batch_processor, logger=logging.getLogger())
+            model = Model()
+            _ = runner_class(
+                model, batch_processor, logger=logging.getLogger())
 
     # test work_dir
     model = Model()
@@ -127,26 +145,39 @@ def test_epoch_based_runner(runner_class):
     os.removedirs(work_dir)
 
 
-@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
-def test_runner_with_parallel(runner_class):
+@pytest.mark.parametrize(
+    'runner_name, runner_class', RUNNERS.module_dict.items())
+def test_runner_with_parallel(runner_name, runner_class):
 
     def batch_processor():
         pass
 
-    model = MMDataParallel(OldStyleModel())
-    _ = runner_class(model, batch_processor, logger=logging.getLogger())
-
-    model = MMDataParallel(Model())
-    _ = runner_class(model, logger=logging.getLogger())
-
-    with pytest.raises(RuntimeError):
-        # batch_processor and train_step() cannot be both set
-
-        def batch_processor():
-            pass
+    if runner_name.startswith('IPU'):
+        model = MMDataParallel(Model())
+        with pytest.raises(
+                TypeError,
+                match='if you want to implement data parallelism '
+                'at the module level on IPU, '
+                'use IPU option: replicationFactor'):
+            _ = runner_class(model,
+                             batch_processor=None,
+                             logger=logging.getLogger())
+    else:
+        model = MMDataParallel(OldStyleModel())
+        _ = runner_class(model, batch_processor, logger=logging.getLogger())
 
         model = MMDataParallel(Model())
-        _ = runner_class(model, batch_processor, logger=logging.getLogger())
+        _ = runner_class(model, logger=logging.getLogger())
+
+        with pytest.raises(RuntimeError):
+            # batch_processor and train_step() cannot be both set
+
+            def batch_processor():
+                pass
+
+            model = MMDataParallel(Model())
+            _ = runner_class(
+                model, batch_processor, logger=logging.getLogger())
 
 
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())

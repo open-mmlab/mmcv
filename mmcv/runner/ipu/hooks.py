@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.utils import TORCH_VERSION, digit_version
 from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
 
@@ -15,7 +16,7 @@ def wrap_lr_update_hook(lr_hook_class,):
 
 def wrap_optimizer_hook(optimizer_hook_class,):
     assert optimizer_hook_class == OptimizerHook,\
-        "OptimizerHook type used is:{}, not supported now".format(
+        'OptimizerHook type used is:{}, not supported now'.format(
             str(optimizer_hook_class))
 
     class ipu_optimizer_hook_class(OptimizerHook):
@@ -70,7 +71,7 @@ if (TORCH_VERSION != 'parrots'
             assert coalesce,\
                 'implemented all reduce in distributed training currently'
             assert bucket_size_mb == -1,\
-                "no bucket_size_mb can be set in IPU mode"
+                'no bucket_size_mb can be set in IPU mode'
             self.distributed = distributed
             self._scale_update_param = None
             if loss_scale == 'dynamic':
