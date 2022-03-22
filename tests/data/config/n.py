@@ -1,4 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+
+
+def func(x):
+    return x
+
 test_item1 = [1, 2]
 bool_item2 = True
 str_item3 = 'test'
