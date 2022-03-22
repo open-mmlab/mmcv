@@ -232,7 +232,7 @@ mmcv.resize_video('test.mp4', 'resized2.mp4', ratio=2)
 
 - IO
 - Visualization
-- Flow warpping
+- Flow warping
 
 We provide two options to dump optical flow files: uncompressed and compressed.
 The uncompressed way just dumps the floating numbers to a binary file. It is
