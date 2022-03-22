@@ -56,7 +56,7 @@ class TestResize:
     def test_resize(self):
         data_info = dict(
             img=np.random.random((1333, 800, 3)),
-            gt_semantic_seg=np.random.random((1333, 800, 3)),
+            gt_seg_map=np.random.random((1333, 800, 3)),
             gt_bboxes=np.array([[0, 0, 112, 112]]),
             gt_keypoints=np.array([[[20, 50, 1]]]))
 
@@ -100,7 +100,7 @@ class TestResize:
         results = transform(copy.deepcopy(data_info))
         assert (results['gt_bboxes'] == np.array([[0, 0, 168, 224]])).all()
         assert (results['gt_keypoints'] == np.array([[[30, 100, 1]]])).all()
-        assert results['gt_semantic_seg'].shape[:2] == (2666, 1200)
+        assert results['gt_seg_map'].shape[:2] == (2666, 1200)
 
         # test clip_object_border = False
         data_info = dict(
@@ -143,39 +143,39 @@ class TestPad:
 
         data_info = dict(
             img=np.random.random((1333, 800, 3)),
-            gt_semantic_seg=np.random.random((1333, 800, 3)),
+            gt_seg_map=np.random.random((1333, 800, 3)),
             gt_bboxes=np.array([[0, 0, 112, 112]]),
             gt_keypoints=np.array([[[20, 50, 1]]]))
 
-        # test pad img / gt_semantic_seg with size
+        # test pad img / gt_seg_map with size
         trans = Pad(size=(1200, 2000))
         results = trans(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (2000, 1200)
-        assert results['gt_semantic_seg'].shape[:2] == (2000, 1200)
+        assert results['gt_seg_map'].shape[:2] == (2000, 1200)
 
-        # test pad img/gt_semantic_seg with size_divisor
+        # test pad img/gt_seg_map with size_divisor
         trans = Pad(size_divisor=11)
         results = trans(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (1342, 803)
-        assert results['gt_semantic_seg'].shape[:2] == (1342, 803)
+        assert results['gt_seg_map'].shape[:2] == (1342, 803)
 
-        # test pad img/gt_semantic_seg with pad_to_square
+        # test pad img/gt_seg_map with pad_to_square
         trans = Pad(pad_to_square=True)
         results = trans(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (1333, 1333)
-        assert results['gt_semantic_seg'].shape[:2] == (1333, 1333)
+        assert results['gt_seg_map'].shape[:2] == (1333, 1333)
 
-        # test pad img/gt_semantic_seg with pad_to_square and size_divisor
+        # test pad img/gt_seg_map with pad_to_square and size_divisor
         trans = Pad(pad_to_square=True, size_divisor=11)
         results = trans(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (1342, 1342)
-        assert results['gt_semantic_seg'].shape[:2] == (1342, 1342)
+        assert results['gt_seg_map'].shape[:2] == (1342, 1342)
 
-        # test pad img/gt_semantic_seg with pad_to_square and size_divisor
+        # test pad img/gt_seg_map with pad_to_square and size_divisor
         trans = Pad(pad_to_square=True, size_divisor=11)
         results = trans(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (1342, 1342)
-        assert results['gt_semantic_seg'].shape[:2] == (1342, 1342)
+        assert results['gt_seg_map'].shape[:2] == (1342, 1342)
 
         # test padding_mode
         new_img = np.ones((1333, 800, 3))
@@ -191,12 +191,12 @@ class TestPad:
             pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
-        assert (results['gt_semantic_seg'][1333:2000, 800:2000, :] == 10).all()
+        assert (results['gt_seg_map'][1333:2000, 800:2000, :] == 10).all()
 
         trans = Pad(size=(2000, 2000), pad_val=dict(img=(12, 12, 12)))
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
-        assert (results['gt_semantic_seg'][1333:2000,
+        assert (results['gt_seg_map'][1333:2000,
                                            800:2000, :] == 255).all()
 
         # test rgb image, pad_to_square=True
@@ -205,29 +205,29 @@ class TestPad:
             pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][:, 800:1333, :] == 12).all()
-        assert (results['gt_semantic_seg'][:, 800:1333, :] == 10).all()
+        assert (results['gt_seg_map'][:, 800:1333, :] == 10).all()
 
         trans = Pad(pad_to_square=True, pad_val=dict(img=(12, 12, 12)))
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][:, 800:1333, :] == 12).all()
-        assert (results['gt_semantic_seg'][:, 800:1333, :] == 255).all()
+        assert (results['gt_seg_map'][:, 800:1333, :] == 255).all()
 
         # test pad_val is int
         # test rgb image
         trans = Pad(size=(2000, 2000), pad_val=12)
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
-        assert (results['gt_semantic_seg'][1333:2000,
+        assert (results['gt_seg_map'][1333:2000,
                                            800:2000, :] == 255).all()
         # test gray image
         new_img = np.random.random((1333, 800))
         data_info['img'] = new_img
         new_semantic_seg = np.random.random((1333, 800))
-        data_info['gt_semantic_seg'] = new_semantic_seg
+        data_info['gt_seg_map'] = new_semantic_seg
         trans = Pad(size=(2000, 2000), pad_val=12)
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000] == 12).all()
-        assert (results['gt_semantic_seg'][1333:2000, 800:2000] == 255).all()
+        assert (results['gt_seg_map'][1333:2000, 800:2000] == 255).all()
 
     def test_repr(self):
         trans = Pad(pad_to_square=True, size_divisor=11, padding_mode='edge')
@@ -249,7 +249,7 @@ class TestCenterCrop:
     @staticmethod
     def reset_results(results, original_img, gt_semantic_map):
         results['img'] = copy.deepcopy(original_img)
-        results['gt_semantic_seg'] = copy.deepcopy(gt_semantic_map)
+        results['gt_seg_map'] = copy.deepcopy(gt_semantic_map)
         results['gt_bboxes'] = np.array([[0, 0, 210, 160],
                                          [200, 150, 400, 300]])
         results['gt_keypoints'] = np.array([[[20, 50, 1]], [[200, 150, 1]],
@@ -297,7 +297,7 @@ class TestCenterCrop:
         assert results['width'] == 224
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
         assert (
-            results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
+            results['gt_seg_map'] == self.gt_semantic_map[38:262,
                                                                88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 122], [112, 112, 224,
@@ -316,7 +316,7 @@ class TestCenterCrop:
         assert results['width'] == 224
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
         assert (
-            results['gt_semantic_seg'] == self.gt_semantic_map[38:262,
+            results['gt_seg_map'] == self.gt_semantic_map[38:262,
                                                                88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 122], [112, 112, 224,
@@ -335,7 +335,7 @@ class TestCenterCrop:
         assert results['width'] == 224
         assert (results['img'] == self.original_img[22:278, 88:312, ...]).all()
         assert (
-            results['gt_semantic_seg'] == self.gt_semantic_map[22:278,
+            results['gt_seg_map'] == self.gt_semantic_map[22:278,
                                                                88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 138], [112, 128, 224,
@@ -354,7 +354,7 @@ class TestCenterCrop:
         assert results['height'] == 300
         assert results['width'] == 400
         assert (results['img'] == self.original_img).all()
-        assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 210, 160], [200, 150, 400,
                                                      300]])).all()
@@ -372,7 +372,7 @@ class TestCenterCrop:
         assert results['height'] == 300
         assert results['width'] == 400
         assert (results['img'] == self.original_img).all()
-        assert (results['gt_semantic_seg'] == self.gt_semantic_map).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 210, 160], [200, 150, 400,
                                                      300]])).all()
@@ -384,7 +384,7 @@ class TestCenterCrop:
         transform = dict(
             type='CenterCrop',
             crop_size=(img_width // 2, img_height * 2),
-            do_pad=True,
+            auto_pad=True,
             pad_cfg=dict(type='Pad', padding_mode='constant', pad_val=12))
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
@@ -392,9 +392,9 @@ class TestCenterCrop:
         results = center_crop_module(results)
         assert results['height'] == 600
         assert results['width'] == 200
-        assert results['img'].shape[:2] == results['gt_semantic_seg'].shape
+        assert results['img'].shape[:2] == results['gt_seg_map'].shape
         assert (results['img'][300:600, 100:300, ...] == 12).all()
-        assert (results['gt_semantic_seg'][300:600, 100:300] == 255).all()
+        assert (results['gt_seg_map'][300:600, 100:300] == 255).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 110, 160], [100, 150, 200,
                                                      300]])).all()
@@ -405,7 +405,7 @@ class TestCenterCrop:
         transform = dict(
             type='CenterCrop',
             crop_size=(img_width // 2, img_height * 2),
-            do_pad=True,
+            auto_pad=True,
             pad_cfg=dict(
                 type='Pad',
                 padding_mode='constant',
@@ -417,7 +417,7 @@ class TestCenterCrop:
         assert results['height'] == 600
         assert results['width'] == 200
         assert (results['img'][300:600, 100:300, ...] == 13).all()
-        assert (results['gt_semantic_seg'][300:600, 100:300] == 33).all()
+        assert (results['gt_seg_map'][300:600, 100:300] == 33).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 110, 160], [100, 150, 200,
                                                      300]])).all()
@@ -436,7 +436,7 @@ class TestCenterCrop:
         assert results['width'] == img_width // 2
         assert (results['img'] == self.original_img[:, 100:300, ...]).all()
         assert (
-            results['gt_semantic_seg'] == self.gt_semantic_map[:,
+            results['gt_seg_map'] == self.gt_semantic_map[:,
                                                                100:300]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 110, 160], [100, 150, 200,
@@ -455,7 +455,7 @@ class TestCenterCrop:
         assert results['height'] == img_height // 2
         assert results['width'] == img_width
         assert (results['img'] == self.original_img[75:225, ...]).all()
-        assert (results['gt_semantic_seg'] == self.gt_semantic_map[75:225,
+        assert (results['gt_seg_map'] == self.gt_semantic_map[75:225,
                                                                    ...]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 210, 85], [200, 75, 400,
@@ -482,7 +482,7 @@ class TestCenterCrop:
         cropped_seg = center_crop_module(pil_seg)
         cropped_seg = np.array(cropped_seg)
         assert np.equal(results['img'], cropped_img).all()
-        assert np.equal(results['gt_semantic_seg'], cropped_seg).all()
+        assert np.equal(results['gt_seg_map'], cropped_seg).all()
 
 
 class TestRandomGrayscale:
@@ -497,7 +497,7 @@ class TestRandomGrayscale:
             type='RandomGrayscale',
             prob=1.,
             channel_weights=(0.299, 0.587, 0.114),
-            keep_channel=True)
+            keep_channels=True)
         random_gray_scale_module = TRANSFORMS.build(transform)
         assert isinstance(repr(random_gray_scale_module), str)
 
@@ -514,7 +514,7 @@ class TestRandomGrayscale:
             type='RandomGrayscale',
             prob=1.,
             channel_weights=(0.299, 0.587, 0.114),
-            keep_channel=True)
+            keep_channels=True)
 
         random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
@@ -586,7 +586,7 @@ class TestMultiScaleFlipAug:
             type='MultiScaleFlipAug',
             transforms=[dict(type='MockFormatBundle')],
             img_scale=[(1333, 800), (800, 600), (640, 480)],
-            flip=True,
+            allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
@@ -595,12 +595,12 @@ class TestMultiScaleFlipAug:
         assert len(input) == 12
         assert len(data_sample) == 12
 
-        # test with flip=False
+        # test with allow_flip=False
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=[dict(type='MockFormatBundle')],
             img_scale=[(1333, 800), (800, 600), (640, 480)],
-            flip=False,
+            allow_flip=False,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
@@ -624,7 +624,7 @@ class TestMultiScaleFlipAug:
             type='MultiScaleFlipAug',
             transforms=transforms_cfg,
             img_scale=[(1333, 800), (800, 600), (640, 480)],
-            flip=True,
+            allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
@@ -681,7 +681,7 @@ class TestMultiScaleFlipAug:
         assert len(data_sample) == 4
 
 
-class TestRandomMultiscaleResize:
+class TestRandomChoiceResize:
 
     @classmethod
     def setup_class(cls):
@@ -691,25 +691,25 @@ class TestRandomMultiscaleResize:
 
     def reset_results(self, results):
         results['img'] = copy.deepcopy(self.original_img)
-        results['gt_semantic_seg'] = copy.deepcopy(self.original_img)
+        results['gt_seg_map'] = copy.deepcopy(self.original_img)
 
     def test_repr(self):
         # test repr
         transform = dict(
-            type='RandomMultiscaleResize', scales=[(1333, 800), (1333, 600)])
+            type='RandomChoiceResize', scales=[(1333, 800), (1333, 600)])
         random_multiscale_resize = TRANSFORMS.build(transform)
         assert isinstance(repr(random_multiscale_resize), str)
 
     def test_error(self):
         # test assertion if size is smaller than 0
         with pytest.raises(AssertionError):
-            transform = dict(type='RandomMultiscaleResize', scales=[0.5, 1, 2])
+            transform = dict(type='RandomChoiceResize', scales=[0.5, 1, 2])
             TRANSFORMS.build(transform)
 
     def test_random_multiscale_resize(self):
         results = dict()
         # test with one scale
-        transform = dict(type='RandomMultiscaleResize', scales=[(1333, 800)])
+        transform = dict(type='RandomChoiceResize', scales=[(1333, 800)])
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
@@ -717,7 +717,7 @@ class TestRandomMultiscaleResize:
 
         # test with multi scales
         _scale_choice = [(1333, 800), (1333, 600)]
-        transform = dict(type='RandomMultiscaleResize', scales=_scale_choice)
+        transform = dict(type='RandomChoiceResize', scales=_scale_choice)
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
@@ -726,7 +726,7 @@ class TestRandomMultiscaleResize:
 
         # test keep_ratio
         transform = dict(
-            type='RandomMultiscaleResize',
+            type='RandomChoiceResize',
             scales=[(900, 600)],
             resize_cfg=dict(type='Resize', keep_ratio=True))
         random_multiscale_resize = TRANSFORMS.build(transform)
@@ -739,7 +739,7 @@ class TestRandomMultiscaleResize:
         # test clip_object_border
         gt_bboxes = [[200, 150, 600, 450]]
         transform = dict(
-            type='RandomMultiscaleResize',
+            type='RandomChoiceResize',
             scales=[(200, 150)],
             resize_cfg=dict(type='Resize', clip_object_border=True))
         random_multiscale_resize = TRANSFORMS.build(transform)
@@ -751,7 +751,7 @@ class TestRandomMultiscaleResize:
                                                          150]])).all()
 
         transform = dict(
-            type='RandomMultiscaleResize',
+            type='RandomChoiceResize',
             scales=[(200, 150)],
             resize_cfg=dict(type='Resize', clip_object_border=False))
         random_multiscale_resize = TRANSFORMS.build(transform)
@@ -795,7 +795,7 @@ class TestRandomFlip:
             'img': np.random.random((224, 224, 3)),
             'gt_bboxes': np.array([[0, 1, 100, 101]]),
             'gt_keypoints': np.array([[[100, 100, 1.0]]]),
-            'gt_semantic_seg': np.random.random((224, 224, 3))
+            'gt_seg_map': np.random.random((224, 224, 3))
         }
 
         # horizontal flip
@@ -876,7 +876,7 @@ class TestRandomResize:
         # keep ratio is True
         results = {
             'img': np.random.random((224, 224, 3)),
-            'gt_semantic_seg': np.random.random((224, 224, 3)),
+            'gt_seg_map': np.random.random((224, 224, 3)),
             'gt_bboxes': np.array([[0, 0, 112, 112]]),
             'gt_keypoints': np.array([[[112, 112]]])
         }
