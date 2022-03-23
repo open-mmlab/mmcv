@@ -250,7 +250,7 @@ pipeline = [
 以上文中的 `MyFlip` 为例，我们希望以一定的概率随机执行翻转：
 
 ```python
-from mmcv.transforms.utils import cacheable_method
+from mmcv.transforms.utils import cache_randomness
 
 @TRANSFORMS.register_module()
 class MyRandomFlip(BaseTransform):
@@ -259,7 +259,7 @@ class MyRandomFlip(BaseTransform):
         self.prob = prob
         self.direction = direction
 
-    @cacheable_method  # 标注该方法的输出为可共享的随机变量
+    @cache_randomness  # 标注该方法的输出为可共享的随机变量
     def do_flip(self):
         flip = True if random.random() > self.prob else False
         return flip
@@ -271,4 +271,4 @@ class MyRandomFlip(BaseTransform):
         return results
 ```
 
-通过 `cacheable_method` 装饰器，方法返回值 `flip` 被标注为一个支持共享的随机变量。进而，在 `ApplyToMultiple` 对多个目标的变换中，这一变量的值都会保持一致。
+通过 `cache_randomness` 装饰器，方法返回值 `flip` 被标注为一个支持共享的随机变量。进而，在 `ApplyToMultiple` 对多个目标的变换中，这一变量的值都会保持一致。

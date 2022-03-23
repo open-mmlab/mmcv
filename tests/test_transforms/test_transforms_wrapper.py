@@ -6,7 +6,7 @@ import pytest
 
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import cache_random_params, cacheable_method
+from mmcv.transforms.utils import cache_random_params, cache_randomness
 from mmcv.transforms.wrappers import (ApplyToMultiple, Compose, RandomChoice,
                                       Remap)
 
@@ -45,15 +45,18 @@ class AddToValue(BaseTransform):
 class RandomAddToValue(AddToValue):
     """Dummy transform to add a random addend to results['value']"""
 
-    def __init__(self) -> None:
+    def __init__(self, repeat=1) -> None:
         super().__init__(addend=None)
+        self.repeat = repeat
 
-    @cacheable_method
+    @cache_randomness
     def get_random_addend(self):
         return np.random.rand()
 
     def transform(self, results):
-        return self.add(results, addend=self.get_random_addend())
+        for _ in range(self.repeat):
+            results = self.add(results, addend=self.get_random_addend())
+        return results
 
 
 @TRANSFORMS.register_module()
@@ -100,8 +103,8 @@ def test_cache_random_parameters():
     transform = RandomAddToValue()
 
     # Case 1: cache random parameters
-    assert hasattr(RandomAddToValue, '_cacheable_methods')
-    assert 'get_random_addend' in RandomAddToValue._cacheable_methods
+    assert hasattr(RandomAddToValue, '_methods_with_randomness')
+    assert 'get_random_addend' in RandomAddToValue._methods_with_randomness
 
     with cache_random_params(transform):
         results_1 = transform(dict(value=0))
@@ -114,12 +117,18 @@ def test_cache_random_parameters():
     with pytest.raises(AssertionError):
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
-    # Case 3: invalid use of cacheable methods
+    # Case 3: allow to invoke random method 0 times
+    transform = RandomAddToValue(repeat=0)
+    with cache_random_params(transform):
+        _ = transform(dict(value=0))
+
+    # Case 4: NOT allow to invoke random method >1 times
+    transform = RandomAddToValue(repeat=2)
     with pytest.raises(RuntimeError):
         with cache_random_params(transform):
-            _ = transform.get_random_addend()
+            _ = transform(dict(value=0))
 
-    # Case 4: apply on nested transforms
+    # Case 5: apply on nested transforms
     transform = Compose([RandomAddToValue()])
     with cache_random_params(transform):
         results_1 = transform(dict(value=0))
@@ -357,10 +366,10 @@ def test_randomchoice():
 
 
 def test_utils():
-    # Test cacheable_method: normal case
+    # Test cache_randomness: normal case
     class DummyTransform(BaseTransform):
 
-        @cacheable_method
+        @cache_randomness
         def func(self):
             return np.random.rand()
 
@@ -373,21 +382,21 @@ def test_utils():
     with cache_random_params(transform):
         _ = transform({})
 
-    # Test cacheable_method: invalid function type
+    # Test cache_randomness: invalid function type
     with pytest.raises(TypeError):
 
         class DummyTransform():
 
-            @cacheable_method
+            @cache_randomness
             @staticmethod
             def func():
                 return np.random.rand()
 
-    # Test cacheable_method: invalid function argument list
+    # Test cache_randomness: invalid function argument list
     with pytest.raises(TypeError):
 
         class DummyTransform():
 
-            @cacheable_method
+            @cache_randomness
             def func(cls):
                 return np.random.rand()
