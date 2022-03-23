@@ -238,6 +238,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Add PPA
+        run: |
+          apt-get update && apt-get install -y software-properties-common
+          add-apt-repository -y ppa:deadsnakes/ppa
       - name: Install python-dev
         run: apt-get update && apt-get install -y python${{matrix.python-version}}-dev
       - name: python -m Install PyTorch
