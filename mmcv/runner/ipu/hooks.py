@@ -84,7 +84,7 @@ if (TORCH_VERSION != 'parrots'
                     'IPU mode supports single scale currently')
             else:
                 raise ValueError('loss_scale must be of type float, dict, or '
-                                 f'"dynamic", got {loss_scale}')
+                                 f'"dynamic", but got {loss_scale}')
 
         def after_train_iter(self, runner):
             pass
