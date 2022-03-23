@@ -1252,8 +1252,6 @@ class RandomResize(BaseTransform):
             interpolation='bilinear')
     ) -> None:
 
-        assert scale is not None
-
         self.scale = scale
         self.ratio_range = ratio_range
         self.resize_cfg = resize_cfg
