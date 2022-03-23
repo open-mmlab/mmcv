@@ -76,6 +76,7 @@ For more details, please refer the the following tables.
       <td align="left">11.5</td>
       <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu115/torch1.11.0/index.html</code></pre> </details></td>
       <td align="left"></td>
+      <td align="left"></td>
       <td align="left"> </td>
       <td align="left"> </td>
       <td align="left"> </td>
