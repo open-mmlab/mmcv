@@ -112,12 +112,12 @@ class ApplyToMapped(BaseTransform):
             be used as the remapping. If auto_remap is not given, it will be
             automatically set True if 'remapping' is not given, and vice
             versa. Note that if auto_remap is set True, remapping should be
-            None and allow_nonexist_keys should be True.
+            None and allow_nonexist_keys should be False.
             Default: None.
-        allow_nonexist_keys (bool): If True, the outer keys in the mapping
+        allow_nonexist_keys (bool): If False, the outer keys in the mapping
             must exist in the input data, or an exception will be raised. If
-            False, the missing keys will be assigned a special value
-            `NotInResults` during input remapping. Default: True.
+            True, the missing keys will be assigned a special value
+            `NotInResults` during input remapping. Default: False.
 
     Examples:
         >>> # Example 1: ApplyToMapped 'gt_img' to 'img'
@@ -159,7 +159,7 @@ class ApplyToMapped(BaseTransform):
                  mapping: Optional[Dict] = None,
                  remapping: Optional[Dict] = None,
                  auto_remap: Optional[bool] = None,
-                 allow_nonexist_keys: bool = True):
+                 allow_nonexist_keys: bool = False):
 
         self.allow_nonexist_keys = allow_nonexist_keys
         self.mapping = mapping
@@ -169,9 +169,9 @@ class ApplyToMapped(BaseTransform):
         self.auto_remap = auto_remap
 
         if self.auto_remap:
-            if not self.allow_nonexist_keys:
+            if self.allow_nonexist_keys:
                 raise ValueError(
-                    'ApplyToMapped: `allow_nonexist_keys` must be set True if'
+                    'ApplyToMapped: `allow_nonexist_keys` must be set False if'
                     '`auto_remap` is set True.')
 
             if remapping is not None:
@@ -216,9 +216,9 @@ class ApplyToMapped(BaseTransform):
 
             # m is an outer_key
             if self.allow_nonexist_keys:
-                return data.get(m)
-            else:
                 return data.get(m, NotInResults)
+            else:
+                return data.get(m)
 
         collected = _map(data, mapping)
         collected = {
@@ -303,10 +303,10 @@ class ApplyToMultiple(ApplyToMapped):
             versa. Note that if auto_remap is set True, remapping should be
             None and allow_nonexist_keys should be True.
             Default: None.
-        allow_nonexist_keys (bool): If True, the outer keys in the mapping
+        allow_nonexist_keys (bool): If False, the outer keys in the mapping
             must exist in the input data, or an exception will be raised. If
-            False, the missing keys will be assigned a special value
-            `NotInResults` during input remapping. Default: True.
+            True, the missing keys will be assigned a special value
+            `NotInResults` during input remapping. Default: False.
         share_random_params (bool): If True, the random transform
             (e.g., RandomFlip) will be conducted in a deterministic way and
             have the same behavior on all data items. For example, to randomly
@@ -364,7 +364,7 @@ class ApplyToMultiple(ApplyToMapped):
                  mapping: Optional[Dict] = None,
                  remapping: Optional[Dict] = None,
                  auto_remap: Optional[bool] = None,
-                 allow_nonexist_keys: bool = True,
+                 allow_nonexist_keys: bool = False,
                  share_random_params: bool = False):
         super().__init__(transforms, mapping, remapping, auto_remap,
                          allow_nonexist_keys)

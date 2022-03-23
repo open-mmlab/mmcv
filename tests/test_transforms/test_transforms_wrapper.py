@@ -227,13 +227,13 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v22'], 5)
     np.testing.assert_equal(results['v3'], 6)
 
-    # Case 7: `allow_nonexist_keys` must be True if `auto_remap` is set True
+    # Case 7: `allow_nonexist_keys` must be False if `auto_remap` is set True
     with pytest.raises(ValueError):
         pipeline = ApplyToMapped(
             transforms=[AddToValue(addend=2)],
             mapping=dict(value=['v_in_1', 'v_in_2']),
             auto_remap=True,
-            allow_nonexist_keys=False)
+            allow_nonexist_keys=True)
 
     # Case 8: output_map must be None if `auto_remap` is set True
     with pytest.raises(ValueError):
@@ -243,12 +243,12 @@ def test_apply_to_mapped():
             remapping=dict(value='v_out'),
             auto_remap=True)
 
-    # Case 9: non-allow_nonexist_keys input mapping
+    # Case 9: allow_nonexist_keys
     pipeline = ApplyToMapped(
         transforms=[SumTwoValues()],
         mapping=dict(num_1='a', num_2='b'),
         auto_remap=False,
-        allow_nonexist_keys=False)
+        allow_nonexist_keys=True)
 
     results = pipeline(dict(a=1, b=2))
     np.testing.assert_equal(results['sum'], 3)
