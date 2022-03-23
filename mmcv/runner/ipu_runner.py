@@ -46,6 +46,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
             modules_to_record=[],
             ipu_model_cfg={},
             fp16_cfg=None,
+            ipu_dataloader=False,
             batch_processor=None,
             **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None,\
@@ -66,6 +67,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
                 self.model, self.ipu_options, self.optimizer, self.logger,
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
+            self.ipu_dataloader = ipu_dataloader
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
             raise NotImplementedError('cpu mode on IPURunner not supported')
@@ -101,7 +103,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
 
     def run(self, data_loaders, *args, **kwargs):
         # map data_loader to ipu data_loader
-        if IPU_MODE:
+        if self.ipu_dataloader:
             training_opts = self.ipu_options['training']
 
             for data_loader in data_loaders:
