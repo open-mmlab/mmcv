@@ -36,7 +36,7 @@ It supports the following systems.
 
 - Linux
 - Windows
-- MacOS
+- macOS
 
 ```{note}
 MMCV requires Python 3.6+.

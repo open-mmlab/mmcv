@@ -64,8 +64,8 @@ MMCV 提供了如下众多功能：
 MMCV 支持以下的系统：
 
 - Linux
-- MacOS
 - Windows
+- macOS
 
 如想了解更多特性和使用，请参考[文档](http://mmcv.readthedocs.io/zh_CN/latest)。
 

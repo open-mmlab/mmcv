@@ -66,7 +66,7 @@ It supports the following systems.
 
 - Linux
 - Windows
-- MacOS
+- macOS
 
 See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
 
