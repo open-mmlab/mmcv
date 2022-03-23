@@ -76,7 +76,7 @@ if (TORCH_VERSION != 'parrots'
             self._scale_update_param = None
             if loss_scale == 'dynamic':
                 raise NotImplementedError(
-                    'IPU mode not support dynamic loss scale currently')
+                    'IPU mode does not support dynamic loss scale currently')
             elif isinstance(loss_scale, float):
                 self.loss_scale = loss_scale
             elif isinstance(loss_scale, dict):
