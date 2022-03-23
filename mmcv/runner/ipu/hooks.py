@@ -81,7 +81,7 @@ if (TORCH_VERSION != 'parrots'
                 self.loss_scale = loss_scale
             elif isinstance(loss_scale, dict):
                 raise NotImplementedError(
-                    'IPU mode support single scale currently')
+                    'IPU mode supports single scale currently')
             else:
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
