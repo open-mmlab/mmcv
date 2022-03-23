@@ -71,7 +71,7 @@ if (TORCH_VERSION != 'parrots'
             assert coalesce,\
                 'implemented all reduce in distributed training currently'
             assert bucket_size_mb == -1,\
-                'no bucket_size_mb can be set in IPU mode'
+                '`bucket_size_mb` should not be set in IPU mode'
             self.distributed = distributed
             self._scale_update_param = None
             if loss_scale == 'dynamic':
