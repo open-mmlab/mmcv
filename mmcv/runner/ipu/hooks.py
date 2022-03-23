@@ -67,7 +67,7 @@ if (TORCH_VERSION != 'parrots'
                      loss_scale=512.,
                      distributed=True):
             assert grad_clip is None,\
-                'IPU mode not support grad_clip currently'
+                'IPU mode does not support `grad_clip` currently'
             assert coalesce,\
                 'implemented all reduce in distributed training currently'
             assert bucket_size_mb == -1,\
