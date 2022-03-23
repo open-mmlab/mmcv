@@ -762,6 +762,8 @@ class MultiScaleFlipAug(BaseTransform):
         transforms (list[dict]): Transforms to be applied to each resized
             and flipped data.
         img_scale (tuple | list[tuple] | None): Images scales for resizing.
+        scale_factor (float or tuple[float]): Scale factors for resizing.
+            Defaults to None.
         flip (bool): Whether apply flip augmentation. Defaults to False.
         flip_direction (str | list[str]): Flip augmentation directions,
             options are "horizontal", "vertical" and "diagonal". If
@@ -778,6 +780,7 @@ class MultiScaleFlipAug(BaseTransform):
         self,
         transforms: List[dict],
         img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
+        scale_factor: Optional[Union[float, List[float]]] = None,
         flip: bool = False,
         flip_direction: Union[str, List[str]] = 'horizontal',
         resize_cfg: dict = dict(type='Resize', keep_ratio=True),
@@ -785,11 +788,20 @@ class MultiScaleFlipAug(BaseTransform):
     ) -> None:
         super().__init__()
         self.transforms = Compose(transforms)  # type: ignore
-        assert img_scale is not None
-        self.img_scale = img_scale if isinstance(img_scale,
-                                                 list) else [img_scale]
-        self.scale_key = 'scale'
-        assert mmcv.is_list_of(self.img_scale, tuple)
+
+        if img_scale is not None:
+            self.img_scale = img_scale if isinstance(img_scale,
+                                                     list) else [img_scale]
+            self.scale_key = 'scale'
+            assert mmcv.is_list_of(self.img_scale, tuple)
+        else:
+            # if ``img_scale`` and ``scale_factor`` both be ``None``
+            if scale_factor is None:
+                self.img_scale = [1.]
+            else:
+                self.img_scale = scale_factor if isinstance(
+                    scale_factor, list) else [scale_factor]
+            self.scale_key = 'scale_factor'
 
         self.flip = flip
         self.flip_direction = flip_direction if isinstance(
@@ -801,7 +813,7 @@ class MultiScaleFlipAug(BaseTransform):
         self.resize_cfg = resize_cfg
         self.flip_cfg = flip_cfg
 
-    def transform(self, results: dict) -> dict:
+    def transform(self, results: dict) -> Tuple[List, List]:
         """Apply test time augment transforms on results.
 
         Args:
@@ -813,6 +825,7 @@ class MultiScaleFlipAug(BaseTransform):
         """
 
         aug_data = []
+        input_data = []
         flip_args = [(False, '')]
         if self.flip:
             flip_args += [(True, direction)
@@ -820,7 +833,7 @@ class MultiScaleFlipAug(BaseTransform):
         for scale in self.img_scale:
             for flip, direction in flip_args:
                 _resize_cfg = self.resize_cfg.copy()
-                _resize_cfg.update(scale=scale)
+                _resize_cfg.update({self.scale_key: scale})
                 _resize_flip = [_resize_cfg]
 
                 if flip:
@@ -834,14 +847,11 @@ class MultiScaleFlipAug(BaseTransform):
                 resize_flip = Compose(_resize_flip)
                 _results = results.copy()
                 _results = resize_flip(_results)
-                data = self.transforms(_results)
-                aug_data.append(data)
-        # list of dict to dict of list
-        aug_data_dict = {key: [] for key in aug_data[0]}
-        for data in aug_data:
-            for key, val in data.items():
-                aug_data_dict[key].append(val)
-        return aug_data_dict
+                input_image, data_sample = self.transforms(_results)
+
+                input_data.append(input_image)
+                aug_data.append(data_sample)
+        return input_data, aug_data
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
