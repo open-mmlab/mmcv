@@ -3,7 +3,7 @@ from mmcv.utils import TORCH_VERSION, digit_version
 from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
 
 
-def wrap_lr_update_hook(lr_hook_class,):
+def wrap_lr_update_hook(lr_hook_class):
     assert issubclass(lr_hook_class, LrUpdaterHook)
 
     class ipu_lr_hook_class(lr_hook_class):
