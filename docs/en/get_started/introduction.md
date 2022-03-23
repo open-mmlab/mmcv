@@ -32,6 +32,12 @@ It provides the following functionalities.
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
+It supports the following systems.
+
+- Linux
+- Windows
+- MacOS
+
 ```{note}
 MMCV requires Python 3.6+.
 ```
