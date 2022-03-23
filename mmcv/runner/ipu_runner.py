@@ -9,13 +9,36 @@ from .hooks import HOOKS
 
 from mmcv.runner.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu import parse_ipu_options,\
-        build_from_cfg_with_wrapper, IPU_MODE,\
-        ipu_model_wrapper, wrap_optimizer_hook,\
-        IPUFp16OptimizerHook, wrap_lr_update_hook
+    from mmcv.runner.ipu import (parse_ipu_options,
+                                 build_from_cfg_with_wrapper, IPU_MODE,
+                                 ipu_model_wrapper, wrap_optimizer_hook,
+                                 IPUFp16OptimizerHook, wrap_lr_update_hook,
+                                 IPUDataloader)
 
 
 class IPUBaseRunner(metaclass=ABCMeta):
+    """ A base runner for IPU device, should be inherited with
+    base_runner.BaseRunner
+    This runner has some extra processes for IPU which are showed below:
+    1. Parse options for IPU
+    2. wrap pytorch model for IPU
+    3. Raise errors while encountering illegal ussage
+    4. Input IPU options and initialize dataloader if finding a instance of
+       of IPUDataloader
+    Args:
+        model (pytorch.model)
+        options (mmcv.Config, dict): Options that will be used to compile
+            and run the model.
+        modules_to_record (mmcv.Config, list): idx or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+        ipu_model_cfg (mmcv.Config, dict): config of model partition and
+            recomputing checkpoint
+        fp16_cfg (mmcv.Config): config for fp16 training
+        batch_processor (callable): A callable method that process a data
+            batch. Should be None for IPU runner
+        kwargs: other kwargs please check Class base_runner.BaseRunner
+    """
     def __init__(
             self,
             model,
@@ -82,7 +105,8 @@ class IPUBaseRunner(metaclass=ABCMeta):
             training_opts = self.ipu_options['training']
 
             for data_loader in data_loaders:
-                if not getattr(data_loader, 'initialized', True):
+                if isinstance(data_loader, IPUDataloader)\
+                   and not data_loader.initialized:
                     data_loader.init(options=training_opts)
 
         super().run(data_loaders, *args, **kwargs)
@@ -90,8 +114,9 @@ class IPUBaseRunner(metaclass=ABCMeta):
 
 @RUNNERS.register_module()
 class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
-    """Epoch-based Runner.
-
+    """Epoch-based Runner for IPU.
+    The Inheritance order(MRO) is:
+    IPUEpochBasedRunner -> IPUBaseRunner -> EpochBasedRunner -> BaseRunner
     This runner train models epoch by epoch.
     """
     pass
@@ -99,8 +124,9 @@ class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
 
 @RUNNERS.register_module()
 class IPUIterBasedRunner(IPUBaseRunner, IterBasedRunner):
-    """Iteration-based Runner.
-
+    """Iteration-based Runner for IPU.
+    The Inheritance order(MRO) is:
+    IPUIterBasedRunner -> IPUBaseRunner -> IterBasedRunner -> BaseRunner
     This runner train models iteration by iteration.
     """
     pass

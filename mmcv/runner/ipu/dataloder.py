@@ -43,6 +43,48 @@ def collate(batch, samples_per_gpu=1):
 
 
 class IPUDataloader(poptorch.DataLoader):
+    """ Thin wrapper around the traditional `torch.utils.data.DataLoader`
+    to abstract away some of the batch sizes calculationsand speed up
+    data loading.
+
+    If this data loader is used in a distributed execution environment, it will
+    ensure that each process uses a different subset of the dataset, providing
+    you first call ``options.randomSeed(N)`` with an integer N which is the
+    same across all hosts.
+    Args:
+        options (poptorch.Options): Options that will be used to compile
+            and run the model.
+        dataset (torch.utils.data.Dataset): The dataset to get the data from.
+        batch_size (int, optional): This is the batch size in the conventional
+            sense of being the size that runs through an operation in the model
+            at any given time.
+        shuffle (bool, optional): set to ``True`` to have the data reshuffled
+            at every epoch (default: ``False``).
+        num_workers (int, optional): how many subprocesses to use for data
+            loading. ``0`` means that the data will be loaded in the main
+            process. (default: ``0``)
+        drop_last (bool, optional): If True and the number of elements in the
+            dataset is not a multiple of the combined batch size then the
+            incomplete batch at the end will be dropped.
+        persistent_workers (bool, optional): Re-use workers between
+            iterations if True.
+        auto_distributed_partitioning (bool, optional): If True, partitions the
+            dataset for distributed execution automatically. Otherwise, it is
+            assumed that partitioning has been handled manually.
+        mode (poptorch.DataLoaderMode, optional): If `DataLoaderMode.Async`,
+            uses an :py:class:`~poptorch.AsynchronousDataAccessor` to access
+            the dataset. If `DataLoaderMode.Sync`, accesses the dataset
+            synchronously.
+        async_options (Dict[str, Any], optional): Options to pass to
+            :py:class:`~poptorch.AsynchronousDataAccessor`.
+        rebatched_worker_size (int, optional): When using AsyncRebatched: batch
+            size of the tensors loaded by the workers.
+            Default to the combined batch size.
+            If specified the ``rebatched_worker_size`` must be less than
+            or equal to the combined batch size.
+        kwargs (Dict[str, Any], optional): Other options to pass to PyTorch's
+            ``DataLoader`` constructor.
+    """
     def __init__(self,
                  options,
                  dataset,
@@ -53,9 +95,19 @@ class IPUDataloader(poptorch.DataLoader):
                  persistent_workers=True,
                  auto_distributed_partitioning=True,
                  mode=poptorch.DataLoaderMode.AsyncRebatched,
+                 async_options=None,
                  rebatched_worker_size=128,
                  **kwargs):
-        # lazy init
+        """ lazy init:
+            In many frameworks, the dataloder will be constructed before
+            the initialization of the ipu options, so the lazy init
+            method is used here, and the real initialization will not be done
+            until the dataloder needs to be used and the options are input.
+        """
+        # lazy init: sometimes, we cannot get IPU options when make data
+        #            loader
+        if async_options is None:
+            async_options = {'load_indefinitely': True, 'buffer_size': 8}
         self.kwargs = {'options': options,
                        'dataset': dataset,
                        'batch_size': batch_size,
@@ -68,15 +120,14 @@ class IPUDataloader(poptorch.DataLoader):
                        'mode': mode,
                        'collate_fn':
                        partial(collate, samples_per_gpu=batch_size),
-                       'async_options': {
-                           'load_indefinitely': True, 'buffer_size': 8},
+                       'async_options': async_options,
                        'rebatched_worker_size': rebatched_worker_size,
                        **kwargs}
         self.initialized = False
 
-    def init(self, **kwargs):
+    def init(self, options, **kwargs):
         if not self.initialized:
-            kwargs = {**self.kwargs, **kwargs}
+            kwargs = {**self.kwargs, **kwargs, 'options': options}
             super().__init__(**kwargs)
             self.initialized = True
 

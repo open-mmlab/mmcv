@@ -76,7 +76,9 @@ def auto_fp16(apply_to=None, out_fp32=False, supported_types=[]):
         apply_to (Iterable, optional): The argument names to be converted.
             `None` indicates all arguments.
         out_fp32 (bool): Whether to convert the output back to fp32.
-
+        supported_types (list[Class], optional): class types to support besides
+            torch.nn.Module
+            `New in version 1.4.8.`
     Example:
 
         >>> import torch.nn as nn

@@ -4,6 +4,11 @@ from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
 
 
 def wrap_lr_update_hook(lr_hook_class):
+    """A wrapper function to wrap any subclass of LrUpdaterHook
+    IPU needs extra operations to upload optimizer setting,
+    this wrapper will override function(_set_lr) of a subclass of
+    LrUpdaterHook.
+    """
     assert issubclass(lr_hook_class, LrUpdaterHook)
 
     class ipu_lr_hook_class(lr_hook_class):
@@ -15,6 +20,12 @@ def wrap_lr_update_hook(lr_hook_class):
 
 
 def wrap_optimizer_hook(optimizer_hook_class,):
+    """A wrapper function to wrap OptimizerHook
+    This is an non-intrusive implementation of wrapping optimizer hook
+    (or you need to change every config file to use IPU optimizer hook)
+    IPU's clip-norm implementation is different from pytorch, so there
+    should be an error raised when using clip-norm.
+    """
     assert optimizer_hook_class == OptimizerHook,\
         'OptimizerHook type used is:{}, not supported now'.format(
             str(optimizer_hook_class))
@@ -90,4 +101,4 @@ if (TORCH_VERSION != 'parrots'
             pass
 
 else:
-    raise RuntimeError('The IPU mode only supports torch1.10 and above')
+    raise RuntimeError('The IPU mode only supports torch 1.6 and above')
