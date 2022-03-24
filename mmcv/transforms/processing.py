@@ -1278,7 +1278,7 @@ class RandomResize(BaseTransform):
         self.resize = TRANSFORMS.build(self.resize_cfg)
 
     @staticmethod
-    def _random_sample(scales: Sequence[Tuple[int, int]]) -> Tuple[int, int]:
+    def _random_sample(scales: Sequence[Tuple[int, int]]) -> tuple:
         """Private function to randomly sample a scale from a list of tuples.
 
         Args:
@@ -1286,7 +1286,7 @@ class RandomResize(BaseTransform):
                 There must be two tuples in scales, which specify the lower
                 and upper bound of image scales.
         Returns:
-            tuple: Returns the target scale.
+            tuple: The targeted scale of the image to be resized.
         """
 
         assert mmcv.is_list_of(scales, tuple) and len(scales) == 2
@@ -1298,8 +1298,8 @@ class RandomResize(BaseTransform):
         return scale
 
     @staticmethod
-    def _random_sample_ratio(
-            scale: tuple, ratio_range: Tuple[float, float]) -> Tuple[int, int]:
+    def _random_sample_ratio(scale: tuple, ratio_range: Tuple[float,
+                                                              float]) -> tuple:
         """Private function to randomly sample a scale from a tuple.
 
         A ratio will be randomly sampled from the range specified by
@@ -1310,7 +1310,7 @@ class RandomResize(BaseTransform):
             ratio_range (tuple[float]): The minimum and maximum ratio to scale
                 the ``scale``.
         Returns:
-            tuple: Returns the target scale.
+            tuple: The targeted scale of the image to be resized.
         """
 
         assert isinstance(scale, tuple) and len(scale) == 2
@@ -1321,13 +1321,12 @@ class RandomResize(BaseTransform):
         return scale
 
     @cacheable_method
-    def _random_scale(self) -> None:
+    def _random_scale(self) -> tuple:
         """Private function to randomly sample an scale according to the type
         of ``scale``.
 
         Returns:
-            dict: One new key ``scale`` is added into ``results``,
-            which would be used by subsequent pipelines.
+            tuple: The targeted scale of the image to be resized.
         """
 
         if isinstance(self.scale, tuple):
