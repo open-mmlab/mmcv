@@ -549,9 +549,9 @@ class CenterCrop(BaseTransform):
             # set gt_kepoints out of the result image invisible
             height, width = results['img'].shape[:2]
             valid_pos = (gt_keypoints[:, :, 0] >=
-                          0) * (gt_keypoints[:, :, 0] <
-                                width) * (gt_keypoints[:, :, 1] >= 0) * (
-                                    gt_keypoints[:, :, 1] < height)
+                         0) * (gt_keypoints[:, :, 0] <
+                               width) * (gt_keypoints[:, :, 1] >= 0) * (
+                                   gt_keypoints[:, :, 1] < height)
             gt_keypoints[:, :, 2] = np.where(valid_pos, gt_keypoints[:, :, 2],
                                              0)
             gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
@@ -1218,18 +1218,16 @@ class RandomFlip(BaseTransform):
 class RandomResize(BaseTransform):
     """Random resize images & bbox & keypoints.
 
-    Added or updated keys: scale, scale_factor, keep_ratio, img, height, width,
-    gt_bboxes, gt_semantic_seg, and gt_keypoints.
     How to choose the target scale to resize the image will follow the rules
     below:
 
-    - if `scale` is a list of tuple, the first value of the target scale is
-      sampled from [`scale[0][0]`, `scale[1][0]`] uniformally and the second
-      value of the target scale is sampled from [`scale[0][1]`, `scale[1][1]`]
-      uniformally.
-    - if `scale` is a tuple, the first and second values of the target scale
-      is equal to the first and second values of `scale` multiplied by a value
-      sampled from [`ratio_range[0]`, `ratio_range[1]`] uniformally.
+    - if ``scale`` is a list of tuple, the first value of the target scale is
+      sampled from [``scale[0][0]``, ``scale[1][0]``] uniformally and the
+      second value of the target scale is sampled from
+      [``scale[0][1]``, ``scale[1][1]``] uniformally.
+    - if ``scale`` is a tuple, the first and second values of the target scale
+      is equal to the first and second values of ``scale`` multiplied by a
+      value sampled from [``ratio_range[0]``, ``ratio_range[1]``] uniformally.
 
     Required Keys:
 
@@ -1325,10 +1323,10 @@ class RandomResize(BaseTransform):
     @cacheable_method
     def _random_scale(self) -> None:
         """Private function to randomly sample an scale according to the type
-        of `scale`.
+        of ``scale``.
 
         Returns:
-            dict: One new key 'scale`is added into ``results``,
+            dict: One new key ``scale`` is added into ``results``,
             which would be used by subsequent pipelines.
         """
 
@@ -1351,9 +1349,9 @@ class RandomResize(BaseTransform):
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
-            dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
-            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
-            and 'keep_ratio' keys are updated in result dict.
+            dict: Resized results, ``img``, ``gt_bboxes``, ``gt_semantic_seg``,
+            ``gt_keypoints``, ``scale``, ``scale_factor``, ``height``,
+            ``width``, and ``keep_ratio`` keys are updated in result dict.
         """
         results['scale'] = self._random_scale()
         self.resize.scale = results['scale']
