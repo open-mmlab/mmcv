@@ -111,7 +111,7 @@ class LoadAnnotation(BaseTransform):
                 }
             ]
             # Filename of semantic or panoptic segmentation ground truth file.
-            'seg_map': 'a/b/c'
+            'seg_map_path': 'a/b/c'
         }
 
     After this module, the annotation has been changed to the format below:
@@ -125,7 +125,7 @@ class LoadAnnotation(BaseTransform):
              # In int type.
             'gt_bboxes_labels': np.ndarray(N, )
              # In uint8 type.
-            'gt_semantic_seg': np.ndarray (H, W)
+            'gt_seg_map': np.ndarray (H, W)
              # in (x, y, v) order, float type.
             'gt_keypoints': np.ndarray(N, NK, 3)
         }
@@ -138,13 +138,13 @@ class LoadAnnotation(BaseTransform):
       - bbox_label
       - keypoints (optional)
 
-    - seg_map (optional)
+    - seg_map_path (optional)
 
     Added Keys:
 
     - gt_bboxes
     - gt_bboxes_labels
-    - gt_semantic_seg
+    - gt_seg_map
     - gt_keypoints
 
     Args:
@@ -154,8 +154,8 @@ class LoadAnnotation(BaseTransform):
             Defaults to True.
         with_seg (bool): Whether to parse and load the semantic segmentation
             annotation. Defaults to False.
-        with_kps (bool): Whether to parse and load the keypoints annotation.
-            Defaults to False.
+        with_keypoints (bool): Whether to parse and load the keypoints
+            annotation. Defaults to False.
         imdecode_backend (str): The image decoding backend type. The backend
             argument for :func:``mmcv.imfrombytes``.
             See :fun:``mmcv.imfrombytes`` for details.
@@ -170,7 +170,7 @@ class LoadAnnotation(BaseTransform):
         with_bbox: bool = True,
         with_label: bool = True,
         with_seg: bool = False,
-        with_kps: bool = False,
+        with_keypoints: bool = False,
         imdecode_backend: str = 'cv2',
         file_client_args: dict = dict(backend='disk')
     ) -> None:
@@ -178,7 +178,7 @@ class LoadAnnotation(BaseTransform):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_seg = with_seg
-        self.with_kps = with_kps
+        self.with_keypoints = with_keypoints
         self.imdecode_backend = imdecode_backend
         self.file_client_args = file_client_args.copy()
         self.file_client = mmcv.FileClient(**self.file_client_args)
@@ -220,8 +220,8 @@ class LoadAnnotation(BaseTransform):
             dict: The dict contains loaded semantic segmentation annotations.
         """
 
-        img_bytes = self.file_client.get(results['seg_map'])
-        results['gt_semantic_seg'] = mmcv.imfrombytes(
+        img_bytes = self.file_client.get(results['seg_map_path'])
+        results['gt_seg_map'] = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze()
 
@@ -256,7 +256,7 @@ class LoadAnnotation(BaseTransform):
             self._load_labels(results)
         if self.with_seg:
             self._load_semantic_seg(results)
-        if self.with_kps:
+        if self.with_keypoints:
             self._load_kps(results)
         return results
 
@@ -265,7 +265,7 @@ class LoadAnnotation(BaseTransform):
         repr_str += f'(with_bbox={self.with_bbox}, '
         repr_str += f'with_label={self.with_label}, '
         repr_str += f'with_seg={self.with_seg}, '
-        repr_str += f'with_kps={self.with_kps}, '
+        repr_str += f'with_keypoints={self.with_keypoints}, '
         repr_str += f"imdecode_backend='{self.imdecode_backend}', "
         repr_str += f'file_client_args={self.file_client_args})'
         return repr_str
