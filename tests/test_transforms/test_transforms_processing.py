@@ -196,8 +196,7 @@ class TestPad:
         trans = Pad(size=(2000, 2000), pad_val=dict(img=(12, 12, 12)))
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
-        assert (results['gt_seg_map'][1333:2000,
-                                           800:2000, :] == 255).all()
+        assert (results['gt_seg_map'][1333:2000, 800:2000, :] == 255).all()
 
         # test rgb image, pad_to_square=True
         trans = Pad(
@@ -217,8 +216,7 @@ class TestPad:
         trans = Pad(size=(2000, 2000), pad_val=12)
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
-        assert (results['gt_seg_map'][1333:2000,
-                                           800:2000, :] == 255).all()
+        assert (results['gt_seg_map'][1333:2000, 800:2000, :] == 255).all()
         # test gray image
         new_img = np.random.random((1333, 800))
         data_info['img'] = new_img
@@ -296,9 +294,8 @@ class TestCenterCrop:
         assert results['height'] == 224
         assert results['width'] == 224
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
-        assert (
-            results['gt_seg_map'] == self.gt_semantic_map[38:262,
-                                                               88:312]).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map[38:262,
+                                                              88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 122], [112, 112, 224,
                                                      224]])).all()
@@ -315,9 +312,8 @@ class TestCenterCrop:
         assert results['height'] == 224
         assert results['width'] == 224
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
-        assert (
-            results['gt_seg_map'] == self.gt_semantic_map[38:262,
-                                                               88:312]).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map[38:262,
+                                                              88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 122], [112, 112, 224,
                                                      224]])).all()
@@ -334,9 +330,8 @@ class TestCenterCrop:
         assert results['height'] == 256
         assert results['width'] == 224
         assert (results['img'] == self.original_img[22:278, 88:312, ...]).all()
-        assert (
-            results['gt_seg_map'] == self.gt_semantic_map[22:278,
-                                                               88:312]).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map[22:278,
+                                                              88:312]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 122, 138], [112, 128, 224,
                                                      256]])).all()
@@ -435,9 +430,8 @@ class TestCenterCrop:
         assert results['height'] == img_height
         assert results['width'] == img_width // 2
         assert (results['img'] == self.original_img[:, 100:300, ...]).all()
-        assert (
-            results['gt_seg_map'] == self.gt_semantic_map[:,
-                                                               100:300]).all()
+        assert (results['gt_seg_map'] == self.gt_semantic_map[:,
+                                                              100:300]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 110, 160], [100, 150, 200,
                                                      300]])).all()
@@ -456,7 +450,7 @@ class TestCenterCrop:
         assert results['width'] == img_width
         assert (results['img'] == self.original_img[75:225, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[75:225,
-                                                                   ...]).all()
+                                                              ...]).all()
         assert np.equal(results['gt_bboxes'],
                         np.array([[0, 0, 210, 85], [200, 75, 400,
                                                     150]])).all()

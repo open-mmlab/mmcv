@@ -380,11 +380,9 @@ class Pad(BaseTransform):
         ``results['pad_shape']``."""
         if results.get('gt_seg_map', None) is not None:
             pad_val = self.pad_val.get('seg', 255)
-            if isinstance(pad_val,
-                          int) and results['gt_seg_map'].ndim == 3:
-                pad_val = tuple([
-                    pad_val for _ in range(results['gt_seg_map'].shape[2])
-                ])
+            if isinstance(pad_val, int) and results['gt_seg_map'].ndim == 3:
+                pad_val = tuple(
+                    [pad_val for _ in range(results['gt_seg_map'].shape[2])])
             results['gt_seg_map'] = mmcv.impad(
                 results['gt_seg_map'],
                 shape=results['pad_shape'][:2],
@@ -417,8 +415,8 @@ class Pad(BaseTransform):
 @TRANSFORMS.register_module()
 class CenterCrop(BaseTransform):
     """Crop the center of the image, segmentation masks, bounding boxes and key
-    points. If the crop area exceeds the original image and ``auto_pad`` is True,
-    the original image will be padded before cropping.
+    points. If the crop area exceeds the original image and ``auto_pad`` is
+    True, the original image will be padded before cropping.
 
     Required Keys:
 
@@ -639,9 +637,9 @@ class RandomGrayscale(BaseTransform):
             grayscale. Defaults to 0.1.
         keep_channels (bool): Whether keep channel number the same as
             input. Defaults to False.
-        channel_weights (tuple): The grayscale weights of each channel, 
-            and the weights will be normalized. For example, (1, 2, 1) 
-            will be normalized as (0.25, 0.5, 0.25). Defaults to 
+        channel_weights (tuple): The grayscale weights of each channel,
+            and the weights will be normalized. For example, (1, 2, 1)
+            will be normalized as (0.25, 0.5, 0.25). Defaults to
             (1., 1., 1.).
         color_format (str): Color format set to be any of 'bgr',
             'rgb', 'hsv'. Note: 'hsv' image will be transformed into 'bgr'
@@ -1152,8 +1150,7 @@ class RandomFlip(BaseTransform):
         # flip segs
         if results.get('gt_seg_map', None) is not None:
             results['gt_seg_map'] = mmcv.imflip(
-                results['gt_seg_map'],
-                direction=results['flip_direction'])
+                results['gt_seg_map'], direction=results['flip_direction'])
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
