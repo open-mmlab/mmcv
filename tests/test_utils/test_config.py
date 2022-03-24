@@ -470,20 +470,17 @@ def test_dict_action():
     with pytest.raises(AssertionError):
         parser.parse_args(['--options', 'item2.a=[(a,b), [1,2], false'])
     # Normal values
-    args = parser.parse_args(
-        ['--options',
-         'item2.a=1',
-         'item2.b=0.1',
-         'item2.c=x',
-         'item3=false',
-         'item4=none',
-         ])
-    out_dict = {'item2.a': 1,
-                'item2.b': 0.1,
-                'item2.c': 'x',
-                'item3': False,
-                'item4': None,
-                }
+    args = parser.parse_args([
+        '--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false',
+        'item4=none'
+    ])
+    out_dict = {
+        'item2.a': 1,
+        'item2.b': 0.1,
+        'item2.c': 'x',
+        'item3': False,
+        'item4': None,
+    }
     assert args.options == out_dict
     cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
