@@ -1254,7 +1254,7 @@ class RandomResize(BaseTransform):
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
-        resize_cfg (dict): Config to initialize a 'Resize' object.
+        resize_cfg (dict): Config to initialize a ``Resize`` object.
     """
 
     def __init__(
