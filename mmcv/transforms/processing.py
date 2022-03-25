@@ -1224,7 +1224,8 @@ class RandomResize(BaseTransform):
     - if ``scale`` is a list of tuple, the first value of the target scale is
       sampled from [``scale[0][0]``, ``scale[1][0]``] uniformally and the
       second value of the target scale is sampled from
-      [``scale[0][1]``, ``scale[1][1]``] uniformally.
+      [``scale[0][1]``, ``scale[1][1]``] uniformally. Following cv2,
+      scale[i][0] is for width, and scale[i][1] is for height.
     - if ``scale`` is a tuple, the first and second values of the target scale
       is equal to the first and second values of ``scale`` multiplied by a
       value sampled from [``ratio_range[0]``, ``ratio_range[1]``] uniformally.
@@ -1254,7 +1255,9 @@ class RandomResize(BaseTransform):
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
-        resize_cfg (dict): Config to initialize a ``Resize`` object.
+        resize_cfg (dict): Config to initialize a ``Resize`` transform.
+            Defaults to dict(type='Resize', keep_ratio=True,
+            clip_object_border=True, backend='cv2', interpolation='bilinear').
     """
 
     def __init__(
