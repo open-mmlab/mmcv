@@ -711,11 +711,11 @@ def test_cosine_runner_hook(multi_optimizers):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
-@pytest.mark.parametrize('multi_optimziers', (True, False))
-def test_linear_runner_hook(multi_optimziers):
+@pytest.mark.parametrize('multi_optimizers', (True, False))
+def test_linear_runner_hook(multi_optimizers):
     sys.modules['pavi'] = MagicMock()
     loader = DataLoader(torch.ones((10, 2)))
-    runner = _build_demo_runner(multi_optimizers=multi_optimziers)
+    runner = _build_demo_runner(multi_optimizers=multi_optimizers)
 
     # add momentum scheduler
 
@@ -745,7 +745,7 @@ def test_linear_runner_hook(multi_optimziers):
 
     # TODO: use a more elegant way to check values
     assert hasattr(hook, 'writer')
-    if multi_optimziers:
+    if multi_optimizers:
         calls = [
             call(
                 'train', {
