@@ -92,7 +92,7 @@ class Compose(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class ApplyToMapped(BaseTransform):
+class KeyMapper(BaseTransform):
     """A transform wrapper to map and reorganize the input/output of the
     wrapped transforms (or sub-pipeline).
 
@@ -101,31 +101,28 @@ class ApplyToMapped(BaseTransform):
             object or config dict to be wrapped.
         mapping (dict): A dict that defines the input key mapping.
             The keys corresponds to the inner key (i.e., kwargs of the
-            `transform` method), and should be string type. The values
+            ``transform`` method), and should be string type. The values
             corresponds to the outer keys (i.e., the keys of the
             data/results), and should have a type of string, list or dict.
             None means not applying input mapping. Default: None.
         remapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
-            `mapping`. Default: None.
+            ``mapping``. Default: None.
         auto_remap (bool, optional): If True, an inverse of the mapping will
             be used as the remapping. If auto_remap is not given, it will be
             automatically set True if 'remapping' is not given, and vice
-            versa. Note that if auto_remap is set True, remapping should be
-            None and allow_nonexist_keys should be False.
-            Default: None.
+            versa. Default: None.
         allow_nonexist_keys (bool): If False, the outer keys in the mapping
-            must exist in the input data, or an exception will be raised. If
-            True, the missing keys will be assigned a special value
-            `NotInResults` during input remapping. Default: False.
+            must exist in the input data, or an exception will be raised.
+            Default: False.
 
     Examples:
-        >>> # Example 1: ApplyToMapped 'gt_img' to 'img'
+        >>> # Example 1: KeyMapper 'gt_img' to 'img'
         >>> pipeline = [
-        >>>     # Use ApplyToMapped to convert outer (original) field name
+        >>>     # Use KeyMapper to convert outer (original) field name
         >>>     # 'gt_img' to inner (used by inner transforms) filed name
         >>>     # 'img'
-        >>>     dict(type='ApplyToMapped',
+        >>>     dict(type='KeyMapper',
         >>>         mapping=dict(img='gt_img'),
         >>>         # auto_remap=True means output key mapping is the revert of
         >>>         # the input key mapping, e.g. inner 'img' will be mapped
@@ -143,9 +140,9 @@ class ApplyToMapped(BaseTransform):
         >>>     # The inner field 'imgs' will be a dict with keys 'img_src'
         >>>     # and 'img_tar', whose values are outer fields 'img1' and
         >>>     # 'img2' respectively.
-        >>>     dict(type='ApplyToMapped',
+        >>>     dict(type='KeyMapper',
         >>>         dict(
-        >>>             type='ApplyToMapped',
+        >>>             type='KeyMapper',
         >>>             mapping=dict(
         >>>                 imgs=dict(
         >>>                     img_src='img1',
@@ -169,13 +166,8 @@ class ApplyToMapped(BaseTransform):
         self.auto_remap = auto_remap
 
         if self.auto_remap:
-            if self.allow_nonexist_keys:
-                raise ValueError(
-                    'ApplyToMapped: `allow_nonexist_keys` must be set False if'
-                    '`auto_remap` is set True.')
-
             if remapping is not None:
-                raise ValueError('ApplyToMapped: `remapping` must be None if'
+                raise ValueError('KeyMapper: ``remapping`` must be None if'
                                  '`auto_remap` is set True.')
             self.remapping = mapping
         else:
@@ -190,13 +182,13 @@ class ApplyToMapped(BaseTransform):
         return iter(self.transforms)
 
     def map_input(self, data: Dict, mapping: Dict) -> Dict[str, Any]:
-        """ApplyToMapped inputs for the wrapped transforms by gathering and
+        """KeyMapper inputs for the wrapped transforms by gathering and
         renaming data items according to the mapping.
 
         Args:
             data (dict): The original input data
             mapping (dict): The input key mapping. See the document of
-                `mmcv.transforms.wrappers.ApplyToMapped` for details.
+                ``mmcv.transforms.wrappers.KeyMapper`` for details.
 
         Returns:
             dict: The input data with remapped keys. This will be the actual
@@ -233,13 +225,13 @@ class ApplyToMapped(BaseTransform):
         return inputs
 
     def map_output(self, data: Dict, remapping: Dict) -> Dict[str, Any]:
-        """ApplyToMapped outputs from the wrapped transforms by gathering and
+        """KeyMapper outputs from the wrapped transforms by gathering and
         renaming data items according to the remapping.
 
         Args:
             data (dict): The output of the wrapped pipeline.
             remapping (dict): The output key mapping. See the document of
-                `mmcv.transforms.wrappers.ApplyToMapped` for details.
+                ``mmcv.transforms.wrappers.KeyMapper`` for details.
 
         Returns:
             dict: The output with remapped keys.
@@ -281,7 +273,7 @@ class ApplyToMapped(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class ApplyToMultiple(ApplyToMapped):
+class TransformBroadcaster(KeyMapper):
     """A transform wrapper to apply the wrapped transforms to multiple data
     items. For example, apply Resize to multiple images.
 
@@ -293,20 +285,17 @@ class ApplyToMultiple(ApplyToMapped):
             outer keys of the target items should be remapped as a list with
             the standard inner key (The key required by the wrapped transform).
             See the following example and the document of
-            `mmcv.transforms.wrappers.ApplyToMapped` for details.
+            ``mmcv.transforms.wrappers.KeyMapper`` for details.
         remapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
-            `mapping`. Default: None.
+            ``mapping``. Default: None.
         auto_remap (bool, optional): If True, an inverse of the mapping will
             be used as the remapping. If auto_remap is not given, it will be
             automatically set True if 'remapping' is not given, and vice
-            versa. Note that if auto_remap is set True, remapping should be
-            None and allow_nonexist_keys should be True.
-            Default: None.
+            versa. Default: None.
         allow_nonexist_keys (bool): If False, the outer keys in the mapping
-            must exist in the input data, or an exception will be raised. If
-            True, the missing keys will be assigned a special value
-            `NotInResults` during input remapping. Default: False.
+            must exist in the input data, or an exception will be raised.
+            Default: False.
         share_random_params (bool): If True, the random transform
             (e.g., RandomFlip) will be conducted in a deterministic way and
             have the same behavior on all data items. For example, to randomly
@@ -324,10 +313,10 @@ class ApplyToMultiple(ApplyToMapped):
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
-        >>>     # ApplyToMultiple maps multiple outer fields to standard the
-        >>>     # inner field and process them with wrapped transforms
+        >>>     # TransformBroadcaster maps multiple outer fields to standard
+        >>>     # the inner field and process them with wrapped transforms
         >>>     # respectively
-        >>>     dict(type='ApplyToMultiple',
+        >>>     dict(type='TransformBroadcaster',
         >>>         # case 1: from multiple outer fields
         >>>         mapping=dict(img=['lq', 'gt']),
         >>>         auto_remap=True,
@@ -343,10 +332,10 @@ class ApplyToMultiple(ApplyToMapped):
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
-        >>>     # ApplyToMultiple maps multiple outer fields to standard the
-        >>>     # inner field and process them with wrapped transforms
+        >>>     # TransformBroadcaster maps multiple outer fields to standard
+        >>>     # the inner field and process them with wrapped transforms
         >>>     # respectively
-        >>>     dict(type='ApplyToMultiple',
+        >>>     dict(type='TransformBroadcaster',
         >>>         # case 2: from one outer field that contains multiple
         >>>         # data elements (e.g. a list)
         >>>         # mapping=dict(img='images'),
@@ -460,7 +449,7 @@ class RandomChoice(BaseTransform):
         if prob is not None:
             assert mmcv.is_seq_of(prob, float)
             assert len(transforms) == len(prob), \
-                '`transforms` and `prob` must have same lengths. ' \
+                '``transforms`` and ``prob`` must have same lengths. ' \
                 f'Got {len(transforms)} vs {len(prob)}.'
             assert sum(prob) == 1
 

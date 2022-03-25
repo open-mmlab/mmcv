@@ -7,8 +7,8 @@ import pytest
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
 from mmcv.transforms.utils import cache_random_params, cache_randomness
-from mmcv.transforms.wrappers import (ApplyToMapped, ApplyToMultiple, Compose,
-                                      RandomChoice)
+from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomChoice,
+                                      TransformBroadcaster)
 
 
 @TRANSFORMS.register_module()
@@ -139,7 +139,7 @@ def test_cache_random_parameters():
 def test_apply_to_mapped():
 
     # Case 1: simple remap
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
         mapping=dict(value='v_in'),
         remapping=dict(value='v_out'))
@@ -152,7 +152,7 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v_out'], 2)
 
     # Case 2: collecting list
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
         mapping=dict(value=['v_in_1', 'v_in_2']),
         remapping=dict(value=['v_out_1', 'v_out_2']))
@@ -168,7 +168,7 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v_out_2'], 4)
 
     # Case 3: collecting dict
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
         mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
         remapping=dict(value=dict(v1='v_out_1', v2='v_out_2')))
@@ -184,7 +184,7 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v_out_2'], 4)
 
     # Case 4: collecting list with auto_remap mode
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
         mapping=dict(value=['v_in_1', 'v_in_2']),
         auto_remap=True)
@@ -198,7 +198,7 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v_in_2'], 4)
 
     # Case 5: collecting dict with auto_remap mode
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
         mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
         auto_remap=True)
@@ -212,7 +212,7 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v_in_2'], 4)
 
     # Case 6: nested collection with auto_remap mode
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
         mapping=dict(value=['v1', dict(v2=['v21', 'v22'], v3='v3')]),
         auto_remap=True)
@@ -227,24 +227,16 @@ def test_apply_to_mapped():
     np.testing.assert_equal(results['v22'], 5)
     np.testing.assert_equal(results['v3'], 6)
 
-    # Case 7: `allow_nonexist_keys` must be False if `auto_remap` is set True
+    # Case 7: output_map must be None if `auto_remap` is set True
     with pytest.raises(ValueError):
-        pipeline = ApplyToMapped(
-            transforms=[AddToValue(addend=2)],
-            mapping=dict(value=['v_in_1', 'v_in_2']),
-            auto_remap=True,
-            allow_nonexist_keys=True)
-
-    # Case 8: output_map must be None if `auto_remap` is set True
-    with pytest.raises(ValueError):
-        pipeline = ApplyToMapped(
+        pipeline = KeyMapper(
             transforms=[AddToValue(addend=1)],
             mapping=dict(value='v_in'),
             remapping=dict(value='v_out'),
             auto_remap=True)
 
-    # Case 9: allow_nonexist_keys
-    pipeline = ApplyToMapped(
+    # Case 8: allow_nonexist_keys8
+    pipeline = KeyMapper(
         transforms=[SumTwoValues()],
         mapping=dict(num_1='a', num_2='b'),
         auto_remap=False,
@@ -256,14 +248,14 @@ def test_apply_to_mapped():
     results = pipeline(dict(a=1))
     assert np.isnan(results['sum'])
 
-    # Case 10: use wrapper as a transform
-    transform = ApplyToMapped(mapping=dict(b='a'), auto_remap=False)
+    # Case 9: use wrapper as a transform
+    transform = KeyMapper(mapping=dict(b='a'), auto_remap=False)
     results = transform(dict(a=1))
     # note that the original key 'a' will not be removed
     assert results == dict(a=1, b=1)
 
     # Test basic functions
-    pipeline = ApplyToMapped(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
         mapping=dict(value='v_in'),
         remapping=dict(value='v_out'))
@@ -279,7 +271,7 @@ def test_apply_to_mapped():
 def test_apply_to_multiple():
 
     # Case 1: apply to list in results
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
         mapping=dict(value='values'),
         auto_remap=True)
@@ -290,7 +282,7 @@ def test_apply_to_multiple():
     np.testing.assert_equal(results['values'], [2, 3])
 
     # Case 2: apply to multiple keys
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
         mapping=dict(value=['v_1', 'v_2']),
         auto_remap=True)
@@ -302,7 +294,7 @@ def test_apply_to_multiple():
     np.testing.assert_equal(results['v_2'], 3)
 
     # Case 3: apply to multiple groups of keys
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()],
         mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
         remapping=dict(sum=['a', 'b']),
@@ -316,7 +308,7 @@ def test_apply_to_multiple():
 
     # Case 4: inconsistent sequence length
     with pytest.raises(ValueError):
-        pipeline = ApplyToMultiple(
+        pipeline = TransformBroadcaster(
             transforms=[SumTwoValues()],
             mapping=dict(num_1='list_1', num_2='list_2'),
             auto_remap=False)
@@ -325,7 +317,7 @@ def test_apply_to_multiple():
         _ = pipeline(results)
 
     # Case 5: share random parameter
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[RandomAddToValue()],
         mapping=dict(value='values'),
         auto_remap=True,
@@ -356,8 +348,8 @@ def test_randomchoice():
 
     _ = pipeline(dict(value=1))
 
-    # Case 3: nested RandomChoice in ApplyToMultiple
-    pipeline = ApplyToMultiple(
+    # Case 3: nested RandomChoice in TransformBroadcaster
+    pipeline = TransformBroadcaster(
         transforms=[
             RandomChoice(
                 transforms=[[AddToValue(addend=1.0)],

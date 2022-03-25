@@ -21,7 +21,7 @@ class cache_randomness:
     return the cached values when being invoked again.
 
     .. note::
-        Only a instance method can be decorated as a cache_randomness.
+        Only an instance method can be decorated by ``cache_randomness``.
     """
 
     def __init__(self, func):
@@ -34,7 +34,7 @@ class cache_randomness:
         if len(func_args) == 0 or func_args[0] != 'self':
             raise TypeError(
                 '@cache_randomness should only be used to decorate '
-                'instance methods (the first argument is `self`).')
+                'instance methods (the first argument is ``self``).')
 
         functools.update_wrapper(self, func)
         self.func = func
@@ -52,14 +52,14 @@ class cache_randomness:
         instance = self.instance_ref()
         name = self.__name__
 
-        # Check the flag `self._cache_enabled`, which should be
-        # set by the contextmanagers like `cache_random_parameters`
+        # Check the flag ``self._cache_enabled``, which should be
+        # set by the contextmanagers like ``cache_random_parameters```
         cache_enabled = getattr(instance, '_cache_enabled', False)
 
         if cache_enabled:
             # Initialize the cache of the transform instances. The flag
-            # `cache_enabled` is set by contextmanagers like
-            # `cache_random_params`.
+            # ``cache_enabled``` is set by contextmanagers like
+            # ``cache_random_params```.
             if not hasattr(instance, '_cache'):
                 setattr(instance, '_cache', {})
 
@@ -82,12 +82,12 @@ class cache_randomness:
 @contextmanager
 def cache_random_params(transforms: Union[BaseTransform, Iterable]):
     """Context-manager that enables the cache of return values of methods
-    decorated by `cache_randomness` in transforms.
+    decorated by ``cache_randomness`` in transforms.
 
     In this mode, decorated methods will cache their return values on the
     first invoking, and always return the cached value afterward. This allow
     to apply random transforms in a deterministic way. For example, apply same
-    transforms on multiple examples. See `cache_randomness` for more
+    transforms on multiple examples. See ``cache_randomness`` for more
     information.
 
     Args:
@@ -136,7 +136,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
                 key = f'{id(obj)}.{name}'
                 if key2counter[key] > 1:
                     raise RuntimeError(
-                        'The method decorated by `cache_randomness` should '
+                        'The method decorated by ``cache_randomness`` should '
                         'be invoked at most once during processing one data '
                         f'sample. The method {name} of {obj} has been invoked'
                         f' {key2counter[key]} times.')

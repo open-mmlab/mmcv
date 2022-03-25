@@ -150,16 +150,16 @@ pipeline = [
 
 变换包装是一种特殊的数据变换类，他们本身并不操作数据字典中的图像、标签等信息，而是对其中定义的数据变换的行为进行增强。
 
-### 字段映射（ApplyToMapped）
+### 字段映射（KeyMapper）
 
-字段映射包装（`ApplyToMapped`）用于对数据字典中的字段进行映射。例如，一般的图像处理变换都从数据字典中的 `"img"` 字段获得值。但有些时候，我们希望这些变换处理数据字典中其他字段中的图像，比如 `"gt_img"` 字段。
+字段映射包装（`KeyMapper`）用于对数据字典中的字段进行映射。例如，一般的图像处理变换都从数据字典中的 `"img"` 字段获得值。但有些时候，我们希望这些变换处理数据字典中其他字段中的图像，比如 `"gt_img"` 字段。
 
 如果配合注册器和配置文件使用的话，在配置文件中数据集的 `pipeline` 中如下例使用字段映射包装：
 
 ```python
 pipeline = [
     ...
-    dict(type='ApplyToMapped',
+    dict(type='KeyMapper',
         mapping={'img': 'gt_img'},  # 将 "gt_img" 字段映射至 "img" 字段
         auto_remap=True,  # 在完成变换后，将 "img" 重映射回 "gt_img" 字段
         transforms=[
@@ -198,11 +198,11 @@ pipeline = [
 ]
 ```
 
-### 多目标扩展（ApplyToMultiple）
+### 多目标扩展（TransformBroadcaster）
 
-通常，一个数据变换类只会从一个固定的字段读取操作目标。虽然我们也可以使用 `ApplyToMapped` 来改变读取的字段，但无法将变换一次性应用于多个字段的数据。为了实现这一功能，我们需要借助多目标扩展包装（`ApplyToMultiple`）。
+通常，一个数据变换类只会从一个固定的字段读取操作目标。虽然我们也可以使用 `KeyMapper` 来改变读取的字段，但无法将变换一次性应用于多个字段的数据。为了实现这一功能，我们需要借助多目标扩展包装（`TransformBroadcaster`）。
 
-多目标扩展包装（`ApplyToMultiple`）有两个用法，一是将数据变换作用于指定的多个字段，二是将数据变换作用于某个字段下的一组目标中。
+多目标扩展包装（`TransformBroadcaster`）有两个用法，一是将数据变换作用于指定的多个字段，二是将数据变换作用于某个字段下的一组目标中。
 
 1. 应用于多个字段
 
@@ -210,7 +210,7 @@ pipeline = [
 
    ```python
    pipeline = [
-       dict(type='ApplyToMultiple',
+       dict(type='TransformBroadcaster',
            # 分别应用于 "lq" 和 "gt" 两个字段，并将二者应设置 "img" 字段
            mapping={'img': ['lq', 'gt']},
            # 在完成变换后，将 "img" 字段重映射回原先的字段
@@ -231,7 +231,7 @@ pipeline = [
 
    ```python
    pipeline = [
-       dict(type='ApplyToMultiple',
+       dict(type='TransformBroadcaster',
            # 将 "images" 字段下的每张图片映射至 "img" 字段
            mapping={'img': 'images'},
            # 在完成变换后，将 "img" 字段下的图片重映射回 "images" 字段的列表中
@@ -245,7 +245,7 @@ pipeline = [
    ]
    ```
 
-在 `ApplyToMultiple` 中，我们提供了 `share_random_param` 选项来支持在多次数据变换中共享随机状态。例如，在超分辨率任务中，我们希望将随机变换**同步**作用于低分辨率图像和原始图像。如果我们希望在自定义的数据变换类中使用这一功能，我们需要在类中标注哪些随机变量是支持共享的。
+在 `TransformBroadcaster` 中，我们提供了 `share_random_param` 选项来支持在多次数据变换中共享随机状态。例如，在超分辨率任务中，我们希望将随机变换**同步**作用于低分辨率图像和原始图像。如果我们希望在自定义的数据变换类中使用这一功能，我们需要在类中标注哪些随机变量是支持共享的。
 
 以上文中的 `MyFlip` 为例，我们希望以一定的概率随机执行翻转：
 
@@ -271,4 +271,4 @@ class MyRandomFlip(BaseTransform):
         return results
 ```
 
-通过 `cache_randomness` 装饰器，方法返回值 `flip` 被标注为一个支持共享的随机变量。进而，在 `ApplyToMultiple` 对多个目标的变换中，这一变量的值都会保持一致。
+通过 `cache_randomness` 装饰器，方法返回值 `flip` 被标注为一个支持共享的随机变量。进而，在 `TransformBroadcaster` 对多个目标的变换中，这一变量的值都会保持一致。

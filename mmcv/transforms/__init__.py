@@ -4,14 +4,14 @@ from .loading import LoadAnnotation, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomFlip, RandomGrayscale, RandomMultiscaleResize,
                          RandomResize, Resize)
-from .wrappers import ApplyToMapped, ApplyToMultiple, Compose, RandomChoice
+from .wrappers import Compose, KeyMapper, RandomChoice, TransformBroadcaster
 
 try:
     import torch  # noqa: F401
 except ImportError:
     __all__ = [
-        'TRANSFORMS', 'ApplyToMultiple', 'Compose', 'RandomChoice',
-        'ApplyToMapped', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
+        'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
+        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
         'Resize', 'Pad', 'RandomFlip', 'RandomMultiscaleResize', 'CenterCrop',
         'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
     ]
@@ -19,8 +19,8 @@ else:
     from .formatting import ImageToTensor, ToTensor, to_tensor
 
     __all__ = [
-        'TRANSFORMS', 'ApplyToMultiple', 'Compose', 'RandomChoice',
-        'ApplyToMapped', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
+        'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
+        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
         'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomMultiscaleResize', 'CenterCrop',
         'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
