@@ -946,7 +946,7 @@ class RandomMultiscaleResize(BaseTransform):
         self.resize_cfg = resize_cfg
 
     @staticmethod
-    def random_select(scales: List[Tuple]) -> Tuple[Tuple, int]:
+    def random_select(scales: List[Tuple]) -> Tuple[tuple, int]:
         """Randomly select an img_scale from given candidates.
 
         Args:

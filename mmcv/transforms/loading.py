@@ -210,7 +210,7 @@ class LoadAnnotation(BaseTransform):
             gt_bboxes_labels.append(instance['bbox_label'])
         results['gt_bboxes_labels'] = np.array(gt_bboxes_labels)
 
-    def _load_semantic_seg(self, results: dict) -> None:
+    def _load_seg_map(self, results: dict) -> None:
         """Private function to load semantic segmentation annotations.
 
         Args:
@@ -255,7 +255,7 @@ class LoadAnnotation(BaseTransform):
         if self.with_label:
             self._load_labels(results)
         if self.with_seg:
-            self._load_semantic_seg(results)
+            self._load_seg_map(results)
         if self.with_keypoints:
             self._load_kps(results)
         return results
