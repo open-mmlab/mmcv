@@ -1224,14 +1224,14 @@ class RandomResize(BaseTransform):
     - if ``scale`` is a list of tuple, the first value of the target scale is
       sampled from [``scale[0][0]``, ``scale[1][0]``] uniformally and the
       second value of the target scale is sampled from
-      [``scale[0][1]``, ``scale[1][1]``] uniformally. Following the order of
-      weight and height in cv2, scale[i][0] is for width, and scale[i][1] is
-      for height.
+      [``scale[0][1]``, ``scale[1][1]``] uniformally. Following the resize
+      order of weight and height in cv2, scale[i][0] is for width, and
+      scale[i][1] is for height.
     - if ``scale`` is a tuple, the first and second values of the target scale
       is equal to the first and second values of ``scale`` multiplied by a
       value sampled from [``ratio_range[0]``, ``ratio_range[1]``] uniformally.
-      Following the order of weight and height in cv2, ratio_range[0] is for
-      width, and ratio_range[1] is for height.
+      Following the resize order of weight and height in cv2, ratio_range[0] is
+      for width, and ratio_range[1] is for height.
 
     Required Keys:
 
