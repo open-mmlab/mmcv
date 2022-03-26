@@ -556,7 +556,7 @@ class Config:
 
     def dump(self, file=None):
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
-        if self.filename.endswith('.py'):
+        if file is not None and file.endswith('.py'):
             if file is None:
                 return self.pretty_text
             else:
@@ -565,7 +565,7 @@ class Config:
         else:
             import mmcv
             if file is None:
-                file_format = self.filename.split('.')[-1]
+                file_format = file.split('.')[-1]
                 return mmcv.dump(cfg_dict, file_format=file_format)
             else:
                 mmcv.dump(cfg_dict, file)
