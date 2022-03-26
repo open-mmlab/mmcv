@@ -545,9 +545,9 @@ class CenterCrop(BaseTransform):
             # set gt_kepoints out of the result image invisible
             height, width = results['img'].shape[:2]
             valid_pos = (gt_keypoints[:, :, 0] >=
-                          0) * (gt_keypoints[:, :, 0] <
-                                width) * (gt_keypoints[:, :, 1] >= 0) * (
-                                    gt_keypoints[:, :, 1] < height)
+                         0) * (gt_keypoints[:, :, 0] <
+                               width) * (gt_keypoints[:, :, 1] >= 0) * (
+                                   gt_keypoints[:, :, 1] < height)
             gt_keypoints[:, :, 2] = np.where(valid_pos, gt_keypoints[:, :, 2],
                                              0)
             gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
