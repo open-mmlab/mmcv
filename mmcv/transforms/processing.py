@@ -457,10 +457,7 @@ class CenterCrop(BaseTransform):
     def __init__(self,
                  crop_size: Union[int, Tuple[int, int]],
                  auto_pad: bool = False,
-                 pad_cfg: dict = dict(
-                     type='Pad',
-                     pad_val=dict(img=0, seg=255),
-                     padding_mode=None),
+                 pad_cfg: dict = dict(type='Pad'),
                  clip_object_border: bool = True) -> None:
         super().__init__()
         assert isinstance(crop_size, int) or (
@@ -912,7 +909,7 @@ class RandomChoiceResize(BaseTransform):
 
     def __init__(
         self,
-        scales: Union[list, Tuple],
+        scales: Sequence[Union[int, Tuple]],
         resize_cfg: dict = dict(type='Resize')
     ) -> None:
         super().__init__()
@@ -924,8 +921,8 @@ class RandomChoiceResize(BaseTransform):
         self.resize_cfg = resize_cfg
 
     @cacheable_method
-    def _random_select(self) -> Tuple[Number, int]:
-        """Randomly select an img_scale from given candidates.
+    def _random_select(self) -> Tuple[int, int]:
+        """Randomly select an scale from given candidates.
 
         Returns:
             (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
