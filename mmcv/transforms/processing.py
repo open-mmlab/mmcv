@@ -742,12 +742,11 @@ class MultiScaleFlipAug(BaseTransform):
     .. code-block::
 
         dict(
-            img=[...],
-            img_shape=[...],
-            scale=[(1333, 400), (1333, 400), (1333, 800), (1333, 800)]
-            allow_flip=[False, True, False, True]
-            ...
+            inputs=[...],
+            data_samples=[...]
         )
+
+    Where the length of ``inputs`` and ``data_samples`` are both 4.
 
     Required Keys:
 
@@ -823,8 +822,8 @@ class MultiScaleFlipAug(BaseTransform):
             into a list.
         """
 
-        aug_data = []
-        input_data = []
+        data_samples = []
+        inputs = []
         flip_args = [(False, '')]
         if self.allow_flip:
             flip_args += [(True, direction)
@@ -846,11 +845,11 @@ class MultiScaleFlipAug(BaseTransform):
                 resize_flip = Compose(_resize_flip)
                 _results = results.copy()
                 _results = resize_flip(_results)
-                input_image, data_sample = self.transforms(_results)
+                packed_results = self.transforms(_results)
 
-                input_data.append(input_image)
-                aug_data.append(data_sample)
-        return input_data, aug_data
+                inputs.append(packed_results['inputs'])
+                data_samples.append(packed_results['data_sample'])
+        return dict(inputs=inputs, data_sample=data_samples)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__

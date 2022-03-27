@@ -538,14 +538,14 @@ class TestRandomGrayscale:
 
 
 @TRANSFORMS.register_module()
-class MockFormatBundle(BaseTransform):
+class MockPackTaskInputs(BaseTransform):
 
     def __init__(self) -> None:
         super().__init__()
 
     def transform(self, results):
-        data_sample = Mock()
-        return results['img'], data_sample
+        packed_results = dict(inputs=results['img'], data_sample=Mock())
+        return packed_results
 
 
 class TestMultiScaleFlipAug:
@@ -578,30 +578,28 @@ class TestMultiScaleFlipAug:
         # test with empty transforms
         transform = dict(
             type='MultiScaleFlipAug',
-            transforms=[dict(type='MockFormatBundle')],
+            transforms=[dict(type='MockPackTaskInputs')],
             img_scale=[(1333, 800), (800, 600), (640, 480)],
             allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
-        input, data_sample = multi_scale_flip_aug_module(results)
-        assert len(input) == 12
-        assert len(data_sample) == 12
+        packed_results = multi_scale_flip_aug_module(results)
+        assert len(packed_results['inputs']) == 12
 
         # test with allow_flip=False
         transform = dict(
             type='MultiScaleFlipAug',
-            transforms=[dict(type='MockFormatBundle')],
+            transforms=[dict(type='MockPackTaskInputs')],
             img_scale=[(1333, 800), (800, 600), (640, 480)],
             allow_flip=False,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
-        input, data_sample = multi_scale_flip_aug_module(results)
-        assert len(input) == 3
-        assert len(data_sample) == 3
+        packed_results = multi_scale_flip_aug_module(results)
+        assert len(packed_results['inputs']) == 3
 
         # test with transforms
         img_norm_cfg = dict(
@@ -612,7 +610,7 @@ class TestMultiScaleFlipAug:
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockFormatBundle')
+            dict(type='MockPackTaskInputs')
         ]
         transform = dict(
             type='MultiScaleFlipAug',
@@ -623,9 +621,8 @@ class TestMultiScaleFlipAug:
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
-        input, data_sample = multi_scale_flip_aug_module(results)
-        assert len(input) == 12
-        assert len(data_sample) == 12
+        packed_results = multi_scale_flip_aug_module(results)
+        assert len(packed_results['inputs']) == 12
 
         # test with scale_factor
         img_norm_cfg = dict(
@@ -636,20 +633,19 @@ class TestMultiScaleFlipAug:
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockFormatBundle')
+            dict(type='MockPackTaskInputs')
         ]
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=transforms_cfg,
             scale_factor=[0.5, 1., 2.],
-            flip=True,
+            allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
-        input, data_sample = multi_scale_flip_aug_module(results)
-        assert len(input) == 12
-        assert len(data_sample) == 12
+        packed_results = multi_scale_flip_aug_module(results)
+        assert len(packed_results['inputs']) == 12
 
         # test no resize
         img_norm_cfg = dict(
@@ -660,19 +656,18 @@ class TestMultiScaleFlipAug:
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockFormatBundle')
+            dict(type='MockPackTaskInputs')
         ]
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=transforms_cfg,
-            flip=True,
+            allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
         results = dict()
         results['img'] = copy.deepcopy(self.original_img)
-        input, data_sample = multi_scale_flip_aug_module(results)
-        assert len(input) == 4
-        assert len(data_sample) == 4
+        packed_results = multi_scale_flip_aug_module(results)
+        assert len(packed_results['inputs']) == 4
 
 
 class TestRandomChoiceResize:
