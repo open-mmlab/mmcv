@@ -9,6 +9,7 @@ import mmcv
 from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
+from .utils import cacheable_method
 from .wrappers import Compose
 
 Number = Union[int, float]
@@ -548,9 +549,9 @@ class CenterCrop(BaseTransform):
             # set gt_kepoints out of the result image invisible
             height, width = results['img'].shape[:2]
             valid_pos = (gt_keypoints[:, :, 0] >=
-                          0) * (gt_keypoints[:, :, 0] <
-                                width) * (gt_keypoints[:, :, 1] >= 0) * (
-                                    gt_keypoints[:, :, 1] < height)
+                         0) * (gt_keypoints[:, :, 0] <
+                               width) * (gt_keypoints[:, :, 1] >= 0) * (
+                                   gt_keypoints[:, :, 1] < height)
             gt_keypoints[:, :, 2] = np.where(valid_pos, gt_keypoints[:, :, 2],
                                              0)
             gt_keypoints[:, :, 0] = np.clip(gt_keypoints[:, :, 0], 0,
@@ -1129,6 +1130,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
+    @cacheable_method
     def _choose_direction(self) -> str:
         """Choose the flip direction according to `prob` and `direction`"""
         if isinstance(self.direction,
@@ -1173,10 +1175,9 @@ class RandomFlip(BaseTransform):
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip segs
-        if results.get('gt_semantic_seg', None) is not None:
-            results['gt_semantic_seg'] = mmcv.imflip(
-                results['gt_semantic_seg'],
-                direction=results['flip_direction'])
+        if results.get('gt_seg_map', None) is not None:
+            results['gt_seg_map'] = mmcv.imflip(
+                results['gt_seg_map'], direction=results['flip_direction'])
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
@@ -1217,18 +1218,20 @@ class RandomFlip(BaseTransform):
 class RandomResize(BaseTransform):
     """Random resize images & bbox & keypoints.
 
-    Added or updated keys: scale, scale_factor, keep_ratio, img, height, width,
-    gt_bboxes, gt_semantic_seg, and gt_keypoints.
     How to choose the target scale to resize the image will follow the rules
     below:
 
-    - if `scale` is a list of tuple, the first value of the target scale is
-      sampled from [`scale[0][0]`, `scale[1][0]`] uniformally and the second
-      value of the target scale is sampled from [`scale[0][1]`, `scale[1][1]`]
-      uniformally.
-    - if `scale` is a tuple, the first and second values of the target scale
-      is equal to the first and second values of `scale` multiplied by a value
-      sampled from [`ratio_range[0]`, `ratio_range[1]`] uniformally.
+    - if ``scale`` is a list of tuple, the first value of the target scale is
+      sampled from [``scale[0][0]``, ``scale[1][0]``] uniformally and the
+      second value of the target scale is sampled from
+      [``scale[0][1]``, ``scale[1][1]``] uniformally. Following the resize
+      order of weight and height in cv2, scale[i][0] is for width, and
+      scale[i][1] is for height.
+    - if ``scale`` is a tuple, the first and second values of the target scale
+      is equal to the first and second values of ``scale`` multiplied by a
+      value sampled from [``ratio_range[0]``, ``ratio_range[1]``] uniformally.
+      Following the resize order of weight and height in cv2, ratio_range[0] is
+      for width, and ratio_range[1] is for height.
 
     Required Keys:
 
@@ -1251,50 +1254,37 @@ class RandomResize(BaseTransform):
     - keep_ratio
 
     Args:
-        scale (tuple or list[tuple], optional): Images scales for resizing.
+        scale (tuple or list[tuple]): Images scales for resizing.
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
-        keep_ratio (bool): Whether to keep the aspect ratio when resizing the
-            image. Defaults to True.
-        clip_object_border (bool): Whether to clip the objects
-            outside the border of the image. In some dataset like MOT17, the
-            gt bboxes are allowed to cross the border of images. Therefore,
-            we don't need to clip the gt bboxes in these cases.
-            Defaults to True.
-        backend (str): Image resize backend, choices are 'cv2' and 'pillow'.
-            These two backends generates slightly different results. Defaults
-            to 'cv2'.
-        interpolation (str): How to interpolate the original image when
-            resizing. Defaults to 'bilinear'.
+        resize_cfg (dict): Config to initialize a ``Resize`` transform.
+            Defaults to dict(type='Resize', keep_ratio=True,
+            clip_object_border=True, backend='cv2', interpolation='bilinear').
     """
 
-    def __init__(self,
-                 scale: Union[Tuple[int, int], List[Tuple[int, int]]] = None,
-                 ratio_range: Tuple[float, float] = None,
-                 keep_ratio: bool = True,
-                 clip_object_border: bool = True,
-                 backend: str = 'cv2',
-                 interpolation: str = 'bilinear') -> None:
-
-        assert scale is not None
+    def __init__(
+        self,
+        scale: Union[Tuple[int, int], List[Tuple[int, int]]],
+        ratio_range: Tuple[float, float] = None,
+        resize_cfg: dict = dict(
+            type='Resize',
+            keep_ratio=True,
+            clip_object_border=True,
+            backend='cv2',
+            interpolation='bilinear')
+    ) -> None:
 
         self.scale = scale
         self.ratio_range = ratio_range
-        self.keep_ratio = keep_ratio
-        self.clip_object_border = clip_object_border
-        self.backend = backend
-        self.interpolation = interpolation
+        self.resize_cfg = resize_cfg
 
         # create a empty Reisize object
-        self.resize = Resize(0)
-        self.resize.keep_ratio = keep_ratio
-        self.resize.clip_object_border = clip_object_border
-        self.resize.backend = backend
-        self.resize.interpolation = interpolation
+        self.resize_cfg.update(dict(scale=0))
+        self.resize = TRANSFORMS.build(self.resize_cfg)
 
     @staticmethod
-    def _random_sample(scales: Sequence[Tuple[int, int]]) -> Tuple[int, int]:
+    def _random_sample(scales: Sequence[Tuple[int, int]]) -> tuple:
         """Private function to randomly sample a scale from a list of tuples.
 
         Args:
@@ -1302,7 +1292,7 @@ class RandomResize(BaseTransform):
                 There must be two tuples in scales, which specify the lower
                 and upper bound of image scales.
         Returns:
-            tuple: Returns the target scale.
+            tuple: The targeted scale of the image to be resized.
         """
 
         assert mmcv.is_list_of(scales, tuple) and len(scales) == 2
@@ -1314,8 +1304,8 @@ class RandomResize(BaseTransform):
         return scale
 
     @staticmethod
-    def _random_sample_ratio(
-            scale: tuple, ratio_range: Tuple[float, float]) -> Tuple[int, int]:
+    def _random_sample_ratio(scale: tuple, ratio_range: Tuple[float,
+                                                              float]) -> tuple:
         """Private function to randomly sample a scale from a tuple.
 
         A ratio will be randomly sampled from the range specified by
@@ -1326,7 +1316,7 @@ class RandomResize(BaseTransform):
             ratio_range (tuple[float]): The minimum and maximum ratio to scale
                 the ``scale``.
         Returns:
-            tuple: Returns the target scale.
+            tuple: The targeted scale of the image to be resized.
         """
 
         assert isinstance(scale, tuple) and len(scale) == 2
@@ -1336,15 +1326,13 @@ class RandomResize(BaseTransform):
         scale = int(scale[0] * ratio), int(scale[1] * ratio)
         return scale
 
-    def _random_scale(self, results: dict) -> None:
+    @cacheable_method
+    def _random_scale(self) -> tuple:
         """Private function to randomly sample an scale according to the type
-        of `scale`.
+        of ``scale``.
 
-        Args:
-            results (dict): Result dict from :obj:`dataset`.
         Returns:
-            dict: One new key 'scale`is added into ``results``,
-            which would be used by subsequent pipelines.
+            tuple: The targeted scale of the image to be resized.
         """
 
         if isinstance(self.scale, tuple):
@@ -1357,7 +1345,7 @@ class RandomResize(BaseTransform):
             raise NotImplementedError(f"Do not support sampling function \
                                         for '{self.scale}'")
 
-        results['scale'] = scale
+        return scale
 
     def transform(self, results: dict) -> dict:
         """Transform function to resize images, bounding boxes, semantic
@@ -1366,11 +1354,11 @@ class RandomResize(BaseTransform):
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
-            dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
-            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
-            and 'keep_ratio' keys are updated in result dict.
+            dict: Resized results, ``img``, ``gt_bboxes``, ``gt_semantic_seg``,
+            ``gt_keypoints``, ``scale``, ``scale_factor``, ``height``,
+            ``width``, and ``keep_ratio`` keys are updated in result dict.
         """
-        self._random_scale(results)
+        results['scale'] = self._random_scale()
         self.resize.scale = results['scale']
         results = self.resize.transform(results)
         return results
@@ -1379,8 +1367,5 @@ class RandomResize(BaseTransform):
         repr_str = self.__class__.__name__
         repr_str += f'(scale={self.scale}, '
         repr_str += f'ratio_range={self.ratio_range}, '
-        repr_str += f'keep_ratio={self.keep_ratio}, '
-        repr_str += f'bbox_clip_border={self.clip_object_border}, '
-        repr_str += f'backend={self.backend}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f'resize_cfg={self.resize_cfg})'
         return repr_str
