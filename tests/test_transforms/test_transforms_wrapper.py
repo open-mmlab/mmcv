@@ -6,9 +6,9 @@ import pytest
 
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import cache_random_params, cacheable_method
-from mmcv.transforms.wrappers import (ApplyToMultiple, Compose, RandomChoice,
-                                      Remap)
+from mmcv.transforms.utils import cache_random_params, cache_randomness
+from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomChoice,
+                                      TransformBroadcaster)
 
 
 @TRANSFORMS.register_module()
@@ -45,15 +45,18 @@ class AddToValue(BaseTransform):
 class RandomAddToValue(AddToValue):
     """Dummy transform to add a random addend to results['value']"""
 
-    def __init__(self) -> None:
+    def __init__(self, repeat=1) -> None:
         super().__init__(addend=None)
+        self.repeat = repeat
 
-    @cacheable_method
+    @cache_randomness
     def get_random_addend(self):
         return np.random.rand()
 
     def transform(self, results):
-        return self.add(results, addend=self.get_random_addend())
+        for _ in range(self.repeat):
+            results = self.add(results, addend=self.get_random_addend())
+        return results
 
 
 @TRANSFORMS.register_module()
@@ -100,8 +103,8 @@ def test_cache_random_parameters():
     transform = RandomAddToValue()
 
     # Case 1: cache random parameters
-    assert hasattr(RandomAddToValue, '_cacheable_methods')
-    assert 'get_random_addend' in RandomAddToValue._cacheable_methods
+    assert hasattr(RandomAddToValue, '_methods_with_randomness')
+    assert 'get_random_addend' in RandomAddToValue._methods_with_randomness
 
     with cache_random_params(transform):
         results_1 = transform(dict(value=0))
@@ -114,12 +117,18 @@ def test_cache_random_parameters():
     with pytest.raises(AssertionError):
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
-    # Case 3: invalid use of cacheable methods
+    # Case 3: allow to invoke random method 0 times
+    transform = RandomAddToValue(repeat=0)
+    with cache_random_params(transform):
+        _ = transform(dict(value=0))
+
+    # Case 4: NOT allow to invoke random method >1 times
+    transform = RandomAddToValue(repeat=2)
     with pytest.raises(RuntimeError):
         with cache_random_params(transform):
-            _ = transform.get_random_addend()
+            _ = transform(dict(value=0))
 
-    # Case 4: apply on nested transforms
+    # Case 5: apply on nested transforms
     transform = Compose([RandomAddToValue()])
     with cache_random_params(transform):
         results_1 = transform(dict(value=0))
@@ -127,13 +136,13 @@ def test_cache_random_parameters():
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
 
-def test_remap():
+def test_apply_to_mapped():
 
     # Case 1: simple remap
-    pipeline = Remap(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
-        input_mapping=dict(value='v_in'),
-        output_mapping=dict(value='v_out'))
+        mapping=dict(value='v_in'),
+        remapping=dict(value='v_out'))
 
     results = dict(value=0, v_in=1)
     results = pipeline(results)
@@ -143,10 +152,10 @@ def test_remap():
     np.testing.assert_equal(results['v_out'], 2)
 
     # Case 2: collecting list
-    pipeline = Remap(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        input_mapping=dict(value=['v_in_1', 'v_in_2']),
-        output_mapping=dict(value=['v_out_1', 'v_out_2']))
+        mapping=dict(value=['v_in_1', 'v_in_2']),
+        remapping=dict(value=['v_out_1', 'v_out_2']))
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a list'):
@@ -159,10 +168,10 @@ def test_remap():
     np.testing.assert_equal(results['v_out_2'], 4)
 
     # Case 3: collecting dict
-    pipeline = Remap(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        input_mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
-        output_mapping=dict(value=dict(v1='v_out_1', v2='v_out_2')))
+        mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
+        remapping=dict(value=dict(v1='v_out_1', v2='v_out_2')))
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a dict'):
@@ -174,11 +183,11 @@ def test_remap():
     np.testing.assert_equal(results['v_out_1'], 3)
     np.testing.assert_equal(results['v_out_2'], 4)
 
-    # Case 4: collecting list with inplace mode
-    pipeline = Remap(
+    # Case 4: collecting list with auto_remap mode
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        input_mapping=dict(value=['v_in_1', 'v_in_2']),
-        inplace=True)
+        mapping=dict(value=['v_in_1', 'v_in_2']),
+        auto_remap=True)
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a list'):
@@ -188,11 +197,11 @@ def test_remap():
     np.testing.assert_equal(results['v_in_1'], 3)
     np.testing.assert_equal(results['v_in_2'], 4)
 
-    # Case 5: collecting dict with inplace mode
-    pipeline = Remap(
+    # Case 5: collecting dict with auto_remap mode
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        input_mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
-        inplace=True)
+        mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
+        auto_remap=True)
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a dict'):
@@ -202,11 +211,11 @@ def test_remap():
     np.testing.assert_equal(results['v_in_1'], 3)
     np.testing.assert_equal(results['v_in_2'], 4)
 
-    # Case 6: nested collection with inplace mode
-    pipeline = Remap(
+    # Case 6: nested collection with auto_remap mode
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        input_mapping=dict(value=['v1', dict(v2=['v21', 'v22'], v3='v3')]),
-        inplace=True)
+        mapping=dict(value=['v1', dict(v2=['v21', 'v22'], v3='v3')]),
+        auto_remap=True)
     results = dict(value=0, v1=1, v21=2, v22=3, v3=4)
 
     with pytest.warns(UserWarning, match='value is a list'):
@@ -218,27 +227,20 @@ def test_remap():
     np.testing.assert_equal(results['v22'], 5)
     np.testing.assert_equal(results['v3'], 6)
 
-    # Case 7: `strict` must be True if `inplace` is set True
+    # Case 7: output_map must be None if `auto_remap` is set True
     with pytest.raises(ValueError):
-        pipeline = Remap(
-            transforms=[AddToValue(addend=2)],
-            input_mapping=dict(value=['v_in_1', 'v_in_2']),
-            inplace=True,
-            strict=False)
-
-    # Case 8: output_map must be None if `inplace` is set True
-    with pytest.raises(ValueError):
-        pipeline = Remap(
+        pipeline = KeyMapper(
             transforms=[AddToValue(addend=1)],
-            input_mapping=dict(value='v_in'),
-            output_mapping=dict(value='v_out'),
-            inplace=True)
+            mapping=dict(value='v_in'),
+            remapping=dict(value='v_out'),
+            auto_remap=True)
 
-    # Case 9: non-strict input mapping
-    pipeline = Remap(
+    # Case 8: allow_nonexist_keys8
+    pipeline = KeyMapper(
         transforms=[SumTwoValues()],
-        input_mapping=dict(num_1='a', num_2='b'),
-        strict=False)
+        mapping=dict(num_1='a', num_2='b'),
+        auto_remap=False,
+        allow_nonexist_keys=True)
 
     results = pipeline(dict(a=1, b=2))
     np.testing.assert_equal(results['sum'], 3)
@@ -246,11 +248,17 @@ def test_remap():
     results = pipeline(dict(a=1))
     assert np.isnan(results['sum'])
 
+    # Case 9: use wrapper as a transform
+    transform = KeyMapper(mapping=dict(b='a'), auto_remap=False)
+    results = transform(dict(a=1))
+    # note that the original key 'a' will not be removed
+    assert results == dict(a=1, b=1)
+
     # Test basic functions
-    pipeline = Remap(
+    pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
-        input_mapping=dict(value='v_in'),
-        output_mapping=dict(value='v_out'))
+        mapping=dict(value='v_in'),
+        remapping=dict(value='v_out'))
 
     # __iter__
     for _ in pipeline:
@@ -263,10 +271,10 @@ def test_remap():
 def test_apply_to_multiple():
 
     # Case 1: apply to list in results
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
-        input_mapping=dict(value='values'),
-        inplace=True)
+        mapping=dict(value='values'),
+        auto_remap=True)
     results = dict(values=[1, 2])
 
     results = pipeline(results)
@@ -274,10 +282,10 @@ def test_apply_to_multiple():
     np.testing.assert_equal(results['values'], [2, 3])
 
     # Case 2: apply to multiple keys
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
-        input_mapping=dict(value=['v_1', 'v_2']),
-        inplace=True)
+        mapping=dict(value=['v_1', 'v_2']),
+        auto_remap=True)
     results = dict(v_1=1, v_2=2)
 
     results = pipeline(results)
@@ -286,10 +294,11 @@ def test_apply_to_multiple():
     np.testing.assert_equal(results['v_2'], 3)
 
     # Case 3: apply to multiple groups of keys
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()],
-        input_mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
-        output_mapping=dict(sum=['a', 'b']))
+        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
+        remapping=dict(sum=['a', 'b']),
+        auto_remap=False)
 
     results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
     results = pipeline(results)
@@ -299,18 +308,19 @@ def test_apply_to_multiple():
 
     # Case 4: inconsistent sequence length
     with pytest.raises(ValueError):
-        pipeline = ApplyToMultiple(
+        pipeline = TransformBroadcaster(
             transforms=[SumTwoValues()],
-            input_mapping=dict(num_1='list_1', num_2='list_2'))
+            mapping=dict(num_1='list_1', num_2='list_2'),
+            auto_remap=False)
 
         results = dict(list_1=[1, 2], list_2=[1, 2, 3])
         _ = pipeline(results)
 
     # Case 5: share random parameter
-    pipeline = ApplyToMultiple(
+    pipeline = TransformBroadcaster(
         transforms=[RandomAddToValue()],
-        input_mapping=dict(value='values'),
-        inplace=True,
+        mapping=dict(value='values'),
+        auto_remap=True,
         share_random_params=True)
 
     results = dict(values=[0, 0])
@@ -326,27 +336,27 @@ def test_randomchoice():
 
     # Case 1: given probability
     pipeline = RandomChoice(
-        pipelines=[[AddToValue(addend=1.0)], [AddToValue(addend=2.0)]],
-        pipeline_probs=[1.0, 0.0])
+        transforms=[[AddToValue(addend=1.0)], [AddToValue(addend=2.0)]],
+        prob=[1.0, 0.0])
 
     results = pipeline(dict(value=1))
     np.testing.assert_equal(results['value'], 2.0)
 
     # Case 2: default probability
-    pipeline = RandomChoice(pipelines=[[AddToValue(
+    pipeline = RandomChoice(transforms=[[AddToValue(
         addend=1.0)], [AddToValue(addend=2.0)]])
 
     _ = pipeline(dict(value=1))
 
-    # Case 3: nested RandomChoice in ApplyToMultiple
-    pipeline = ApplyToMultiple(
+    # Case 3: nested RandomChoice in TransformBroadcaster
+    pipeline = TransformBroadcaster(
         transforms=[
             RandomChoice(
-                pipelines=[[AddToValue(addend=1.0)],
-                           [AddToValue(addend=2.0)]], ),
+                transforms=[[AddToValue(addend=1.0)],
+                            [AddToValue(addend=2.0)]], ),
         ],
-        input_mapping=dict(value='values'),
-        inplace=True,
+        mapping=dict(value='values'),
+        auto_remap=True,
         share_random_params=True)
 
     results = dict(values=[0 for _ in range(10)])
@@ -357,10 +367,10 @@ def test_randomchoice():
 
 
 def test_utils():
-    # Test cacheable_method: normal case
+    # Test cache_randomness: normal case
     class DummyTransform(BaseTransform):
 
-        @cacheable_method
+        @cache_randomness
         def func(self):
             return np.random.rand()
 
@@ -373,21 +383,21 @@ def test_utils():
     with cache_random_params(transform):
         _ = transform({})
 
-    # Test cacheable_method: invalid function type
+    # Test cache_randomness: invalid function type
     with pytest.raises(TypeError):
 
         class DummyTransform():
 
-            @cacheable_method
+            @cache_randomness
             @staticmethod
             def func():
                 return np.random.rand()
 
-    # Test cacheable_method: invalid function argument list
+    # Test cache_randomness: invalid function argument list
     with pytest.raises(TypeError):
 
         class DummyTransform():
 
-            @cacheable_method
+            @cache_randomness
             def func(cls):
                 return np.random.rand()

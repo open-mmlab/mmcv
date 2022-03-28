@@ -8,7 +8,10 @@ import numpy as np
 import mmcv
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .utils import cache_random_params, cacheable_method
+from .utils import cache_random_params, cache_randomness
+
+# Define type of transform or transform config
+Transform = Union[Dict, Callable[[Dict], Dict]]
 
 # Indicator for required but missing keys in results
 NotInResults = object()
@@ -46,8 +49,9 @@ class Compose(BaseTransform):
         >>> ]
     """
 
-    def __init__(self, transforms: List[Union[Dict, Callable[[Dict], Dict]]]):
-        assert isinstance(transforms, Sequence)
+    def __init__(self, transforms: Union[Transform, List[Transform]]):
+        if not isinstance(transforms, list):
+            transforms = [transforms]
         self.transforms = []
         for transform in transforms:
             if isinstance(transform, dict):
@@ -88,42 +92,42 @@ class Compose(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class Remap(BaseTransform):
-    """A transform wrapper to remap and reorganize the input/output of the
+class KeyMapper(BaseTransform):
+    """A transform wrapper to map and reorganize the input/output of the
     wrapped transforms (or sub-pipeline).
 
     Args:
-        transforms (list[dict | callable]): Sequence of transform object or
-            config dict to be wrapped.
-        input_mapping (dict): A dict that defines the input key mapping.
+        transforms (list[dict | callable], optional): Sequence of transform
+            object or config dict to be wrapped.
+        mapping (dict): A dict that defines the input key mapping.
             The keys corresponds to the inner key (i.e., kwargs of the
-            `transform` method), and should be string type. The values
+            ``transform`` method), and should be string type. The values
             corresponds to the outer keys (i.e., the keys of the
             data/results), and should have a type of string, list or dict.
             None means not applying input mapping. Default: None.
-        output_mapping (dict): A dict that defines the output key mapping.
+        remapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
-            `input_mapping`. Default: None.
-        inplace (bool): If True, an inverse of the input_mapping will be used
-            as the output_mapping. Note that if inplace is set True,
-            output_mapping should be None and strict should be True.
+            ``mapping``. Default: None.
+        auto_remap (bool, optional): If True, an inverse of the mapping will
+            be used as the remapping. If auto_remap is not given, it will be
+            automatically set True if 'remapping' is not given, and vice
+            versa. Default: None.
+        allow_nonexist_keys (bool): If False, the outer keys in the mapping
+            must exist in the input data, or an exception will be raised.
             Default: False.
-        strict (bool): If True, the outer keys in the input_mapping must exist
-            in the input data, or an exception will be raised. If False,
-            the missing keys will be assigned a special value `NotInResults`
-            during input remapping. Default: True.
 
     Examples:
-        >>> # Example 1: Remap 'gt_img' to 'img'
+        >>> # Example 1: KeyMapper 'gt_img' to 'img'
         >>> pipeline = [
-        >>>     # Use Remap to convert outer (original) field name 'gt_img'
-        >>>     # to inner (used by inner transforms) filed name 'img'
-        >>>     dict(type='Remap',
-        >>>         input_mapping=dict(img='gt_img'),
-        >>>         # inplace=True means output key mapping is the revert of
+        >>>     # Use KeyMapper to convert outer (original) field name
+        >>>     # 'gt_img' to inner (used by inner transforms) filed name
+        >>>     # 'img'
+        >>>     dict(type='KeyMapper',
+        >>>         mapping=dict(img='gt_img'),
+        >>>         # auto_remap=True means output key mapping is the revert of
         >>>         # the input key mapping, e.g. inner 'img' will be mapped
         >>>         # back to outer 'gt_img'
-        >>>         inplace=True,
+        >>>         auto_remap=True,
         >>>         transforms=[
         >>>             # In all transforms' implementation just use 'img'
         >>>             # as a standard field name
@@ -136,10 +140,10 @@ class Remap(BaseTransform):
         >>>     # The inner field 'imgs' will be a dict with keys 'img_src'
         >>>     # and 'img_tar', whose values are outer fields 'img1' and
         >>>     # 'img2' respectively.
-        >>>     dict(type='Remap',
+        >>>     dict(type='KeyMapper',
         >>>         dict(
-        >>>             type='Remap',
-        >>>             input_mapping=dict(
+        >>>             type='KeyMapper',
+        >>>             mapping=dict(
         >>>                 imgs=dict(
         >>>                     img_src='img1',
         >>>                     img_tar='img2')),
@@ -148,66 +152,67 @@ class Remap(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: List[Union[Dict, Callable[[Dict], Dict]]],
-                 input_mapping: Optional[Dict] = None,
-                 output_mapping: Optional[Dict] = None,
-                 inplace: bool = False,
-                 strict: bool = True):
+                 transforms: Union[Transform, List[Transform]] = None,
+                 mapping: Optional[Dict] = None,
+                 remapping: Optional[Dict] = None,
+                 auto_remap: Optional[bool] = None,
+                 allow_nonexist_keys: bool = False):
 
-        self.inplace = inplace
-        self.strict = strict
-        self.input_mapping = input_mapping
+        self.allow_nonexist_keys = allow_nonexist_keys
+        self.mapping = mapping
 
-        if self.inplace:
-            if not self.strict:
-                raise ValueError('Remap: `strict` must be set True if'
-                                 '`inplace` is set True.')
+        if auto_remap is None:
+            auto_remap = remapping is None
+        self.auto_remap = auto_remap
 
-            if output_mapping is not None:
-                raise ValueError('Remap: `output_mapping` must be None if'
-                                 '`inplace` is set True.')
-            self.output_mapping = input_mapping
+        if self.auto_remap:
+            if remapping is not None:
+                raise ValueError('KeyMapper: ``remapping`` must be None if'
+                                 '`auto_remap` is set True.')
+            self.remapping = mapping
         else:
-            self.output_mapping = output_mapping
+            self.remapping = remapping
 
+        if transforms is None:
+            transforms = []
         self.transforms = Compose(transforms)
 
     def __iter__(self):
         """Allow easy iteration over the transform sequence."""
         return iter(self.transforms)
 
-    def remap_input(self, data: Dict, input_mapping: Dict) -> Dict[str, Any]:
-        """Remap inputs for the wrapped transforms by gathering and renaming
-        data items according to the input_mapping.
+    def map_input(self, data: Dict, mapping: Dict) -> Dict[str, Any]:
+        """KeyMapper inputs for the wrapped transforms by gathering and
+        renaming data items according to the mapping.
 
         Args:
             data (dict): The original input data
-            input_mapping (dict): The input key mapping. See the document of
-                `mmcv.transforms.wrappers.Remap` for details.
+            mapping (dict): The input key mapping. See the document of
+                ``mmcv.transforms.wrappers.KeyMapper`` for details.
 
         Returns:
             dict: The input data with remapped keys. This will be the actual
                 input of the wrapped pipeline.
         """
 
-        def _remap(data, m):
+        def _map(data, m):
             if isinstance(m, dict):
                 # m is a dict {inner_key:outer_key, ...}
-                return {k_in: _remap(data, k_out) for k_in, k_out in m.items()}
+                return {k_in: _map(data, k_out) for k_in, k_out in m.items()}
             if isinstance(m, (tuple, list)):
                 # m is a list or tuple [outer_key1, outer_key2, ...]
                 # This is the case when we collect items from the original
                 # data to form a list or tuple to feed to the wrapped
                 # transforms.
-                return m.__class__(_remap(data, e) for e in m)
+                return m.__class__(_map(data, e) for e in m)
 
             # m is an outer_key
-            if self.strict:
-                return data.get(m)
-            else:
+            if self.allow_nonexist_keys:
                 return data.get(m, NotInResults)
+            else:
+                return data.get(m)
 
-        collected = _remap(data, input_mapping)
+        collected = _map(data, mapping)
         collected = {
             k: v
             for k, v in collected.items() if v is not NotInResults
@@ -219,79 +224,78 @@ class Remap(BaseTransform):
 
         return inputs
 
-    def remap_output(self, data: Dict, output_mapping: Dict) -> Dict[str, Any]:
-        """Remap outputs from the wrapped transforms by gathering and renaming
-        data items according to the output_mapping.
+    def map_output(self, data: Dict, remapping: Dict) -> Dict[str, Any]:
+        """KeyMapper outputs from the wrapped transforms by gathering and
+        renaming data items according to the remapping.
 
         Args:
             data (dict): The output of the wrapped pipeline.
-            output_mapping (dict): The output key mapping. See the document of
-                `mmcv.transforms.wrappers.Remap` for details.
+            remapping (dict): The output key mapping. See the document of
+                ``mmcv.transforms.wrappers.KeyMapper`` for details.
 
         Returns:
             dict: The output with remapped keys.
         """
 
-        def _remap(data, m):
+        def _map(data, m):
             if isinstance(m, dict):
                 assert isinstance(data, dict)
                 results = {}
                 for k_in, k_out in m.items():
                     assert k_in in data
-                    results.update(_remap(data[k_in], k_out))
+                    results.update(_map(data[k_in], k_out))
                 return results
             if isinstance(m, (list, tuple)):
                 assert isinstance(data, (list, tuple))
                 assert len(data) == len(m)
                 results = {}
                 for m_i, d_i in zip(m, data):
-                    results.update(_remap(d_i, m_i))
+                    results.update(_map(d_i, m_i))
                 return results
 
             return {m: data}
 
         # Note that unmapped items are not retained, which is different from
-        # the behavior in remap_input. This is to avoid original data items
+        # the behavior in map_input. This is to avoid original data items
         # being overwritten by intermediate namesakes
-        return _remap(data, output_mapping)
+        return _map(data, remapping)
 
     def transform(self, results: Dict) -> Dict:
 
-        inputs = self.remap_input(results, self.input_mapping)
+        inputs = self.map_input(results, self.mapping)
         outputs = self.transforms(inputs)
 
-        if self.output_mapping:
-            outputs = self.remap_output(outputs, self.output_mapping)
+        if self.remapping:
+            outputs = self.map_output(outputs, self.remapping)
 
         results.update(outputs)
         return results
 
 
 @TRANSFORMS.register_module()
-class ApplyToMultiple(Remap):
+class TransformBroadcaster(KeyMapper):
     """A transform wrapper to apply the wrapped transforms to multiple data
     items. For example, apply Resize to multiple images.
 
     Args:
         transforms (list[dict | callable]): Sequence of transform object or
             config dict to be wrapped.
-        input_mapping (dict): A dict that defines the input key mapping.
+        mapping (dict): A dict that defines the input key mapping.
             Note that to apply the transforms to multiple data items, the
             outer keys of the target items should be remapped as a list with
             the standard inner key (The key required by the wrapped transform).
             See the following example and the document of
-            `mmcv.transforms.wrappers.Remap` for details.
-        output_mapping (dict): A dict that defines the output key mapping.
+            ``mmcv.transforms.wrappers.KeyMapper`` for details.
+        remapping (dict): A dict that defines the output key mapping.
             The keys and values have the same meanings and rules as in the
-            `input_mapping`. Default: None.
-        inplace (bool): If True, an inverse of the input_mapping will be used
-            as the output_mapping. Note that if inplace is set True,
-            output_mapping should be None and strict should be True.
+            ``mapping``. Default: None.
+        auto_remap (bool, optional): If True, an inverse of the mapping will
+            be used as the remapping. If auto_remap is not given, it will be
+            automatically set True if 'remapping' is not given, and vice
+            versa. Default: None.
+        allow_nonexist_keys (bool): If False, the outer keys in the mapping
+            must exist in the input data, or an exception will be raised.
             Default: False.
-        strict (bool): If True, the outer keys in the input_mapping must exist
-            in the input data, or an exception will be raised. If False,
-            the missing keys will be assigned a special value `NotInResults`
-            during input remapping. Default: True.
         share_random_params (bool): If True, the random transform
             (e.g., RandomFlip) will be conducted in a deterministic way and
             have the same behavior on all data items. For example, to randomly
@@ -300,7 +304,7 @@ class ApplyToMultiple(Remap):
 
     .. note::
         To apply the transforms to each elements of a list or tuple, instead
-        of separating data items, you can remap the outer key of the target
+        of separating data items, you can map the outer key of the target
         sequence to the standard inner key. See example 2.
         example.
 
@@ -309,13 +313,13 @@ class ApplyToMultiple(Remap):
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
-        >>>     # ApplyToMultiple maps multiple outer fields to standard the
-        >>>     # inner field and process them with wrapped transforms
+        >>>     # TransformBroadcaster maps multiple outer fields to standard
+        >>>     # the inner field and process them with wrapped transforms
         >>>     # respectively
-        >>>     dict(type='ApplyToMultiple',
+        >>>     dict(type='TransformBroadcaster',
         >>>         # case 1: from multiple outer fields
-        >>>         input_mapping=dict(img=['lq', 'gt']),
-        >>>         inplace=True,
+        >>>         mapping=dict(img=['lq', 'gt']),
+        >>>         auto_remap=True,
         >>>         # share_random_param=True means using identical random
         >>>         # parameters in every processing
         >>>         share_random_param=True,
@@ -328,14 +332,14 @@ class ApplyToMultiple(Remap):
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
-        >>>     # ApplyToMultiple maps multiple outer fields to standard the
-        >>>     # inner field and process them with wrapped transforms
+        >>>     # TransformBroadcaster maps multiple outer fields to standard
+        >>>     # the inner field and process them with wrapped transforms
         >>>     # respectively
-        >>>     dict(type='ApplyToMultiple',
+        >>>     dict(type='TransformBroadcaster',
         >>>         # case 2: from one outer field that contains multiple
         >>>         # data elements (e.g. a list)
-        >>>         # input_mapping=dict(img='images'),
-        >>>         inplace=True,
+        >>>         # mapping=dict(img='images'),
+        >>>         auto_remap=True,
         >>>         share_random_param=True,
         >>>         transforms=[
         >>>             dict(type='Crop', crop_size=(384, 384)),
@@ -346,13 +350,13 @@ class ApplyToMultiple(Remap):
 
     def __init__(self,
                  transforms: List[Union[Dict, Callable[[Dict], Dict]]],
-                 input_mapping: Optional[Dict] = None,
-                 output_mapping: Optional[Dict] = None,
-                 inplace: bool = False,
-                 strict: bool = True,
+                 mapping: Optional[Dict] = None,
+                 remapping: Optional[Dict] = None,
+                 auto_remap: Optional[bool] = None,
+                 allow_nonexist_keys: bool = False,
                  share_random_params: bool = False):
-        super().__init__(transforms, input_mapping, output_mapping, inplace,
-                         strict)
+        super().__init__(transforms, mapping, remapping, auto_remap,
+                         allow_nonexist_keys)
 
         self.share_random_params = share_random_params
 
@@ -360,7 +364,7 @@ class ApplyToMultiple(Remap):
         # infer split number from input
         seq_len = None
         key_rep = None
-        for key in self.input_mapping:
+        for key in self.mapping:
 
             assert isinstance(data[key], Sequence)
             if seq_len is not None:
@@ -375,14 +379,14 @@ class ApplyToMultiple(Remap):
         scatters = []
         for i in range(seq_len):
             scatter = data.copy()
-            for key in self.input_mapping:
+            for key in self.mapping:
                 scatter[key] = data[key][i]
             scatters.append(scatter)
         return scatters
 
     def transform(self, results: Dict):
         # Apply input remapping
-        inputs = self.remap_input(results, self.input_mapping)
+        inputs = self.map_input(results, self.mapping)
 
         # Scatter sequential inputs into a list
         inputs = self.scatter_sequence(inputs)
@@ -407,8 +411,8 @@ class ApplyToMultiple(Remap):
         }
 
         # Apply output remapping
-        if self.output_mapping:
-            outputs = self.remap_output(outputs, self.output_mapping)
+        if self.remapping:
+            outputs = self.map_output(outputs, self.remapping)
 
         results.update(outputs)
         return results
@@ -419,9 +423,9 @@ class RandomChoice(BaseTransform):
     """Process data with a randomly chosen pipeline from given candidates.
 
     Args:
-        pipelines (list[list]): A list of pipeline candidates, each is a
+        transforms (list[list]): A list of pipeline candidates, each is a
             sequence of transforms.
-        pipeline_probs (list[float], optional): The probabilities associated
+        prob (list[float], optional): The probabilities associated
             with each pipeline. The length should be equal to the pipeline
             number and the sum should be 1. If not given, a uniform
             distribution will be assumed.
@@ -430,7 +434,7 @@ class RandomChoice(BaseTransform):
         >>> # config
         >>> pipeline = [
         >>>     dict(type='RandomChoice',
-        >>>         pipelines=[
+        >>>         transforms=[
         >>>             [dict(type='RandomHorizontalFlip')],  # subpipeline 1
         >>>             [dict(type='RandomRotate')],  # subpipeline 2
         >>>         ]
@@ -439,27 +443,27 @@ class RandomChoice(BaseTransform):
     """
 
     def __init__(self,
-                 pipelines: List[List[Union[Dict, Callable[[Dict], Dict]]]],
-                 pipeline_probs: Optional[List[float]] = None):
+                 transforms: List[Union[Transform, List[Transform]]],
+                 prob: Optional[List[float]] = None):
 
-        if pipeline_probs is not None:
-            assert mmcv.is_seq_of(pipeline_probs, float)
-            assert len(pipelines) == len(pipeline_probs), \
-                '`pipelines` and `pipeline_probs` must have same lengths. ' \
-                f'Got {len(pipelines)} vs {len(pipeline_probs)}.'
-            assert sum(pipeline_probs) == 1
+        if prob is not None:
+            assert mmcv.is_seq_of(prob, float)
+            assert len(transforms) == len(prob), \
+                '``transforms`` and ``prob`` must have same lengths. ' \
+                f'Got {len(transforms)} vs {len(prob)}.'
+            assert sum(prob) == 1
 
-        self.pipeline_probs = pipeline_probs
-        self.pipelines = [Compose(transforms) for transforms in pipelines]
+        self.prob = prob
+        self.transforms = [Compose(transforms) for transforms in transforms]
 
     def __iter__(self):
-        return iter(self.pipelines)
+        return iter(self.transforms)
 
-    @cacheable_method
+    @cache_randomness
     def random_pipeline_index(self):
-        indices = np.arange(len(self.pipelines))
-        return np.random.choice(indices, p=self.pipeline_probs)
+        indices = np.arange(len(self.transforms))
+        return np.random.choice(indices, p=self.prob)
 
     def transform(self, results):
         idx = self.random_pipeline_index()
-        return self.pipelines[idx](results)
+        return self.transforms[idx](results)
