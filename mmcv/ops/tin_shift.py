@@ -18,12 +18,10 @@ class TINShiftFunction(Function):
 
     @staticmethod
     def forward(ctx, input, shift):
-        batches_input = input.size(0)
-        batches_shift = shift.size(0)
-        if batches_input != batches_shift:
-            raise ValueError('batches_input should be equal to batches_shift, '
-                             f'but got batches_input={batches_input} \
-                             and batches_shift={batches_shift}.')
+        if input.size(0) != shift.size(0):
+            raise ValueError(
+                    'The first dim (batch) of `input` and `shift` should be same, '
+                    f'but got {input.size(0)} and {shift.size(0)}.')
         C = input.size(2)
         num_segments = shift.size(1)
         if C // num_segments <= 0 or C % num_segments != 0:
