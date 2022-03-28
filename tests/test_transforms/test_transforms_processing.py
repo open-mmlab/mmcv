@@ -869,9 +869,10 @@ class TestRandomResize:
             'gt_bboxes': np.array([[0, 0, 112, 112]]),
             'gt_keypoints': np.array([[[112, 112]]])
         }
-        # import pdb
-        # pdb.set_trace()
-        TRANSFORMS = RandomResize((224, 224), (1.0, 2.0), keep_ratio=True)
+
+        TRANSFORMS = RandomResize(
+            (224, 224), (1.0, 2.0),
+            resize_cfg=dict(type='Resize', keep_ratio=True))
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert 224 <= results_update['height']
         assert 448 >= results_update['height']
@@ -882,13 +883,17 @@ class TestRandomResize:
         assert results['gt_bboxes'][0][2] <= 112
 
         # keep ratio is False
-        TRANSFORMS = RandomResize((224, 224), (1.0, 2.0), keep_ratio=False)
+        TRANSFORMS = RandomResize(
+            (224, 224), (1.0, 2.0),
+            resize_cfg=dict(type='Resize', keep_ratio=False))
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
 
         # choose target scale from init when override is False and scale is a
         # list of tuples
         results = {}
-        TRANSFORMS = RandomResize([(224, 448), (112, 224)], keep_ratio=True)
+        TRANSFORMS = RandomResize([(224, 448), (112, 224)],
+                                  resize_cfg=dict(
+                                      type='Resize', keep_ratio=True))
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert results_update['scale'][0] >= 224 and results_update['scale'][
             0] <= 448
@@ -899,5 +904,6 @@ class TestRandomResize:
         with pytest.raises(NotImplementedError):
             results = {}
             TRANSFORMS = RandomResize([(224, 448), [112, 224]],
-                                      keep_ratio=True)
+                                      resize_cfg=dict(
+                                          type='Resize', keep_ratio=True))
             results_update = TRANSFORMS.transform(copy.deepcopy(results))
