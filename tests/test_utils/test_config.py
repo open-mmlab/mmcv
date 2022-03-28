@@ -427,7 +427,25 @@ def test_dict():
         assert cfg.item1 == 0
         cfg.update(dict(item2=dict(a=1)))
         assert cfg.item2.a == 1
-
+        
+        
+@pytest.mark.parametrize(
+    "file", ["a.json", "b.py", "c.yaml"]
+)
+def test_fromdict(file):
+    cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
+    cfg = Config(cfg_dict=cfg_dict)
+    assert cfg.item1 == cfg_dict['item1']
+    assert cfg.item2 == cfg_dict['item2']
+    assert cfg.item3 == cfg_dict['item3']
+    assert cfg.item4 == cfg_dict['item4']
+    assert cfg._filename == None
+    # dump without a filename argument is only returning pretty_text
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        dump_file = osp.join(temp_config_dir, file)
+        cfg.dump(dump_file)
+        cfg = Config.fromfile(dump_file) 
+        assert cfg.dump() == open(dump_file, 'r').read()
 
 def test_setattr():
     cfg = Config()
