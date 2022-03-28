@@ -139,9 +139,10 @@ class Registry:
         Returns:
             str: The inferred scope name.
         """
-        # inspect.stack() trace where this function is called, the index-2
-        # indicates the frame where `infer_scope()` is called
-        filename = inspect.getmodule(inspect.stack()[2][0]).__name__
+        frame = inspect.currentframe()
+        # get the frame where `infer_scope()` is called
+        infer_scope_caller = frame.f_back.f_back
+        filename = inspect.getmodule(infer_scope_caller).__name__
         split_filename = filename.split('.')
         return split_filename[0]
 
