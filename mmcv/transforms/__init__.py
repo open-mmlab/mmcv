@@ -22,6 +22,6 @@ else:
         'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
         'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
         'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
-        'RandomFlip', 'RandomChoiceResize', 'CenterCrop',
-        'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
+        'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
+        'MultiScaleFlipAug', 'RandomResize'
     ]

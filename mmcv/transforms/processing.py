@@ -9,7 +9,7 @@ import mmcv
 from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .utils import cacheable_method
+from .utils import cache_randomness
 from .wrappers import Compose
 
 Number = Union[int, float]
@@ -657,7 +657,7 @@ class RandomGrayscale(BaseTransform):
         assert color_format in ['bgr', 'rgb', 'hsv']
         self.color_format = color_format
 
-    @cacheable_method
+    @cache_randomness
     def _random_prob(self):
         return random.random()
 
@@ -919,7 +919,7 @@ class RandomChoiceResize(BaseTransform):
         assert mmcv.is_list_of(self.scales, tuple)
         self.resize_cfg = resize_cfg
 
-    @cacheable_method
+    @cache_randomness
     def _random_select(self) -> Tuple[int, int]:
         """Randomly select an scale from given candidates.
 
@@ -1100,7 +1100,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
-    @cacheable_method
+    @cache_randomness
     def _choose_direction(self) -> str:
         """Choose the flip direction according to `prob` and `direction`"""
         if isinstance(self.direction,
@@ -1296,7 +1296,7 @@ class RandomResize(BaseTransform):
         scale = int(scale[0] * ratio), int(scale[1] * ratio)
         return scale
 
-    @cacheable_method
+    @cache_randomness
     def _random_scale(self) -> tuple:
         """Private function to randomly sample an scale according to the type
         of ``scale``.
