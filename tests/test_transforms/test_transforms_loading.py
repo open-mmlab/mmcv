@@ -50,7 +50,7 @@ class TestLoadAnnotation:
         data_prefix = osp.join(osp.dirname(__file__), '../data')
         seg_map = osp.join(data_prefix, 'grayscale.jpg')
         cls.results = {
-            'seg_map':
+            'seg_map_path':
             seg_map,
             'instances': [{
                 'bbox': [0, 0, 10, 20],
@@ -68,7 +68,7 @@ class TestLoadAnnotation:
             with_bbox=True,
             with_label=False,
             with_seg=False,
-            with_kps=False,
+            with_keypoints=False,
         )
         results = transform(copy.deepcopy(self.results))
         assert 'gt_bboxes' in results
@@ -80,7 +80,7 @@ class TestLoadAnnotation:
             with_bbox=False,
             with_label=True,
             with_seg=False,
-            with_kps=False,
+            with_keypoints=False,
         )
         results = transform(copy.deepcopy(self.results))
         assert 'gt_bboxes_labels' in results
@@ -91,7 +91,7 @@ class TestLoadAnnotation:
             with_bbox=False,
             with_label=False,
             with_seg=False,
-            with_kps=True,
+            with_keypoints=True,
         )
         results = transform(copy.deepcopy(self.results))
         assert 'gt_keypoints' in results
@@ -103,20 +103,21 @@ class TestLoadAnnotation:
             with_bbox=False,
             with_label=False,
             with_seg=True,
-            with_kps=False,
+            with_keypoints=False,
         )
         results = transform(copy.deepcopy(self.results))
-        assert 'gt_semantic_seg' in results
-        assert results['gt_semantic_seg'].shape[:2] == (300, 400)
+        assert 'gt_seg_map' in results
+        assert results['gt_seg_map'].shape[:2] == (300, 400)
 
     def test_repr(self):
         transform = LoadAnnotation(
             with_bbox=True,
             with_label=False,
             with_seg=False,
-            with_kps=False,
+            with_keypoints=False,
         )
-        assert repr(transform) == ('LoadAnnotation(with_bbox=True, '
-                                   'with_label=False, with_seg=False, '
-                                   "with_kps=False, imdecode_backend='cv2', "
-                                   "file_client_args={'backend': 'disk'})")
+        assert repr(transform) == (
+            'LoadAnnotation(with_bbox=True, '
+            'with_label=False, with_seg=False, '
+            "with_keypoints=False, imdecode_backend='cv2', "
+            "file_client_args={'backend': 'disk'})")

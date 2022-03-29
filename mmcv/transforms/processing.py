@@ -23,6 +23,10 @@ class Normalize(BaseTransform):
 
     - img
 
+    Modified Keys:
+
+    - img
+
     Added Keys:
 
     - img_norm_cfg
@@ -38,12 +42,12 @@ class Normalize(BaseTransform):
         to_rgb (bool): Whether to convert the image from BGR to RGB before
             normlizing the image. If ``to_rgb=True``, the order of mean and std
             should be RGB. If ``to_rgb=False``, the order of mean and std
-            should be BGR. Defaults to True.
+            should be the same order of the image. Defaults to True.
     """
 
     def __init__(self,
-                 mean: Sequence[float],
-                 std: Sequence[float],
+                 mean: Sequence[Number],
+                 std: Sequence[Number],
                  to_rgb: bool = True) -> None:
         self.mean = np.array(mean, dtype=np.float32)
         self.std = np.array(std, dtype=np.float32)
@@ -120,7 +124,7 @@ class Resize(BaseTransform):
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
             backend, "nearest", "bilinear" for 'pillow' backend. Defaults
-            to 'cv2'.
+            to 'bilinear'.
     """
 
     def __init__(self,
@@ -275,7 +279,6 @@ class Pad(BaseTransform):
     Required Keys:
 
     - img
-    - gt_bboxes (optional)
     - gt_semantic_seg (optional)
 
     Modified Keys:
@@ -298,9 +301,15 @@ class Pad(BaseTransform):
             None.
         pad_to_square (bool): Whether to pad the image into a square.
             Currently only used for YOLOX. Defaults to False.
-        pad_val (int or dict): A dict for padding value.
-            if ``type(pad_val) == int``, the val to pad seg is 255. Defaults to
-            ``dict(img=0, seg=255)``.
+        pad_val (Number | dict[str, Number], optional) - Padding value for if
+            the pad_mode is "constant".  If it is a single number, the value
+            to pad the image is the number and to pad the semantic
+            segmentation map is 255. If it is a dict, it should have the
+            following keys:
+
+            - img: The value to pad the image.
+            - seg: The value to pad the semantic segmentation map.
+            Defaults to dict(img=0, seg=255).
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Defaults to 'constant'.
 
@@ -321,7 +330,7 @@ class Pad(BaseTransform):
                  size: Optional[Tuple[int, int]] = None,
                  size_divisor: Optional[int] = None,
                  pad_to_square: bool = False,
-                 pad_val: Union[int, dict] = dict(img=0, seg=255),
+                 pad_val: Union[Number, dict] = dict(img=0, seg=255),
                  padding_mode: str = 'constant') -> None:
         self.size = size
         self.size_divisor = size_divisor
@@ -938,7 +947,7 @@ class RandomMultiscaleResize(BaseTransform):
         self.resize_cfg = resize_cfg
 
     @staticmethod
-    def random_select(scales: List[Tuple]) -> Tuple[Number, int]:
+    def random_select(scales: List[Tuple]) -> Tuple[tuple, int]:
         """Randomly select an img_scale from given candidates.
 
         Args:
