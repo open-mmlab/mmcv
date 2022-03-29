@@ -33,14 +33,18 @@ def collate(batch, samples_per_gpu=1):
         collated_batch = []
         for samples in transposed:
             if not isinstance(samples[0], DataContainer):
+                # At present, we will skip the processing of datacontainer,
+                # which will reduce the performance of IPU dataloder
                 collated_batch.append(collate(samples, samples_per_gpu))
         return collated_batch
     elif isinstance(batch[0], Mapping):
-        collated_dic = {}
+        collated_batch = {}
         for key in batch[0]:
             if not isinstance(batch[0][key], DataContainer):
-                collated_dic[key] = collate([d[key] for d in batch])
-        return collated_dic
+                # At present, we will skip the processing of datacontainer,
+                # which will reduce the performance of IPU dataloder
+                collated_batch[key] = collate([d[key] for d in batch])
+        return collated_batch
     else:
         return default_collate(batch)
 
@@ -102,7 +106,7 @@ class IPUDataloader(poptorch.DataLoader):
                  async_options=None,
                  rebatched_worker_size=128,
                  **kwargs):
-        """Lazy init:
+        """ Lazy init:
             In many frameworks, the dataloder will be constructed before
             the initialization of the ipu options, so the lazy init
             method is used here, and the real initialization will not be done
