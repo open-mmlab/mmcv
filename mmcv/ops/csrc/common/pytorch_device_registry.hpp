@@ -22,13 +22,9 @@ inline std::string GetDeviceStr(const at::Device& device) {
 }
 
 // Registry
-template <typename F>
-class DeviceRegistry;
-
-template <typename Ret, typename... Args>
-class DeviceRegistry<Ret (*)(Args...)> {
+template <typename FunctionType>
+class DeviceRegistry {
  public:
-  using FunctionType = Ret (*)(Args...);
   static const int MAX_DEVICE_TYPES =
       int8_t(at::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES);
 
