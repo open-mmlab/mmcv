@@ -21,7 +21,8 @@ def collate(batch, samples_per_gpu=1):
     """
 
     if not isinstance(batch, Sequence):
-        raise TypeError(f'{batch.dtype} is not supported.')
+        raise TypeError(
+            f'`batch` should be a sequence, but got {type(batch)}.')
 
     if isinstance(batch[0], DataContainer):
         raise TypeError('DataContainer is not supported in ipu data loader.')
