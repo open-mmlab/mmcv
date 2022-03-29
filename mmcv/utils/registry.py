@@ -139,6 +139,8 @@ class Registry:
         Returns:
             str: The inferred scope name.
         """
+        # We access the caller using inspect.currentframe() instead of
+        # inspect.stack() for performance reasons. See details in PR #1844
         frame = inspect.currentframe()
         # get the frame where `infer_scope()` is called
         infer_scope_caller = frame.f_back.f_back
