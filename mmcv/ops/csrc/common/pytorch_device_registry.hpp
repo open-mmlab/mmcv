@@ -22,11 +22,11 @@ inline std::string GetDeviceStr(const at::Device& device) {
 }
 
 // Registry
-template <typename F, F f>
+template <typename F>
 class DeviceRegistry;
 
-template <typename Ret, typename... Args, Ret (*f)(Args...)>
-class DeviceRegistry<Ret (*)(Args...), f> {
+template <typename Ret, typename... Args>
+class DeviceRegistry<Ret (*)(Args...)> {
  public:
   using FunctionType = Ret (*)(Args...);
   static const int MAX_DEVICE_TYPES =
@@ -125,7 +125,7 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
 
 // helper macro
 
-#define DEVICE_REGISTRY(key) DeviceRegistry<decltype(&(key)), key>::instance()
+#define DEVICE_REGISTRY(key) DeviceRegistry<decltype(&(key))>::instance()
 
 #define REGISTER_DEVICE_IMPL(key, device, value)           \
   struct key##_##device##_registerer {                     \
@@ -133,7 +133,7 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
       DEVICE_REGISTRY(key).Register(at::k##device, value); \
     }                                                      \
   };                                                       \
-  static key##_##device##_registerer _##key##_##device##_registerer;
+  key##_##device##_registerer _##key##_##device##_registerer;
 
 #define DISPATCH_DEVICE_IMPL(key, ...) \
   Dispatch(DEVICE_REGISTRY(key), #key, __VA_ARGS__)
