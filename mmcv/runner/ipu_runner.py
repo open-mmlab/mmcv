@@ -17,7 +17,7 @@ if IPU_MODE:
 
 
 class IPUBaseRunner(metaclass=ABCMeta):
-    """ A base runner for IPU device, should be inherited with
+    """A base runner for IPU device, should be inherited with
     base_runner.BaseRunner
     This runner has some extra processes for IPU which are showed below:
     1. Parse options for IPU
@@ -25,6 +25,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
     3. Raise errors while encountering illegal ussage
     4. Input IPU options and initialize dataloader if finding a instance of
        of IPUDataloader
+
     Args:
         model (pytorch.model)
         options (mmcv.Config, dict): Options that will be used to compile

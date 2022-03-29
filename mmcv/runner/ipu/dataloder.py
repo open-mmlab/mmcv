@@ -46,14 +46,15 @@ def collate(batch, samples_per_gpu=1):
 
 
 class IPUDataloader(poptorch.DataLoader):
-    """ Thin wrapper around the traditional `torch.utils.data.DataLoader`
-    to abstract away some of the batch sizes calculationsand speed up
-    data loading.
+    """Thin wrapper of `torch.utils.data.DataLoader`
 
+    Abstract away some of the batch sizes calculations and speed up
+    data loading.
     If this data loader is used in a distributed execution environment, it will
     ensure that each process uses a different subset of the dataset, providing
     you first call ``options.randomSeed(N)`` with an integer N which is the
     same across all hosts.
+
     Args:
         options (poptorch.Options): Options that will be used to compile
             and run the model.
@@ -101,7 +102,7 @@ class IPUDataloader(poptorch.DataLoader):
                  async_options=None,
                  rebatched_worker_size=128,
                  **kwargs):
-        """ lazy init:
+        """Lazy init:
             In many frameworks, the dataloder will be constructed before
             the initialization of the ipu options, so the lazy init
             method is used here, and the real initialization will not be done
