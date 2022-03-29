@@ -12,8 +12,9 @@ def collate(batch, samples_per_gpu=1):
     """Puts each data field into a tensor/DataContainer with outer dimension
     batch size.
 
-    Extend default_collate to add support for
-    :type:`~mmcv.parallel.DataContainer`. There are 3 cases.
+    TODO support for
+    :type:`~mmcv.parallel.DataContainer`. Currently, it will be ignored.
+    There are 3 cases.
 
     1. cpu_only = True, e.g., meta data
     2. cpu_only = False, stack = True, e.g., images tensors
@@ -25,20 +26,21 @@ def collate(batch, samples_per_gpu=1):
             f'`batch` should be a sequence, but got {type(batch)}.')
 
     if isinstance(batch[0], DataContainer):
+        # TODO `DataContainer` will be supported in the future.
         raise TypeError('DataContainer is not supported in ipu data loader.')
     elif isinstance(batch[0], Sequence):
         transposed = zip(*batch)
-        _list = []
+        collated_batch = []
         for samples in transposed:
             if not isinstance(samples[0], DataContainer):
-                _list.append(collate(samples, samples_per_gpu))
-        return _list
+                collated_batch.append(collate(samples, samples_per_gpu))
+        return collated_batch
     elif isinstance(batch[0], Mapping):
-        _dic = {}
+        collated_dic = {}
         for key in batch[0]:
             if not isinstance(batch[0][key], DataContainer):
-                _dic[key] = collate([d[key] for d in batch])
-        return _dic
+                collated_dic[key] = collate([d[key] for d in batch])
+        return collated_dic
     else:
         return default_collate(batch)
 
