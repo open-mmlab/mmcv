@@ -2,7 +2,7 @@
 from .builder import TRANSFORMS
 from .loading import LoadAnnotation, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
-                         RandomFlip, RandomGrayscale, RandomMultiscaleResize,
+                         RandomChoiceResize, RandomFlip, RandomGrayscale,
                          RandomResize, Resize)
 from .wrappers import Compose, KeyMapper, RandomChoice, TransformBroadcaster
 
@@ -12,7 +12,7 @@ except ImportError:
     __all__ = [
         'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
         'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
-        'Resize', 'Pad', 'RandomFlip', 'RandomMultiscaleResize', 'CenterCrop',
+        'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize', 'CenterCrop',
         'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
     ]
 else:
@@ -22,6 +22,6 @@ else:
         'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
         'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
         'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
-        'RandomFlip', 'RandomMultiscaleResize', 'CenterCrop',
-        'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
+        'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
+        'MultiScaleFlipAug', 'RandomResize'
     ]
