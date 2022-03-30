@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -9,7 +9,7 @@ import mmcv
 from mmcv.image.geometric import _scale_size
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .utils import cacheable_method
+from .utils import cache_randomness
 from .wrappers import Compose
 
 Number = Union[int, float]
@@ -90,14 +90,14 @@ class Resize(BaseTransform):
 
     - img
     - gt_bboxes (optional)
-    - gt_semantic_seg (optional)
+    - gt_seg_map (optional)
     - gt_keypoints (optional)
 
     Modified Keys:
 
     - img
     - gt_bboxes
-    - gt_semantic_seg
+    - gt_seg_map
     - gt_keypoints
     - height
     - width
@@ -205,20 +205,20 @@ class Resize(BaseTransform):
 
     def _resize_seg(self, results: dict) -> None:
         """Resize semantic segmentation map with ``results['scale']``."""
-        if results.get('gt_semantic_seg', None) is not None:
+        if results.get('gt_seg_map', None) is not None:
             if self.keep_ratio:
                 gt_seg = mmcv.imrescale(
-                    results['gt_semantic_seg'],
+                    results['gt_seg_map'],
                     results['scale'],
                     interpolation=self.interpolation,
                     backend=self.backend)
             else:
                 gt_seg = mmcv.imresize(
-                    results['gt_semantic_seg'],
+                    results['gt_seg_map'],
                     results['scale'],
                     interpolation=self.interpolation,
                     backend=self.backend)
-            results['gt_semantic_seg'] = gt_seg
+            results['gt_seg_map'] = gt_seg
 
     def _resize_keypoints(self, results: dict) -> None:
         """Resize keypoints with ``results['scale_factor']``."""
@@ -241,7 +241,7 @@ class Resize(BaseTransform):
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
-            dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+            dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
             'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
             and 'keep_ratio' keys are updated in result dict.
         """
@@ -279,12 +279,13 @@ class Pad(BaseTransform):
     Required Keys:
 
     - img
-    - gt_semantic_seg (optional)
+    - gt_bboxes (optional)
+    - gt_seg_map (optional)
 
     Modified Keys:
 
     - img
-    - gt_semantic_seg
+    - gt_seg_map
     - height
     - width
 
@@ -387,15 +388,13 @@ class Pad(BaseTransform):
     def _pad_seg(self, results: dict) -> None:
         """Pad semantic segmentation map according to
         ``results['pad_shape']``."""
-        if results.get('gt_semantic_seg', None) is not None:
+        if results.get('gt_seg_map', None) is not None:
             pad_val = self.pad_val.get('seg', 255)
-            if isinstance(pad_val,
-                          int) and results['gt_semantic_seg'].ndim == 3:
-                pad_val = tuple([
-                    pad_val for _ in range(results['gt_semantic_seg'].shape[2])
-                ])
-            results['gt_semantic_seg'] = mmcv.impad(
-                results['gt_semantic_seg'],
+            if isinstance(pad_val, int) and results['gt_seg_map'].ndim == 3:
+                pad_val = tuple(
+                    [pad_val for _ in range(results['gt_seg_map'].shape[2])])
+            results['gt_seg_map'] = mmcv.impad(
+                results['gt_seg_map'],
                 shape=results['pad_shape'][:2],
                 pad_val=pad_val,
                 padding_mode=self.padding_mode)
@@ -426,13 +425,13 @@ class Pad(BaseTransform):
 @TRANSFORMS.register_module()
 class CenterCrop(BaseTransform):
     """Crop the center of the image, segmentation masks, bounding boxes and key
-    points. If the crop area exceeds the original image and ``pad_mode`` is not
-    None, the original image will be padded before cropping.
+    points. If the crop area exceeds the original image and ``auto_pad`` is
+    True, the original image will be padded before cropping.
 
     Required Keys:
 
     - img
-    - gt_semantic_seg (optional)
+    - gt_seg_map (optional)
     - gt_bboxes (optional)
     - gt_keypoints (optional)
 
@@ -441,7 +440,7 @@ class CenterCrop(BaseTransform):
     - img
     - height
     - width
-    - gt_semantic_seg (optional)
+    - gt_seg_map (optional)
     - gt_bboxes (optional)
     - gt_keypoints (optional)
 
@@ -454,15 +453,10 @@ class CenterCrop(BaseTransform):
         crop_size (Union[int, Tuple[int, int]]):  Expected size after cropping
             with the format of (w, h). If set to an integer, then cropping
             width and height are equal to this integer.
-        pad_val (Union[Number, Dict[str, Number]]): A dict for
-            padding value. To specify how to set this argument, please see
-            the docstring of class ``Pad``. Defaults to
-            ``dict(img=0, seg=255)``.
-        pad_mode (str, optional): Type of padding. Should be: 'constant',
-            'edge', 'reflect' or 'symmetric'. For details, please see the
-            docstring of class ``Pad``. Defaults to 'constant'.
-        pad_cfg (str): Base config for padding. Defaults to
-            ``dict(type='Pad')``.
+        auto_pad (bool): Whether to pad the image if it's smaller than the
+            ``crop_size``. Defaults to False.
+        pad_cfg (dict): Base config for padding. Refer to ``mmcv.Pad`` for
+            detail. Defaults to ``dict(type='Pad')``.
         clip_object_border (bool): Whether to clip the objects
             outside the border of the image. In some dataset like MOT17, the
             gt bboxes are allowed to cross the border of images. Therefore,
@@ -470,14 +464,11 @@ class CenterCrop(BaseTransform):
             Defaults to True.
     """
 
-    def __init__(
-        self,
-        crop_size: Union[int, Tuple[int, int]],
-        pad_val: Union[Number, Dict[str, Number]] = dict(img=0, seg=255),
-        pad_mode: Optional[str] = None,
-        pad_cfg: dict = dict(type='Pad'),
-        clip_object_border: bool = True,
-    ) -> None:  # flake8: noqa
+    def __init__(self,
+                 crop_size: Union[int, Tuple[int, int]],
+                 auto_pad: bool = False,
+                 pad_cfg: dict = dict(type='Pad'),
+                 clip_object_border: bool = True) -> None:
         super().__init__()
         assert isinstance(crop_size, int) or (
             isinstance(crop_size, tuple) and len(crop_size) == 2
@@ -488,9 +479,15 @@ class CenterCrop(BaseTransform):
             crop_size = (crop_size, crop_size)
         assert crop_size[0] > 0 and crop_size[1] > 0
         self.crop_size = crop_size
-        self.pad_val = pad_val
-        self.pad_mode = pad_mode
-        self.pad_cfg = pad_cfg
+        self.auto_pad = auto_pad
+
+        self.pad_cfg = pad_cfg.copy()
+        # size will be overwritten
+        if 'size' in self.pad_cfg and auto_pad:
+            warnings.warn('``size`` is set in ``pad_cfg``,'
+                          'however this argument will be overwritten'
+                          ' according to crop size and image size')
+
         self.clip_object_border = clip_object_border
 
     def _crop_img(self, results: dict, bboxes: np.ndarray) -> None:
@@ -515,9 +512,9 @@ class CenterCrop(BaseTransform):
             results (dict): Result dict contains the data to transform.
             bboxes (np.ndarray): Shape (4, ), location of cropped bboxes.
         """
-        if results.get('gt_semantic_seg', None) is not None:
-            img = mmcv.imcrop(results['gt_semantic_seg'], bboxes=bboxes)
-            results['gt_semantic_seg'] = img
+        if results.get('gt_seg_map', None) is not None:
+            img = mmcv.imcrop(results['gt_seg_map'], bboxes=bboxes)
+            results['gt_seg_map'] = img
 
     def _crop_bboxes(self, results: dict, bboxes: np.ndarray) -> None:
         """Update bounding boxes according to CenterCrop.
@@ -587,17 +584,13 @@ class CenterCrop(BaseTransform):
         img_height, img_width = img.shape[:2]
 
         if crop_height > img_height or crop_width > img_width:
-            if self.pad_mode is not None:
+            if self.auto_pad:
                 # pad the area
                 img_height = max(img_height, crop_height)
                 img_width = max(img_width, crop_width)
                 pad_size = (img_width, img_height)
                 _pad_cfg = self.pad_cfg.copy()
-                _pad_cfg.update(
-                    dict(
-                        size=pad_size,
-                        pad_val=self.pad_val,
-                        padding_mode=self.pad_mode))
+                _pad_cfg.update(dict(size=pad_size))
                 pad_transform = TRANSFORMS.build(_pad_cfg)
                 results = pad_transform(results)
             else:
@@ -612,7 +605,7 @@ class CenterCrop(BaseTransform):
 
         # crop the image
         self._crop_img(results, bboxes)
-        # crop the gt_semantic_seg
+        # crop the gt_seg_map
         self._crop_seg_map(results, bboxes)
         # crop the bounding box
         self._crop_bboxes(results, bboxes)
@@ -623,8 +616,8 @@ class CenterCrop(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', crop_size = {self.crop_size}'
-        repr_str += f', pad_val = {self.pad_val}'
-        repr_str += f', pad_mode = {self.pad_mode}'
+        repr_str += f', auto_pad={self.auto_pad}'
+        repr_str += f', pad_cfg={self.pad_cfg}'
         repr_str += f',clip_object_border = {self.clip_object_border}'
         return repr_str
 
@@ -649,10 +642,12 @@ class RandomGrayscale(BaseTransform):
     Args:
         prob (float): Probability that image should be converted to
             grayscale. Defaults to 0.1.
-        keep_channel (bool): Whether keep channel number the same as
+        keep_channels (bool): Whether keep channel number the same as
             input. Defaults to False.
-        channel_weights (tuple): Channel weights to compute gray
-            image. Defaults to (1., 1., 1.).
+        channel_weights (tuple): The grayscale weights of each channel,
+            and the weights will be normalized. For example, (1, 2, 1)
+            will be normalized as (0.25, 0.5, 0.25). Defaults to
+            (1., 1., 1.).
         color_format (str): Color format set to be any of 'bgr',
             'rgb', 'hsv'. Note: 'hsv' image will be transformed into 'bgr'
             format no matter whether it is grayscaled. Defaults to 'bgr'.
@@ -660,17 +655,21 @@ class RandomGrayscale(BaseTransform):
 
     def __init__(self,
                  prob: float = 0.1,
-                 keep_channel: bool = False,
+                 keep_channels: bool = False,
                  channel_weights: Sequence[float] = (1., 1., 1.),
                  color_format: str = 'bgr') -> None:
         super().__init__()
         assert 0. <= prob <= 1., ('The range of ``prob`` value is [0., 1.],' +
                                   f' but got {prob} instead')
         self.prob = prob
-        self.keep_channel = keep_channel
+        self.keep_channels = keep_channels
         self.channel_weights = channel_weights
         assert color_format in ['bgr', 'rgb', 'hsv']
         self.color_format = color_format
+
+    @cache_randomness
+    def _random_prob(self):
+        return random.random()
 
     def transform(self, results: dict) -> dict:
         """Apply random grayscale on results.
@@ -687,7 +686,7 @@ class RandomGrayscale(BaseTransform):
             img = mmcv.hsv2bgr(img)
         img = img[..., None] if img.ndim == 2 else img
         num_output_channels = img.shape[2]
-        if random.random() < self.prob:
+        if self._random_prob() < self.prob:
             if num_output_channels > 1:
                 assert num_output_channels == len(
                     self.channel_weights
@@ -697,7 +696,7 @@ class RandomGrayscale(BaseTransform):
                 normalized_weights = (
                     np.array(self.channel_weights) / sum(self.channel_weights))
                 img = (normalized_weights * img).sum(axis=2)
-                if self.keep_channel:
+                if self.keep_channels:
                     img = img[:, :, None]
                     results['img'] = np.dstack(
                         [img for _ in range(num_output_channels)])
@@ -710,7 +709,7 @@ class RandomGrayscale(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', prob = {self.prob}'
-        repr_str += f', keep_channel = {self.keep_channel}'
+        repr_str += f', keep_channels = {self.keep_channels}'
         repr_str += f', channel_weights = {self.channel_weights}'
         repr_str += f', color_format = {self.color_format}'
         return repr_str
@@ -753,12 +752,11 @@ class MultiScaleFlipAug(BaseTransform):
     .. code-block::
 
         dict(
-            img=[...],
-            img_shape=[...],
-            scale=[(1333, 400), (1333, 400), (1333, 800), (1333, 800)]
-            flip=[False, True, False, True]
-            ...
+            inputs=[...],
+            data_samples=[...]
         )
+
+    Where the length of ``inputs`` and ``data_samples`` are both 4.
 
     Required Keys:
 
@@ -774,7 +772,7 @@ class MultiScaleFlipAug(BaseTransform):
         img_scale (tuple | list[tuple] | None): Images scales for resizing.
         scale_factor (float or tuple[float]): Scale factors for resizing.
             Defaults to None.
-        flip (bool): Whether apply flip augmentation. Defaults to False.
+        allow_flip (bool): Whether apply flip augmentation. Defaults to False.
         flip_direction (str | list[str]): Flip augmentation directions,
             options are "horizontal", "vertical" and "diagonal". If
             flip_direction is a list, multiple flip augmentations will be
@@ -791,7 +789,7 @@ class MultiScaleFlipAug(BaseTransform):
         transforms: List[dict],
         img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
         scale_factor: Optional[Union[float, List[float]]] = None,
-        flip: bool = False,
+        allow_flip: bool = False,
         flip_direction: Union[str, List[str]] = 'horizontal',
         resize_cfg: dict = dict(type='Resize', keep_ratio=True),
         flip_cfg: dict = dict(type='RandomFlip')
@@ -813,14 +811,14 @@ class MultiScaleFlipAug(BaseTransform):
                     scale_factor, list) else [scale_factor]
             self.scale_key = 'scale_factor'
 
-        self.flip = flip
+        self.allow_flip = allow_flip
         self.flip_direction = flip_direction if isinstance(
             flip_direction, list) else [flip_direction]
         assert mmcv.is_list_of(self.flip_direction, str)
-        if not self.flip and self.flip_direction != ['horizontal']:
+        if not self.allow_flip and self.flip_direction != ['horizontal']:
             warnings.warn(
                 'flip_direction has no effect when flip is set to False')
-        self.resize_cfg = resize_cfg
+        self.resize_cfg = resize_cfg.copy()
         self.flip_cfg = flip_cfg
 
     def transform(self, results: dict) -> Tuple[List, List]:
@@ -834,10 +832,10 @@ class MultiScaleFlipAug(BaseTransform):
             into a list.
         """
 
-        aug_data = []
-        input_data = []
+        data_samples = []
+        inputs = []
         flip_args = [(False, '')]
-        if self.flip:
+        if self.allow_flip:
             flip_args += [(True, direction)
                           for direction in self.flip_direction]
         for scale in self.img_scale:
@@ -857,23 +855,23 @@ class MultiScaleFlipAug(BaseTransform):
                 resize_flip = Compose(_resize_flip)
                 _results = results.copy()
                 _results = resize_flip(_results)
-                input_image, data_sample = self.transforms(_results)
+                packed_results = self.transforms(_results)
 
-                input_data.append(input_image)
-                aug_data.append(data_sample)
-        return input_data, aug_data
+                inputs.append(packed_results['inputs'])
+                data_samples.append(packed_results['data_sample'])
+        return dict(inputs=inputs, data_sample=data_samples)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', transforms={self.transforms}'
         repr_str += f', img_scale={self.img_scale}'
-        repr_str += f', flip={self.flip}'
+        repr_str += f', allow_flip={self.allow_flip}'
         repr_str += f', flip_direction={self.flip_direction}'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class RandomMultiscaleResize(BaseTransform):
+class RandomChoiceResize(BaseTransform):
     """Resize images & bbox & mask from a list of multiple scales.
 
     This transform resizes the input image to some scale. Bboxes and masks are
@@ -891,7 +889,7 @@ class RandomMultiscaleResize(BaseTransform):
 
     - img
     - gt_bboxes (optional)
-    - gt_semantic_seg (optional)
+    - gt_seg_map (optional)
     - gt_keypoints (optional)
 
     Modified Keys:
@@ -900,7 +898,7 @@ class RandomMultiscaleResize(BaseTransform):
     - height
     - width
     - gt_bboxes (optional)
-    - gt_semantic_seg (optional)
+    - gt_seg_map (optional)
     - gt_keypoints (optional)
 
     Added Keys:
@@ -913,24 +911,14 @@ class RandomMultiscaleResize(BaseTransform):
 
     Args:
         scales (Union[list, Tuple]): Images scales for resizing.
-        keep_ratio (bool): Whether to keep the aspect ratio when
-            resizing the image. Defaults to False.
-        clip_object_border (bool): Whether clip the objects outside
-            the border of the image.  Defaults to True.
-        backend (str): Image resize backend, choices are 'cv2' and
-            'pillow'. These two backends generates slightly different results.
-            Defaults to 'cv2'.
-        interpolation (str): The mode of interpolation, support
-            "bilinear", "bicubic", "nearest". Defaults to "bilinear".
+        resize_cfg (dict): Base config for resizing. Refer to
+            ``mmcv.Resize`` for detail. Defaults to
+            ``dict(type='Resize')``.
     """
 
     def __init__(
         self,
-        scales: Union[list, Tuple],
-        keep_ratio: bool = False,
-        clip_object_border: bool = True,
-        backend: str = 'cv2',
-        interpolation: str = 'bilinear',
+        scales: Sequence[Union[int, Tuple]],
         resize_cfg: dict = dict(type='Resize')
     ) -> None:
         super().__init__()
@@ -939,19 +927,11 @@ class RandomMultiscaleResize(BaseTransform):
         else:
             self.scales = [scales]
         assert mmcv.is_list_of(self.scales, tuple)
-        self.keep_ratio = keep_ratio
-        self.clip_object_border = clip_object_border
-        self.backend = backend
-        self.interpolation = interpolation
-
         self.resize_cfg = resize_cfg
 
-    @staticmethod
-    def random_select(scales: List[Tuple]) -> Tuple[tuple, int]:
-        """Randomly select an img_scale from given candidates.
-
-        Args:
-            scales (list[tuple]): Images scales for selection.
+    @cache_randomness
+    def _random_select(self) -> Tuple[int, int]:
+        """Randomly select an scale from given candidates.
 
         Returns:
             (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
@@ -959,9 +939,9 @@ class RandomMultiscaleResize(BaseTransform):
             ``scale_idx`` is the selected index in the given candidates.
         """
 
-        assert mmcv.is_list_of(scales, tuple)
-        scale_idx = np.random.randint(len(scales))
-        scale = scales[scale_idx]
+        assert mmcv.is_list_of(self.scales, tuple)
+        scale_idx = np.random.randint(len(self.scales))
+        scale = self.scales[scale_idx]
         return scale, scale_idx
 
     def transform(self, results: dict) -> dict:
@@ -971,20 +951,14 @@ class RandomMultiscaleResize(BaseTransform):
             results (dict): Result dict contains the data to transform.
 
         Returns:
-            dict: Resized results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+            dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
             'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
             and 'keep_ratio' keys are updated in result dict.
         """
 
-        target_scale, scale_idx = self.random_select(self.scales)
+        target_scale, scale_idx = self._random_select()
         _resize_cfg = self.resize_cfg.copy()
-        _resize_cfg.update(
-            dict(
-                scale=target_scale,
-                keep_ratio=self.keep_ratio,
-                clip_object_border=self.clip_object_border,
-                backend=self.backend,
-                interpolation=self.interpolation))
+        _resize_cfg.update(dict(scale=target_scale))
         resize_transform = TRANSFORMS.build(_resize_cfg)
         results = resize_transform(results)
         results['scale_idx'] = scale_idx
@@ -993,17 +967,14 @@ class RandomMultiscaleResize(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', scales={self.scales}'
-        repr_str += f', keep_ratio={self.keep_ratio}'
-        repr_str += f', clip_object_border={self.clip_object_border}'
-        repr_str += f', backend={self.backend}'
-        repr_str += f', interpolation={self.interpolation}'
+        repr_str += f', resize_cfg={self.resize_cfg}'
         return repr_str
 
 
 @TRANSFORMS.register_module()
 class RandomFlip(BaseTransform):
     """Flip the image & bbox & keypoints & segmentation map. Added or Updated
-    keys: flip, flip_direction, img, gt_bboxes, gt_semantic_seg, and
+    keys: flip, flip_direction, img, gt_bboxes, gt_seg_map, and
     gt_keypoints. There are 3 flip modes:
 
      - ``prob`` is float, ``direction`` is string: the image will be
@@ -1026,13 +997,13 @@ class RandomFlip(BaseTransform):
     Required Keys:
         - img
         - gt_bboxes (optional)
-        - gt_semantic_seg (optional)
+        - gt_seg_map (optional)
         - gt_keypoints (optional)
 
     Modified Keys:
         - img
         - gt_bboxes (optional)
-        - gt_semantic_seg (optional)
+        - gt_seg_map (optional)
         - gt_keypoints (optional)
 
     Added Keys:
@@ -1139,7 +1110,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
-    @cacheable_method
+    @cache_randomness
     def _choose_direction(self) -> str:
         """Choose the flip direction according to `prob` and `direction`"""
         if isinstance(self.direction,
@@ -1207,7 +1178,7 @@ class RandomFlip(BaseTransform):
         Args:
             results (dict): Result dict from loading pipeline.
         Returns:
-            dict: Flipped results, 'img', 'gt_bboxes', 'gt_semantic_seg',
+            dict: Flipped results, 'img', 'gt_bboxes', 'gt_seg_map',
             'gt_keypoints', 'flip', and 'flip_direction' keys are
             updated in result dict.
         """
@@ -1246,14 +1217,14 @@ class RandomResize(BaseTransform):
 
     - img
     - gt_bboxes
-    - gt_semantic_seg
+    - gt_seg_map
     - gt_keypoints
 
     Modified Keys:
 
     - img
     - gt_bboxes
-    - gt_semantic_seg
+    - gt_seg_map
     - gt_keypoints
 
     Added Keys:
@@ -1335,7 +1306,7 @@ class RandomResize(BaseTransform):
         scale = int(scale[0] * ratio), int(scale[1] * ratio)
         return scale
 
-    @cacheable_method
+    @cache_randomness
     def _random_scale(self) -> tuple:
         """Private function to randomly sample an scale according to the type
         of ``scale``.
