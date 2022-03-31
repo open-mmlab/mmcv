@@ -564,9 +564,7 @@ class Config:
         import mmcv
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
         if file is None:
-            if self.filename is None:
-                return mmcv.dump(cfg_dict)
-            elif self.filename.endswith('.py'):
+            if self.filename is None or self.filename.endswith('.py'):
                 return self.pretty_text
             else:
                 file_format = self.filename.split('.')[-1]
