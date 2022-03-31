@@ -320,7 +320,7 @@ class WrappedNet(torch.nn.Module):
 
     def forward_eval(self, kwargs):
         img = kwargs.pop('img')
-        img_metas = kwargs.pop('img_metas')
+        img_metas = kwargs.pop('img_metas', None)
         return_loss = kwargs.pop('return_loss')
         assert not return_loss
         # TODO Temporarily hard-code to close post_process,
@@ -462,7 +462,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             loss=loss, log_vars=log_vars, num_samples=num_samples)
         return final_output_dic
 
-    def eval_call(self, img, img_metas, return_loss=True, **kwargs):
+    def eval_call(self, img, img_metas=None, return_loss=True, **kwargs):
         # arguments from mmdet/models/detectors/base.py:BaseDetector.forward
         # tmp usssage for eval mode
         assert not self.training

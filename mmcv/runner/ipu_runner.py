@@ -12,8 +12,7 @@ if IPU_MODE:
     from mmcv.runner.ipu import (parse_ipu_options,
                                  build_from_cfg_with_wrapper, IPU_MODE,
                                  ipu_model_wrapper, wrap_optimizer_hook,
-                                 IPUFp16OptimizerHook, wrap_lr_update_hook,
-                                 IPUDataloader)
+                                 IPUFp16OptimizerHook, wrap_lr_update_hook,)
 
 
 class IPUBaseRunner(metaclass=ABCMeta):
@@ -47,7 +46,6 @@ class IPUBaseRunner(metaclass=ABCMeta):
             modules_to_record=[],
             ipu_model_cfg={},
             fp16_cfg=None,
-            ipu_dataloader=False,
             batch_processor=None,
             **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None,\
@@ -68,7 +66,6 @@ class IPUBaseRunner(metaclass=ABCMeta):
                 self.model, self.ipu_options, self.optimizer, self.logger,
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
-            self.ipu_dataloader = ipu_dataloader
         else:
             # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
             raise NotImplementedError('cpu mode on IPURunner not supported')
@@ -102,17 +99,19 @@ class IPUBaseRunner(metaclass=ABCMeta):
             hook = optimizer_config
         self.register_hook(hook, priority='ABOVE_NORMAL')
 
-    def run(self, data_loaders, *args, **kwargs):
-        # map data_loader to ipu data_loader
-        if self.ipu_dataloader:
-            training_opts = self.ipu_options['training']
+    def run(self, data_loaders, workflow, *args, **kwargs):
+        for i, flow in enumerate(workflow):
+            mode, iters = flow
+            # initialize IPU dataloder if not initialized
+            data_loaders[i].init(options=self.get_ipu_opts(mode))
 
-            for data_loader in data_loaders:
-                if isinstance(data_loader, IPUDataloader)\
-                   and not data_loader.initialized:
-                    data_loader.init(options=training_opts)
+        super().run(data_loaders, workflow, *args, **kwargs)
 
-        super().run(data_loaders, *args, **kwargs)
+    def get_ipu_opts(self, mode):
+        if mode == 'train':
+            return self.ipu_options['training']
+        elif mode == 'val':
+            return self.ipu_options['inference']
 
 
 @RUNNERS.register_module()

@@ -102,9 +102,9 @@ class IPUDataloader(poptorch.DataLoader):
                  drop_last=True,
                  persistent_workers=True,
                  auto_distributed_partitioning=True,
-                 mode=poptorch.DataLoaderMode.AsyncRebatched,
+                 mode='sync',
                  async_options=None,
-                 rebatched_worker_size=128,
+                 rebatched_worker_size=None,
                  **kwargs):
         """ Lazy init:
             In many frameworks, the dataloder will be constructed before
@@ -114,8 +114,11 @@ class IPUDataloader(poptorch.DataLoader):
         """
         # lazy init: sometimes, we cannot get IPU options when make data
         #            loader
-        if async_options is None:
+        if mode == 'async':
             async_options = {'load_indefinitely': True, 'buffer_size': 8}
+            if rebatched_worker_size is None:
+                rebatched_worker_size = 128
+
         self.kwargs = {'options': options,
                        'dataset': dataset,
                        'batch_size': batch_size,
@@ -131,11 +134,16 @@ class IPUDataloader(poptorch.DataLoader):
                        'async_options': async_options,
                        'rebatched_worker_size': rebatched_worker_size,
                        **kwargs}
+        self.dataset = dataset
         self.initialized = False
 
     def init(self, options, **kwargs):
         if not self.initialized:
             kwargs = {**self.kwargs, **kwargs, 'options': options}
+            if kwargs['mode'] == 'sync':
+                kwargs['mode'] = poptorch.DataLoaderMode.Sync
+            elif kwargs['mode'] == 'async':
+                kwargs['mode'] = poptorch.DataLoaderMode.AsyncRebatched
             super().__init__(**kwargs)
             self.initialized = True
 
