@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import functools
 import os
-import subprocess
 import socket
+import subprocess
 from collections import OrderedDict
 
 import torch
@@ -15,7 +15,7 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
 def find_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Binding to port 0 will cause the OS to find an available port for us
-    sock.bind(("", 0))
+    sock.bind(('', 0))
     port = sock.getsockname()[1]
     sock.close()
     # NOTE: there is still a chance the port could be taken by other processes.
@@ -81,7 +81,7 @@ def _init_dist_slurm(backend, port=None):
         pass  # use MASTER_PORT in the environment variable
     else:
         # if torch.distributed default port(29500) is available
-        # then use it,else find a free port
+        # then use it, else find a free port
         if not is_port_in_use(29500):
             os.environ['MASTER_PORT'] = '29500'
         else:
