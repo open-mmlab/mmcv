@@ -14,7 +14,7 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
 
 
 # Copied from Detectron2
-def find_free_port():
+def _find_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Binding to port 0 will cause the OS to find an available port for us
     sock.bind(('', 0))
@@ -24,7 +24,7 @@ def find_free_port():
     return port
 
 
-def is_port_in_use(port):
+def _is_port_in_use(port):
     ips = socket.gethostbyname_ex(socket.gethostname())[-1]
     ips.append('localhost')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -86,10 +86,10 @@ def _init_dist_slurm(backend, port=None):
     else:
         # if torch.distributed default port(29500) is available
         # then use it, else find a free port
-        if not is_port_in_use(29500):
+        if not _is_port_in_use(29500):
             os.environ['MASTER_PORT'] = '29500'
         else:
-            os.environ['MASTER_PORT'] = str(find_free_port())
+            os.environ['MASTER_PORT'] = str(_find_free_port())
     # use MASTER_ADDR in the environment variable if it already exists
     if 'MASTER_ADDR' not in os.environ:
         os.environ['MASTER_ADDR'] = addr
