@@ -84,7 +84,7 @@ class LoadImageFromFile(BaseTransform):
         return repr_str
 
 
-class LoadAnnotation(BaseTransform):
+class LoadAnnotations(BaseTransform):
     """Load and process the ``instances`` and ``seg_map`` annotation provided
     by dataset.
 

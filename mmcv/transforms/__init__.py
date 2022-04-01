@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base import BaseTransform
 from .builder import TRANSFORMS
-from .loading import LoadAnnotation, LoadImageFromFile
+from .loading import LoadAnnotations, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomChoiceResize, RandomFlip, RandomGrayscale,
                          RandomResize, Resize)
