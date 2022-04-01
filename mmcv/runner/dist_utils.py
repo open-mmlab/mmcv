@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import functools
 import os
 import socket
@@ -12,6 +13,7 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
 
+# Copied from Detectron2
 def find_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Binding to port 0 will cause the OS to find an available port for us
