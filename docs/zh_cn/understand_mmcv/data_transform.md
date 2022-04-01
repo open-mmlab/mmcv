@@ -74,7 +74,7 @@ dataset = dict(
 | class                         | 功能                                      |
 | :---------------------------: | :---------------------------------------: |
 | [`LoadImageFromFile`](TODO)   | 根据路径加载图像                          |
-| [`LoadAnnotation`](TODO)      | 加载和组织标注信息，如 bbox、语义分割图等 |
+| [`LoadAnnotations`](TODO)      | 加载和组织标注信息，如 bbox、语义分割图等 |
 
 ### 数据预处理及增强
 
