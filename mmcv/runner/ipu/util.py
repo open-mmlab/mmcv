@@ -75,15 +75,23 @@ def _opts_assigner(_cfg, opts_node):
         if callable(opts_node):
             opts_node(_cfg)
         else:
-            error_msg = 'opts_node type {} not supported'.format(
-                type(opts_node))
+            error_msg = f'opts_node type {type(opts_node)} not supported'
             raise NotImplementedError(error_msg)
     else:
-        error_msg = 'cfg type {} not supported'.format(type(_cfg))
+        error_msg = f'cfg type {type(_cfg)} not supported'
         raise NotImplementedError(error_msg)
 
 
 def parse_ipu_options(ipu_options):
+    """parse dictionary to ipu options
+
+    Args:
+        ipu_options (dict): A dictionary of ipu settings
+
+    Returns:
+        opts: training options and inference options of IPU in a
+            dictionary
+    """
     # set ipu options for inference and training by config
     train_cfgs = ipu_options.pop('train_cfgs', {})
     eval_cfgs = ipu_options.pop('eval_cfgs', {})
@@ -207,19 +215,15 @@ def ipu_model_wrapper(
 
 
 def model_sharding(model, split_edges):
-    # shard model into multi-IPUs according to the pipeline config
-    # three args needed in ipu_model_cfg['split_edges']:
-    """
-    :param layer_to_call: model layer name or layer number
-    :param user_id: A user defined identifier for the block.
-        Blocks with the same id are considered as being a single block.
-        Block identifiers are also used to manually specify pipelines or
-        phases.
-    :param ipu_id: The id of the IPU to run on.
-                    Note that the ``ipu_id`` is an index
-                    in a multi-IPU device within PopTorch, and is
-                    separate and distinct from the device ids used by
-                    ``gc-info``.
+    """split models in-place into multi-IPUs
+
+    Args:
+        model (pytorch.nn.Module): the target model to be split
+        split_edges (dict): model layer names or layer numbers
+            of split edge
+
+    Returns:
+        model (pytorch.nn.Module): split model
     """
     if len(split_edges) == 0:
         return model
@@ -227,17 +231,17 @@ def model_sharding(model, split_edges):
     spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
     for idx, (_name, _module) in enumerate(model.named_modules()):
         assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),\
-            'The same layer is referenced twice while doing model partition: '\
-            'idx is {} and name is {}'.format(idx, _name)
+            f'The same layer is referenced twice while doing model partition: \
+                idx is {idx} and name is {_name}'
         edge = spilt_edges_dic.pop(_name, None)
         edge = spilt_edges_dic.pop(idx, edge)
         if edge is not None:
             poptorch.BeginBlock(_module, edge.get(
                 'user_id', _name), edge['ipu_id'])
     # check all split_edges are used
+    split_edge_names = list(spilt_edges_dic.keys())
     assert len(spilt_edges_dic) == 0,\
-        'split_edges: {} are not contained in the model'.format(
-                                        list(spilt_edges_dic.keys()))
+        f'split_edges: {split_edge_names} are not contained in the model'
     return model
 
 
@@ -251,12 +255,11 @@ def recomputation_checkpoint(model: torch.nn.Module, module_names=[])\
         else:
             return poptorch.recomputationCheckpoint(outputs)
 
-    for idx, (_name, _module) in enumerate(model.named_modules()):
+    for _name, _module in model.named_modules():
         if _name in module_names:
             _module.register_forward_hook(recompute_outputs)
             module_names.remove(_name)
 
     # check all module_names are used
     assert len(module_names) == 0,\
-        'split_edges: {} are not contained in the model'.format(
-                                        module_names)
+        f'split_edges: {module_names} are not contained in the model'

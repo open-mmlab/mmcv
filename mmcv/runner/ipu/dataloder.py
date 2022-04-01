@@ -52,8 +52,10 @@ def collate(batch, samples_per_gpu=1):
 class IPUDataloader(poptorch.DataLoader):
     """Thin wrapper of `torch.utils.data.DataLoader`
 
-    Abstract away some of the batch sizes calculations and speed up
-    data loading.
+    Comparing with pytorch.Dataloder, this dataloder changes the way of
+    calculation of batch size and adds the AsynchronousDataAccessor to
+    load and release data faster in cpu mode.
+
     If this data loader is used in a distributed execution environment, it will
     ensure that each process uses a different subset of the dataset, providing
     you first call ``options.randomSeed(N)`` with an integer N which is the
@@ -114,11 +116,6 @@ class IPUDataloader(poptorch.DataLoader):
         """
         # lazy init: sometimes, we cannot get IPU options when make data
         #            loader
-        if mode == 'async':
-            async_options = {'load_indefinitely': True, 'buffer_size': 8}
-            if rebatched_worker_size is None:
-                rebatched_worker_size = 128
-
         self.kwargs = {'options': options,
                        'dataset': dataset,
                        'batch_size': batch_size,
@@ -144,6 +141,11 @@ class IPUDataloader(poptorch.DataLoader):
                 kwargs['mode'] = poptorch.DataLoaderMode.Sync
             elif kwargs['mode'] == 'async':
                 kwargs['mode'] = poptorch.DataLoaderMode.AsyncRebatched
+                if kwargs['async_options'] is None:
+                    kwargs['async_options'] = {'load_indefinitely': True,
+                                               'buffer_size': 8}
+                if kwargs['rebatched_worker_size'] is None:
+                    kwargs['rebatched_worker_size'] = 128
             super().__init__(**kwargs)
             self.initialized = True
 

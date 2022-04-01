@@ -42,9 +42,9 @@ class IPUBaseRunner(metaclass=ABCMeta):
     def __init__(
             self,
             model,
-            ipu_options={},
-            modules_to_record=[],
-            ipu_model_cfg={},
+            ipu_options=None,
+            modules_to_record=None,
+            ipu_model_cfg=None,
             fp16_cfg=None,
             batch_processor=None,
             **kwargs):
@@ -55,7 +55,9 @@ class IPUBaseRunner(metaclass=ABCMeta):
                 'if you want to implement data parallelism '
                 'at the module level on IPU, '
                 'use IPU option: replicationFactor')
-
+        ipu_options = ipu_options or {}
+        modules_to_record = modules_to_record or []
+        ipu_model_cfg = ipu_model_cfg or {}
         super(IPUBaseRunner, self).__init__(model, **kwargs)
 
         # process options of ipu

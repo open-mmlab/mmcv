@@ -27,8 +27,8 @@ def wrap_optimizer_hook(optimizer_hook_class,):
     should be an error raised when using clip-norm.
     """
     assert optimizer_hook_class == OptimizerHook,\
-        'OptimizerHook type used is:{}, not supported now'.format(
-            str(optimizer_hook_class))
+        f'OptimizerHook type used is:{str(optimizer_hook_class)},\
+             not supported now'
 
     class ipu_optimizer_hook_class(OptimizerHook):
         def after_train_iter(self, runner):

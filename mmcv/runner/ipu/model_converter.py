@@ -23,6 +23,16 @@ class DictArgsParser(ArgsParser):
 
 
 class ComplexDataManager:
+    """A class used to record data structure of input of model.
+
+    At present, the input data structure accepted by IPU is limited,
+    when the input data structure of mmcv varies.
+    Here, an intermediate class is needed to convert and record
+    the data structure.
+
+    Args:
+        logger (warnings.warn): logger used to print warning
+    """
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
@@ -71,9 +81,9 @@ class ComplexDataManager:
             for idx in range(len(treeA)):
                 new_address = ''
                 if not self.quick_mode:
-                    new_address = address+'[{}]'.format(str(idx))
+                    new_address = address+f'[{str(idx)}]'
                     assert isinstance(treeA[idx], type(treeB[idx])),\
-                        'data structure changed: {}'.format(new_address)
+                        f'data structure changed: {new_address}'
                 if isinstance(treeA[idx], torch.Tensor):
                     treeB[idx] = treeA[idx]
                 else:
@@ -83,9 +93,9 @@ class ComplexDataManager:
             for k, v in treeA.items():
                 new_address = ''
                 if not self.quick_mode:
-                    new_address = address + '[{}]'.format(str(k))
+                    new_address = address + f'[{str(k)}]'
                     assert isinstance(treeA[k], type(treeB[k])),\
-                        'data structure changed: {}'.format(new_address)
+                        f'data structure changed: {new_address}'
                 if isinstance(v, torch.Tensor):
                     treeB[k] = treeA[k]
                 else:
@@ -99,9 +109,8 @@ class ComplexDataManager:
                         'should be same, but data({}) is changed'.\
                         format(address)
                 else:
-                    self.warning('find a non-torch.Tensor data({}) '
-                                 'changed, and the address is {}'.format(
-                                     str(type(treeA)), str(address)))
+                    self.warning(f'find a non-torch.Tensor data({type(treeA)}) \
+                        changed, and the address is {address}')
         elif isinstance(treeA, DataContainer):
             if not self.quick_mode:
                 assert isinstance(treeB, DataContainer)
@@ -109,8 +118,7 @@ class ComplexDataManager:
                 self.update(treeA.data, treeB.data, False, address=new_address)
         else:
             raise NotImplementedError(
-                'not supported datatype:{}, address is {}'
-                .format(str(treeA), address))
+                f'not supported datatype:{str(treeA)}, address is {address}')
 
     def get_tensors(self, target_tree=None):
         # get a list of tensor from self._tree
@@ -141,7 +149,7 @@ class ComplexDataManager:
             self._get_tensors(_tree.data, tensors)
         else:
             raise NotImplementedError(
-                'not supported datatype:{}'.format(str(_tree)))
+                f'not supported datatype:{str(_tree)}')
 
     def set_tensors(self, tensors):
         if type(self._tree) == torch.Tensor:
@@ -171,7 +179,7 @@ class ComplexDataManager:
             self._set_tensors(_tree.data, tensors)
         else:
             raise NotImplementedError(
-                'not supported datatype:{}'.format(str(_tree)))
+                f'not supported datatype:{str(_tree)}')
 
     def clean_tensors(self,):
         self._clean_tensors(self._tree)
@@ -195,7 +203,7 @@ class ComplexDataManager:
             self._clean_tensors(_tree.data)
         else:
             raise NotImplementedError(
-                'not supported datatype:{}'.format(str(_tree)))
+                f'not supported datatype:{str(_tree)}')
 
 
 class WrappedNet(torch.nn.Module):
