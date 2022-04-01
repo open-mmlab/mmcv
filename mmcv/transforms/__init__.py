@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .builder import TRANSFORMS
-from .loading import LoadAnnotation, LoadImageFromFile
+from .loading import LoadAnnotations, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomChoiceResize, RandomFlip, RandomGrayscale,
                          RandomResize, Resize)
@@ -11,7 +11,7 @@ try:
 except ImportError:
     __all__ = [
         'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
-        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
+        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations', 'Normalize',
         'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize', 'CenterCrop',
         'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
     ]
@@ -20,7 +20,7 @@ else:
 
     __all__ = [
         'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
-        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation', 'Normalize',
+        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations', 'Normalize',
         'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
         'MultiScaleFlipAug', 'RandomResize'

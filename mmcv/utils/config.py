@@ -576,12 +576,12 @@ class Config:
 
             >>> # Merge list element
             >>> cfg = Config(dict(pipeline=[
-            ...     dict(type='LoadImage'), dict(type='LoadAnnotations')]))
+            ...     dict(type='LoadImage'), dict(type='LoadAnnotationss')]))
             >>> options = dict(pipeline={'0': dict(type='SelfLoadImage')})
             >>> cfg.merge_from_dict(options, allow_list_keys=True)
             >>> cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
             >>> assert cfg_dict == dict(pipeline=[
-            ...     dict(type='SelfLoadImage'), dict(type='LoadAnnotations')])
+            ...     dict(type='SelfLoadImage'), dict(type='LoadAnnotationss')])
 
         Args:
             options (dict): dict of configs to merge from.

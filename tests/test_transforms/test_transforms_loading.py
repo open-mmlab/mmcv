@@ -4,7 +4,7 @@ import os.path as osp
 
 import numpy as np
 
-from mmcv.transforms import LoadAnnotation, LoadImageFromFile
+from mmcv.transforms import LoadAnnotations, LoadImageFromFile
 
 
 class TestLoadImageFromFile:
@@ -44,7 +44,7 @@ class TestLoadImageFromFile:
         assert results['img'].dtype == np.uint8
 
 
-class TestLoadAnnotation:
+class TestLoadAnnotations:
 
     def setup_class(cls):
         data_prefix = osp.join(osp.dirname(__file__), '../data')
@@ -64,7 +64,7 @@ class TestLoadAnnotation:
         }
 
     def test_load_bboxes(self):
-        transform = LoadAnnotation(
+        transform = LoadAnnotations(
             with_bbox=True,
             with_label=False,
             with_seg=False,
@@ -76,7 +76,7 @@ class TestLoadAnnotation:
                                                   [10, 10, 110, 120]])).all()
 
     def test_load_labels(self):
-        transform = LoadAnnotation(
+        transform = LoadAnnotations(
             with_bbox=False,
             with_label=True,
             with_seg=False,
@@ -87,7 +87,7 @@ class TestLoadAnnotation:
         assert (results['gt_bboxes_labels'] == np.array([1, 2])).all()
 
     def test_load_kps(self):
-        transform = LoadAnnotation(
+        transform = LoadAnnotations(
             with_bbox=False,
             with_label=False,
             with_seg=False,
@@ -99,7 +99,7 @@ class TestLoadAnnotation:
                                                      [[4, 5, 6]]])).all()
 
     def test_load_seg_map(self):
-        transform = LoadAnnotation(
+        transform = LoadAnnotations(
             with_bbox=False,
             with_label=False,
             with_seg=True,
@@ -110,14 +110,14 @@ class TestLoadAnnotation:
         assert results['gt_seg_map'].shape[:2] == (300, 400)
 
     def test_repr(self):
-        transform = LoadAnnotation(
+        transform = LoadAnnotations(
             with_bbox=True,
             with_label=False,
             with_seg=False,
             with_keypoints=False,
         )
         assert repr(transform) == (
-            'LoadAnnotation(with_bbox=True, '
+            'LoadAnnotations(with_bbox=True, '
             'with_label=False, with_seg=False, '
             "with_keypoints=False, imdecode_backend='cv2', "
             "file_client_args={'backend': 'disk'})")
