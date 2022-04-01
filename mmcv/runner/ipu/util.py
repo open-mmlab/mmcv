@@ -202,7 +202,7 @@ def ipu_model_wrapper(
 
     # split model into multi-IPUs if specified
     assert len(ipu_model_cfg.get('eval_split_edges', [])) == 0,\
-        "Currently, BeginBlock can only be used once on the same model"
+        'Currently, BeginBlock can only be used once on the same model'
     eval_model = model_sharding(copy.copy(model).eval(), ipu_model_cfg.get(
         'eval_split_edges', []))
 
