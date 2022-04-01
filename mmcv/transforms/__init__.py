@@ -12,7 +12,7 @@ try:
 except ImportError:
     __all__ = [
         'BaseTransform', 'TRANSFORMS', 'TransformBroadcaster', 'Compose',
-        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation',
+        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize',
         'CenterCrop', 'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
     ]
@@ -21,7 +21,7 @@ else:
 
     __all__ = [
         'BaseTransform', 'TRANSFORMS', 'TransformBroadcaster', 'Compose',
-        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotation',
+        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
         'MultiScaleFlipAug', 'RandomResize'
