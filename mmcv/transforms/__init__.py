@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .base import BaseTransform
 from .builder import TRANSFORMS
 from .loading import LoadAnnotations, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
@@ -10,18 +11,18 @@ try:
     import torch  # noqa: F401
 except ImportError:
     __all__ = [
-        'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
-        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations', 'Normalize',
-        'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize', 'CenterCrop',
-        'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
+        'BaseTransform', 'TRANSFORMS', 'TransformBroadcaster', 'Compose',
+        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
+        'Normalize', 'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize',
+        'CenterCrop', 'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
     ]
 else:
     from .formatting import ImageToTensor, ToTensor, to_tensor
 
     __all__ = [
-        'TRANSFORMS', 'TransformBroadcaster', 'Compose', 'RandomChoice',
-        'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations', 'Normalize',
-        'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
+        'BaseTransform', 'TRANSFORMS', 'TransformBroadcaster', 'Compose',
+        'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
+        'Normalize', 'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
         'MultiScaleFlipAug', 'RandomResize'
     ]
