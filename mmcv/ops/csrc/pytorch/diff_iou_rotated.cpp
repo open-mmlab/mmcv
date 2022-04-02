@@ -1,34 +1,9 @@
+// Copyright (c) OpenMMLab. All rights reserved
+// Adapted from https://github.com/lilanxiao/Rotated_IoU/cuda_op/sort_vert.cpp  # noqa
 #include <ATen/cuda/CUDAContext.h>
 #include <torch/extension.h>
 #include <c10/cuda/CUDAGuard.h>
-
-#define CHECK_CUDA(x)                                           \
-    do {                                                        \
-        TORCH_CHECK(x.is_cuda(), #x " must be a CUDA tensor");   \
-    } while (0)
-
-#define CHECK_CONTIGUOUS(x)                                                     \
-    do {                                                                        \
-        TORCH_CHECK(x.is_contiguous(), #x " must ne a contiguous tensor");       \
-    } while (0)                                                                 
-
-#define CHECK_IS_INT(x)                                     \
-    do {                                                    \
-        TORCH_CHECK(x.scalar_type()==at::ScalarType::Int,   \
-                    #x " must be a int tensor");            \
-    } while (0)
-
-#define CHECK_IS_FLOAT(x)                                       \
-    do {                                                        \
-        TORCH_CHECK(x.scalar_type()==at::ScalarType::Float,    \
-                    #x " must be a float tensor");              \
-    } while (0)                                                 
-
-#define CHECK_IS_BOOL(x)                                       \
-    do {                                                        \
-        TORCH_CHECK(x.scalar_type()==at::ScalarType::Bool,    \
-                    #x " must be a bool tensor");             \
-    } while (0)
+#include "pytorch_cpp_helper.hpp"
 
 #define MAX_NUM_VERT_IDX 9
 
@@ -41,9 +16,6 @@ at::Tensor diff_iou_rotated_sort_vertices(at::Tensor vertices, at::Tensor mask, 
     CHECK_CUDA(vertices);
     CHECK_CUDA(mask);
     CHECK_CUDA(num_valid);
-    CHECK_IS_FLOAT(vertices);
-    CHECK_IS_BOOL(mask);
-    CHECK_IS_INT(num_valid);
 
     int b = vertices.size(0);
     int n = vertices.size(1);
@@ -59,4 +31,3 @@ at::Tensor diff_iou_rotated_sort_vertices(at::Tensor vertices, at::Tensor mask, 
 
     return idx;
 }
-

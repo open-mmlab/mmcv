@@ -18,6 +18,7 @@ from .deprecated_wrappers import Conv2d_deprecated as Conv2d
 from .deprecated_wrappers import ConvTranspose2d_deprecated as ConvTranspose2d
 from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
+from .diff_iou_rotated import diff_iou_rotated_2d, diff_iou_rotated_3d
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
 from .furthest_point_sample import (furthest_point_sample,
@@ -65,7 +66,6 @@ from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
-from .diff_iou_rotated import diff_iou_rotated_sort_vertices
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -97,5 +97,5 @@ __all__ = [
     'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
     'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
-    'convex_iou', 'convex_giou'
+    'convex_iou', 'convex_giou', 'diff_iou_rotated_2d', 'diff_iou_rotated_3d'
 ]

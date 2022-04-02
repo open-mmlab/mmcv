@@ -1,3 +1,5 @@
+// Copyright (c) OpenMMLab. All rights reserved
+// Adapted from https://github.com/lilanxiao/Rotated_IoU/cuda_op/sort_vert_kernel.cu  # noqa
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <cmath>
@@ -29,7 +31,7 @@ inline dim3 opt_block_config(int x, int y){
 
 /*
 compare normalized vertices (vertices around (0,0))
-if vertex1 < vertex2 return ture.
+if vertex1 < vertex2 return true.
 order: minimum at x-aixs, become larger in anti-clockwise direction
 */
 __device__ bool compare_vertices(float x1, float y1, float x2, float y2){
@@ -73,7 +75,7 @@ __global__ void sort_vertices_kernel(int b, int n, int m,
     int index = threadIdx.x;        // index of polygon
     int stride = blockDim.x;
     for (int i = index; i<n; i+=stride){
-        int pad;    // index of arbitary invalid intersection point (not box corner!)
+        int pad;    // index of arbitrary invalid intersection point (not box corner!)
         for (int j=INTERSECTION_OFFSET; j<m; ++j){
             if (!mask[i*m + j]){
                 pad = j;
@@ -90,7 +92,7 @@ __global__ void sort_vertices_kernel(int b, int n, int m,
             // sort the valid vertices
             // note the number of valid vertices is known
             for (int j=0; j<num_valid[i]; ++j){
-                // initilize with a "big" value
+                // initialize with a "big" value
                 float x_min = 1;
                 float y_min = -EPSILON;
                 int i_take = 0;
