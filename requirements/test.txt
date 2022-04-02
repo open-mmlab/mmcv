@@ -1,8 +1,8 @@
 coverage
 lmdb
-onnx==1.7.0
-onnxoptimizer
-onnxruntime>=1.8.0
+onnx==1.7.0z; python_version < '3.10'
+onnxoptimizer; python_version < '3.10'
+onnxruntime>=1.8.0; python_version < '3.10'
 pytest
 PyTurboJPEG
 scipy
