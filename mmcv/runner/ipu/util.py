@@ -2,8 +2,10 @@
 import copy
 import inspect
 import torch
+import torch.nn as nn
 import popart
 import poptorch
+
 from mmcv.utils import Registry
 from .model_converter import TrainEvalModel
 
@@ -55,8 +57,11 @@ def build_from_cfg_with_wrapper(
     else:
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
-    wrapped_obj_cls = obj_cls if wrapper_func is None \
-        else wrapper_func(obj_cls)
+            
+    if wrapper_func is None:
+        wrapped_obj_cls = obj_cls
+    else:
+        wrapped_obj_cls = wrapper_func(obj_cls)
     try:
         return wrapped_obj_cls(**args)
     except Exception as e:
@@ -147,13 +152,31 @@ def ipu_model_wrapper(
         opts,
         optimizer=None,
         logger=None,
-        modules_to_record=[],
-        ipu_model_cfg={},
+        modules_to_record=(),
+        ipu_model_cfg=None,
         fp16_cfg=None
         ):
-    # TrainEvalModel will shallow copy the model,
-    # so any changes to the model must be placed before TrainEvalModel
-    # hold the training state of model
+    """Convert torch model to IPU model
+
+    Args:
+        model (nn.Module): The target model to be converted.
+        opts (dict): IPU options.
+        optimizer (torch.optim | optional): torch optimizer, necessary
+            if in training mode
+        logger: a logger
+        modules_to_record (tuple): names of modules to be recorded.
+        ipu_model_cfg (dict): a dictionary contained train_split_edges,
+            train_ckpt_nodes, see details in funcations model_sharding and
+            recomputation_checkpoint
+        fp16_cfg (dict): config for IPU fp16 training, currently support
+            configs: `loss_scale`, `velocity_accum_type`, `accum_type`.
+            see details in
+            https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html
+    
+    Returns:
+        TrainEvalModel: IPU wrapped model.
+    """
+    ipu_model_cfg = ipu_model_cfg or {}
     training = model.training if optimizer is not None else False
     # set mixed-precision
     if fp16_cfg is not None:
@@ -165,13 +188,15 @@ def ipu_model_wrapper(
         if optimizer is not None:
             optimizer.loss_scaling = loss_scale
             if fp16_cfg.get('velocity_accum_type', False):
-                optimizer.velocity_accum_type =\
-                    torch.half if fp16_cfg['velocity_accum_type'] == 'half'\
-                    else torch.float32
+                if fp16_cfg['velocity_accum_type'] == 'half':
+                    optimizer.velocity_accum_type = torch.half
+                else:
+                    optimizer.velocity_accum_type = torch.float32
             if fp16_cfg.get('accum_type', False):
-                optimizer.accum_type =\
-                    torch.half if fp16_cfg['accum_type'] == 'half'\
-                    else torch.float32
+                if fp16_cfg['accum_type'] == 'half':
+                    optimizer.accum_type = torch.half
+                else:
+                    optimizer.accum_type = torch.float32
         # TODO support feature alignment for fp16
         if len(modules_to_record) > 0:
             raise NotImplementedError(
@@ -215,12 +240,12 @@ def ipu_model_wrapper(
 
 
 def model_sharding(model, split_edges):
-    """split models in-place into multi-IPUs
+    """split models in-place into multi-IPUs.
 
     Args:
-        model (pytorch.nn.Module): the target model to be split
-        split_edges (dict): model layer names or layer numbers
-            of split edge
+        model (nn.Module): The target model to be split.
+        split_edges (list): Model layer names or layer numbers
+            of split edge.
 
         Examples:
             >>> split_edges = [
@@ -231,48 +256,49 @@ def model_sharding(model, split_edges):
             >>> sharding_model = model_sharding(torch_model, split_edges)
 
     Returns:
-        model (nn.Module): split model
+        nn.Module: Split model.
     """
     if len(split_edges) == 0:
         return model
     assert isinstance(split_edges, list)
-    spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
-    for idx, (_name, _module) in enumerate(model.named_modules()):
-        assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),\
-            f'The same layer is referenced twice while doing model partition: \
-                idx is {idx} and name is {_name}'
-        edge = spilt_edges_dic.pop(_name, None)
-        edge = spilt_edges_dic.pop(idx, edge)
+    spilt_edges_dict = {edge['layer_to_call']: edge for edge in split_edges}
+
+    for idx, (name, module) in enumerate(model.named_modules()):
+        if idx in spilt_edges_dict and name in spilt_edges_dict:
+            raise ValueError(
+                f'The same layer is referenced twice while doing model'
+                f' partition: idx is {idx} and name is {name}')
+         
+        edge = spilt_edges_dict.pop(name, None)
+        edge = spilt_edges_dict.pop(idx, edge)
         if edge is not None:
-            poptorch.BeginBlock(_module, edge.get(
-                'user_id', _name), edge['ipu_id'])
-    # check all split_edges are used
-    split_edge_names = list(spilt_edges_dic.keys())
-    assert len(spilt_edges_dic) == 0,\
-        f'split_edges: {split_edge_names} are not contained in the model'
+            poptorch.BeginBlock(module, edge.get(
+                'user_id', name), edge['ipu_id'])
+
+    # ensure all split_edges are used
+    if len(spilt_edges_dict) > 0:
+        split_edge_names = list(spilt_edges_dict.keys())
+        raise RuntimeError(
+            f'split_edges: {split_edge_names} are not contained in the model')
     return model
 
 
-def recomputation_checkpoint(model: torch.nn.Module, module_names=[])\
+def recomputation_checkpoint(model: nn.Module, module_names=[])\
      -> torch.utils.hooks.RemovableHandle:
     """Annotates the output of a module to be checkpointed instead of
         recomputed
 
+    If recompute mode is enabled, ipu will release the activations of
+    the middle layers to save memory. During the backward of gradient,
+    the activation of the middle layer will be recalculated again.
+    This function is used to declare the activations of some intermediate
+    layers that need to be saved in order to skip the recomputation of
+    some layers.
+
     Args:
-        model (pytorch.nn.Module): the target model to be split
-        split_edges (dict): model layer names or layer numbers
-            of split edge
-
-        Examples:
-            >>> split_edges = [
-            ...     # layer_to_call is name of layer and ipu_id
-            ...     # if the id of ipu to map
-            ...     dict(layer_to_call='model.conv1', ipu_id=0),
-            ...     dict(layer_to_call='model.conv3', ipu_id=1)]
-            >>> sharding_model = model_sharding(torch_model, split_edges)
-
-    Returns:
-        model (nn.Module): split model
+        model (nn.Module): the target model to apply recomputation
+            checkpoint
+        module_names (list): model layer names
     """
     def recompute_outputs(module, inputs, outputs):
         if type(outputs) is tuple:
@@ -280,10 +306,10 @@ def recomputation_checkpoint(model: torch.nn.Module, module_names=[])\
         else:
             return poptorch.recomputationCheckpoint(outputs)
 
-    for _name, _module in model.named_modules():
-        if _name in module_names:
-            _module.register_forward_hook(recompute_outputs)
-            module_names.remove(_name)
+    for name, module in model.named_modules():
+        if name in module_names:
+            module.register_forward_hook(recompute_outputs)
+            module_names.remove(name)
 
     # check all module_names are used
     assert len(module_names) == 0,\

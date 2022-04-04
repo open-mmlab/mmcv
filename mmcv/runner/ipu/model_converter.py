@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+import torch.nn as nn
 import poptorch
 import numpy as np
 import inspect
@@ -206,7 +207,7 @@ class ComplexDataManager:
                 f'not supported datatype:{str(_tree)}')
 
 
-class WrappedNet(torch.nn.Module):
+class WrappedNet(nn.Module):
     def __init__(
             self,
             model,
@@ -577,7 +578,7 @@ class TrainEvalModel:
         if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`, etc.
 
         This is equivalent with :meth:`self.train(False)
-        <torch.nn.Module.train>`.
+        <nn.Module.train>`.
 
         See :ref:`locally-disable-grad-doc` for a comparison between
         `.eval()` and several similar mechanisms that may be confused with it.
@@ -646,7 +647,7 @@ class TrainEvalModel:
         return getattr(self.executor, attr)
 
 
-def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
+def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
                   options: Optional['poptorch.Options'] = None,
                   optimizer: Optional['torch.optim.Optimizer'] = None,
                   logger=None,
@@ -693,7 +694,7 @@ def trainingModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
                                  poptorch_version=__version__,)
 
 
-def inferenceModel(model: Union['torch.nn.Module', 'poptorch.PoplarExecutor'],
+def inferenceModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
                    options: Optional['poptorch.Options'] = None,
                    logger=None
                    ) -> 'poptorch.PoplarExecutor':

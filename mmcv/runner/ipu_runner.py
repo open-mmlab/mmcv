@@ -17,13 +17,15 @@ if IPU_MODE:
 
 
 class IPUBaseRunner(metaclass=ABCMeta):
-    """A base runner for IPU device, should be inherited with
-    base_runner.BaseRunner
-    This runner has some extra processes for IPU which are showed below:
+    """All subclasses run on IPU device should inherit this base class and 
+    ``base_runner.BaseRunner``.
+    
+    This runner has some extra processes for IPU which are shown below:
+    
     1. Parse options for IPU
     2. wrap pytorch model for IPU
-    3. Raise errors while encountering illegal ussage
-    4. Input IPU options and initialize dataloader if finding a instance of
+    3. Raise errors while encountering illegal usage
+    4. Input IPU options and initialize dataloader if finding an instance of
        of IPUDataloader
 
     Args:
@@ -117,7 +119,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
         elif mode == 'val':
             return self.ipu_options['inference']
         else:
-            raise RuntimeError(f'expect train or val but got {mode}')
+            raise ValueError(f'mode should be train or val but got {mode}')
 
 
 @RUNNERS.register_module()
