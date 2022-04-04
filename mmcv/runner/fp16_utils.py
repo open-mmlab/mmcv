@@ -63,7 +63,7 @@ def cast_tensor_type(inputs, src_type, dst_type):
         return inputs
 
 
-def auto_fp16(apply_to=None, out_fp32=False, supported_types=[]):
+def auto_fp16(apply_to=None, out_fp32=False, supported_types=(nn.Module, )):
     """Decorator to enable fp16 training automatically.
 
     This decorator is useful when you write custom modules and want to support
