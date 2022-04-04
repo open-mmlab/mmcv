@@ -81,12 +81,14 @@ def collect_env():
             # on Windows, cl.exe is not in PATH. We need to find the path.
             # distutils.ccompiler.new_compiler() returns a msvccompiler
             # object and after initialization, path to cl.exe is found.
+            import locale
             from distutils.ccompiler import new_compiler
             ccompiler = new_compiler()
             ccompiler.initialize()
             cc = subprocess.check_output(
                 f'{ccompiler.cc}', stderr=subprocess.STDOUT, shell=True)
-            env_info['MSVC'] = cc.decode('utf-8').partition('\n')[0].strip()
+            encoding = locale.getdefaultlocale()[1]
+            env_info['MSVC'] = cc.decode(encoding).partition('\n')[0].strip()
             env_info['GCC'] = 'n/a'
             del ccompiler
     except subprocess.CalledProcessError:
