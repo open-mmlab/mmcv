@@ -218,7 +218,7 @@ def ipu_model_wrapper(
 
 
 def model_sharding(model, split_edges):
-    """split models in-place into multi-IPUs
+    """split models in-place into multi-IPUs.
 
     Args:
         model (nn.Module): The target model to be split.
