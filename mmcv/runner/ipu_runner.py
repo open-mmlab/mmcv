@@ -12,7 +12,8 @@ if IPU_MODE:
     from mmcv.runner.ipu import (parse_ipu_options,
                                  build_from_cfg_with_wrapper, IPU_MODE,
                                  ipu_model_wrapper, wrap_optimizer_hook,
-                                 IPUFp16OptimizerHook, wrap_lr_update_hook,)
+                                 IPUFp16OptimizerHook, wrap_lr_update_hook,
+                                 IPUDataloader)
 
 
 class IPUBaseRunner(metaclass=ABCMeta):
@@ -55,6 +56,7 @@ class IPUBaseRunner(metaclass=ABCMeta):
                 'if you want to implement data parallelism '
                 'at the module level on IPU, '
                 'use IPU option: replicationFactor')
+
         ipu_options = ipu_options or {}
         modules_to_record = modules_to_record or []
         ipu_model_cfg = ipu_model_cfg or {}
@@ -63,13 +65,11 @@ class IPUBaseRunner(metaclass=ABCMeta):
         # process options of ipu
         if IPU_MODE:
             self.ipu_options = parse_ipu_options(ipu_options)
-            # self.data_loader = wrap_data_loader(self.data_loader)
             self.model = ipu_model_wrapper(
                 self.model, self.ipu_options, self.optimizer, self.logger,
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
         else:
-            # warnings.warn('no ipu found, degrade to CPU mode', UserWarning)
             raise NotImplementedError('cpu mode on IPURunner not supported')
 
     def register_lr_hook(self, lr_config):
@@ -103,8 +103,10 @@ class IPUBaseRunner(metaclass=ABCMeta):
 
     def run(self, data_loaders, workflow, *args, **kwargs):
         for i, flow in enumerate(workflow):
-            mode, iters = flow
+            mode, _ = flow
             # initialize IPU dataloder if not initialized
+            assert isinstance(data_loaders[i], IPUDataloader),\
+                'IPU runner can only work with `IPUDataloader`'
             data_loaders[i].init(options=self.get_ipu_opts(mode))
 
         super().run(data_loaders, workflow, *args, **kwargs)
@@ -114,11 +116,14 @@ class IPUBaseRunner(metaclass=ABCMeta):
             return self.ipu_options['training']
         elif mode == 'val':
             return self.ipu_options['inference']
+        else:
+            raise RuntimeError(f'expect train or val but got {mode}')
 
 
 @RUNNERS.register_module()
 class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
     """Epoch-based Runner for IPU.
+
     The Inheritance order(MRO) is:
     IPUEpochBasedRunner -> IPUBaseRunner -> EpochBasedRunner -> BaseRunner
     This runner train models epoch by epoch.
@@ -129,6 +134,7 @@ class IPUEpochBasedRunner(IPUBaseRunner, EpochBasedRunner):
 @RUNNERS.register_module()
 class IPUIterBasedRunner(IPUBaseRunner, IterBasedRunner):
     """Iteration-based Runner for IPU.
+
     The Inheritance order(MRO) is:
     IPUIterBasedRunner -> IPUBaseRunner -> IterBasedRunner -> BaseRunner
     This runner train models iteration by iteration.

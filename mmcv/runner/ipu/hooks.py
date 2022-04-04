@@ -14,22 +14,22 @@ def wrap_lr_update_hook(lr_hook_class):
 
     class ipu_lr_hook_class(lr_hook_class):
         def _set_lr(self, runner, *args, **kwargs):
-            result = super()._set_lr(runner, *args, **kwargs)
-            assert result is None  # _set_lr should return nothing
+            super()._set_lr(runner, *args, **kwargs)
             runner.model.setOptimizer(runner.optimizer)
     return ipu_lr_hook_class
 
 
 def wrap_optimizer_hook(optimizer_hook_class,):
     """A wrapper function to wrap OptimizerHook
+
     This is an non-intrusive implementation of wrapping optimizer hook
     (or you need to change every config file to use IPU optimizer hook)
     IPU's clip-norm implementation is different from pytorch, so there
     should be an error raised when using clip-norm.
     """
-    assert optimizer_hook_class == OptimizerHook,\
-        f'OptimizerHook type used is:{str(optimizer_hook_class)},\
-             not supported now'
+    if optimizer_hook_class is not OptimizerHook:
+        raise ValueError(
+            f'Only OptimizerHook is supported, bug got {optimizer_hook_class}')
 
     class ipu_optimizer_hook_class(OptimizerHook):
         def after_train_iter(self, runner):

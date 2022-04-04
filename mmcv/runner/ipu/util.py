@@ -222,8 +222,16 @@ def model_sharding(model, split_edges):
         split_edges (dict): model layer names or layer numbers
             of split edge
 
+        Examples:
+            >>> split_edges = [
+            ...     # layer_to_call is name of layer and ipu_id
+            ...     # if the id of ipu to map
+            ...     dict(layer_to_call='model.conv1', ipu_id=0),
+            ...     dict(layer_to_call='model.conv3', ipu_id=1)]
+            >>> sharding_model = model_sharding(torch_model, split_edges)
+
     Returns:
-        model (pytorch.nn.Module): split model
+        model (nn.Module): split model
     """
     if len(split_edges) == 0:
         return model
@@ -248,7 +256,24 @@ def model_sharding(model, split_edges):
 def recomputation_checkpoint(model: torch.nn.Module, module_names=[])\
      -> torch.utils.hooks.RemovableHandle:
     """Annotates the output of a module to be checkpointed instead of
-        recomputed"""
+        recomputed
+
+    Args:
+        model (pytorch.nn.Module): the target model to be split
+        split_edges (dict): model layer names or layer numbers
+            of split edge
+
+        Examples:
+            >>> split_edges = [
+            ...     # layer_to_call is name of layer and ipu_id
+            ...     # if the id of ipu to map
+            ...     dict(layer_to_call='model.conv1', ipu_id=0),
+            ...     dict(layer_to_call='model.conv3', ipu_id=1)]
+            >>> sharding_model = model_sharding(torch_model, split_edges)
+
+    Returns:
+        model (nn.Module): split model
+    """
     def recompute_outputs(module, inputs, outputs):
         if type(outputs) is tuple:
             return tuple(poptorch.recomputationCheckpoint(y) for y in outputs)
