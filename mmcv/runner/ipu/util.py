@@ -228,7 +228,8 @@ def model_sharding(model, split_edges):
     if len(split_edges) == 0:
         return model
     assert isinstance(split_edges, list)
-    spilt_edges_dic = {ele['layer_to_call']: ele for ele in split_edges}
+    spilt_edges_dict = {edge['layer_to_call']: edge for edge in split_edges}
+
     for idx, (_name, _module) in enumerate(model.named_modules()):
         assert not (idx in spilt_edges_dic and _name in spilt_edges_dic),\
             f'The same layer is referenced twice while doing model partition: \
