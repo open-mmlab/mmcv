@@ -4,8 +4,9 @@ from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
 
 
 def wrap_lr_update_hook(lr_hook_class):
-    """A wrapper function to wrap any subclass of LrUpdaterHook
-    IPU needs extra operations to upload optimizer setting,
+    """A wrapper function to wrap any subclass of LrUpdaterHook.
+    
+    IPU needs extra operations to upload optimizer settings,
     this wrapper will override function(_set_lr) of a subclass of
     LrUpdaterHook.
     """
