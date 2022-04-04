@@ -226,7 +226,7 @@ def model_sharding(model, split_edges):
             of split edge
 
     Returns:
-        model (pytorch.nn.Module): split model
+        nn.Module: Split model.
     """
     if len(split_edges) == 0:
         return model
