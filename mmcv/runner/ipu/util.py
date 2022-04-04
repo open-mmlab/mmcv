@@ -55,8 +55,11 @@ def build_from_cfg_with_wrapper(
     else:
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
-    wrapped_obj_cls = obj_cls if wrapper_func is None \
-        else wrapper_func(obj_cls)
+            
+    if wrapper_func is None:
+        wrapped_obj_cls = obj_cls
+    else:
+        wrapped_obj_cls = wrapper_func(obj_cls)
     try:
         return wrapped_obj_cls(**args)
     except Exception as e:
