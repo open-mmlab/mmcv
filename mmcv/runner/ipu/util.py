@@ -221,9 +221,9 @@ def model_sharding(model, split_edges):
     """split models in-place into multi-IPUs
 
     Args:
-        model (pytorch.nn.Module): the target model to be split
-        split_edges (dict): model layer names or layer numbers
-            of split edge
+        model (nn.Module): The target model to be split.
+        split_edges (list): Model layer names or layer numbers
+            of split edge.
 
     Returns:
         nn.Module: Split model.
