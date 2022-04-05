@@ -90,7 +90,6 @@ def collect_env():
             encoding = locale.getdefaultlocale()[1]
             env_info['MSVC'] = cc.decode(encoding).partition('\n')[0].strip()
             env_info['GCC'] = 'n/a'
-            del ccompiler
     except subprocess.CalledProcessError:
         env_info['GCC'] = 'n/a'
 
