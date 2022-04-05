@@ -517,7 +517,7 @@ class TrainEvalModel:
                 train_model, options=options['training'], optimizer=optimizer,
                 logger=logger, modules_to_record=modules_to_record)
             self.training = True
-        self._eval_executor = inferenceModel(
+        self._eval_executor = get_inference_model(
             eval_model, options=options['inference'], logger=logger)
 
     @property
@@ -654,10 +654,11 @@ def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
                        logger=None,
                        modules_to_record=[]
                        ) -> poptorch.PoplarExecutor:
-    """Create a PopTorch training model, from a PyTorch model, to run on IPU
+    """Create a PopTorch training model from a PyTorch model, running on IPU
     hardware in training mode.
 
-    .. note:: PopTorch makes a shallow copy of the model. Changes to the
+    Note:
+        PopTorch makes a shallow copy of the model. Changes to the
         parameters in the returned training model affect the original model
         and vice versa. However, primitive variable types are not synced: for
         example calling ``model.train()`` on the original model, which
@@ -670,16 +671,15 @@ def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
     :param optimizer: The optimizers to apply during \
         training.
 
-        Supported PyTorch optimizers: ``optim.SGD``, ``optim.Adam``, \
-             ``optim.AdamW``, ``optim.RMSprop``.
+        - Supported PyTorch optimizers: ``optim.SGD``, ``optim.Adam``,
+          ``optim.AdamW`` and ``optim.RMSprop``.
 
-        Supported PopTorch optimizers: :py:class:`poptorch.optim.SGD`, \
-            :py:class:`poptorch.optim.Adam`, \
-            :py:class:`poptorch.optim.AdamW`, \
-            :py:class:`poptorch.optim.RMSprop`. \
-            :py:class:`poptorch.optim.LAMB`.
+        - Supported PopTorch optimizers: ``poptorch.optim.SGD``,
+           ``poptorch.optim.Adam``, ``poptorch.optim.AdamW``,
+           ``poptorch.optim.RMSprop`` and ``poptorch.optim.LAMB``.
 
-    :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
+    returns:
+        The :class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
     # Create a copy of the original model in case it needs to be wrapped
@@ -695,14 +695,15 @@ def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
                                  poptorch_version=__version__,)
 
 
-def inferenceModel(model: Union[nn.Module, poptorch.PoplarExecutor],
+def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
                    options: Optional[poptorch.Options] = None,
                    logger=None
                    ) -> poptorch.PoplarExecutor:
-    """Create a PopTorch inference model, from a PyTorch model, to run on IPU
+    """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 
-    .. note:: PopTorch makes a shallow copy of the model. Changes to the
+    Note: 
+        PopTorch makes a shallow copy of the model. Changes to the
         parameters in the returned inference model affect the original model
         and vice versa. However, primitive variable types are not synced: for
         example calling ``model.eval()`` on the original model will not alter
@@ -710,10 +711,13 @@ def inferenceModel(model: Union[nn.Module, poptorch.PoplarExecutor],
         ``model.eval()`` on your model before you call this function for
         correct behavior.
 
-    :param model: The PyTorch model to wrap.
-    :param options: The IPU specific options
-    :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
-        of ``model``.
+    Args:
+        model (nn.Module or poptorch.PoplarExecutor): The PyTorch model to wrap.
+        options (poptorch.Options, optional): The IPU specific options.
+        logger (xxx): xxx.
+   
+   Returns:  
+       The :class:`poptorch.PoplarExecutor` wrapper to use in place of ``model``.
     """
 
     return PoplarExecutorForMMCV(model=copy.copy(model),
