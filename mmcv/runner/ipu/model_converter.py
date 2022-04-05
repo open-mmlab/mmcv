@@ -656,7 +656,8 @@ def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
     """Create a PopTorch training model, from a PyTorch model, to run on IPU
     hardware in training mode.
 
-    .. note:: PopTorch makes a shallow copy of the model. Changes to the
+    Note:
+        PopTorch makes a shallow copy of the model. Changes to the
         parameters in the returned training model affect the original model
         and vice versa. However, primitive variable types are not synced: for
         example calling ``model.train()`` on the original model, which
