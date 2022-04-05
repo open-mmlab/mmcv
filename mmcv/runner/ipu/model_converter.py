@@ -676,7 +676,8 @@ def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
            ``poptorch.optim.Adam``, ``poptorch.optim.AdamW``,
            ``poptorch.optim.RMSprop`` and ``poptorch.optim.LAMB``.
 
-    :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
+    returns:
+        The :class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
     # Create a copy of the original model in case it needs to be wrapped
