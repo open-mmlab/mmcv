@@ -698,7 +698,7 @@ def inferenceModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
                    options: Optional['poptorch.Options'] = None,
                    logger=None
                    ) -> 'poptorch.PoplarExecutor':
-    """Create a PopTorch inference model, from a PyTorch model, to run on IPU
+    """Create a PopTorch inference model from a PyTorch model, to run on IPU
     hardware in inference mode.
 
     .. note:: PopTorch makes a shallow copy of the model. Changes to the
