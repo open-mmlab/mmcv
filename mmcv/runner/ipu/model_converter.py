@@ -701,7 +701,8 @@ def inferenceModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
     """Create a PopTorch inference model from a PyTorch model, to run on IPU
     hardware in inference mode.
 
-    .. note:: PopTorch makes a shallow copy of the model. Changes to the
+    Note: 
+        PopTorch makes a shallow copy of the model. Changes to the
         parameters in the returned inference model affect the original model
         and vice versa. However, primitive variable types are not synced: for
         example calling ``model.eval()`` on the original model will not alter
