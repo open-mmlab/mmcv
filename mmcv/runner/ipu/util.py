@@ -247,13 +247,13 @@ def model_sharding(model, split_edges):
         split_edges (list): Model layer names or layer numbers
             of split edge.
 
-        Examples:
-            >>> split_edges = [
-            ...     # layer_to_call is name of layer and ipu_id
-            ...     # if the id of ipu to map
-            ...     dict(layer_to_call='model.conv1', ipu_id=0),
-            ...     dict(layer_to_call='model.conv3', ipu_id=1)]
-            >>> sharding_model = model_sharding(torch_model, split_edges)
+    Examples:
+        >>> split_edges = [
+        ...     # layer_to_call is name of layer and ipu_id
+        ...     # is the id of ipu to map
+        ...     dict(layer_to_call='model.conv1', ipu_id=0),
+        ...     dict(layer_to_call='model.conv3', ipu_id=1)]
+        >>> sharding_model = model_sharding(torch_model, split_edges)
 
     Returns:
         nn.Module: Split model.
