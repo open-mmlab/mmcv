@@ -69,21 +69,21 @@ def build_from_cfg_with_wrapper(
         raise type(e)(f'{wrapped_obj_cls.__name__}: {e}')
 
 
-def _opts_assigner(_cfg, opts_node):
+def _options_assigner(cfg, options_node):
     # set popart.options by config
-    # _cfg: dict, python data type
-    # opts_node: python module or function
-    if isinstance(_cfg, dict):
-        for _key in _cfg:
-            _opts_assigner(_cfg[_key], getattr(opts_node, _key))
-    elif isinstance(_cfg, (int, float, str, list)):
-        if callable(opts_node):
-            opts_node(_cfg)
+    # cfg: dict, python data type
+    # options_node: python module or function
+    if isinstance(cfg, dict):
+        for key in cfg:
+            _options_assigner(cfg[key], getattr(options_node, key))
+    elif isinstance(cfg, (int, float, str, list)):
+        if callable(options_node):
+            options_node(cfg)
         else:
-            error_msg = f'opts_node type {type(opts_node)} not supported'
+            error_msg = f'opts_node type {type(options_node)} not supported'
             raise NotImplementedError(error_msg)
     else:
-        error_msg = f'cfg type {type(_cfg)} not supported'
+        error_msg = f'cfg type {type(cfg)} not supported'
         raise NotImplementedError(error_msg)
 
 
@@ -122,14 +122,16 @@ def parse_ipu_options(ipu_options):
 
 def _parse_ipu_options(ipu_options):
     # If it cannot be directly assigned, use if statement to parse it,
-    # and if it can be directly assigned, use _opts_assigner to assign
+    # and if it can be directly assigned, use _options_assigner to assign
     opts = poptorch.Options()
+
     if 'availableMemoryProportion' in ipu_options:
         availableMemoryProportion = ipu_options.pop(
             'availableMemoryProportion')
         mem_prop = {f'IPU{i}': availableMemoryProportion[i]
                     for i in range(len(availableMemoryProportion))}
         opts.setAvailableMemoryProportion(mem_prop)
+
     if 'executionStrategy' in ipu_options:
         executionStrategy = ipu_options.pop('executionStrategy')
         if executionStrategy == 'SameAsIpu':
@@ -139,11 +141,13 @@ def _parse_ipu_options(ipu_options):
             opts.setExecutionStrategy(poptorch.ShardedExecution())
         else:
             raise NotImplementedError
+
     if 'partialsType' in ipu_options:
         partialsType = ipu_options.pop('partialsType')
         opts.Precision.setPartialsType(
             getattr(torch, partialsType))  # half or float
-    _opts_assigner(ipu_options, opts)
+
+    _options_assigner(ipu_options, opts)
     return opts
 
 
@@ -160,12 +164,13 @@ def ipu_model_wrapper(
 
     Args:
         model (nn.Module): The target model to be converted.
-        opts (dict): IPU options.
-        optimizer (torch.optim | optional): torch optimizer, necessary
+        opts (dict[str, poptorch.Options]): IPU options, generated
+            by func: parse_ipu_options.
+        optimizer (torch.optim, optional): torch optimizer, necessary
             if in training mode
         logger: a logger
         modules_to_record (tuple): names of modules to be recorded.
-        ipu_model_cfg (dict): a dictionary contained train_split_edges,
+        ipu_model_cfg (dict): a dictionary contains train_split_edges,
             train_ckpt_nodes, see details in funcations model_sharding and
             recomputation_checkpoint
         fp16_cfg (dict): config for IPU fp16 training, currently support
@@ -244,13 +249,16 @@ def model_sharding(model, split_edges):
 
     Args:
         model (nn.Module): The target model to be split.
-        split_edges (list): Model layer names or layer numbers
-            of split edge.
+        split_edges (list of dict): Model layer names or layer numbers
+            of split edge. Each item of ``split_edges`` is a dictionary,
+            which may contain the following key-pairs:
+            
+            - layer_to_call: PyTorch module to assign to the block
+            - user_id (optional): A user defined identifier for the block.
+            - ipu_id: The id of the IPU to run on.
 
         Examples:
             >>> split_edges = [
-            ...     # layer_to_call is name of layer and ipu_id
-            ...     # if the id of ipu to map
             ...     dict(layer_to_call='model.conv1', ipu_id=0),
             ...     dict(layer_to_call='model.conv3', ipu_id=1)]
             >>> sharding_model = model_sharding(torch_model, split_edges)
@@ -283,12 +291,12 @@ def model_sharding(model, split_edges):
     return model
 
 
-def recomputation_checkpoint(model: nn.Module, module_names=[])\
+def recomputation_checkpoint(model: nn.Module, module_names)\
      -> torch.utils.hooks.RemovableHandle:
     """Annotates the output of a module to be checkpointed instead of
-        recomputed
+    recomputed
 
-    If recompute mode is enabled, ipu will release the activations of
+    If recomputation mode is enabled, ipu will release the activations of
     the middle layers to save memory. During the backward of gradient,
     the activation of the middle layer will be recalculated again.
     This function is used to declare the activations of some intermediate
@@ -313,4 +321,4 @@ def recomputation_checkpoint(model: nn.Module, module_names=[])\
 
     # check all module_names are used
     assert len(module_names) == 0,\
-        f'split_edges: {module_names} are not contained in the model'
+        f'recomputed nodes: {module_names} are not contained in the model'

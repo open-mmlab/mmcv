@@ -31,7 +31,7 @@ def test_complexdatamanager():
     tensors = cdm.get_tensors()
     tensors[0].add_(1)
     cdm.set_tensors(tensors)
-    tree = cdm.get_tree()
+    tree = cdm.tree
     tree['c'].data['a'].sub_(1)
     cdm.set_tree(tree)
     tensors = cdm.get_tensors()

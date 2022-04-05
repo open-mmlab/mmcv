@@ -2,6 +2,7 @@
 from abc import ABCMeta
 import torch
 
+from .base_runner import BaseRunner
 from .iter_based_runner import IterBasedRunner
 from .epoch_based_runner import EpochBasedRunner
 from .builder import RUNNERS
@@ -16,12 +17,11 @@ if IPU_MODE:
                                  IPUDataloader)
 
 
-class IPUBaseRunner(metaclass=ABCMeta):
-    """All subclasses run on IPU device should inherit this base class and 
-    ``base_runner.BaseRunner``.
-    
+class IPUBaseRunner(BaseRunner):
+    """An base runner for IPU.
+
     This runner has some extra processes for IPU which are shown below:
-    
+
     1. Parse options for IPU
     2. wrap pytorch model for IPU
     3. Raise errors while encountering illegal usage

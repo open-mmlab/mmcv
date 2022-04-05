@@ -5,8 +5,8 @@ from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
 
 def wrap_lr_update_hook(lr_hook_class):
     """A wrapper function to wrap any subclass of LrUpdaterHook.
-    
-    IPU needs extra operations to upload optimizer settings,
+
+    IPU needs extra operations to upload optimizer settings.
     this wrapper will override function(_set_lr) of a subclass of
     LrUpdaterHook.
     """
@@ -15,6 +15,7 @@ def wrap_lr_update_hook(lr_hook_class):
     class ipu_lr_hook_class(lr_hook_class):
         def _set_lr(self, runner, *args, **kwargs):
             super()._set_lr(runner, *args, **kwargs)
+            # convert torch optimizer to poptorch optimizer
             runner.model.setOptimizer(runner.optimizer)
     return ipu_lr_hook_class
 
