@@ -653,7 +653,7 @@ def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
                   logger=None,
                   modules_to_record=[]
                   ) -> 'poptorch.PoplarExecutor':
-    """Create a PopTorch training model, from a PyTorch model, to run on IPU
+    """Create a PopTorch training model from a PyTorch model, to run on IPU
     hardware in training mode.
 
     Note:
