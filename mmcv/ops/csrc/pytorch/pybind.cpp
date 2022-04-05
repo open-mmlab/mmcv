@@ -400,8 +400,8 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
 
 void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
 
-at::Tensor diff_iou_rotated_sort_vertices(at::Tensor vertices, at::Tensor mask,
-                                          at::Tensor num_valid);
+at::Tensor diff_iou_rotated_sort_vertices_forward(at::Tensor vertices, at::Tensor mask,
+                                                  at::Tensor num_valid);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -812,7 +812,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("polygons"), py::arg("ious"));
   m.def("convex_giou", &convex_giou, "convex_giou", py::arg("pointsets"),
         py::arg("polygons"), py::arg("output"));
-  m.def("diff_iou_rotated_sort_vertices", &diff_iou_rotated_sort_vertices,
-        "diff_iou_rotated_sort_vertices", py::arg("vertices"),
+  m.def("diff_iou_rotated_sort_vertices_forward",
+        &diff_iou_rotated_sort_vertices_forward,
+        "diff_iou_rotated_sort_vertices_forward", py::arg("vertices"),
         py::arg("mask"), py::arg("num_valid"));
 }

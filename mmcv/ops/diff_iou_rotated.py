@@ -7,14 +7,15 @@ from torch.autograd import Function
 from ..utils import ext_loader
 
 EPSILON = 1e-8
-ext_module = ext_loader.load_ext('_ext', ['diff_iou_rotated_sort_vertices'])
+ext_module = ext_loader.load_ext('_ext',
+                                 ['diff_iou_rotated_sort_vertices_forward'])
 
 
 class SortVertices(Function):
 
     @staticmethod
     def forward(ctx, vertices, mask, num_valid):
-        idx = ext_module.diff_iou_rotated_sort_vertices(
+        idx = ext_module.diff_iou_rotated_sort_vertices_forward(
             vertices, mask, num_valid)
         ctx.mark_non_differentiable(idx)
         return idx
