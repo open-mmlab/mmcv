@@ -697,7 +697,7 @@ def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
 def inferenceModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
                    options: Optional['poptorch.Options'] = None,
                    logger=None
-                   ) -> 'poptorch.PoplarExecutor':
+                   ) -> poptorch.PoplarExecutor:
     """Create a PopTorch inference model from a PyTorch model, to run on IPU
     hardware in inference mode.
 
