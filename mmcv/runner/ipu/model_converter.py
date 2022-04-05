@@ -669,14 +669,12 @@ def trainingModel(model: Union['nn.Module', 'poptorch.PoplarExecutor'],
     :param optimizer: The optimizers to apply during \
         training.
 
-        Supported PyTorch optimizers: ``optim.SGD``, ``optim.Adam``, \
-             ``optim.AdamW``, ``optim.RMSprop``.
+        - Supported PyTorch optimizers: ``optim.SGD``, ``optim.Adam``,
+          ``optim.AdamW`` and ``optim.RMSprop``.
 
-        Supported PopTorch optimizers: :py:class:`poptorch.optim.SGD`, \
-            :py:class:`poptorch.optim.Adam`, \
-            :py:class:`poptorch.optim.AdamW`, \
-            :py:class:`poptorch.optim.RMSprop`. \
-            :py:class:`poptorch.optim.LAMB`.
+        - Supported PopTorch optimizers: ``poptorch.optim.SGD``,
+           ``poptorch.optim.Adam``, ``poptorch.optim.AdamW``,
+           ``poptorch.optim.RMSprop`` and ``poptorch.optim.LAMB``.
 
     :returns: The :py:class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
