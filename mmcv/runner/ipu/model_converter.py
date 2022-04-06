@@ -15,12 +15,20 @@ from ..fp16_utils import auto_fp16
 
 
 class DictArgsParser(ArgsParser):
+    """A helper class for handling model input.
+    Args:
+        inputs (list): Inputs of model.
+    """
     def __init__(self, inputs):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
         self._varnames = list(inputs.keys())
         self._defaults = [inspect.Parameter.empty for _ in self._varnames]
         self._warned_not_contiguous_input = False
+
+
+# A customized None type for ComplexDataManager
+ComplexDataManagerNone = object()
 
 
 class ComplexDataManager:
@@ -32,7 +40,8 @@ class ComplexDataManager:
     the data structure.
 
     Args:
-        logger (warnings.warn): logger used to print warning
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
     """
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
@@ -44,14 +53,15 @@ class ComplexDataManager:
         self.quick_mode = True
 
     def compare_fixed_type(self, a, b):
+        """Compare data, supported datatypes are numpy array and python
+            basic types."""
         if isinstance(a, np.ndarray):
             return np.all(a == b)
         else:
             return a == b
 
     def set_tree(self, tree):
-        # tree: A composite data type containing dictionaries, lists,
-        # tensors and basic python data types
+        """Record a complex data."""
         if self._tree is not None:
             if isinstance(tree, torch.Tensor):
                 assert isinstance(self._tree, torch.Tensor), \
@@ -69,12 +79,23 @@ class ComplexDataManager:
     def update(
             self,
             treeA,
-            treeB='ComplexDataManagerNone',
+            treeB=ComplexDataManagerNone,
             strict=True,
-            key=None,
             address='data'
             ):
-        if treeB == 'ComplexDataManagerNone':
+        """Update recorded complex data in-place.
+
+        Args:
+            treeA (list or dictionary or tuple): New complex data.
+            treeB (list or dictionary or tuple): Complex data to update,
+                if not entered here, self.tree will be updated then.
+            strict (bool, optional): If true, an error will be reported
+                when the following conditions occur:
+                1. Non-torch.Tensor data changed.
+                2. Torch.Tensor data shape changed.
+            address: Record the address of current data to be updated.
+        """
+        if treeB == ComplexDataManagerNone:
             treeB = self.tree
             
         # Update with a tree with the same structure
@@ -102,7 +123,7 @@ class ComplexDataManager:
                     treeB[k] = treeA[k]
                 else:
                     self.update(treeA[k], treeB[k], strict,
-                                key, address=new_address)
+                                address=new_address)
         elif isinstance(treeA, self.fixed_data_types):
             if not self.quick_mode:
                 is_equal = self.compare_fixed_type(treeA, treeB)
@@ -125,6 +146,7 @@ class ComplexDataManager:
                 f'not supported datatype:{str(treeA)}, address is {address}')
 
     def get_tensors(self, target_tree=None):
+        """Collect torch.Tensor data from self.tree to a tuple and return."""
         # get a list of tensor from self._tree
         target_tree = self._tree if target_tree is None else target_tree
         tensors = []
@@ -156,6 +178,7 @@ class ComplexDataManager:
                 f'not supported datatype:{str(tree)}')
 
     def set_tensors(self, tensors):
+        """Put tensors from tuple back to self.tree."""
         if isinstance(self._tree, torch.Tensor):
             assert len(tensors) == 1
             assert type(tensors[0]) == torch.Tensor
@@ -188,6 +211,7 @@ class ComplexDataManager:
                 f'not supported datatype:{str(tree)}')
 
     def clean_tensors(self):
+        """Delete tensors from self.tree"""
         self._clean_tensors(self._tree)
 
     def _clean_tensors(self, tree):
@@ -213,14 +237,30 @@ class ComplexDataManager:
 
 
 class WrappedNet(nn.Module):
+    """A net wrapper for model convertion.
+
+    This wrapper will make some changes and add some extra functions to
+    training/inference model.
+
+    Args:
+        model (:obj:`nn.Module`): The model to be run.
+        inputs_tree_manager (:obj:`ComplexDataManager`): A parser
+            converting inputs from tuple to dictionary.
+        outputs_tree_manager (:obj:`ComplexDataManager`): A parser
+            converting outputs from dictionary to tuple.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+        hooked_features (dict, optional): Specify the features to be
+            recorded.
+    """
     def __init__(
             self,
             model,
             inputs_tree_manager,
             outputs_tree_manager,
             modules_to_record=None,
-            hooked_features=None
-            ):
+            hooked_features=None):
         super().__init__()
         self.model = model
         self.inputs_tree_manager = inputs_tree_manager
@@ -247,7 +287,9 @@ class WrappedNet(nn.Module):
         return input_output_hook
 
     def forward(self, inputs_tuple):
-        # convert tuple back to kwargs to enable the original model running
+        """This function is used to be compiled to ipu, the inputs and
+        outputs need to be tuples, so here we need to restore the input back
+        to a dictionary and convert the output to a tuple"""
         self.inputs_tree_manager.set_tensors(inputs_tuple)
         kwargs = {**(self.inputs_tree_manager.tree)}
         if self.training:
@@ -291,7 +333,7 @@ class WrappedNet(nn.Module):
 
         Args:
             data (dict): The output of dataloader.
-            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
+            optimizer (:obj:`torch.optim.Optimizer`, optional): The
                 optimizer of runner is passed to ``train_step()``. This
                 argument is unused and reserved.
 
@@ -349,6 +391,22 @@ class WrappedNet(nn.Module):
 
 
 class PoplarExecutorForMMCV(PoplarExecutor):
+    """An executor for inputs/outputs parsing, model compilation,
+        data alignment and IPU upload/download.
+
+    Args:
+        model (:obj:`nn.Module`): The model to be compiled.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        training (bool): Model in training mode or eval mode.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+        args (argument list): Arguments passed to the `__init__`
+            method of PoplarExecutor.
+        kwargs (keyword arguments): Keyword arguments passed to the `__init__`
+            method of PoplarExecutor.
+    """
     def __init__(
             self,
             model,
@@ -400,7 +458,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
     @auto_fp16(supported_types=(PoplarExecutor,))
     def run_model(self, data_dict):
-        # this function used to parse input_dict
+        # this function is used to parse input_dict
         # and convert to output_dict
         if self.isCompiled():
             self.inputs_tree_manager.set_tree(data_dict)
@@ -499,6 +557,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
 
 def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
+    """Align data between two activations or weights."""
     try:
         np.testing.assert_allclose(featA, featB, rtol=rtol, atol=atol)
     except AssertionError as e:
@@ -506,6 +565,22 @@ def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
 
 
 class TrainEvalModel:
+    """A class maintaining training PoplarExecutorForMMCV and inference
+        PoplarExecutorForMMCV.
+
+    Args:
+        train_model (:obj:`nn.Module`): The training model to be compiled.
+        eval_model (:obj:`nn.Module`): The inference model to be compiled.
+        options (mmcv.Config, dict): Options that will be used to compile
+            and run the model.
+        optimizer (:obj:`torch.optim.Optimizer`, optional): torch
+            optimizer, necessary if in training mode
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+    """
     def __init__(
             self,
             train_model,
@@ -533,7 +608,7 @@ class TrainEvalModel:
             return self._eval_executor
 
     def train(self, mode: bool = True):
-        r"""Sets the module in training mode.
+        """Sets the module in training mode.
 
         This has any effect only on certain modules. See documentations of
         particular modules for details of their behaviors in
@@ -576,7 +651,7 @@ class TrainEvalModel:
             return self
 
     def eval(self):
-        r"""Sets the module in evaluation mode.
+        """Sets the module in evaluation mode.
 
         This has any effect only on certain modules.
         See documentations of particular modules
@@ -597,8 +672,7 @@ class TrainEvalModel:
     def compare_data_between_ipu_and_cpu(
             self,
             hooked_features_cpu,
-            hooked_features_ipu
-            ):
+            hooked_features_ipu):
         for key, val in hooked_features_cpu.items():
             fea_in_cpu_list = [val['fea_in']] if isinstance(
                 val['fea_in'], torch.Tensor) else val['fea_in']
@@ -671,19 +745,19 @@ def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         model returned by this function. You may need to call ``model.train()``
         on your model before you call this function for correct behavior.
 
-    :param model: The PyTorch model to wrap.
-    :param options: The IPU specific options
-    :param optimizer: The optimizers to apply during \
-        training.
+    Args:
+        model (:obj:`nn.Module`): The model to be run.
+        options (poptorch.Options): Options that will be used to compile
+            and run the model.
+        optimizer (:obj:`torch.optim.Optimizer`, optional): The optimizers
+            to apply during training.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
 
-        - Supported PyTorch optimizers: ``optim.SGD``, ``optim.Adam``,
-          ``optim.AdamW`` and ``optim.RMSprop``.
-
-        - Supported PopTorch optimizers: ``poptorch.optim.SGD``,
-           ``poptorch.optim.Adam``, ``poptorch.optim.AdamW``,
-           ``poptorch.optim.RMSprop`` and ``poptorch.optim.LAMB``.
-
-    returns:
+    Returns:
         The :class:`poptorch.PoplarExecutor` wrapper to use in place
         of ``model``.
     """
@@ -717,12 +791,15 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         correct behavior.
 
     Args:
-        model (nn.Module or poptorch.PoplarExecutor): The PyTorch model to wrap.
-        options (poptorch.Options, optional): The IPU specific options.
-        logger (xxx): xxx.
-   
-   Returns:  
-       The :class:`poptorch.PoplarExecutor` wrapper to use in place of ``model``.
+        model (:obj:`nn.Module`): The model to be run.
+        options (poptorch.Options): Options that will be used to compile
+            and run the model.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+
+    Returns:
+        The :class:`poptorch.PoplarExecutor` wrapper to use in place of
+        ``model``.
     """
 
     return PoplarExecutorForMMCV(model=copy.copy(model),

@@ -166,10 +166,12 @@ def ipu_model_wrapper(
         model (nn.Module): The target model to be converted.
         opts (dict[str, poptorch.Options]): IPU options, generated
             by :func:`parse_ipu_options`.
-        optimizer (torch.optim, optional): torch optimizer, necessary
-            if in training mode
+        optimizer (:obj:`torch.optim.Optimizer`, optional): torch
+            optimizer, necessary if in training mode
         logger: a logger
-        modules_to_record (tuple): names of modules to be recorded.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
         ipu_model_cfg (dict): A dictionary contains train_split_edges and
             train_ckpt_nodes, See details in :func:`model_sharding` and
             :func:`recomputation_checkpoint` functions.

@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from abc import ABCMeta
 import torch
 
 from .base_runner import BaseRunner
@@ -29,7 +28,7 @@ class IPUBaseRunner(BaseRunner):
        of IPUDataloader
 
     Args:
-        model (:obj:`torch.nn.Module`): The model to be run.
+        model (:obj:`nn.Module`): The model to be run.
         options (mmcv.Config, dict): Options that will be used to compile
             and run the model.
         modules_to_record (mmcv.Config, list): Index or name of modules which
