@@ -97,7 +97,7 @@ class ComplexDataManager:
         """
         if treeB == ComplexDataManagerNone:
             treeB = self.tree
-            
+
         # Update with a tree with the same structure
         # but different values(tensors and basic python data types)
         if isinstance(treeA, (tuple, list)):
@@ -781,7 +781,7 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
     """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 
-    Note: 
+    Note:
         PopTorch makes a shallow copy of the model. Changes to the
         parameters in the returned inference model affect the original model
         and vice versa. However, primitive variable types are not synced: for

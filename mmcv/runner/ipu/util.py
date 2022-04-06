@@ -57,7 +57,7 @@ def build_from_cfg_with_wrapper(
     else:
         raise TypeError(
             f'type must be a str or valid type, but got {type(obj_type)}')
-            
+
     if wrapper_func is None:
         wrapped_obj_cls = obj_cls
     else:
@@ -179,7 +179,7 @@ def ipu_model_wrapper(
             configs: `loss_scale`, `velocity_accum_type` and `accum_type`.
             See details in
             https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html
-    
+
     Returns:
         TrainEvalModel: IPU wrapped model.
     """
@@ -253,7 +253,7 @@ def model_sharding(model, split_edges):
         split_edges (list of dict): Model layer names or layer numbers
             of split edge. Each item of ``split_edges`` is a dictionary,
             which may contain the following key-pairs:
-            
+
             - layer_to_call: PyTorch module to assign to the block
             - user_id (optional): A user defined identifier for the block.
             - ipu_id: The id of the IPU to run on.
@@ -277,7 +277,7 @@ def model_sharding(model, split_edges):
             raise ValueError(
                 'The same layer is referenced twice while doing model'
                 f' partition: idx is {idx} and name is {name}')
-         
+
         edge = spilt_edges_dict.pop(name, None)
         edge = spilt_edges_dict.pop(idx, edge)
         if edge is not None:
