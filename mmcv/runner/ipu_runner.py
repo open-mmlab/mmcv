@@ -18,7 +18,7 @@ if IPU_MODE:
 
 
 class IPUBaseRunner(BaseRunner):
-    """An base runner for IPU.
+    """A base runner for IPU.
 
     This runner has some extra processes for IPU which are shown below:
 
@@ -29,18 +29,18 @@ class IPUBaseRunner(BaseRunner):
        of IPUDataloader
 
     Args:
-        model (pytorch.model)
+        model (:obj:`torch.nn.Module`): The model to be run.
         options (mmcv.Config, dict): Options that will be used to compile
             and run the model.
-        modules_to_record (mmcv.Config, list): idx or name of modules which
+        modules_to_record (mmcv.Config, list): Index or name of modules which
             will be recorded for output. It is necessary to specify output for
             static graph of model training or inference.
-        ipu_model_cfg (mmcv.Config, dict): config of model partition and
+        ipu_model_cfg (mmcv.Config, dict): Config of model partition and
             recomputing checkpoint
-        fp16_cfg (mmcv.Config): config for fp16 training
+        fp16_cfg (mmcv.Config): Config for fp16 training.
         batch_processor (callable): A callable method that process a data
             batch. Should be None for IPU runner
-        kwargs: other kwargs please check Class base_runner.BaseRunner
+        kwargs: Keyword arguments will be passed to ``base_runner.BaseRunner``.
     """
     def __init__(
             self,
@@ -56,13 +56,14 @@ class IPUBaseRunner(BaseRunner):
         if isinstance(model, torch.nn.parallel.DataParallel):
             raise TypeError(
                 'if you want to implement data parallelism '
-                'at the module level on IPU, '
+                'at the module level on IPU, please'
                 'use IPU option: replicationFactor')
 
         ipu_options = ipu_options or {}
         modules_to_record = modules_to_record or []
         ipu_model_cfg = ipu_model_cfg or {}
-        super(IPUBaseRunner, self).__init__(model, **kwargs)
+        # call BaseRunner.__init__() here
+        super().__init__(model, **kwargs)
 
         # process options of ipu
         if IPU_MODE:
@@ -109,11 +110,11 @@ class IPUBaseRunner(BaseRunner):
             # initialize IPU dataloder if not initialized
             assert isinstance(data_loaders[i], IPUDataloader),\
                 'IPU runner can only work with `IPUDataloader`'
-            data_loaders[i].init(options=self.get_ipu_opts(mode))
+            data_loaders[i].init(options=self.get_ipu_options(mode))
 
         super().run(data_loaders, workflow, *args, **kwargs)
 
-    def get_ipu_opts(self, mode):
+    def get_ipu_options(self, mode):
         if mode == 'train':
             return self.ipu_options['training']
         elif mode == 'val':

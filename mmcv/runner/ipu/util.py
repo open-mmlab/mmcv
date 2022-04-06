@@ -94,8 +94,8 @@ def parse_ipu_options(ipu_options):
         ipu_options (dict): A dictionary of ipu settings
 
     Returns:
-        opts: training options and inference options of IPU in a
-            dictionary
+        dict[str, poptorch.Options]: Training options and inference options
+            of IPU.
     """
     # set ipu options for inference and training by config
     train_cfgs = ipu_options.pop('train_cfgs', {})
@@ -160,22 +160,22 @@ def ipu_model_wrapper(
         ipu_model_cfg=None,
         fp16_cfg=None
         ):
-    """Convert torch model to IPU model
+    """Convert torch model to IPU model.
 
     Args:
         model (nn.Module): The target model to be converted.
         opts (dict[str, poptorch.Options]): IPU options, generated
-            by func: parse_ipu_options.
+            by :func:`parse_ipu_options`.
         optimizer (torch.optim, optional): torch optimizer, necessary
             if in training mode
         logger: a logger
         modules_to_record (tuple): names of modules to be recorded.
-        ipu_model_cfg (dict): a dictionary contains train_split_edges,
-            train_ckpt_nodes, see details in funcations model_sharding and
-            recomputation_checkpoint
-        fp16_cfg (dict): config for IPU fp16 training, currently support
-            configs: `loss_scale`, `velocity_accum_type`, `accum_type`.
-            see details in
+        ipu_model_cfg (dict): A dictionary contains train_split_edges and
+            train_ckpt_nodes, See details in :func:`model_sharding` and
+            :func:`recomputation_checkpoint` functions.
+        fp16_cfg (dict): Config for IPU fp16 training. Currently supports
+            configs: `loss_scale`, `velocity_accum_type` and `accum_type`.
+            See details in
             https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html
     
     Returns:
@@ -230,11 +230,10 @@ def ipu_model_wrapper(
             assert len(modules_to_record) == 0, \
                 'Feature alignment for multi-replica mode not implemented'
 
-    # split model into multi-IPUs if specified
+    # TODO supports different model partitions between train and eval mode
     assert len(ipu_model_cfg.get('eval_split_edges', [])) == 0,\
         'Currently, BeginBlock can only be used once on the same model'
-    eval_model = model_sharding(copy.copy(model).eval(), ipu_model_cfg.get(
-        'eval_split_edges', []))
+    eval_model = copy.copy(model).eval()
 
     # wrap model for compilation
     model = TrainEvalModel(train_model, eval_model, options=opts,
@@ -274,7 +273,7 @@ def model_sharding(model, split_edges):
     for idx, (name, module) in enumerate(model.named_modules()):
         if idx in spilt_edges_dict and name in spilt_edges_dict:
             raise ValueError(
-                f'The same layer is referenced twice while doing model'
+                'The same layer is referenced twice while doing model'
                 f' partition: idx is {idx} and name is {name}')
          
         edge = spilt_edges_dict.pop(name, None)
@@ -291,10 +290,9 @@ def model_sharding(model, split_edges):
     return model
 
 
-def recomputation_checkpoint(model: nn.Module, module_names)\
-     -> torch.utils.hooks.RemovableHandle:
+def recomputation_checkpoint(model: nn.Module, module_names: list):
     """Annotates the output of a module to be checkpointed instead of
-    recomputed
+    recomputed.
 
     If recomputation mode is enabled, ipu will release the activations of
     the middle layers to save memory. During the backward of gradient,
@@ -304,9 +302,9 @@ def recomputation_checkpoint(model: nn.Module, module_names)\
     some layers.
 
     Args:
-        model (nn.Module): the target model to apply recomputation
-            checkpoint
-        module_names (list): model layer names
+        model (nn.Module): The target model to apply recomputation
+            checkpoint.
+        module_names (list): Layer names of module.
     """
     def recompute_outputs(module, inputs, outputs):
         if type(outputs) is tuple:
