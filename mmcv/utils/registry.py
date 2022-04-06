@@ -233,8 +233,9 @@ class Registry:
         self.children[registry.scope] = registry
 
     def _register_module(self, module_class, module_name=None, force=False):
-        if not inspect.isclass(module_class):
-            raise TypeError('module must be a class, '
+        if not inspect.isclass(module_class) and not inspect.isfunction(
+                module_class):
+            raise TypeError('module must be a class or a function, '
                             f'but got {type(module_class)}')
 
         if module_name is None:
