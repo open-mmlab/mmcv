@@ -679,17 +679,17 @@ class TrainEvalModel:
             hooked_features_cpu,
             hooked_features_ipu):
         for key, val in hooked_features_cpu.items():
-            fea_in_cpu_list = [val['fea_in']] if isinstance(
-                val['fea_in'], torch.Tensor) else val['fea_in']
-            fea_in_ipu_list = [hooked_features_ipu[key]['fea_in']] \
-                if isinstance(val['fea_in'], torch.Tensor) \
-                else hooked_features_ipu[key]['fea_in']
+            is_tensor = isinstance(val['fea_in'], torch.Tensor)
+            fea_in_cpu = val['fea_in']
+            fea_in_cpu_list = [fea_in_cpu] if is_tensor else fea_in_cpu
+            fea_in_ipu = hooked_features_ipu[key]['fea_in']
+            fea_in_ipu_list = [fea_in_ipu] if is_tensor else fea_in_ipu
 
-            fea_out_cpu_list = [val['fea_out']] if isinstance(
-                val['fea_out'], torch.Tensor) else val['fea_out']
-            fea_out_ipu_list = [hooked_features_ipu[key]['fea_out']] \
-                if isinstance(val['fea_out'], torch.Tensor) \
-                else hooked_features_ipu[key]['fea_out']
+            is_tensor = isinstance(val['fea_out'], torch.Tensor)
+            fea_out_cpu = val['fea_out']
+            fea_out_cpu_list = [fea_out_cpu] if is_tensor else fea_out_cpu
+            fea_out_ipu = hooked_features_ipu[key]['fea_out']
+            fea_out_ipu_list = [fea_out_ipu] if is_tensor else fea_out_ipu
 
             print('comparing layer:', key)
             for idx, (featA, featB) in \
