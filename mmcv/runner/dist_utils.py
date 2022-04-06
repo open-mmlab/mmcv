@@ -13,8 +13,8 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
 
-# Copied from Detectron2
 def _find_free_port():
+    # Copied from https://github.com/facebookresearch/detectron2/blob/main/detectron2/engine/launch.py
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Binding to port 0 will cause the OS to find an available port for us
     sock.bind(('', 0))
