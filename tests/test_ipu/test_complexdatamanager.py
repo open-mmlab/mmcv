@@ -54,6 +54,21 @@ def test_complexdatamanager():
         complex_data['a'] = AuxClass()
         cdm.get_tensors()
 
+    with pytest.raises(NotImplementedError, match='not supported datatype:'):
+        complex_data['a'] = AuxClass()
+        cdm.clean_tensors()
+
+    cdm = ComplexDataManager(logging.getLogger())
+    cdm.set_tree(complex_data)
+    complex_data['a'] = torch.rand(3, 4)
+    with pytest.raises(ValueError, match='all data except torch.Tensor'):
+        new_complex_data = {**complex_data, 'b': np.random.rand(3, 4)}
+        cdm.update(new_complex_data)
+
+    cdm.update(new_complex_data, strict=False)
+
+    cdm.clean_tensors()
+
     # test single tensor
     single_tensor = torch.rand(3, 4)
     cdm = ComplexDataManager(logging.getLogger())

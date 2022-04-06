@@ -107,13 +107,13 @@ def test_optimizerhook():
 
     with pytest.raises(
             NotImplementedError,
-            match='IPU mode not support'):
+            match='IPU mode does not support'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale='dynamic', distributed=False)
 
     with pytest.raises(
             NotImplementedError,
-            match='IPU mode support single'):
+            match='IPU mode supports single'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale={}, distributed=False)
 

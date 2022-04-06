@@ -34,7 +34,7 @@ def collate(batch, samples_per_gpu=1):
         for samples in transposed:
             if not isinstance(samples[0], DataContainer):
                 # At present, we will skip the processing of datacontainer,
-                # which will reduce the performance of IPU dataloder
+                # which will reduce the performance of IPU dataloader
                 collated_batch.append(collate(samples, samples_per_gpu))
         return collated_batch
     elif isinstance(batch[0], Mapping):
@@ -42,7 +42,7 @@ def collate(batch, samples_per_gpu=1):
         for key in batch[0]:
             if not isinstance(batch[0][key], DataContainer):
                 # At present, we will skip the processing of datacontainer,
-                # which will reduce the performance of IPU dataloder
+                # which will reduce the performance of IPU dataloader
                 collated_batch[key] = collate([d[key] for d in batch])
         return collated_batch
     else:
@@ -52,7 +52,7 @@ def collate(batch, samples_per_gpu=1):
 class IPUDataloader(poptorch.DataLoader):
     """Thin wrapper of `torch.utils.data.DataLoader`
 
-    Comparing with pytorch.Dataloder, this dataloder changes the way of
+    Comparing with pytorch.dataloader, this dataloader changes the way of
     calculation of batch size and adds the AsynchronousDataAccessor to
     load and release data faster in cpu mode.
 
@@ -109,10 +109,10 @@ class IPUDataloader(poptorch.DataLoader):
                  rebatched_worker_size=None,
                  **kwargs):
         """ Lazy init:
-            In many frameworks, the dataloder will be constructed before
+            In many frameworks, the dataloader will be constructed before
             the initialization of the ipu options, so the lazy init
             method is used here, and the real initialization will not be done
-            until the dataloder needs to be used and the options are input.
+            until the dataloader needs to be used and the options are input.
         """
         # lazy init: sometimes, we cannot get IPU options when make data
         #            loader

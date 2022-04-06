@@ -52,15 +52,9 @@ class IPUBaseRunner(BaseRunner):
             **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None,\
             'only support model with train_step'
-        if isinstance(model, torch.nn.parallel.DataParallel):
-            raise TypeError(
-                'if you want to implement data parallelism '
-                'at the module level on IPU, please'
-                'use IPU option: replicationFactor')
 
-        ipu_options = ipu_options or {}
-        modules_to_record = modules_to_record or []
-        ipu_model_cfg = ipu_model_cfg or {}
+        if ipu_options is None:
+            ipu_options = {}
         # call BaseRunner.__init__() here
         super().__init__(model, **kwargs)
 
@@ -106,7 +100,7 @@ class IPUBaseRunner(BaseRunner):
     def run(self, data_loaders, workflow, *args, **kwargs):
         for i, flow in enumerate(workflow):
             mode, _ = flow
-            # initialize IPU dataloder if not initialized
+            # initialize IPU dataloader if not initialized
             assert isinstance(data_loaders[i], IPUDataloader),\
                 'IPU runner can only work with `IPUDataloader`'
             data_loaders[i].init(options=self.get_ipu_options(mode))

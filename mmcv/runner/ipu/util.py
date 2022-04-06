@@ -156,7 +156,7 @@ def ipu_model_wrapper(
         opts,
         optimizer=None,
         logger=None,
-        modules_to_record=(),
+        modules_to_record=None,
         ipu_model_cfg=None,
         fp16_cfg=None
         ):
@@ -183,7 +183,8 @@ def ipu_model_wrapper(
     Returns:
         TrainEvalModel: IPU wrapped model.
     """
-    ipu_model_cfg = ipu_model_cfg or {}
+    if ipu_model_cfg is None:
+        ipu_model_cfg = {}
     training = model.training if optimizer is not None else False
     # set mixed-precision
     if fp16_cfg is not None:
@@ -205,7 +206,7 @@ def ipu_model_wrapper(
                 else:
                     optimizer.accum_type = torch.float32
         # TODO support feature alignment for fp16
-        if len(modules_to_record) > 0:
+        if modules_to_record is not None:
             raise NotImplementedError(
                 'Feature alignment for fp16 is not implemented')
 
@@ -224,12 +225,12 @@ def ipu_model_wrapper(
 
         # TODO support feature alignment for gradient accumulation mode
         if getattr(opts['training'].Training, 'gradient_accumulation', 1) > 1:
-            assert len(modules_to_record) == 0, \
+            assert modules_to_record is None, \
                 'Feature alignment for grad-accumulation mode not implemented'
 
         # TODO support feature alignment for multi-replica mode
         if getattr(opts['training'], 'replication_factor', 1) > 1:
-            assert len(modules_to_record) == 0, \
+            assert modules_to_record is None, \
                 'Feature alignment for multi-replica mode not implemented'
 
     # TODO supports different model partitions between train and eval mode

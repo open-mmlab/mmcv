@@ -90,7 +90,7 @@ def test_build_model():
             model = ToyModel()
             optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
             logger = logging.getLogger()
-            modules_to_record = []
+            modules_to_record = None
             ipu_model_cfg = dict(
                 train_split_edges=[
                     dict(
@@ -204,6 +204,13 @@ def test_run_model():
     with pytest.raises(NotImplementedError):
         run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
 
+    # test velocity_accum_type and accum_type
+    fp16_cfg = {
+        'loss_scale': 0.5,
+        'velocity_accum_type': 'float',
+        'accum_type': 'float'}
+    run_model(ipu_options, fp16_cfg, None, ipu_model_wrapper)
+
     # test compile and run
     ipu_options = dict(
         randomSeed=888,
@@ -222,12 +229,10 @@ def test_run_model():
         enableExecutableCaching='cache_engine',
         train_cfgs=dict(executionStrategy='SameAsIpu',
                         availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
-        partialsType='half')
+        eval_cfgs=dict(deviceIterations=1,))
     ipu_options = parse_ipu_options(ipu_options)
-    fp16_cfg = {'loss_scale': 0.5}
-    modules_to_record = []
-    run_model(ipu_options, fp16_cfg, modules_to_record, ipu_model_wrapper)
+    modules_to_record = None
+    run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
     # test inference mode
     ipu_options = dict(
@@ -239,7 +244,7 @@ def test_run_model():
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     fp16_cfg = {'loss_scale': 0.5}
-    modules_to_record = []
+    modules_to_record = None
     _, ipu_model = run_model(ipu_options,
                              fp16_cfg,
                              modules_to_record,
@@ -250,7 +255,7 @@ def test_run_model():
     with pytest.raises(ValueError):
         ipu_model.train(123)
     _, ipu_model = run_model(ipu_options,
-                             fp16_cfg,
+                             None,
                              modules_to_record,
                              ipu_model_wrapper)
 

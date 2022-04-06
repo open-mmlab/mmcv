@@ -2,13 +2,22 @@
 import copy
 import pytest
 
+import torch.nn as nn
 import mmcv
 from mmcv.utils.ipu_wrapper import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu.util import parse_ipu_options
+    from mmcv.runner.ipu.util import parse_ipu_options, model_sharding
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
+
+
+class ToyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(3, 3, 1)
+        self.bn = nn.BatchNorm2d(3)
+        self.relu = nn.ReLU6()
 
 
 @skip_no_ipu
@@ -143,3 +152,28 @@ def test_parse_ipu_options():
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['train_cfgs']['Precision'] = {'autocast_policy': 123}
         parse_ipu_options(_options_cfg)
+
+
+@skip_no_ipu
+def test_model_sharding():
+
+    model = ToyModel()
+    split_edges = [
+        dict(
+            layer_to_call='666',
+            ipu_id=0)]
+
+    with pytest.raises(RuntimeError, match='split_edges:'):
+        model_sharding(model, split_edges)
+
+    model = ToyModel()
+    split_edges = [
+        dict(
+            layer_to_call='conv',
+            ipu_id=0),
+        dict(
+            layer_to_call=1,
+            ipu_id=0)]
+    
+    with pytest.raises(ValueError, match='The same layer is referenced'):
+        model_sharding(model, split_edges)

@@ -28,10 +28,6 @@ def wrap_optimizer_hook(optimizer_hook_class):
     IPU's clip-norm implementation is different from pytorch, so there
     should be an error raised when using clip-norm.
     """
-    if optimizer_hook_class is not OptimizerHook:
-        raise ValueError(
-            f'Only OptimizerHook is supported, bug got {optimizer_hook_class}')
-
     class ipu_optimizer_hook_class(OptimizerHook):
         def after_train_iter(self, runner):
             if self.detect_anomalous_params:
