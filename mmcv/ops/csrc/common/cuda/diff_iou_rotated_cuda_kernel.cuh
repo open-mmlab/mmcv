@@ -1,15 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved
 // Adapted from https://github.com/lilanxiao/Rotated_IoU/cuda_op/sort_vert_kernel.cu  # noqa
-#include <ATen/ATen.h>
-#include <ATen/cuda/CUDAContext.h>
-#include <cmath>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef MMCV_USE_PARROTS
+#include "parrots_cuda_helper.hpp"
+#else
+#include "pytorch_cuda_helper.hpp"
+#endif
 
-#define TOTAL_THREADS 512
 #define MAX_NUM_VERT_IDX 9
 #define INTERSECTION_OFFSET 8
 #define EPSILON 1e-8
@@ -17,17 +13,8 @@
 
 inline int opt_n_thread(int work_size){
     const int pow_2 = std::log(static_cast<double>(work_size)) / std::log(2.0);
-    return max(min(1<<pow_2, TOTAL_THREADS), 1);
+    return max(min(1<<pow_2, THREADS_PER_BLOCK), 1);
 }
-
-inline dim3 opt_block_config(int x, int y){
-    const int x_thread = opt_n_thread(x);
-    const int y_thread = max(min(opt_n_thread(y), TOTAL_THREADS/x_thread), 1);
-    dim3 block_config(x_thread, y_thread, 1);
-
-    return block_config;
-}
-
 
 /*
 compare normalized vertices (vertices around (0,0))
@@ -46,15 +33,16 @@ __device__ bool compare_vertices(float x1, float y1, float x2, float y2){
 
     float n1 = x1*x1 + y1*y1 + EPSILON;
     float n2 = x2*x2 + y2*y2 + EPSILON;
+    float diff = fabs(x1)*x1/n1 - fabs(x2)*x2/n2;
 
     if (y1 > 0 && y2 > 0){
-        if (fabs(x1)*x1/n1 - fabs(x2)*x2/n2 > EPSILON)
+        if (diff > EPSILON)
             return true;
         else
             return false;
     }
     if (y1 < 0 && y2 < 0) {
-        if (fabs(x1)*x1/n1 - fabs(x2)*x2/n2 < EPSILON)
+        if (diff < EPSILON)
             return true;
         else
             return false;
@@ -95,6 +83,9 @@ __global__ void diff_iou_rotated_sort_vertices_forward_cuda_kernel(
                 float x_min = 1;
                 float y_min = -EPSILON;
                 int i_take = 0;
+                int i2 = idx[i*MAX_NUM_VERT_IDX + j - 1];
+                float x2 = vertices[i*m*2 + i2*2 + 0];
+                float y2 = vertices[i*m*2 + i2*2 + 1];
                 for (int k=0; k<m; ++k){
                     float x = vertices[i*m*2 + k*2 + 0];
                     float y = vertices[i*m*2 + k*2 + 1];
@@ -105,20 +96,16 @@ __global__ void diff_iou_rotated_sort_vertices_forward_cuda_kernel(
                             i_take = k;
                         }
                     } else {
-                        int i2 = idx[i*MAX_NUM_VERT_IDX + j - 1];
-                        float x2 = vertices[i*m*2 + i2*2 + 0];
-                        float y2 = vertices[i*m*2 + i2*2 + 1];
                         if (mask[i*m+k] &&
                             compare_vertices(x, y, x_min, y_min) &&
-                            compare_vertices(x2, y2, x, y)
-                            ){
+                            compare_vertices(x2, y2, x, y)){
                             x_min = x;
                             y_min = y;
                             i_take = k;
                         }
                     }
-                    idx[i*MAX_NUM_VERT_IDX + j] = i_take;
                 }
+                idx[i*MAX_NUM_VERT_IDX + j] = i_take;
             }
             // duplicate the first idx
             idx[i*MAX_NUM_VERT_IDX + num_valid[i]] = idx[i*MAX_NUM_VERT_IDX + 0];

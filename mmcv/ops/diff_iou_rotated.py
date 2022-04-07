@@ -58,11 +58,11 @@ def box_intersection_th(corners1: torch.Tensor, corners2: torch.Tensor):
     den_t = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)
     t = den_t / num
     t[num == .0] = -1.
-    mask_t = (t > 0) * (t < 1)  # intersection on line segment 1
+    mask_t = (t > 0) & (t < 1)  # intersection on line segment 1
     den_u = (x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)
     u = -den_u / num
     u[num == .0] = -1.
-    mask_u = (u > 0) * (u < 1)  # intersection on line segment 2
+    mask_u = (u > 0) & (u < 1)  # intersection on line segment 2
     mask = mask_t * mask_u
     # overwrite with EPSILON. otherwise numerically unstable
     t = den_t / (num + EPSILON)
@@ -229,12 +229,9 @@ def box2corners_th(box: torch.Tensor):
     w = box[..., 2:3]
     h = box[..., 3:4]
     alpha = box[..., 4:5]  # (B, N, 1)
-    x4 = torch.FloatTensor([0.5, -0.5,
-                            -0.5, 0.5]).unsqueeze(0).unsqueeze(0).to(
-                                box.device)  # (1,1,4)
+    x4 = torch.FloatTensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
     x4 = x4 * w  # (B, N, 4)
-    y4 = torch.FloatTensor([0.5, 0.5, -0.5,
-                            -0.5]).unsqueeze(0).unsqueeze(0).to(box.device)
+    y4 = torch.FloatTensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
     y4 = y4 * h  # (B, N, 4)
     corners = torch.stack([x4, y4], dim=-1)  # (B, N, 4, 2)
     sin = torch.sin(alpha)
