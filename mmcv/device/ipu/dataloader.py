@@ -49,7 +49,7 @@ def collate(batch, samples_per_gpu=1):
         return default_collate(batch)
 
 
-class IPUDataloader(poptorch.DataLoader):
+class IPUDataLoader(poptorch.DataLoader):
     """Thin wrapper of `torch.utils.data.DataLoader`.
 
     Comparing with pytorch.dataloader, this dataloader changes the way of
