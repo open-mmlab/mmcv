@@ -21,7 +21,7 @@ def wrap_lr_update_hook(lr_hook_class):
 
 
 def wrap_optimizer_hook(optimizer_hook_class):
-    """A wrapper function to wrap OptimizerHook
+    """A wrapper function to wrap OptimizerHook.
 
     This is an non-intrusive implementation of wrapping optimizer hook
     (or you need to change every config file to use IPU optimizer hook)

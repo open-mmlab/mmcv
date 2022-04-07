@@ -59,9 +59,9 @@ class ToyModel(nn.Module):
 
 @skip_no_ipu
 def test_build_model():
-    for executionStrategy in \
+    for execution_strategy in \
             ['SameAsIpu', 'ShardedExecution', 'error_strategy']:
-        if executionStrategy == 'error_strategy':
+        if execution_strategy == 'error_strategy':
             def maybe_catch_error(_error):
                 return pytest.raises(_error)
         else:
@@ -79,7 +79,7 @@ def test_build_model():
             ipu_options = dict(
                 randomSeed=888,
                 enableExecutableCaching='cache_engine',
-                train_cfgs=dict(executionStrategy=executionStrategy,
+                train_cfgs=dict(executionStrategy=execution_strategy,
                                 Training=dict(gradientAccumulation=8),
                                 availableMemoryProportion=[
                                     0.3, 0.3, 0.3, 0.3]),

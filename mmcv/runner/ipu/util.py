@@ -15,7 +15,7 @@ def build_from_cfg_with_wrapper(
         registry,
         wrapper_func=None,
         default_args=None):
-    """Build a module from config dict and wrap module with "wrapper_func"
+    """Build a module from config dict and wrap module with "wrapper_func".
 
     Args:
         cfg (dict): Config dict. It should at least contain the key "type".
@@ -88,14 +88,14 @@ def _options_assigner(cfg, options_node):
 
 
 def parse_ipu_options(ipu_options):
-    """parse dictionary to ipu options
+    """parse dictionary to ipu options.
 
     Args:
-        ipu_options (dict): A dictionary of ipu settings
+        ipu_options (dict): A dictionary of ipu settings.
 
     Returns:
         dict[str, poptorch.Options]: Training options and inference options
-            of IPU.
+        of IPU.
     """
     # set ipu options for inference and training by config
     train_cfgs = ipu_options.pop('train_cfgs', {})
@@ -128,19 +128,22 @@ def _parse_ipu_options(ipu_options):
     if 'availableMemoryProportion' in ipu_options:
         availableMemoryProportion = ipu_options.pop(
             'availableMemoryProportion')
-        mem_prop = {f'IPU{i}': availableMemoryProportion[i]
-                    for i in range(len(availableMemoryProportion))}
+        mem_props = {}
+        for i, mem_prop in enumerate(availableMemoryProportion):
+            mem_props[f'IPU{i}'] = mem_prop
         opts.setAvailableMemoryProportion(mem_prop)
 
     if 'executionStrategy' in ipu_options:
-        executionStrategy = ipu_options.pop('executionStrategy')
-        if executionStrategy == 'SameAsIpu':
+        execution_strategy = ipu_options.pop('executionStrategy')
+        if execution_strategy == 'SameAsIpu':
             opts.setExecutionStrategy(poptorch.PipelinedExecution(
-                getattr(poptorch.AutoStage, executionStrategy)))
-        elif executionStrategy == 'ShardedExecution':
+                getattr(poptorch.AutoStage, execution_strategy)))
+        elif execution_strategy == 'ShardedExecution':
             opts.setExecutionStrategy(poptorch.ShardedExecution())
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                'executionStrategy should be "SameAsIpu" or "ShardedExecution"'
+                f', but got {execution_strategy}')
 
     if 'partialsType' in ipu_options:
         partialsType = ipu_options.pop('partialsType')

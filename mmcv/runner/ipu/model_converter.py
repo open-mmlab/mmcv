@@ -16,6 +16,7 @@ from ..fp16_utils import auto_fp16
 
 class DictArgsParser(ArgsParser):
     """A helper class for handling model input.
+
     Args:
         inputs (list): Inputs of model.
     """
@@ -39,6 +40,16 @@ class ComplexDataManager:
     Here, an intermediate class is needed to convert and record
     the data structure.
 
+    ComplexDataManager will record a complex input/output data in self._tree.
+    For example, we have an input data:
+    {'img': tensorA, 'label': tensorB, 'img_metas': [tensorC, tensorD]}
+    To enable IPU to use the input, ComplexDataManager will collect the torch
+    tensors from self._tree into a tuple like:
+    (tensorA, tensorB, tensorC, tensorD).
+    Meanwhile, the return of IPU is a tuple of tensors, ComplexDataManager
+    also have a function named set_tensors to set tensors back to a self._tree
+    as the output for upper calls.
+
     Args:
         logger (:obj:`logging.Logger`): Logger used during running.
              Defaults to None.
@@ -46,6 +57,7 @@ class ComplexDataManager:
     def __init__(self, logger=None):
         self.fixed_data_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
+        # enable or disable input data's shape and value check
         self.quick_mode = False
         self._tree = None
 
@@ -54,7 +66,7 @@ class ComplexDataManager:
 
     def compare_fixed_type(self, a, b):
         """Compare data, supported datatypes are numpy array and python
-            basic types."""
+        basic types."""
         if isinstance(a, np.ndarray):
             return np.all(a == b)
         else:
@@ -117,12 +129,12 @@ class ComplexDataManager:
                 new_address = ''
                 if not self.quick_mode:
                     new_address = address + f'[{str(k)}]'
-                    assert isinstance(treeA[k], type(treeB[k])),\
+                    assert isinstance(v, type(treeB[k])),\
                         f'data structure changed: {new_address}'
                 if isinstance(v, torch.Tensor):
-                    treeB[k] = treeA[k]
+                    treeB[k] = v
                 else:
-                    self.update(treeA[k], treeB[k], strict,
+                    self.update(v, treeB[k], strict,
                                 address=new_address)
         elif isinstance(treeA, self.fixed_data_types):
             if not self.quick_mode:
@@ -181,7 +193,7 @@ class ComplexDataManager:
         """Put tensors from tuple back to self.tree."""
         if isinstance(self._tree, torch.Tensor):
             assert len(tensors) == 1
-            assert type(tensors[0]) == torch.Tensor
+            assert isinstance(tensors[0], torch.Tensor)
             self._tree = tensors[0]
         else:
             # convert to list if tensors is tuple
@@ -211,7 +223,7 @@ class ComplexDataManager:
                 f'not supported datatype:{str(tree)}')
 
     def clean_tensors(self):
-        """Delete tensors from self.tree"""
+        """Delete tensors from self.tree."""
         self._clean_tensors(self._tree)
 
     def _clean_tensors(self, tree):
@@ -278,20 +290,20 @@ class WrappedNet(nn.Module):
                     name, idx, self.hooked_features)
                 module.register_forward_hook(hook=features_hook)
 
-    def get_input_output_hook(self, name, idx, save_dic):
+    def get_input_output_hook(self, name, idx, save_dict):
         def input_output_hook(module, fea_in, fea_out):
             if isinstance(fea_in, tuple):
                 fea_in = list(fea_in)
             if isinstance(fea_out, tuple):
                 fea_out = list(fea_out)
-            save_dic[name] = {'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
+            save_dict[name] = {'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
             return None
         return input_output_hook
 
     def forward(self, inputs_tuple):
         """This function is used to be compiled to ipu, the inputs and
         outputs need to be tuples, so here we need to restore the input back
-        to a dictionary and convert the output to a tuple"""
+        to a dictionary and convert the output to a tuple."""
         self.inputs_tree_manager.set_tensors(inputs_tuple)
         kwargs = {**(self.inputs_tree_manager.tree)}
         if self.training:
@@ -394,7 +406,7 @@ class WrappedNet(nn.Module):
 
 class PoplarExecutorForMMCV(PoplarExecutor):
     """An executor for inputs/outputs parsing, model compilation,
-        data alignment and IPU upload/download.
+    data alignment and IPU upload/download.
 
     Args:
         model (:obj:`nn.Module`): The model to be compiled.
@@ -429,6 +441,9 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         self.hooked_features = {}
         self.hooked_features_ipu = {}
         if modules_to_record is None:
+            # It is possible that the IPU implementation of some operators
+            # is inconsistent with the expected (CPU), here you can use
+            # this method to confirm whether there is a problem
             self.compare_with_cpu = False
         else:
             self.compare_with_cpu = True
@@ -476,10 +491,9 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             self.inputs_tree_manager.quick()
             self.outputs_tree_manager.quick()
 
-        # parser args for first iter
-        self._args_parser = DictArgsParser(
-            {'args': inputs_tuple}) if self._args_parser is None\
-            else self._args_parser
+        # parser args in the first iter
+        if self._args_parser is None:
+            self._args_parser = DictArgsParser({'args': inputs_tuple})
 
         # run or convert model
         # the plain_outputs will be used in converting stage
@@ -491,22 +505,22 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # according to the same order
         self.outputs_tree_manager.set_tensors(plain_outputs)
         # get the real output dictionary from self.outputs_tree_manager
-        output_dic = self.outputs_tree_manager.tree
+        output_dict = self.outputs_tree_manager.tree
 
-        # split output_dic into hooked_features_ipu
+        # split output_dict into hooked_features_ipu
         # and output of the torch model
         mmcv_model_output = {}
-        for name in output_dic:
+        for name in output_dict:
             if name in self.hooked_features:
-                self.hooked_features_ipu[name] = output_dic[name]
+                self.hooked_features_ipu[name] = output_dict[name]
             else:
-                mmcv_model_output[name] = output_dic[name]
+                mmcv_model_output[name] = output_dict[name]
 
-        if 'output of WrappedNet: single tensor' in output_dic:
+        if 'output of WrappedNet: single tensor' in output_dict:
             assert len(mmcv_model_output) == 1
-            assert type(
-                mmcv_model_output['output of WrappedNet: single tensor'])\
-                == torch.Tensor
+            assert isinstance(
+                mmcv_model_output['output of WrappedNet: single tensor'],
+                torch.Tensor)
             mmcv_model_output = \
                 mmcv_model_output['output of WrappedNet: single tensor']
 
@@ -527,18 +541,18 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # TODO we will ignore optimizer for it will not be used in model,
         # support later if necessary
         data['optimizer'] = None
-        output_dic = self.run_model(data)
+        output_dict = self.run_model(data)
 
         # outputs contained loss, log_vars, num_samples,
         # only loss(torch.tensor) has been updated
         # remove all unchanged vars, left torch.tensor
-        neat_output_dic = {'loss': output_dic['loss']}
+        neat_output_dict = {'loss': output_dict['loss']}
 
         # re-parse outputs, get back log_vars and num_samples
-        loss, log_vars = self.model._parse_losses(neat_output_dic)
-        final_output_dic = dict(
+        loss, log_vars = self.model._parse_losses(neat_output_dict)
+        final_output_dict = dict(
             loss=loss, log_vars=log_vars, num_samples=num_samples)
-        return final_output_dic
+        return final_output_dict
 
     def eval_call(self, img, img_metas=None, return_loss=True, **kwargs):
         # arguments from mmdet/models/detectors/base.py:BaseDetector.forward
@@ -548,9 +562,9 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         assert not return_loss
         data = {'img': img, 'img_metas': img_metas, 'return_loss': return_loss}
 
-        output_dic = self.run_model(data)
+        output_dict = self.run_model(data)
 
-        return output_dic
+        return output_dict
 
     def detachFromDevice(self):
         if self.isCompiled() and self._is_attached:
@@ -571,10 +585,11 @@ def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
 
 class TrainEvalModel:
     """A class maintaining training PoplarExecutorForMMCV and inference
-        PoplarExecutorForMMCV.
+    PoplarExecutorForMMCV.
 
     Args:
         train_model (:obj:`nn.Module`): The training model to be compiled.
+            ``train_model`` can be None if only executing validation.
         eval_model (:obj:`nn.Module`): The inference model to be compiled.
         options (mmcv.Config, dict): Options that will be used to compile
             and run the model.
@@ -622,14 +637,14 @@ class TrainEvalModel:
 
         Args:
             mode (bool): whether to set training mode (``True``) or evaluation
-                         mode (``False``). Default: ``True``.
+                mode (``False``). Default: ``True``.
 
         Returns:
             Module: self
         """
         if not isinstance(mode, bool):
             raise ValueError('training mode is expected to be boolean')
-        if self._train_executor is None and mode is True:
+        if self._train_executor is None and mode:
             raise RuntimeError(
                 'The train_executor is not initialized.'
                 'If you want to initialize train_executor,'
@@ -706,15 +721,15 @@ class TrainEvalModel:
     def train_step(self, data, optimizer=None, **kwargs):
         assert self.training, 'not supported train_step on eval mode'
         hooked_features_cpu = {}
-        if self._train_executor.isCompiled() \
-                and self._train_executor.compare_with_cpu:
+        if (self._train_executor.isCompiled() and
+            self._train_executor.compare_with_cpu):
             self.copyWeightsToHost()
             self._train_executor.model.train_step(data, optimizer, **kwargs)
             hooked_features_cpu = {**(self._train_executor.hooked_features)}
         result = self._train_executor.train_step(data, optimizer, **kwargs)
-        if self._train_executor.isCompiled() \
-            and self._train_executor.compare_with_cpu \
-                and len(hooked_features_cpu) > 0:
+        if (self._train_executor.isCompiled() and
+            self._train_executor.compare_with_cpu and
+            len(hooked_features_cpu) > 0):
             self.compare_data_between_ipu_and_cpu(
                 hooked_features_cpu, self._train_executor.hooked_features_ipu)
         return result
