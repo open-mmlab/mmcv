@@ -28,7 +28,7 @@ def _is_port_in_use(port):
     ips = socket.gethostbyname_ex(socket.gethostname())[-1]
     ips.append('localhost')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return all([s.connect_ex((ip, port)) == 0 for ip in ips])
+        return any([s.connect_ex((ip, port)) == 0 for ip in ips])
 
 
 def init_dist(launcher, backend='nccl', **kwargs):
