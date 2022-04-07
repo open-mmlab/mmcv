@@ -16,9 +16,9 @@ def collate(batch, samples_per_gpu=1):
     :type:`~mmcv.parallel.DataContainer`. Currently, it will be ignored.
     There are 3 cases.
 
-    1. cpu_only = True, e.g., meta data
-    2. cpu_only = False, stack = True, e.g., images tensors
-    3. cpu_only = False, stack = False, e.g., gt bboxes
+    1. cpu_only = True, e.g., meta data.
+    2. cpu_only = False, stack = True, e.g., images tensors.
+    3. cpu_only = False, stack = False, e.g., gt bboxes.
     """
 
     if not isinstance(batch, Sequence):
@@ -50,7 +50,7 @@ def collate(batch, samples_per_gpu=1):
 
 
 class IPUDataloader(poptorch.DataLoader):
-    """Thin wrapper of `torch.utils.data.DataLoader`
+    """Thin wrapper of `torch.utils.data.DataLoader`.
 
     Comparing with pytorch.dataloader, this dataloader changes the way of
     calculation of batch size and adds the AsynchronousDataAccessor to

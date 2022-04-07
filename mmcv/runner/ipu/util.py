@@ -131,7 +131,7 @@ def _parse_ipu_options(ipu_options):
         mem_props = {}
         for i, mem_prop in enumerate(availableMemoryProportion):
             mem_props[f'IPU{i}'] = mem_prop
-        opts.setAvailableMemoryProportion(mem_prop)
+        opts.setAvailableMemoryProportion(mem_props)
 
     if 'executionStrategy' in ipu_options:
         execution_strategy = ipu_options.pop('executionStrategy')
