@@ -14,7 +14,7 @@ from mmcv.device.ipu import IPU_MODE
 from torch.utils.data import Dataset
 if IPU_MODE:
     from mmcv.device.ipu import runner
-    from mmcv.device.ipu import IPUDataloader
+    from mmcv.device.ipu import IPUDataLoader
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
@@ -102,7 +102,7 @@ def test_build_runner():
     cfg = dict(type='IPUIterBasedRunner', max_iters=1)
     with pytest.raises(
             NotImplementedError,
-            match='cpu mode on IPURunner not supported'):
+            match='cpu mode on IPURunner is not supported'):
         ipu_runner = build_runner(cfg, default_args=default_args)
 
     runner.IPU_MODE = True
@@ -112,7 +112,7 @@ def test_build_runner():
 
     model = ToyModel()
     ipu_options = {'train_cfgs': {}, 'eval_cfgs': {}}
-    dataloader = IPUDataloader(None, ToyDataset(), num_workers=1)
+    dataloader = IPUDataLoader(None, ToyDataset(), num_workers=1)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
     cfg = dict(type='IPUIterBasedRunner',
                max_iters=2,

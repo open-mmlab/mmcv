@@ -5,7 +5,7 @@ from mmcv.device.ipu import IPU_MODE
 from torch.utils.data import Dataset
 from mmcv.parallel.data_container import DataContainer
 if IPU_MODE:
-    from mmcv.device.ipu import IPUDataloader, parse_ipu_options
+    from mmcv.device.ipu import IPUDataLoader, parse_ipu_options
     from mmcv.device.ipu.dataloader import collate
 
 skip_no_ipu = pytest.mark.skipif(
@@ -23,7 +23,7 @@ class ToyDataset(Dataset):
 @skip_no_ipu
 def test_dataloader_ipu():
 
-    dataloader = IPUDataloader(None,
+    dataloader = IPUDataLoader(None,
                                ToyDataset(),
                                batch_size=256,
                                num_workers=1,

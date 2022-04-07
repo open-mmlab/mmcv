@@ -9,7 +9,7 @@ from mmcv.parallel import DataContainer
 
 
 def collate(batch, samples_per_gpu=1):
-    """Puts each data field into a tensor/DataContainer with outer dimension
+    """Put each data field into a tensor/DataContainer with outer dimension
     batch size.
 
     TODO support for
@@ -34,7 +34,7 @@ def collate(batch, samples_per_gpu=1):
         for samples in transposed:
             if not isinstance(samples[0], DataContainer):
                 # At present, we will skip the processing of datacontainer,
-                # which will reduce the performance of IPU dataloader
+                # which will reduce the performance of IPU DataLoder
                 collated_batch.append(collate(samples, samples_per_gpu))
         return collated_batch
     elif isinstance(batch[0], Mapping):
@@ -42,7 +42,7 @@ def collate(batch, samples_per_gpu=1):
         for key in batch[0]:
             if not isinstance(batch[0][key], DataContainer):
                 # At present, we will skip the processing of datacontainer,
-                # which will reduce the performance of IPU dataloader
+                # which will reduce the performance of IPU DataLoder
                 collated_batch[key] = collate([d[key] for d in batch])
         return collated_batch
     else:
@@ -52,7 +52,7 @@ def collate(batch, samples_per_gpu=1):
 class IPUDataLoader(poptorch.DataLoader):
     """Thin wrapper of `torch.utils.data.DataLoader`.
 
-    Comparing with pytorch.dataloader, this dataloader changes the way of
+    Compared with the pytorch DataLoder, this DataLoder changes the way of
     calculation of batch size and adds the AsynchronousDataAccessor to
     load and release data faster in cpu mode.
 
@@ -114,7 +114,7 @@ class IPUDataLoader(poptorch.DataLoader):
             method is used here, and the real initialization will not be done
             until the dataloader needs to be used and the options are input.
         """
-        # lazy init: sometimes, we cannot get IPU options when make data
+        # lazy init: sometimes, we cannot get IPU options when build data
         #            loader
         self.kwargs = {'options': options,
                        'dataset': dataset,

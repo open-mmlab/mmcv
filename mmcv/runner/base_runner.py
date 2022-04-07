@@ -29,7 +29,7 @@ class BaseRunner(metaclass=ABCMeta):
     - ``save_checkpoint()``
 
     Args:
-        model (:obj:`torch.nn.Module`): The model to be run.
+        model (:obj:`torch.nn.Module`): The model to run.
         batch_processor (callable): A callable method that process a data
             batch. The interface of this method should be
             `batch_processor(model, data, train_mode) -> dict`

@@ -28,11 +28,11 @@ class DictArgsParser(ArgsParser):
         self._warned_not_contiguous_input = False
 
 
-# A customized None type for ComplexDataManager
-ComplexDataManagerNone = object()
+# A customized None type for HierarchicalData
+HierarchicalDataNone = object()
 
 
-class ComplexDataManager:
+class HierarchicalData:
     """A class used to record data structure of input of model.
 
     At present, the input data structure accepted by IPU is limited,
@@ -40,13 +40,13 @@ class ComplexDataManager:
     Here, an intermediate class is needed to convert and record
     the data structure.
 
-    ComplexDataManager will record a complex input/output data in self._tree.
+    HierarchicalData will record a complex input/output data in self._tree.
     For example, we have an input data:
     {'img': tensorA, 'label': tensorB, 'img_metas': [tensorC, tensorD]}
-    To enable IPU to use the input, ComplexDataManager will collect the torch
+    To enable IPU to use the input, HierarchicalData will collect the torch
     tensors from self._tree into a tuple like:
     (tensorA, tensorB, tensorC, tensorD).
-    Meanwhile, the return of IPU is a tuple of tensors, ComplexDataManager
+    Meanwhile, the return of IPU is a tuple of tensors, HierarchicalData
     also have a function named set_tensors to set tensors back to a self._tree
     as the output for upper calls.
 
@@ -55,7 +55,7 @@ class ComplexDataManager:
              Defaults to None.
     """
     def __init__(self, logger=None):
-        self.fixed_data_types = (int, str, float, np.ndarray, type(None))
+        self.atomic_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
         # enable or disable input data's shape and value check
         self.quick_mode = False
@@ -64,7 +64,7 @@ class ComplexDataManager:
     def quick(self):
         self.quick_mode = True
 
-    def compare_fixed_type(self, a, b):
+    def compare_atomic_type(self, a, b):
         """Compare data, supported datatypes are numpy array and python
         basic types."""
         if isinstance(a, np.ndarray):
@@ -91,7 +91,7 @@ class ComplexDataManager:
     def update(
             self,
             treeA,
-            treeB=ComplexDataManagerNone,
+            treeB=HierarchicalDataNone,
             strict=True,
             address='data'
             ):
@@ -107,7 +107,7 @@ class ComplexDataManager:
                 2. Torch.Tensor data shape changed.
             address: Record the address of current data to be updated.
         """
-        if treeB is ComplexDataManagerNone:
+        if treeB is HierarchicalDataNone:
             treeB = self.tree
 
         # Update with a tree with the same structure
@@ -136,9 +136,9 @@ class ComplexDataManager:
                 else:
                     self.update(v, treeB[k], strict,
                                 address=new_address)
-        elif isinstance(treeA, self.fixed_data_types):
+        elif isinstance(treeA, self.atomic_types):
             if not self.quick_mode:
-                is_equal = self.compare_fixed_type(treeA, treeB)
+                is_equal = self.compare_atomic_type(treeA, treeB)
                 if not is_equal:
                     if strict:
                         raise ValueError(
@@ -181,7 +181,7 @@ class ComplexDataManager:
                     tensors.append(v)
                 else:
                     self._get_tensors(v, tensors)
-        elif isinstance(tree, self.fixed_data_types):
+        elif isinstance(tree, self.atomic_types):
             pass
         elif isinstance(tree, DataContainer):
             self._get_tensors(tree.data, tensors)
@@ -214,7 +214,7 @@ class ComplexDataManager:
                     tree[k] = tensors.pop(0)
                 else:
                     self._set_tensors(v, tensors)
-        elif isinstance(tree, self.fixed_data_types):
+        elif isinstance(tree, self.atomic_types):
             pass
         elif isinstance(tree, DataContainer):
             self._set_tensors(tree.data, tensors)
@@ -239,7 +239,7 @@ class ComplexDataManager:
                     tree[k] = None
                 else:
                     self._clean_tensors(v)
-        elif isinstance(tree, self.fixed_data_types):
+        elif isinstance(tree, self.atomic_types):
             pass
         elif isinstance(tree, DataContainer):
             self._clean_tensors(tree.data)
@@ -255,10 +255,10 @@ class WrappedNet(nn.Module):
     training/inference model.
 
     Args:
-        model (:obj:`nn.Module`): The model to be run.
-        inputs_tree_manager (:obj:`ComplexDataManager`): A parser
+        model (:obj:`nn.Module`): The model to run.
+        inputs_tree_manager (:obj:`HierarchicalData`): A parser
             converting inputs from tuple to dictionary.
-        outputs_tree_manager (:obj:`ComplexDataManager`): A parser
+        outputs_tree_manager (:obj:`HierarchicalData`): A parser
             converting outputs from dictionary to tuple.
         hooked_features (dict): Specify the features to be
             recorded.
@@ -433,12 +433,14 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         # self.model == self._user_model: input pytorch model
         # self._model: wrapped model which is used to compile
         # and update weights, these two models use same weights
-        # wrapped model only accept and output tuple, so ComplexDataManager
+        # wrapped model only accept and output tuple, so HierarchicalData
         # will convert dictionary to tuple and convert them back
-        self.inputs_tree_manager = ComplexDataManager(logger=logger)
-        self.outputs_tree_manager = ComplexDataManager(logger=logger)
+        self.inputs_tree_manager = HierarchicalData(logger=logger)
+        self.outputs_tree_manager = HierarchicalData(logger=logger)
         self.logger = logger
+        # the features calculated by CPU
         self.hooked_features = {}
+        # the features calculated by IPU
         self.hooked_features_ipu = {}
         if modules_to_record is None:
             # It is possible that the IPU implementation of some operators
@@ -509,22 +511,22 @@ class PoplarExecutorForMMCV(PoplarExecutor):
 
         # split output_dict into hooked_features_ipu
         # and output of the torch model
-        mmcv_model_output = {}
+        torch_model_output = {}
         for name in output_dict:
             if name in self.hooked_features:
                 self.hooked_features_ipu[name] = output_dict[name]
             else:
-                mmcv_model_output[name] = output_dict[name]
+                torch_model_output[name] = output_dict[name]
 
         if 'output of WrappedNet: single tensor' in output_dict:
-            assert len(mmcv_model_output) == 1
+            assert len(torch_model_output) == 1
             assert isinstance(
-                mmcv_model_output['output of WrappedNet: single tensor'],
+                torch_model_output['output of WrappedNet: single tensor'],
                 torch.Tensor)
-            mmcv_model_output = \
-                mmcv_model_output['output of WrappedNet: single tensor']
+            torch_model_output = \
+                torch_model_output['output of WrappedNet: single tensor']
 
-        return mmcv_model_output
+        return torch_model_output
 
     def train_step(self, data, optimizer=None, **kwargs):
         # arguments from mmcls/models/classifiers/base.py:
@@ -533,7 +535,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         assert len(kwargs) == 0  # TODO, support later if necessary
 
         # TODO support datacontainer as input
-        # currently, auto_fp16 and ComplexDataManager take too much time on
+        # currently, auto_fp16 and HierarchicalData take too much time on
         # traversing datacontainer
         data['img_metas'] = None
         num_samples = len(data['img'].data)
@@ -643,7 +645,8 @@ class TrainEvalModel:
             Module: self
         """
         if not isinstance(mode, bool):
-            raise ValueError('training mode is expected to be boolean')
+            raise ValueError('training mode is expected to be boolean, '
+                             f'but got {type(mode)}')
         if self._train_executor is None and mode:
             raise RuntimeError(
                 'The train_executor is not initialized.'
@@ -766,7 +769,7 @@ def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         on your model before you call this function for correct behavior.
 
     Args:
-        model (:obj:`nn.Module`): The model to be run.
+        model (:obj:`nn.Module`): The model to run.
         options (poptorch.Options): Options that will be used to compile
             and run the model.
         optimizer (:obj:`torch.optim.Optimizer`, optional): The optimizers
@@ -811,7 +814,7 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         correct behavior.
 
     Args:
-        model (:obj:`nn.Module`): The model to be run.
+        model (:obj:`nn.Module`): The model to run.
         options (poptorch.Options): Options that will be used to compile
             and run the model.
         logger (:obj:`logging.Logger`): Logger used during running.

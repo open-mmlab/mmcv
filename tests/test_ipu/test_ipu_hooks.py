@@ -83,26 +83,32 @@ def test_optimizerhook():
         grad_clip=dict(max_norm=2),
         detect_anomalous_params=True)
 
+    # test building ipu_lr_hook_class
     dummy_runner.register_training_hooks(
         lr_config=lr_config,
-        optimizer_config=optimizer_config,
+        optimizer_config=None,
         timer_config=None
     )
 
+    # test _set_lr()
     output = dummy_runner.model.train_step(**dummy_input)
     dummy_runner.outputs = output
     dummy_runner.call_hook('before_train_epoch')
 
+    # test building ipu_optimizer_hook_class
     with pytest.raises(
             NotImplementedError,
             match='IPU does not support gradient clip'):
-        dummy_runner.call_hook('after_train_iter')
+        dummy_runner.register_training_hooks(
+            lr_config=None,
+            optimizer_config=optimizer_config,
+            timer_config=None
+        )
 
     # test fp16 optimizer hook
     lr_config = dict(policy='step', step=[100, 150])
     optimizer_config = dict(
         grad_clip=dict(max_norm=2),)
-    dummy_runner.hooks.pop(0)
     dummy_runner.hooks.pop(0)
 
     with pytest.raises(

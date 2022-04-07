@@ -148,7 +148,7 @@ def test_parse_ipu_options():
 
     with pytest.raises(
             NotImplementedError,
-            match='opts_node type'):
+            match='options_node type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['train_cfgs']['Precision'] = {'autocast_policy': 123}
         parse_ipu_options(_options_cfg)

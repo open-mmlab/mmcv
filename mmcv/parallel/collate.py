@@ -9,7 +9,7 @@ from .data_container import DataContainer
 
 
 def collate(batch, samples_per_gpu=1):
-    """Puts each data field into a tensor/DataContainer with outer dimension
+    """Put each data field into a tensor/DataContainer with outer dimension
     batch size.
 
     Extend default_collate to add support for

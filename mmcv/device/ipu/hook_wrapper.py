@@ -3,7 +3,7 @@ from mmcv.utils import TORCH_VERSION, digit_version
 from mmcv.runner import HOOKS, OptimizerHook, LrUpdaterHook
 
 
-def wrap_lr_update_hook(lr_hook_class):
+def wrap_lr_updater_hook(lr_hook_class):
     """A wrapper function to wrap any subclass of LrUpdaterHook.
 
     IPU needs extra operations to upload optimizer settings.
@@ -29,12 +29,11 @@ def wrap_optimizer_hook(optimizer_hook_class):
     should be an error raised when using clip-norm.
     """
     class ipu_optimizer_hook_class(OptimizerHook):
-        def after_train_iter(self, runner):
-            if self.detect_anomalous_params:
-                self.detect_anomalous_parameters(
-                    runner.outputs['loss'], runner)
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
             if self.grad_clip is not None:
                 raise NotImplementedError('IPU does not support gradient clip')
+
     return ipu_optimizer_hook_class
 
 

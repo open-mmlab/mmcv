@@ -7,15 +7,15 @@ if IPU_MODE:
                                 build_from_cfg_with_wrapper, model_sharding,
                                 recomputation_checkpoint)
     from .hook_wrapper import (wrap_optimizer_hook, IPUFp16OptimizerHook,
-                               wrap_lr_update_hook)
-    from .dataloader import IPUDataloader
+                               wrap_lr_updater_hook)
+    from .dataloader import IPUDataLoader
     from .runner import IPUBaseRunner, IPUEpochBasedRunner, IPUIterBasedRunner
     __all__ = [
         'parse_ipu_options', 'ipu_model_wrapper',
         'build_from_cfg_with_wrapper', 'IPU_MODE',
         'model_sharding', 'wrap_optimizer_hook',
-        'IPUFp16OptimizerHook', 'wrap_lr_update_hook',
-        'recomputation_checkpoint', 'IPUDataloader',
+        'IPUFp16OptimizerHook', 'wrap_lr_updater_hook',
+        'recomputation_checkpoint', 'IPUDataLoader',
         'IPUBaseRunner', 'IPUEpochBasedRunner',
         'IPUIterBasedRunner'
     ]

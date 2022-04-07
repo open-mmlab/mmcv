@@ -80,7 +80,7 @@ def _options_assigner(cfg, options_node):
         if callable(options_node):
             options_node(cfg)
         else:
-            error_msg = f'opts_node type {type(options_node)} not supported'
+            error_msg = f'options_node type {type(options_node)} not supported'
             raise NotImplementedError(error_msg)
     else:
         error_msg = f'cfg type {type(cfg)} not supported'

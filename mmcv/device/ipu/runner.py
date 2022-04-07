@@ -7,8 +7,8 @@ if IPU_MODE:
     from . import (parse_ipu_options,
                    build_from_cfg_with_wrapper, IPU_MODE,
                    ipu_model_wrapper, wrap_optimizer_hook,
-                   IPUFp16OptimizerHook, wrap_lr_update_hook,
-                   IPUDataloader)
+                   IPUFp16OptimizerHook, wrap_lr_updater_hook,
+                   IPUDataLoader)
 
 
 class IPUBaseRunner(BaseRunner):
@@ -20,10 +20,10 @@ class IPUBaseRunner(BaseRunner):
     2. wrap pytorch model for IPU
     3. Raise errors while encountering illegal usage
     4. Input IPU options and initialize dataloader if finding an instance of
-       of IPUDataloader
+       of IPUDataLoader
 
     Args:
-        model (:obj:`nn.Module`): The model to be run.
+        model (:obj:`nn.Module`): The model to run.
         options (mmcv.Config, dict): Options that will be used to compile
             and run the model.
         modules_to_record (mmcv.Config, list): Index or name of modules which
@@ -61,9 +61,11 @@ class IPUBaseRunner(BaseRunner):
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg, fp16_cfg=fp16_cfg)
         else:
-            raise NotImplementedError('cpu mode on IPURunner not supported')
+            raise NotImplementedError('cpu mode on IPURunner is not supported')
 
     def register_lr_hook(self, lr_config):
+        if lr_config is None:
+            return
         assert isinstance(lr_config, dict)
         assert 'policy' in lr_config
         policy_type = lr_config.pop('policy')
@@ -79,10 +81,12 @@ class IPUBaseRunner(BaseRunner):
         hook_type = policy_type + 'LrUpdaterHook'
         lr_config['type'] = hook_type
         hook = build_from_cfg_with_wrapper(
-            lr_config, HOOKS, wrap_lr_update_hook)
+            lr_config, HOOKS, wrap_lr_updater_hook)
         self.register_hook(hook, priority='VERY_HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
+        if optimizer_config is None:
+            return
         assert isinstance(optimizer_config, (dict, IPUFp16OptimizerHook))
         if isinstance(optimizer_config, dict):
             optimizer_config.setdefault('type', 'OptimizerHook')
@@ -96,8 +100,8 @@ class IPUBaseRunner(BaseRunner):
         for i, flow in enumerate(workflow):
             mode, _ = flow
             # initialize IPU dataloader if not initialized
-            assert isinstance(data_loaders[i], IPUDataloader),\
-                'IPU runner can only work with `IPUDataloader`'
+            assert isinstance(data_loaders[i], IPUDataLoader),\
+                'IPU runner can only work with `IPUDataLoader`'
             data_loaders[i].init(options=self.get_ipu_options(mode))
 
         super().run(data_loaders, workflow, *args, **kwargs)

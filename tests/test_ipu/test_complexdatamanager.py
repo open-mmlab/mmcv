@@ -6,14 +6,14 @@ import torch
 from mmcv.parallel.data_container import DataContainer
 from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.device.ipu.model_converter import ComplexDataManager
+    from mmcv.device.ipu.model_converter import HierarchicalData
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
 
 
 @skip_no_ipu
-def test_complexdatamanager():
+def test_HierarchicalData():
     # test complex data
     complex_data = {
         'a': torch.rand(3, 4),
@@ -26,7 +26,7 @@ def test_complexdatamanager():
             'b': np.random.rand(3, 4),
             'c': [1, 'asd']}}
 
-    cdm = ComplexDataManager(logging.getLogger())
+    cdm = HierarchicalData(logging.getLogger())
     cdm.set_tree(complex_data)
     tensors = cdm.get_tensors()
     tensors[0].add_(1)
@@ -58,7 +58,7 @@ def test_complexdatamanager():
         complex_data['a'] = AuxClass()
         cdm.clean_tensors()
 
-    cdm = ComplexDataManager(logging.getLogger())
+    cdm = HierarchicalData(logging.getLogger())
     cdm.set_tree(complex_data)
     complex_data['a'] = torch.rand(3, 4)
     with pytest.raises(ValueError, match='all data except torch.Tensor'):
@@ -71,7 +71,7 @@ def test_complexdatamanager():
 
     # test single tensor
     single_tensor = torch.rand(3, 4)
-    cdm = ComplexDataManager(logging.getLogger())
+    cdm = HierarchicalData(logging.getLogger())
     cdm.set_tree(single_tensor)
     cdm.set_tree(torch.rand(3, 4))
     tensors = cdm.get_tensors()
