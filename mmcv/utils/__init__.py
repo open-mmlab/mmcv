@@ -37,17 +37,21 @@ except ImportError:
     ]
 else:
     from .env import collect_env
+    from .hub import load_url
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
-    from .parrots_wrapper import (
-        TORCH_VERSION, BuildExtension, CppExtension, CUDAExtension, DataLoader,
-        PoolDataLoader, SyncBatchNorm, _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
-        _AvgPoolNd, _BatchNorm, _ConvNd, _ConvTransposeMixin, _InstanceNorm,
-        _MaxPoolNd, get_build_config, is_rocm_pytorch, _get_cuda_home)
-    from .pytorch_wrapper import is_cuda, is_mlu
+    # yapf: disable
+    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
+                                  CUDAExtension, DataLoader, PoolDataLoader,
+                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
+                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
+                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+                                  _InstanceNorm, _MaxPoolNd, get_build_config,
+                                  is_rocm_pytorch)
+    # yapf: enable
     from .registry import Registry, build_from_cfg
+    from .seed import worker_init_fn
     from .trace import is_jit_tracing
-    from .hub import load_url
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
         'print_log', 'is_str', 'iter_cast', 'list_cast', 'tuple_cast',
@@ -67,5 +71,5 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method'
+        '_get_cuda_home', 'load_url', 'has_method', 'worker_init_fn'
     ]
