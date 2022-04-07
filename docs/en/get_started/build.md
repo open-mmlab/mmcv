@@ -261,6 +261,6 @@ Firstly, you need to apply an IPU cloud machine, see [here](https://www.graphcor
 2. Build MMCV under same python environment
 
 ##### Option 2: Install from SDK
-1. Build MMCV
 
+1. Build MMCV
 2. Use pip to install sdk according to [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html). Also, you need to apply for machine and sdk to Graphcore.
