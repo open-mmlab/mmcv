@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 import torch
 from mmcv.parallel.data_container import DataContainer
-from mmcv.utils.ipu_wrapper import IPU_MODE
+from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu.model_converter import ComplexDataManager
+    from mmcv.device.ipu.model_converter import ComplexDataManager
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')

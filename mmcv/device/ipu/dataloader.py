@@ -5,7 +5,7 @@ import poptorch
 from functools import partial
 from torch.utils.data.dataloader import default_collate
 
-from mmcv.parallel.data_container import DataContainer
+from mmcv.parallel import DataContainer
 
 
 def collate(batch, samples_per_gpu=1):

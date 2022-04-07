@@ -15,7 +15,7 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
 from mmcv.runner.hooks import IterTimerHook
-from mmcv.utils.ipu_wrapper import IPU_MODE
+from mmcv.device.ipu import IPU_MODE
 
 
 def get_runners():

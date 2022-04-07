@@ -7,10 +7,10 @@ import torch
 import torch.nn as nn
 
 from mmcv.runner.fp16_utils import auto_fp16
-from mmcv.utils.ipu_wrapper import IPU_MODE
+from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu import parse_ipu_options, ipu_model_wrapper
-    from mmcv.runner.ipu.model_converter import compare_feat
+    from mmcv.device.ipu import parse_ipu_options, ipu_model_wrapper
+    from mmcv.device.ipu.model_converter import compare_feat
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')

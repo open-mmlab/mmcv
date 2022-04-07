@@ -11,9 +11,9 @@ import torch.nn as nn
 
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.runner import build_runner
-from mmcv.utils.ipu_wrapper import IPU_MODE
+from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu import IPUFp16OptimizerHook
+    from mmcv.device.ipu import IPUFp16OptimizerHook
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')

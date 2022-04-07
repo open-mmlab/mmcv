@@ -1,19 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
+from mmcv.runner import (BaseRunner, IterBasedRunner,
+                         EpochBasedRunner, RUNNERS, HOOKS)
 
-from .base_runner import BaseRunner
-from .iter_based_runner import IterBasedRunner
-from .epoch_based_runner import EpochBasedRunner
-from .builder import RUNNERS
-from .hooks import HOOKS
-
-from mmcv.runner.ipu import IPU_MODE
+from . import IPU_MODE
 if IPU_MODE:
-    from mmcv.runner.ipu import (parse_ipu_options,
-                                 build_from_cfg_with_wrapper, IPU_MODE,
-                                 ipu_model_wrapper, wrap_optimizer_hook,
-                                 IPUFp16OptimizerHook, wrap_lr_update_hook,
-                                 IPUDataloader)
+    from . import (parse_ipu_options,
+                   build_from_cfg_with_wrapper, IPU_MODE,
+                   ipu_model_wrapper, wrap_optimizer_hook,
+                   IPUFp16OptimizerHook, wrap_lr_update_hook,
+                   IPUDataloader)
 
 
 class IPUBaseRunner(BaseRunner):

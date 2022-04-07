@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.utils import TORCH_VERSION, digit_version
-from mmcv.runner.hooks import HOOKS, OptimizerHook, LrUpdaterHook
+from mmcv.runner import HOOKS, OptimizerHook, LrUpdaterHook
 
 
 def wrap_lr_update_hook(lr_hook_class):

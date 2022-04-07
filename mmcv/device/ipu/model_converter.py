@@ -10,8 +10,8 @@ from typing import Optional, Union
 from collections import OrderedDict
 from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
-from mmcv.parallel.data_container import DataContainer
-from ..fp16_utils import auto_fp16
+from mmcv.parallel import DataContainer
+from mmcv.runner import auto_fp16
 
 
 class DictArgsParser(ArgsParser):

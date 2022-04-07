@@ -10,11 +10,11 @@ import torch
 import torch.nn as nn
 
 from mmcv.runner import build_runner
-from mmcv.utils.ipu_wrapper import IPU_MODE
+from mmcv.device.ipu import IPU_MODE
 from torch.utils.data import Dataset
 if IPU_MODE:
-    from mmcv.runner import ipu_runner, IPUEpochBasedRunner
-    from mmcv.runner.ipu import IPUDataloader
+    from mmcv.device.ipu import runner
+    from mmcv.device.ipu import IPUDataloader
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
@@ -92,23 +92,23 @@ def test_build_runner():
         work_dir=osp.join(temp_root, dir_name),
         logger=logging.getLogger())
     cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
-    runner = build_runner(cfg, default_args=default_args)
-    assert runner._max_epochs == 1
+    ipu_runner = build_runner(cfg, default_args=default_args)
+    assert ipu_runner._max_epochs == 1
     cfg = dict(type='IPUIterBasedRunner', max_iters=1)
-    runner = build_runner(cfg, default_args=default_args)
-    assert runner._max_iters == 1
+    ipu_runner = build_runner(cfg, default_args=default_args)
+    assert ipu_runner._max_iters == 1
 
-    ipu_runner.IPU_MODE = False
+    runner.IPU_MODE = False
     cfg = dict(type='IPUIterBasedRunner', max_iters=1)
     with pytest.raises(
             NotImplementedError,
             match='cpu mode on IPURunner not supported'):
-        runner = build_runner(cfg, default_args=default_args)
+        ipu_runner = build_runner(cfg, default_args=default_args)
 
-    ipu_runner.IPU_MODE = True
+    runner.IPU_MODE = True
     with pytest.raises(ValueError, match='Only one of'):
         cfg = dict(type='IPUIterBasedRunner', max_epochs=1, max_iters=1)
-        runner = build_runner(cfg, default_args=default_args)
+        ipu_runner = build_runner(cfg, default_args=default_args)
 
     model = ToyModel()
     ipu_options = {'train_cfgs': {}, 'eval_cfgs': {}}
@@ -122,8 +122,8 @@ def test_build_runner():
         optimizer=optimizer,
         work_dir=osp.join(temp_root, dir_name),
         logger=logging.getLogger())
-    runner = build_runner(cfg, default_args=default_args)
-    runner.run([dataloader], [('train', 2)])
-    runner.get_ipu_options('val')
+    ipu_runner = build_runner(cfg, default_args=default_args)
+    ipu_runner.run([dataloader], [('train', 2)])
+    ipu_runner.get_ipu_options('val')
     with pytest.raises(ValueError, match='mode should be train or val'):
-        runner.get_ipu_options('666')
+        ipu_runner.get_ipu_options('666')

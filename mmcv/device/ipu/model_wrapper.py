@@ -191,7 +191,7 @@ def ipu_model_wrapper(
     training = model.training if optimizer is not None else False
     # set mixed-precision
     if fp16_cfg is not None:
-        from mmcv.runner.fp16_utils import wrap_fp16_model
+        from mmcv.runner import wrap_fp16_model
         loss_scale = fp16_cfg['loss_scale']
         wrap_fp16_model(model)
         model.half()
