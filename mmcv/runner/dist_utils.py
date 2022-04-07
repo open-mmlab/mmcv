@@ -24,11 +24,11 @@ def _find_free_port():
     return port
 
 
-def _is_port_in_use(port):
+def _is_free_port(port):
     ips = socket.gethostbyname_ex(socket.gethostname())[-1]
     ips.append('localhost')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return any([s.connect_ex((ip, port)) == 0 for ip in ips])
+        return not any([s.connect_ex((ip, port)) == 0 for ip in ips])
 
 
 def init_dist(launcher, backend='nccl', **kwargs):
@@ -86,7 +86,7 @@ def _init_dist_slurm(backend, port=None):
     else:
         # if torch.distributed default port(29500) is available
         # then use it, else find a free port
-        if not _is_port_in_use(29500):
+        if _is_free_port(29500):
             os.environ['MASTER_PORT'] = '29500'
         else:
             os.environ['MASTER_PORT'] = str(_find_free_port())
