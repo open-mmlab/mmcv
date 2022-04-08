@@ -78,6 +78,7 @@ __global__ void diff_iou_rotated_sort_vertices_forward_cuda_kernel(
         } else {
             // sort the valid vertices
             // note the number of valid vertices is known
+            // note: check that num_valid[i] < MAX_NUM_VERT_IDX
             for (int j=0; j<num_valid[i]; ++j){
                 // initialize with a "big" value
                 float x_min = 1;
