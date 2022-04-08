@@ -5,7 +5,8 @@ from .loading import LoadAnnotations, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomChoiceResize, RandomFlip, RandomGrayscale,
                          RandomResize, Resize)
-from .wrappers import Compose, KeyMapper, RandomChoice, TransformBroadcaster
+from .wrappers import (Compose, KeyMapper, RandomApply, RandomChoice,
+                       TransformBroadcaster)
 
 try:
     import torch  # noqa: F401
@@ -14,7 +15,8 @@ except ImportError:
         'BaseTransform', 'TRANSFORMS', 'TransformBroadcaster', 'Compose',
         'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize',
-        'CenterCrop', 'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize'
+        'CenterCrop', 'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize',
+        'RandomApply'
     ]
 else:
     from .formatting import ImageToTensor, ToTensor, to_tensor
@@ -24,5 +26,5 @@ else:
         'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
-        'MultiScaleFlipAug', 'RandomResize'
+        'MultiScaleFlipAug', 'RandomResize', 'RandomApply'
     ]

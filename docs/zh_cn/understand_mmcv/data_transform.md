@@ -172,7 +172,7 @@ pipeline = [
 
 利用字段映射包装，我们在实现数据变换类时，不需要考虑在 `transform` 方法中考虑各种可能的输入字段名，只需要处理默认的字段即可。
 
-### 随机选择（RandomChoice）
+### 随机选择（RandomChoice）和随机执行（RandomApply）
 
 随机选择包装（`RandomChoice`）用于从一系列数据变换组合中随机应用一个数据变换组合。利用这一包装，我们可以简单地实现一些数据增强功能，比如 AutoAugment。
 
@@ -194,6 +194,18 @@ pipeline = [
         ],
         prob=[0.4, 0.6]  # 两种随机变换组合各自的选用概率
         )
+    ...
+]
+```
+
+随机执行包装（`RandomApply`）用于以指定概率随机执行数据变换组合。例如：
+
+```python
+pipeline = [
+    ...
+    dict(type='RandomApply',
+        transforms=[dict(type='Rotate', angle=30.)],
+        prob=0.3)  # 以 0.3 的概率执行被包装的数据变换
     ...
 ]
 ```
