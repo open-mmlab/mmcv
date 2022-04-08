@@ -43,8 +43,8 @@ def box_intersection_th(corners1: torch.Tensor, corners2: torch.Tensor):
     line2 = torch.cat([corners2, corners2[:, :, [1, 2, 3, 0], :]], dim=3)
     # duplicate data to pair each edges from the boxes
     # (B, N, 4, 4) -> (B, N, 4, 4, 4) : Batch, Box, edge1, edge2, point
-    line1_ext = line1.unsqueeze(3).repeat([1, 1, 1, 4, 1])
-    line2_ext = line2.unsqueeze(2).repeat([1, 1, 4, 1, 1])
+    line1_ext = line1.unsqueeze(3)
+    line2_ext = line2.unsqueeze(2)
     x1 = line1_ext[..., 0]
     y1 = line1_ext[..., 1]
     x2 = line1_ext[..., 2]
