@@ -89,6 +89,13 @@ def test_registry():
     with pytest.raises(TypeError):
         CATS.register_module(0)
 
+    @CATS.register_module()
+    def muchkin():
+        pass
+
+    assert CATS.get('muchkin') is muchkin
+    assert 'muchkin' in CATS
+
     # can only decorate a class or a function
     with pytest.raises(TypeError):
 

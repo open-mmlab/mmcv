@@ -43,7 +43,7 @@ def build_from_cfg(cfg, registry, default_args=None):
         if obj_cls is None:
             raise KeyError(
                 f'{obj_type} is not in the {registry.name} registry')
-    elif inspect.isclass(obj_type):
+    elif inspect.isclass(obj_type) or inspect.isfunction(obj_type):
         obj_cls = obj_type
     else:
         raise TypeError(
@@ -56,9 +56,10 @@ def build_from_cfg(cfg, registry, default_args=None):
 
 
 class Registry:
-    """A registry to map strings to classes.
+    """A registry to map strings to classes or functions.
 
-    Registered object could be built from registry.
+    Registered object could be built from registry. Meanwhile, registered
+    functions could be called from registry.
 
     Example:
         >>> MODELS = Registry('models')
@@ -66,6 +67,10 @@ class Registry:
         >>> class ResNet:
         >>>     pass
         >>> resnet = MODELS.build(dict(type='ResNet'))
+        >>> @MODELS.register_module()
+        >>> def resnet50():
+        >>>     pass
+        >>> resnet = MODELS.build(dict(type='resnet50'))
 
     Please refer to
     https://mmcv.readthedocs.io/en/latest/understand_mmcv/registry.html for
@@ -287,7 +292,7 @@ class Registry:
                 specified, the class name will be used.
             force (bool, optional): Whether to override an existing class with
                 the same name. Default: False.
-            module (type): Module class to be registered.
+            module (type): Module class or function to be registered.
         """
         if not isinstance(force, bool):
             raise TypeError(f'force must be a boolean, but got {type(force)}')
