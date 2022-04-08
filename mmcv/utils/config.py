@@ -332,6 +332,8 @@ class Config:
     def fromfile(filename,
                  use_predefined_variables=True,
                  import_custom_modules=True):
+        if isinstance(filename, Path):
+            filename = str(filename)
         cfg_dict, cfg_text = Config._file2dict(filename,
                                                use_predefined_variables)
         if import_custom_modules and cfg_dict.get('custom_imports', None):
