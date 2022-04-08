@@ -155,7 +155,7 @@ class HierarchicalData:
                 self.update(treeA.data, treeB.data, False, address=new_address)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{str(treeA)}, address is {address}')
+                f'not supported datatype:{type(treeA)}, address is {address}')
 
     def get_tensors(self, target_tree=None):
         """Collect torch.Tensor data from self.tree to a tuple and return."""
@@ -187,7 +187,7 @@ class HierarchicalData:
             self._get_tensors(tree.data, tensors)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{str(tree)}')
+                f'not supported datatype:{type(tree)}')
 
     def set_tensors(self, tensors):
         """Put tensors from tuple back to self.tree."""
@@ -220,7 +220,7 @@ class HierarchicalData:
             self._set_tensors(tree.data, tensors)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{str(tree)}')
+                f'not supported datatype:{type(tree)}')
 
     def clean_tensors(self):
         """Delete tensors from self.tree."""
@@ -245,7 +245,7 @@ class HierarchicalData:
             self._clean_tensors(tree.data)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{str(tree)}')
+                f'not supported datatype:{type(tree)}')
 
 
 class WrappedNet(nn.Module):
