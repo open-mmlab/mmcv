@@ -10,7 +10,7 @@ from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
     from mmcv.device.ipu import parse_ipu_options, ipu_model_wrapper
-    from mmcv.device.ipu.model_converter import compare_feat
+    from mmcv.device.ipu.model_converter import compare_tensor
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
@@ -270,5 +270,5 @@ def test_run_model():
 
 
 @skip_no_ipu
-def test_compare_feat():
-    compare_feat(np.random.rand(3, 4), np.random.rand(3, 4))
+def test_compare_tensor():
+    compare_tensor(np.random.rand(3, 4), np.random.rand(3, 4))

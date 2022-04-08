@@ -34,7 +34,8 @@ class IPUBaseRunner(BaseRunner):
         fp16_cfg (mmcv.Config): Config for fp16 training.
         batch_processor (callable): A callable method that process a data
             batch. Should be None for IPU runner
-        kwargs (Dict[str, Any], optional): Keyword arguments will be passed to ``base_runner.BaseRunner``.
+        kwargs (Dict[str, Any], optional): Keyword arguments will be passed to
+        ``base_runner.BaseRunner``.
     """
     def __init__(
             self,

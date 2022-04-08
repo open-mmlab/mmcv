@@ -283,7 +283,7 @@ class WrappedNet(nn.Module):
         self.hooked_features = hooked_features
         if modules_to_record is None:
             modules_to_record = []
-            
+
         for idx, (name, module) in enumerate(model.named_modules()):
             if name in modules_to_record or idx in modules_to_record:
                 features_hook = self.get_input_output_hook(
@@ -296,7 +296,8 @@ class WrappedNet(nn.Module):
                 fea_in = list(fea_in)
             if isinstance(fea_out, tuple):
                 fea_out = list(fea_out)
-            save_dict[name] = {'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
+            save_dict[name] = {
+                'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
             return None
         return input_output_hook
 
@@ -540,7 +541,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
         data['img_metas'] = None
         num_samples = len(data['img'].data)
 
-        # TODO we will ignore optimizer for it will not be used in model,
+        # TODO we will ignore optimizer because it will not be used in model,
         # support later if necessary
         data['optimizer'] = None
         output_dict = self.run_model(data)
@@ -577,7 +578,7 @@ class PoplarExecutorForMMCV(PoplarExecutor):
             super().attachToDevice()
 
 
-def compare_feat(featA, featB, rtol=1e-3, atol=1e-5):
+def compare_tensor(featA, featB, rtol=1e-3, atol=1e-5):
     """Align data between two activations or weights."""
     try:
         np.testing.assert_allclose(featA, featB, rtol=rtol, atol=atol)
@@ -713,11 +714,11 @@ class TrainEvalModel:
             for idx, (featA, featB) in \
                     enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
                 print('fea_in, tensor ', idx)
-                compare_feat(featA.detach().numpy(), featB.detach().numpy())
+                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
             for idx, (featA, featB) in \
                     enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
                 print('fea_out, tensor', idx)
-                compare_feat(featA.detach().numpy(), featB.detach().numpy())
+                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
 
     # TODO Unified training and eval interface,
     # merge train_step(train) and __call__(eval) together
@@ -727,8 +728,10 @@ class TrainEvalModel:
         if (self._train_executor.isCompiled() and
             self._train_executor.compare_with_cpu):
             self.copyWeightsToHost()
+            # run in CPU mode
             self._train_executor.model.train_step(data, optimizer, **kwargs)
             hooked_features_cpu = {**(self._train_executor.hooked_features)}
+        # run in IPU mode
         result = self._train_executor.train_step(data, optimizer, **kwargs)
         if (self._train_executor.isCompiled() and
             self._train_executor.compare_with_cpu and
@@ -750,7 +753,7 @@ class TrainEvalModel:
         return getattr(self.executor, attr)
 
 
-def get_training_model(model: Union[nn.Module, poptorch.PoplarExecutor],
+def get_training_model(model: nn.Module,
                        options: Optional[poptorch.Options] = None,
                        optimizer: Optional[torch.optim.Optimizer] = None,
                        logger=None,

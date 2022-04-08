@@ -87,76 +87,77 @@ def _options_assigner(cfg, options_node):
         raise NotImplementedError(error_msg)
 
 
-def parse_ipu_options(ipu_options):
-    """parse dictionary to ipu options.
+def parse_ipu_options(options):
+    """Parse dictionary to ipu options.
 
     Args:
-        ipu_options (dict): A dictionary of ipu settings.
+        options (dict): A dictionary of ipu settings.
 
     Returns:
         dict[str, poptorch.Options]: Training options and inference options
         of IPU.
     """
     # set ipu options for inference and training by config
-    train_cfgs = ipu_options.pop('train_cfgs', {})
-    eval_cfgs = ipu_options.pop('eval_cfgs', {})
+    train_cfgs = options.pop('train_cfgs', {})
+    eval_cfgs = options.pop('eval_cfgs', {})
     eval_cfgs['replicationFactor'] = 1  # eval mode only use one replica
     eval_cfgs['executionStrategy'] = 'ShardedExecution'
     # overwrite default ipu options with specified train cfgs
-    training_ipu_options = {**ipu_options, **train_cfgs}
+    training_ipu_options = {**options, **train_cfgs}
     # overwrite default ipu options with specified eval cfgs
-    inference_ipu_options = {**ipu_options, **eval_cfgs}
+    inference_ipu_options = {**options, **eval_cfgs}
 
-    opts = {'training': _parse_ipu_options(training_ipu_options),
-            'inference': _parse_ipu_options(inference_ipu_options)}
+    ipu_options = {'training': _parse_ipu_options(training_ipu_options),
+                   'inference': _parse_ipu_options(inference_ipu_options)}
 
     # TODO configure these codes
-    opts['training']._Popart.set('disableGradAccumulationTensorStreams', True)
-    opts['training']._Popart.set(
+    ipu_options['training']._Popart.set(
+        'disableGradAccumulationTensorStreams', True)
+    ipu_options['training']._Popart.set(
         'accumulateOuterFragmentSettings.schedule',
         int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
-    opts['training'].Precision.enableStochasticRounding(True)
+    ipu_options['training'].Precision.enableStochasticRounding(True)
 
-    return opts
+    return ipu_options
 
 
-def _parse_ipu_options(ipu_options):
+def _parse_ipu_options(options_dict):
     # If it cannot be directly assigned, use if statement to parse it,
     # and if it can be directly assigned, use _options_assigner to assign
-    opts = poptorch.Options()
+    options = poptorch.Options()
 
-    if 'availableMemoryProportion' in ipu_options:
-        availableMemoryProportion = ipu_options.pop(
+    if 'availableMemoryProportion' in options_dict:
+        available_memory_proportion = options_dict.pop(
             'availableMemoryProportion')
         mem_props = {}
-        for i, mem_prop in enumerate(availableMemoryProportion):
+        for i, mem_prop in enumerate(available_memory_proportion):
             mem_props[f'IPU{i}'] = mem_prop
-        opts.setAvailableMemoryProportion(mem_props)
+        options.setAvailableMemoryProportion(mem_props)
 
-    if 'executionStrategy' in ipu_options:
-        execution_strategy = ipu_options.pop('executionStrategy')
+    if 'executionStrategy' in options_dict:
+        execution_strategy = options_dict.pop('executionStrategy')
         if execution_strategy == 'SameAsIpu':
-            opts.setExecutionStrategy(poptorch.PipelinedExecution(
+            options.setExecutionStrategy(poptorch.PipelinedExecution(
                 getattr(poptorch.AutoStage, execution_strategy)))
         elif execution_strategy == 'ShardedExecution':
-            opts.setExecutionStrategy(poptorch.ShardedExecution())
+            options.setExecutionStrategy(poptorch.ShardedExecution())
         else:
             raise NotImplementedError(
                 'executionStrategy should be "SameAsIpu" or "ShardedExecution"'
                 f', but got {execution_strategy}')
 
-    if 'partialsType' in ipu_options:
-        partialsType = ipu_options.pop('partialsType')
-        opts.Precision.setPartialsType(
-            getattr(torch, partialsType))  # half or float
+    if 'partialsType' in options_dict:
+        partials_type = options_dict.pop('partialsType')
+        options.Precision.setPartialsType(
+            getattr(torch, partials_type))  # half or float
 
-    _options_assigner(ipu_options, opts)
-    return opts
+    _options_assigner(options_dict, options)
+    return options
 
 
 def ipu_model_wrapper(
         model,
-        opts,
+        options,
         optimizer=None,
         logger=None,
         modules_to_record=None,
@@ -167,7 +168,7 @@ def ipu_model_wrapper(
 
     Args:
         model (nn.Module): The target model to be converted.
-        opts (dict[str, poptorch.Options]): IPU options, generated
+        options (dict[str, poptorch.Options]): IPU options, generated
             by :func:`parse_ipu_options`.
         optimizer (:obj:`torch.optim.Optimizer`, optional): torch
             optimizer, necessary if in training mode
@@ -227,12 +228,16 @@ def ipu_model_wrapper(
             ipu_model_cfg.get('train_ckpt_nodes', []))
 
         # TODO support feature alignment for gradient accumulation mode
-        if getattr(opts['training'].Training, 'gradient_accumulation', 1) > 1:
+        gradient_accumulation = \
+            getattr(options['training'].Training, 'gradient_accumulation', 1)
+        if gradient_accumulation > 1:
             assert modules_to_record is None, \
                 'Feature alignment for grad-accumulation mode not implemented'
 
         # TODO support feature alignment for multi-replica mode
-        if getattr(opts['training'], 'replication_factor', 1) > 1:
+        replication_factor = \
+            getattr(options['training'], 'replication_factor', 1)
+        if replication_factor > 1:
             assert modules_to_record is None, \
                 'Feature alignment for multi-replica mode not implemented'
 
@@ -242,7 +247,7 @@ def ipu_model_wrapper(
     eval_model = copy.copy(model).eval()
 
     # wrap model for compilation
-    model = TrainEvalModel(train_model, eval_model, options=opts,
+    model = TrainEvalModel(train_model, eval_model, options=options,
                            optimizer=optimizer, logger=logger,
                            modules_to_record=modules_to_record)
     model.train(training)
