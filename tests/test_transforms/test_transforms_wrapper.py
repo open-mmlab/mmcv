@@ -6,9 +6,10 @@ import pytest
 
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import cache_random_params, cache_randomness
-from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomApply,
-                                      RandomChoice, TransformBroadcaster)
+from mmcv.transforms.utils import (cache_random_params, cache_randomness,
+                                   prohibit_cache_randomness)
+from mmcv.transforms.wrappers import (Compose, KeyMapper,  RandomApply, RandomChoice,
+                                      TransformBroadcaster)
 
 
 @TRANSFORMS.register_module()
@@ -421,18 +422,50 @@ def test_utils():
     # Test cache_randomness: invalid function type
     with pytest.raises(TypeError):
 
-        class DummyTransform():
+        class DummyTransform(BaseTransform):
 
             @cache_randomness
             @staticmethod
             def func():
                 return np.random.rand()
 
+            def transform(self, results):
+                return results
+
     # Test cache_randomness: invalid function argument list
     with pytest.raises(TypeError):
 
-        class DummyTransform():
+        class DummyTransform(BaseTransform):
 
             @cache_randomness
             def func(cls):
                 return np.random.rand()
+
+            def transform(self, results):
+                return results
+
+    # Test prohibit_cache_randomness: invalid mixture with cache_randomness
+    with pytest.raises(RuntimeError):
+
+        @prohibit_cache_randomness
+        class DummyTransform(BaseTransform):
+
+            @cache_randomness
+            def func(self):
+                pass
+
+            def transform(self, results):
+                return results
+
+    # Test prohibit_cache_randomness: raise error in cache_random_params
+    with pytest.raises(RuntimeError):
+
+        @prohibit_cache_randomness
+        class DummyTransform(BaseTransform):
+
+            def transform(self, results):
+                return results
+
+        transform = DummyTransform()
+        with cache_random_params(transform):
+            pass
