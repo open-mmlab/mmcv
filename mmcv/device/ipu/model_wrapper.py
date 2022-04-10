@@ -87,7 +87,7 @@ def _options_assigner(cfg, options_node):
         raise NotImplementedError(error_msg)
 
 
-def parse_ipu_options(options):
+def cast_to_options(options):
     """Parse dictionary to ipu options.
 
     Args:
@@ -169,7 +169,7 @@ def ipu_model_wrapper(
     Args:
         model (nn.Module): The target model to be converted.
         options (dict[str, poptorch.Options]): IPU options, generated
-            by :func:`parse_ipu_options`.
+            by :func:`cast_to_options`.
         optimizer (:obj:`torch.optim.Optimizer`, optional): torch
             optimizer, necessary if in training mode
         logger: a logger

@@ -4,7 +4,7 @@ from mmcv.runner import (BaseRunner, IterBasedRunner,
 
 from . import IPU_MODE
 if IPU_MODE:
-    from . import (parse_ipu_options,
+    from . import (cast_to_options,
                    build_from_cfg_with_wrapper, IPU_MODE,
                    ipu_model_wrapper, wrap_optimizer_hook,
                    IPUFp16OptimizerHook, wrap_lr_updater_hook,
@@ -56,7 +56,7 @@ class IPUBaseRunner(BaseRunner):
 
         # process options of ipu
         if IPU_MODE:
-            self.ipu_options = parse_ipu_options(ipu_options)
+            self.ipu_options = cast_to_options(ipu_options)
             self.model = ipu_model_wrapper(
                 self.model, self.ipu_options, self.optimizer, self.logger,
                 modules_to_record=modules_to_record,

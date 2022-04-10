@@ -9,7 +9,7 @@ import torch.nn as nn
 from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.device.ipu import parse_ipu_options, ipu_model_wrapper
+    from mmcv.device.ipu import cast_to_options, ipu_model_wrapper
     from mmcv.device.ipu.model_converter import compare_tensor
 
 skip_no_ipu = pytest.mark.skipif(
@@ -86,7 +86,7 @@ def test_build_model():
                 eval_cfg=dict(deviceIterations=1,),
                 partialsType='half')
 
-            ipu_options = parse_ipu_options(ipu_options)
+            ipu_options = cast_to_options(ipu_options)
             model = ToyModel()
             optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
             logger = logging.getLogger()
@@ -164,7 +164,7 @@ def test_run_model():
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     modules_to_record = ['bn']
     with pytest.raises(
             AssertionError,
@@ -180,7 +180,7 @@ def test_run_model():
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     modules_to_record = ['bn']
     with pytest.raises(
             AssertionError,
@@ -195,7 +195,7 @@ def test_run_model():
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     fp16_cfg = {
         'loss_scale': 0.5,
         'velocity_accum_type': 'half',
@@ -219,7 +219,7 @@ def test_run_model():
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     modules_to_record = ['bn']
     run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
@@ -230,7 +230,7 @@ def test_run_model():
         train_cfg=dict(executionStrategy='SameAsIpu',
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,))
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     modules_to_record = None
     run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
@@ -242,7 +242,7 @@ def test_run_model():
                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     fp16_cfg = {'loss_scale': 0.5}
     modules_to_record = None
     _, ipu_model = run_model(ipu_options,

@@ -5,7 +5,7 @@ from mmcv.device.ipu import IPU_MODE
 from torch.utils.data import Dataset
 from mmcv.parallel.data_container import DataContainer
 if IPU_MODE:
-    from mmcv.device.ipu import IPUDataLoader, parse_ipu_options
+    from mmcv.device.ipu import IPUDataLoader, cast_to_options
     from mmcv.device.ipu.dataloader import collate
 
 skip_no_ipu = pytest.mark.skipif(
@@ -29,7 +29,7 @@ def test_dataloader_ipu():
                                num_workers=1,
                                mode='async')
     ipu_options = {'train_cfg': {}, 'eval_cfg': {}}
-    ipu_options = parse_ipu_options(ipu_options)
+    ipu_options = cast_to_options(ipu_options)
     dataloader.init(ipu_options['training'])
 
 @skip_no_ipu

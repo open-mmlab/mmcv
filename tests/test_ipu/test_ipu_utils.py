@@ -6,7 +6,7 @@ import torch.nn as nn
 import mmcv
 from mmcv.device.ipu import IPU_MODE
 if IPU_MODE:
-    from mmcv.device.ipu import parse_ipu_options, model_sharding
+    from mmcv.device.ipu import cast_to_options, model_sharding
 
 skip_no_ipu = pytest.mark.skipif(
     not IPU_MODE, reason='test case under ipu environment')
@@ -137,21 +137,21 @@ def test_parse_ipu_options():
                         Training=dict(gradientAccumulation=8),
                         availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),)
-    parse_ipu_options(copy.deepcopy(options_cfg))
+    cast_to_options(copy.deepcopy(options_cfg))
 
     with pytest.raises(
             NotImplementedError,
             match='cfg type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['randomSeed'] = (1, 3)
-        parse_ipu_options(_options_cfg)
+        cast_to_options(_options_cfg)
 
     with pytest.raises(
             NotImplementedError,
             match='options_node type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['train_cfg']['Precision'] = {'autocast_policy': 123}
-        parse_ipu_options(_options_cfg)
+        cast_to_options(_options_cfg)
 
 
 @skip_no_ipu
