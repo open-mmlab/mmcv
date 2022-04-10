@@ -79,11 +79,11 @@ def test_build_model():
             ipu_options = dict(
                 randomSeed=888,
                 enableExecutableCaching='cache_engine',
-                train_cfgs=dict(executionStrategy=execution_strategy,
-                                Training=dict(gradientAccumulation=8),
-                                availableMemoryProportion=[
+                train_cfg=dict(executionStrategy=execution_strategy,
+                               Training=dict(gradientAccumulation=8),
+                               availableMemoryProportion=[
                                     0.3, 0.3, 0.3, 0.3]),
-                eval_cfgs=dict(deviceIterations=1,),
+                eval_cfg=dict(deviceIterations=1,),
                 partialsType='half')
 
             ipu_options = parse_ipu_options(ipu_options)
@@ -159,10 +159,10 @@ def test_run_model():
     ipu_options = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        Training=dict(gradientAccumulation=8),
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       Training=dict(gradientAccumulation=8),
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     modules_to_record = ['bn']
@@ -176,9 +176,9 @@ def test_run_model():
         randomSeed=888,
         replicationFactor=2,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     modules_to_record = ['bn']
@@ -191,9 +191,9 @@ def test_run_model():
     ipu_options = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     fp16_cfg = {
@@ -215,9 +215,9 @@ def test_run_model():
     ipu_options = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     modules_to_record = ['bn']
@@ -227,9 +227,9 @@ def test_run_model():
     ipu_options = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,))
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,))
     ipu_options = parse_ipu_options(ipu_options)
     modules_to_record = None
     run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
@@ -238,9 +238,9 @@ def test_run_model():
     ipu_options = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),
+        train_cfg=dict(executionStrategy='SameAsIpu',
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+        eval_cfg=dict(deviceIterations=1,),
         partialsType='half')
     ipu_options = parse_ipu_options(ipu_options)
     fp16_cfg = {'loss_scale': 0.5}

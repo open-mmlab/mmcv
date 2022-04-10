@@ -133,10 +133,10 @@ def test_parse_ipu_options():
     options_cfg = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfgs=dict(executionStrategy='SameAsIpu',
+        train_cfg=dict(executionStrategy='SameAsIpu',
                         Training=dict(gradientAccumulation=8),
                         availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfgs=dict(deviceIterations=1,),)
+        eval_cfg=dict(deviceIterations=1,),)
     parse_ipu_options(copy.deepcopy(options_cfg))
 
     with pytest.raises(
@@ -150,7 +150,7 @@ def test_parse_ipu_options():
             NotImplementedError,
             match='options_node type'):
         _options_cfg = copy.deepcopy(options_cfg)
-        _options_cfg['train_cfgs']['Precision'] = {'autocast_policy': 123}
+        _options_cfg['train_cfg']['Precision'] = {'autocast_policy': 123}
         parse_ipu_options(_options_cfg)
 
 

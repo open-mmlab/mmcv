@@ -28,7 +28,7 @@ def test_dataloader_ipu():
                                batch_size=256,
                                num_workers=1,
                                mode='async')
-    ipu_options = {'train_cfgs': {}, 'eval_cfgs': {}}
+    ipu_options = {'train_cfg': {}, 'eval_cfg': {}}
     ipu_options = parse_ipu_options(ipu_options)
     dataloader.init(ipu_options['training'])
 
