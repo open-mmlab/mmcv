@@ -107,8 +107,8 @@ def cast_to_options(options):
     # overwrite default ipu options with specified eval cfgs
     inference_ipu_options = {**options, **eval_cfg}
 
-    ipu_options = {'training': _parse_ipu_options(training_ipu_options),
-                   'inference': _parse_ipu_options(inference_ipu_options)}
+    ipu_options = {'training': _cast_to_options(training_ipu_options),
+                   'inference': _cast_to_options(inference_ipu_options)}
 
     # TODO configure these codes
     ipu_options['training']._Popart.set(
@@ -121,7 +121,7 @@ def cast_to_options(options):
     return ipu_options
 
 
-def _parse_ipu_options(options_dict):
+def _cast_to_options(options_dict):
     # If it cannot be directly assigned, use if statement to parse it,
     # and if it can be directly assigned, use _options_assigner to assign
     options = poptorch.Options()
@@ -172,7 +172,7 @@ def ipu_model_wrapper(
             by :func:`cast_to_options`.
         optimizer (:obj:`torch.optim.Optimizer`, optional): torch
             optimizer, necessary if in training mode
-        logger: a logger
+        logger (:obj:`logging.Logger`): Logger used during training.
         modules_to_record (mmcv.Config, list): Index or name of modules which
             will be recorded for output. It is necessary to specify output for
             static graph of model training or inference.
