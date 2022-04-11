@@ -87,28 +87,28 @@ def _options_assigner(cfg, options_node):
         raise NotImplementedError(error_msg)
 
 
-def cast_to_options(options):
+def cast_to_options(cfg):
     """Parse dictionary to ipu options.
 
     Args:
-        options (dict): A dictionary of ipu settings.
+        cfg (dict): A dictionary of ipu settings.
 
     Returns:
         dict[str, poptorch.Options]: Training options and inference options
         of IPU.
     """
     # set ipu options for inference and training by config
-    train_cfg = options.pop('train_cfg', {})
-    eval_cfg = options.pop('eval_cfg', {})
+    train_cfg = cfg.pop('train_cfg', {})
+    eval_cfg = cfg.pop('eval_cfg', {})
     eval_cfg['replicationFactor'] = 1  # eval mode only use one replica
     eval_cfg['executionStrategy'] = 'ShardedExecution'
-    # overwrite default ipu options with specified train cfgs
-    training_ipu_options = {**options, **train_cfg}
-    # overwrite default ipu options with specified eval cfgs
-    inference_ipu_options = {**options, **eval_cfg}
+    # overwrite default ipu cfg with specified train cfgs
+    training_ipu_cfg = {**cfg, **train_cfg}
+    # overwrite default ipu cfg with specified eval cfgs
+    inference_ipu_cfg = {**cfg, **eval_cfg}
 
-    ipu_options = {'training': _cast_to_options(training_ipu_options),
-                   'inference': _cast_to_options(inference_ipu_options)}
+    ipu_options = {'training': _cast_to_options(training_ipu_cfg),
+                   'inference': _cast_to_options(inference_ipu_cfg)}
 
     # TODO configure these codes
     ipu_options['training']._Popart.set(

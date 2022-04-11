@@ -249,7 +249,7 @@ class HierarchicalData:
 
 
 class WrappedNet(nn.Module):
-    """A net wrapper for model convertion.
+    """A net wrapper for model conversion.
 
     This wrapper will make some changes and add some extra functions to
     training/inference model.
