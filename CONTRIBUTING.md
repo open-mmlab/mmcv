@@ -53,7 +53,7 @@ Try the following steps to install ruby when you encounter an issue on installin
 ```shell
 # install rvm
 curl -L https://get.rvm.io | bash -s -- --autolibs=read-fail
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && echo source "$HOME/.rvm/scripts/rvm" >> ~/.bashrc  && source ~/.bashrc
 rvm autolibs disable
 
 # install ruby
