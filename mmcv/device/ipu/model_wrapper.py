@@ -121,21 +121,21 @@ def cast_to_options(cfg):
     return ipu_options
 
 
-def _cast_to_options(options_dict):
+def _cast_to_options(cfg):
     # If it cannot be directly assigned, use if statement to parse it,
     # and if it can be directly assigned, use _options_assigner to assign
     options = poptorch.Options()
 
-    if 'availableMemoryProportion' in options_dict:
-        available_memory_proportion = options_dict.pop(
+    if 'availableMemoryProportion' in cfg:
+        available_memory_proportion = cfg.pop(
             'availableMemoryProportion')
         mem_props = {}
         for i, mem_prop in enumerate(available_memory_proportion):
             mem_props[f'IPU{i}'] = mem_prop
         options.setAvailableMemoryProportion(mem_props)
 
-    if 'executionStrategy' in options_dict:
-        execution_strategy = options_dict.pop('executionStrategy')
+    if 'executionStrategy' in cfg:
+        execution_strategy = cfg.pop('executionStrategy')
         if execution_strategy == 'SameAsIpu':
             options.setExecutionStrategy(poptorch.PipelinedExecution(
                 getattr(poptorch.AutoStage, execution_strategy)))
@@ -146,12 +146,12 @@ def _cast_to_options(options_dict):
                 'executionStrategy should be "SameAsIpu" or "ShardedExecution"'
                 f', but got {execution_strategy}')
 
-    if 'partialsType' in options_dict:
-        partials_type = options_dict.pop('partialsType')
+    if 'partialsType' in cfg:
+        partials_type = cfg.pop('partialsType')
         options.Precision.setPartialsType(
             getattr(torch, partials_type))  # half or float
 
-    _options_assigner(options_dict, options)
+    _options_assigner(cfg, options)
     return options
 
 
@@ -318,7 +318,7 @@ def recomputation_checkpoint(model: nn.Module, module_names: list):
         module_names (list): Layer names of module.
     """
     def recompute_outputs(module, inputs, outputs):
-        if type(outputs) is tuple:
+        if isinstance(outputs, tuple):
             return tuple(poptorch.recomputationCheckpoint(y) for y in outputs)
         else:
             return poptorch.recomputationCheckpoint(outputs)
