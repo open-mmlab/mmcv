@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# initialize mmcv.runner first to avoid circular reference
-from mmcv import runner # noqa
 from .utils import IS_IPU
 
 
