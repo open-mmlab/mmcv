@@ -18,7 +18,7 @@ import mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import load_url, mkdir_or_exist
+from ..utils import digit_version, load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -107,13 +107,30 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 def get_torchvision_models():
     model_urls = dict()
-    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
-        if ispkg:
-            continue
-        _zoo = import_module(f'torchvision.models.{name}')
-        if hasattr(_zoo, 'model_urls'):
-            _urls = getattr(_zoo, 'model_urls')
-            model_urls.update(_urls)
+    if digit_version(torchvision.__version__) <= digit_version('0.12.1'):
+        for _, name, ispkg in pkgutil.walk_packages(
+                torchvision.models.__path__):
+            if ispkg:
+                continue
+            if name.startswith('_'):
+                continue
+            _zoo = import_module(f'torchvision.models.{name}')
+            if hasattr(_zoo, 'model_urls'):
+                _urls = getattr(_zoo, 'model_urls')
+                model_urls.update(_urls)
+    else:
+        for cls_name, cls in torchvision.models.__dict__.items():
+            if not hasattr(cls, '__base__'):
+                continue
+            if cls.__base__ != torchvision.models._api.WeightsEnum:
+                continue
+            cls_key = cls_name.replace('_Weights', '').lower()
+            if hasattr(cls, 'DEFAULT'):
+                model_urls[cls_key] = cls.DEFAULT.url
+            else:
+                warnings.warn(f'{cls_key} does not have default weight, see '
+                              f'more information in'
+                              f'torchvision.models.{cls_name}')
     return model_urls
 
 
