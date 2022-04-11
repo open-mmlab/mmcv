@@ -116,8 +116,7 @@ class IPUDataLoader(poptorch.DataLoader):
         """
         # lazy init: sometimes, we cannot get IPU options when build data
         #            loader
-        self.kwargs = {'options': options,
-                       'dataset': dataset,
+        self.kwargs = {'dataset': dataset,
                        'batch_size': batch_size,
                        'shuffle': shuffle,
                        'num_workers': num_workers,
@@ -133,6 +132,8 @@ class IPUDataLoader(poptorch.DataLoader):
                        **kwargs}
         self.dataset = dataset
         self.initialized = False
+        if options:
+            self.init(options=options)
 
     def init(self, options, **kwargs):
         if not self.initialized:

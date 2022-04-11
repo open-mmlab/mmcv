@@ -10,14 +10,14 @@ import torch
 import torch.nn as nn
 
 from mmcv.runner import build_runner
-from mmcv.device.ipu import IPU_MODE
+from mmcv.device.ipu import IS_IPU
 from torch.utils.data import Dataset
-if IPU_MODE:
+if IS_IPU:
     from mmcv.device.ipu import runner
     from mmcv.device.ipu import IPUDataLoader
 
 skip_no_ipu = pytest.mark.skipif(
-    not IPU_MODE, reason='test case under ipu environment')
+    not IS_IPU, reason='test case under ipu environment')
 
 # Most of its functions are inherited from EpochBasedRunner and IterBasedRunner
 # So only do incremental testing on overridden methods
@@ -98,14 +98,14 @@ def test_build_runner():
     ipu_runner = build_runner(cfg, default_args=default_args)
     assert ipu_runner._max_iters == 1
 
-    runner.IPU_MODE = False
+    runner.IS_IPU = False
     cfg = dict(type='IPUIterBasedRunner', max_iters=1)
     with pytest.raises(
             NotImplementedError,
             match='cpu mode on IPURunner is not supported'):
         ipu_runner = build_runner(cfg, default_args=default_args)
 
-    runner.IPU_MODE = True
+    runner.IS_IPU = True
     with pytest.raises(ValueError, match='Only one of'):
         cfg = dict(type='IPUIterBasedRunner', max_epochs=1, max_iters=1)
         ipu_runner = build_runner(cfg, default_args=default_args)

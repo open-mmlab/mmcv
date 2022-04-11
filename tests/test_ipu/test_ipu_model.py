@@ -7,13 +7,13 @@ import torch
 import torch.nn as nn
 
 from mmcv.runner.fp16_utils import auto_fp16
-from mmcv.device.ipu import IPU_MODE
-if IPU_MODE:
+from mmcv.device.ipu import IS_IPU
+if IS_IPU:
     from mmcv.device.ipu import cast_to_options, ipu_model_wrapper
     from mmcv.device.ipu.model_converter import compare_tensor
 
 skip_no_ipu = pytest.mark.skipif(
-    not IPU_MODE, reason='test case under ipu environment')
+    not IS_IPU, reason='test case under ipu environment')
 
 
 class MyBn(nn.BatchNorm2d):

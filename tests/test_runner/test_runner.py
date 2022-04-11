@@ -15,13 +15,13 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
 from mmcv.runner.hooks import IterTimerHook
-from mmcv.device.ipu import IPU_MODE
+from mmcv.device.ipu import IS_IPU
 
 
 def get_runners():
     module_dict = {}
     for runner_name, runner_class in RUNNERS.module_dict.items():
-        if IPU_MODE or not runner_name.startswith('IPU'):
+        if IS_IPU or not runner_name.startswith('IPU'):
             module_dict[runner_name] = runner_class
     return module_dict
 

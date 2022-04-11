@@ -423,7 +423,7 @@ class WrappedNet(nn.Module):
         return outputs
 
 
-class PoplarExecutorForMMCV(PoplarExecutor):
+class MMPoplarExecutor(PoplarExecutor):
     """An executor for inputs/outputs parsing, model compilation,
     data alignment and IPU upload/download.
 
@@ -605,8 +605,8 @@ def compare_tensor(featA, featB, rtol=1e-3, atol=1e-5):
 
 
 class TrainEvalModel:
-    """A class maintaining training PoplarExecutorForMMCV and inference
-    PoplarExecutorForMMCV.
+    """A class maintaining training MMPoplarExecutor and inference
+    MMPoplarExecutor.
 
     Args:
         train_model (:obj:`nn.Module`): The training model to be compiled.
@@ -808,7 +808,7 @@ def get_training_model(model: nn.Module,
     # Create a copy of the original model in case it needs to be wrapped
     maybe_wrapped_model = copy.copy(model)
 
-    return PoplarExecutorForMMCV(model=maybe_wrapped_model,
+    return MMPoplarExecutor(model=maybe_wrapped_model,
                                  logger=logger,
                                  options=options,
                                  training=True,
@@ -846,7 +846,7 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         ``model``.
     """
 
-    return PoplarExecutorForMMCV(model=copy.copy(model),
+    return MMPoplarExecutor(model=copy.copy(model),
                                  logger=logger,
                                  options=options,
                                  training=False,

@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .utils import IPU_MODE
+from .utils import IS_IPU
 
 
-if IPU_MODE:
+if IS_IPU:
     from .model_wrapper import (cast_to_options, ipu_model_wrapper,
                                 build_from_cfg_with_wrapper, model_sharding,
                                 recomputation_checkpoint)
@@ -12,7 +12,7 @@ if IPU_MODE:
     from .runner import IPUBaseRunner, IPUEpochBasedRunner, IPUIterBasedRunner
     __all__ = [
         'cast_to_options', 'ipu_model_wrapper',
-        'build_from_cfg_with_wrapper', 'IPU_MODE',
+        'build_from_cfg_with_wrapper', 'IS_IPU',
         'model_sharding', 'wrap_optimizer_hook',
         'IPUFp16OptimizerHook', 'wrap_lr_updater_hook',
         'recomputation_checkpoint', 'IPUDataLoader',

@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
-from mmcv.device.ipu import IPU_MODE
+from mmcv.device.ipu import IS_IPU
 from torch.utils.data import Dataset
 from mmcv.parallel.data_container import DataContainer
-if IPU_MODE:
+if IS_IPU:
     from mmcv.device.ipu import IPUDataLoader, cast_to_options
     from mmcv.device.ipu.dataloader import collate
 
 skip_no_ipu = pytest.mark.skipif(
-    not IPU_MODE, reason='test case under ipu environment')
+    not IS_IPU, reason='test case under ipu environment')
 
 
 class ToyDataset(Dataset):
