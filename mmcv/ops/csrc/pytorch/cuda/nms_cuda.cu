@@ -24,11 +24,11 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
       boxes_num, iou_threshold, offset, boxes_sorted.data_ptr<float>(),
       (unsigned long long*)mask.data_ptr<int64_t>());
 
+  // Filter the boxes which should be kept.
   at::Tensor keep_t = at::zeros(
       {boxes_num}, boxes.options().dtype(at::kBool).device(at::kCUDA));
-  gather_keep_from_mask_parallize<<<1, min(col_blocks, THREADS_PER_BLOCK),
-                                    col_blocks * sizeof(unsigned long long),
-                                    stream>>>(
+  gather_keep_from_mask<<<1, min(col_blocks, THREADS_PER_BLOCK),
+                          col_blocks * sizeof(unsigned long long), stream>>>(
       keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),
       boxes_num);
   AT_CUDA_CHECK(cudaGetLastError());
