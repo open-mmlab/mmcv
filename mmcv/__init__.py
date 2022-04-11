@@ -7,7 +7,6 @@ from .utils import *
 from .version import *
 from .video import *
 from .visualization import *
-from .device.ipu import *
 
 # The following modules are not imported to this level, so mmcv may be used
 # without PyTorch.
