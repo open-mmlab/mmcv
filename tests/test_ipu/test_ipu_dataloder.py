@@ -32,6 +32,7 @@ def test_dataloader_ipu():
     ipu_options = cast_to_options(ipu_options)
     dataloader.init(ipu_options['training'])
 
+
 @skip_no_ipu
 def test_collate_ipu():
     with pytest.raises(TypeError, match='`batch` should be a sequence'):

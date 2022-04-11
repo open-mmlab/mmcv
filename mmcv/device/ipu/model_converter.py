@@ -28,27 +28,27 @@ class DictArgsParser(ArgsParser):
         self._warned_not_contiguous_input = False
 
 
-# A customized None type for HierarchicalData
+# A customized None type for HierarchicalDataManager
 HierarchicalDataNone = object()
 
 
-class HierarchicalData:
-    """A class used to record data structure of input of model.
+class HierarchicalDataManager:
+    """A class manage all the tensors in the complex data
 
     At present, the input data structure accepted by IPU is limited,
     when the input data structure of mmcv varies.
-    Here, an intermediate class is needed to convert and record
-    the data structure.
+    Here, an intermediate class is needed to get and update tensors
+    from the original data.
 
-    HierarchicalData will record a complex input/output data in self._tree.
-    For example, we have an input data:
+    HierarchicalDataManager will record a complex input/output data in
+    self._data. For example, we have an input data:
     {'img': tensorA, 'label': tensorB, 'img_metas': [tensorC, tensorD]}
-    To enable IPU to use the input, HierarchicalData will collect the torch
-    tensors from self._tree into a tuple like:
+    To enable IPU to use the input, HierarchicalDataManager will collect
+    the torch tensors from self._data into a tuple like:
     (tensorA, tensorB, tensorC, tensorD).
-    Meanwhile, the return of IPU is a tuple of tensors, HierarchicalData
-    also have a function named set_tensors to set tensors back to a self._tree
-    as the output for upper calls.
+    Meanwhile, the return of IPU is a tuple of tensors, HierarchicalDataManager
+    also have a function named update_all_tensors to update tensors in
+    self._data which is the output for upper calls.
 
     Args:
         logger (:obj:`logging.Logger`): Logger used during running.
@@ -59,7 +59,7 @@ class HierarchicalData:
         self.warning = warnings.warn if logger is None else logger.warning
         # enable or disable input data's shape and value check
         self.quick_mode = False
-        self._tree = None
+        self._data = None
 
     def quick(self):
         self.quick_mode = True
@@ -72,35 +72,35 @@ class HierarchicalData:
         else:
             return a == b
 
-    def set_tree(self, tree):
+    def record_hierarchical_data(self, data):
         """Record a complex data."""
-        if self._tree is not None:
-            if isinstance(tree, torch.Tensor):
-                assert isinstance(self._tree, torch.Tensor), \
+        if self._data is not None:
+            if isinstance(data, torch.Tensor):
+                assert isinstance(self._data, torch.Tensor), \
                     'original complex data is not torch.tensor'
-                self._tree = tree
+                self._data = data
             else:
-                self.update(tree)
+                self.update(data)
         else:
-            self._tree = tree
+            self._data = data
 
     @property
-    def tree(self):
-        return self._tree
+    def data(self):
+        return self._data
 
     def update(
             self,
-            treeA,
-            treeB=HierarchicalDataNone,
+            dataA,
+            dataB=HierarchicalDataNone,
             strict=True,
             address='data'
             ):
         """Update recorded complex data in-place.
 
         Args:
-            treeA (list or dict or tuple): New complex data.
-            treeB (list or dict or tuple): Complex data to update.
-                if not specified, self.tree will be updated then.
+            dataA (list or dict or tuple): New complex data.
+            dataB (list or dict or tuple): Complex data to update.
+                if not specified, self.data will be updated then.
             strict (bool, optional): If true, an error will be reported
                 when the following conditions occur:
                 1. Non-torch.Tensor data changed.
@@ -108,38 +108,38 @@ class HierarchicalData:
             address (str): Record the address of current data to be updated.
                 Default: 'data'.
         """
-        if treeB is HierarchicalDataNone:
-            treeB = self.tree
+        if dataB is HierarchicalDataNone:
+            dataB = self.data
 
-        # Update with a tree with the same structure
+        # Update with a da ta with the same structure
         # but different values(tensors and basic python data types)
-        if isinstance(treeA, (tuple, list)):
-            for idx, node in enumerate(treeA):
+        if isinstance(dataA, (tuple, list)):
+            for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
                     new_address = address+f'[{str(idx)}]'
-                    assert isinstance(node, type(treeB[idx])),\
+                    assert isinstance(node, type(dataB[idx])),\
                         f'data structure changed: {new_address}'
                 if isinstance(node, torch.Tensor):
-                    treeB[idx] = node
+                    dataB[idx] = node
                 else:
-                    self.update(node, treeB[idx],
+                    self.update(node, dataB[idx],
                                 strict, address=new_address)
-        elif isinstance(treeA, dict):
-            for k, v in treeA.items():
+        elif isinstance(dataA, dict):
+            for k, v in dataA.items():
                 new_address = ''
                 if not self.quick_mode:
                     new_address = address + f'[{str(k)}]'
-                    assert isinstance(v, type(treeB[k])),\
+                    assert isinstance(v, type(dataB[k])),\
                         f'data structure changed: {new_address}'
                 if isinstance(v, torch.Tensor):
-                    treeB[k] = v
+                    dataB[k] = v
                 else:
-                    self.update(v, treeB[k], strict,
+                    self.update(v, dataB[k], strict,
                                 address=new_address)
-        elif isinstance(treeA, self.atomic_types):
+        elif isinstance(dataA, self.atomic_types):
             if not self.quick_mode:
-                is_equal = self.compare_atomic_type(treeA, treeB)
+                is_equal = self.compare_atomic_type(dataA, dataB)
                 if not is_equal:
                     if strict:
                         raise ValueError(
@@ -147,122 +147,123 @@ class HierarchicalData:
                             f'but data({address}) is changed.')
                     else:
                         self.warning(
-                            f'find a non-torch.Tensor data({type(treeA)}) '
+                            f'find a non-torch.Tensor data({type(dataA)}) '
                             f'changed, and the address is {address}')
-        elif isinstance(treeA, DataContainer):
+        elif isinstance(dataA, DataContainer):
             if not self.quick_mode:
-                assert isinstance(treeB, DataContainer)
+                assert isinstance(dataB, DataContainer)
                 new_address = address + '.data'
-                self.update(treeA.data, treeB.data, False, address=new_address)
+                self.update(dataA.data, dataB.data, False, address=new_address)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{type(treeA)}, address is {address}')
+                f'not supported datatype:{type(dataA)}, address is {address}')
 
-    def get_tensors(self, target_tree=None):
-        """Collect torch.Tensor data from self.tree to a list and return."""
-        # get a list of tensor from self._tree
-        target_tree = self._tree if target_tree is None else target_tree
+    def get_all_tensors(self, hierarchical_data=None):
+        """Collect torch.Tensor data from self.data to a list and return."""
+        # get a list of tensor from self._data
+        if hierarchical_data is None:
+            hierarchical_data = self._data
         tensors = []
-        if isinstance(target_tree, torch.Tensor):
-            tensors = [target_tree]
+        if isinstance(hierarchical_data, torch.Tensor):
+            tensors = [hierarchical_data]
         else:
-            self._get_tensors(target_tree, tensors)
+            self._get_tensors(hierarchical_data, tensors)
         return tensors
 
-    def _get_tensors(self, tree, tensors):
-        if isinstance(tree, (tuple, list)):
-            for node in tree:
+    def _get_tensors(self, data, tensors):
+        if isinstance(data, (tuple, list)):
+            for node in data:
                 if isinstance(node, torch.Tensor):
                     tensors.append(node)
                 else:
                     self._get_tensors(node, tensors)
-        elif isinstance(tree, dict):
-            for v in tree.values():
+        elif isinstance(data, dict):
+            for v in data.values():
                 if isinstance(v, torch.Tensor):
                     tensors.append(v)
                 else:
                     self._get_tensors(v, tensors)
-        elif isinstance(tree, self.atomic_types):
+        elif isinstance(data, self.atomic_types):
             pass
-        elif isinstance(tree, DataContainer):
-            self._get_tensors(tree.data, tensors)
+        elif isinstance(data, DataContainer):
+            self._get_tensors(data.data, tensors)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{type(tree)}')
+                f'not supported datatype:{type(data)}')
 
-    def set_tensors(self, tensors):
-        """Put tensors from tuple back to self.tree."""
-        if isinstance(self._tree, torch.Tensor):
+    def update_all_tensors(self, tensors):
+        """Put tensors from tuple back to self.data."""
+        if isinstance(self._data, torch.Tensor):
             assert len(tensors) == 1
             assert isinstance(tensors[0], torch.Tensor)
-            self._tree = tensors[0]
+            self._data = tensors[0]
         else:
             # convert to list if tensors is tuple
             tensors = list(tensors)
-            self._set_tensors(self._tree, tensors)
-        return self._tree
+            self._set_tensors(self._data, tensors)
+        return self._data
 
-    def _set_tensors(self, tree, tensors):
-        if isinstance(tree, tuple):
-            tree = list(tree)
-            for idx in range(len(tree)):
-                if isinstance(tree[idx], torch.Tensor):
-                    tree[idx] = tensors.pop(0)
+    def _set_tensors(self, data, tensors):
+        if isinstance(data, tuple):
+            data = list(data)
+            for idx in range(len(data)):
+                if isinstance(data[idx], torch.Tensor):
+                    data[idx] = tensors.pop(0)
                 else:
-                    self._set_tensors(tree[idx], tensors)
-            tree = tuple(tree)
-        elif isinstance(tree, list):
-            for idx in range(len(tree)):
-                if isinstance(tree[idx], torch.Tensor):
-                    tree[idx] = tensors.pop(0)
+                    self._set_tensors(data[idx], tensors)
+            data = tuple(data)
+        elif isinstance(data, list):
+            for idx in range(len(data)):
+                if isinstance(data[idx], torch.Tensor):
+                    data[idx] = tensors.pop(0)
                 else:
-                    self._set_tensors(tree[idx], tensors)
-        elif isinstance(tree, dict):
-            for k, v in tree.items():
+                    self._set_tensors(data[idx], tensors)
+        elif isinstance(data, dict):
+            for k, v in data.items():
                 if isinstance(v, torch.Tensor):
-                    tree[k] = tensors.pop(0)
+                    data[k] = tensors.pop(0)
                 else:
                     self._set_tensors(v, tensors)
-        elif isinstance(tree, self.atomic_types):
+        elif isinstance(data, self.atomic_types):
             pass
-        elif isinstance(tree, DataContainer):
-            self._set_tensors(tree.data, tensors)
+        elif isinstance(data, DataContainer):
+            self._set_tensors(data.data, tensors)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{type(tree)}')
+                f'not supported datatype:{type(data)}')
 
-    def clean_tensors(self):
-        """Delete tensors from self.tree."""
-        self._clean_tensors(self._tree)
+    def clean_all_tensors(self):
+        """Delete tensors from self.data."""
+        self._clean_tensors(self._data)
 
-    def _clean_tensors(self, tree):
-        if isinstance(tree, tuple):
-            tree = list(tree)
-            for idx in range(len(tree)):
-                if isinstance(tree[idx], torch.Tensor):
-                    tree[idx] = None
+    def _clean_tensors(self, data):
+        if isinstance(data, tuple):
+            data = list(data)
+            for idx in range(len(data)):
+                if isinstance(data[idx], torch.Tensor):
+                    data[idx] = None
                 else:
-                    self._clean_tensors(tree[idx])
-            tree = tuple(tree)
-        elif isinstance(tree, list):
-            for idx in range(len(tree)):
-                if isinstance(tree[idx], torch.Tensor):
-                    tree[idx] = None
+                    self._clean_tensors(data[idx])
+            data = tuple(data)
+        elif isinstance(data, list):
+            for idx in range(len(data)):
+                if isinstance(data[idx], torch.Tensor):
+                    data[idx] = None
                 else:
-                    self._clean_tensors(tree[idx])
-        elif isinstance(tree, dict):
-            for k, v in tree.items():
+                    self._clean_tensors(data[idx])
+        elif isinstance(data, dict):
+            for k, v in data.items():
                 if isinstance(v, torch.Tensor):
-                    tree[k] = None
+                    data[k] = None
                 else:
                     self._clean_tensors(v)
-        elif isinstance(tree, self.atomic_types):
+        elif isinstance(data, self.atomic_types):
             pass
-        elif isinstance(tree, DataContainer):
-            self._clean_tensors(tree.data)
+        elif isinstance(data, DataContainer):
+            self._clean_tensors(data.data)
         else:
             raise NotImplementedError(
-                f'not supported datatype:{type(tree)}')
+                f'not supported datatype:{type(data)}')
 
 
 class WrappedNet(nn.Module):
@@ -273,11 +274,11 @@ class WrappedNet(nn.Module):
 
     Args:
         model (:obj:`nn.Module`): The model to run.
-        inputs_tree_manager (:obj:`HierarchicalData`): A parser
+        inputs_manager (:obj:`HierarchicalDataManager`): A parser
             converting inputs from tuple to dictionary.
-        outputs_tree_manager (:obj:`HierarchicalData`): A parser
+        outputs_manager (:obj:`HierarchicalDataManager`): A parser
             converting outputs from dictionary to tuple.
-        inter_ouputs_in_cpu (dict): Specify the features to be
+        inter_outputs_in_cpu (dict): Specify the features to be
             recorded.
         modules_to_record (mmcv.Config, list): Index or name of modules which
             will be recorded for output. It is necessary to specify output for
@@ -286,27 +287,27 @@ class WrappedNet(nn.Module):
     def __init__(
             self,
             model,
-            inputs_tree_manager,
-            outputs_tree_manager,
-            inter_ouputs_in_cpu,
+            inputs_manager,
+            outputs_manager,
+            inter_outputs_in_cpu,
             modules_to_record=None):
         super().__init__()
         self.model = model
-        self.inputs_tree_manager = inputs_tree_manager
-        self.outputs_tree_manager = outputs_tree_manager
+        self.inputs_manager = inputs_manager
+        self.outputs_manager = outputs_manager
         self.training = model.training
         # Register a hook function to capture the intermediate features
         # generated by the network to align the outputs between ipu and cpu
         # Used to confirm whether the implementation of CPU is consistent
         # with the implementation of IPU
-        self.inter_ouputs_in_cpu = inter_ouputs_in_cpu
+        self.inter_outputs_in_cpu = inter_outputs_in_cpu
         if modules_to_record is None:
             modules_to_record = []
 
         for idx, (name, module) in enumerate(model.named_modules()):
             if name in modules_to_record or idx in modules_to_record:
                 features_hook = self.get_input_output_hook(
-                    name, idx, self.inter_ouputs_in_cpu)
+                    name, idx, self.inter_outputs_in_cpu)
                 module.register_forward_hook(hook=features_hook)
 
     def get_input_output_hook(self, name, idx, save_dict):
@@ -324,8 +325,8 @@ class WrappedNet(nn.Module):
         """This function is used to be compiled to ipu, the inputs and
         outputs need to be tuples, so here we need to restore the input back
         to a dictionary and convert the output to a tuple."""
-        self.inputs_tree_manager.set_tensors(inputs_tuple)
-        kwargs = {**(self.inputs_tree_manager.tree)}
+        self.inputs_manager.update_all_tensors(inputs_tuple)
+        kwargs = {**(self.inputs_manager.data)}
         if self.training:
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
@@ -340,14 +341,14 @@ class WrappedNet(nn.Module):
             outputs = {'output of WrappedNet: single tensor': outputs}
 
         # if there are some features need to be record, add extra outputs
-        for name in self.inter_ouputs_in_cpu:
-            outputs[name] = self.inter_ouputs_in_cpu[name]
+        for name in self.inter_outputs_in_cpu:
+            outputs[name] = self.inter_outputs_in_cpu[name]
 
         # record all the places of return tensors in the converting stage
         # while in the real run stage, all the tensor are changed in-place
         # that means the output can be obtained directly outside this function
-        self.outputs_tree_manager.set_tree(outputs)
-        plain_outputs = self.outputs_tree_manager.get_tensors()
+        self.outputs_manager.record_hierarchical_data(outputs)
+        plain_outputs = self.outputs_manager.get_all_tensors()
         return plain_outputs
 
     def forward_train(self, kwargs):
@@ -452,15 +453,16 @@ class MMPoplarExecutor(PoplarExecutor):
         # self.model == self._user_model: input pytorch model
         # self._model: wrapped model which is used to compile
         # and update weights, these two models use same weights
-        # wrapped model only accept and output tuple, so HierarchicalData
-        # will convert dictionary to tuple and convert them back
-        self.inputs_tree_manager = HierarchicalData(logger=logger)
-        self.outputs_tree_manager = HierarchicalData(logger=logger)
+        # wrapped model only accept and output tuple, so
+        # HierarchicalDataManager will convert dictionary
+        # to tuple and convert them back
+        self.inputs_manager = HierarchicalDataManager(logger=logger)
+        self.outputs_manager = HierarchicalDataManager(logger=logger)
         self.logger = logger
         # the features calculated by CPU
-        self.inter_ouputs_in_cpu = {}
+        self.inter_outputs_in_cpu = {}
         # the features calculated by IPU
-        self.inter_ouputs_in_ipu = {}
+        self.inter_outputs_in_ipu = {}
         if modules_to_record is None:
             # It is possible that the IPU implementation of some operators
             # is inconsistent with the expected (CPU), here you can use
@@ -474,9 +476,9 @@ class MMPoplarExecutor(PoplarExecutor):
             model.fp16_enabled = False
             self.fp16_enabled = True
         # make torch.jit.trace convert self._model
-        model = WrappedNet(model, self.inputs_tree_manager,
-                           self.outputs_tree_manager,
-                           self.inter_ouputs_in_cpu,
+        model = WrappedNet(model, self.inputs_manager,
+                           self.outputs_manager,
+                           self.inter_outputs_in_cpu,
                            modules_to_record=modules_to_record)
         super().__init__(model, training=training, *args, **kwargs)
         # overwrite self._args_parser in train_step or val_step
@@ -502,15 +504,15 @@ class MMPoplarExecutor(PoplarExecutor):
         # this function is used to parse input_dict
         # and convert to output_dict
         if self.isCompiled():
-            self.inputs_tree_manager.set_tree(data_dict)
-            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
+            self.inputs_manager.record_hierarchical_data(data_dict)
+            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
         else:
             # get tensors out of data and put them in a tuple
-            self.inputs_tree_manager.set_tree(data_dict)
-            inputs_tuple = tuple(self.inputs_tree_manager.get_tensors())
-            # turn logger in tree manager off after compilation
-            self.inputs_tree_manager.quick()
-            self.outputs_tree_manager.quick()
+            self.inputs_manager.record_hierarchical_data(data_dict)
+            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
+            # turn logger in data manager off after compilation
+            self.inputs_manager.quick()
+            self.outputs_manager.quick()
 
         # parser args in the first iter
         if self._args_parser is None:
@@ -520,20 +522,20 @@ class MMPoplarExecutor(PoplarExecutor):
         # the plain_outputs will be used in converting stage
         plain_outputs = self(inputs_tuple)
 
-        self.inputs_tree_manager.clean_tensors()
+        self.inputs_manager.clean_all_tensors()
 
         # put list of tensors back to the output dict
         # according to the same order
-        self.outputs_tree_manager.set_tensors(plain_outputs)
-        # get the real output dictionary from self.outputs_tree_manager
-        output_dict = self.outputs_tree_manager.tree
+        self.outputs_manager.update_all_tensors(plain_outputs)
+        # get the real output dictionary from self.outputs_manager
+        output_dict = self.outputs_manager.data
 
-        # split output_dict into inter_ouputs_in_ipu
+        # split output_dict into inter_outputs_in_ipu
         # and output of the torch model
         torch_model_output = {}
         for name in output_dict:
-            if name in self.inter_ouputs_in_cpu:
-                self.inter_ouputs_in_ipu[name] = output_dict[name]
+            if name in self.inter_outputs_in_cpu:
+                self.inter_outputs_in_ipu[name] = output_dict[name]
             else:
                 torch_model_output[name] = output_dict[name]
 
@@ -554,8 +556,8 @@ class MMPoplarExecutor(PoplarExecutor):
         assert len(kwargs) == 0  # TODO, support later if necessary
 
         # TODO support datacontainer as input
-        # currently, auto_fp16 and HierarchicalData take too much time on
-        # traversing datacontainer
+        # currently, auto_fp16 and HierarchicalDataManager take too much
+        # time on traversing datacontainer
         data['img_metas'] = None
         num_samples = len(data['img'].data)
 
@@ -713,19 +715,19 @@ class TrainEvalModel:
 
     def compare_data_between_ipu_and_cpu(
             self,
-            inter_ouputs_in_cpu,
-            inter_ouputs_in_ipu):
-        for key, val in inter_ouputs_in_cpu.items():
+            inter_outputs_in_cpu,
+            inter_outputs_in_ipu):
+        for key, val in inter_outputs_in_cpu.items():
             is_tensor = isinstance(val['fea_in'], torch.Tensor)
             fea_in_cpu = val['fea_in']
             fea_in_cpu_list = [fea_in_cpu] if is_tensor else fea_in_cpu
-            fea_in_ipu = inter_ouputs_in_ipu[key]['fea_in']
+            fea_in_ipu = inter_outputs_in_ipu[key]['fea_in']
             fea_in_ipu_list = [fea_in_ipu] if is_tensor else fea_in_ipu
 
             is_tensor = isinstance(val['fea_out'], torch.Tensor)
             fea_out_cpu = val['fea_out']
             fea_out_cpu_list = [fea_out_cpu] if is_tensor else fea_out_cpu
-            fea_out_ipu = inter_ouputs_in_ipu[key]['fea_out']
+            fea_out_ipu = inter_outputs_in_ipu[key]['fea_out']
             fea_out_ipu_list = [fea_out_ipu] if is_tensor else fea_out_ipu
 
             print('comparing layer:', key)
@@ -742,20 +744,22 @@ class TrainEvalModel:
     # merge train_step(train) and __call__(eval) together
     def train_step(self, data, optimizer=None, **kwargs):
         assert self.training, 'not supported train_step on eval mode'
-        inter_ouputs_in_cpu = {}
+        inter_outputs_in_cpu = {}
         if (self._train_executor.isCompiled() and
             self._train_executor.compare_with_cpu):
             self.copyWeightsToHost()
             # run in CPU mode
             self._train_executor.model.train_step(data, optimizer, **kwargs)
-            inter_ouputs_in_cpu = {**(self._train_executor.inter_ouputs_in_cpu)}
+            inter_outputs_in_cpu = {
+                **(self._train_executor.inter_outputs_in_cpu)}
         # run in IPU mode
         result = self._train_executor.train_step(data, optimizer, **kwargs)
         if (self._train_executor.isCompiled() and
             self._train_executor.compare_with_cpu and
-            len(inter_ouputs_in_cpu) > 0):
+            len(inter_outputs_in_cpu) > 0):
             self.compare_data_between_ipu_and_cpu(
-                inter_ouputs_in_cpu, self._train_executor.inter_ouputs_in_ipu)
+                inter_outputs_in_cpu,
+                self._train_executor.inter_outputs_in_ipu)
         return result
 
     # TODO Unified training and eval interface,
@@ -809,13 +813,13 @@ def get_training_model(model: nn.Module,
     maybe_wrapped_model = copy.copy(model)
 
     return MMPoplarExecutor(model=maybe_wrapped_model,
-                                 logger=logger,
-                                 options=options,
-                                 training=True,
-                                 optimizer=optimizer,
-                                 user_model=model,
-                                 modules_to_record=modules_to_record,
-                                 poptorch_version=__version__)
+                            logger=logger,
+                            options=options,
+                            training=True,
+                            optimizer=optimizer,
+                            user_model=model,
+                            modules_to_record=modules_to_record,
+                            poptorch_version=__version__)
 
 
 def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
@@ -847,7 +851,7 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
     """
 
     return MMPoplarExecutor(model=copy.copy(model),
-                                 logger=logger,
-                                 options=options,
-                                 training=False,
-                                 poptorch_version=__version__)
+                            logger=logger,
+                            options=options,
+                            training=False,
+                            poptorch_version=__version__)

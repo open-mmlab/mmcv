@@ -134,8 +134,8 @@ def test_parse_ipu_options():
         randomSeed=888,
         enableExecutableCaching='cache_engine',
         train_cfg=dict(executionStrategy='SameAsIpu',
-                        Training=dict(gradientAccumulation=8),
-                        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
+                       Training=dict(gradientAccumulation=8),
+                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
         eval_cfg=dict(deviceIterations=1,),)
     cast_to_options(copy.deepcopy(options_cfg))
 
@@ -174,6 +174,6 @@ def test_model_sharding():
         dict(
             layer_to_call=1,
             ipu_id=0)]
-    
+
     with pytest.raises(ValueError, match='The same layer is referenced'):
         model_sharding(model, split_edges)

@@ -75,7 +75,7 @@ class ToyDataset(Dataset):
     def __getitem__(self, index):
         return {'img': torch.rand((3, 10, 10)),
                 'gt_label': torch.rand((3, 10, 10))}
-    
+
     def __len__(self,):
         return 3
 
