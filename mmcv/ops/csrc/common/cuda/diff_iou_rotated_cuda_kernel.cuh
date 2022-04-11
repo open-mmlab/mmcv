@@ -84,22 +84,19 @@ __global__ void diff_iou_rotated_sort_vertices_forward_cuda_kernel(
                 float x_min = 1;
                 float y_min = -EPSILON;
                 int i_take = 0;
-                int i2 = idx[i*MAX_NUM_VERT_IDX + j - 1];
-                float x2 = vertices[i*m*2 + i2*2 + 0];
-                float y2 = vertices[i*m*2 + i2*2 + 1];
+                int i2;
+                float x2, y2;
+                if (j != 0) {
+                    i2 = idx[i*MAX_NUM_VERT_IDX + j - 1];
+                    x2 = vertices[i*m*2 + i2*2 + 0];
+                    y2 = vertices[i*m*2 + i2*2 + 1];
+                }
                 for (int k=0; k<m; ++k){
                     float x = vertices[i*m*2 + k*2 + 0];
                     float y = vertices[i*m*2 + k*2 + 1];
-                    if (j==0){
-                        if (mask[i*m+k] && compare_vertices(x, y, x_min, y_min)){
-                            x_min = x;
-                            y_min = y;
-                            i_take = k;
-                        }
-                    } else {
-                        if (mask[i*m+k] &&
-                            compare_vertices(x, y, x_min, y_min) &&
-                            compare_vertices(x2, y2, x, y)){
+                    if (mask[i*m+k] && compare_vertices(x, y, x_min, y_min)) {
+                        if ((j == 0) ||
+                            (j != 0 && compare_vertices(x2, y2, x, y))) {
                             x_min = x;
                             y_min = y;
                             i_take = k;
