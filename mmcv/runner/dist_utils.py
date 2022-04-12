@@ -12,6 +12,8 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from mmcv.utils import print_log
+
 
 def _find_free_port():
     # Copied from https://github.com/facebookresearch/detectron2/blob/main/detectron2/engine/launch.py # noqa: E501
@@ -80,7 +82,15 @@ def _init_dist_slurm(backend, port=None):
         f'scontrol show hostname {node_list} | head -n1')
     # specify master port
     if port is not None:
-        os.environ['MASTER_PORT'] = str(port)
+        if _is_free_port(port):
+            os.environ['MASTER_PORT'] = str(port)
+        else:
+            _free_port = _find_free_port()
+            os.environ['MASTER_PORT'] = str(_free_port)
+            print_log(
+                'Specified MASTER_PORT not available,' +
+                f'use port {_free_port}',
+                logger='mmcv')
     elif 'MASTER_PORT' in os.environ:
         pass  # use MASTER_PORT in the environment variable
     else:
@@ -89,7 +99,12 @@ def _init_dist_slurm(backend, port=None):
         if _is_free_port(29500):
             os.environ['MASTER_PORT'] = '29500'
         else:
-            os.environ['MASTER_PORT'] = str(_find_free_port())
+            _free_port = _find_free_port()
+            os.environ['MASTER_PORT'] = str(_free_port)
+            print_log(
+                f'MASTER_PORT not given and default port \
+                not available,use port {_free_port}',
+                logger='mmcv')
     # use MASTER_ADDR in the environment variable if it already exists
     if 'MASTER_ADDR' not in os.environ:
         os.environ['MASTER_ADDR'] = addr
