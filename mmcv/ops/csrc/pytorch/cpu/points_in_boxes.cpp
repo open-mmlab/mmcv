@@ -51,3 +51,41 @@ void points_in_boxes_cpu_forward(Tensor boxes_tensor, Tensor pts_tensor,
     }
   }
 }
+
+void points_in_boxes_cpu_forward_with_offsets(Tensor boxes_tensor,
+                                              Tensor pts_tensor,
+                                              Tensor pts_indices_tensor,
+                                              Tensor center_offsets_tensor) {
+  // params boxes: (N, 7) [x, y, z, x_size, y_size, z_size, rz] in LiDAR
+  // coordinate, z is the bottom center, each box DO NOT overlaps params pts:
+  // (npoints, 3) [x, y, z] in LiDAR coordinate params pts_indices: (N, npoints)
+  // params center_offsets: (npoints, 3) center offsets of points
+
+  CHECK_CONTIGUOUS(boxes_tensor);
+  CHECK_CONTIGUOUS(pts_tensor);
+  CHECK_CONTIGUOUS(pts_indices_tensor);
+  CHECK_CONTIGUOUS(center_offsets);
+
+  int boxes_num = boxes_tensor.size(0);
+  int pts_num = pts_tensor.size(0);
+
+  const float *boxes = boxes_tensor.data_ptr<float>();
+  const float *pts = pts_tensor.data_ptr<float>();
+  int *pts_indices = pts_indices_tensor.data_ptr<int>();
+  int *center_offsets = center_offsets_tensor.data_ptr<float>();
+
+  float local_x = 0, local_y = 0;
+  for (int i = 0; i < boxes_num; i++) {
+    for (int j = 0; j < pts_num; j++) {
+      int cur_in_flag =
+          check_pt_in_box3d_cpu(pts + j * 3, boxes + i * 7, local_x, local_y);
+      pts_indices[i * pts_num + j] = cur_in_flag;
+      if (cur_in_flag == 1) {
+        center_offsets[j * 3] = pts[j * 3] - boxes[i * 7];
+        center_offsets[j * 3 + 1] = pts[j * 3 + 1] - boxes[i * 7 + 1];
+        center_offsets[j * 3 + 2] = (pts[j * 3 + 2] - (boxes[i * 7 + 2]
+                                     + boxes[i * 7 + 3] / 2.0));
+      }
+    }
+  }
+}

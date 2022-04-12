@@ -4,7 +4,7 @@ from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
     'points_in_boxes_part_forward', 'points_in_boxes_cpu_forward',
-    'points_in_boxes_all_forward'
+    'points_in_boxes_cpu_forward_with_offsets', 'points_in_boxes_all_forward'
 ])
 
 
@@ -92,6 +92,49 @@ def points_in_boxes_cpu(points, boxes):
     point_indices = point_indices.transpose(1, 2)
 
     return point_indices
+
+def points_in_boxes_with_offsets_cpu(points, boxes):
+    """Find all boxes in which each point is, as well as the offsets from the
+    box centers (CPU). The CPU version of :meth:`points_in_boxes_all`.
+
+    Args:
+        points (torch.Tensor): [B, M, 3], [x, y, z] in
+            LiDAR/DEPTH coordinate
+        boxes (torch.Tensor): [B, T, 7],
+            num_valid_boxes <= T, [x, y, z, x_size, y_size, z_size, rz],
+            (x, y, z) is the bottom center.
+
+    Returns:
+        torch.Tensor: Return the box indices of points with the shape of
+        (B, M, T). Default background = 0.
+        torch.Tensor: Return the offsets from the box centers of points,
+        if it belows to the box, with the shape of (B, M, 3).
+        Default background = 0.
+    """
+    assert points.shape[0] == boxes.shape[0], \
+        'Points and boxes should have the same batch size, ' \
+        f'but got {points.shape[0]} and {boxes.shape[0]}'
+    assert boxes.shape[2] == 7, \
+        'boxes dimension should be 7, ' \
+        f'but got unexpected shape {boxes.shape[2]}'
+    assert points.shape[2] == 3, \
+        'points dimension should be 3, ' \
+        f'but got unexpected shape {points.shape[2]}'
+    batch_size, num_points, _ = points.shape
+    num_boxes = boxes.shape[1]
+
+    point_indices = points.new_zeros((batch_size, num_boxes, num_points),
+                                     dtype=torch.int)
+    center_offsets = points.new_zeros((batch_size, num_points, 3),
+                                      dtype=torch.int)
+    for b in range(batch_size):
+        ext_module.points_in_boxes_cpu_forward_with_offsets(
+                                               boxes[b].float().contiguous(),
+                                               points[b].float().contiguous(),
+                                               point_indices[b])
+    point_indices = point_indices.transpose(1, 2)
+
+    return point_indices, center_offsets
 
 
 def points_in_boxes_all(points, boxes):

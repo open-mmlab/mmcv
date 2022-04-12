@@ -57,8 +57,29 @@ void points_in_boxes_forward_cpu_parrots(HostContext& ctx,
   points_in_boxes_cpu_forward(boxes_tensor, pts_tensor, pts_indices_tensor);
 }
 
+void points_in_boxes_forward_with_offsets_cpu_parrots(
+                                          HostContext& ctx,
+                                          const SSElement& attr,
+                                          const OperatorBase::in_list_t& ins,
+                                          OperatorBase::out_list_t& outs) {
+  auto boxes_tensor = buildATensor(ctx, ins[0]);
+  auto pts_tensor = buildATensor(ctx, ins[1]);
+
+  auto pts_indices_tensor = buildATensor(ctx, outs[0]);
+  auto center_offsets_tensor = buildATensor(ctx, outs[1]);
+
+  points_in_boxes_cpu_forward(boxes_tensor, pts_tensor, pts_indices_tensor,
+                              center_offsets_tensor);
+}
+
 PARROTS_EXTENSION_REGISTER(points_in_boxes_cpu_forward)
     .input(2)
     .output(1)
     .apply(points_in_boxes_forward_cpu_parrots)
+    .done();
+
+PARROTS_EXTENSION_REGISTER(points_in_boxes_cpu_forward_with_offsets)
+    .input(2)
+    .output(1)
+    .apply(points_in_boxes_forward_with_offsets_cpu_parrots)
     .done();
