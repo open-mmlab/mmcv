@@ -93,6 +93,7 @@ def points_in_boxes_cpu(points, boxes):
 
     return point_indices
 
+
 def points_in_boxes_with_offsets_cpu(points, boxes):
     """Find all boxes in which each point is, as well as the offsets from the
     box centers (CPU). The CPU version of :meth:`points_in_boxes_all`.
