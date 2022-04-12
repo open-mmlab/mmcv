@@ -120,17 +120,9 @@ def get_torchvision_models():
                 model_urls.update(_urls)
     else:
         for cls_name, cls in torchvision.models.__dict__.items():
-            if not hasattr(cls, '__base__'):
-                continue
-            if cls.__base__ != torchvision.models._api.WeightsEnum:
-                continue
             cls_key = cls_name.replace('_Weights', '').lower()
-            if hasattr(cls, 'DEFAULT'):
+            if cls_name.endswith('_Weights') and hasattr(cls, 'DEFAULT'):
                 model_urls[cls_key] = cls.DEFAULT.url
-            else:
-                warnings.warn(f'{cls_key} does not have default weight, see '
-                              f'more information in'
-                              f'torchvision.models.{cls_name}')
     return model_urls
 
 
