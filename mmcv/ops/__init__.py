@@ -40,6 +40,7 @@ from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
 from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
+                              points_in_boxes_with_offsets_cpu,
                               points_in_boxes_part)
 from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
@@ -96,5 +97,5 @@ __all__ = [
     'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
     'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
-    'convex_iou', 'convex_giou'
+    'convex_iou', 'convex_giou', 'points_in_boxes_with_offsets_cpu'
 ]
