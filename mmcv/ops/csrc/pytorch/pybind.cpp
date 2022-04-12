@@ -279,22 +279,6 @@ Tensor indice_maxpool_backward(Tensor features, Tensor outFeatures,
                                Tensor outGrad, Tensor indicePairs,
                                Tensor indiceNum);
 
-Tensor bottom_pool_forward(Tensor input);
-
-Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor left_pool_forward(Tensor input);
-
-Tensor left_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor right_pool_forward(Tensor input);
-
-Tensor right_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor top_pool_forward(Tensor input);
-
-Tensor top_pool_backward(Tensor input, Tensor grad_output);
-
 void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                      const int mode_flag, const bool aligned);
 
@@ -705,26 +689,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("shift"), py::arg("output"));
   m.def("tin_shift_backward", &tin_shift_backward, "tin_shift backward",
         py::arg("grad_output"), py::arg("shift"), py::arg("grad_input"));
-  m.def("bottom_pool_forward", &bottom_pool_forward, "Bottom Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("bottom_pool_backward", &bottom_pool_backward, "Bottom Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("left_pool_forward", &left_pool_forward, "Left Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("left_pool_backward", &left_pool_backward, "Left Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("right_pool_forward", &right_pool_forward, "Right Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("right_pool_backward", &right_pool_backward, "Right Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("top_pool_forward", &top_pool_forward, "Top Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("top_pool_backward", &top_pool_backward, "Top Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
   m.def("box_iou_rotated", &box_iou_rotated, "IoU for rotated boxes",
         py::arg("boxes1"), py::arg("boxes2"), py::arg("ious"),
         py::arg("mode_flag"), py::arg("aligned"));

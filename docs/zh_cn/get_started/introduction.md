@@ -31,6 +31,12 @@ MMCV 提供了如下众多功能：
 - 多种 CNN 网络结构
 - 高质量实现的常见 CUDA 算子
 
+MMCV 支持以下的系统：
+
+- Linux
+- Windows
+- macOS
+
 如想了解更多特性和使用，请参考[文档](https://mmcv.readthedocs.io/zh_CN/latest)。
 
 ```{note}

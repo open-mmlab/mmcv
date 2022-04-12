@@ -217,13 +217,14 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.9.0+cu102, 1.10.0+cu102, 1.11.0+cu102]
+        torch: [1.9.0+cu102, 1.10.0+cu102]
         include:
           - torch: 1.9.0+cu102
             torchvision: 0.10.0+cu102
           - torch: 1.10.0+cu102
             torchvision: 0.11.0+cu102
-          - torch: 1.11.0+cu102
+          - python-version: '3.10'
+            torch: 1.11.0+cu102
             torchvision: 0.12.0+cu102
           - python-version: 3.6
             torch: 1.9.0+cu102
@@ -237,8 +238,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Add PPA
+        run: |
+          apt-get update && apt-get install -y software-properties-common
+          add-apt-repository -y ppa:deadsnakes/ppa
       - name: Install python-dev
-        run: apt-get update && apt-get install -y python${{matrix.python-version}}-dev
+        run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python${{matrix.python-version}}-dev
       - name: python -m Install PyTorch
         run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
@@ -255,6 +260,15 @@ jobs:
           python -m pip install -r requirements/test.txt
           coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
+        if: ${{matrix.python-version != '3.10'}}
+      # special treatment for python3.10 because onnx and onnxruntime don't provide python3.10 pre-built packages
+      - name: Run unittests and generate coverage report for python3.10
+        run: |
+          python -m pip install -r requirements/test.txt
+          coverage run --branch --source=mmcv -m pytest tests/ --ignore=tests/test_ops/test_onnx.py --ignore=tests/test_ops/test_tensorrt.py --ignore=tests/test_ops/test_tensorrt_preprocess.py
+          coverage xml
+        if: ${{matrix.python-version == '3.10'}}
+
 
   build_windows_without_ops:
     runs-on: windows-latest
