@@ -123,5 +123,4 @@ src/
 # IPU
 *.pvti
 *.pvti-journal
-/cache_engine
 /report
