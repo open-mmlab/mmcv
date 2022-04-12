@@ -62,7 +62,8 @@ def test_HierarchicalData():
     hd.record_hierarchical_data(hierarchical_data_sample)
     hierarchical_data_sample['a'] = torch.rand(3, 4)
     with pytest.raises(ValueError, match='all data except torch.Tensor'):
-        new_hierarchical_data_sample = {**hierarchical_data_sample, 'b': np.random.rand(3, 4)}
+        new_hierarchical_data_sample = {
+            **hierarchical_data_sample, 'b': np.random.rand(3, 4)}
         hd.update(new_hierarchical_data_sample)
 
     hd.update(new_hierarchical_data_sample, strict=False)
