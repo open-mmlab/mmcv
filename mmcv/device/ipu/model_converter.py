@@ -1,15 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
+import inspect
+import warnings
+from collections import OrderedDict
+from typing import Optional, Union
+
+import numpy as np
+import poptorch
 import torch
 import torch.nn as nn
-import poptorch
-import numpy as np
-import inspect
-import copy
-import warnings
-from typing import Optional, Union
-from collections import OrderedDict
 from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
+
 from mmcv.parallel import DataContainer
 from mmcv.runner import auto_fp16
 
@@ -20,6 +22,7 @@ class DictArgsParser(ArgsParser):
     Args:
         inputs (list): Inputs of model.
     """
+
     def __init__(self, inputs):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
@@ -33,7 +36,7 @@ HierarchicalDataNone = object()
 
 
 class HierarchicalDataManager:
-    """A class manage all the tensors in the complex data
+    """A class manage all the tensors in the complex data.
 
     At present, the input data structure accepted by IPU is limited,
     when the input data structure of mmcv varies.
@@ -54,6 +57,7 @@ class HierarchicalDataManager:
         logger (:obj:`logging.Logger`): Logger used during running.
              Defaults to None.
     """
+
     def __init__(self, logger=None):
         self.atomic_types = (int, str, float, np.ndarray, type(None))
         self.warning = warnings.warn if logger is None else logger.warning
@@ -65,8 +69,8 @@ class HierarchicalDataManager:
         self.quick_mode = True
 
     def compare_atomic_type(self, a, b):
-        """Compare data, supported datatypes are numpy array and python
-        basic types."""
+        """Compare data, supported datatypes are numpy array and python basic
+        types."""
         if isinstance(a, np.ndarray):
             return np.all(a == b)
         else:
@@ -88,13 +92,11 @@ class HierarchicalDataManager:
     def data(self):
         return self._data
 
-    def update(
-            self,
-            dataA,
-            dataB=HierarchicalDataNone,
-            strict=True,
-            address='data'
-            ):
+    def update(self,
+               dataA,
+               dataB=HierarchicalDataNone,
+               strict=True,
+               address='data'):
         """Update recorded complex data in-place.
 
         Args:
@@ -117,14 +119,13 @@ class HierarchicalDataManager:
             for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
-                    new_address = address+f'[{str(idx)}]'
+                    new_address = address + f'[{str(idx)}]'
                     assert isinstance(node, type(dataB[idx])),\
                         f'data structure changed: {new_address}'
                 if isinstance(node, torch.Tensor):
                     dataB[idx] = node
                 else:
-                    self.update(node, dataB[idx],
-                                strict, address=new_address)
+                    self.update(node, dataB[idx], strict, address=new_address)
         elif isinstance(dataA, dict):
             for k, v in dataA.items():
                 new_address = ''
@@ -135,8 +136,7 @@ class HierarchicalDataManager:
                 if isinstance(v, torch.Tensor):
                     dataB[k] = v
                 else:
-                    self.update(v, dataB[k], strict,
-                                address=new_address)
+                    self.update(v, dataB[k], strict, address=new_address)
         elif isinstance(dataA, self.atomic_types):
             if not self.quick_mode:
                 is_equal = self.compare_atomic_type(dataA, dataB)
@@ -188,8 +188,7 @@ class HierarchicalDataManager:
         elif isinstance(data, DataContainer):
             self._get_tensors(data.data, tensors)
         else:
-            raise NotImplementedError(
-                f'not supported datatype:{type(data)}')
+            raise NotImplementedError(f'not supported datatype:{type(data)}')
 
     def update_all_tensors(self, tensors):
         """Put tensors from tuple back to self.data."""
@@ -229,8 +228,7 @@ class HierarchicalDataManager:
         elif isinstance(data, DataContainer):
             self._set_tensors(data.data, tensors)
         else:
-            raise NotImplementedError(
-                f'not supported datatype:{type(data)}')
+            raise NotImplementedError(f'not supported datatype:{type(data)}')
 
     def clean_all_tensors(self):
         """Delete tensors from self.data."""
@@ -262,8 +260,7 @@ class HierarchicalDataManager:
         elif isinstance(data, DataContainer):
             self._clean_tensors(data.data)
         else:
-            raise NotImplementedError(
-                f'not supported datatype:{type(data)}')
+            raise NotImplementedError(f'not supported datatype:{type(data)}')
 
 
 class WrappedNet(nn.Module):
@@ -284,13 +281,13 @@ class WrappedNet(nn.Module):
             will be recorded for output. It is necessary to specify output for
             static graph of model training or inference.
     """
-    def __init__(
-            self,
-            model,
-            inputs_manager,
-            outputs_manager,
-            inter_outputs_in_cpu,
-            modules_to_record=None):
+
+    def __init__(self,
+                 model,
+                 inputs_manager,
+                 outputs_manager,
+                 inter_outputs_in_cpu,
+                 modules_to_record=None):
         super().__init__()
         self.model = model
         self.inputs_manager = inputs_manager
@@ -311,20 +308,25 @@ class WrappedNet(nn.Module):
                 module.register_forward_hook(hook=features_hook)
 
     def get_input_output_hook(self, name, idx, save_dict):
+
         def input_output_hook(module, fea_in, fea_out):
             if isinstance(fea_in, tuple):
                 fea_in = list(fea_in)
             if isinstance(fea_out, tuple):
                 fea_out = list(fea_out)
             save_dict[name] = {
-                'fea_in': fea_in, 'fea_out': fea_out, 'idx': idx}
+                'fea_in': fea_in,
+                'fea_out': fea_out,
+                'idx': idx
+            }
             return None
+
         return input_output_hook
 
     def forward(self, inputs_tuple):
-        """This function is used to be compiled to ipu, the inputs and
-        outputs need to be tuples, so here we need to restore the input back
-        to a dictionary and convert the output to a tuple."""
+        """This function is used to be compiled to ipu, the inputs and outputs
+        need to be tuples, so here we need to restore the input back to a
+        dictionary and convert the output to a tuple."""
         self.inputs_manager.update_all_tensors(inputs_tuple)
         kwargs = {**(self.inputs_manager.data)}
         if self.training:
@@ -403,8 +405,7 @@ class WrappedNet(nn.Module):
                 raise TypeError(
                     f'{loss_name} is not a tensor or list of tensors')
 
-        loss = sum(value for key, value in log_vars.items()
-                   if 'loss' in key)
+        loss = sum(value for key, value in log_vars.items() if 'loss' in key)
         log_vars['loss'] = loss
 
         return loss, log_vars
@@ -419,14 +420,16 @@ class WrappedNet(nn.Module):
         # post_process will convert output tensor to numpy array automatically,
         # resulting in _check_trace failure
         outputs = self.model(
-            img, img_metas=img_metas,
-            return_loss=return_loss, post_process=False)
+            img,
+            img_metas=img_metas,
+            return_loss=return_loss,
+            post_process=False)
         return outputs
 
 
 class MMPoplarExecutor(PoplarExecutor):
-    """An executor for inputs/outputs parsing, model compilation,
-    data alignment and IPU upload/download.
+    """An executor for inputs/outputs parsing, model compilation, data
+    alignment and IPU upload/download.
 
     Args:
         model (:obj:`nn.Module`): The model to be compiled.
@@ -441,15 +444,14 @@ class MMPoplarExecutor(PoplarExecutor):
         kwargs (keyword arguments): Keyword arguments passed to the `__init__`
             method of PoplarExecutor.
     """
-    def __init__(
-            self,
-            model,
-            logger=None,
-            training=True,
-            modules_to_record=None,
-            *args,
-            **kwargs
-            ):
+
+    def __init__(self,
+                 model,
+                 logger=None,
+                 training=True,
+                 modules_to_record=None,
+                 *args,
+                 **kwargs):
         # self.model == self._user_model: input pytorch model
         # self._model: wrapped model which is used to compile
         # and update weights, these two models use same weights
@@ -476,10 +478,12 @@ class MMPoplarExecutor(PoplarExecutor):
             model.fp16_enabled = False
             self.fp16_enabled = True
         # make torch.jit.trace convert self._model
-        model = WrappedNet(model, self.inputs_manager,
-                           self.outputs_manager,
-                           self.inter_outputs_in_cpu,
-                           modules_to_record=modules_to_record)
+        model = WrappedNet(
+            model,
+            self.inputs_manager,
+            self.outputs_manager,
+            self.inter_outputs_in_cpu,
+            modules_to_record=modules_to_record)
         super().__init__(model, training=training, *args, **kwargs)
         # overwrite self._args_parser in train_step or val_step
         self._args_parser = None
@@ -499,7 +503,7 @@ class MMPoplarExecutor(PoplarExecutor):
         # temporarily use this function to fix the problem
         return self._training  # comes from self.model._training
 
-    @auto_fp16(supported_types=(PoplarExecutor,))
+    @auto_fp16(supported_types=(PoplarExecutor, ))
     def run_model(self, data_dict):
         # this function is used to parse input_dict
         # and convert to output_dict
@@ -624,21 +628,24 @@ class TrainEvalModel:
             will be recorded for output. It is necessary to specify output for
             static graph of model training or inference.
     """
-    def __init__(
-            self,
-            train_model,
-            eval_model,
-            options,
-            optimizer,
-            modules_to_record=None,
-            logger=None):
+
+    def __init__(self,
+                 train_model,
+                 eval_model,
+                 options,
+                 optimizer,
+                 modules_to_record=None,
+                 logger=None):
         if train_model is None:
             self._train_executor = None
             self.training = False
         else:
             self._train_executor = get_training_model(
-                train_model, options=options['training'], optimizer=optimizer,
-                logger=logger, modules_to_record=modules_to_record)
+                train_model,
+                options=options['training'],
+                optimizer=optimizer,
+                logger=logger,
+                modules_to_record=modules_to_record)
             self.training = True
         self._eval_executor = get_inference_model(
             eval_model, options=options['inference'], logger=logger)
@@ -713,10 +720,8 @@ class TrainEvalModel:
         """
         return self.train(False)
 
-    def compare_data_between_ipu_and_cpu(
-            self,
-            inter_outputs_in_cpu,
-            inter_outputs_in_ipu):
+    def compare_data_between_ipu_and_cpu(self, inter_outputs_in_cpu,
+                                         inter_outputs_in_ipu):
         for key, val in inter_outputs_in_cpu.items():
             is_tensor = isinstance(val['fea_in'], torch.Tensor)
             fea_in_cpu = val['fea_in']
@@ -745,18 +750,19 @@ class TrainEvalModel:
     def train_step(self, data, optimizer=None, **kwargs):
         assert self.training, 'not supported train_step on eval mode'
         inter_outputs_in_cpu = {}
-        if (self._train_executor.isCompiled() and
-            self._train_executor.compare_with_cpu):
+        if (self._train_executor.isCompiled()
+                and self._train_executor.compare_with_cpu):
             self.copyWeightsToHost()
             # run in CPU mode
             self._train_executor.model.train_step(data, optimizer, **kwargs)
             inter_outputs_in_cpu = {
-                **(self._train_executor.inter_outputs_in_cpu)}
+                **(self._train_executor.inter_outputs_in_cpu)
+            }
         # run in IPU mode
         result = self._train_executor.train_step(data, optimizer, **kwargs)
-        if (self._train_executor.isCompiled() and
-            self._train_executor.compare_with_cpu and
-            len(inter_outputs_in_cpu) > 0):
+        if (self._train_executor.isCompiled()
+                and self._train_executor.compare_with_cpu
+                and len(inter_outputs_in_cpu) > 0):
             self.compare_data_between_ipu_and_cpu(
                 inter_outputs_in_cpu,
                 self._train_executor.inter_outputs_in_ipu)
@@ -766,8 +772,7 @@ class TrainEvalModel:
     # merge train_step(train) and __call__(eval) together
     def __call__(self, *args, **kwargs):
         if self.training:
-            raise NotImplementedError(
-                'use train_step rather than __call__')
+            raise NotImplementedError('use train_step rather than __call__')
         else:
             return self._eval_executor.eval_call(*args, **kwargs)
 
@@ -779,8 +784,7 @@ def get_training_model(model: nn.Module,
                        options: Optional[poptorch.Options] = None,
                        optimizer: Optional[torch.optim.Optimizer] = None,
                        logger=None,
-                       modules_to_record=None
-                       ) -> poptorch.PoplarExecutor:
+                       modules_to_record=None) -> poptorch.PoplarExecutor:
     """Create a PopTorch training model from a PyTorch model, running on IPU
     hardware in training mode.
 
@@ -812,20 +816,20 @@ def get_training_model(model: nn.Module,
     # Create a copy of the original model in case it needs to be wrapped
     maybe_wrapped_model = copy.copy(model)
 
-    return MMPoplarExecutor(model=maybe_wrapped_model,
-                            logger=logger,
-                            options=options,
-                            training=True,
-                            optimizer=optimizer,
-                            user_model=model,
-                            modules_to_record=modules_to_record,
-                            poptorch_version=__version__)
+    return MMPoplarExecutor(
+        model=maybe_wrapped_model,
+        logger=logger,
+        options=options,
+        training=True,
+        optimizer=optimizer,
+        user_model=model,
+        modules_to_record=modules_to_record,
+        poptorch_version=__version__)
 
 
 def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
                         options: Optional[poptorch.Options] = None,
-                        logger=None
-                        ) -> poptorch.PoplarExecutor:
+                        logger=None) -> poptorch.PoplarExecutor:
     """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 
@@ -850,8 +854,9 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         ``model``.
     """
 
-    return MMPoplarExecutor(model=copy.copy(model),
-                            logger=logger,
-                            options=options,
-                            training=False,
-                            poptorch_version=__version__)
+    return MMPoplarExecutor(
+        model=copy.copy(model),
+        logger=logger,
+        options=options,
+        training=False,
+        poptorch_version=__version__)

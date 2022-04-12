@@ -11,11 +11,11 @@ import pytest
 import torch
 import torch.nn as nn
 
+from mmcv.device.ipu import IS_IPU
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
 from mmcv.runner.hooks import IterTimerHook
-from mmcv.device.ipu import IS_IPU
 
 
 def get_runners():
@@ -66,8 +66,7 @@ def test_build_runner():
         runner = build_runner(cfg, default_args=default_args)
 
 
-@pytest.mark.parametrize(
-    'runner_name, runner_class', MODULE_DICT.items())
+@pytest.mark.parametrize('runner_name, runner_class', MODULE_DICT.items())
 def test_epoch_based_runner(runner_name, runner_class):
 
     if runner_name.startswith('IPU'):
@@ -78,9 +77,10 @@ def test_epoch_based_runner(runner_name, runner_class):
             def batch_processor():
                 pass
 
-            _ = runner_class(model,
-                             batch_processor=batch_processor,
-                             logger=logging.getLogger())
+            _ = runner_class(
+                model,
+                batch_processor=batch_processor,
+                logger=logging.getLogger())
 
     else:
         with pytest.warns(DeprecationWarning):
@@ -157,8 +157,7 @@ def test_epoch_based_runner(runner_name, runner_class):
     os.removedirs(work_dir)
 
 
-@pytest.mark.parametrize(
-    'runner_name, runner_class', MODULE_DICT.items())
+@pytest.mark.parametrize('runner_name, runner_class', MODULE_DICT.items())
 def test_runner_with_parallel(runner_name, runner_class):
 
     def batch_processor():
@@ -171,9 +170,8 @@ def test_runner_with_parallel(runner_name, runner_class):
                 match='if you want to implement data parallelism '
                 'at the module level on IPU, '
                 'use IPU option: replicationFactor'):
-            _ = runner_class(model,
-                             batch_processor=None,
-                             logger=logging.getLogger())
+            _ = runner_class(
+                model, batch_processor=None, logger=logging.getLogger())
     else:
         model = MMDataParallel(OldStyleModel())
         _ = runner_class(model, batch_processor, logger=logging.getLogger())

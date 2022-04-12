@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# initialize ipu to registor ipu runner to RUNNERS
 from .base_module import BaseModule, ModuleDict, ModuleList, Sequential
 from .base_runner import BaseRunner
 from .builder import RUNNERS, build_runner
@@ -37,8 +38,8 @@ from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
                         build_optimizer_constructor)
 from .priority import Priority, get_priority
 from .utils import get_host_info, get_time_str, obj_from_dict, set_random_seed
-# initialize ipu to registor ipu runner to RUNNERS
-from mmcv.device import ipu # noqa
+
+from mmcv.device import ipu  # isort:skip
 
 __all__ = [
     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
@@ -64,5 +65,5 @@ __all__ = [
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
     'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
-    'SegmindLoggerHook'
+    'SegmindLoggerHook', 'ipu'
 ]

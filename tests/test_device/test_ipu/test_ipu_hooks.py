@@ -4,14 +4,15 @@ import os.path as osp
 import random
 import string
 import tempfile
-import torch
 
 import pytest
+import torch
 import torch.nn as nn
 
-from mmcv.runner.fp16_utils import auto_fp16
-from mmcv.runner import build_runner
 from mmcv.device.ipu import IS_IPU
+from mmcv.runner import build_runner
+from mmcv.runner.fp16_utils import auto_fp16
+
 if IS_IPU:
     from mmcv.device.ipu import IPUFp16OptimizerHook
 
@@ -23,6 +24,7 @@ skip_no_ipu = pytest.mark.skipif(
 # of MMCLS and MMDET are unified,
 # construct the model according to the unified standards
 class ToyModel(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
@@ -40,7 +42,10 @@ class ToyModel(nn.Module):
             return {
                 'loss': loss,
                 'loss_list': [loss, loss],
-                'loss_dict': {'loss1': loss}}
+                'loss_dict': {
+                    'loss1': loss
+                }
+            }
         return x
 
     def _parse_losses(self, losses):
@@ -59,8 +64,11 @@ def test_optimizerhook():
 
     model = ToyModel()
     dummy_input = {
-        'data': {'img': torch.rand((16, 3, 10, 10)),
-                 'gt_label': torch.rand((16, 3, 10, 10))}}
+        'data': {
+            'img': torch.rand((16, 3, 10, 10)),
+            'gt_label': torch.rand((16, 3, 10, 10))
+        }
+    }
 
     temp_root = tempfile.gettempdir()
     dir_name = ''.join(
@@ -80,15 +88,11 @@ def test_optimizerhook():
     lr_config = dict(policy='step', step=[1, 150])
     # test optimizer config
     optimizer_config = dict(
-        grad_clip=dict(max_norm=2),
-        detect_anomalous_params=True)
+        grad_clip=dict(max_norm=2), detect_anomalous_params=True)
 
     # test building ipu_lr_hook_class
     dummy_runner.register_training_hooks(
-        lr_config=lr_config,
-        optimizer_config=None,
-        timer_config=None
-    )
+        lr_config=lr_config, optimizer_config=None, timer_config=None)
 
     # test _set_lr()
     output = dummy_runner.model.train_step(**dummy_input)
@@ -97,45 +101,34 @@ def test_optimizerhook():
 
     # test building ipu_optimizer_hook_class
     with pytest.raises(
-            NotImplementedError,
-            match='IPU does not support gradient clip'):
+            NotImplementedError, match='IPU does not support gradient clip'):
         dummy_runner.register_training_hooks(
             lr_config=None,
             optimizer_config=optimizer_config,
-            timer_config=None
-        )
+            timer_config=None)
 
     # test fp16 optimizer hook
     lr_config = dict(policy='step', step=[100, 150])
-    optimizer_config = dict(
-        grad_clip=dict(max_norm=2),)
+    optimizer_config = dict(grad_clip=dict(max_norm=2), )
     dummy_runner.hooks.pop(0)
 
-    with pytest.raises(
-            NotImplementedError,
-            match='IPU mode does not support'):
+    with pytest.raises(NotImplementedError, match='IPU mode does not support'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale='dynamic', distributed=False)
 
-    with pytest.raises(
-            NotImplementedError,
-            match='IPU mode supports single'):
+    with pytest.raises(NotImplementedError, match='IPU mode supports single'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale={}, distributed=False)
 
-    with pytest.raises(
-            ValueError,
-            match='loss_scale must be'):
+    with pytest.raises(ValueError, match='loss_scale must be'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale=[], distributed=False)
 
-    optimizer_config = IPUFp16OptimizerHook(
-        loss_scale=2.0, distributed=False)
+    optimizer_config = IPUFp16OptimizerHook(loss_scale=2.0, distributed=False)
 
     dummy_runner.register_training_hooks(
         lr_config=lr_config,
         optimizer_config=optimizer_config,
-        timer_config=None
-    )
+        timer_config=None)
 
     dummy_runner.call_hook('after_train_iter')

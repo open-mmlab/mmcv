@@ -3,7 +3,7 @@
 
 def is_ipu():
     try:
-        import poptorch # noqa: E261, F401
+        import poptorch  # noqa: E261, F401
         IS_IPU = True
     except ImportError:
         IS_IPU = False

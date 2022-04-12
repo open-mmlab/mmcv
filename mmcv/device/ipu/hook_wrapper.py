@@ -1,34 +1,37 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.runner import HOOKS, LrUpdaterHook, OptimizerHook
 from mmcv.utils import TORCH_VERSION, digit_version
-from mmcv.runner import HOOKS, OptimizerHook, LrUpdaterHook
 
 
 def wrap_lr_updater_hook(lr_hook_class):
     """A wrapper function to wrap any subclass of LrUpdaterHook.
 
-    IPU needs extra operations to upload optimizer settings.
-    this wrapper will override function(_set_lr) of a subclass of
-    LrUpdaterHook.
+    IPU needs extra operations to upload optimizer settings. this wrapper will
+    override function(_set_lr) of a subclass of LrUpdaterHook.
     """
     assert issubclass(lr_hook_class, LrUpdaterHook)
 
     class ipu_lr_hook_class(lr_hook_class):
+
         def _set_lr(self, runner, *args, **kwargs):
             super()._set_lr(runner, *args, **kwargs)
             # convert torch optimizer to poptorch optimizer
             runner.model.setOptimizer(runner.optimizer)
+
     return ipu_lr_hook_class
 
 
 def wrap_optimizer_hook(optimizer_hook_class):
     """A wrapper function to wrap OptimizerHook.
 
-    This is an non-intrusive implementation of wrapping optimizer hook
-    (or you need to change every config file to use IPU optimizer hook)
-    IPU's clip-norm implementation is different from pytorch, so there
-    should be an error raised when using clip-norm.
+    This is an non-intrusive implementation of wrapping optimizer hook (or you
+    need to change every config file to use IPU optimizer hook) IPU's clip-norm
+    implementation is different from pytorch, so there should be an error
+    raised when using clip-norm.
     """
+
     class ipu_optimizer_hook_class(OptimizerHook):
+
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             if self.grad_clip is not None:
@@ -39,6 +42,7 @@ def wrap_optimizer_hook(optimizer_hook_class):
 
 if (TORCH_VERSION != 'parrots'
         and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
+
     @HOOKS.register_module()
     class IPUFp16OptimizerHook(OptimizerHook):
         """FP16 optimizer hook (using PyTorch's implementation).

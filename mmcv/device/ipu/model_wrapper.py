@@ -1,20 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import inspect
-import torch
-import torch.nn as nn
+
 import popart
 import poptorch
+import torch
+import torch.nn as nn
 
 from mmcv.utils import Registry
 from .model_converter import TrainEvalModel
 
 
-def build_from_cfg_with_wrapper(
-        cfg,
-        registry,
-        wrapper_func=None,
-        default_args=None):
+def build_from_cfg_with_wrapper(cfg,
+                                registry,
+                                wrapper_func=None,
+                                default_args=None):
     """Build a module from config dict and wrap module with "wrapper_func".
 
     Args:
@@ -107,12 +107,14 @@ def cast_to_options(cfg):
     # overwrite default ipu cfg with specified eval cfgs
     inference_ipu_cfg = {**cfg, **eval_cfg}
 
-    ipu_options = {'training': _cast_to_options(training_ipu_cfg),
-                   'inference': _cast_to_options(inference_ipu_cfg)}
+    ipu_options = {
+        'training': _cast_to_options(training_ipu_cfg),
+        'inference': _cast_to_options(inference_ipu_cfg)
+    }
 
     # TODO configure these codes
-    ipu_options['training']._Popart.set(
-        'disableGradAccumulationTensorStreams', True)
+    ipu_options['training']._Popart.set('disableGradAccumulationTensorStreams',
+                                        True)
     ipu_options['training']._Popart.set(
         'accumulateOuterFragmentSettings.schedule',
         int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
@@ -127,8 +129,7 @@ def _cast_to_options(cfg):
     options = poptorch.Options()
 
     if 'availableMemoryProportion' in cfg:
-        available_memory_proportion = cfg.pop(
-            'availableMemoryProportion')
+        available_memory_proportion = cfg.pop('availableMemoryProportion')
         mem_props = {}
         for i, mem_prop in enumerate(available_memory_proportion):
             mem_props[f'IPU{i}'] = mem_prop
@@ -137,8 +138,9 @@ def _cast_to_options(cfg):
     if 'executionStrategy' in cfg:
         execution_strategy = cfg.pop('executionStrategy')
         if execution_strategy == 'SameAsIpu':
-            options.setExecutionStrategy(poptorch.PipelinedExecution(
-                getattr(poptorch.AutoStage, execution_strategy)))
+            options.setExecutionStrategy(
+                poptorch.PipelinedExecution(
+                    getattr(poptorch.AutoStage, execution_strategy)))
         elif execution_strategy == 'ShardedExecution':
             options.setExecutionStrategy(poptorch.ShardedExecution())
         else:
@@ -148,22 +150,20 @@ def _cast_to_options(cfg):
 
     if 'partialsType' in cfg:
         partials_type = cfg.pop('partialsType')
-        options.Precision.setPartialsType(
-            getattr(torch, partials_type))  # half or float
+        options.Precision.setPartialsType(getattr(
+            torch, partials_type))  # half or float
 
     _options_assigner(cfg, options)
     return options
 
 
-def ipu_model_wrapper(
-        model,
-        options,
-        optimizer=None,
-        logger=None,
-        modules_to_record=None,
-        ipu_model_cfg=None,
-        fp16_cfg=None
-        ):
+def ipu_model_wrapper(model,
+                      options,
+                      optimizer=None,
+                      logger=None,
+                      modules_to_record=None,
+                      ipu_model_cfg=None,
+                      fp16_cfg=None):
     """Convert torch model to IPU model.
 
     Args:
@@ -223,9 +223,8 @@ def ipu_model_wrapper(
             copy.copy(model).train(),
             ipu_model_cfg.get('train_split_edges', []))
 
-        recomputation_checkpoint(
-            train_model,
-            ipu_model_cfg.get('train_ckpt_nodes', []))
+        recomputation_checkpoint(train_model,
+                                 ipu_model_cfg.get('train_ckpt_nodes', []))
 
         # TODO support feature alignment for gradient accumulation mode
         gradient_accumulation = \
@@ -247,9 +246,13 @@ def ipu_model_wrapper(
     eval_model = copy.copy(model).eval()
 
     # wrap model for compilation
-    model = TrainEvalModel(train_model, eval_model, options=options,
-                           optimizer=optimizer, logger=logger,
-                           modules_to_record=modules_to_record)
+    model = TrainEvalModel(
+        train_model,
+        eval_model,
+        options=options,
+        optimizer=optimizer,
+        logger=logger,
+        modules_to_record=modules_to_record)
     model.train(training)
     return model
 
@@ -290,8 +293,8 @@ def model_sharding(model, split_edges):
         edge = spilt_edges_dict.pop(name, None)
         edge = spilt_edges_dict.pop(idx, edge)
         if edge is not None:
-            poptorch.BeginBlock(module, edge.get(
-                'user_id', name), edge['ipu_id'])
+            poptorch.BeginBlock(module, edge.get('user_id', name),
+                                edge['ipu_id'])
 
     # ensure all split_edges are used
     if len(spilt_edges_dict) > 0:
@@ -317,6 +320,7 @@ def recomputation_checkpoint(model: nn.Module, module_names: list):
             checkpoint.
         module_names (list): Layer names of module.
     """
+
     def recompute_outputs(module, inputs, outputs):
         if isinstance(outputs, tuple):
             return tuple(poptorch.recomputationCheckpoint(y) for y in outputs)

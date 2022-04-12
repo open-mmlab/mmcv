@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import pytest
 
+import pytest
 import torch.nn as nn
+
 import mmcv
 from mmcv.device.ipu import IS_IPU
+
 if IS_IPU:
     from mmcv.device.ipu import cast_to_options, model_sharding
 
@@ -13,6 +15,7 @@ skip_no_ipu = pytest.mark.skipif(
 
 
 class ToyModel(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
@@ -133,22 +136,21 @@ def test_parse_ipu_options():
     options_cfg = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
-        train_cfg=dict(executionStrategy='SameAsIpu',
-                       Training=dict(gradientAccumulation=8),
-                       availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-        eval_cfg=dict(deviceIterations=1,),)
+        train_cfg=dict(
+            executionStrategy='SameAsIpu',
+            Training=dict(gradientAccumulation=8),
+            availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],
+        ),
+        eval_cfg=dict(deviceIterations=1, ),
+    )
     cast_to_options(copy.deepcopy(options_cfg))
 
-    with pytest.raises(
-            NotImplementedError,
-            match='cfg type'):
+    with pytest.raises(NotImplementedError, match='cfg type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['randomSeed'] = (1, 3)
         cast_to_options(_options_cfg)
 
-    with pytest.raises(
-            NotImplementedError,
-            match='options_node type'):
+    with pytest.raises(NotImplementedError, match='options_node type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['train_cfg']['Precision'] = {'autocast_policy': 123}
         cast_to_options(_options_cfg)
@@ -158,22 +160,16 @@ def test_parse_ipu_options():
 def test_model_sharding():
 
     model = ToyModel()
-    split_edges = [
-        dict(
-            layer_to_call='666',
-            ipu_id=0)]
+    split_edges = [dict(layer_to_call='666', ipu_id=0)]
 
     with pytest.raises(RuntimeError, match='split_edges:'):
         model_sharding(model, split_edges)
 
     model = ToyModel()
     split_edges = [
-        dict(
-            layer_to_call='conv',
-            ipu_id=0),
-        dict(
-            layer_to_call=1,
-            ipu_id=0)]
+        dict(layer_to_call='conv', ipu_id=0),
+        dict(layer_to_call=1, ipu_id=0)
+    ]
 
     with pytest.raises(ValueError, match='The same layer is referenced'):
         model_sharding(model, split_edges)

@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections.abc import Mapping, Sequence
+from functools import partial
 
 import poptorch
-from functools import partial
 from torch.utils.data.dataloader import default_collate
 
 from mmcv.parallel import DataContainer
@@ -95,6 +95,7 @@ class IPUDataLoader(poptorch.DataLoader):
         kwargs (Dict[str, Any], optional): Other options to pass to PyTorch's
             ``DataLoader`` constructor.
     """
+
     def __init__(self,
                  options,
                  dataset,
@@ -108,28 +109,29 @@ class IPUDataLoader(poptorch.DataLoader):
                  async_options=None,
                  rebatched_worker_size=None,
                  **kwargs):
-        """ Lazy init:
-            In many frameworks, the dataloader will be constructed before
-            the initialization of the ipu options, so the lazy init
-            method is used here, and the real initialization will not be done
-            until the dataloader needs to be used and the options are input.
+        """Lazy init:
+
+        In many frameworks, the dataloader will be constructed before the
+        initialization of the ipu options, so the lazy init method is used
+        here, and the real initialization will not be done until the dataloader
+        needs to be used and the options are input.
         """
         # lazy init: sometimes, we cannot get IPU options when build data
         #            loader
-        self.kwargs = {'dataset': dataset,
-                       'batch_size': batch_size,
-                       'shuffle': shuffle,
-                       'num_workers': num_workers,
-                       'drop_last': drop_last,
-                       'persistent_workers': persistent_workers,
-                       'auto_distributed_partitioning':
-                           auto_distributed_partitioning,
-                       'mode': mode,
-                       'collate_fn':
-                       partial(collate, samples_per_gpu=batch_size),
-                       'async_options': async_options,
-                       'rebatched_worker_size': rebatched_worker_size,
-                       **kwargs}
+        self.kwargs = {
+            'dataset': dataset,
+            'batch_size': batch_size,
+            'shuffle': shuffle,
+            'num_workers': num_workers,
+            'drop_last': drop_last,
+            'persistent_workers': persistent_workers,
+            'auto_distributed_partitioning': auto_distributed_partitioning,
+            'mode': mode,
+            'collate_fn': partial(collate, samples_per_gpu=batch_size),
+            'async_options': async_options,
+            'rebatched_worker_size': rebatched_worker_size,
+            **kwargs
+        }
         self.dataset = dataset
         self.initialized = False
         if options:
@@ -143,8 +145,10 @@ class IPUDataLoader(poptorch.DataLoader):
             elif kwargs['mode'] == 'async':
                 kwargs['mode'] = poptorch.DataLoaderMode.AsyncRebatched
                 if kwargs['async_options'] is None:
-                    kwargs['async_options'] = {'load_indefinitely': True,
-                                               'buffer_size': 8}
+                    kwargs['async_options'] = {
+                        'load_indefinitely': True,
+                        'buffer_size': 8
+                    }
                 if kwargs['rebatched_worker_size'] is None:
                     kwargs['rebatched_worker_size'] = 128
             super().__init__(**kwargs)
