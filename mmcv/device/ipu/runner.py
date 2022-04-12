@@ -2,7 +2,7 @@
 from mmcv.runner import (BaseRunner, IterBasedRunner,
                          EpochBasedRunner, RUNNERS, HOOKS)
 
-from . import IS_IPU
+from .utils import IS_IPU
 if IS_IPU:
     from . import (cast_to_options,
                    build_from_cfg_with_wrapper, IS_IPU,
