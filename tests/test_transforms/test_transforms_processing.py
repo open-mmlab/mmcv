@@ -291,8 +291,7 @@ class TestCenterCrop:
         transform = dict(type='CenterCrop', crop_size=224)
         center_crop_module = TRANSFORMS.build(transform)
         results = center_crop_module(results)
-        assert results['height'] == 224
-        assert results['width'] == 224
+        assert results['img_shape'] == (224, 224)
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[38:262,
                                                               88:312]).all()
@@ -309,8 +308,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 224
-        assert results['width'] == 224
+        assert results['img_shape'] == (224, 224)
         assert (results['img'] == self.original_img[38:262, 88:312, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[38:262,
                                                               88:312]).all()
@@ -327,8 +325,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 256
-        assert results['width'] == 224
+        assert results['img_shape'] == (256, 224)
         assert (results['img'] == self.original_img[22:278, 88:312, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[22:278,
                                                               88:312]).all()
@@ -346,8 +343,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 300
-        assert results['width'] == 400
+        assert results['img_shape'] == (300, 400)
         assert (results['img'] == self.original_img).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map).all()
         assert np.equal(results['gt_bboxes'],
@@ -364,8 +360,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 300
-        assert results['width'] == 400
+        assert results['img_shape'] == (300, 400)
         assert (results['img'] == self.original_img).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map).all()
         assert np.equal(results['gt_bboxes'],
@@ -385,8 +380,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 600
-        assert results['width'] == 200
+        assert results['img_shape'] == (600, 200)
         assert results['img'].shape[:2] == results['gt_seg_map'].shape
         assert (results['img'][300:600, 100:300, ...] == 12).all()
         assert (results['gt_seg_map'][300:600, 100:300] == 255).all()
@@ -409,8 +403,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == 600
-        assert results['width'] == 200
+        assert results['img_shape'] == (600, 200)
         assert (results['img'][300:600, 100:300, ...] == 13).all()
         assert (results['gt_seg_map'][300:600, 100:300] == 33).all()
         assert np.equal(results['gt_bboxes'],
@@ -427,8 +420,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == img_height
-        assert results['width'] == img_width // 2
+        assert results['img_shape'] == (img_height, img_width // 2)
         assert (results['img'] == self.original_img[:, 100:300, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[:,
                                                               100:300]).all()
@@ -446,8 +438,7 @@ class TestCenterCrop:
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
         results = center_crop_module(results)
-        assert results['height'] == img_height // 2
-        assert results['width'] == img_width
+        assert results['img_shape'] == (img_height // 2, img_width)
         assert (results['img'] == self.original_img[75:225, ...]).all()
         assert (results['gt_seg_map'] == self.gt_semantic_map[75:225,
                                                               ...]).all()
@@ -557,17 +548,17 @@ class TestMultiScaleFlipAug:
         cls.original_img = copy.deepcopy(cls.img)
 
     def test_error(self):
-        # test assertion if img_scale is not tuple or list of tuple
+        # test assertion if scales is not tuple or list of tuple
         with pytest.raises(AssertionError):
             transform = dict(
-                type='MultiScaleFlipAug', img_scale=[1333, 800], transforms=[])
+                type='MultiScaleFlipAug', scales=[1333, 800], transforms=[])
             TRANSFORMS.build(transform)
 
         # test assertion if flip_direction is not str or list of str
         with pytest.raises(AssertionError):
             transform = dict(
                 type='MultiScaleFlipAug',
-                img_scale=[(1333, 800)],
+                scales=[(1333, 800)],
                 flip_direction=1,
                 transforms=[])
             TRANSFORMS.build(transform)
@@ -579,7 +570,7 @@ class TestMultiScaleFlipAug:
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=[dict(type='MockPackTaskInputs')],
-            img_scale=[(1333, 800), (800, 600), (640, 480)],
+            scales=[(1333, 800), (800, 600), (640, 480)],
             allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
@@ -592,7 +583,7 @@ class TestMultiScaleFlipAug:
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=[dict(type='MockPackTaskInputs')],
-            img_scale=[(1333, 800), (800, 600), (640, 480)],
+            scales=[(1333, 800), (800, 600), (640, 480)],
             allow_flip=False,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
@@ -615,7 +606,7 @@ class TestMultiScaleFlipAug:
         transform = dict(
             type='MultiScaleFlipAug',
             transforms=transforms_cfg,
-            img_scale=[(1333, 800), (800, 600), (640, 480)],
+            scales=[(1333, 800), (800, 600), (640, 480)],
             allow_flip=True,
             flip_direction=['horizontal', 'vertical', 'diagonal'])
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
