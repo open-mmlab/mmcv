@@ -4,7 +4,7 @@ from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
     'points_in_boxes_part_forward', 'points_in_boxes_cpu_forward',
-    'points_in_boxes_cpu_forward_with_offsets', 'points_in_boxes_all_forward'
+    'points_in_boxes_with_offsets_cpu_forward', 'points_in_boxes_all_forward'
 ])
 
 
@@ -128,7 +128,7 @@ def points_in_boxes_with_offsets_cpu(points, boxes):
     center_offsets = points.new_zeros((batch_size, num_points, 3),
                                       dtype=torch.int)
     for b in range(batch_size):
-        ext_module.points_in_boxes_cpu_forward_with_offsets(
+        ext_module.points_in_boxes_with_offsets_cpu_forward(
                                                boxes[b].float().contiguous(),
                                                points[b].float().contiguous(),
                                                point_indices[b])

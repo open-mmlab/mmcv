@@ -57,7 +57,7 @@ void points_in_boxes_forward_cpu_parrots(HostContext& ctx,
   points_in_boxes_cpu_forward(boxes_tensor, pts_tensor, pts_indices_tensor);
 }
 
-void points_in_boxes_forward_with_offsets_cpu_parrots(
+void points_in_boxes_with_offsets_forward_cpu_parrots(
                                           HostContext& ctx,
                                           const SSElement& attr,
                                           const OperatorBase::in_list_t& ins,
@@ -68,8 +68,9 @@ void points_in_boxes_forward_with_offsets_cpu_parrots(
   auto pts_indices_tensor = buildATensor(ctx, outs[0]);
   auto center_offsets_tensor = buildATensor(ctx, outs[1]);
 
-  points_in_boxes_cpu_forward(boxes_tensor, pts_tensor, pts_indices_tensor,
-                              center_offsets_tensor);
+  points_in_boxes_with_offsets_cpu_forward(boxes_tensor, pts_tensor,
+                                           pts_indices_tensor,
+                                           center_offsets_tensor);
 }
 
 PARROTS_EXTENSION_REGISTER(points_in_boxes_cpu_forward)
@@ -78,8 +79,8 @@ PARROTS_EXTENSION_REGISTER(points_in_boxes_cpu_forward)
     .apply(points_in_boxes_forward_cpu_parrots)
     .done();
 
-PARROTS_EXTENSION_REGISTER(points_in_boxes_cpu_forward_with_offsets)
+PARROTS_EXTENSION_REGISTER(points_in_boxes_with_offsets_cpu_forward)
     .input(2)
-    .output(1)
-    .apply(points_in_boxes_forward_with_offsets_cpu_parrots)
+    .output(2)
+    .apply(points_in_boxes_with_offsets_forward_cpu_parrots)
     .done();

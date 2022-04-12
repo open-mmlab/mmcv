@@ -52,7 +52,7 @@ void points_in_boxes_cpu_forward(Tensor boxes_tensor, Tensor pts_tensor,
   }
 }
 
-void points_in_boxes_cpu_forward_with_offsets(Tensor boxes_tensor,
+void points_in_boxes_with_offsets_cpu_forward(Tensor boxes_tensor,
                                               Tensor pts_tensor,
                                               Tensor pts_indices_tensor,
                                               Tensor center_offsets_tensor) {
