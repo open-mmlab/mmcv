@@ -400,7 +400,8 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
 
 void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
 
-at::Tensor diff_iou_rotated_sort_vertices_forward(at::Tensor vertices, at::Tensor mask,
+at::Tensor diff_iou_rotated_sort_vertices_forward(at::Tensor vertices,
+                                                  at::Tensor mask,
                                                   at::Tensor num_valid);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
