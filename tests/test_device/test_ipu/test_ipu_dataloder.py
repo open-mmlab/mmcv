@@ -29,13 +29,13 @@ def test_ipu_dataloader():
     # test lazy initialization
     dataloader = IPUDataLoader(
         None, ToyDataset(), batch_size=256, num_workers=1, mode='async')
-    ipu_options = {'train_cfg': {}, 'eval_cfg': {}}
-    ipu_options = cast_to_options(ipu_options)
+    options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
+    ipu_options = cast_to_options(options_cfg)
     dataloader.init(ipu_options['training'])
 
     # test normal initialization
-    ipu_options = {'train_cfg': {}, 'eval_cfg': {}}
-    ipu_options = cast_to_options(ipu_options)
+    options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
+    ipu_options = cast_to_options(options_cfg)['training']
     dataloader = IPUDataLoader(
         ipu_options, ToyDataset(), batch_size=256, num_workers=1, mode='async')
 

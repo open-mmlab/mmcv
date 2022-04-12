@@ -8,13 +8,13 @@ import tempfile
 import pytest
 import torch
 import torch.nn as nn
-
-from mmcv.runner import build_runner
-from mmcv.device.ipu import IS_IPU
 from torch.utils.data import Dataset
+
+from mmcv.device.ipu import IS_IPU
+from mmcv.runner import build_runner
+
 if IS_IPU:
-    from mmcv.device.ipu import runner
-    from mmcv.device.ipu import IPUDataLoader
+    from mmcv.device.ipu import IPUDataLoader, runner
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')
@@ -44,6 +44,7 @@ class Model(OldStyleModel):
 
 
 class ToyModel(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
@@ -57,7 +58,7 @@ class ToyModel(nn.Module):
         x = self.relu(x)
         if return_loss:
             loss = ((x - kwargs['gt_label'])**2).sum()
-            return {'loss': loss, 'loss1': loss+1}
+            return {'loss': loss, 'loss1': loss + 1}
         return x
 
     def _parse_losses(self, losses):
@@ -72,11 +73,14 @@ class ToyModel(nn.Module):
 
 
 class ToyDataset(Dataset):
-    def __getitem__(self, index):
-        return {'img': torch.rand((3, 10, 10)),
-                'gt_label': torch.rand((3, 10, 10))}
 
-    def __len__(self,):
+    def __getitem__(self, index):
+        return {
+            'img': torch.rand((3, 10, 10)),
+            'gt_label': torch.rand((3, 10, 10))
+        }
+
+    def __len__(self, ):
         return 3
 
 
@@ -111,12 +115,10 @@ def test_build_runner():
         ipu_runner = build_runner(cfg, default_args=default_args)
 
     model = ToyModel()
-    ipu_options = {'train_cfg': {}, 'eval_cfg': {}}
+    options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
     dataloader = IPUDataLoader(None, ToyDataset(), num_workers=1)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-    cfg = dict(type='IPUIterBasedRunner',
-               max_iters=2,
-               ipu_options=ipu_options)
+    cfg = dict(type='IPUIterBasedRunner', max_iters=2, options_cfg=options_cfg)
     default_args = dict(
         model=model,
         optimizer=optimizer,
