@@ -11,13 +11,13 @@ from mmcv.runner.fp16_utils import auto_fp16
 
 if IS_IPU:
     from mmcv.device.ipu import cast_to_options, ipu_model_wrapper
-    from mmcv.device.ipu.model_converter import compare_tensor
+    from mmcv.device.ipu.utils import compare_tensor
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')
 
 
-class MyBn(nn.BatchNorm2d):
+class MyBN(nn.BatchNorm2d):
 
     def forward(self, *args, **kwargs):
         result = super().forward(*args, **kwargs)
@@ -32,7 +32,7 @@ class ToyModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 3, 1)
-        self.bn = MyBn(3)
+        self.bn = MyBN(3)
         self.relu = nn.ReLU6()
         self.fp16_enabled = False
 

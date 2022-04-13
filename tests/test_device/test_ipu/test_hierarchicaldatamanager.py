@@ -9,7 +9,8 @@ from mmcv.device.ipu import IS_IPU
 from mmcv.parallel.data_container import DataContainer
 
 if IS_IPU:
-    from mmcv.device.ipu.model_converter import HierarchicalDataManager
+    from mmcv.device.ipu.hierarchical_data_manager import \
+        HierarchicalDataManager
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')

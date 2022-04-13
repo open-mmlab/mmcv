@@ -1,13 +1,75 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
+
 from mmcv.runner import (HOOKS, RUNNERS, BaseRunner, EpochBasedRunner,
                          IterBasedRunner)
-from .utils import IS_IPU
+from mmcv.utils import Registry
+from .ipu_wrapper import IS_IPU
 
 if IS_IPU:
-    from . import (IPUDataLoader, IPUFp16OptimizerHook,
-                   build_from_cfg_with_wrapper, cast_to_options,
-                   ipu_model_wrapper, wrap_lr_updater_hook,
-                   wrap_optimizer_hook)
+    from .dataloader import IPUDataLoader
+    from .hook_wrapper import (IPUFp16OptimizerHook, wrap_lr_updater_hook,
+                               wrap_optimizer_hook)
+    from .model_wrapper import ipu_model_wrapper
+    from .utils import cast_to_options
+
+
+def build_from_cfg_with_wrapper(cfg,
+                                registry,
+                                wrapper_func=None,
+                                default_args=None):
+    """Build a module from config dict and wrap module with "wrapper_func".
+
+    Args:
+        cfg (dict): Config dict. It should at least contain the key "type".
+        registry (:obj:`Registry`): The registry to search the type from.
+        default_args (dict, optional): Default initialization arguments.
+        wrapper_func (function): Used to wrap class
+
+    Returns:
+        object: The constructed object.
+    """
+    if not isinstance(cfg, dict):
+        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
+    if 'type' not in cfg:
+        if default_args is None or 'type' not in default_args:
+            raise KeyError(
+                '`cfg` or `default_args` must contain the key "type", '
+                f'but got {cfg}\n{default_args}')
+    if not isinstance(registry, Registry):
+        raise TypeError('registry must be an mmcv.Registry object, '
+                        f'but got {type(registry)}')
+    if not (isinstance(default_args, dict) or default_args is None):
+        raise TypeError('default_args must be a dict or None, '
+                        f'but got {type(default_args)}')
+
+    args = cfg.copy()
+
+    if default_args is not None:
+        for name, value in default_args.items():
+            args.setdefault(name, value)
+
+    obj_type = args.pop('type')
+    if isinstance(obj_type, str):
+        obj_cls = registry.get(obj_type)
+        if obj_cls is None:
+            raise KeyError(
+                f'{obj_type} is not in the {registry.name} registry')
+    elif inspect.isclass(obj_type):
+        obj_cls = obj_type
+    else:
+        raise TypeError(
+            f'type must be a str or valid type, but got {type(obj_type)}')
+
+    if wrapper_func is None:
+        wrapped_obj_cls = obj_cls
+    else:
+        wrapped_obj_cls = wrapper_func(obj_cls)
+    try:
+        return wrapped_obj_cls(**args)
+    except Exception as e:
+        # Normal TypeError does not print class name.
+        raise type(e)(f'{wrapped_obj_cls.__name__}: {e}')
 
 
 class IPUBaseRunner(BaseRunner):
@@ -55,10 +117,10 @@ class IPUBaseRunner(BaseRunner):
 
         # process options of ipu
         if IS_IPU:
-            self.ipu_options = cast_to_options(options_cfg)
+            self.options = cast_to_options(options_cfg)
             self.model = ipu_model_wrapper(
                 self.model,
-                self.ipu_options,
+                self.options,
                 self.optimizer,
                 self.logger,
                 modules_to_record=modules_to_record,
@@ -106,15 +168,15 @@ class IPUBaseRunner(BaseRunner):
             # initialize IPU dataloader if not initialized
             assert isinstance(data_loaders[i], IPUDataLoader),\
                 'IPU runner can only work with `IPUDataLoader`'
-            data_loaders[i].init(options=self.get_ipu_options(mode))
+            data_loaders[i].init(options=self.get_options(mode))
 
         super().run(data_loaders, workflow, *args, **kwargs)
 
-    def get_ipu_options(self, mode):
+    def get_options(self, mode):
         if mode == 'train':
-            return self.ipu_options['training']
+            return self.options['training']
         elif mode == 'val':
-            return self.ipu_options['inference']
+            return self.options['inference']
         else:
             raise ValueError(f'mode should be train or val but got {mode}')
 

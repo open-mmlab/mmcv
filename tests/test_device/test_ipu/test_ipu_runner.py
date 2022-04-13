@@ -126,6 +126,6 @@ def test_build_runner():
         logger=logging.getLogger())
     ipu_runner = build_runner(cfg, default_args=default_args)
     ipu_runner.run([dataloader], [('train', 2)])
-    ipu_runner.get_ipu_options('val')
+    ipu_runner.get_options('val')
     with pytest.raises(ValueError, match='mode should be train or val'):
-        ipu_runner.get_ipu_options('666')
+        ipu_runner.get_options('666')

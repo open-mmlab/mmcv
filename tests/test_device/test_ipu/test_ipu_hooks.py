@@ -14,7 +14,7 @@ from mmcv.runner import build_runner
 from mmcv.runner.fp16_utils import auto_fp16
 
 if IS_IPU:
-    from mmcv.device.ipu import IPUFp16OptimizerHook
+    from mmcv.device.ipu.hook_wrapper import IPUFp16OptimizerHook
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')

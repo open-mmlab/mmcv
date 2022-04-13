@@ -61,8 +61,6 @@ def test_ipu_collate():
     }
     batch = [batch1, batch0]
     results = collate(batch)
-    tensor_shape = torch.zeros(2, 3, 4, 5).shape
-    arr_shape = torch.zeros(2, 3, 4, 5, 6).shape
     tensor_shape = torch.Tensor(list(results['tensor'].shape))
     arr_shape = torch.Tensor(list(results['arr'].shape))
     assert torch.equal(torch.Tensor([2, 3, 4, 5]), tensor_shape)

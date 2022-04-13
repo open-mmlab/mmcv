@@ -1,160 +1,624 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import inspect
+from collections import OrderedDict
+from typing import Optional, Union
 
-import popart
 import poptorch
 import torch
 import torch.nn as nn
+from poptorch import PoplarExecutor, __version__, identity_loss
+from poptorch._args_parser import ArgsParser
 
-from mmcv.utils import Registry
-from .model_converter import TrainEvalModel
-
-
-def build_from_cfg_with_wrapper(cfg,
-                                registry,
-                                wrapper_func=None,
-                                default_args=None):
-    """Build a module from config dict and wrap module with "wrapper_func".
-
-    Args:
-        cfg (dict): Config dict. It should at least contain the key "type".
-        registry (:obj:`Registry`): The registry to search the type from.
-        default_args (dict, optional): Default initialization arguments.
-        wrapper_func (function): Used to wrap class
-
-    Returns:
-        object: The constructed object.
-    """
-    if not isinstance(cfg, dict):
-        raise TypeError(f'cfg must be a dict, but got {type(cfg)}')
-    if 'type' not in cfg:
-        if default_args is None or 'type' not in default_args:
-            raise KeyError(
-                '`cfg` or `default_args` must contain the key "type", '
-                f'but got {cfg}\n{default_args}')
-    if not isinstance(registry, Registry):
-        raise TypeError('registry must be an mmcv.Registry object, '
-                        f'but got {type(registry)}')
-    if not (isinstance(default_args, dict) or default_args is None):
-        raise TypeError('default_args must be a dict or None, '
-                        f'but got {type(default_args)}')
-
-    args = cfg.copy()
-
-    if default_args is not None:
-        for name, value in default_args.items():
-            args.setdefault(name, value)
-
-    obj_type = args.pop('type')
-    if isinstance(obj_type, str):
-        obj_cls = registry.get(obj_type)
-        if obj_cls is None:
-            raise KeyError(
-                f'{obj_type} is not in the {registry.name} registry')
-    elif inspect.isclass(obj_type):
-        obj_cls = obj_type
-    else:
-        raise TypeError(
-            f'type must be a str or valid type, but got {type(obj_type)}')
-
-    if wrapper_func is None:
-        wrapped_obj_cls = obj_cls
-    else:
-        wrapped_obj_cls = wrapper_func(obj_cls)
-    try:
-        return wrapped_obj_cls(**args)
-    except Exception as e:
-        # Normal TypeError does not print class name.
-        raise type(e)(f'{wrapped_obj_cls.__name__}: {e}')
+from mmcv.runner import auto_fp16
+from .hierarchical_data_manager import HierarchicalDataManager
+from .utils import compare_tensor, model_sharding, recomputation_checkpoint
 
 
-def _options_assigner(cfg, options_node):
-    # set popart.options by config
-    # cfg: dict, python data type
-    # options_node: python module or function
-    if isinstance(cfg, dict):
-        for key in cfg:
-            _options_assigner(cfg[key], getattr(options_node, key))
-    elif isinstance(cfg, (int, float, str, list)):
-        if callable(options_node):
-            options_node(cfg)
-        else:
-            error_msg = f'options_node type {type(options_node)} not supported'
-            raise NotImplementedError(error_msg)
-    else:
-        error_msg = f'cfg type {type(cfg)} not supported'
-        raise NotImplementedError(error_msg)
-
-
-def cast_to_options(cfg):
-    """Parse dictionary to ipu options.
+class DictArgsParser(ArgsParser):
+    """A helper class for handling model input.
 
     Args:
-        cfg (dict): A dictionary of ipu settings.
+        inputs (list): Inputs of model.
+    """
+
+    def __init__(self, inputs):
+        # Combine args and kwargs:
+        self._has_variadic_arguments = True
+        self._varnames = list(inputs.keys())
+        self._defaults = [inspect.Parameter.empty for _ in self._varnames]
+        self._warned_not_contiguous_input = False
+
+
+class WrappedNet(nn.Module):
+    """A net wrapper for model conversion.
+
+    This wrapper will make some changes and add some extra functions to
+    training/inference model.
+
+    Args:
+        model (:obj:`nn.Module`): The model to run.
+        inputs_manager (:obj:`HierarchicalDataManager`): A parser
+            converting inputs from tuple to dictionary.
+        outputs_manager (:obj:`HierarchicalDataManager`): A parser
+            converting outputs from dictionary to tuple.
+        inter_outputs_in_cpu (dict): Specify the features to be
+            recorded.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+    """
+
+    def __init__(self,
+                 model,
+                 inputs_manager,
+                 outputs_manager,
+                 inter_outputs_in_cpu,
+                 modules_to_record=None):
+        super().__init__()
+        self.model = model
+        self.inputs_manager = inputs_manager
+        self.outputs_manager = outputs_manager
+        self.training = model.training
+        # Register a hook function to capture the intermediate features
+        # generated by the network to align the outputs between ipu and cpu
+        # Used to confirm whether the implementation of CPU is consistent
+        # with the implementation of IPU
+        self.inter_outputs_in_cpu = inter_outputs_in_cpu
+        if modules_to_record is None:
+            modules_to_record = []
+
+        for idx, (name, module) in enumerate(model.named_modules()):
+            if name in modules_to_record or idx in modules_to_record:
+                features_hook = self.get_input_output_hook(
+                    name, idx, self.inter_outputs_in_cpu)
+                module.register_forward_hook(hook=features_hook)
+
+    def get_input_output_hook(self, name, idx, save_dict):
+
+        def input_output_hook(module, fea_in, fea_out):
+            if isinstance(fea_in, tuple):
+                fea_in = list(fea_in)
+            if isinstance(fea_out, tuple):
+                fea_out = list(fea_out)
+            save_dict[name] = {
+                'fea_in': fea_in,
+                'fea_out': fea_out,
+                'idx': idx
+            }
+            return None
+
+        return input_output_hook
+
+    def forward(self, inputs_tuple):
+        """This function is used to be compiled to ipu, the inputs and outputs
+        need to be tuples, so here we need to restore the input back to a
+        dictionary and convert the output to a tuple."""
+        self.inputs_manager.update_all_tensors(inputs_tuple)
+        kwargs = {**(self.inputs_manager.data)}
+        if self.training:
+            outputs = self.forward_train(kwargs)
+            # tell poptorch which loss will be used finally
+            identity_loss(outputs['loss'], reduction='none')
+        else:
+            outputs = self.forward_eval(kwargs)
+
+        if isinstance(outputs, torch.Tensor):
+            # currently not support single tensor output,
+            # need to wrap it with a dictionary,
+            # use a keyword to identify this case
+            outputs = {'output of WrappedNet: single tensor': outputs}
+
+        # if there are some features need to be record, add extra outputs
+        for name in self.inter_outputs_in_cpu:
+            outputs[name] = self.inter_outputs_in_cpu[name]
+
+        # record all the places of return tensors in the converting stage
+        # while in the real run stage, all the tensor are changed in-place
+        # that means the output can be obtained directly outside this function
+        self.outputs_manager.record_hierarchical_data(outputs)
+        plain_outputs = self.outputs_manager.get_all_tensors()
+        return plain_outputs
+
+    def forward_train(self, kwargs):
+        optimizer = kwargs.pop('optimizer')
+        outputs = self.train_step(kwargs, optimizer)
+        return outputs
+
+    def train_step(self, data, optimizer=None, **kwargs):
+        """The iteration step during training.
+
+        This method defines an iteration step during training, except for the
+        back propagation and optimizer updating, which are done in an optimizer
+        hook. Note that in some complicated cases or models, the whole process
+        including back propagation and optimizer updating are also defined in
+        this method, such as GAN.
+
+        Args:
+            data (dict): The output of dataloader.
+            optimizer (:obj:`torch.optim.Optimizer`, optional): The
+                optimizer of runner is passed to ``train_step()``. This
+                argument is unused and reserved.
+
+        Returns:
+            dict: Dict of outputs. The following fields are contained.
+                - loss (torch.Tensor): A tensor for back propagation, which \
+                    can be a weighted sum of multiple losses.
+                - log_vars (dict): Dict contains all the variables to be sent \
+                    to the logger.
+                - num_samples (int): Indicates the batch size (when the model \
+                    is DDP, it means the batch size on each GPU), which is \
+                    used for averaging the logs.
+        """
+        losses = self.model(**data)
+        loss, log_vars = self._parse_losses(losses)
+
+        outputs = dict(
+            loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
+
+        return outputs
+
+    def _parse_losses(self, losses):
+        log_vars = OrderedDict()
+        for loss_name, loss_value in losses.items():
+            if isinstance(loss_value, torch.Tensor):
+                log_vars[loss_name] = loss_value.mean()
+            elif isinstance(loss_value, list):
+                log_vars[loss_name] = sum(loss.mean() for loss in loss_value)
+            elif isinstance(loss_value, dict):
+                for name, value in loss_value.items():
+                    log_vars[name] = value
+            else:
+                raise TypeError(
+                    f'{loss_name} is not a tensor or list of tensors')
+
+        loss = sum(value for key, value in log_vars.items() if 'loss' in key)
+        log_vars['loss'] = loss
+
+        return loss, log_vars
+
+    def forward_eval(self, kwargs):
+        img = kwargs.pop('img')
+        img_metas = kwargs.pop('img_metas', None)
+        return_loss = kwargs.pop('return_loss')
+        assert not return_loss
+        # TODO Temporarily hard-code to close post_process,
+        # otherwise, in the third trace(_check_trace),
+        # post_process will convert output tensor to numpy array automatically,
+        # resulting in _check_trace failure
+        outputs = self.model(
+            img,
+            img_metas=img_metas,
+            return_loss=return_loss,
+            post_process=False)
+        return outputs
+
+
+class MMPoplarExecutor(PoplarExecutor):
+    """An executor for inputs/outputs parsing, model compilation, data
+    alignment and IPU upload/download.
+
+    Args:
+        model (:obj:`nn.Module`): The model to be compiled.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        training (bool): Model in training mode or eval mode.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+        args (argument list): Arguments passed to the `__init__`
+            method of PoplarExecutor.
+        kwargs (keyword arguments): Keyword arguments passed to the `__init__`
+            method of PoplarExecutor.
+    """
+
+    def __init__(self,
+                 model,
+                 logger=None,
+                 training=True,
+                 modules_to_record=None,
+                 *args,
+                 **kwargs):
+        # self.model == self._user_model: input pytorch model
+        # self._model: wrapped model which is used to compile
+        # and update weights, these two models use same weights
+        # wrapped model only accept and output tuple, so
+        # HierarchicalDataManager will convert dictionary
+        # to tuple and convert them back
+        self.inputs_manager = HierarchicalDataManager(logger=logger)
+        self.outputs_manager = HierarchicalDataManager(logger=logger)
+        self.logger = logger
+        # the features calculated by CPU
+        self.inter_outputs_in_cpu = {}
+        # the features calculated by IPU
+        self.inter_outputs_in_ipu = {}
+        if modules_to_record is None:
+            # It is possible that the IPU implementation of some operators
+            # is inconsistent with the expected (CPU), here you can use
+            # this method to confirm whether there is a problem
+            self.compare_with_cpu = False
+        else:
+            self.compare_with_cpu = True
+        # move model.fp16_enabled to self.fp16_enabled,
+        # modify the position where the input is automatically casted to half
+        if getattr(model, 'fp16_enabled', False):
+            model.fp16_enabled = False
+            self.fp16_enabled = True
+        # make torch.jit.trace convert self._model
+        model = WrappedNet(
+            model,
+            self.inputs_manager,
+            self.outputs_manager,
+            self.inter_outputs_in_cpu,
+            modules_to_record=modules_to_record)
+        super().__init__(model, training=training, *args, **kwargs)
+        # overwrite self._args_parser in train_step or val_step
+        self._args_parser = None
+        if training:
+            assert self.training
+        else:
+            assert not self.training
+
+    @property
+    def training(self):
+        # If trying to get the attribute(training) of self,
+        # since the class has no training attribute,
+        # it will automatically look for the training attribute of self.model.
+        # However, the real attribute we want to check is self._training,
+        # self.model.training  and self._training are often inconsistent.
+        # It is not clear whether it is a Poptorch bug or a special design,
+        # temporarily use this function to fix the problem
+        return self._training  # comes from self.model._training
+
+    @auto_fp16(supported_types=(PoplarExecutor, ))
+    def run_model(self, data_dict):
+        # this function is used to parse input_dict
+        # and convert to output_dict
+        if self.isCompiled():
+            self.inputs_manager.record_hierarchical_data(data_dict)
+            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
+        else:
+            # get tensors out of data and put them in a tuple
+            self.inputs_manager.record_hierarchical_data(data_dict)
+            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
+            # turn logger in data manager off after compilation
+            self.inputs_manager.quick()
+            self.outputs_manager.quick()
+
+        # parser args in the first iter
+        if self._args_parser is None:
+            self._args_parser = DictArgsParser({'args': inputs_tuple})
+
+        # run or convert model
+        # the plain_outputs will be used in converting stage
+        plain_outputs = self(inputs_tuple)
+
+        self.inputs_manager.clean_all_tensors()
+
+        # put list of tensors back to the output dict
+        # according to the same order
+        self.outputs_manager.update_all_tensors(plain_outputs)
+        # get the real output dictionary from self.outputs_manager
+        output_dict = self.outputs_manager.data
+
+        # split output_dict into inter_outputs_in_ipu
+        # and output of the torch model
+        torch_model_output = {}
+        for name in output_dict:
+            if name in self.inter_outputs_in_cpu:
+                self.inter_outputs_in_ipu[name] = output_dict[name]
+            else:
+                torch_model_output[name] = output_dict[name]
+
+        if 'output of WrappedNet: single tensor' in output_dict:
+            assert len(torch_model_output) == 1
+            assert isinstance(
+                torch_model_output['output of WrappedNet: single tensor'],
+                torch.Tensor)
+            torch_model_output = \
+                torch_model_output['output of WrappedNet: single tensor']
+
+        return torch_model_output
+
+    def train_step(self, data, optimizer=None, **kwargs):
+        # arguments from mmcls/models/classifiers/base.py:
+        # BaseClassifier.train_step
+        assert self.training
+        assert len(kwargs) == 0  # TODO, support later if necessary
+
+        # TODO support datacontainer as input
+        # currently, auto_fp16 and HierarchicalDataManager take too much
+        # time on traversing datacontainer
+        data['img_metas'] = None
+        num_samples = len(data['img'].data)
+
+        # TODO we will ignore optimizer because it will not be used in model,
+        # support later if necessary
+        data['optimizer'] = None
+        output_dict = self.run_model(data)
+
+        # outputs contained loss, log_vars, num_samples,
+        # only loss(torch.tensor) has been updated
+        # remove all unchanged vars, left torch.tensor
+        neat_output_dict = {'loss': output_dict['loss']}
+
+        # re-parse outputs, get back log_vars and num_samples
+        loss, log_vars = self.model._parse_losses(neat_output_dict)
+        final_output_dict = dict(
+            loss=loss, log_vars=log_vars, num_samples=num_samples)
+        return final_output_dict
+
+    def eval_call(self, img, img_metas=None, return_loss=True, **kwargs):
+        # arguments from mmdet/models/detectors/base.py:BaseDetector.forward
+        # tmp usssage for eval mode
+        assert not self.training
+        assert len(kwargs) == 0  # TODO, support later if necessary
+        assert not return_loss
+        data = {'img': img, 'img_metas': img_metas, 'return_loss': return_loss}
+
+        output_dict = self.run_model(data)
+
+        return output_dict
+
+    def detachFromDevice(self):
+        if self.isCompiled() and self._is_attached:
+            super().detachFromDevice()
+
+    def attachToDevice(self):
+        if self.isCompiled() and not self._is_attached:
+            super().attachToDevice()
+
+
+class TrainEvalModel:
+    """A class maintaining training MMPoplarExecutor and inference
+    MMPoplarExecutor.
+
+    Args:
+        train_model (:obj:`nn.Module`): The training model to be compiled.
+            ``train_model`` can be None if only executing validation.
+        eval_model (:obj:`nn.Module`): The inference model to be compiled.
+        options (mmcv.Config, dict): Options that will be used to compile
+            and run the model.
+        optimizer (:obj:`torch.optim.Optimizer`, optional): torch
+            optimizer, necessary if in training mode
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
+    """
+
+    def __init__(self,
+                 train_model,
+                 eval_model,
+                 options,
+                 optimizer,
+                 modules_to_record=None,
+                 logger=None):
+        if train_model is None:
+            self._train_executor = None
+            self.training = False
+        else:
+            self._train_executor = get_training_model(
+                train_model,
+                options=options['training'],
+                optimizer=optimizer,
+                logger=logger,
+                modules_to_record=modules_to_record)
+            self.training = True
+        self._eval_executor = get_inference_model(
+            eval_model, options=options['inference'], logger=logger)
+
+    @property
+    def executor(self):
+        if self.training:
+            return self._train_executor
+        else:
+            return self._eval_executor
+
+    def train(self, mode: bool = True):
+        """Sets the module in training mode.
+
+        This has any effect only on certain modules. See documentations of
+        particular modules for details of their behaviors in
+        training/evaluation mode, if they are affected,
+        e.g. :class:`Dropout`, :class:`BatchNorm`, etc.
+
+        Args:
+            mode (bool): whether to set training mode (``True``) or evaluation
+                mode (``False``). Default: ``True``.
+
+        Returns:
+            Module: self
+        """
+        if not isinstance(mode, bool):
+            raise ValueError('training mode is expected to be boolean, '
+                             f'but got {type(mode)}')
+        if self._train_executor is None and mode:
+            raise RuntimeError(
+                'The train_executor is not initialized.'
+                'If you want to initialize train_executor,'
+                'you need to input optimizer when converting pytorch model')
+
+        if mode == self.training:
+            self.model.train(mode)
+            return self
+        else:
+            if self.isCompiled():
+                # copy weights from IPU to cpu before off-load current session
+                self.copyWeightsToHost()
+                # detach the current session before change the mode,
+                # if is training mode and weights are updated,
+                # poptorch will copy weights from IPU to host
+                self.detachFromDevice()
+
+            self.training = mode  # session will changed with mode changing
+            self.model.train(mode)
+
+            # after changing mode, attach the current new session,
+            # and this function will copy weights of model to device
+            self.attachToDevice()
+            return self
+
+    def eval(self):
+        """Sets the module in evaluation mode.
+
+        This has any effect only on certain modules.
+        See documentations of particular modules
+        for details of their behaviors in training/evaluation mode,
+        if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`, etc.
+
+        This is equivalent with :meth:`self.train(False)
+        <nn.Module.train>`.
+
+        See :ref:`locally-disable-grad-doc` for a comparison between
+        `.eval()` and several similar mechanisms that may be confused with it.
+
+        Returns:
+            Module: self
+        """
+        return self.train(False)
+
+    def compare_data_between_ipu_and_cpu(self, inter_outputs_in_cpu,
+                                         inter_outputs_in_ipu):
+        for key, val in inter_outputs_in_cpu.items():
+            is_tensor = isinstance(val['fea_in'], torch.Tensor)
+            fea_in_cpu = val['fea_in']
+            fea_in_cpu_list = [fea_in_cpu] if is_tensor else fea_in_cpu
+            fea_in_ipu = inter_outputs_in_ipu[key]['fea_in']
+            fea_in_ipu_list = [fea_in_ipu] if is_tensor else fea_in_ipu
+
+            is_tensor = isinstance(val['fea_out'], torch.Tensor)
+            fea_out_cpu = val['fea_out']
+            fea_out_cpu_list = [fea_out_cpu] if is_tensor else fea_out_cpu
+            fea_out_ipu = inter_outputs_in_ipu[key]['fea_out']
+            fea_out_ipu_list = [fea_out_ipu] if is_tensor else fea_out_ipu
+
+            print('comparing layer:', key)
+            for idx, (featA, featB) in \
+                    enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
+                print('fea_in, tensor ', idx)
+                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
+            for idx, (featA, featB) in \
+                    enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
+                print('fea_out, tensor', idx)
+                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
+
+    # TODO Unified training and eval interface,
+    # merge train_step(train) and __call__(eval) together
+    def train_step(self, data, optimizer=None, **kwargs):
+        assert self.training, 'not supported train_step on eval mode'
+        inter_outputs_in_cpu = {}
+        if (self._train_executor.isCompiled()
+                and self._train_executor.compare_with_cpu):
+            self.copyWeightsToHost()
+            # run in CPU mode
+            self._train_executor.model.train_step(data, optimizer, **kwargs)
+            inter_outputs_in_cpu = {
+                **(self._train_executor.inter_outputs_in_cpu)
+            }
+        # run in IPU mode
+        result = self._train_executor.train_step(data, optimizer, **kwargs)
+        if (self._train_executor.isCompiled()
+                and self._train_executor.compare_with_cpu
+                and len(inter_outputs_in_cpu) > 0):
+            self.compare_data_between_ipu_and_cpu(
+                inter_outputs_in_cpu,
+                self._train_executor.inter_outputs_in_ipu)
+        return result
+
+    # TODO Unified training and eval interface,
+    # merge train_step(train) and __call__(eval) together
+    def __call__(self, *args, **kwargs):
+        if self.training:
+            raise NotImplementedError('use train_step rather than __call__')
+        else:
+            return self._eval_executor.eval_call(*args, **kwargs)
+
+    def __getattr__(self, attr):
+        return getattr(self.executor, attr)
+
+
+def get_training_model(model: nn.Module,
+                       options: Optional[poptorch.Options] = None,
+                       optimizer: Optional[torch.optim.Optimizer] = None,
+                       logger=None,
+                       modules_to_record=None) -> poptorch.PoplarExecutor:
+    """Create a PopTorch training model from a PyTorch model, running on IPU
+    hardware in training mode.
+
+    Note:
+        PopTorch makes a shallow copy of the model. Changes to the
+        parameters in the returned training model affect the original model
+        and vice versa. However, primitive variable types are not synced: for
+        example calling ``model.train()`` on the original model, which
+        changes the ``training`` bool of the model instance, will not alter the
+        model returned by this function. You may need to call ``model.train()``
+        on your model before you call this function for correct behavior.
+
+    Args:
+        model (:obj:`nn.Module`): The model to run.
+        options (poptorch.Options): Options that will be used to compile
+            and run the model.
+        optimizer (:obj:`torch.optim.Optimizer`, optional): The optimizers
+            to apply during training.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
+        modules_to_record (mmcv.Config, list): Index or name of modules which
+            will be recorded for output. It is necessary to specify output for
+            static graph of model training or inference.
 
     Returns:
-        dict[str, poptorch.Options]: Training options and inference options
-        of IPU.
+        The :class:`poptorch.PoplarExecutor` wrapper to use in place
+        of ``model``.
     """
-    # set ipu options for inference and training by config
-    train_cfg = cfg.pop('train_cfg', {})
-    eval_cfg = cfg.pop('eval_cfg', {})
-    eval_cfg['replicationFactor'] = 1  # eval mode only use one replica
-    eval_cfg['executionStrategy'] = 'ShardedExecution'
-    # overwrite default ipu cfg with specified train cfgs
-    training_ipu_cfg = {**cfg, **train_cfg}
-    # overwrite default ipu cfg with specified eval cfgs
-    inference_ipu_cfg = {**cfg, **eval_cfg}
+    # Create a copy of the original model in case it needs to be wrapped
+    maybe_wrapped_model = copy.copy(model)
 
-    ipu_options = {
-        'training': _cast_to_options(training_ipu_cfg),
-        'inference': _cast_to_options(inference_ipu_cfg)
-    }
-
-    # TODO configure these codes
-    ipu_options['training']._Popart.set('disableGradAccumulationTensorStreams',
-                                        True)
-    ipu_options['training']._Popart.set(
-        'accumulateOuterFragmentSettings.schedule',
-        int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
-    ipu_options['training'].Precision.enableStochasticRounding(True)
-
-    return ipu_options
+    return MMPoplarExecutor(
+        model=maybe_wrapped_model,
+        logger=logger,
+        options=options,
+        training=True,
+        optimizer=optimizer,
+        user_model=model,
+        modules_to_record=modules_to_record,
+        poptorch_version=__version__)
 
 
-def _cast_to_options(cfg):
-    # If it cannot be directly assigned, use if statement to parse it,
-    # and if it can be directly assigned, use _options_assigner to assign
-    options = poptorch.Options()
+def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
+                        options: Optional[poptorch.Options] = None,
+                        logger=None) -> poptorch.PoplarExecutor:
+    """Create a PopTorch inference model from a PyTorch model, running on IPU
+    hardware in inference mode.
 
-    if 'availableMemoryProportion' in cfg:
-        available_memory_proportion = cfg.pop('availableMemoryProportion')
-        mem_props = {}
-        for i, mem_prop in enumerate(available_memory_proportion):
-            mem_props[f'IPU{i}'] = mem_prop
-        options.setAvailableMemoryProportion(mem_props)
+    Note:
+        PopTorch makes a shallow copy of the model. Changes to the
+        parameters in the returned inference model affect the original model
+        and vice versa. However, primitive variable types are not synced: for
+        example calling ``model.eval()`` on the original model will not alter
+        the model returned by this function. You may need to call
+        ``model.eval()`` on your model before you call this function for
+        correct behavior.
 
-    if 'executionStrategy' in cfg:
-        execution_strategy = cfg.pop('executionStrategy')
-        if execution_strategy == 'SameAsIpu':
-            options.setExecutionStrategy(
-                poptorch.PipelinedExecution(
-                    getattr(poptorch.AutoStage, execution_strategy)))
-        elif execution_strategy == 'ShardedExecution':
-            options.setExecutionStrategy(poptorch.ShardedExecution())
-        else:
-            raise NotImplementedError(
-                'executionStrategy should be "SameAsIpu" or "ShardedExecution"'
-                f', but got {execution_strategy}')
+    Args:
+        model (:obj:`nn.Module`): The model to run.
+        options (poptorch.Options): Options that will be used to compile
+            and run the model.
+        logger (:obj:`logging.Logger`): Logger used during running.
+             Defaults to None.
 
-    if 'partialsType' in cfg:
-        partials_type = cfg.pop('partialsType')
-        options.Precision.setPartialsType(getattr(
-            torch, partials_type))  # half or float
+    Returns:
+        The :class:`poptorch.PoplarExecutor` wrapper to use in place of
+        ``model``.
+    """
 
-    _options_assigner(cfg, options)
-    return options
+    return MMPoplarExecutor(
+        model=copy.copy(model),
+        logger=logger,
+        options=options,
+        training=False,
+        poptorch_version=__version__)
 
 
 def ipu_model_wrapper(model,
@@ -255,83 +719,3 @@ def ipu_model_wrapper(model,
         modules_to_record=modules_to_record)
     model.train(training)
     return model
-
-
-def model_sharding(model, split_edges):
-    """split models in-place into multi-IPUs.
-
-    Args:
-        model (nn.Module): The target model to be split.
-        split_edges (list of dict): Model layer names or layer numbers
-            of split edge. Each item of ``split_edges`` is a dictionary,
-            which may contain the following key-pairs:
-
-            - layer_to_call: PyTorch module to assign to the block
-            - user_id (optional): A user defined identifier for the block.
-            - ipu_id: The id of the IPU to run on.
-
-        Examples:
-            >>> split_edges = [
-            ...     dict(layer_to_call='model.conv1', ipu_id=0),
-            ...     dict(layer_to_call='model.conv3', ipu_id=1)]
-            >>> sharding_model = model_sharding(torch_model, split_edges)
-
-    Returns:
-        nn.Module: Split model.
-    """
-    if len(split_edges) == 0:
-        return model
-    assert isinstance(split_edges, list)
-    spilt_edges_dict = {edge['layer_to_call']: edge for edge in split_edges}
-
-    for idx, (name, module) in enumerate(model.named_modules()):
-        if idx in spilt_edges_dict and name in spilt_edges_dict:
-            raise ValueError(
-                'The same layer is referenced twice while doing model'
-                f' partition: idx is {idx} and name is {name}')
-
-        edge = spilt_edges_dict.pop(name, None)
-        edge = spilt_edges_dict.pop(idx, edge)
-        if edge is not None:
-            poptorch.BeginBlock(module, edge.get('user_id', name),
-                                edge['ipu_id'])
-
-    # ensure all split_edges are used
-    if len(spilt_edges_dict) > 0:
-        split_edge_names = list(spilt_edges_dict.keys())
-        raise RuntimeError(
-            f'split_edges: {split_edge_names} are not contained in the model')
-    return model
-
-
-def recomputation_checkpoint(model: nn.Module, module_names: list):
-    """Annotates the output of a module to be checkpointed instead of
-    recomputed.
-
-    If recomputation mode is enabled, ipu will release the activations of
-    the middle layers to save memory. During the backward of gradient,
-    the activation of the middle layer will be recalculated again.
-    This function is used to declare the activations of some intermediate
-    layers that need to be saved in order to skip the recomputation of
-    some layers.
-
-    Args:
-        model (nn.Module): The target model to apply recomputation
-            checkpoint.
-        module_names (list): Layer names of module.
-    """
-
-    def recompute_outputs(module, inputs, outputs):
-        if isinstance(outputs, tuple):
-            return tuple(poptorch.recomputationCheckpoint(y) for y in outputs)
-        else:
-            return poptorch.recomputationCheckpoint(outputs)
-
-    for name, module in model.named_modules():
-        if name in module_names:
-            module.register_forward_hook(recompute_outputs)
-            module_names.remove(name)
-
-    # check all module_names are used
-    assert len(module_names) == 0,\
-        f'recomputed nodes: {module_names} are not contained in the model'
