@@ -30,8 +30,8 @@ def box_intersection(corners1, corners2):
     Convention: if two edges are collinear, there is no intersection point.
 
     Args:
-        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
-        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
 
     Returns:
         Tuple:
@@ -46,27 +46,21 @@ def box_intersection(corners1, corners2):
     # (B, N, 4, 4) -> (B, N, 4, 4, 4) : Batch, Box, edge1, edge2, point
     line1_ext = line1.unsqueeze(3)
     line2_ext = line2.unsqueeze(2)
-    x1 = line1_ext[..., 0]
-    y1 = line1_ext[..., 1]
-    x2 = line1_ext[..., 2]
-    y2 = line1_ext[..., 3]
-    x3 = line2_ext[..., 0]
-    y3 = line2_ext[..., 1]
-    x4 = line2_ext[..., 2]
-    y4 = line2_ext[..., 3]
+    x1, y1, x2, y2 = line1_ext.split([1, 1, 1, 1], dim=-1)
+    x3, y3, x4, y4 = line2_ext.split([1, 1, 1, 1], dim=-1)
     # math: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
-    num = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-    den_t = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)
-    t = den_t / num
-    t[num == .0] = -1.
+    numerator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    denumerator_t = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)
+    t = denumerator_t / numerator
+    t[numerator == .0] = -1.
     mask_t = (t > 0) & (t < 1)  # intersection on line segment 1
-    den_u = (x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)
-    u = -den_u / num
-    u[num == .0] = -1.
+    denumerator_u = (x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)
+    u = -denumerator_u / numerator
+    u[numerator == .0] = -1.
     mask_u = (u > 0) & (u < 1)  # intersection on line segment 2
     mask = mask_t * mask_u
     # overwrite with EPSILON. otherwise numerically unstable
-    t = den_t / (num + EPSILON)
+    t = denumerator_t / (numerator + EPSILON)
     intersections = torch.stack([x1 + t * (x2 - x1), y1 + t * (y2 - y1)],
                                 dim=-1)
     intersections = intersections * mask.float().unsqueeze(-1)
@@ -79,26 +73,30 @@ def box1_in_box2(corners1, corners2):
     it's also a valid point.
 
     Args:
-        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
-        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
 
     Returns:
         Tensor: (B, N, 4) Intersection.
     """
+    # a, b, c, d - 4 vertices of box2
     a = corners2[:, :, 0:1, :]  # (B, N, 1, 2)
     b = corners2[:, :, 1:2, :]  # (B, N, 1, 2)
     d = corners2[:, :, 3:4, :]  # (B, N, 1, 2)
+    # ab, am, ad - vectors between corresponding vertices
     ab = b - a  # (B, N, 1, 2)
     am = corners1 - a  # (B, N, 4, 2)
     ad = d - a  # (B, N, 1, 2)
-    p_ab = torch.sum(ab * am, dim=-1)  # (B, N, 4)
+    prod_ab = torch.sum(ab * am, dim=-1)  # (B, N, 4)
     norm_ab = torch.sum(ab * ab, dim=-1)  # (B, N, 1)
-    p_ad = torch.sum(ad * am, dim=-1)  # (B, N, 4)
+    prod_ad = torch.sum(ad * am, dim=-1)  # (B, N, 4)
     norm_ad = torch.sum(ad * ad, dim=-1)  # (B, N, 1)
     # NOTE: the expression looks ugly but is stable if the two boxes
     # are exactly the same also stable with different scale of bboxes
-    cond1 = (p_ab / norm_ab > -1e-6) * (p_ab / norm_ab < 1 + 1e-6)  # (B, N, 4)
-    cond2 = (p_ad / norm_ad > -1e-6) * (p_ad / norm_ad < 1 + 1e-6)  # (B, N, 4)
+    cond1 = (prod_ab / norm_ab > -1e-6) * (prod_ab / norm_ab < 1 + 1e-6
+                                           )  # (B, N, 4)
+    cond2 = (prod_ad / norm_ad > -1e-6) * (prod_ad / norm_ad < 1 + 1e-6
+                                           )  # (B, N, 4)
     return cond1 * cond2
 
 
@@ -106,8 +104,8 @@ def box_in_box(corners1, corners2):
     """Check if corners of two boxes lie in each other.
 
     Args:
-        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
-        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
 
     Returns:
         Tuple:
@@ -123,8 +121,8 @@ def build_vertices(corners1, corners2, c1_in_2, c2_in_1, inters, mask_inter):
     """Find vertices of intersection area.
 
     Args:
-        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
-        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
         c1_in_2 (Tensor): (B, N, 4) True if i-th corner of box1 is in box2.
         c2_in_1 (Tensor): (B, N, 4) True if i-th corner of box2 is in box1.
         inters (Tensor): (B, N, 4, 4, 2) Intersections.
@@ -200,8 +198,8 @@ def oriented_box_intersection_2d(corners1, corners2):
     """Calculate intersection area of 2d rotated boxes.
 
     Args:
-        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
-        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
 
     Returns:
         Tuple:
@@ -260,11 +258,12 @@ def diff_iou_rotated_2d(box1, box2):
     """
     corners1 = box2corners(box1)
     corners2 = box2corners(box2)
-    inter_area, _ = oriented_box_intersection_2d(corners1, corners2)  # (B, N)
+    intersection, _ = oriented_box_intersection_2d(corners1,
+                                                   corners2)  # (B, N)
     area1 = box1[:, :, 2] * box1[:, :, 3]
     area2 = box2[:, :, 2] * box2[:, :, 3]
-    u = area1 + area2 - inter_area
-    iou = inter_area / u
+    union = area1 + area2 - intersection
+    iou = intersection / union
     return iou
 
 
@@ -282,15 +281,15 @@ def diff_iou_rotated_3d(box3d1, box3d2):
     box2 = box3d2[..., [0, 1, 3, 4, 6]]
     corners1 = box2corners(box1)
     corners2 = box2corners(box2)
-    inter_area, _ = oriented_box_intersection_2d(corners1, corners2)
+    intersection, _ = oriented_box_intersection_2d(corners1, corners2)
     zmax1 = box3d1[..., 2] + box3d1[..., 5] * 0.5
     zmin1 = box3d1[..., 2] - box3d1[..., 5] * 0.5
     zmax2 = box3d2[..., 2] + box3d2[..., 5] * 0.5
     zmin2 = box3d2[..., 2] - box3d2[..., 5] * 0.5
     z_overlap = (torch.min(zmax1, zmax2) -
-                 torch.max(zmin1, zmin2)).clamp_min(0.)
-    intersection_3d = inter_area * z_overlap
-    v1 = box3d1[..., 3] * box3d1[..., 4] * box3d1[..., 5]
-    v2 = box3d2[..., 3] * box3d2[..., 4] * box3d2[..., 5]
-    u3d = v1 + v2 - intersection_3d
-    return intersection_3d / u3d
+                 torch.max(zmin1, zmin2)).clamp_(min=0.)
+    intersection_3d = intersection * z_overlap
+    volume1 = box3d1[..., 3] * box3d1[..., 4] * box3d1[..., 5]
+    volume2 = box3d2[..., 3] * box3d2[..., 4] * box3d2[..., 5]
+    union_3d = volume1 + volume2 - intersection_3d
+    return intersection_3d / union_3d
