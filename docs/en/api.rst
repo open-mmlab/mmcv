@@ -47,8 +47,3 @@ ops
 ------
 .. automodule:: mmcv.ops
     :members:
-
-device
-------
-.. automodule:: mmcv.device
-    :members:

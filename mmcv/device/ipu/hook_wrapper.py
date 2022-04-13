@@ -6,7 +6,7 @@ from mmcv.utils import TORCH_VERSION, digit_version
 def wrap_lr_updater_hook(lr_hook_class):
     """A wrapper function to wrap any subclass of LrUpdaterHook.
 
-    IPU needs extra operations to upload optimizer settings. this wrapper will
+    IPU needs extra operations to upload optimizer settings. This wrapper will
     override function(_set_lr) of a subclass of LrUpdaterHook.
     """
     assert issubclass(lr_hook_class, LrUpdaterHook)

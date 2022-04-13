@@ -43,35 +43,35 @@ def test_build_from_cfg():
             self.stages = stages
 
     cfg = dict(type='ResNet', depth=50)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     cfg = dict(type='ResNet', depth=50)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args={'stages': 3})
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 3
 
     cfg = dict(type='ResNeXt', depth=50, stages=3)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNeXt)
     assert model.depth == 50 and model.stages == 3
 
     cfg = dict(type=ResNet, depth=50)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     # type defined using default_args
     cfg = dict(depth=50)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args=dict(type='ResNet'))
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     cfg = dict(depth=50)
-    model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args=dict(type=ResNet))
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
@@ -79,61 +79,61 @@ def test_build_from_cfg():
     # not a registry
     with pytest.raises(TypeError):
         cfg = dict(type='VGG')
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, 'BACKBONES')
 
     # non-registered class
     with pytest.raises(KeyError):
         cfg = dict(type='VGG')
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES)
 
     # default_args must be a dict or None
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES, default_args=1)
 
     # cfg['type'] should be a str or class
     with pytest.raises(TypeError):
         cfg = dict(type=1000)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES)
 
     # cfg should contain the key "type"
     with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50, stages=4)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES)
 
     # cfg or default_args should contain the key "type"
     with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES, default_args=dict(stages=4))
 
     # incorrect registry type
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, 'BACKBONES')
 
     # incorrect default_args type
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES, default_args=0)
 
     # incorrect arguments
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', non_existing_arg=50)
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES)
 
     # cfg not dict
     with pytest.raises(TypeError):
         cfg = []
-        model = mmcv.device.ipu.runner.build_from_cfg_with_wrapper(
+        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
             cfg, BACKBONES)
 
 

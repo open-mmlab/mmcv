@@ -36,16 +36,26 @@ def test_HierarchicalData():
             'c': [1, 'asd']
         }
     }
+    all_tensors = []
+    all_tensors.append(hierarchical_data_sample['a'])
+    all_tensors.append(hierarchical_data_sample['c'].data['a'])
+    all_tensors.append(hierarchical_data_sample['e'][2])
+    all_tensors.append(hierarchical_data_sample['f']['a'])
+    all_tensors_id = [id(ele) for ele in all_tensors]
 
     hd = HierarchicalDataManager(logging.getLogger())
     hd.record_hierarchical_data(hierarchical_data_sample)
     tensors = hd.get_all_tensors()
+    for t in tensors:
+        assert id(t) in all_tensors_id
     tensors[0].add_(1)
     hd.update_all_tensors(tensors)
     data = hd.data
     data['c'].data['a'].sub_(1)
     hd.record_hierarchical_data(data)
     tensors = hd.get_all_tensors()
+    for t in tensors:
+        assert id(t) in all_tensors_id
     hd.quick()
 
     with pytest.raises(
@@ -87,6 +97,9 @@ def test_HierarchicalData():
     single_tensor = torch.rand(3, 4)
     hd = HierarchicalDataManager(logging.getLogger())
     hd.record_hierarchical_data(single_tensor)
-    hd.record_hierarchical_data(torch.rand(3, 4))
     tensors = hd.get_all_tensors()
-    hd.update_all_tensors(tensors)
+    assert len(tensors) == 1 and single_tensor in tensors
+    single_tensor_to_update = [torch.rand(3, 4)]
+    hd.update_all_tensors(single_tensor_to_update)
+    new_tensors = hd.get_all_tensors()
+    assert new_tensors == single_tensor_to_update

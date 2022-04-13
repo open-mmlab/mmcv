@@ -168,6 +168,7 @@ class HierarchicalDataManager:
     def update_all_tensors(self, tensors):
         """Put tensors from tuple back to self.data."""
         if isinstance(self._data, torch.Tensor):
+            print(tensors, len(tensors))
             assert len(tensors) == 1
             assert isinstance(tensors[0], torch.Tensor)
             self._data = tensors[0]
