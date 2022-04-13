@@ -132,7 +132,8 @@ def points_in_boxes_with_offsets_cpu(points, boxes):
         ext_module.points_in_boxes_with_offsets_cpu_forward(
                                                boxes[b].float().contiguous(),
                                                points[b].float().contiguous(),
-                                               point_indices[b])
+                                               point_indices[b],
+                                               center_offsets[b])
     point_indices = point_indices.transpose(1, 2)
 
     return point_indices, center_offsets
