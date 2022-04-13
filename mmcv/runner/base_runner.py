@@ -380,7 +380,8 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
-            checkpoint['meta']['config'] = self.meta['config']
+            if 'config' in self.meta:
+                checkpoint['meta']['config'] = self.meta['config']
 
         # resume meta information meta
         self.meta = checkpoint['meta']
