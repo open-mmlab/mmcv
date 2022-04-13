@@ -2,12 +2,10 @@
 import io
 import os
 import os.path as osp
-import pkgutil
 import re
 import time
 import warnings
 from collections import OrderedDict
-from importlib import import_module
 from tempfile import TemporaryDirectory
 
 import torch
@@ -107,18 +105,20 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 def get_torchvision_models():
     model_urls = dict()
+    # Since torchvision reconstruct its weight loading logic, some model keys
+    # and urls in `model_urls` have been changed. If you want to experiment
+    # based on old weights, please use torchvision lower than 13.0. See more
+    # details at https://github.com/open-mmlab/mmcv/issues/1848.
     if digit_version(torchvision.__version__) <= digit_version('0.12.1'):
-        for _, name, ispkg in pkgutil.walk_packages(
-                torchvision.models.__path__):
-            if ispkg:
-                continue
-            if name.startswith('_'):
-                continue
-            _zoo = import_module(f'torchvision.models.{name}')
-            if hasattr(_zoo, 'model_urls'):
-                _urls = getattr(_zoo, 'model_urls')
-                model_urls.update(_urls)
+        model_zoo_path = osp.join(
+            osp.dirname(__file__), '..', 'model_zoo',
+            'torchvision_before0.13.json')
+        return mmcv.load(model_zoo_path)
     else:
+        warnings.warn(
+            'Checkpoints loaded from torchvision have been changed '
+            'since torchvision 0.13.0. If you want to experiment based on old '
+            'weights, please use torchvision lower than 13.0')
         for cls_name, cls in torchvision.models.__dict__.items():
             cls_key = cls_name.replace('_Weights', '').lower()
             if cls_name.endswith('_Weights') and hasattr(cls, 'DEFAULT'):
