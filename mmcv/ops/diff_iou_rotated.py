@@ -25,17 +25,18 @@ class SortVertices(Function):
         return ()
 
 
-def box_intersection_th(corners1: torch.Tensor, corners2: torch.Tensor):
+def box_intersection(corners1, corners2):
     """Find intersection points of rectangles.
-    Convention: if two edges are collinear, there is no intersection point
+    Convention: if two edges are collinear, there is no intersection point.
 
     Args:
-        corners1 (torch.Tensor): B, N, 4, 2
-        corners2 (torch.Tensor): B, N, 4, 2
+        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
+        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
 
     Returns:
-        intersections (torch.Tensor): B, N, 4, 4, 2
-        mask (torch.Tensor) : B, N, 4, 4; bool
+        Tuple:
+         - Tensor: (B, N, 4, 4, 2) Intersections.
+         - Tensor: (B, N, 4, 4) Valid intersections mask.
     """
     # build edges from corners
     # B, N, 4, 4: Batch, Box, edge, point
@@ -72,17 +73,17 @@ def box_intersection_th(corners1: torch.Tensor, corners2: torch.Tensor):
     return intersections, mask
 
 
-def box1_in_box2(corners1: torch.Tensor, corners2: torch.Tensor):
+def box1_in_box2(corners1, corners2):
     """Check if corners of box1 lie in box2.
     Convention: if a corner is exactly on the edge of the other box,
     it's also a valid point.
 
     Args:
-        corners1 (torch.Tensor): (B, N, 4, 2)
-        corners2 (torch.Tensor): (B, N, 4, 2)
+        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
+        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
 
     Returns:
-        c1_in_2: (B, N, 4) Bool
+        Tensor: (B, N, 4) Intersection.
     """
     a = corners2[:, :, 0:1, :]  # (B, N, 1, 2)
     b = corners2[:, :, 1:2, :]  # (B, N, 1, 2)
@@ -101,39 +102,39 @@ def box1_in_box2(corners1: torch.Tensor, corners2: torch.Tensor):
     return cond1 * cond2
 
 
-def box_in_box_th(corners1: torch.Tensor, corners2: torch.Tensor):
+def box_in_box(corners1, corners2):
     """Check if corners of two boxes lie in each other.
 
     Args:
-        corners1 (torch.Tensor): (B, N, 4, 2)
-        corners2 (torch.Tensor): (B, N, 4, 2)
+        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
+        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
 
     Returns:
-        c1_in_2: (B, N, 4) Bool. i-th corner of box1 in box2
-        c2_in_1: (B, N, 4) Bool. i-th corner of box2 in box1
+        Tuple:
+         - Tensor: (B, N, 4) True if i-th corner of box1 is in box2.
+         - Tensor: (B, N, 4) True if i-th corner of box2 is in box1.
     """
     c1_in_2 = box1_in_box2(corners1, corners2)
     c2_in_1 = box1_in_box2(corners2, corners1)
     return c1_in_2, c2_in_1
 
 
-def build_vertices(corners1: torch.Tensor, corners2: torch.Tensor,
-                   c1_in_2: torch.Tensor, c2_in_1: torch.Tensor,
-                   inters: torch.Tensor, mask_inter: torch.Tensor):
+def build_vertices(corners1, corners2, c1_in_2, c2_in_1, inters, mask_inter):
     """Find vertices of intersection area.
 
     Args:
-        corners1 (torch.Tensor): (B, N, 4, 2)
-        corners2 (torch.Tensor): (B, N, 4, 2)
-        c1_in_2 (torch.Tensor): Bool, (B, N, 4)
-        c2_in_1 (torch.Tensor): Bool, (B, N, 4)
-        inters (torch.Tensor): (B, N, 4, 4, 2)
-        mask_inter (torch.Tensor): (B, N, 4, 4)
+        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
+        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
+        c1_in_2 (Tensor): (B, N, 4) True if i-th corner of box1 is in box2.
+        c2_in_1 (Tensor): (B, N, 4) True if i-th corner of box2 is in box1.
+        inters (Tensor): (B, N, 4, 4, 2) Intersections.
+        mask_inter (Tensor): (B, N, 4, 4) Valid intersections mask.
 
     Returns:
-        vertices (torch.Tensor): (B, N, 24, 2) vertices of intersection area;
-            only some elements are valid
-        mask (torch.Tensor): (B, N, 24) indicates valid elements in vertices
+        Tuple:
+         - Tensor: (B, N, 24, 2) Vertices of intersection area;
+               only some elements are valid.
+         - Tensor: (B, N, 24) Mask of valid elements in vertices.
     """
     # NOTE: inter has elements equals zero and has zeros gradient
     # (masked by multiplying with 0); can be used as trick
@@ -147,24 +148,24 @@ def build_vertices(corners1: torch.Tensor, corners2: torch.Tensor,
     return vertices, mask
 
 
-def sort_indices(vertices: torch.Tensor, mask: torch.Tensor):
+def sort_indices(vertices, mask):
     """Sort indices.
-
-    Args:
-        vertices (torch.Tensor): float (B, N, 24, 2)
-        mask (torch.Tensor): bool (B, N, 24)
-
-    Returns:
-        sorted_index: bool (B, N, 9)
-
     Note:
         why 9? the polygon has maximal 8 vertices.
         +1 to duplicate the first element.
         the index should have following structure:
             (A, B, C, ... , A, X, X, X)
         and X indicates the index of arbitrary elements in the last
-        16 (intersections not corners) with
-        value 0 and mask False. (cause they have zero value and zero gradient)
+        16 (intersections not corners) with value 0 and mask False.
+        (cause they have zero value and zero gradient)
+
+    Args:
+        vertices (Tensor): (B, N, 24, 2) Box vertices.
+        mask (Tensor): (B, N, 24) Mask.
+
+    Returns:
+        Tensor: (B, N, 9) Sorted indices.
+
     """
     num_valid = torch.sum(mask.int(), dim=2).int()  # (B, N)
     mean = torch.sum(
@@ -174,16 +175,17 @@ def sort_indices(vertices: torch.Tensor, mask: torch.Tensor):
     return SortVertices.apply(vertices_normalized, mask, num_valid).long()
 
 
-def calculate_area(idx_sorted: torch.Tensor, vertices: torch.Tensor):
+def calculate_area(idx_sorted, vertices):
     """Calculate area of intersection.
 
     Args:
-        idx_sorted (torch.Tensor): (B, N, 9)
-        vertices (torch.Tensor): (B, N, 24, 2)
+        idx_sorted (Tensor): (B, N, 9) Sorted vertex ids.
+        vertices (Tensor): (B, N, 24, 2) Vertices.
 
-    return:
-        area: (B, N), area of intersection
-        selected: (B, N, 9, 2), vertices of polygon with zero padding
+    Returns:
+        Tuple:
+         - Tensor (B, N): Area of intersection.
+         - Tensor: (B, N, 9, 2) Vertices of polygon with zero padding.
     """
     idx_ext = idx_sorted.unsqueeze(-1).repeat([1, 1, 1, 2])
     selected = torch.gather(vertices, 2, idx_ext)
@@ -194,34 +196,34 @@ def calculate_area(idx_sorted: torch.Tensor, vertices: torch.Tensor):
     return area, selected
 
 
-def oriented_box_intersection_2d(corners1: torch.Tensor,
-                                 corners2: torch.Tensor):
-    """Calculate intersection area of 2d rectangles.
+def oriented_box_intersection_2d(corners1, corners2):
+    """Calculate intersection area of 2d rotated boxes.
 
     Args:
-        corners1 (torch.Tensor): (B, N, 4, 2)
-        corners2 (torch.Tensor): (B, N, 4, 2)
+        corners1 (Tensor): (B, N, 4, 2) Corners of the first box.
+        corners2 (Tensor): (B, N, 4, 2) Corners of the second box.
 
     Returns:
-        area: (B, N), area of intersection
-        selected: (B, N, 9, 2), vertices of polygon with zero padding
+        Tuple:
+         - Tensor (B, N): Area of intersection.
+         - Tensor: (B, N, 9, 2) Vertices of polygon with zero padding.
     """
-    inters, mask_inter = box_intersection_th(corners1, corners2)
-    c12, c21 = box_in_box_th(corners1, corners2)
+    inters, mask_inter = box_intersection(corners1, corners2)
+    c12, c21 = box_in_box(corners1, corners2)
     vertices, mask = build_vertices(corners1, corners2, c12, c21, inters,
                                     mask_inter)
     sorted_indices = sort_indices(vertices, mask)
     return calculate_area(sorted_indices, vertices)
 
 
-def box2corners_th(box: torch.Tensor):
-    """Convert box coordinate to corners.
+def box2corners(box):
+    """Convert rotated 2d box coordinate to corners.
 
     Args:
-        box (torch.Tensor): (B, N, 5) with x, y, w, h, alpha
+        box (Tensor): (B, N, 5) with x, y, w, h, alpha.
 
     Returns:
-        torch.Tensor: (B, N, 4, 2) corners
+        Tensor: (B, N, 4, 2) Corners.
     """
     B = box.size()[0]
     x = box[..., 0:1]
@@ -246,17 +248,18 @@ def box2corners_th(box: torch.Tensor):
     return rotated
 
 
-def diff_iou_rotated_2d(box1: torch.Tensor, box2: torch.Tensor):
-    """Calculate differentiable iou of 2d boxes.
+def diff_iou_rotated_2d(box1, box2):
+    """Calculate differentiable iou of rotated 2d boxes.
+
     Args:
-        box1 (torch.Tensor): (B, N, 5)
-        box2 (torch.Tensor): (B, N, 5)
+        box1 (Tensor): (B, N, 5) First box.
+        box2 (Tensor): (B, N, 5) Second box.
 
     Returns:
-        iou (torch.Tensor): (B, N)
+        Tensor: (B, N) IoU.
     """
-    corners1 = box2corners_th(box1)
-    corners2 = box2corners_th(box2)
+    corners1 = box2corners(box1)
+    corners2 = box2corners(box2)
     inter_area, _ = oriented_box_intersection_2d(corners1, corners2)  # (B, N)
     area1 = box1[:, :, 2] * box1[:, :, 3]
     area2 = box2[:, :, 2] * box2[:, :, 3]
@@ -265,20 +268,20 @@ def diff_iou_rotated_2d(box1: torch.Tensor, box2: torch.Tensor):
     return iou
 
 
-def diff_iou_rotated_3d(box3d1: torch.Tensor, box3d2: torch.Tensor):
-    """Calculate differentiable iou of 3d boxes.
+def diff_iou_rotated_3d(box3d1, box3d2):
+    """Calculate differentiable iou of rotated 3d boxes.
 
     Args:
-        box3d1 (torch.Tensor): (B, N, 3+3+1),  (x,y,z,w,h,l,alpha)
-        box3d2 (torch.Tensor): (B, N, 3+3+1),  (x,y,z,w,h,l,alpha)
+        box3d1 (Tensor): (B, N, 3+3+1) First box (x,y,z,w,h,l,alpha).
+        box3d2 (Tensor): (B, N, 3+3+1) Second box (x,y,z,w,h,l,alpha).
 
     Returns:
-        iou (torch.Tensor): (B, N)
+        Tensor: (B, N) IoU.
     """
     box1 = box3d1[..., [0, 1, 3, 4, 6]]  # 2d box
     box2 = box3d2[..., [0, 1, 3, 4, 6]]
-    corners1 = box2corners_th(box1)
-    corners2 = box2corners_th(box2)
+    corners1 = box2corners(box1)
+    corners2 = box2corners(box2)
     inter_area, _ = oriented_box_intersection_2d(corners1, corners2)
     zmax1 = box3d1[..., 2] + box3d1[..., 5] * 0.5
     zmin1 = box3d1[..., 2] - box3d1[..., 5] * 0.5
