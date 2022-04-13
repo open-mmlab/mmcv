@@ -472,14 +472,15 @@ def test_dict_action():
     # Normal values
     args = parser.parse_args([
         '--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false',
-        'item4=none'
+        'item4=none', 'item5=None'
     ])
     out_dict = {
         'item2.a': 1,
         'item2.b': 0.1,
         'item2.c': 'x',
         'item3': False,
-        'item4': None,
+        'item4': 'none',
+        'item5': None,
     }
     assert args.options == out_dict
     cfg_file = osp.join(data_path, 'config/a.py')
