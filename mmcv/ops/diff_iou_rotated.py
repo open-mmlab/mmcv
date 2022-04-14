@@ -117,7 +117,8 @@ def box_in_box(corners1, corners2):
     return c1_in_2, c2_in_1
 
 
-def build_vertices(corners1, corners2, c1_in_2, c2_in_1, inters, mask_inter):
+def build_vertices(corners1, corners2, c1_in_2, c2_in_1, intersections,
+                   valid_mask):
     """Find vertices of intersection area.
 
     Args:
@@ -125,8 +126,8 @@ def build_vertices(corners1, corners2, c1_in_2, c2_in_1, inters, mask_inter):
         corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
         c1_in_2 (Tensor): (B, N, 4) True if i-th corner of box1 is in box2.
         c2_in_1 (Tensor): (B, N, 4) True if i-th corner of box2 is in box1.
-        inters (Tensor): (B, N, 4, 4, 2) Intersections.
-        mask_inter (Tensor): (B, N, 4, 4) Valid intersections mask.
+        intersections (Tensor): (B, N, 4, 4, 2) Intersections.
+        valid_mask (Tensor): (B, N, 4, 4) Valid intersections mask.
 
     Returns:
         Tuple:
@@ -140,9 +141,10 @@ def build_vertices(corners1, corners2, c1_in_2, c2_in_1, inters, mask_inter):
     N = corners1.size()[1]
     # (B, N, 4 + 4 + 16, 2)
     vertices = torch.cat(
-        [corners1, corners2, inters.view([B, N, -1, 2])], dim=2)
+        [corners1, corners2,
+         intersections.view([B, N, -1, 2])], dim=2)
     # Bool (B, N, 4 + 4 + 16)
-    mask = torch.cat([c1_in_2, c2_in_1, mask_inter.view([B, N, -1])], dim=2)
+    mask = torch.cat([c1_in_2, c2_in_1, valid_mask.view([B, N, -1])], dim=2)
     return vertices, mask
 
 
@@ -204,12 +206,12 @@ def oriented_box_intersection_2d(corners1, corners2):
     Returns:
         Tuple:
          - Tensor (B, N): Area of intersection.
-         - Tensor: (B, N, 9, 2) Vertices of polygon with zero padding.
+         - Tensor (B, N, 9, 2): Vertices of polygon with zero padding.
     """
-    inters, mask_inter = box_intersection(corners1, corners2)
+    intersections, valid_mask = box_intersection(corners1, corners2)
     c12, c21 = box_in_box(corners1, corners2)
-    vertices, mask = build_vertices(corners1, corners2, c12, c21, inters,
-                                    mask_inter)
+    vertices, mask = build_vertices(corners1, corners2, c12, c21,
+                                    intersections, valid_mask)
     sorted_indices = sort_indices(vertices, mask)
     return calculate_area(sorted_indices, vertices)
 
@@ -224,11 +226,7 @@ def box2corners(box):
         Tensor: (B, N, 4, 2) Corners.
     """
     B = box.size()[0]
-    x = box[..., 0:1]
-    y = box[..., 1:2]
-    w = box[..., 2:3]
-    h = box[..., 3:4]
-    alpha = box[..., 4:5]  # (B, N, 1)
+    x, y, w, h, alpha = box.split([1, 1, 1, 1, 1], dim=-1)
     x4 = torch.FloatTensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
     x4 = x4 * w  # (B, N, 4)
     y4 = torch.FloatTensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
