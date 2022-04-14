@@ -61,12 +61,9 @@ def test_ipu_collate():
     }
     batch = [batch1, batch0]
     results = collate(batch)
-    tensor_shape = torch.Tensor(list(results['tensor'].shape))
-    arr_shape = torch.Tensor(list(results['arr'].shape))
-    assert torch.equal(torch.Tensor([2, 3, 4, 5]), tensor_shape)
-    assert torch.equal(torch.Tensor([2, 3, 4, 5, 6]), arr_shape)
+    assert results['tensor'].shape == (2, 3, 4, 5)
+    assert results['arr'].shape == (2, 3, 4, 5, 6)
     for data in results['data_list']:
         for tensor in data:
             assert not isinstance(tensor, DataContainer)
-            data_in_list_shape = torch.Tensor(list(tensor.shape))
-            assert torch.equal(torch.Tensor([2]), data_in_list_shape)
+            assert tensor.shape == (2, )

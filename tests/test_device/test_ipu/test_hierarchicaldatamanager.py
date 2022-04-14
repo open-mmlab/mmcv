@@ -18,7 +18,7 @@ skip_no_ipu = pytest.mark.skipif(
 
 @skip_no_ipu
 def test_HierarchicalData():
-    # test complex data
+    # test hierarchical data
     hierarchical_data_sample = {
         'a': torch.rand(3, 4),
         'b': np.random.rand(3, 4),
@@ -45,21 +45,22 @@ def test_HierarchicalData():
 
     hd = HierarchicalDataManager(logging.getLogger())
     hd.record_hierarchical_data(hierarchical_data_sample)
-    tensors = hd.get_all_tensors()
+    tensors = hd.collect_all_tensors()
     for t in tensors:
         assert id(t) in all_tensors_id
     tensors[0].add_(1)
     hd.update_all_tensors(tensors)
-    data = hd.data
+    data = hd.hierarchical_data
     data['c'].data['a'].sub_(1)
     hd.record_hierarchical_data(data)
-    tensors = hd.get_all_tensors()
+    tensors = hd.collect_all_tensors()
     for t in tensors:
         assert id(t) in all_tensors_id
     hd.quick()
 
     with pytest.raises(
-            AssertionError, match='original complex data is not torch.tensor'):
+            AssertionError,
+            match='original hierarchical data is not torch.tensor'):
         hd.record_hierarchical_data(torch.rand(3, 4))
 
     class AuxClass:
@@ -74,7 +75,7 @@ def test_HierarchicalData():
 
     with pytest.raises(NotImplementedError, match='not supported datatype:'):
         hierarchical_data_sample['a'] = AuxClass()
-        hd.get_all_tensors()
+        hd.collect_all_tensors()
 
     with pytest.raises(NotImplementedError, match='not supported datatype:'):
         hierarchical_data_sample['a'] = AuxClass()
@@ -87,9 +88,9 @@ def test_HierarchicalData():
         new_hierarchical_data_sample = {
             **hierarchical_data_sample, 'b': np.random.rand(3, 4)
         }
-        hd.update(new_hierarchical_data_sample)
+        hd.update_hierarchical_data(new_hierarchical_data_sample)
 
-    hd.update(new_hierarchical_data_sample, strict=False)
+    hd.update_hierarchical_data(new_hierarchical_data_sample, strict=False)
 
     hd.clean_all_tensors()
 
@@ -97,9 +98,9 @@ def test_HierarchicalData():
     single_tensor = torch.rand(3, 4)
     hd = HierarchicalDataManager(logging.getLogger())
     hd.record_hierarchical_data(single_tensor)
-    tensors = hd.get_all_tensors()
+    tensors = hd.collect_all_tensors()
     assert len(tensors) == 1 and single_tensor in tensors
     single_tensor_to_update = [torch.rand(3, 4)]
     hd.update_all_tensors(single_tensor_to_update)
-    new_tensors = hd.get_all_tensors()
+    new_tensors = hd.collect_all_tensors()
     assert new_tensors == single_tensor_to_update

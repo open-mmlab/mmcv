@@ -95,7 +95,7 @@ class WrappedNet(nn.Module):
         need to be tuples, so here we need to restore the input back to a
         dictionary and convert the output to a tuple."""
         self.inputs_manager.update_all_tensors(inputs_tuple)
-        kwargs = {**(self.inputs_manager.data)}
+        kwargs = {**(self.inputs_manager.hierarchical_data)}
         if self.training:
             outputs = self.forward_train(kwargs)
             # tell poptorch which loss will be used finally
@@ -117,7 +117,7 @@ class WrappedNet(nn.Module):
         # while in the real run stage, all the tensor are changed in-place
         # that means the output can be obtained directly outside this function
         self.outputs_manager.record_hierarchical_data(outputs)
-        plain_outputs = self.outputs_manager.get_all_tensors()
+        plain_outputs = self.outputs_manager.collect_all_tensors()
         return plain_outputs
 
     def forward_train(self, kwargs):
@@ -276,11 +276,11 @@ class MMPoplarExecutor(PoplarExecutor):
         # and convert to output_dict
         if self.isCompiled():
             self.inputs_manager.record_hierarchical_data(data_dict)
-            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
+            inputs_tuple = tuple(self.inputs_manager.collect_all_tensors())
         else:
             # get tensors out of data and put them in a tuple
             self.inputs_manager.record_hierarchical_data(data_dict)
-            inputs_tuple = tuple(self.inputs_manager.get_all_tensors())
+            inputs_tuple = tuple(self.inputs_manager.collect_all_tensors())
             # turn logger in data manager off after compilation
             self.inputs_manager.quick()
             self.outputs_manager.quick()
@@ -299,7 +299,7 @@ class MMPoplarExecutor(PoplarExecutor):
         # according to the same order
         self.outputs_manager.update_all_tensors(plain_outputs)
         # get the real output dictionary from self.outputs_manager
-        output_dict = self.outputs_manager.data
+        output_dict = self.outputs_manager.hierarchical_data
 
         # split output_dict into inter_outputs_in_ipu
         # and output of the torch model

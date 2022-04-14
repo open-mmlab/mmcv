@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os.path as osp
-import random
-import string
-import tempfile
 
 import pytest
 import torch
@@ -85,15 +82,13 @@ class ToyDataset(Dataset):
 
 
 @skip_no_ipu
-def test_build_runner():
+def test_build_runner(tmp_path):
     # __init__
-    temp_root = tempfile.gettempdir()
-    dir_name = ''.join(
-        [random.choice(string.ascii_letters) for _ in range(10)])
+    dir_name = 'a_tmp_dir'
 
     default_args = dict(
         model=Model(),
-        work_dir=osp.join(temp_root, dir_name),
+        work_dir=osp.join(tmp_path, dir_name),
         logger=logging.getLogger())
     cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
     ipu_runner = build_runner(cfg, default_args=default_args)
@@ -122,7 +117,7 @@ def test_build_runner():
     default_args = dict(
         model=model,
         optimizer=optimizer,
-        work_dir=osp.join(temp_root, dir_name),
+        work_dir=osp.join(tmp_path, dir_name),
         logger=logging.getLogger())
     ipu_runner = build_runner(cfg, default_args=default_args)
     ipu_runner.run([dataloader], [('train', 2)])

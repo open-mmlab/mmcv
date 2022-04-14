@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os.path as osp
-import random
-import string
-import tempfile
 
 import pytest
 import torch
@@ -60,7 +57,7 @@ class ToyModel(nn.Module):
 
 
 @skip_no_ipu
-def test_optimizerhook():
+def test_ipu_hook_wrapper(tmp_path):
 
     model = ToyModel()
     dummy_input = {
@@ -70,15 +67,14 @@ def test_optimizerhook():
         }
     }
 
-    temp_root = tempfile.gettempdir()
-    dir_name = ''.join(
-        [random.choice(string.ascii_letters) for _ in range(10)])
+    dir_name = 'a_tmp_dir'
+    working_dir = osp.join(tmp_path, dir_name)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
     default_args = dict(
         model=model,
-        work_dir=osp.join(temp_root, dir_name),
+        work_dir=working_dir,
         optimizer=optimizer,
         logger=logging.getLogger())
     cfg = dict(type='IPUEpochBasedRunner', max_epochs=1)
@@ -108,8 +104,8 @@ def test_optimizerhook():
             timer_config=None)
 
     # test fp16 optimizer hook
-    lr_config = dict(policy='step', step=[100, 150])
-    optimizer_config = dict(grad_clip=dict(max_norm=2), )
+    lr_config = dict(policy='step', step=[1, 150])
+    optimizer_config = dict(grad_clip=dict(max_norm=2))
     dummy_runner.hooks.pop(0)
 
     with pytest.raises(NotImplementedError, match='IPU mode does not support'):
@@ -120,7 +116,7 @@ def test_optimizerhook():
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale={}, distributed=False)
 
-    with pytest.raises(ValueError, match='loss_scale must be'):
+    with pytest.raises(ValueError, match='loss_scale should be float'):
         optimizer_config = IPUFp16OptimizerHook(
             loss_scale=[], distributed=False)
 

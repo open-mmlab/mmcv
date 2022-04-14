@@ -8,8 +8,11 @@ import mmcv
 from mmcv.device.ipu import IS_IPU
 
 if IS_IPU:
+    from poptorch.options import _IExecutionStrategy
+
     from mmcv.device.ipu import cast_to_options
-    from mmcv.device.ipu.utils import model_sharding
+    from mmcv.device.ipu.utils import (build_from_cfg_with_wrapper,
+                                       model_sharding)
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')
@@ -43,35 +46,35 @@ def test_build_from_cfg():
             self.stages = stages
 
     cfg = dict(type='ResNet', depth=50)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     cfg = dict(type='ResNet', depth=50)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
+    model = build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args={'stages': 3})
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 3
 
     cfg = dict(type='ResNeXt', depth=50, stages=3)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNeXt)
     assert model.depth == 50 and model.stages == 3
 
     cfg = dict(type=ResNet, depth=50)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(cfg, BACKBONES)
+    model = build_from_cfg_with_wrapper(cfg, BACKBONES)
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     # type defined using default_args
     cfg = dict(depth=50)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
+    model = build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args=dict(type='ResNet'))
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
 
     cfg = dict(depth=50)
-    model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
+    model = build_from_cfg_with_wrapper(
         cfg, BACKBONES, default_args=dict(type=ResNet))
     assert isinstance(model, ResNet)
     assert model.depth == 50 and model.stages == 4
@@ -79,66 +82,57 @@ def test_build_from_cfg():
     # not a registry
     with pytest.raises(TypeError):
         cfg = dict(type='VGG')
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, 'BACKBONES')
+        model = build_from_cfg_with_wrapper(cfg, 'BACKBONES')
 
     # non-registered class
     with pytest.raises(KeyError):
         cfg = dict(type='VGG')
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES)
 
     # default_args must be a dict or None
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES, default_args=1)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES, default_args=1)
 
     # cfg['type'] should be a str or class
     with pytest.raises(TypeError):
         cfg = dict(type=1000)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES)
 
     # cfg should contain the key "type"
     with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50, stages=4)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES)
 
     # cfg or default_args should contain the key "type"
     with pytest.raises(KeyError, match='must contain the key "type"'):
         cfg = dict(depth=50)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
+        model = build_from_cfg_with_wrapper(
             cfg, BACKBONES, default_args=dict(stages=4))
 
     # incorrect registry type
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, 'BACKBONES')
+        model = build_from_cfg_with_wrapper(cfg, 'BACKBONES')
 
     # incorrect default_args type
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', depth=50)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES, default_args=0)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES, default_args=0)
 
     # incorrect arguments
     with pytest.raises(TypeError):
         cfg = dict(type='ResNet', non_existing_arg=50)
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES)
 
     # cfg not dict
     with pytest.raises(TypeError):
         cfg = []
-        model = mmcv.device.ipu.utils.build_from_cfg_with_wrapper(
-            cfg, BACKBONES)
+        model = build_from_cfg_with_wrapper(cfg, BACKBONES)
 
 
 @skip_no_ipu
-def test_parse_ipu_options():
+def test_cast_to_options():
     options_cfg = dict(
         randomSeed=888,
         enableExecutableCaching='cache_engine',
@@ -149,7 +143,22 @@ def test_parse_ipu_options():
         ),
         eval_cfg=dict(deviceIterations=1, ),
     )
-    cast_to_options(copy.deepcopy(options_cfg))
+    ipu_options = cast_to_options(copy.deepcopy(options_cfg))
+    assert 'training' in ipu_options
+    assert 'inference' in ipu_options
+    assert ipu_options['training']._values['random_seed'] == 888
+    assert ipu_options['training']._values['replication_factor'] == 1
+    assert ipu_options['training']._values['available_memory_proportion'] == {
+        0: 0.3,
+        1: 0.3,
+        2: 0.3,
+        3: 0.3
+    }
+    assert ipu_options['training']._popart.options[
+        'cachePath'] == 'cache_engine'
+    assert isinstance(ipu_options['training']._execution_strategy,
+                      _IExecutionStrategy)
+    assert ipu_options['inference']._values['device_iterations'] == 1
 
     with pytest.raises(NotImplementedError, match='cfg type'):
         _options_cfg = copy.deepcopy(options_cfg)
@@ -179,3 +188,7 @@ def test_model_sharding():
 
     with pytest.raises(ValueError, match='The same layer is referenced'):
         model_sharding(model, split_edges)
+
+    model = ToyModel()
+    split_edges = [dict(layer_to_call='conv', ipu_id=0)]
+    model_sharding(model, split_edges)
