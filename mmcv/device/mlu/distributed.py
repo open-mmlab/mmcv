@@ -7,7 +7,8 @@ from .scatter_gather import scatter_kwargs
 class MLUDistributedDataParallel(MMDistributedDataParallel):
     """The DDP module supports DataContainer.
 
-    MLUDDP has one difference from MMDDP which moves data to MLU with coping instead of scattering.
+    MLUDDP has one difference from MMDDP which moves data to MLU with coping
+    instead of scattering.
     """
 
     def to_kwargs(self, inputs, kwargs, device_id):
