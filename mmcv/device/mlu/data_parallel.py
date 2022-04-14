@@ -9,8 +9,8 @@ from .scatter_gather import scatter_kwargs
 class MLUDataParallel(MMDataParallel):
     """The MLUDataParallel module that supports DataContainer.
 
-    MLUDataParallel is a class from MMDataParall, which supports MLU
-    training and inference only.
+    MLUDataParallel is a class inherited from MMDataParall, which supports
+    MLU training and inference only.
 
     The main differences with MMDataParallel:
 

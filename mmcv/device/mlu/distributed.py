@@ -5,7 +5,7 @@ from .scatter_gather import scatter_kwargs
 
 
 class MLUDistributedDataParallel(MMDistributedDataParallel):
-    """The DDP module that supports DataContainer.
+    """The DDP module supports DataContainer.
 
     MLUDDP has difference with MMDDP:
 
