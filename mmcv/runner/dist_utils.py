@@ -12,6 +12,8 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from mmcv.utils import print_log
+
 
 def _find_free_port():
     # Copied from https://github.com/facebookresearch/detectron2/blob/main/detectron2/engine/launch.py # noqa: E501
@@ -29,6 +31,23 @@ def _is_free_port(port):
     ips.append('localhost')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return all(s.connect_ex((ip, port)) != 0 for ip in ips)
+
+
+def _set_port(port, port_info=None):
+    if _is_free_port(port):
+        os.environ['MASTER_PORT'] = str(port)
+    else:
+        _free_port = _find_free_port()
+        os.environ['MASTER_PORT'] = str(_free_port)
+        if port_info:
+            print_log(
+                f'{port_info} not available,' + f'use port {_free_port}',
+                logger='mmcv')
+        else:
+            print_log(
+                f'MASTER_PORT not given and default port \
+                not available,use port {_free_port}',
+                logger='mmcv')
 
 
 def init_dist(launcher, backend='nccl', **kwargs):
@@ -80,16 +99,14 @@ def _init_dist_slurm(backend, port=None):
         f'scontrol show hostname {node_list} | head -n1')
     # specify master port
     if port is not None:
-        os.environ['MASTER_PORT'] = str(port)
+        _set_port(port, port_info='param `port`')
     elif 'MASTER_PORT' in os.environ:
-        pass  # use MASTER_PORT in the environment variable
+        _set_port(
+            int(os.environ['MASTER_PORT']), port_info='environ `MASTER_PORT`')
     else:
         # if torch.distributed default port(29500) is available
         # then use it, else find a free port
-        if _is_free_port(29500):
-            os.environ['MASTER_PORT'] = '29500'
-        else:
-            os.environ['MASTER_PORT'] = str(_find_free_port())
+        _set_port(29500)
     # use MASTER_ADDR in the environment variable if it already exists
     if 'MASTER_ADDR' not in os.environ:
         os.environ['MASTER_ADDR'] = addr
