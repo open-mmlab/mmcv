@@ -7,11 +7,9 @@ from .scatter_gather import scatter_kwargs
 class MLUDistributedDataParallel(MMDistributedDataParallel):
     """The DDP module that supports DataContainer.
 
-    MMDDP has two main differences with PyTorch DDP:
+    MLUDDP has difference with MMDDP:
 
-    - It supports a custom type :class:`DataContainer` which allows more
-      flexible control of input data.
-    - It implement two APIs ``train_step()`` and ``val_step()``.
+    - It use MLU device copy instead of scatter.
     """
 
     def to_kwargs(self, inputs, kwargs, device_id):

@@ -5,19 +5,13 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.device.mlu import MLUDataParallel, MLUDistributedDataParallel
-from mmcv.device.mlu._functions import Scatter, get_input_device, scatter
+from mmcv.device.mlu import IS_MLU, MLUDataParallel, MLUDistributedDataParallel
+from mmcv.device.mlu._functions import Scatter, scatter
 from mmcv.parallel import is_module_wrapper
 
 
 def mock(*args, **kwargs):
     pass
-
-
-mlu_is_available = False
-if hasattr(torch, 'mlu'):
-    import torch_mlu  # noqa: F401
-    mlu_is_available = torch.mlu.is_available()
 
 
 @patch('torch.distributed._broadcast_coalesced', mock)
@@ -37,34 +31,12 @@ def test_is_module_wrapper():
     model = Model()
     assert not is_module_wrapper(model)
 
-    if mlu_is_available:
+    if IS_MLU:
         mludp = MLUDataParallel(model)
         assert is_module_wrapper(mludp)
 
         mluddp = MLUDistributedDataParallel(model, process_group=MagicMock())
         assert is_module_wrapper(mluddp)
-
-
-def test_get_input_device():
-    # if the device is CPU, return -1
-    input = torch.zeros([1, 3, 3, 3])
-    assert get_input_device(input) == -1
-    inputs = [torch.zeros([1, 3, 3, 3]), torch.zeros([1, 4, 4, 4])]
-    assert get_input_device(inputs) == -1
-
-    # if the device is MLU, return the index of device
-    if mlu_is_available:
-        input = torch.zeros([1, 3, 3, 3]).to('mlu')
-        assert get_input_device(input) == 'mlu'
-        inputs = [
-            torch.zeros([1, 3, 3, 3]).to('mlu'),
-            torch.zeros([1, 4, 4, 4]).to('mlu')
-        ]
-        assert get_input_device(inputs) == 'mlu'
-
-    # input should be a tensor or list of tensor
-    with pytest.raises(Exception):
-        get_input_device(5)
 
 
 def test_scatter():
@@ -79,7 +51,7 @@ def test_scatter():
         assert torch.allclose(input, output)
 
     # if the device is MLU, copy the input from CPU to MLU
-    if mlu_is_available:
+    if IS_MLU:
         input = torch.zeros([1, 3, 3, 3])
         output = scatter(input=input, devices=[0])
         assert torch.allclose(input.to('mlu'), output)
@@ -110,7 +82,7 @@ def test_Scatter():
         assert torch.allclose(input, output)
 
     # if the device is MLU, copy the input from CPU to MLU
-    if mlu_is_available:
+    if IS_MLU:
         target_mlus = [0]
         input = torch.zeros([1, 3, 3, 3])
         outputs = Scatter.forward(target_mlus, input)

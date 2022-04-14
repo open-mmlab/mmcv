@@ -7,27 +7,28 @@ from .scatter_gather import scatter_kwargs
 
 
 class MLUDataParallel(MMDataParallel):
-    """The DataParallel module that supports DataContainer.
+    """The MLUDataParallel module that supports DataContainer.
 
-    MMDataParallel has two main differences with PyTorch DataParallel:
+    MLUDataParallel is a class from MMDataParall, which supports MLU
+    training and inference only.
 
-    - It supports a custom type :class:`DataContainer` which allows more
-      flexible control of input data during both GPU and CPU inference.
-    - It implement two more APIs ``train_step()`` and ``val_step()``.
+    The main differences with MMDataParallel:
+
+    - It only supports single-card of MLU, and only use first card to
+      run training and inference.
+
+    - It uses direct host-to-device copy instead of stream-background
+      scatter.
 
     .. warning::
-        MMDataParallel only supports single GPU training, if you need to
-        train with multiple GPUs, please use MMDistributedDataParallel
-        instead. If you have multiple GPUs and you just want to use
-        MMDataParallel, you can set the environment variable
-        ``CUDA_VISIBLE_DEVICES=0`` or instantiate ``MMDataParallel`` with
-        ``device_ids=[0]``.
+        MLUDataParallel only supports single MLU training, if you need to
+        train with multiple MLUs, please use MLUDistributedDataParallel
+        instead. If you have multiple MLUs, you can set the environment
+        variable ``MLU_VISIBLE_DEVICES=0`` (or any other card number(s))
+        to specify the running device.
 
     Args:
         module (:class:`nn.Module`): Module to be encapsulated.
-        device_ids (list[int]): Device IDS of modules to be scattered to.
-            Defaults to None when GPU is not available.
-        output_device (str | int): Device ID for output. Defaults to None.
         dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
