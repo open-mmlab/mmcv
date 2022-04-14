@@ -12,6 +12,8 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
+from mmcv.device.mlu import IS_MLU
+
 
 def _find_free_port():
     # Copied from https://github.com/facebookresearch/detectron2/blob/main/detectron2/engine/launch.py # noqa: E501
@@ -47,9 +49,18 @@ def init_dist(launcher, backend='nccl', **kwargs):
 def _init_dist_pytorch(backend, **kwargs):
     # TODO: use local_rank instead of rank % num_gpus
     rank = int(os.environ['RANK'])
-    num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(rank % num_gpus)
-    dist.init_process_group(backend=backend, **kwargs)
+    if IS_MLU:
+        import torch_mlu  # noqa: F401
+        torch.mlu.set_device(rank)
+        dist.init_process_group(
+            backend='cncl',
+            rank=rank,
+            world_size=int(os.environ['WORLD_SIZE']),
+            **kwargs)
+    else:
+        num_gpus = torch.cuda.device_count()
+        torch.cuda.set_device(rank % num_gpus)
+        dist.init_process_group(backend=backend, **kwargs)
 
 
 def _init_dist_mpi(backend, **kwargs):
