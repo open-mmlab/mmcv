@@ -7,7 +7,21 @@ from .misc import is_seq_of
 
 
 def build_from_cfg(cfg, registry, default_args=None):
-    """Build a module from config dict.
+    """Build a module from config dict when it is a class configuration, or
+    call a function from config dict when it is a function configuration.
+
+    Example:
+        >>> MODELS = Registry('models')
+        >>> @MODELS.register_module()
+        >>> class ResNet:
+        >>>     pass
+        >>> resnet = build_from_cfg(dict(type='Resnet'), MODELS)
+        >>> # Returns an instantiated object
+        >>> @MODELS.register_module()
+        >>> def resnet50():
+        >>>     pass
+        >>> resnet = build_from_cfg(dict(type='resnet50'), MODELS)
+        >>> # Return a function call result
 
     Args:
         cfg (dict): Config dict. It should at least contain the key "type".
