@@ -17,11 +17,7 @@ try:
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     else:
-        try:
-            if torch.is_mlu_available():
-                from torch_mlu.utils.cpp_extension import BuildExtension
-        except AttributeError:
-            from torch.utils.cpp_extension import BuildExtension
+        from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
