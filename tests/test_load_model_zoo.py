@@ -12,7 +12,7 @@ from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import digit_version
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -78,8 +78,9 @@ def load(filepath, map_location=None):
 @patch('torch.load', load)
 def test_load_external_url():
     # test modelzoo://
+    torchvision_version = torchvision.__version__
     url = _load_checkpoint('modelzoo://resnet50')
-    if TORCH_VERSION < '1.9.0':
+    if torchvision_version < '0.10.0':
         assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
                        '357.pth')
     else:
@@ -89,7 +90,7 @@ def test_load_external_url():
 
     # test torchvision://
     url = _load_checkpoint('torchvision://resnet50')
-    if TORCH_VERSION < '1.9.0':
+    if torchvision_version < '0.10.0':
         assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
                        '357.pth')
     else:
