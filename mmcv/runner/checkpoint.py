@@ -123,21 +123,26 @@ def get_torchvision_models():
     else:
         # Since torchvision bumps to 0.13, the weight loading logic, model keys
         # and model urls have been changed. We will load the old version urls
-        # in mmcv/model_zoo/torchvision_before0.13.json to prevent from BC
+        # in mmcv/model_zoo/torchvision_0.12.json to prevent from BC
         # Breaking. If your version of torchvision is higher than 0.13.0,
         # new urls will be added to `model_urls` additionally. You can get the
-        # newest torchvision model by resnet50.IMAGENET1K_V1.
+        # newest torchvision model by resnet50.imagenet1k_v1.
         json_path = osp.join(mmcv.__path__[0],
-                             'model_zoo/torchvision_before0.13.json')
+                             'model_zoo/torchvision_0.12.json')
         model_urls = mmcv.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
-            if not cls_name.endswith('_Weights'):
+            if (not cls_name.endswith('_Weights')
+                    or not hasattr(cls, 'DEFAULT')):
                 continue
-
+            # Since `cls.DEFAULT` can not be accessed by iterate cls, we set
+            # default urls explicitly.
+            cls_key = cls_name.replace('_Weights', '').lower()
+            model_urls[f'{cls_key}.default'] = cls.DEFAULT.url
             for weight_enum in cls:
                 cls_key = cls_name.replace('_Weights', '').lower()
-                cls_key = f'{cls_key}.{weight_enum.name}'
+                cls_key = f'{cls_key}.{weight_enum.name.lower()}'
                 model_urls[cls_key] = weight_enum.url
+
     return model_urls
 
 
