@@ -87,7 +87,8 @@ def collect_env():
             ccompiler.initialize()
             cc = subprocess.check_output(
                 f'{ccompiler.cc}', stderr=subprocess.STDOUT, shell=True)
-            env_info['MSVC'] = cc.decode(os.device_encoding(1)).partition('\n')[0].strip()
+            env_info['MSVC'] = cc.decode(
+                os.device_encoding(1)).partition('\n')[0].strip()
             env_info['GCC'] = 'n/a'
     except subprocess.CalledProcessError:
         env_info['GCC'] = 'n/a'
