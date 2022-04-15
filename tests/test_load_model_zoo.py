@@ -4,6 +4,7 @@ import os.path as osp
 from unittest.mock import patch
 
 import pytest
+import torchvision
 
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
@@ -11,7 +12,7 @@ from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import TORCH_VERSION, digit_version
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -96,6 +97,13 @@ def test_load_external_url():
         assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
                        'a61.pth')
 
+    if digit_version(torchvision.__version__) > digit_version('0.12.0'):
+        assert (
+            _load_checkpoint('torchvision://resnet50.IMAGENET1K_V1') ==
+            'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+        assert (
+            _load_checkpoint('torchvision://resnet50') ==
+            'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
     # test open-mmlab:// with default MMCV_HOME
     os.environ.pop(ENV_MMCV_HOME, None)
     os.environ.pop(ENV_XDG_CACHE_HOME, None)
