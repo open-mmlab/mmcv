@@ -8,4 +8,4 @@ def is_mlu_available():
         return False
 
 
-IS_MLU = is_mlu_available()
+IS_MLU_AVAILABLE = is_mlu_available()

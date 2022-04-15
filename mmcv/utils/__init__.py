@@ -49,7 +49,7 @@ else:
                                   _InstanceNorm, _MaxPoolNd, get_build_config,
                                   is_rocm_pytorch)
     # yapf: enable
-    from .pytorch_wrapper import is_cuda
+    from .pytorch_wrapper import IS_CUDA_AVAILABLE
     from .registry import Registry, build_from_cfg
     from .seed import worker_init_fn
     from .trace import is_jit_tracing
@@ -72,5 +72,6 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method', 'is_cuda', 'worker_init_fn'
+        '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
+        'worker_init_fn'
     ]

@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.device.mlu import IS_MLU
-from mmcv.utils import is_cuda
+from mmcv.device.mlu import IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 
 class TestBBox(object):
@@ -39,11 +39,11 @@ class TestBBox(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not is_cuda(), reason='requires CUDA support')),
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_bbox_overlaps_float(self, device):
         self._test_bbox_overlaps(device, dtype=torch.float)
@@ -52,11 +52,11 @@ class TestBBox(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not is_cuda(), reason='requires CUDA support')),
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_bbox_overlaps_half(self, device):
         self._test_bbox_overlaps(device, dtype=torch.half)
