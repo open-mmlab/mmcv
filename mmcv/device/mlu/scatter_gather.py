@@ -16,7 +16,7 @@ def scatter(inputs, target_mlus, dim=0):
         if isinstance(obj, torch.Tensor):
             if target_mlus != [-1]:
                 obj = obj.to('mlu')
-                return obj
+                return [obj]
             else:
                 # for CPU inference we use self-implemented scatter
                 return Scatter.forward(target_mlus, obj)
