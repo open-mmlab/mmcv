@@ -12,7 +12,7 @@ from poptorch._args_parser import ArgsParser
 
 from mmcv.runner import auto_fp16
 from .hierarchical_data_manager import HierarchicalDataManager
-from .utils import compare_tensor, model_sharding, recomputation_checkpoint
+from .utils import compare_ndarray, model_sharding, recomputation_checkpoint
 
 
 class DictArgsParser(ArgsParser):
@@ -498,11 +498,11 @@ class TrainEvalModel:
             for idx, (featA, featB) in \
                     enumerate(zip(fea_in_cpu_list, fea_in_ipu_list)):
                 print('fea_in, tensor ', idx)
-                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
+                compare_ndarray(featA.detach().numpy(), featB.detach().numpy())
             for idx, (featA, featB) in \
                     enumerate(zip(fea_out_cpu_list, fea_out_ipu_list)):
                 print('fea_out, tensor', idx)
-                compare_tensor(featA.detach().numpy(), featB.detach().numpy())
+                compare_ndarray(featA.detach().numpy(), featB.detach().numpy())
 
     # TODO Unified training and eval interface,
     # merge train_step(train) and __call__(eval) together

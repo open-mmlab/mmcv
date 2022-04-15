@@ -11,7 +11,7 @@ from mmcv.runner.fp16_utils import auto_fp16
 
 if IS_IPU:
     from mmcv.device.ipu import cast_to_options, ipu_model_wrapper
-    from mmcv.device.ipu.utils import compare_tensor
+    from mmcv.device.ipu.utils import compare_ndarray
 
 skip_no_ipu = pytest.mark.skipif(
     not IS_IPU, reason='test case under ipu environment')
@@ -298,4 +298,4 @@ def test_run_model():
 
 @skip_no_ipu
 def test_compare_tensor():
-    compare_tensor(np.random.rand(3, 4), np.random.rand(3, 4))
+    compare_ndarray(np.random.rand(3, 4), np.random.rand(3, 4))

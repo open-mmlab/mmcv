@@ -178,7 +178,7 @@ def recomputation_checkpoint(model: nn.Module, module_names: list):
         f'recomputed nodes: {module_names} are not contained in the model'
 
 
-def compare_tensor(featA, featB, rtol=1e-3, atol=1e-5):
+def compare_ndarray(featA, featB, rtol=1e-3, atol=1e-5):
     """Align data between two activations or weights."""
     try:
         np.testing.assert_allclose(featA, featB, rtol=rtol, atol=atol)
