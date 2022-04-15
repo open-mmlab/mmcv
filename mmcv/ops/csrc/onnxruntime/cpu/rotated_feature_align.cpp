@@ -36,10 +36,10 @@ T bilinear_interpolate(const T *input, const int height, const int width, T y,
   T lx = x - x_low;
   T hy = 1. - ly, hx = 1. - lx;
   // do bilinear interpolation
-  T v1 = input[y_low * width + x_low];
-  T v2 = input[y_low * width + x_high];
-  T v3 = input[y_high * width + x_low];
-  T v4 = input[y_high * width + x_high];
+  T v1 = input[int(fma(y_low, width, x_low))];
+  T v2 = input[int(fma(y_low, width, x_high))];
+  T v3 = input[int(fma(y_high, width, x_low))];
+  T v4 = input[int(fma(y_high, width, x_high))];
   T w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
 
   T val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);

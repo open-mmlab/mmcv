@@ -35,10 +35,10 @@ T bilinear_interpolate(const T* input, const int height, const int width, T y,
   T lx = x - x_low;
   T hy = 1. - ly, hx = 1. - lx;
   // do bilinear interpolation
-  T v1 = input[y_low * width + x_low];
-  T v2 = input[y_low * width + x_high];
-  T v3 = input[y_high * width + x_low];
-  T v4 = input[y_high * width + x_high];
+  T v1 = input[int(fma(y_low, width, x_low))];
+  T v2 = input[int(fma(y_low, width, x_high))];
+  T v3 = input[int(fma(y_high, width, x_low))];
+  T v4 = input[int(fma(y_high, width, x_high))];
   T w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
 
   T val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);
@@ -134,27 +134,15 @@ void bilinear_interpolate_gradient(const int height, const int width, T y, T x,
   T lx = x - x_low;
   T hy = 1. - ly, hx = 1. - lx;
 
-  // reference in forward
-  // T v1 = input[y_low * width + x_low];
-  // T v2 = input[y_low * width + x_high];
-  // T v3 = input[y_high * width + x_low];
-  // T v4 = input[y_high * width + x_high];
-  // T val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);
-
   w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
 
   return;
 }
 
-// reads the 16-bit, 32-bit or 64-bit word old located at the address address in
-// global or shared memory, computes (old + val), and stores the result back to
-// memory at the same address. These three operations are performed in one
-// atomic transaction. The function returns old.
 template <typename scalar_t>
-scalar_t atomicAdd(scalar_t* address, scalar_t val) {
+void valueAdd(scalar_t* address, scalar_t val) {
   scalar_t old = *address;
   *address = (old + val);
-  return old;
 }
 
 template <typename scalar_t>
@@ -201,7 +189,7 @@ void rotated_feature_align_backward_cpu_kernel(
         bottom_diff + (n * channels + c) * height * width;
     scalar_t value_top_diff = top_diff[index];
 
-    atomicAdd(bottom_diff + index, value_top_diff);
+    valueAdd(bottom_diff + index, value_top_diff);
     for (int i = 0; i < points; i++) {
       scalar_t w1, w2, w3, w4;
       int x_low, x_high, y_low, y_high;
@@ -214,10 +202,10 @@ void rotated_feature_align_backward_cpu_kernel(
       scalar_t g3 = value_top_diff * w3;
       scalar_t g4 = value_top_diff * w4;
       if (x_low >= 0 && x_high >= 0 && y_low >= 0 && y_high >= 0) {
-        atomicAdd(offset_bottom_diff + y_low * width + x_low, g1);
-        atomicAdd(offset_bottom_diff + y_low * width + x_high, g2);
-        atomicAdd(offset_bottom_diff + y_high * width + x_low, g3);
-        atomicAdd(offset_bottom_diff + y_high * width + x_high, g4);
+        valueAdd(offset_bottom_diff + y_low * width + x_low, g1);
+        valueAdd(offset_bottom_diff + y_low * width + x_high, g2);
+        valueAdd(offset_bottom_diff + y_high * width + x_low, g3);
+        valueAdd(offset_bottom_diff + y_high * width + x_high, g4);
       }
     }
   }
