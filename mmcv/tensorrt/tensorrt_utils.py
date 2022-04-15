@@ -40,6 +40,19 @@ def onnx2trt(onnx_model,
         >>>             device_id=0)
         >>>             })
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
@@ -94,6 +107,19 @@ def save_trt_engine(engine, path):
         engine (tensorrt.ICudaEngine): TensorRT engine to serialize
         path (str): disk path to write the engine
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     with open(path, mode='wb') as f:
         f.write(bytearray(engine.serialize()))
 
@@ -107,6 +133,19 @@ def load_trt_engine(path):
     Returns:
         tensorrt.ICudaEngine: the TensorRT engine loaded from disk
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
@@ -154,6 +193,20 @@ class TRTWrapper(torch.nn.Module):
     """
 
     def __init__(self, engine, input_names=None, output_names=None):
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: This tool will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
+
         super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
@@ -231,5 +284,6 @@ class TRTWraper(TRTWrapper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        warnings.warn('TRTWraper will be deprecated in'
-                      ' future. Please use TRTWrapper instead')
+        warnings.warn(
+            'TRTWraper will be deprecated in'
+            ' future. Please use TRTWrapper instead', DeprecationWarning)

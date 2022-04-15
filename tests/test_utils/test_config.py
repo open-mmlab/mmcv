@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import copy
 import json
 import os
 import os.path as osp
@@ -10,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mmcv import Config, DictAction, dump, load
+from mmcv import Config, ConfigDict, DictAction, dump, load
 
 data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 
@@ -347,11 +348,15 @@ def test_merge_delete():
     cfg_file = osp.join(data_path, 'config/delete.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field
-    assert cfg.item1 == [1, 2]
-    assert cfg.item2 == dict(b=0)
+    assert cfg.item1 == dict(a=0)
+    assert cfg.item2 == dict(a=0, b=0)
     assert cfg.item3 is True
     assert cfg.item4 == 'test'
     assert '_delete_' not in cfg.item2
+
+    # related issue: https://github.com/open-mmlab/mmcv/issues/1570
+    assert type(cfg.item1) == ConfigDict
+    assert type(cfg.item2) == ConfigDict
 
 
 def test_merge_intermediate_variable():
@@ -529,6 +534,30 @@ def test_deprecation():
     ]
 
     for cfg_file in deprecated_cfg_files:
-        with pytest.warns(UserWarning):
+        with pytest.warns(DeprecationWarning):
             cfg = Config.fromfile(cfg_file)
         assert cfg.item1 == 'expected'
+
+
+def test_deepcopy():
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    new_cfg = copy.deepcopy(cfg)
+
+    assert isinstance(new_cfg, Config)
+    assert new_cfg._cfg_dict == cfg._cfg_dict
+    assert new_cfg._cfg_dict is not cfg._cfg_dict
+    assert new_cfg._filename == cfg._filename
+    assert new_cfg._text == cfg._text
+
+
+def test_copy():
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    new_cfg = copy.copy(cfg)
+
+    assert isinstance(new_cfg, Config)
+    assert new_cfg is not cfg
+    assert new_cfg._cfg_dict is cfg._cfg_dict
+    assert new_cfg._filename == cfg._filename
+    assert new_cfg._text == cfg._text

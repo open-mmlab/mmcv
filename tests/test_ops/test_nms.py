@@ -1,8 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import is_cuda, is_mlu
+from mmcv.device.mlu import IS_MLU
+from mmcv.utils import is_cuda
 
 
 class Testnms(object):
@@ -15,7 +17,7 @@ class Testnms(object):
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))
+                not IS_MLU, reason='requires MLU support'))
     ])
     def test_nms_allclose(self, device):
         from mmcv.ops import nms
@@ -192,3 +194,14 @@ class Testnms(object):
 
         assert torch.equal(keep, seq_keep)
         assert torch.equal(boxes, seq_boxes)
+
+        # test skip nms when `nms_cfg` is None
+        seq_boxes, seq_keep = batched_nms(
+            torch.from_numpy(results['boxes']),
+            torch.from_numpy(results['scores']),
+            torch.from_numpy(results['idxs']),
+            None,
+            class_agnostic=False)
+        assert len(seq_keep) == len(results['boxes'])
+        # assert score is descending order
+        assert ((seq_boxes[:, -1][1:] - seq_boxes[:, -1][:-1]) < 0).all()

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
 import mmcv
@@ -96,15 +97,15 @@ def test_registry():
             pass
 
     # begin: test old APIs
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.register_module(SphynxCat)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.register_module(SphynxCat, force=True)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.register_module
         class NewCat:
@@ -112,11 +113,11 @@ def test_registry():
 
         assert CATS.get('NewCat').__name__ == 'NewCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.deprecated_register_module(SphynxCat, force=True)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.deprecated_register_module
         class CuteCat:
@@ -124,7 +125,7 @@ def test_registry():
 
         assert CATS.get('CuteCat').__name__ == 'CuteCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.deprecated_register_module(force=True)
         class NewCat2:

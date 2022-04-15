@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import sys
 from collections import OrderedDict
 from tempfile import TemporaryDirectory
@@ -13,7 +14,8 @@ from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,
-                                    load_from_pavi, save_checkpoint)
+                                    load_from_local, load_from_pavi,
+                                    save_checkpoint)
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -196,8 +198,8 @@ def test_load_checkpoint_with_prefix():
 
 def test_load_checkpoint():
     import os
-    import tempfile
     import re
+    import tempfile
 
     class PrefixModel(nn.Module):
 
@@ -298,7 +300,6 @@ def test_load_checkpoint_metadata():
 
 def test_load_classes_name():
     import os
-
     import tempfile
 
     from mmcv.runner import load_checkpoint, save_checkpoint
@@ -331,9 +332,10 @@ def test_load_classes_name():
 
 
 def test_checkpoint_loader():
-    from mmcv.runner import _load_checkpoint, save_checkpoint, CheckpointLoader
-    import tempfile
     import os
+    import tempfile
+
+    from mmcv.runner import CheckpointLoader, _load_checkpoint, save_checkpoint
     checkpoint_path = os.path.join(tempfile.gettempdir(), 'checkpoint.pth')
     model = Model()
     save_checkpoint(model, checkpoint_path)
@@ -347,13 +349,16 @@ def test_checkpoint_loader():
         'modelzoo://xx.xx/xx.pth', 'torchvision://xx.xx/xx.pth',
         'open-mmlab://xx.xx/xx.pth', 'openmmlab://xx.xx/xx.pth',
         'mmcls://xx.xx/xx.pth', 'pavi://xx.xx/xx.pth', 's3://xx.xx/xx.pth',
-        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth'
+        'ss3://xx.xx/xx.pth', ' s3://xx.xx/xx.pth',
+        'open-mmlab:s3://xx.xx/xx.pth', 'openmmlab:s3://xx.xx/xx.pth',
+        'openmmlabs3://xx.xx/xx.pth', ':s3://xx.xx/xx.path'
     ]
     fn_names = [
         'load_from_http', 'load_from_http', 'load_from_torchvision',
         'load_from_torchvision', 'load_from_openmmlab', 'load_from_openmmlab',
         'load_from_mmcls', 'load_from_pavi', 'load_from_ceph',
-        'load_from_local', 'load_from_local'
+        'load_from_local', 'load_from_local', 'load_from_ceph',
+        'load_from_ceph', 'load_from_local', 'load_from_local'
     ]
 
     for filename, fn_name in zip(filenames, fn_names):
@@ -430,3 +435,18 @@ def test_save_checkpoint(tmp_path):
         save_checkpoint(
             model, filename, file_client_args={'backend': 'petrel'})
     mock_method.assert_called()
+
+
+def test_load_from_local():
+    import os
+    home_path = os.path.expanduser('~')
+    checkpoint_path = os.path.join(
+        home_path, 'dummy_checkpoint_used_to_test_load_from_local.pth')
+    model = Model()
+    save_checkpoint(model, checkpoint_path)
+    checkpoint = load_from_local(
+        '~/dummy_checkpoint_used_to_test_load_from_local.pth',
+        map_location=None)
+    assert_tensor_equal(checkpoint['state_dict']['block.conv.weight'],
+                        model.block.conv.weight)
+    os.remove(checkpoint_path)

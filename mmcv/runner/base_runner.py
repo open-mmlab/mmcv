@@ -61,8 +61,10 @@ class BaseRunner(metaclass=ABCMeta):
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
                                 f'but got {type(batch_processor)}')
-            warnings.warn('batch_processor is deprecated, please implement '
-                          'train_step() and val_step() in the model instead.')
+            warnings.warn(
+                'batch_processor is deprecated, please implement '
+                'train_step() and val_step() in the model instead.',
+                DeprecationWarning)
             # raise an error is `batch_processor` is not None and
             # `model.train_step()` exists.
             if is_module_wrapper(model):
@@ -207,8 +209,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current learning rates of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
         if isinstance(self.optimizer, torch.optim.Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
@@ -226,8 +228,8 @@ class BaseRunner(metaclass=ABCMeta):
 
         Returns:
             list[float] | dict[str, list[float]]: Current momentums of all
-                param groups. If the runner has a dict of optimizers, this
-                method will return a dict.
+            param groups. If the runner has a dict of optimizers, this method
+            will return a dict.
         """
 
         def _get_momentum(optimizer):
@@ -287,7 +289,7 @@ class BaseRunner(metaclass=ABCMeta):
             hook_cfg (dict): Hook config. It should have at least keys 'type'
               and 'priority' indicating its type and priority.
 
-        Notes:
+        Note:
             The specific hook class to register should not use 'type' and
             'priority' arguments during initialization.
         """

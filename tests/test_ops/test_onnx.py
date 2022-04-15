@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import warnings
 from functools import partial
@@ -8,6 +9,7 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from packaging import version
 
 onnx_file = 'tmp.onnx'
@@ -87,10 +89,11 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
-    grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+    grid = F.affine_grid(
+        grid, (1, 1, 15, 15), align_corners=align_corners).type_as(input)
 
     def func(input, grid):
-        return nn.functional.grid_sample(
+        return F.grid_sample(
             input,
             grid,
             mode=mode,
@@ -110,7 +113,8 @@ def test_bilinear_grid_sample(align_corners):
 
     input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
-    grid = nn.functional.affine_grid(grid, (1, 1, 15, 15)).type_as(input)
+    grid = F.affine_grid(
+        grid, (1, 1, 15, 15), align_corners=align_corners).type_as(input)
 
     def func(input, grid):
         return bilinear_grid_sample(input, grid, align_corners=align_corners)
@@ -462,7 +466,7 @@ def test_interpolate():
     register_extra_symbolics(opset_version)
 
     def func(feat, scale_factor=2):
-        out = nn.functional.interpolate(feat, scale_factor=scale_factor)
+        out = F.interpolate(feat, scale_factor=scale_factor)
         return out
 
     net = WrapFunction(func)
@@ -652,6 +656,9 @@ def test_modulated_deform_conv2d():
         pytest.skip('modulated_deform_conv op is not successfully compiled')
 
     ort_custom_op_path = get_onnxruntime_op_path()
+    if not os.path.exists(ort_custom_op_path):
+        pytest.skip('custom ops for onnxruntime are not compiled.')
+
     # modulated deform conv config
     in_channels = 3
     out_channels = 64

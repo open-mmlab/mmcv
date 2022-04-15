@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
@@ -26,8 +27,17 @@ class TestNmsRotated:
         boxes = torch.from_numpy(np_boxes).cuda()
         labels = torch.from_numpy(np_labels).cuda()
 
+        # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5, labels)
 
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test ccw angle definition
+        boxes[..., -2] *= -1
+        dets, keep_inds = nms_rotated(
+            boxes[:, :5], boxes[:, -1], 0.5, labels, clockwise=False)
+        dets[..., -2] *= -1
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
@@ -47,6 +57,29 @@ class TestNmsRotated:
 
         boxes = torch.from_numpy(np_boxes).cuda()
 
+        # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5)
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test ccw angle definition
+        boxes[..., -2] *= -1
+        dets, keep_inds = nms_rotated(
+            boxes[:, :5], boxes[:, -1], 0.5, clockwise=False)
+        dets[..., -2] *= -1
+        assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
+
+        # test batched_nms with nms_rotated
+        from mmcv.ops import batched_nms
+
+        nms_cfg = dict(type='nms_rotated', iou_threshold=0.5)
+
+        boxes, keep = batched_nms(
+            torch.from_numpy(np_boxes[:, :5]),
+            torch.from_numpy(np_boxes[:, -1]),
+            torch.from_numpy(np.array([0, 0, 0, 0])),
+            nms_cfg,
+            class_agnostic=False)
+        assert np.allclose(boxes.cpu().numpy()[:, :5], np_expect_dets)
+        assert np.allclose(keep.cpu().numpy(), np_expect_keep_inds)

@@ -20,7 +20,7 @@ template <typename scalar_t>
 __global__ void roi_align_rotated_forward_cuda_kernel(
     const int nthreads, const scalar_t *bottom_data,
     const scalar_t *bottom_rois, const scalar_t spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width,
     const int pooled_height, const int pooled_width, scalar_t *top_data) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
@@ -58,11 +58,11 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
         bottom_data + (roi_batch_ind * channels + c) * height * width;
 
     // We use roi_bin_grid to sample the grid and mimic integral
-    int roi_bin_grid_h = (sample_num > 0)
-                             ? sample_num
+    int roi_bin_grid_h = (sampling_ratio > 0)
+                             ? sampling_ratio
                              : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
+        (sampling_ratio > 0) ? sampling_ratio : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
@@ -104,7 +104,7 @@ __global__ void roi_align_rotated_forward_cuda_kernel(
 template <typename scalar_t>
 __global__ void roi_align_rotated_backward_cuda_kernel(
     const int nthreads, const scalar_t *top_diff, const scalar_t *bottom_rois,
-    const scalar_t spatial_scale, const int sample_num, const bool aligned,
+    const scalar_t spatial_scale, const int sampling_ratio, const bool aligned,
     const bool clockwise, const int channels, const int height, const int width,
     const int pooled_height, const int pooled_width, scalar_t *bottom_diff) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
@@ -146,11 +146,11 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
     const scalar_t top_diff_this_bin = offset_top_diff[ph * pooled_width + pw];
 
     // We use roi_bin_grid to sample the grid and mimic integral
-    int roi_bin_grid_h = (sample_num > 0)
-                             ? sample_num
+    int roi_bin_grid_h = (sampling_ratio > 0)
+                             ? sampling_ratio
                              : ceilf(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
-        (sample_num > 0) ? sample_num : ceilf(roi_width / pooled_width);
+        (sampling_ratio > 0) ? sampling_ratio : ceilf(roi_width / pooled_width);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.

@@ -1,8 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import is_cuda, is_mlu
+from mmcv.device.mlu import IS_MLU
+from mmcv.utils import is_cuda
 
 
 class TestBBox(object):
@@ -41,7 +43,7 @@ class TestBBox(object):
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))
+                not IS_MLU, reason='requires MLU support'))
     ])
     def test_bbox_overlaps_float(self, device):
         self._test_bbox_overlaps(device, dtype=torch.float)
@@ -54,7 +56,7 @@ class TestBBox(object):
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))
+                not IS_MLU, reason='requires MLU support'))
     ])
     def test_bbox_overlaps_half(self, device):
         self._test_bbox_overlaps(device, dtype=torch.half)

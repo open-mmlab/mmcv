@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 from functools import partial
 from typing import Callable
@@ -7,6 +8,7 @@ import onnx
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 try:
     from mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
@@ -487,11 +489,10 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
     input = torch.rand(1, 1, 10, 10).cuda()
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
-    grid = nn.functional.affine_grid(grid,
-                                     (1, 1, 15, 15)).type_as(input).cuda()
+    grid = F.affine_grid(grid, (1, 1, 15, 15)).type_as(input).cuda()
 
     def func(input, grid):
-        return nn.functional.grid_sample(
+        return F.grid_sample(
             input,
             grid,
             mode=mode,

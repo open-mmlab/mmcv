@@ -1,0 +1,44 @@
+## CUDA ops
+
+We implement common CUDA ops used in detection, segmentation, etc.
+
+- ActiveRotatedFilter
+- AssignScoreWithK
+- BallQuery
+- BBoxOverlaps
+- CARAFE
+- CrissCrossAttention
+- ContextBlock
+- ConvexIoU
+- CornerPool
+- Deformable Convolution v1/v2
+- Deformable RoIPool
+- DynamicScatter
+- GatherPoints
+- FurthestPointSample
+- FurthestPointSampleWithDist
+- GeneralizedAttention
+- GroupPoints
+- KNN
+- MaskedConv
+- MinAreaPolygon
+- NMS
+- PointsInPolygons
+- PSAMask
+- RiRoIAlignRotated
+- RotatedFeatureAlign
+- RoIPointPool3d
+- RoIPool
+- RoIAlign
+- RoIAwarePool3d
+- SimpleRoIAlign
+- SigmoidFocalLoss
+- SoftmaxFocalLoss
+- SoftNMS
+- Sparse Convolution
+- Synchronized BatchNorm
+- Voxelization
+- ThreeInterpolate
+- ThreeNN
+- Weight standardization
+- Correlation

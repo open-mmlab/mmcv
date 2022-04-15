@@ -57,7 +57,7 @@ def test_build_runner():
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
 def test_epoch_based_runner(runner_class):
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         # batch_processor is deprecated
         model = OldStyleModel()
 

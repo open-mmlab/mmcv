@@ -14,7 +14,6 @@
 
 #ifdef MMCV_WITH_MLU
 #include "aten.h"
-#include "common_mlu_helper.hpp"
 
 #define NFU_ALIGN_SIZE 128
 

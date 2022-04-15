@@ -12,13 +12,14 @@ def points_in_boxes_part(points, boxes):
     """Find the box in which each point is (CUDA).
 
     Args:
-        points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate
+        points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate.
         boxes (torch.Tensor): [B, T, 7],
             num_valid_boxes <= T, [x, y, z, x_size, y_size, z_size, rz] in
-            LiDAR/DEPTH coordinate, (x, y, z) is the bottom center
+            LiDAR/DEPTH coordinate, (x, y, z) is the bottom center.
 
     Returns:
-        box_idxs_of_pts (torch.Tensor): (B, M), default background = -1
+        torch.Tensor: Return the box indices of points with the shape of
+        (B, M). Default background = -1.
     """
     assert points.shape[0] == boxes.shape[0], \
         'Points and boxes should have the same batch size, ' \
@@ -67,7 +68,8 @@ def points_in_boxes_cpu(points, boxes):
             (x, y, z) is the bottom center.
 
     Returns:
-        box_idxs_of_pts (torch.Tensor): (B, M, T), default background = 0.
+        torch.Tensor: Return the box indices of points with the shape of
+        (B, M, T). Default background = 0.
     """
     assert points.shape[0] == boxes.shape[0], \
         'Points and boxes should have the same batch size, ' \
@@ -102,7 +104,8 @@ def points_in_boxes_all(points, boxes):
             (x, y, z) is the bottom center.
 
     Returns:
-        box_idxs_of_pts (torch.Tensor): (B, M, T), default background = 0.
+        torch.Tensor: Return the box indices of points with the shape of
+        (B, M, T). Default background = 0.
     """
     assert boxes.shape[0] == points.shape[0], \
         'Points and boxes should have the same batch size, ' \

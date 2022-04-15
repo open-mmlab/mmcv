@@ -25,22 +25,22 @@ class MultiScaleDeformableAttnFunction(Function):
         """GPU version of multi-scale deformable attention.
 
         Args:
-            value (Tensor): The value has shape
+            value (torch.Tensor): The value has shape
                 (bs, num_keys, mum_heads, embed_dims//num_heads)
-            value_spatial_shapes (Tensor): Spatial shape of
+            value_spatial_shapes (torch.Tensor): Spatial shape of
                 each feature map, has shape (num_levels, 2),
                 last dimension 2 represent (h, w)
-            sampling_locations (Tensor): The location of sampling points,
+            sampling_locations (torch.Tensor): The location of sampling points,
                 has shape
                 (bs ,num_queries, num_heads, num_levels, num_points, 2),
                 the last dimension 2 represent (x, y).
-            attention_weights (Tensor): The weight of sampling points used
-                when calculate the attention, has shape
+            attention_weights (torch.Tensor): The weight of sampling points
+                used when calculate the attention, has shape
                 (bs ,num_queries, num_heads, num_levels, num_points),
             im2col_step (Tensor): The step used in image to column.
 
         Returns:
-            Tensor: has shape (bs, num_queries, embed_dims)
+            torch.Tensor: has shape (bs, num_queries, embed_dims)
         """
 
         ctx.im2col_step = im2col_step
@@ -62,12 +62,10 @@ class MultiScaleDeformableAttnFunction(Function):
         """GPU version of backward function.
 
         Args:
-            grad_output (Tensor): Gradient
-                of output tensor of forward.
+            grad_output (torch.Tensor): Gradient of output tensor of forward.
 
         Returns:
-             Tuple[Tensor]: Gradient
-                of input tensors in forward.
+            tuple[Tensor]: Gradient of input tensors in forward.
         """
         value, value_spatial_shapes, value_level_start_index,\
             sampling_locations, attention_weights = ctx.saved_tensors
@@ -96,21 +94,21 @@ def multi_scale_deformable_attn_pytorch(value, value_spatial_shapes,
     """CPU version of multi-scale deformable attention.
 
     Args:
-        value (Tensor): The value has shape
-            (bs, num_keys, mum_heads, embed_dims//num_heads)
-        value_spatial_shapes (Tensor): Spatial shape of
+        value (torch.Tensor): The value has shape
+            (bs, num_keys, num_heads, embed_dims//num_heads)
+        value_spatial_shapes (torch.Tensor): Spatial shape of
             each feature map, has shape (num_levels, 2),
             last dimension 2 represent (h, w)
-        sampling_locations (Tensor): The location of sampling points,
+        sampling_locations (torch.Tensor): The location of sampling points,
             has shape
             (bs ,num_queries, num_heads, num_levels, num_points, 2),
             the last dimension 2 represent (x, y).
-        attention_weights (Tensor): The weight of sampling points used
+        attention_weights (torch.Tensor): The weight of sampling points used
             when calculate the attention, has shape
             (bs ,num_queries, num_heads, num_levels, num_points),
 
     Returns:
-        Tensor: has shape (bs, num_queries, embed_dims)
+        torch.Tensor: has shape (bs, num_queries, embed_dims)
     """
 
     bs, _, num_heads, embed_dims = value.shape
@@ -263,37 +261,38 @@ class MultiScaleDeformableAttention(BaseModule):
         """Forward Function of MultiScaleDeformAttention.
 
         Args:
-            query (Tensor): Query of Transformer with shape
+            query (torch.Tensor): Query of Transformer with shape
                 (num_query, bs, embed_dims).
-            key (Tensor): The key tensor with shape
+            key (torch.Tensor): The key tensor with shape
                 `(num_key, bs, embed_dims)`.
-            value (Tensor): The value tensor with shape
+            value (torch.Tensor): The value tensor with shape
                 `(num_key, bs, embed_dims)`.
-            identity (Tensor): The tensor used for addition, with the
+            identity (torch.Tensor): The tensor used for addition, with the
                 same shape as `query`. Default None. If None,
                 `query` will be used.
-            query_pos (Tensor): The positional encoding for `query`.
+            query_pos (torch.Tensor): The positional encoding for `query`.
                 Default: None.
-            key_pos (Tensor): The positional encoding for `key`. Default
+            key_pos (torch.Tensor): The positional encoding for `key`. Default
                 None.
-            reference_points (Tensor):  The normalized reference
+            reference_points (torch.Tensor):  The normalized reference
                 points with shape (bs, num_query, num_levels, 2),
                 all elements is range in [0, 1], top-left (0,0),
                 bottom-right (1, 1), including padding area.
                 or (N, Length_{query}, num_levels, 4), add
                 additional two dimensions is (w, h) to
                 form reference boxes.
-            key_padding_mask (Tensor): ByteTensor for `query`, with
+            key_padding_mask (torch.Tensor): ByteTensor for `query`, with
                 shape [bs, num_key].
-            spatial_shapes (Tensor): Spatial shape of features in
+            spatial_shapes (torch.Tensor): Spatial shape of features in
                 different levels. With shape (num_levels, 2),
                 last dimension represents (h, w).
-            level_start_index (Tensor): The start index of each level.
+            level_start_index (torch.Tensor): The start index of each level.
                 A tensor has shape ``(num_levels, )`` and can be represented
                 as [0, h_0*w_0, h_0*w_0+h_1*w_1, ...].
 
         Returns:
-             Tensor: forwarded results with shape [num_query, bs, embed_dims].
+            torch.Tensor: forwarded results with shape
+            [num_query, bs, embed_dims].
         """
 
         if value is None:

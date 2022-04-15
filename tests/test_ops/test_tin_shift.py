@@ -1,10 +1,12 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 
 import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import is_cuda, is_mlu
+from mmcv.device.mlu import IS_MLU
+from mmcv.utils import is_cuda
 
 _USING_PARROTS = True
 try:
@@ -207,15 +209,14 @@ def _test_tinshift_assert(device, dtype):
             not is_cuda(), reason='requires CUDA support')),
     pytest.param(
         'mlu',
-        marks=pytest.mark.skipif(not is_mlu(), reason='requires MLU support'))
+        marks=pytest.mark.skipif(not IS_MLU, reason='requires MLU support'))
 ])
 @pytest.mark.parametrize('dtype', [
     torch.float,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            is_mlu(),
-            reason='MLU does not support for 64-bit floating point')),
+            IS_MLU, reason='MLU does not support for 64-bit floating point')),
     torch.half
 ])
 def test_tinshift(device, dtype):

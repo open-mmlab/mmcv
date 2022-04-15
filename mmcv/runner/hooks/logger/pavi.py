@@ -15,6 +15,21 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class PaviLoggerHook(LoggerHook):
+    """Class to visual model, log metrics (for internal use).
+
+    Args:
+        init_kwargs (dict): A dict contains the initialization keys.
+        add_graph (bool): Whether to visual model. Default: False.
+        add_last_ckpt (bool): Whether to save checkpoint after run.
+            Default: False.
+        interval (int): Logging interval (every k iterations). Default: True.
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`. Default: True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default: False.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
+        img_key (string): Get image data from Dataset. Default: 'img_info'.
+    """
 
     def __init__(self,
                  init_kwargs=None,

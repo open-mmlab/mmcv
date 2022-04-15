@@ -14,10 +14,24 @@ from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
                     DistSamplerSeedHook, DvcliveLoggerHook, EMAHook, EvalHook,
                     Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
                     GradientCumulativeOptimizerHook, Hook, IterTimerHook,
-                    LoggerHook, LrUpdaterHook, MlflowLoggerHook,
-                    NeptuneLoggerHook, OptimizerHook, PaviLoggerHook,
+                    LoggerHook, MlflowLoggerHook, NeptuneLoggerHook,
+                    OptimizerHook, PaviLoggerHook, SegmindLoggerHook,
                     SyncBuffersHook, TensorboardLoggerHook, TextLoggerHook,
                     WandbLoggerHook)
+from .hooks.lr_updater import StepLrUpdaterHook  # noqa
+from .hooks.lr_updater import (CosineAnnealingLrUpdaterHook,
+                               CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
+                               ExpLrUpdaterHook, FixedLrUpdaterHook,
+                               FlatCosineAnnealingLrUpdaterHook,
+                               InvLrUpdaterHook, LinearAnnealingLrUpdaterHook,
+                               LrUpdaterHook, OneCycleLrUpdaterHook,
+                               PolyLrUpdaterHook)
+from .hooks.momentum_updater import (CosineAnnealingMomentumUpdaterHook,
+                                     CyclicMomentumUpdaterHook,
+                                     LinearAnnealingMomentumUpdaterHook,
+                                     MomentumUpdaterHook,
+                                     OneCycleMomentumUpdaterHook,
+                                     StepMomentumUpdaterHook)
 from .iter_based_runner import IterBasedRunner, IterLoader
 from .log_buffer import LogBuffer
 from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
@@ -29,6 +43,12 @@ from .utils import get_host_info, get_time_str, obj_from_dict, set_random_seed
 __all__ = [
     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
+    'FixedLrUpdaterHook', 'StepLrUpdaterHook', 'ExpLrUpdaterHook',
+    'PolyLrUpdaterHook', 'InvLrUpdaterHook', 'CosineAnnealingLrUpdaterHook',
+    'FlatCosineAnnealingLrUpdaterHook', 'CosineRestartLrUpdaterHook',
+    'CyclicLrUpdaterHook', 'OneCycleLrUpdaterHook', 'MomentumUpdaterHook',
+    'StepMomentumUpdaterHook', 'CosineAnnealingMomentumUpdaterHook',
+    'CyclicMomentumUpdaterHook', 'OneCycleMomentumUpdaterHook',
     'OptimizerHook', 'IterTimerHook', 'DistSamplerSeedHook', 'LoggerHook',
     'PaviLoggerHook', 'TextLoggerHook', 'TensorboardLoggerHook',
     'NeptuneLoggerHook', 'WandbLoggerHook', 'MlflowLoggerHook',
@@ -43,5 +63,7 @@ __all__ = [
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
     'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor'
+    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
+    'SegmindLoggerHook', 'LinearAnnealingMomentumUpdaterHook',
+    'LinearAnnealingLrUpdaterHook'
 ]

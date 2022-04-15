@@ -24,6 +24,7 @@
 # SOFTWARE.
 
 import sys
+import warnings
 from functools import partial
 
 import numpy as np
@@ -48,16 +49,16 @@ def get_model_complexity_info(model,
 
     Supported layers are listed as below:
         - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
-        - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
-            ``nn.ReLU6``.
+        - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``,
+          ``nn.LeakyReLU``, ``nn.ReLU6``.
         - Poolings: ``nn.MaxPool1d``, ``nn.MaxPool2d``, ``nn.MaxPool3d``,
-            ``nn.AvgPool1d``, ``nn.AvgPool2d``, ``nn.AvgPool3d``,
-            ``nn.AdaptiveMaxPool1d``, ``nn.AdaptiveMaxPool2d``,
-            ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``,
-            ``nn.AdaptiveAvgPool2d``, ``nn.AdaptiveAvgPool3d``.
+          ``nn.AvgPool1d``, ``nn.AvgPool2d``, ``nn.AvgPool3d``,
+          ``nn.AdaptiveMaxPool1d``, ``nn.AdaptiveMaxPool2d``,
+          ``nn.AdaptiveMaxPool3d``, ``nn.AdaptiveAvgPool1d``,
+          ``nn.AdaptiveAvgPool2d``, ``nn.AdaptiveAvgPool3d``.
         - BatchNorms: ``nn.BatchNorm1d``, ``nn.BatchNorm2d``,
-            ``nn.BatchNorm3d``, ``nn.GroupNorm``, ``nn.InstanceNorm1d``,
-            ``InstanceNorm2d``, ``InstanceNorm3d``, ``nn.LayerNorm``.
+          ``nn.BatchNorm3d``, ``nn.GroupNorm``, ``nn.InstanceNorm1d``,
+          ``InstanceNorm2d``, ``InstanceNorm3d``, ``nn.LayerNorm``.
         - Linear: ``nn.Linear``.
         - Deconvolution: ``nn.ConvTranspose2d``.
         - Upsample: ``nn.Upsample``.
@@ -78,8 +79,8 @@ def get_model_complexity_info(model,
 
     Returns:
         tuple[float | str]: If ``as_strings`` is set to True, it will return
-            FLOPs and parameter counts in a string format. otherwise, it will
-            return those in a float number format.
+        FLOPs and parameter counts in a string format. otherwise, it will
+        return those in a float number format.
     """
     assert type(input_shape) is tuple
     assert len(input_shape) >= 1
@@ -458,7 +459,7 @@ def deconv_flops_counter_hook(conv_module, input, output):
     bias_flops = 0
     if conv_module.bias is not None:
         output_height, output_width = output.shape[2:]
-        bias_flops = out_channels * batch_size * output_height * output_height
+        bias_flops = out_channels * batch_size * output_height * output_width
     overall_flops = overall_conv_flops + bias_flops
 
     conv_module.__flops__ += int(overall_flops)
@@ -502,9 +503,8 @@ def batch_counter_hook(module, input, output):
         input = input[0]
         batch_size = len(input)
     else:
-        pass
-        print('Warning! No positional inputs found for a module, '
-              'assuming batch size is 1.')
+        warnings.warn('No positional inputs found for a module, '
+                      'assuming batch size is 1.')
     module.__batch_counter__ += batch_size
 
 
@@ -530,9 +530,9 @@ def remove_batch_counter_hook_function(module):
 def add_flops_counter_variable_or_reset(module):
     if is_supported_instance(module):
         if hasattr(module, '__flops__') or hasattr(module, '__params__'):
-            print('Warning: variables __flops__ or __params__ are already '
-                  'defined for the module' + type(module).__name__ +
-                  ' ptflops can affect your code!')
+            warnings.warn('variables __flops__ or __params__ are already '
+                          'defined for the module' + type(module).__name__ +
+                          ' ptflops can affect your code!')
         module.__flops__ = 0
         module.__params__ = get_model_parameters_number(module)
 

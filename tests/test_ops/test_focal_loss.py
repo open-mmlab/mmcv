@@ -1,8 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import is_cuda, is_mlu
+from mmcv.device.mlu import IS_MLU
+from mmcv.utils import is_cuda
 
 _USING_PARROTS = True
 try:
@@ -136,7 +138,7 @@ class Testfocalloss(object):
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))
+                not IS_MLU, reason='requires MLU support'))
     ])
     def test_sigmoid_float(self, device):
         self._test_sigmoid(device=device, dtype=torch.float)
@@ -149,7 +151,7 @@ class Testfocalloss(object):
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not is_mlu(), reason='requires MLU support'))
+                not IS_MLU, reason='requires MLU support'))
     ])
     def test_sigmoid_half(self, device):
         self._test_sigmoid(device, dtype=torch.half)

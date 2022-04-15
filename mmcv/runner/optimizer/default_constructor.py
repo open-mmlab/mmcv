@@ -46,16 +46,17 @@ class DefaultOptimizerConstructor:
       would not be added into optimizer. Default: False.
 
     Note:
+
         1. If the option ``dcn_offset_lr_mult`` is used, the constructor will
-            override the effect of ``bias_lr_mult`` in the bias of offset
-            layer. So be careful when using both ``bias_lr_mult`` and
-            ``dcn_offset_lr_mult``. If you wish to apply both of them to the
-            offset layer in deformable convs, set ``dcn_offset_lr_mult``
-            to the original ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
+        override the effect of ``bias_lr_mult`` in the bias of offset layer.
+        So be careful when using both ``bias_lr_mult`` and
+        ``dcn_offset_lr_mult``. If you wish to apply both of them to the offset
+        layer in deformable convs, set ``dcn_offset_lr_mult`` to the original
+        ``dcn_offset_lr_mult`` * ``bias_lr_mult``.
+
         2. If the option ``dcn_offset_lr_mult`` is used, the constructor will
-            apply it to all the DCN layers in the model. So be careful when
-            the model contains multiple DCN layers in places other than
-            backbone.
+        apply it to all the DCN layers in the model. So be careful when the
+        model contains multiple DCN layers in places other than backbone.
 
     Args:
         model (:obj:`nn.Module`): The model with parameters to be optimized.
@@ -83,7 +84,7 @@ class DefaultOptimizerConstructor:
         >>> # assume model have attribute model.backbone and model.cls_head
         >>> optimizer_cfg = dict(type='SGD', lr=0.01, weight_decay=0.95)
         >>> paramwise_cfg = dict(custom_keys={
-                '.backbone': dict(lr_mult=0.1, decay_mult=0.9)})
+                'backbone': dict(lr_mult=0.1, decay_mult=0.9)})
         >>> optim_builder = DefaultOptimizerConstructor(
         >>>     optimizer_cfg, paramwise_cfg)
         >>> optimizer = optim_builder(model)

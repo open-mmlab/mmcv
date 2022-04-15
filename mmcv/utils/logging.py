@@ -89,6 +89,7 @@ def print_log(msg, logger=None, level=logging.INFO):
         msg (str): The message to be logged.
         logger (logging.Logger | str | None): The logger to be used.
             Some special loggers are:
+            
             - "silent": no message will be printed.
             - other str: the logger obtained with `get_root_logger(logger)`.
             - None: The `print()` method will be used to print log messages.
