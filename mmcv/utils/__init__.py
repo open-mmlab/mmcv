@@ -41,11 +41,12 @@ else:
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
     # yapf: disable
-    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
-                                  CUDAExtension, DataLoader, PoolDataLoader,
-                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
-                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
-                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+    from .parrots_wrapper import (IS_CUDA_AVAILABLE, TORCH_VERSION,
+                                  BuildExtension, CppExtension, CUDAExtension,
+                                  DataLoader, PoolDataLoader, SyncBatchNorm,
+                                  _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
+                                  _AvgPoolNd, _BatchNorm, _ConvNd,
+                                  _ConvTransposeMixin, _get_cuda_home,
                                   _InstanceNorm, _MaxPoolNd, get_build_config,
                                   is_rocm_pytorch)
     # yapf: enable
@@ -71,5 +72,6 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method', 'worker_init_fn'
+        '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
+        'worker_init_fn'
     ]
