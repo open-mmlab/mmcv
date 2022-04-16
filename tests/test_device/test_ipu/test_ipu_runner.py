@@ -7,8 +7,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 
-from mmcv.device.ipu import IS_IPU
 from mmcv.runner import build_runner
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from mmcv.device.ipu import IPUDataLoader, runner

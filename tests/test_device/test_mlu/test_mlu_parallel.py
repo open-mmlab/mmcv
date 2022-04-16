@@ -5,9 +5,9 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.device.mlu import IS_MLU, MLUDataParallel, MLUDistributedDataParallel
 from mmcv.device.mlu._functions import Scatter, scatter
 from mmcv.parallel import is_module_wrapper
+from mmcv.utils import IS_MLU, MLUDataParallel, MLUDistributedDataParallel
 
 
 def mock(*args, **kwargs):

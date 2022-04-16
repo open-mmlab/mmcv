@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.device.ipu import IS_IPU
 from mmcv.parallel.data_container import DataContainer
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from mmcv.device.ipu.hierarchical_data_manager import \

@@ -6,9 +6,9 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.device.ipu import IS_IPU
 from mmcv.runner import build_runner
 from mmcv.runner.fp16_utils import auto_fp16
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from mmcv.device.ipu.hook_wrapper import IPUFp16OptimizerHook

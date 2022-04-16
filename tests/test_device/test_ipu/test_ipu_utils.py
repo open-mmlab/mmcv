@@ -5,7 +5,7 @@ import pytest
 import torch.nn as nn
 
 import mmcv
-from mmcv.device.ipu import IS_IPU
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from poptorch.options import _IExecutionStrategy

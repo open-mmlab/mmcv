@@ -2,7 +2,7 @@
 
 from mmcv.runner import (HOOKS, RUNNERS, BaseRunner, EpochBasedRunner,
                          IterBasedRunner)
-from .ipu_wrapper import IS_IPU
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from .dataloader import IPUDataLoader

@@ -4,8 +4,8 @@ import pytest
 import torch
 from torch.utils.data import Dataset
 
-from mmcv.device.ipu import IS_IPU
 from mmcv.parallel.data_container import DataContainer
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from mmcv.device.ipu import IPUDataLoader, cast_to_options

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .ipu_wrapper import IS_IPU
+from mmcv.utils import IS_IPU
 
 if IS_IPU:
     from .dataloader import IPUDataLoader
@@ -8,7 +8,7 @@ if IS_IPU:
     from .runner import IPUBaseRunner, IPUEpochBasedRunner, IPUIterBasedRunner
     from .utils import cast_to_options
     __all__ = [
-        'cast_to_options', 'ipu_model_wrapper', 'IS_IPU',
-        'IPUFp16OptimizerHook', 'IPUDataLoader', 'IPUBaseRunner',
-        'IPUEpochBasedRunner', 'IPUIterBasedRunner'
+        'cast_to_options', 'ipu_model_wrapper', 'IPUFp16OptimizerHook',
+        'IPUDataLoader', 'IPUBaseRunner', 'IPUEpochBasedRunner',
+        'IPUIterBasedRunner'
     ]
