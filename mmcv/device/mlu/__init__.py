@@ -4,8 +4,6 @@ from .distributed import MLUDistributedDataParallel
 from .scatter_gather import scatter, scatter_kwargs
 
 __all__ = [
-    'MLUDataParallel',
-    'MLUDistributedDataParallel',
-    'scatter',
-    'scatter_kwargs',
+    'MLUDataParallel', 'MLUDistributedDataParallel', 'scatter',
+    'scatter_kwargs'
 ]
