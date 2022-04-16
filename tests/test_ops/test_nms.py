@@ -3,8 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.device.mlu import IS_MLU_AVAILABLE
-from mmcv.utils import IS_CUDA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
 class Testnms(object):
