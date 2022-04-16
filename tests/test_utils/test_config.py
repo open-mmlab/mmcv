@@ -561,3 +561,13 @@ def test_copy():
     assert new_cfg._cfg_dict is cfg._cfg_dict
     assert new_cfg._filename == cfg._filename
     assert new_cfg._text == cfg._text
+
+
+def test_special_element():
+    cfg_file = osp.join(data_path, 'config/w.py')
+    in_cfg = Config.fromfile(cfg_file)
+    assert in_cfg.str_item_1 == osp.join(osp.expanduser('~'), 'folder')
+    assert in_cfg.str_item_2 == 'string with \"escape\" characters'
+
+    out_cfg = Config.fromstring(in_cfg.pretty_text, '.py')
+    assert in_cfg._cfg_dict == out_cfg._cfg_dict
