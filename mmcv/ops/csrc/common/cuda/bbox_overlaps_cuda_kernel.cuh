@@ -104,6 +104,8 @@ __device__ __forceinline__ __half __half_min(const __half a, const __half b) {
   return __hle(a, b) ? a : b;
 }
 
+// fp16 won't provide much increase when aligned==true. It is useful when
+// aligned==false, which would give you ~40% bonus.
 __device__ void bbox_overlaps_cuda_kernel_half(
     const __half* bbox1, const __half* bbox2, __half* ious, const int num_bbox1,
     const int num_bbox2, const int mode, const bool aligned, const int offset) {
