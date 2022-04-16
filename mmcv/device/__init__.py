@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import ipu
+from . import mlu
 
-__all__ = ['ipu']
+__all__ = ['mlu']

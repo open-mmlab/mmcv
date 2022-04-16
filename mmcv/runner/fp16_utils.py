@@ -63,7 +63,7 @@ def cast_tensor_type(inputs, src_type, dst_type):
         return inputs
 
 
-def auto_fp16(apply_to=None, out_fp32=False):
+def auto_fp16(apply_to=None, out_fp32=False, supported_types=(nn.Module, )):
     """Decorator to enable fp16 training automatically.
 
     This decorator is useful when you write custom modules and want to support
@@ -76,7 +76,8 @@ def auto_fp16(apply_to=None, out_fp32=False):
         apply_to (Iterable, optional): The argument names to be converted.
             `None` indicates all arguments.
         out_fp32 (bool): Whether to convert the output back to fp32.
-
+        supported_types (tuple): Classes can be decorated by ``auto_fp16``.
+            `New in version 1.5.0.`
     Example:
 
         >>> import torch.nn as nn
@@ -102,9 +103,9 @@ def auto_fp16(apply_to=None, out_fp32=False):
         def new_func(*args, **kwargs):
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
-            if not isinstance(args[0], torch.nn.Module):
+            if not isinstance(args[0], supported_types):
                 raise TypeError('@auto_fp16 can only be used to decorate the '
-                                'method of nn.Module')
+                                f'method of those classes {supported_types}')
             if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
 
@@ -420,3 +421,4 @@ class LossScaler:
     @property
     def loss_scale(self):
         return self.cur_scale
+
