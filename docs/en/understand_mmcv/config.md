@@ -196,5 +196,5 @@ _deprecation_ = dict(
 ```python
 >>> cfg = Config.fromfile('./deprecated_cfg.py')
 
-UserWarning: The config file deprecated.py will be deprecated in the future. Please use expected_cfg.py instead. More information can be found at https://github.com/open-mmlab/mmcv/pull/1275
+UserWarning: The config file deprecated_cfg.py will be deprecated in the future. Please use expected_cfg.py instead. More information can be found at https://github.com/open-mmlab/mmcv/pull/1275
 ```

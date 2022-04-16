@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import copy
 import json
 import os
 import os.path as osp
@@ -536,3 +537,27 @@ def test_deprecation():
         with pytest.warns(DeprecationWarning):
             cfg = Config.fromfile(cfg_file)
         assert cfg.item1 == 'expected'
+
+
+def test_deepcopy():
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    new_cfg = copy.deepcopy(cfg)
+
+    assert isinstance(new_cfg, Config)
+    assert new_cfg._cfg_dict == cfg._cfg_dict
+    assert new_cfg._cfg_dict is not cfg._cfg_dict
+    assert new_cfg._filename == cfg._filename
+    assert new_cfg._text == cfg._text
+
+
+def test_copy():
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    new_cfg = copy.copy(cfg)
+
+    assert isinstance(new_cfg, Config)
+    assert new_cfg is not cfg
+    assert new_cfg._cfg_dict is cfg._cfg_dict
+    assert new_cfg._filename == cfg._filename
+    assert new_cfg._text == cfg._text

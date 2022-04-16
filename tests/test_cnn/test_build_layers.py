@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
@@ -59,12 +60,21 @@ def test_build_conv_layer():
     assert layer.groups == kwargs['groups']
     assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
 
+    # sparse convs cannot support the case when groups>1
+    kwargs.pop('groups')
+
     for type_name, module in CONV_LAYERS.module_dict.items():
         cfg = dict(type=type_name)
+        # SparseInverseConv2d and SparseInverseConv3d do not have the argument
+        # 'dilation'
+        if type_name == 'SparseInverseConv2d' or type_name == \
+                'SparseInverseConv3d':
+            kwargs.pop('dilation')
         layer = build_conv_layer(cfg, **kwargs)
         assert isinstance(layer, module)
         assert layer.in_channels == kwargs['in_channels']
         assert layer.out_channels == kwargs['out_channels']
+        kwargs['dilation'] = 2  # recover the key
 
 
 def test_infer_norm_abbr():

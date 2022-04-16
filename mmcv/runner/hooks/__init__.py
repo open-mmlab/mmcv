@@ -6,17 +6,20 @@ from .evaluation import DistEvalHook, EvalHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
 from .logger import (DvcliveLoggerHook, LoggerHook, MlflowLoggerHook,
-                     NeptuneLoggerHook, PaviLoggerHook, TensorboardLoggerHook,
-                     TextLoggerHook, WandbLoggerHook)
+                     NeptuneLoggerHook, PaviLoggerHook, SegmindLoggerHook,
+                     TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
 from .lr_updater import (CosineAnnealingLrUpdaterHook,
                          CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
                          ExpLrUpdaterHook, FixedLrUpdaterHook,
                          FlatCosineAnnealingLrUpdaterHook, InvLrUpdaterHook,
-                         LrUpdaterHook, OneCycleLrUpdaterHook,
-                         PolyLrUpdaterHook, StepLrUpdaterHook)
+                         LinearAnnealingLrUpdaterHook, LrUpdaterHook,
+                         OneCycleLrUpdaterHook, PolyLrUpdaterHook,
+                         StepLrUpdaterHook)
 from .memory import EmptyCacheHook
 from .momentum_updater import (CosineAnnealingMomentumUpdaterHook,
-                               CyclicMomentumUpdaterHook, MomentumUpdaterHook,
+                               CyclicMomentumUpdaterHook,
+                               LinearAnnealingMomentumUpdaterHook,
+                               MomentumUpdaterHook,
                                OneCycleMomentumUpdaterHook,
                                StepMomentumUpdaterHook)
 from .optimizer import (Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
@@ -38,5 +41,7 @@ __all__ = [
     'StepMomentumUpdaterHook', 'CosineAnnealingMomentumUpdaterHook',
     'CyclicMomentumUpdaterHook', 'OneCycleMomentumUpdaterHook',
     'SyncBuffersHook', 'EMAHook', 'EvalHook', 'DistEvalHook', 'ProfilerHook',
-    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook'
+    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook',
+    'SegmindLoggerHook', 'LinearAnnealingLrUpdaterHook',
+    'LinearAnnealingMomentumUpdaterHook'
 ]

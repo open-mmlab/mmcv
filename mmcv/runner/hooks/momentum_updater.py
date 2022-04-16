@@ -200,6 +200,15 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
 
 @HOOKS.register_module()
 class CosineAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
+    """Cosine annealing LR Momentum decays the Momentum of each parameter group
+    linearly.
+
+    Args:
+        min_momentum (float, optional): The minimum momentum. Default: None.
+        min_momentum_ratio (float, optional): The ratio of minimum momentum to
+            the base momentum. Either `min_momentum` or `min_momentum_ratio`
+            should be specified. Default: None.
+    """
 
     def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
         assert (min_momentum is None) ^ (min_momentum_ratio is None)
@@ -220,6 +229,39 @@ class CosineAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
             target_momentum = self.min_momentum
         return annealing_cos(base_momentum, target_momentum,
                              progress / max_progress)
+
+
+@HOOKS.register_module()
+class LinearAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
+    """Linear annealing LR Momentum decays the Momentum of each parameter group
+    linearly.
+
+    Args:
+        min_momentum (float, optional): The minimum momentum. Default: None.
+        min_momentum_ratio (float, optional): The ratio of minimum momentum to
+            the base momentum. Either `min_momentum` or `min_momentum_ratio`
+            should be specified. Default: None.
+    """
+
+    def __init__(self, min_momentum=None, min_momentum_ratio=None, **kwargs):
+        assert (min_momentum is None) ^ (min_momentum_ratio is None)
+        self.min_momentum = min_momentum
+        self.min_momentum_ratio = min_momentum_ratio
+        super(LinearAnnealingMomentumUpdaterHook, self).__init__(**kwargs)
+
+    def get_momentum(self, runner, base_momentum):
+        if self.by_epoch:
+            progress = runner.epoch
+            max_progress = runner.max_epochs
+        else:
+            progress = runner.iter
+            max_progress = runner.max_iters
+        if self.min_momentum_ratio is not None:
+            target_momentum = base_momentum * self.min_momentum_ratio
+        else:
+            target_momentum = self.min_momentum
+        return annealing_linear(base_momentum, target_momentum,
+                                progress / max_progress)
 
 
 @HOOKS.register_module()

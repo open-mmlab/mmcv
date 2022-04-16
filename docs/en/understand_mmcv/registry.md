@@ -31,7 +31,7 @@ In the package, we first create a file to implement builders, named `converters/
 ```python
 from mmcv.utils import Registry
 # create a registry for converters
-CONVERTERS = Registry('converter')
+CONVERTERS = Registry('converters')
 ```
 
 Then we can implement different converters in the package. For example, implement `Converter1` in `converters/converter1.py`
@@ -91,7 +91,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
 ```{note}
 In this example, we demonstrate how to use the `build_func` argument to customize the way to build a class instance.
 The functionality is similar to the default `build_from_cfg`. In most cases, default one would be sufficient.
-`build_model_from_cfg` is also implemented to build PyTorch module in `nn.Sequentail`, you may directly use them instead of implementing by yourself.
+`build_model_from_cfg` is also implemented to build PyTorch module in `nn.Sequential`, you may directly use them instead of implementing by yourself.
 ```
 
 ### Hierarchy Registry

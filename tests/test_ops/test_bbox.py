@@ -1,12 +1,15 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import pytest
 import torch
+
+from mmcv.device.mlu import IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 
 class TestBBox(object):
 
     def _test_bbox_overlaps(self, dtype=torch.float, device='cpu'):
-
         from mmcv.ops import bbox_overlaps
         b1 = torch.tensor([[1.0, 1.0, 3.0, 4.0], [2.0, 2.0, 3.0, 4.0],
                            [7.0, 7.0, 8.0, 8.0]]).to(device).type(dtype)
@@ -25,7 +28,6 @@ class TestBBox(object):
         assert np.allclose(out.cpu().numpy(), should_output, 1e-2)
 
         b1 = torch.tensor([[0.0, 0.0, 3.0, 3.0]]).to(device).type(dtype)
-        b1 = torch.tensor([[0.0, 0.0, 3.0, 3.0]]).to(device).type(dtype)
         b2 = torch.tensor([[4.0, 0.0, 5.0, 3.0], [3.0, 0.0, 4.0, 3.0],
                            [2.0, 0.0, 3.0, 3.0], [1.0, 0.0, 2.0,
                                                   3.0]]).to(device).type(dtype)
@@ -38,13 +40,24 @@ class TestBBox(object):
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not torch.cuda.is_available(),
-                reason='requires CUDA support')),
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_bbox_overlaps_float(self, device):
-        self._test_bbox_overlaps(torch.float, device=device)
+        self._test_bbox_overlaps(device, dtype=torch.float)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
-    def test_bbox_overlaps_half(self, device='cuda'):
-        self._test_bbox_overlaps(torch.half, device=device)
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    def test_bbox_overlaps_half(self, device):
+        self._test_bbox_overlaps(device, dtype=torch.half)
