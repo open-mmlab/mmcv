@@ -79,32 +79,26 @@ def load(filepath, map_location=None):
 def test_load_external_url():
     # test modelzoo://
     torchvision_version = torchvision.__version__
-    url = _load_checkpoint('modelzoo://resnet50')
-    if torchvision_version < '0.10.0':
-        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
-                       '357.pth')
+    if digit_version(torchvision_version) < digit_version('0.10.0'):
+        assert (_load_checkpoint('modelzoo://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-19c8e'
+                '357.pth')
+        assert (_load_checkpoint('torchvision://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-19c8e'
+                '357.pth')
     else:
-        # filename of checkpoint is renamed in torch1.9.0
-        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
-                       'a61.pth')
-
-    # test torchvision://
-    url = _load_checkpoint('torchvision://resnet50')
-    if torchvision_version < '0.10.0':
-        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
-                       '357.pth')
-    else:
-        # filename of checkpoint is renamed in torch1.9.0
-        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
-                       'a61.pth')
+        assert (_load_checkpoint('modelzoo://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-0676b'
+                'a61.pth')
+        assert (_load_checkpoint('torchvision://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-0676b'
+                'a61.pth')
 
     if digit_version(torchvision.__version__) > digit_version('0.12.0'):
         # Test load new format torchvision models.
         _load_checkpoint('torchvision://resnet50.imagenet1k_v1')
         _load_checkpoint('torchvision://resnet50.default')
-        assert (
-            _load_checkpoint('torchvision://resnet50') ==
-            'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+
     # test open-mmlab:// with default MMCV_HOME
     os.environ.pop(ENV_MMCV_HOME, None)
     os.environ.pop(ENV_XDG_CACHE_HOME, None)

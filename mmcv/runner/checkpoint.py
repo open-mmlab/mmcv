@@ -131,6 +131,7 @@ def get_torchvision_models():
                              'model_zoo/torchvision_0.12.json')
         model_urls = mmcv.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
+            #
             if (not cls_name.endswith('_Weights')
                     or not hasattr(cls, 'DEFAULT')):
                 continue
