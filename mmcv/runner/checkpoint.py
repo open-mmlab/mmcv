@@ -131,7 +131,11 @@ def get_torchvision_models():
                              'model_zoo/torchvision_0.12.json')
         model_urls = mmcv.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
-            #
+            # The name of torchvision model weights classes ends with
+            # `_Weights` such as ResNet18_Weights`. However, some model weight
+            # classes, such as `MNASNet0_75_Weights` does not have any urls in
+            # torchvision 0.13.0 and cannot be iterated. Here we simply check
+            # `DEFAULT` attribute to ensure the class is not empty.
             if (not cls_name.endswith('_Weights')
                     or not hasattr(cls, 'DEFAULT')):
                 continue
