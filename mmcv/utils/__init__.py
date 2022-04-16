@@ -36,6 +36,7 @@ except ImportError:
         'is_method_overridden', 'has_method'
     ]
 else:
+    from .device_type import IS_MLU_AVAILABLE
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
@@ -73,5 +74,5 @@ else:
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
         '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
-        'worker_init_fn'
+        'worker_init_fn', 'IS_MLU_AVAILABLE'
     ]

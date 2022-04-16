@@ -5,10 +5,10 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.device.mlu import (IS_MLU_AVAILABLE, MLUDataParallel,
-                             MLUDistributedDataParallel)
+from mmcv.device.mlu import MLUDataParallel, MLUDistributedDataParallel
 from mmcv.device.mlu._functions import Scatter, scatter
 from mmcv.parallel import is_module_wrapper
+from mmcv.utils import IS_MLU_AVAILABLE
 
 
 def mock(*args, **kwargs):
