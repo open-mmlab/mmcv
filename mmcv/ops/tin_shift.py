@@ -20,7 +20,7 @@ class TINShiftFunction(Function):
     def forward(ctx, input, shift):
         if input.size(0) != shift.size(0):
             raise ValueError(
-                f'The first dim (batch) of `input` and `shift` should be'
+                'The first dim (batch) of `input` and `shift` should be '
                 f'same, but got {input.size(0)} and {shift.size(0)}.')
         C = input.size(2)
         num_segments = shift.size(1)
