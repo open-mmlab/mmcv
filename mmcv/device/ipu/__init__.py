@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcv.utils import IS_IPU
+from mmcv.utils import IS_IPU_AVAILABLE
 
-if IS_IPU:
+if IS_IPU_AVAILABLE:
     from .dataloader import IPUDataLoader
     from .hook_wrapper import IPUFp16OptimizerHook
     from .model_wrapper import ipu_model_wrapper

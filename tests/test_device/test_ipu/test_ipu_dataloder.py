@@ -5,14 +5,14 @@ import torch
 from torch.utils.data import Dataset
 
 from mmcv.parallel.data_container import DataContainer
-from mmcv.utils import IS_IPU
+from mmcv.utils import IS_IPU_AVAILABLE
 
-if IS_IPU:
+if IS_IPU_AVAILABLE:
     from mmcv.device.ipu import IPUDataLoader, cast_to_options
     from mmcv.device.ipu.dataloader import collate
 
 skip_no_ipu = pytest.mark.skipif(
-    not IS_IPU, reason='test case under ipu environment')
+    not IS_IPU_AVAILABLE, reason='test case under ipu environment')
 
 
 class ToyDataset(Dataset):

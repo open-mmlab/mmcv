@@ -2,9 +2,9 @@
 
 from mmcv.runner import (HOOKS, RUNNERS, BaseRunner, EpochBasedRunner,
                          IterBasedRunner)
-from mmcv.utils import IS_IPU
+from mmcv.utils import IS_IPU_AVAILABLE
 
-if IS_IPU:
+if IS_IPU_AVAILABLE:
     from .dataloader import IPUDataLoader
     from .hook_wrapper import (IPUFp16OptimizerHook, wrap_lr_updater_hook,
                                wrap_optimizer_hook)
@@ -56,7 +56,7 @@ class IPUBaseRunner(BaseRunner):
         super().__init__(model, **kwargs)
 
         # process options of ipu
-        if IS_IPU:
+        if IS_IPU_AVAILABLE:
             self.options = cast_to_options(options_cfg)
             self.model = ipu_model_wrapper(
                 self.model,

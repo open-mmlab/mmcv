@@ -5,9 +5,9 @@ import pytest
 import torch.nn as nn
 
 import mmcv
-from mmcv.utils import IS_IPU
+from mmcv.utils import IS_IPU_AVAILABLE
 
-if IS_IPU:
+if IS_IPU_AVAILABLE:
     from poptorch.options import _IExecutionStrategy
 
     from mmcv.device.ipu import cast_to_options
@@ -15,7 +15,7 @@ if IS_IPU:
                                        model_sharding)
 
 skip_no_ipu = pytest.mark.skipif(
-    not IS_IPU, reason='test case under ipu environment')
+    not IS_IPU_AVAILABLE, reason='test case under ipu environment')
 
 
 class ToyModel(nn.Module):

@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 
-def is_ipu():
+def is_ipu_available():
     try:
-        import poptorch  # noqa: E261, F401
+        import poptorch
+        return poptorch.ipuHardwareIsAvailable()
     except ImportError:
         return False
-    return True
 
 
-IS_IPU = is_ipu()
+IS_IPU_AVAILABLE = is_ipu_available()
 
 
 def is_mlu_available():

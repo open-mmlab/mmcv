@@ -6,14 +6,14 @@ import pytest
 import torch
 
 from mmcv.parallel.data_container import DataContainer
-from mmcv.utils import IS_IPU
+from mmcv.utils import IS_IPU_AVAILABLE
 
-if IS_IPU:
+if IS_IPU_AVAILABLE:
     from mmcv.device.ipu.hierarchical_data_manager import \
         HierarchicalDataManager
 
 skip_no_ipu = pytest.mark.skipif(
-    not IS_IPU, reason='test case under ipu environment')
+    not IS_IPU_AVAILABLE, reason='test case under ipu environment')
 
 
 @skip_no_ipu
