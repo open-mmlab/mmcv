@@ -28,7 +28,7 @@ def _options_assigner(cfg, options_node):
         raise NotImplementedError(error_msg)
 
 
-def cast_to_options(cfg):
+def cfg2options(cfg):
     """Parse dictionary to ipu options.
 
     Args:

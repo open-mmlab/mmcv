@@ -111,7 +111,7 @@ def test_build_runner(tmp_path):
 
     model = ToyModel()
     options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
-    dataloader = IPUDataLoader(None, ToyDataset(), num_workers=1)
+    dataloader = IPUDataLoader(ToyDataset(), None, num_workers=1)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
     cfg = dict(type='IPUIterBasedRunner', max_iters=2, options_cfg=options_cfg)
     default_args = dict(

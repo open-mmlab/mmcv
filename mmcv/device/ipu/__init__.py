@@ -6,9 +6,9 @@ if IS_IPU_AVAILABLE:
     from .hook_wrapper import IPUFp16OptimizerHook
     from .model_wrapper import ipu_model_wrapper
     from .runner import IPUBaseRunner, IPUEpochBasedRunner, IPUIterBasedRunner
-    from .utils import cast_to_options
+    from .utils import cfg2options
     __all__ = [
-        'cast_to_options', 'ipu_model_wrapper', 'IPUFp16OptimizerHook',
+        'cfg2options', 'ipu_model_wrapper', 'IPUFp16OptimizerHook',
         'IPUDataLoader', 'IPUBaseRunner', 'IPUEpochBasedRunner',
         'IPUIterBasedRunner'
     ]

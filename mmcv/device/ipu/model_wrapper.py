@@ -633,7 +633,7 @@ def ipu_model_wrapper(model,
     Args:
         model (nn.Module): The target model to be converted.
         options (dict[str, poptorch.Options]): IPU options, generated
-            by :func:`cast_to_options`.
+            by :func:`cfg2options`.
         optimizer (:obj:`torch.optim.Optimizer`, optional): torch
             optimizer, necessary if in training mode
         logger (:obj:`logging.Logger`): Logger used during training.

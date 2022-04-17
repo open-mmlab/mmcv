@@ -9,7 +9,7 @@ if IS_IPU_AVAILABLE:
     from .hook_wrapper import (IPUFp16OptimizerHook, wrap_lr_updater_hook,
                                wrap_optimizer_hook)
     from .model_wrapper import ipu_model_wrapper
-    from .utils import build_from_cfg_with_wrapper, cast_to_options
+    from .utils import build_from_cfg_with_wrapper, cfg2options
 
 
 class IPUBaseRunner(BaseRunner):
@@ -57,7 +57,7 @@ class IPUBaseRunner(BaseRunner):
 
         # process options of ipu
         if IS_IPU_AVAILABLE:
-            self.options = cast_to_options(options_cfg)
+            self.options = cfg2options(options_cfg)
             self.model = ipu_model_wrapper(
                 self.model,
                 self.options,

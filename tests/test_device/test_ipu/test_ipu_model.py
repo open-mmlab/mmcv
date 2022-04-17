@@ -10,7 +10,7 @@ from mmcv.runner.fp16_utils import auto_fp16
 from mmcv.utils import IS_IPU_AVAILABLE
 
 if IS_IPU_AVAILABLE:
-    from mmcv.device.ipu import cast_to_options, ipu_model_wrapper
+    from mmcv.device.ipu import cfg2options, ipu_model_wrapper
     from mmcv.device.ipu.utils import compare_ndarray
 
 skip_no_ipu = pytest.mark.skipif(
@@ -95,7 +95,7 @@ def test_build_model():
                 eval_cfg=dict(deviceIterations=1, ),
                 partialsType='half')
 
-            ipu_options = cast_to_options(options_cfg)
+            ipu_options = cfg2options(options_cfg)
             model = ToyModel()
             optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
             logger = logging.getLogger()
@@ -184,7 +184,7 @@ def test_run_model():
         ),
         eval_cfg=dict(deviceIterations=1, ),
         partialsType='half')
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     modules_to_record = ['bn']
     with pytest.raises(AssertionError, match='Feature alignment'):
         run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
@@ -200,7 +200,7 @@ def test_run_model():
         ),
         eval_cfg=dict(deviceIterations=1, ),
         partialsType='half')
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     modules_to_record = ['bn']
     with pytest.raises(AssertionError, match='Feature alignment'):
         run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
@@ -215,7 +215,7 @@ def test_run_model():
         ),
         eval_cfg=dict(deviceIterations=1, ),
         partialsType='half')
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     fp16_cfg = {
         'loss_scale': 0.5,
         'velocity_accum_type': 'half',
@@ -243,7 +243,7 @@ def test_run_model():
         ),
         eval_cfg=dict(deviceIterations=1, ),
         partialsType='half')
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     modules_to_record = ['bn']
     run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
@@ -256,7 +256,7 @@ def test_run_model():
             availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],
         ),
         eval_cfg=dict(deviceIterations=1, ))
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     modules_to_record = None
     run_model(ipu_options, None, modules_to_record, ipu_model_wrapper)
 
@@ -270,7 +270,7 @@ def test_run_model():
         ),
         eval_cfg=dict(deviceIterations=1, ),
         partialsType='half')
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     fp16_cfg = {'loss_scale': 0.5}
     modules_to_record = None
     _, ipu_model = run_model(

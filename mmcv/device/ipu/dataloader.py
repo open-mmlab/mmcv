@@ -62,9 +62,9 @@ class IPUDataLoader(poptorch.DataLoader):
     same across all hosts.
 
     Args:
+        dataset (torch.utils.data.Dataset): The dataset to get the data from.
         options (poptorch.Options): Options that will be used to compile
             and run the model.
-        dataset (torch.utils.data.Dataset): The dataset to get the data from.
         batch_size (int, optional): This is the batch size in the conventional
             sense of being the size that runs through an operation in the model
             at any given time.
@@ -97,8 +97,8 @@ class IPUDataLoader(poptorch.DataLoader):
     """
 
     def __init__(self,
-                 options,
                  dataset,
+                 options,
                  batch_size=1,
                  shuffle=False,
                  num_workers=0,

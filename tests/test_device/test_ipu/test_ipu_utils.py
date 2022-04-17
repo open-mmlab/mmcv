@@ -10,7 +10,7 @@ from mmcv.utils import IS_IPU_AVAILABLE
 if IS_IPU_AVAILABLE:
     from poptorch.options import _IExecutionStrategy
 
-    from mmcv.device.ipu import cast_to_options
+    from mmcv.device.ipu import cfg2options
     from mmcv.device.ipu.utils import (build_from_cfg_with_wrapper,
                                        model_sharding)
 
@@ -143,7 +143,7 @@ def test_cast_to_options():
         ),
         eval_cfg=dict(deviceIterations=1, ),
     )
-    ipu_options = cast_to_options(copy.deepcopy(options_cfg))
+    ipu_options = cfg2options(copy.deepcopy(options_cfg))
     assert 'training' in ipu_options
     assert 'inference' in ipu_options
     assert ipu_options['training']._values['random_seed'] == 888
@@ -163,12 +163,12 @@ def test_cast_to_options():
     with pytest.raises(NotImplementedError, match='cfg type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['randomSeed'] = (1, 3)
-        cast_to_options(_options_cfg)
+        cfg2options(_options_cfg)
 
     with pytest.raises(NotImplementedError, match='options_node type'):
         _options_cfg = copy.deepcopy(options_cfg)
         _options_cfg['train_cfg']['Precision'] = {'autocast_policy': 123}
-        cast_to_options(_options_cfg)
+        cfg2options(_options_cfg)
 
 
 @skip_no_ipu

@@ -8,7 +8,7 @@ from mmcv.parallel.data_container import DataContainer
 from mmcv.utils import IS_IPU_AVAILABLE
 
 if IS_IPU_AVAILABLE:
-    from mmcv.device.ipu import IPUDataLoader, cast_to_options
+    from mmcv.device.ipu import IPUDataLoader, cfg2options
     from mmcv.device.ipu.dataloader import collate
 
 skip_no_ipu = pytest.mark.skipif(
@@ -28,16 +28,16 @@ class ToyDataset(Dataset):
 def test_ipu_dataloader():
     # test lazy initialization
     dataloader = IPUDataLoader(
-        None, ToyDataset(), batch_size=256, num_workers=1, mode='async')
+        ToyDataset(), None, batch_size=256, num_workers=1, mode='async')
     options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
-    ipu_options = cast_to_options(options_cfg)
+    ipu_options = cfg2options(options_cfg)
     dataloader.init(ipu_options['training'])
 
     # test normal initialization
     options_cfg = {'train_cfg': {}, 'eval_cfg': {}}
-    ipu_options = cast_to_options(options_cfg)['training']
+    ipu_options = cfg2options(options_cfg)['training']
     dataloader = IPUDataLoader(
-        ipu_options, ToyDataset(), batch_size=256, num_workers=1, mode='async')
+        ToyDataset(), ipu_options, batch_size=256, num_workers=1, mode='async')
 
 
 @skip_no_ipu
