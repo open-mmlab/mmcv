@@ -97,6 +97,7 @@ def test_load_external_url():
     if digit_version(torchvision.__version__) >= digit_version('0.13.0a0'):
         # Test load new format torchvision models.
         _load_checkpoint('torchvision://resnet50.imagenet1k_v1')
+        _load_checkpoint('torchvision://ResNet50_Weights.IMAGENET1K_V1')
         _load_checkpoint('torchvision://resnet50.default')
 
     # test open-mmlab:// with default MMCV_HOME
