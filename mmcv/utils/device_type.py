@@ -1,4 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
+
+def is_ipu_available():
+    try:
+        import poptorch
+        return poptorch.ipuHardwareIsAvailable()
+    except ImportError:
+        return False
+
+
+IS_IPU_AVAILABLE = is_ipu_available()
+
+
 def is_mlu_available():
     try:
         import torch

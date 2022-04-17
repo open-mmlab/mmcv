@@ -40,6 +40,9 @@ from .optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
 from .priority import Priority, get_priority
 from .utils import get_host_info, get_time_str, obj_from_dict, set_random_seed
 
+# initialize ipu to registor ipu runner to RUNNERS
+from mmcv.device import ipu  # isort:skip  # noqa
+
 __all__ = [
     'BaseRunner', 'Runner', 'EpochBasedRunner', 'IterBasedRunner', 'LogBuffer',
     'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'LrUpdaterHook',
