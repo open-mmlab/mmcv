@@ -36,7 +36,7 @@ except ImportError:
         'is_method_overridden', 'has_method'
     ]
 else:
-    from .device_type import IS_MLU_AVAILABLE, IS_IPU
+    from .device_type import IS_IPU, IS_MLU_AVAILABLE
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
