@@ -1,7 +1,6 @@
 # flake8: noqa
 # Copyright (c) OpenMMLab. All rights reserved.
 from .config import Config, ConfigDict, DictAction
-from .device_type import IS_IPU, IS_MLU
 from .misc import (check_prerequisites, concat_list, deprecated_api_warning,
                    has_method, import_modules_from_strings, is_list_of,
                    is_method_overridden, is_seq_of, is_str, is_tuple_of,
@@ -34,19 +33,21 @@ except ImportError:
         'assert_dict_contains_subset', 'assert_attrs_equal',
         'assert_dict_has_keys', 'assert_keys_equal', 'check_python_script',
         'to_1tuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'to_ntuple',
-        'is_method_overridden', 'has_method', 'IS_IPU', 'IS_MLU'
+        'is_method_overridden', 'has_method'
     ]
 else:
+    from .device_type import IS_MLU_AVAILABLE, IS_IPU
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
     # yapf: disable
-    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
-                                  CUDAExtension, DataLoader, PoolDataLoader,
-                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
-                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
-                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+    from .parrots_wrapper import (IS_CUDA_AVAILABLE, TORCH_VERSION,
+                                  BuildExtension, CppExtension, CUDAExtension,
+                                  DataLoader, PoolDataLoader, SyncBatchNorm,
+                                  _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
+                                  _AvgPoolNd, _BatchNorm, _ConvNd,
+                                  _ConvTransposeMixin, _get_cuda_home,
                                   _InstanceNorm, _MaxPoolNd, get_build_config,
                                   is_rocm_pytorch)
     # yapf: enable
@@ -72,6 +73,6 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method', 'worker_init_fn', 'IS_IPU',
-        'IS_MLU'
+        '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
+        'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU'
     ]

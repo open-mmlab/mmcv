@@ -5,9 +5,10 @@ import pytest
 import torch
 import torch.nn as nn
 
+from mmcv.device.mlu import MLUDataParallel, MLUDistributedDataParallel
 from mmcv.device.mlu._functions import Scatter, scatter
 from mmcv.parallel import is_module_wrapper
-from mmcv.utils import IS_MLU, MLUDataParallel, MLUDistributedDataParallel
+from mmcv.utils import IS_MLU_AVAILABLE
 
 
 def mock(*args, **kwargs):
@@ -31,7 +32,7 @@ def test_is_module_wrapper():
     model = Model()
     assert not is_module_wrapper(model)
 
-    if IS_MLU:
+    if IS_MLU_AVAILABLE:
         mludp = MLUDataParallel(model)
         assert is_module_wrapper(mludp)
 
@@ -51,7 +52,7 @@ def test_scatter():
         assert torch.allclose(input, output)
 
     # if the device is MLU, copy the input from CPU to MLU
-    if IS_MLU:
+    if IS_MLU_AVAILABLE:
         input = torch.zeros([1, 3, 3, 3])
         output = scatter(input=input, devices=[0])
         assert torch.allclose(input.to('mlu'), output)
@@ -82,7 +83,7 @@ def test_Scatter():
         assert torch.allclose(input, output)
 
     # if the device is MLU, copy the input from CPU to MLU
-    if IS_MLU:
+    if IS_MLU_AVAILABLE:
         target_mlus = [0]
         input = torch.zeros([1, 3, 3, 3])
         outputs = Scatter.forward(target_mlus, input)

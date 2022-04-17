@@ -302,12 +302,12 @@ def get_extensions():
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.mlu')
+                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
         else:
-            print(f'Compiling {ext_name} without CUDA')
+            print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             extension = CppExtension
