@@ -13,9 +13,9 @@ from torch.nn.parallel import DataParallel
 from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
-                                    get_state_dict, load_checkpoint,
-                                    load_from_local, load_from_pavi,
-                                    save_checkpoint)
+                                    get_state_dict, get_torchvision_models,
+                                    load_checkpoint, load_from_local,
+                                    load_from_pavi, save_checkpoint)
 
 sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
@@ -147,8 +147,13 @@ def test_get_state_dict():
                         wrapped_model.module.conv.module.bias)
 
 
-def test_load_pavimodel_dist():
+def test_get_torchvision_models():
+    # Check if wrong model paths are given
+    # More details at https://github.com/open-mmlab/mmcv/pull/1668
+    get_torchvision_models()
 
+
+def test_load_pavimodel_dist():
     sys.modules['pavi'] = MagicMock()
     sys.modules['pavi.modelcloud'] = MagicMock()
     pavimodel = Mockpavimodel()

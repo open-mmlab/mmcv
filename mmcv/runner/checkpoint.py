@@ -107,10 +107,13 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 def get_torchvision_models():
     model_urls = dict()
-    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
+    # Add a prefix to avoid returning wrong paths
+    # More details at https://github.com/open-mmlab/mmcv/pull/1668
+    for _, name, ispkg in pkgutil.walk_packages(
+            torchvision.models.__path__, prefix='torchvision.models.'):
         if ispkg:
             continue
-        _zoo = import_module(f'torchvision.models.{name}')
+        _zoo = import_module(name)
         if hasattr(_zoo, 'model_urls'):
             _urls = getattr(_zoo, 'model_urls')
             model_urls.update(_urls)
