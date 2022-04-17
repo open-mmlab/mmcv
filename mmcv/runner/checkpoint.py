@@ -106,7 +106,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def get_torchvision_models():
-    if digit_version(torchvision.__version__) <= digit_version('0.12.0'):
+    if digit_version(torchvision.__version__) < digit_version('0.13.0a0'):
         model_urls = dict()
         # When the version of torchvision is lower than 0.13, the model url is
         # not declared in `torchvision.model.__init__.py`, so we need to
