@@ -434,7 +434,7 @@ def load_from_torchvision(filename, map_location=None):
     # Support getting model urls in the same way as torchvision
     # `ResNet50_Weights.IMAGENET1K_V1` will be mapped to
     # resnet50.imagenet1k_v1.
-    model_name = model_name.replace('_Weights', '').lower()
+    model_name = model_name.lower().replace('_weights', '')
     return load_from_http(model_urls[model_name], map_location=map_location)
 
 
