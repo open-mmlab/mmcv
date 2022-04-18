@@ -95,7 +95,7 @@ def multi_scale_deformable_attn_pytorch(value, value_spatial_shapes,
 
     Args:
         value (torch.Tensor): The value has shape
-            (bs, num_keys, mum_heads, embed_dims//num_heads)
+            (bs, num_keys, num_heads, embed_dims//num_heads)
         value_spatial_shapes (torch.Tensor): Spatial shape of
             each feature map, has shape (num_levels, 2),
             last dimension 2 represent (h, w)

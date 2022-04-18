@@ -368,7 +368,7 @@ Let us introduce the usage of `initialize` in detail.
 
 4. Initialize model inherited from BaseModule, Sequential, ModuleList, ModuleDict
 
-    `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weight`.
+    `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weights()`.
 
     `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
 

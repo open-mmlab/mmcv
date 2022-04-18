@@ -460,7 +460,6 @@ def impad(img,
             areas when padding_mode is 'constant'. Default: 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Default: constant.
-
             - constant: pads with a constant value, this value is specified
               with pad_val.
             - edge: pads with the last value at the edge of the image.
@@ -479,7 +478,9 @@ def impad(img,
 
     assert (shape is not None) ^ (padding is not None)
     if shape is not None:
-        padding = (0, 0, shape[1] - img.shape[1], shape[0] - img.shape[0])
+        width = max(shape[1] - img.shape[1], 0)
+        height = max(shape[0] - img.shape[0], 0)
+        padding = (0, 0, width, height)
 
     # check pad_val
     if isinstance(pad_val, tuple):

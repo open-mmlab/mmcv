@@ -13,6 +13,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - CornerPool
 - Deformable Convolution v1/v2
 - Deformable RoIPool
+- DiffIoURotated
 - DynamicScatter
 - GatherPoints
 - FurthestPointSample

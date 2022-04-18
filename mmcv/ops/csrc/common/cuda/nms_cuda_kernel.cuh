@@ -72,4 +72,46 @@ __global__ void nms_cuda(const int n_boxes, const float iou_threshold,
     }
   }
 }
+
+__global__ void gather_keep_from_mask(bool *keep,
+                                      const unsigned long long *dev_mask,
+                                      const int n_boxes) {
+  const int col_blocks = (n_boxes + threadsPerBlock - 1) / threadsPerBlock;
+  const int tid = threadIdx.x;
+
+  // mark the bboxes which have been removed.
+  extern __shared__ unsigned long long removed[];
+
+  // initialize removed.
+  for (int i = tid; i < col_blocks; i += blockDim.x) {
+    removed[i] = 0;
+  }
+  __syncthreads();
+
+  for (int nblock = 0; nblock < col_blocks; ++nblock) {
+    auto removed_val = removed[nblock];
+    __syncthreads();
+    const int i_offset = nblock * threadsPerBlock;
+#pragma unroll
+    for (int inblock = 0; inblock < threadsPerBlock; ++inblock) {
+      const int i = i_offset + inblock;
+      if (i >= n_boxes) break;
+      // select a candidate, check if it should kept.
+      if (!(removed_val & (1ULL << inblock))) {
+        if (tid == 0) {
+          // mark the output.
+          keep[i] = true;
+        }
+        auto p = dev_mask + i * col_blocks;
+        // remove all bboxes which overlap the candidate.
+        for (int j = tid; j < col_blocks; j += blockDim.x) {
+          if (j >= nblock) removed[j] |= p[j];
+        }
+        __syncthreads();
+        removed_val = removed[nblock];
+      }
+    }
+  }
+}
+
 #endif  // NMS_CUDA_KERNEL_CUH

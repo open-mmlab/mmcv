@@ -1,0 +1,1161 @@
+/*************************************************************************
+ * Copyright (C) 2021 Cambricon.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *************************************************************************/
+#include "common_mlu_helper.hpp"
+
+#define NMS_SIZE (64)
+#define COORD_DIM (4)
+#define MEMORY_CORE (0x80)
+#define INFO_NUM (5)  // 5 means x1, x2, y1, y2 and score
+#define REDUCE_NUM \
+  (7)  // score, x1, y1, x2, y2, max_index (reserve 2 num for half-type input)
+
+#define SIZE_NRAM_BUF (MAX_NRAM_SIZE + REM_FOR_STACK - 62 * 1024)
+#define SIZE_SRAM_BUF (MAX_SRAM_SIZE)
+
+__nram__ int8_t nram_buffer[SIZE_NRAM_BUF];
+__mlu_shared__ int8_t sram_buffer[SIZE_SRAM_BUF];
+
+__mlu_func__ void pvLock() {
+#if __BANG_ARCH__ == 270
+  if (coreId != MEMORY_CORE) {
+    __bang_lock(0, 0);
+  }
+#endif
+}
+
+__mlu_func__ void pvUnlock() {
+#if __BANG_ARCH__ == 270
+  if (coreId != MEMORY_CORE) {
+    __bang_unlock(0, 0);
+  }
+#endif
+}
+
+enum Addr { SRAM, GDRAM };
+
+template <typename IN_DT, typename OUT_DT>
+__mlu_func__ void nms_detection(
+    uint32_t *output_box_num, const int output_mode, const int input_layout,
+    OUT_DT *output_data, const Addr dst, IN_DT *input_data_score,
+    const IN_DT *input_data_box, const Addr src, IN_DT *buffer,
+    const int buffer_size, IN_DT *sram, const int core_limit,
+    const int input_box_num, const int input_stride, const int output_stride,
+    const int keepNum, const float thresh_iou, const float thresh_score,
+    const float offset, const int algo) {
+  // global value, it is stored in sram with a offset from the begin.
+  const int flag_offset_size = 28;
+  int32_t *loop_end_flag = (int32_t *)(sram + flag_offset_size);
+  loop_end_flag[0] = 0;
+  // score, x1, y1, x2, y2, inter_x1, inter_y1, inter_x2, inter_y2
+  const int nms_buffer_count1 = 9;
+  // temp nram buffer to store selected target.
+  const int nram_save_limit_count = 256;
+  float div_thresh_iou = 1.0 / thresh_iou;
+
+  // input data ptr
+  IN_DT *input_score_ptr;
+  const IN_DT *input_x1_ptr;
+  const IN_DT *input_y1_ptr;
+  const IN_DT *input_x2_ptr;
+  const IN_DT *input_y2_ptr;
+  input_score_ptr = input_data_score;
+  input_x1_ptr = input_data_box;
+  if (input_layout == 0) {
+    // [boxes_num, 4]
+    input_y1_ptr = input_x1_ptr + 1;
+    input_x2_ptr = input_x1_ptr + 2;
+    input_y2_ptr = input_x1_ptr + 3;
+  } else if (input_layout == 1) {
+    // [4, boxes_num]
+    input_y1_ptr = input_x1_ptr + input_stride;
+    input_x2_ptr = input_y1_ptr + input_stride;
+    input_y2_ptr = input_x2_ptr + input_stride;
+  }
+
+  // nram data ptr
+  IN_DT *x1;
+  IN_DT *y1;
+  IN_DT *x2;
+  IN_DT *y2;
+  IN_DT *score;
+  IN_DT *inter_x1;
+  IN_DT *inter_y1;
+  IN_DT *inter_x2;
+  IN_DT *inter_y2;
+  IN_DT *max_box;  // the max score, x1, y1, x2, y2
+  IN_DT *x1_mask;
+  IN_DT *y1_mask;
+  IN_DT *x2_mask;
+  IN_DT *y2_mask;
+  OUT_DT *nram_save;
+
+  int limit = 0;        // find limit when GDRAM or SRAM
+  int len_core = 0;     // the length deal by every core
+  int max_seg_pad = 0;  // the max length every repeat
+  int repeat = 0;
+  int remain = 0;
+  int remain_pad = 0;
+  int input_offset = 0;  // offset of input_data for current core
+  int nram_save_count = 0;
+  // mask for collect x1, y1, x2, y2. each mask has 128 elements
+  const int mask_size = 128;
+  const int total_mask_size = 512;
+
+  if (output_mode == 0) {
+    limit = (buffer_size - 128 /*for max_box*/ * sizeof(IN_DT) -
+             nram_save_limit_count * sizeof(OUT_DT) -
+             total_mask_size * sizeof(IN_DT)) /
+            (nms_buffer_count1 * sizeof(IN_DT));
+  } else {
+    limit = (buffer_size - 128 /*for max_box*/ * sizeof(IN_DT) -
+             nram_save_limit_count * INFO_NUM * sizeof(OUT_DT) -
+             total_mask_size * sizeof(IN_DT)) /
+            (nms_buffer_count1 * sizeof(IN_DT));
+  }
+
+  if (core_limit == 1) {
+    len_core = input_box_num;
+    input_offset = 0;
+  } else {
+    int avg_core = input_box_num / core_limit;
+    int rem = input_box_num % core_limit;
+    len_core = avg_core + (taskId < rem ? 1 : 0);
+    input_offset = avg_core * taskId + (taskId <= rem ? taskId : rem);
+  }
+  max_seg_pad = PAD_DOWN(limit, NMS_SIZE);
+  repeat = len_core / max_seg_pad;
+  remain = len_core % max_seg_pad;
+  remain_pad = PAD_UP(remain, NMS_SIZE);
+
+  // if datatype is half, we should convert it to float when compute the IoU
+  int max_seg_iou_compute =
+      PAD_DOWN(max_seg_pad / (sizeof(float) / sizeof(IN_DT)), NMS_SIZE);
+  int repeat_iou_compute = len_core / max_seg_iou_compute;
+  int remain_iou_compute = len_core % max_seg_iou_compute;
+  int remain_pad_iou_compute = PAD_UP(remain_iou_compute, NMS_SIZE);
+  // initial the address point
+  score = buffer;
+  x1 = score + max_seg_pad;
+  y1 = x1 + max_seg_pad;
+  x2 = y1 + max_seg_pad;
+  y2 = x2 + max_seg_pad;
+  inter_x1 = y2 + max_seg_pad;
+  inter_y1 = inter_x1 + max_seg_pad;
+  inter_x2 = inter_y1 + max_seg_pad;
+  inter_y2 = inter_x2 + max_seg_pad;
+  x1_mask = inter_y2 + max_seg_pad;
+  y1_mask = x1_mask + mask_size;
+  x2_mask = y1_mask + mask_size;
+  y2_mask = x2_mask + mask_size;
+  max_box = y2_mask + mask_size;  // the max score, x1, y1, x2, y2
+  // offset two line from max_box
+  nram_save = (OUT_DT *)((char *)max_box + NFU_ALIGN_SIZE);
+
+  // set mask for __bang_collect instruction
+  if (input_layout == 0) {
+    __nramset((IN_DT *)x1_mask, total_mask_size, (IN_DT)0);
+    for (int idx = 0; idx < mask_size; idx++) {
+      int index = (idx % COORD_DIM) * mask_size + idx;
+      x1_mask[index] = (IN_DT)1.0;
+    }
+  }
+
+  for (int keep = 0; keep < keepNum; keep++) {  // loop until the max_score <= 0
+    if (core_limit != 1) {
+      __sync_cluster();  // sync before current loop
+    }
+
+    /******find max start******/
+    int max_index = 0;         // the max score index
+    int global_max_index = 0;  // for U1
+    float max_area = 0;        // the max score area
+    max_box[0] = 0;            // init 0
+
+    for (int i = 0; i <= repeat; i++) {
+      if (i == repeat && remain == 0) {
+        break;
+      }
+      int seg_len = 0;  // the length every nms compute
+      int cpy_len = 0;  // the length every nms memcpy
+      i == repeat ? seg_len = remain_pad : seg_len = max_seg_pad;
+      // check seg_len exceeds the limit of fp16 or not. 65536 is the largest
+      // num that half data type could express.
+      if (sizeof(IN_DT) == sizeof(half) && seg_len > 65536) {
+        // seg length exceeds the max num for fp16 datatype!
+        return;
+      }
+      i == repeat ? cpy_len = remain : cpy_len = max_seg_pad;
+      /******nms load start******/
+      mluMemcpyDirection_t load_dir = SRAM2NRAM;
+      if (src == SRAM) {
+        load_dir = SRAM2NRAM;
+      } else {
+        load_dir = GDRAM2NRAM;
+      }
+      __nramset(score, seg_len, (IN_DT)0);
+      __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
+               cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+               cpy_len * sizeof(IN_DT), 0);
+
+      /******nms load end******/
+
+      __bang_max(inter_x1, score, seg_len);
+      if (inter_x1[0] > max_box[0]) {
+        max_box[0] = inter_x1[0];
+
+        if (sizeof(IN_DT) == sizeof(half)) {
+          max_index = ((uint16_t *)inter_x1)[1] + input_offset +
+                      i * max_seg_pad;  // offset start from head of input_data
+        } else if (sizeof(IN_DT) == sizeof(float)) {
+          max_index = ((uint32_t *)inter_x1)[1] + input_offset +
+                      i * max_seg_pad;  // offset start from head of input_data
+        }
+      }
+    }  // for repeat
+
+    int stride = 1;
+    if (input_layout == 0) {
+      stride = input_stride;
+    } else if (input_layout == 1) {
+      stride = 1;
+    }
+
+    if (core_limit == 1) {
+      max_box[1] = input_x1_ptr[max_index * stride];
+      max_box[2] = input_y1_ptr[max_index * stride];
+      max_box[3] = input_x2_ptr[max_index * stride];
+      max_box[4] = input_y2_ptr[max_index * stride];
+      if (algo == 0 || offset == 0.0) {
+        max_area = ((float)max_box[3] - (float)max_box[1]) *
+                   ((float)max_box[4] - (float)max_box[2]);
+      } else {
+        max_area = ((float)max_box[3] - (float)max_box[1] + offset) *
+                   ((float)max_box[4] - (float)max_box[2] + offset);
+      }
+      input_score_ptr[max_index] = 0;
+      global_max_index = max_index;
+      ((uint32_t *)(max_box + INFO_NUM))[0] = max_index;
+    } else if (core_limit == 4) {
+      // find the max with sram
+      // the max box's x1, y1, x2, y2 on every core
+      if (coreId != MEMORY_CORE) {
+        max_box[1] = input_x1_ptr[max_index * stride];
+        max_box[2] = input_y1_ptr[max_index * stride];
+        max_box[3] = input_x2_ptr[max_index * stride];
+        max_box[4] = input_y2_ptr[max_index * stride];
+      }
+      ((uint32_t *)(max_box + INFO_NUM))[0] = max_index;
+      // copy every core's box info to sram, form: score---x1---y1---x2---y2---
+      for (int i = 0; i < INFO_NUM; i++) {
+        __memcpy(sram + i * core_limit + taskId, max_box + i, 1 * sizeof(IN_DT),
+                 NRAM2SRAM);
+      }
+      // copy every core's max_index to sram, use 2 half to store max_index
+      __memcpy(sram + INFO_NUM * core_limit + taskId * 2, max_box + INFO_NUM,
+               sizeof(uint32_t),
+               NRAM2SRAM);  // int32_t datatype
+      __sync_cluster();
+
+      // copy score from sram to nram and find the max
+      __nramset(inter_x1, NMS_SIZE, (IN_DT)0);
+      __memcpy(inter_x1, sram, core_limit * sizeof(IN_DT), SRAM2NRAM);
+      __bang_max(max_box, inter_x1, NMS_SIZE);
+      int max_core = 0;
+      if (sizeof(IN_DT) == sizeof(half)) {
+        max_core = ((uint16_t *)max_box)[1];
+      } else if (sizeof(IN_DT) == sizeof(float)) {
+        max_core = ((uint32_t *)max_box)[1];
+      }
+
+      // copy the max box from SRAM to NRAM
+      __memcpy(max_box + 1, sram + 1 * core_limit + max_core, 1 * sizeof(IN_DT),
+               SRAM2NRAM);  // x1
+      __memcpy(max_box + 2, sram + 2 * core_limit + max_core, 1 * sizeof(IN_DT),
+               SRAM2NRAM);  // y1
+      __memcpy(max_box + 3, sram + 3 * core_limit + max_core, 1 * sizeof(IN_DT),
+               SRAM2NRAM);  // x2
+      __memcpy(max_box + 4, sram + 4 * core_limit + max_core, 1 * sizeof(IN_DT),
+               SRAM2NRAM);  // y2
+      __memcpy(max_box + 5, sram + 5 * core_limit + 2 * max_core,
+               sizeof(uint32_t), SRAM2NRAM);
+      if (algo == 0 || offset == 0.0) {
+        max_area = ((float)max_box[3] - (float)max_box[1]) *
+                   ((float)max_box[4] - (float)max_box[2]);
+      } else {
+        max_area = ((float)max_box[3] - (float)max_box[1] + offset) *
+                   ((float)max_box[4] - (float)max_box[2] + offset);
+      }
+      global_max_index = ((uint32_t *)(max_box + INFO_NUM))[0];
+      input_score_ptr[global_max_index] = 0;
+    }
+    // by now, we get: max_score|max_index|max_box|max_area
+    /******find max end******/
+
+    /******nms store start******/
+    // store to nram
+    if (float(max_box[0]) > thresh_score) {
+      OUT_DT *save_ptr;
+      int save_offset = 0;
+      int save_str_num = 0;
+      save_ptr = nram_save;
+      save_offset = nram_save_count;
+      save_str_num = nram_save_limit_count;
+      if (coreId == 0) {
+        if (output_mode == 0) {  // index1, index2, ...
+          __memcpy(save_ptr + save_offset, (uint32_t *)(max_box + INFO_NUM),
+                   1 * sizeof(uint32_t), NRAM2NRAM, 1 * sizeof(uint32_t),
+                   1 * sizeof(uint32_t), 0);
+        } else if (output_mode == 1) {  // score, x1, y1, x2, y2
+          __memcpy(save_ptr + save_offset * INFO_NUM, max_box,
+                   INFO_NUM * sizeof(IN_DT), NRAM2NRAM,
+                   INFO_NUM * sizeof(IN_DT), INFO_NUM * sizeof(IN_DT), 0);
+        } else if (output_mode == 2) {  // score---, x1---, y1---, x2---, y2---
+          __memcpy(save_ptr + save_offset, max_box, 1 * sizeof(IN_DT),
+                   NRAM2NRAM, save_str_num * sizeof(IN_DT), 1 * sizeof(IN_DT),
+                   4);
+        }
+      }
+      nram_save_count++;
+      (*output_box_num)++;
+    }
+
+    // store to sram/gdram
+    if (*output_box_num != 0) {
+      mluMemcpyDirection_t store_dir = NRAM2GDRAM;
+      if (dst == SRAM) {
+        store_dir = NRAM2SRAM;
+      } else {  // dst == GDRAM
+        store_dir = NRAM2GDRAM;
+      }
+      if ((nram_save_count == nram_save_limit_count) ||
+          (float(max_box[0]) <= thresh_score) || keep == keepNum - 1) {
+        if (nram_save_count != 0) {
+          if (coreId == 0) {
+            if (output_mode == 0) {  // index1, index2, ...
+              pvLock();
+              __memcpy(output_data, nram_save,
+                       nram_save_count * sizeof(uint32_t), store_dir);
+              pvUnlock();
+              output_data += nram_save_count;
+            } else if (output_mode == 1) {  // score, x1, y1, x2, y2
+              pvLock();
+              __memcpy(output_data, nram_save,
+                       nram_save_count * INFO_NUM * sizeof(IN_DT), store_dir);
+              pvUnlock();
+              output_data += nram_save_count * INFO_NUM;
+            } else if (output_mode ==
+                       2) {  // score---, x1---, y1---, x2---, y2---
+              pvLock();
+              __memcpy(output_data, nram_save, nram_save_count * sizeof(IN_DT),
+                       store_dir, output_stride * sizeof(IN_DT),
+                       nram_save_limit_count * sizeof(IN_DT), 4);
+              pvUnlock();
+              output_data += nram_save_count;
+            }
+            nram_save_count = 0;
+          }
+        }
+      }  // if move data nram->sram/gdram
+    }    // if dst
+
+    // if the max score <= 0, end
+    if (core_limit == 1) {
+      if (float(max_box[0]) <= thresh_score) {
+        break;
+      }
+    } else {
+      if (float(max_box[0]) <= thresh_score) {
+        if (coreId == 0) {
+          loop_end_flag[0] = 1;
+        }
+      }
+      __sync_cluster();
+      if (loop_end_flag[0] == 1) {
+        break;
+      }
+    }
+    /******nms store end******/
+
+    // To solve half data accuracy, we convert half to float to calculate IoU.
+    for (int i = 0; i <= repeat_iou_compute; i++) {
+      if (i == repeat_iou_compute && remain_iou_compute == 0) {
+        break;
+      }
+      int seg_len = 0;  // the length every nms compute
+      int cpy_len = 0;  // the length every nms memcpy
+      i == repeat_iou_compute ? seg_len = remain_pad_iou_compute
+                              : seg_len = max_seg_iou_compute;
+      i == repeat_iou_compute ? cpy_len = remain_iou_compute
+                              : cpy_len = max_seg_iou_compute;
+
+      /******nms load start******/
+      mluMemcpyDirection_t load_dir = SRAM2NRAM;
+      if (src == SRAM) {
+        load_dir = SRAM2NRAM;
+      } else {
+        load_dir = GDRAM2NRAM;
+      }
+
+      __nramset((float *)score, seg_len, 0.0f);
+      int dt_offset = 0;
+      if (sizeof(IN_DT) == sizeof(float)) {
+        __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+        dt_offset = 0;
+      } else if (sizeof(IN_DT) == sizeof(half)) {
+        __nramset(x1, seg_len, half(0));
+        __memcpy(x1, input_score_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+        __bang_half2float((float *)score, (half *)x1, seg_len);
+        dt_offset = max_seg_iou_compute;
+      }
+
+      if (input_layout == 0) {
+        // the following number 4 means x1, y1, x2, y2
+        __memcpy(
+            inter_x1,
+            input_x1_ptr + (input_offset + i * max_seg_iou_compute) * COORD_DIM,
+            cpy_len * COORD_DIM * sizeof(IN_DT), load_dir,
+            cpy_len * COORD_DIM * sizeof(IN_DT),
+            cpy_len * COORD_DIM * sizeof(IN_DT), 0);
+        // here use collect instruction to transpose the [n, 4] shape into [4,
+        // n] shape to avoid
+        // discrete memory accessing.
+        for (int c_i = 0; c_i < COORD_DIM * seg_len / mask_size; c_i++) {
+          // the following number 32 means 32 elements will be selected out by
+          // once operation
+          __bang_collect(x1 + dt_offset + c_i * 32, inter_x1 + c_i * mask_size,
+                         x1_mask, mask_size);
+          __bang_collect(y1 + dt_offset + c_i * 32, inter_x1 + c_i * mask_size,
+                         y1_mask, mask_size);
+          __bang_collect(x2 + dt_offset + c_i * 32, inter_x1 + c_i * mask_size,
+                         x2_mask, mask_size);
+          __bang_collect(y2 + dt_offset + c_i * 32, inter_x1 + c_i * mask_size,
+                         y2_mask, mask_size);
+        }
+      } else if (input_layout == 1) {
+        __memcpy(x1 + dt_offset,
+                 input_x1_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+        __memcpy(y1 + dt_offset,
+                 input_y1_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+        __memcpy(x2 + dt_offset,
+                 input_x2_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+        __memcpy(y2 + dt_offset,
+                 input_y2_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
+                 cpy_len * sizeof(IN_DT), 0);
+      }
+      /******nms load end******/
+
+      /******nms compute start******/
+      if (sizeof(IN_DT) == sizeof(half)) {
+        __bang_half2float((float *)x1, (half *)x1 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)y1, (half *)y1 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)x2, (half *)x2 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)y2, (half *)y2 + max_seg_iou_compute,
+                          seg_len);
+      }
+      // 1、 compute IOU
+      // get the area_I
+      __nramset((float *)inter_y1, seg_len, float(max_box[1]));  // max_x1
+      __bang_maxequal((float *)inter_x1, (float *)x1, (float *)inter_y1,
+                      seg_len);                                  // inter_x1
+      __nramset((float *)inter_y2, seg_len, float(max_box[3]));  // max_x2
+      __bang_minequal((float *)inter_x2, (float *)x2, (float *)inter_y2,
+                      seg_len);  // inter_x2
+      __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
+                 seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+      }
+      __bang_active_relu((float *)inter_x1, (float *)inter_x1,
+                         seg_len);                               // inter_w
+      __nramset((float *)inter_x2, seg_len, float(max_box[2]));  // max_y1
+      __bang_maxequal((float *)inter_y1, (float *)y1, (float *)inter_x2,
+                      seg_len);                                  // inter_y1
+      __nramset((float *)inter_x2, seg_len, float(max_box[4]));  // max_y2
+      __bang_minequal((float *)inter_y2, (float *)y2, (float *)inter_x2,
+                      seg_len);  // inter_y2
+      __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1,
+                 seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+      }
+      __bang_active_relu((float *)inter_y1, (float *)inter_y1,
+                         seg_len);  // inter_h
+      __bang_mul((float *)inter_x1, (float *)inter_x1, (float *)inter_y1,
+                 seg_len);  // area_I
+      // get the area of input_box: area = (x2 - x1) * (y2 - y1);
+      __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
+      __bang_sub((float *)inter_y2, (float *)y2, (float *)y1, seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+        __bang_add_const((float *)inter_y2, (float *)inter_y2, offset, seg_len);
+      }
+      __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
+                 seg_len);  // area
+      // get the area_U: area + max_area - area_I
+      __bang_add_const((float *)inter_x2, (float *)inter_x2, float(max_area),
+                       seg_len);
+      __bang_sub((float *)inter_x2, (float *)inter_x2, (float *)inter_x1,
+                 seg_len);  // area_U
+      // 2、 select the box
+      // if IOU greater than thres, set the score to zero, abort it: area_U >
+      // area_I * (1 / thresh)?
+      if (thresh_iou > 0.0) {
+        __bang_mul_const((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
+                         seg_len);
+      } else {
+        __bang_mul_const((float *)inter_x2, (float *)inter_x2, thresh_iou,
+                         seg_len);
+      }
+      __bang_ge((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
+                seg_len);
+      __bang_mul((float *)score, (float *)score, (float *)inter_x1, seg_len);
+      /******nms compute end******/
+
+      // update the score
+      mluMemcpyDirection_t update_dir = NRAM2SRAM;
+      if (dst == SRAM) {
+        update_dir = NRAM2SRAM;
+      } else {
+        update_dir = NRAM2GDRAM;
+      }
+      if (sizeof(IN_DT) == sizeof(half)) {
+        __bang_float2half_rd((half *)score, (float *)score, seg_len);
+      }
+      pvLock();
+      __memcpy(input_score_ptr + input_offset + i * max_seg_iou_compute, score,
+               cpy_len * sizeof(IN_DT), update_dir, cpy_len * sizeof(IN_DT),
+               cpy_len * sizeof(IN_DT), 0);
+      pvUnlock();
+    }  // for repeat
+  }    // for keepNum
+}
+
+__mlu_global__ void MLUUnion1KernelNMS(
+    const void *input_boxes, const void *input_confidence,
+    const int input_num_boxes, const int input_stride,
+    const int max_output_size, const float iou_threshold,
+    const float confidence_threshold, const int mode, const int input_layout,
+    void *workspace, void *result_num, void *output,
+    const cnrtDataType_t data_type_input, const float offset, const int algo) {
+  if (data_type_input == CNRT_FLOAT16) {
+    __memcpy(workspace, input_confidence, input_num_boxes * sizeof(half),
+             GDRAM2GDRAM);
+  } else if (data_type_input == CNRT_FLOAT32) {
+    __memcpy(workspace, input_confidence, input_num_boxes * sizeof(float),
+             GDRAM2GDRAM);
+  } else {
+  }
+
+  int output_stride = max_output_size;
+  uint32_t result_box_num = 0;
+  if (mode == 0) {
+    uint32_t *out_data = (uint32_t *)output;
+    switch (data_type_input) {
+      default: { return; }
+      case CNRT_FLOAT16: {
+        half *boxes_data = (half *)input_boxes;
+        half *confi_data = (half *)workspace;
+        half *buffer = (half *)nram_buffer;
+        half *sram = (half *)sram_buffer;
+
+        nms_detection(&result_box_num, mode, input_layout, out_data, GDRAM,
+                      confi_data, boxes_data, GDRAM, buffer, SIZE_NRAM_BUF,
+                      sram, taskDim, input_num_boxes, input_stride,
+                      output_stride, max_output_size, iou_threshold,
+                      confidence_threshold, offset, algo);
+        ((uint32_t *)result_num)[0] = result_box_num;
+      }; break;
+      case CNRT_FLOAT32: {
+        float *boxes_data = (float *)input_boxes;
+        float *confi_data = (float *)workspace;
+        float *buffer = (float *)nram_buffer;
+        float *sram = (float *)sram_buffer;
+
+        nms_detection(&result_box_num, mode, input_layout, out_data, GDRAM,
+                      confi_data, boxes_data, GDRAM, buffer, SIZE_NRAM_BUF,
+                      sram, taskDim, input_num_boxes, input_stride,
+                      output_stride, max_output_size, iou_threshold,
+                      confidence_threshold, offset, algo);
+        ((uint32_t *)result_num)[0] = result_box_num;
+      }; break;
+    }
+  } else {
+    switch (data_type_input) {
+      default: { return; }
+      case CNRT_FLOAT16: {
+        half *boxes_data = (half *)input_boxes;
+        half *confi_data = (half *)workspace;
+        half *out_data = (half *)output;
+        half *buffer = (half *)nram_buffer;
+        half *sram = (half *)sram_buffer;
+
+        nms_detection(&result_box_num, mode, input_layout, out_data, GDRAM,
+                      confi_data, boxes_data, GDRAM, buffer, SIZE_NRAM_BUF,
+                      sram, taskDim, input_num_boxes, input_stride,
+                      output_stride, max_output_size, iou_threshold,
+                      confidence_threshold, offset, algo);
+        ((uint32_t *)result_num)[0] = result_box_num;
+      }; break;
+      case CNRT_FLOAT32: {
+        float *boxes_data = (float *)input_boxes;
+        float *confi_data = (float *)workspace;
+        float *out_data = (float *)output;
+        float *buffer = (float *)nram_buffer;
+        float *sram = (float *)sram_buffer;
+
+        nms_detection(&result_box_num, mode, input_layout, out_data, GDRAM,
+                      confi_data, boxes_data, GDRAM, buffer, SIZE_NRAM_BUF,
+                      sram, taskDim, input_num_boxes, input_stride,
+                      output_stride, max_output_size, iou_threshold,
+                      confidence_threshold, offset, algo);
+        ((uint32_t *)result_num)[0] = result_box_num;
+      }; break;
+    }
+  }
+}
+
+template <typename IN_DT, typename OUT_DT>
+__mlu_func__ void nms_detection_ux(
+    int32_t *loop_end_flag, uint32_t &output_box_num, OUT_DT *output_dram,
+    IN_DT *score_data, const IN_DT *boxes_data, const Addr input_ram,
+    const int input_layout, const int input_num_boxes, const int input_stride,
+    const int max_output_size, const float thresh_iou, const float thresh_score,
+    const float offset, const int output_mode, const int algo) {
+  loop_end_flag[0] = 0;
+  IN_DT *sram = (IN_DT *)sram_buffer;
+
+  // score, x1, y1, x2, y2, inter_x1, inter_y1, inter_x2, inter_y2
+  int nms_buffer_count1 = 9;
+  // temp nram buffer to store selected target.
+  int nram_save_limit_count = 256;
+  float div_thresh_iou = 1.0 / thresh_iou;
+
+  // input data ptr
+  IN_DT *input_score_ptr;
+  const IN_DT *input_x1_ptr;
+  const IN_DT *input_y1_ptr;
+  const IN_DT *input_x2_ptr;
+  const IN_DT *input_y2_ptr;
+  input_score_ptr = score_data;
+  input_x1_ptr = boxes_data;
+  input_y1_ptr = input_x1_ptr + input_stride;
+  input_x2_ptr = input_y1_ptr + input_stride;
+  input_y2_ptr = input_x2_ptr + input_stride;
+
+  int limit = 0;        // find limit when GDRAM or SRAM
+  int max_seg_pad = 0;  // the max length every repeat
+  int repeat = 0;
+  int remain = 0;
+  int remain_pad = 0;
+  int nram_save_count = 0;
+
+  if (output_mode == 0) {
+    limit = (SIZE_NRAM_BUF - NFU_ALIGN_SIZE /*for max_box*/ * sizeof(IN_DT) -
+             nram_save_limit_count * sizeof(OUT_DT)) /
+            (nms_buffer_count1 * sizeof(IN_DT));
+  } else {
+    limit = (SIZE_NRAM_BUF - NFU_ALIGN_SIZE /*for max_box*/ * sizeof(IN_DT) -
+             nram_save_limit_count * INFO_NUM * sizeof(OUT_DT)) /
+            (nms_buffer_count1 * sizeof(IN_DT));
+  }
+
+  // data split
+  int avg_cluster = input_num_boxes / clusterDim;
+  int rem_cluster = input_num_boxes % clusterDim;
+  int len_cluster = avg_cluster + (clusterId < rem_cluster ? 1 : 0);
+  int cluster_offset = avg_cluster * clusterId +
+                       (clusterId <= rem_cluster ? clusterId : rem_cluster);
+
+  int avg_core = len_cluster / coreDim;
+  int rem_core = len_cluster % coreDim;
+  int len_core = avg_core + (coreId < rem_core ? 1 : 0);
+  int core_offset =
+      avg_core * coreId + (coreId <= rem_core ? coreId : rem_core);
+  int input_offset = cluster_offset + core_offset;
+
+  max_seg_pad = PAD_DOWN(limit, NMS_SIZE);
+
+  // core 0 of each cluster calculate the max score index
+  int max_index_avg_core = input_num_boxes / clusterDim;
+  int max_index_rem_core = input_num_boxes % clusterDim;
+  int max_index_len_core =
+      max_index_avg_core + (clusterId < max_index_rem_core ? 1 : 0);
+  int max_index_input_offset =
+      max_index_avg_core * clusterId +
+      (clusterId <= max_index_rem_core ? clusterId : max_index_rem_core);
+  repeat = max_index_len_core / max_seg_pad;
+  remain = max_index_len_core % max_seg_pad;
+  remain_pad = PAD_UP(remain, NMS_SIZE);
+
+  // if datatype is fp16, we should cvt to fp32 when compute iou
+  int max_seg_iou_compute =
+      PAD_DOWN(max_seg_pad / (sizeof(float) / sizeof(IN_DT)), NMS_SIZE);
+  int repeat_iou_compute = len_core / max_seg_iou_compute;
+  int remain_iou_compute = len_core % max_seg_iou_compute;
+  int remain_pad_iou_compute = PAD_UP(remain_iou_compute, NMS_SIZE);
+
+  // init the nram ptr
+  IN_DT *score = (IN_DT *)nram_buffer;
+  IN_DT *x1 = score + max_seg_pad;
+  IN_DT *y1 = x1 + max_seg_pad;
+  IN_DT *x2 = y1 + max_seg_pad;
+  IN_DT *y2 = x2 + max_seg_pad;
+  IN_DT *inter_x1 = y2 + max_seg_pad;
+  IN_DT *inter_y1 = inter_x1 + max_seg_pad;
+  IN_DT *inter_x2 = inter_y1 + max_seg_pad;
+  IN_DT *inter_y2 = inter_x2 + max_seg_pad;
+  IN_DT *max_box = inter_y2 + max_seg_pad;  // the max score, x1, y1, x2, y2
+  OUT_DT *nram_save =
+      (OUT_DT *)((char *)max_box +
+                 NFU_ALIGN_SIZE);  // offset two line from max_box
+
+  mluMemcpyDirection_t input_load_dir = SRAM2NRAM;
+  mluMemcpyDirection_t input_store_dir = NRAM2SRAM;
+  input_load_dir = (input_ram == SRAM) ? SRAM2NRAM : GDRAM2NRAM;
+  input_store_dir = (input_ram == SRAM) ? NRAM2SRAM : NRAM2GDRAM;
+
+  for (int keep = 0; keep < max_output_size;
+       keep++) {  // loop until the max_score <= 0
+    __sync_all();
+
+    /******FIND MAX START******/
+    int max_index = 0;
+    int global_max_index = 0;  // for Ux
+    float max_area = 0;        // the max socre area
+    max_box[0] = 0;            // init 0
+
+    if (coreId == 0) {
+      for (int i = 0; i <= repeat; i++) {
+        if (i == repeat && remain == 0) {
+          break;
+        }
+
+        int seg_len = (i == repeat)
+                          ? remain_pad
+                          : max_seg_pad;  // the length every nms compute
+        // check seg_len exceeds the limit of fp16 or not. 65536 is the largest
+        // num
+        // that fp16 could express.
+        if (sizeof(IN_DT) == sizeof(half) && seg_len > 65536) {
+          return;
+        }
+        int cpy_len = (i == repeat)
+                          ? remain
+                          : max_seg_pad;  // the length every nms memcpy
+
+        /******NMS LOAD START******/
+        __bang_write_zero(score, seg_len);
+        __memcpy(score,
+                 input_score_ptr + max_index_input_offset + i * max_seg_pad,
+                 cpy_len * sizeof(IN_DT), input_load_dir,
+                 cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
+
+        /******NMS LOAD END******/
+
+        __bang_max(inter_x1, score, seg_len);
+        if (inter_x1[0] > max_box[0]) {
+          max_box[0] = inter_x1[0];
+          if (sizeof(IN_DT) == sizeof(half)) {
+            max_index =
+                ((uint16_t *)inter_x1)[1] + max_index_input_offset +
+                i * max_seg_pad;  // offset start from head of input_data
+          } else if (sizeof(IN_DT) == sizeof(float)) {
+            max_index =
+                ((uint32_t *)inter_x1)[1] + max_index_input_offset +
+                i * max_seg_pad;  // offset start from head of input_data
+          }
+        }
+      }  // for repeat
+
+      // the max box's x1, y1, x2, y2 on every cluster
+      max_box[1] = input_x1_ptr[max_index];
+      max_box[2] = input_y1_ptr[max_index];
+      max_box[3] = input_x2_ptr[max_index];
+      max_box[4] = input_y2_ptr[max_index];
+      ((uint32_t *)(max_box + 5))[0] = max_index;
+      // copy max box info to sram
+      __memcpy(sram, max_box, REDUCE_NUM * sizeof(IN_DT), NRAM2SRAM);
+    }
+    __sync_all();
+    // copy all partial max to the sram of cluster 0
+    if (clusterId != 0) {
+      __memcpy(sram + REDUCE_NUM * clusterId, sram, REDUCE_NUM * sizeof(IN_DT),
+               SRAM2SRAM, 0);
+    }
+    __sync_all();
+
+    // reduce between clusters to get the global max box
+    if (clusterId == 0) {
+      if (coreId == 0) {
+        __bang_write_zero(inter_x1, NMS_SIZE);
+        __memcpy(inter_x1, sram, sizeof(IN_DT), SRAM2NRAM, sizeof(IN_DT),
+                 REDUCE_NUM * sizeof(IN_DT), clusterDim - 1);
+        __bang_max(max_box, inter_x1, NMS_SIZE);
+        int max_cluster = (sizeof(IN_DT) == sizeof(half))
+                              ? ((uint16_t *)max_box)[1]
+                              : ((uint32_t *)max_box)[1];
+        __memcpy(max_box, sram + max_cluster * REDUCE_NUM,
+                 REDUCE_NUM * sizeof(IN_DT), SRAM2NRAM);
+        __memcpy(sram, max_box, REDUCE_NUM * sizeof(IN_DT), NRAM2SRAM);
+      }
+      __sync_cluster();
+      if (coreId == 0x80 && clusterDim > 1) {
+        // broadcast global max box to each cluster's sram
+        for (int cluster_idx = 1; cluster_idx < clusterDim; ++cluster_idx) {
+          __memcpy(sram, sram, REDUCE_NUM * sizeof(IN_DT), SRAM2SRAM,
+                   cluster_idx);
+        }
+      }
+      __sync_cluster();
+    }
+    __sync_all();
+
+    // copy the global max box to max_box
+    __memcpy(max_box, sram, REDUCE_NUM * sizeof(IN_DT), SRAM2NRAM);
+    if (algo == 0 || offset == 0.0) {
+      max_area = ((float)max_box[3] - (float)max_box[1]) *
+                 ((float)max_box[4] - (float)max_box[2]);
+    } else {
+      max_area = ((float)max_box[3] - (float)max_box[1] + offset) *
+                 ((float)max_box[4] - (float)max_box[2] + offset);
+    }
+    global_max_index = ((uint32_t *)(max_box + 5))[0];
+    if (coreId != 0x80) {
+      input_score_ptr[global_max_index] = 0;
+    }
+    // by now, we get: max_score|max_index|max_box|max_area
+    /******FIND MAX END******/
+
+    /******NMS STORE START******/
+    // store to nram
+    if (float(max_box[0]) > thresh_score) {
+      OUT_DT *save_ptr;
+      int save_offset = 0;
+      int save_str_num = 0;
+      save_ptr = nram_save;
+      save_offset = nram_save_count;
+      save_str_num = nram_save_limit_count;
+      if (clusterId == 0 && coreId == 0) {
+        if (output_mode == 0) {  // index1, index2, ...
+          save_ptr[save_offset] = ((uint32_t *)(max_box + INFO_NUM))[0];
+        } else if (output_mode == 1) {  // score, x1, y1, x2, y2
+          __memcpy(save_ptr + save_offset * INFO_NUM, max_box,
+                   INFO_NUM * sizeof(IN_DT), NRAM2NRAM,
+                   INFO_NUM * sizeof(IN_DT), INFO_NUM * sizeof(IN_DT), 0);
+        } else if (output_mode == 2) {  // score---, x1---, y1---, x2---, y2---
+          __memcpy(save_ptr + save_offset, max_box, 1 * sizeof(IN_DT),
+                   NRAM2NRAM, save_str_num * sizeof(IN_DT), 1 * sizeof(IN_DT),
+                   4);
+        }
+      }
+      nram_save_count++;
+      output_box_num++;
+    }
+
+    // store to sram/gdram
+    if (output_box_num != 0) {
+      if ((nram_save_count == nram_save_limit_count) ||
+          (float(max_box[0]) <= thresh_score) || keep == max_output_size - 1) {
+        if (nram_save_count != 0) {
+          if (clusterId == 0 && coreId == 0) {
+            if (output_mode == 0) {  // index1, index2, ...
+              pvLock();
+              __memcpy(output_dram, nram_save,
+                       nram_save_count * sizeof(uint32_t), NRAM2GDRAM);
+              pvUnlock();
+              output_dram += nram_save_count;
+            } else if (output_mode == 1) {  // score, x1, y1, x2, y2
+              pvLock();
+              __memcpy(output_dram, nram_save,
+                       nram_save_count * INFO_NUM * sizeof(IN_DT), NRAM2GDRAM);
+              pvUnlock();
+              output_dram += nram_save_count * INFO_NUM;
+            } else if (output_mode ==
+                       2) {  // score---, x1---, y1---, x2---, y2---
+              pvLock();
+              __memcpy(output_dram, nram_save, nram_save_count * sizeof(IN_DT),
+                       NRAM2GDRAM, max_output_size * sizeof(IN_DT),
+                       nram_save_limit_count * sizeof(IN_DT), 4);
+              pvUnlock();
+              output_dram += nram_save_count;
+            }
+            nram_save_count = 0;
+          }
+        }
+      }  // if move data nram->sram/gdram
+    }    // if dst
+
+    if (float(max_box[0]) <= thresh_score) {
+      if (clusterId == 0 && coreId == 0) {
+        loop_end_flag[0] = 1;  // dram
+      }
+    }
+    __sync_all();
+    if (loop_end_flag[0] == 1) {
+      break;
+    }
+    /******NMS STORE END******/
+
+    // To solve fp16 accuracy, we convert fp16 to fp32 to calculate IoU.
+    for (int i = 0; i <= repeat_iou_compute; i++) {
+      if (i == repeat_iou_compute && remain_iou_compute == 0) {
+        break;
+      }
+      int seg_len = (i == repeat_iou_compute) ? remain_pad_iou_compute
+                                              : max_seg_iou_compute;
+      int cpy_len =
+          (i == repeat_iou_compute) ? remain_iou_compute : max_seg_iou_compute;
+
+      /******NMS LOAD START******/
+      __nramset((float *)score, seg_len, 0.0f);
+      int dt_offset = 0;
+      if (sizeof(IN_DT) == sizeof(float)) {
+        __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
+                 cpy_len * sizeof(IN_DT), input_load_dir,
+                 cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
+        dt_offset = 0;
+      } else if (sizeof(IN_DT) == sizeof(half)) {
+        __nramset(x1, seg_len, half(0));
+        __memcpy(x1, input_score_ptr + input_offset + i * max_seg_iou_compute,
+                 cpy_len * sizeof(IN_DT), input_load_dir,
+                 cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
+        __bang_half2float((float *)score, (half *)x1, seg_len);
+        dt_offset = max_seg_iou_compute;
+      }
+
+      __memcpy(x1 + dt_offset,
+               input_x1_ptr + input_offset + i * max_seg_iou_compute,
+               cpy_len * sizeof(IN_DT), input_load_dir,
+               max_seg_pad * sizeof(IN_DT), input_num_boxes * sizeof(IN_DT), 3);
+      /******NMS LOAD END******/
+
+      /******NMS COMPUTE START******/
+      if (sizeof(IN_DT) == sizeof(half)) {
+        __bang_half2float((float *)x1, (half *)x1 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)y1, (half *)y1 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)x2, (half *)x2 + max_seg_iou_compute,
+                          seg_len);
+        __bang_half2float((float *)y2, (half *)y2 + max_seg_iou_compute,
+                          seg_len);
+      }
+      // 1、 compute IOU
+      // get the area_I
+      __nramset((float *)inter_y1, seg_len, float(max_box[1]));  // max_x1
+      __bang_maxequal((float *)inter_x1, (float *)x1, (float *)inter_y1,
+                      seg_len);                                  // inter_x1
+      __nramset((float *)inter_y2, seg_len, float(max_box[3]));  // max_x2
+      __bang_minequal((float *)inter_x2, (float *)x2, (float *)inter_y2,
+                      seg_len);  // inter_x2
+      __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
+                 seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+      }
+      __bang_active_relu((float *)inter_x1, (float *)inter_x1,
+                         seg_len);                               // inter_w
+      __nramset((float *)inter_x2, seg_len, float(max_box[2]));  // max_y1
+      __bang_maxequal((float *)inter_y1, (float *)y1, (float *)inter_x2,
+                      seg_len);                                  // inter_y1
+      __nramset((float *)inter_x2, seg_len, float(max_box[4]));  // max_y2
+      __bang_minequal((float *)inter_y2, (float *)y2, (float *)inter_x2,
+                      seg_len);  // inter_y2
+      __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1,
+                 seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+      }
+      __bang_active_relu((float *)inter_y1, (float *)inter_y1,
+                         seg_len);  // inter_h
+      __bang_mul((float *)inter_x1, (float *)inter_x1, (float *)inter_y1,
+                 seg_len);  // area_I
+      // get the area of input_box: area = (x2 - x1) * (y2 - y1);
+      __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
+      __bang_sub((float *)inter_y2, (float *)y2, (float *)y1, seg_len);
+      if (algo == 1 && offset != 0.0) {
+        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+        __bang_add_const((float *)inter_y2, (float *)inter_y2, offset, seg_len);
+      }
+      __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
+                 seg_len);  // area
+      // get the area_U: area + max_area - area_I
+      __bang_add_const((float *)inter_x2, (float *)inter_x2, float(max_area),
+                       seg_len);
+      __bang_sub((float *)inter_x2, (float *)inter_x2, (float *)inter_x1,
+                 seg_len);  // area_U
+      // 2、 select the box
+      // if IOU greater than thres, set the score to zero, abort it: area_U >
+      // area_I * (1 / thresh)?
+      if (thresh_iou > 0.0) {
+        __bang_mul_const((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
+                         seg_len);
+      } else {
+        __bang_mul_const((float *)inter_x2, (float *)inter_x2, thresh_iou,
+                         seg_len);
+      }
+      __bang_ge((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
+                seg_len);
+      __bang_mul((float *)score, (float *)score, (float *)inter_x1, seg_len);
+      /******NMS COMPUTE END******/
+
+      if (sizeof(IN_DT) == 2) {
+        __bang_float2half_rd((half *)score, (float *)score, seg_len);
+      }
+      pvLock();
+      __memcpy(input_score_ptr + input_offset + i * max_seg_iou_compute, score,
+               cpy_len * sizeof(IN_DT), input_store_dir,
+               cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
+      pvUnlock();
+    }  // for repeat
+  }    // for max_output_size
+}
+
+__mlu_global__ void MLUUionXKernelNMS(
+    const void *input_boxes, const void *input_confidence,
+    const int input_num_boxes, const int input_layout, const int input_stride,
+    const int max_output_size, const float iou_threshold,
+    const float confidence_threshold, const float offset,
+    const cnrtDataType_t data_type_input, const int output_mode, const int algo,
+    void *workspace, void *result_num, void *output) {
+  int input_dwidth = (data_type_input == CNRT_FLOAT32) ? 4 : 2;
+  int32_t *loop_end_flag =
+      (int32_t *)((char *)workspace +
+                  INFO_NUM * input_num_boxes * input_dwidth);
+  int reduce_sram_size = NFU_ALIGN_SIZE * REDUCE_NUM * input_dwidth;
+  int availbale_sram_size = SIZE_SRAM_BUF - reduce_sram_size;
+
+  int cluster_score_size = input_num_boxes * input_dwidth;
+  int cluster_boxes_size = input_num_boxes * 4 * input_dwidth;
+  char *sram_score = (char *)sram_buffer + reduce_sram_size;
+  char *sram_boxes =
+      (char *)sram_buffer + reduce_sram_size + cluster_score_size;
+  Addr input_ram = GDRAM;
+  if ((cluster_score_size + cluster_boxes_size) < availbale_sram_size) {
+    input_ram = SRAM;
+    __memcpy(sram_score, input_confidence, cluster_score_size, GDRAM2SRAM);
+    __memcpy(sram_boxes, input_boxes, cluster_boxes_size, GDRAM2SRAM);
+  } else {
+    __memcpy(workspace, input_confidence, cluster_score_size, GDRAM2GDRAM);
+  }
+  __sync_cluster();
+  uint32_t output_box_num = 0;
+  if (output_mode == 0) {
+    uint32_t *output_dram = (uint32_t *)output;
+    switch (data_type_input) {
+      default: { return; }
+      case CNRT_FLOAT16: {
+        half *score_data;
+        half *boxes_data;
+        score_data =
+            (input_ram == SRAM) ? (half *)sram_score : (half *)workspace;
+        boxes_data =
+            (input_ram == SRAM) ? (half *)sram_boxes : (half *)input_boxes;
+        nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
+                         boxes_data, input_ram, input_layout, input_num_boxes,
+                         input_stride, max_output_size, iou_threshold,
+                         confidence_threshold, offset, output_mode, algo);
+        ((uint32_t *)result_num)[0] = output_box_num;
+      }; break;
+      case CNRT_FLOAT32: {
+        float *score_data;
+        float *boxes_data;
+        score_data =
+            (input_ram == SRAM) ? (float *)sram_score : (float *)workspace;
+        boxes_data =
+            (input_ram == SRAM) ? (float *)sram_boxes : (float *)input_boxes;
+        nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
+                         boxes_data, input_ram, input_layout, input_num_boxes,
+                         input_stride, max_output_size, iou_threshold,
+                         confidence_threshold, offset, output_mode, algo);
+        ((uint32_t *)result_num)[0] = output_box_num;
+      }; break;
+    }
+  } else {
+    switch (data_type_input) {
+      default: { return; }
+      case CNRT_FLOAT16: {
+        half *output_dram = (half *)output;
+        half *score_data;
+        half *boxes_data;
+        score_data =
+            (input_ram == SRAM) ? (half *)sram_score : (half *)workspace;
+        boxes_data =
+            (input_ram == SRAM) ? (half *)sram_boxes : (half *)input_boxes;
+        nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
+                         boxes_data, input_ram, input_layout, input_num_boxes,
+                         input_stride, max_output_size, iou_threshold,
+                         confidence_threshold, offset, output_mode, algo);
+        ((uint32_t *)result_num)[0] = output_box_num;
+      }; break;
+      case CNRT_FLOAT32: {
+        float *output_dram = (float *)output;
+        float *score_data;
+        float *boxes_data;
+        score_data =
+            (input_ram == SRAM) ? (float *)sram_score : (float *)workspace;
+        boxes_data =
+            (input_ram == SRAM) ? (float *)sram_boxes : (float *)input_boxes;
+        nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
+                         boxes_data, input_ram, input_layout, input_num_boxes,
+                         input_stride, max_output_size, iou_threshold,
+                         confidence_threshold, offset, output_mode, algo);
+        ((uint32_t *)result_num)[0] = output_box_num;
+      }; break;
+    }
+  }
+}
+
+void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+               const cnrtDataType_t data_type_input, const void *boxes_ptr,
+               const void *scores_ptr, const int input_num_boxes,
+               const int input_stride, const int max_output_boxes,
+               const float iou_threshold, const float offset,
+               void *workspace_ptr, void *output_size_ptr, void *output_ptr) {
+  switch (k_type) {
+    default: { return; }
+    case CNRT_FUNC_TYPE_BLOCK:
+    case CNRT_FUNC_TYPE_UNION1: {
+      MLUUnion1KernelNMS<<<k_dim, k_type, queue>>>(
+          boxes_ptr, scores_ptr, input_num_boxes, input_stride,
+          max_output_boxes, iou_threshold, /*confidence_threshold=*/0.0,
+          /*output_mode=*/0,
+          /*input_layout=*/1, workspace_ptr, output_size_ptr, output_ptr,
+          data_type_input, offset, /*algo=*/1);
+    }; break;
+    case CNRT_FUNC_TYPE_UNION2:
+    case CNRT_FUNC_TYPE_UNION4:
+    case CNRT_FUNC_TYPE_UNION8:
+    case CNRT_FUNC_TYPE_UNION16: {
+      MLUUionXKernelNMS<<<k_dim, k_type, queue>>>(
+          boxes_ptr, scores_ptr, input_num_boxes, /*input_layout=*/1,
+          input_stride, max_output_boxes, iou_threshold,
+          /*confidence_threshold=*/0.0, offset, data_type_input,
+          /*output_mode=*/0, /*algo=*/1, workspace_ptr, output_size_ptr,
+          output_ptr);
+    }; break;
+  }
+}

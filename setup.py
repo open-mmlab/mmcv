@@ -2,6 +2,7 @@ import glob
 import os
 import platform
 import re
+import warnings
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
@@ -11,6 +12,10 @@ try:
     if torch.__version__ == 'parrots':
         from parrots.utils.build_extension import BuildExtension
         EXT_TYPE = 'parrots'
+    elif (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()) or \
+            os.getenv('FORCE_MLU', '0') == '1':
+        from torch_mlu.utils.cpp_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
@@ -135,6 +140,21 @@ def get_extensions():
     extensions = []
 
     if os.getenv('MMCV_WITH_TRT', '0') != '0':
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: ' + \
+            'Custom TensorRT Ops will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
+
         ext_name = 'mmcv._ext_trt'
         from torch.utils.cpp_extension import include_paths, library_paths
         library_dirs = []
@@ -258,26 +278,10 @@ def get_extensions():
         except ImportError:
             pass
 
-        project_dir = 'mmcv/ops/csrc/'
-        if is_rocm_pytorch:
-            from torch.utils.hipify import hipify_python
-
-            hipify_python.hipify(
-                project_directory=project_dir,
-                output_directory=project_dir,
-                includes='mmcv/ops/csrc/*',
-                show_detailed=True,
-                is_pytorch_extension=True,
-            )
-            define_macros += [('MMCV_WITH_CUDA', None)]
-            define_macros += [('HIP_DIFF', None)]
-            cuda_args = os.getenv('MMCV_CUDA_ARGS')
-            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files = glob.glob('./mmcv/ops/csrc/pytorch/hip/*') \
-                + glob.glob('./mmcv/ops/csrc/pytorch/cpu/hip/*')
-            extension = CUDAExtension
-            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/hip'))
-        elif torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+        if is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
+                'FORCE_CUDA', '0') == '1':
+            if is_rocm_pytorch:
+                define_macros += [('HIP_DIFF', None)]
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
@@ -288,8 +292,22 @@ def get_extensions():
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+        elif (hasattr(torch, 'is_mlu_available') and
+                torch.is_mlu_available()) or \
+                os.getenv('FORCE_MLU', '0') == '1':
+            from torch_mlu.utils.cpp_extension import MLUExtension
+            define_macros += [('MMCV_WITH_MLU', None)]
+            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
+            extension = MLUExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
         else:
-            print(f'Compiling {ext_name} without CUDA')
+            print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             extension = CppExtension
@@ -314,6 +332,20 @@ def get_extensions():
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: ' + \
+            'Custom ONNXRuntime Ops will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
         ext_name = 'mmcv._ext_ort'
         import onnxruntime
         from torch.utils.cpp_extension import include_paths, library_paths

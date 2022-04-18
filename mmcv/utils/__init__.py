@@ -36,20 +36,23 @@ except ImportError:
         'is_method_overridden', 'has_method'
     ]
 else:
+    from .device_type import IS_IPU_AVAILABLE, IS_MLU_AVAILABLE
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
     # yapf: disable
-    from .parrots_wrapper import (TORCH_VERSION, BuildExtension, CppExtension,
-                                  CUDAExtension, DataLoader, PoolDataLoader,
-                                  SyncBatchNorm, _AdaptiveAvgPoolNd,
-                                  _AdaptiveMaxPoolNd, _AvgPoolNd, _BatchNorm,
-                                  _ConvNd, _ConvTransposeMixin, _get_cuda_home,
+    from .parrots_wrapper import (IS_CUDA_AVAILABLE, TORCH_VERSION,
+                                  BuildExtension, CppExtension, CUDAExtension,
+                                  DataLoader, PoolDataLoader, SyncBatchNorm,
+                                  _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
+                                  _AvgPoolNd, _BatchNorm, _ConvNd,
+                                  _ConvTransposeMixin, _get_cuda_home,
                                   _InstanceNorm, _MaxPoolNd, get_build_config,
                                   is_rocm_pytorch)
     # yapf: enable
     from .registry import Registry, build_from_cfg
+    from .seed import worker_init_fn
     from .trace import is_jit_tracing
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
@@ -70,5 +73,6 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method'
+        '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
+        'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU_AVAILABLE'
     ]

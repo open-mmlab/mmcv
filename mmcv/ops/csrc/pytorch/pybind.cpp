@@ -279,22 +279,6 @@ Tensor indice_maxpool_backward(Tensor features, Tensor outFeatures,
                                Tensor outGrad, Tensor indicePairs,
                                Tensor indiceNum);
 
-Tensor bottom_pool_forward(Tensor input);
-
-Tensor bottom_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor left_pool_forward(Tensor input);
-
-Tensor left_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor right_pool_forward(Tensor input);
-
-Tensor right_pool_backward(Tensor input, Tensor grad_output);
-
-Tensor top_pool_forward(Tensor input);
-
-Tensor top_pool_backward(Tensor input, Tensor grad_output);
-
 void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                      const int mode_flag, const bool aligned);
 
@@ -338,7 +322,8 @@ void hard_voxelize_forward(const at::Tensor &points,
                            const at::Tensor &coors_range, at::Tensor &voxels,
                            at::Tensor &coors, at::Tensor &num_points_per_voxel,
                            at::Tensor &voxel_num, const int max_points,
-                           const int max_voxels, const int NDim);
+                           const int max_voxels, const int NDim,
+                           const bool deterministic);
 
 void dynamic_voxelize_forward(const at::Tensor &points,
                               const at::Tensor &voxel_size,
@@ -415,6 +400,10 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious);
 
 void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output);
 
+at::Tensor diff_iou_rotated_sort_vertices_forward(at::Tensor vertices,
+                                                  at::Tensor mask,
+                                                  at::Tensor num_valid);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -470,21 +459,21 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("deform_conv_forward", &deform_conv_forward, "deform_conv_forward",
         py::arg("input"), py::arg("weight"), py::arg("offset"),
         py::arg("output"), py::arg("columns"), py::arg("ones"), py::arg("kW"),
-        py::arg("kH"), py::arg("dW"), py::arg("dH"), py::arg("padH"),
-        py::arg("padW"), py::arg("dilationW"), py::arg("dilationH"),
+        py::arg("kH"), py::arg("dW"), py::arg("dH"), py::arg("padW"),
+        py::arg("padH"), py::arg("dilationW"), py::arg("dilationH"),
         py::arg("group"), py::arg("deformable_group"), py::arg("im2col_step"));
   m.def("deform_conv_backward_input", &deform_conv_backward_input,
         "deform_conv_backward_input", py::arg("input"), py::arg("offset"),
         py::arg("gradOutput"), py::arg("gradInput"), py::arg("gradOffset"),
         py::arg("weight"), py::arg("columns"), py::arg("kW"), py::arg("kH"),
-        py::arg("dW"), py::arg("dH"), py::arg("padH"), py::arg("padW"),
+        py::arg("dW"), py::arg("dH"), py::arg("padW"), py::arg("padH"),
         py::arg("dilationW"), py::arg("dilationH"), py::arg("group"),
         py::arg("deformable_group"), py::arg("im2col_step"));
   m.def("deform_conv_backward_parameters", &deform_conv_backward_parameters,
         "deform_conv_backward_parameters", py::arg("input"), py::arg("offset"),
         py::arg("gradOutput"), py::arg("gradWeight"), py::arg("columns"),
         py::arg("ones"), py::arg("kW"), py::arg("kH"), py::arg("dW"),
-        py::arg("dH"), py::arg("padH"), py::arg("padW"), py::arg("dilationW"),
+        py::arg("dH"), py::arg("padW"), py::arg("padH"), py::arg("dilationW"),
         py::arg("dilationH"), py::arg("group"), py::arg("deformable_group"),
         py::arg("scale"), py::arg("im2col_step"));
   m.def("deform_roi_pool_forward", &deform_roi_pool_forward,
@@ -704,26 +693,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("shift"), py::arg("output"));
   m.def("tin_shift_backward", &tin_shift_backward, "tin_shift backward",
         py::arg("grad_output"), py::arg("shift"), py::arg("grad_input"));
-  m.def("bottom_pool_forward", &bottom_pool_forward, "Bottom Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("bottom_pool_backward", &bottom_pool_backward, "Bottom Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("left_pool_forward", &left_pool_forward, "Left Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("left_pool_backward", &left_pool_backward, "Left Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("right_pool_forward", &right_pool_forward, "Right Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("right_pool_backward", &right_pool_backward, "Right Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
-  m.def("top_pool_forward", &top_pool_forward, "Top Pool Forward",
-        py::arg("input"), py::call_guard<py::gil_scoped_release>());
-  m.def("top_pool_backward", &top_pool_backward, "Top Pool Backward",
-        py::arg("input"), py::arg("grad_output"),
-        py::call_guard<py::gil_scoped_release>());
   m.def("box_iou_rotated", &box_iou_rotated, "IoU for rotated boxes",
         py::arg("boxes1"), py::arg("boxes2"), py::arg("ious"),
         py::arg("mode_flag"), py::arg("aligned"));
@@ -756,7 +725,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "hard_voxelize_forward", py::arg("points"), py::arg("voxel_size"),
         py::arg("coors_range"), py::arg("voxels"), py::arg("coors"),
         py::arg("num_points_per_voxel"), py::arg("voxel_num"),
-        py::arg("max_points"), py::arg("max_voxels"), py::arg("NDim"));
+        py::arg("max_points"), py::arg("max_voxels"), py::arg("NDim"),
+        py::arg("deterministic"));
   m.def("dynamic_voxelize_forward", &dynamic_voxelize_forward,
         "dynamic_voxelize_forward", py::arg("points"), py::arg("voxel_size"),
         py::arg("coors_range"), py::arg("coors"), py::arg("NDim"));
@@ -843,4 +813,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("polygons"), py::arg("ious"));
   m.def("convex_giou", &convex_giou, "convex_giou", py::arg("pointsets"),
         py::arg("polygons"), py::arg("output"));
+  m.def("diff_iou_rotated_sort_vertices_forward",
+        &diff_iou_rotated_sort_vertices_forward,
+        "diff_iou_rotated_sort_vertices_forward", py::arg("vertices"),
+        py::arg("mask"), py::arg("num_valid"));
 }
