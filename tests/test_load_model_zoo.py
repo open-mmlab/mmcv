@@ -79,7 +79,7 @@ def load(filepath, map_location=None):
 def test_load_external_url():
     # test modelzoo://
     torchvision_version = torchvision.__version__
-    if digit_version(torchvision_version) < digit_version('0.10.0'):
+    if digit_version(torchvision_version) < digit_version('0.10.0a0'):
         assert (_load_checkpoint('modelzoo://resnet50') ==
                 'url:https://download.pytorch.org/models/resnet50-19c8e'
                 '357.pth')
@@ -96,8 +96,12 @@ def test_load_external_url():
 
     if digit_version(torchvision_version) >= digit_version('0.13.0a0'):
         # Test load new format torchvision models.
-        _load_checkpoint('torchvision://resnet50.imagenet1k_v1')
-        _load_checkpoint('torchvision://ResNet50_Weights.IMAGENET1K_V1')
+        (_load_checkpoint('torchvision://resnet50.imagenet1k_v1') ==
+         'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+
+        (_load_checkpoint('torchvision://ResNet50_Weights.IMAGENET1K_V1') ==
+         'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+
         _load_checkpoint('torchvision://resnet50.default')
 
     # test open-mmlab:// with default MMCV_HOME

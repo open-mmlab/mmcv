@@ -139,7 +139,7 @@ def get_torchvision_models():
             if (not cls_name.endswith('_Weights')
                     or not hasattr(cls, 'DEFAULT')):
                 continue
-            # Since `cls.DEFAULT` can not be accessed by iterate cls, we set
+            # Since `cls.DEFAULT` can not be accessed by iterating cls, we set
             # default urls explicitly.
             cls_key = cls_name.replace('_Weights', '').lower()
             model_urls[f'{cls_key}.default'] = cls.DEFAULT.url
@@ -431,7 +431,7 @@ def load_from_torchvision(filename, map_location=None):
     else:
         model_name = filename[14:]
 
-    # Support getting model urls like torchvision
+    # Support getting model urls in the same way as torchvision
     # `ResNet50_Weights.IMAGENET1K_V1` will be mapped to
     # resnet50.imagenet1k_v1.
     model_name = model_name.replace('_Weights', '').lower()
