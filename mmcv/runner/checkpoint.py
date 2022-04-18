@@ -121,18 +121,18 @@ def get_torchvision_models():
                 _urls = getattr(_zoo, 'model_urls')
                 model_urls.update(_urls)
     else:
-        # Since torchvision bumps to 0.13, the weight loading logic, model keys
-        # and model urls have been changed. We will load the old version urls
-        # in mmcv/model_zoo/torchvision_0.12.json to prevent from BC
-        # Breaking. If your version of torchvision is higher than 0.13.0,
-        # new urls will be added to `model_urls` additionally. You can get the
-        # newest torchvision model by resnet50.imagenet1k_v1.
+        # Since torchvision bumps to v0.13, the weight loading logic,
+        # model keys and model urls have been changed. Here the URLs of old
+        # version is loaded to avoid breaking back compatibility. If the
+        # torchvision version>=0.13.0, new URLs will be added. Users can get
+        # the resnet50 checkpoint by setting 'resnet50.imagent1k_v1',
+        # 'resnet50' or 'ResNet50_Weights.IMAGENET1K_V1' in the config.
         json_path = osp.join(mmcv.__path__[0],
                              'model_zoo/torchvision_0.12.json')
         model_urls = mmcv.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
             # The name of torchvision model weights classes ends with
-            # `_Weights` such as ResNet18_Weights`. However, some model weight
+            # `_Weights` such as `ResNet18_Weights`. However, some model weight
             # classes, such as `MNASNet0_75_Weights` does not have any urls in
             # torchvision 0.13.0 and cannot be iterated. Here we simply check
             # `DEFAULT` attribute to ensure the class is not empty.
@@ -431,8 +431,9 @@ def load_from_torchvision(filename, map_location=None):
     else:
         model_name = filename[14:]
 
-    # Support get model urls like torchvision, `ResNet50_Weights.IMAGENET1K_V1`
-    # will be mapped to resnet50.imagenet1k_v1
+    # Support getting model urls like torchvision
+    # `ResNet50_Weights.IMAGENET1K_V1` will be mapped to
+    # resnet50.imagenet1k_v1.
     model_name = model_name.replace('_Weights', '').lower()
     return load_from_http(model_urls[model_name], map_location=map_location)
 

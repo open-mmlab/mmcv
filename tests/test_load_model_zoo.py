@@ -94,7 +94,7 @@ def test_load_external_url():
                 'url:https://download.pytorch.org/models/resnet50-0676b'
                 'a61.pth')
 
-    if digit_version(torchvision.__version__) >= digit_version('0.13.0a0'):
+    if digit_version(torchvision_version) >= digit_version('0.13.0a0'):
         # Test load new format torchvision models.
         _load_checkpoint('torchvision://resnet50.imagenet1k_v1')
         _load_checkpoint('torchvision://ResNet50_Weights.IMAGENET1K_V1')
