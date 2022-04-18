@@ -13,6 +13,7 @@ import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
+from pathlib import Path
 
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
@@ -391,6 +392,8 @@ class Config:
                 raise KeyError(f'{key} is reserved for config file')
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
+        if isinstance(filename, Path):
+            filename = str(filename)
         super(Config, self).__setattr__('_filename', filename)
         if cfg_text:
             text = cfg_text
