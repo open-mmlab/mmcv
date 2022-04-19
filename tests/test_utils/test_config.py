@@ -567,7 +567,7 @@ def test_special_element():
     cfg_file = osp.join(data_path, 'config/w.py')
     in_cfg = Config.fromfile(cfg_file)
     assert in_cfg.str_item_1 == osp.join(osp.expanduser('~'), 'folder')
-    assert in_cfg.str_item_2 == 'string with \"escape\" characters'
+    assert in_cfg.str_item_2 == 'string with \tescape\\ characters\n'
 
     out_cfg = Config.fromstring(in_cfg.pretty_text, '.py')
     assert in_cfg._cfg_dict == out_cfg._cfg_dict
