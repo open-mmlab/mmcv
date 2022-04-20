@@ -638,6 +638,8 @@ class DictAction(Action):
             pass
         if val.lower() in ['true', 'false']:
             return True if val.lower() == 'true' else False
+        if val == 'None':
+            return None
         return val
 
     @staticmethod
