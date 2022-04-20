@@ -7,8 +7,8 @@ import pytest
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
 from mmcv.transforms.utils import cache_random_params, cache_randomness
-from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomChoice,
-                                      TransformBroadcaster)
+from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomApply,
+                                      RandomChoice, TransformBroadcaster)
 
 
 @TRANSFORMS.register_module()
@@ -136,13 +136,13 @@ def test_cache_random_parameters():
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
 
-def test_apply_to_mapped():
+def test_key_mapper():
 
     # Case 1: simple remap
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
-        mapping=dict(value='v_in'),
-        remapping=dict(value='v_out'))
+        mapping={'value': 'v_in'},
+        remapping={'value': 'v_out'})
 
     results = dict(value=0, v_in=1)
     results = pipeline(results)
@@ -154,8 +154,8 @@ def test_apply_to_mapped():
     # Case 2: collecting list
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        mapping=dict(value=['v_in_1', 'v_in_2']),
-        remapping=dict(value=['v_out_1', 'v_out_2']))
+        mapping={'value': ['v_in_1', 'v_in_2']},
+        remapping={'value': ['v_out_1', 'v_out_2']})
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a list'):
@@ -170,8 +170,14 @@ def test_apply_to_mapped():
     # Case 3: collecting dict
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
-        remapping=dict(value=dict(v1='v_out_1', v2='v_out_2')))
+        mapping={'value': {
+            'v1': 'v_in_1',
+            'v2': 'v_in_2'
+        }},
+        remapping={'value': {
+            'v1': 'v_out_1',
+            'v2': 'v_out_2'
+        }})
     results = dict(value=0, v_in_1=1, v_in_2=2)
 
     with pytest.warns(UserWarning, match='value is a dict'):
@@ -332,7 +338,7 @@ def test_apply_to_multiple():
     _ = str(pipeline)
 
 
-def test_randomchoice():
+def test_random_choice():
 
     # Case 1: given probability
     pipeline = RandomChoice(
@@ -355,7 +361,7 @@ def test_randomchoice():
                 transforms=[[AddToValue(addend=1.0)],
                             [AddToValue(addend=2.0)]], ),
         ],
-        mapping=dict(value='values'),
+        mapping={'value': 'values'},
         auto_remap=True,
         share_random_params=True)
 
@@ -364,6 +370,35 @@ def test_randomchoice():
     # check share_random_params=True works so that all values are same
     values = results['values']
     assert all(map(lambda x: x == values[0], values))
+
+
+def test_random_apply():
+
+    # Case 1: simple use
+    pipeline = RandomApply(transforms=[AddToValue(addend=1.0)], prob=1.0)
+    results = pipeline(dict(value=1))
+    np.testing.assert_equal(results['value'], 2.0)
+
+    pipeline = RandomApply(transforms=[AddToValue(addend=1.0)], prob=0.0)
+    results = pipeline(dict(value=1))
+    np.testing.assert_equal(results['value'], 1.0)
+
+    # Case 2: nested RandomApply in TransformBroadcaster
+    pipeline = TransformBroadcaster(
+        transforms=[RandomApply(transforms=[AddToValue(addend=1)], prob=0.5)],
+        mapping={'value': 'values'},
+        auto_remap=True,
+        share_random_params=True)
+
+    results = dict(values=[0 for _ in range(10)])
+    results = pipeline(results)
+    # check share_random_params=True works so that all values are same
+    values = results['values']
+    assert all(map(lambda x: x == values[0], values))
+
+    # __iter__
+    for _ in pipeline:
+        pass
 
 
 def test_utils():
