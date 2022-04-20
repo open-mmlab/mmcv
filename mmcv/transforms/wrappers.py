@@ -50,6 +50,8 @@ class Compose(BaseTransform):
     """
 
     def __init__(self, transforms: Union[Transform, List[Transform]]):
+        super().__init__()
+
         if not isinstance(transforms, list):
             transforms = [transforms]
         self.transforms = []
@@ -123,7 +125,7 @@ class KeyMapper(BaseTransform):
         >>>     # 'gt_img' to inner (used by inner transforms) filed name
         >>>     # 'img'
         >>>     dict(type='KeyMapper',
-        >>>         mapping=dict(img='gt_img'),
+        >>>         mapping={'img': 'gt_img'},
         >>>         # auto_remap=True means output key mapping is the revert of
         >>>         # the input key mapping, e.g. inner 'img' will be mapped
         >>>         # back to outer 'gt_img'
@@ -157,6 +159,8 @@ class KeyMapper(BaseTransform):
                  remapping: Optional[Dict] = None,
                  auto_remap: Optional[bool] = None,
                  allow_nonexist_keys: bool = False):
+
+        super().__init__()
 
         self.allow_nonexist_keys = allow_nonexist_keys
         self.mapping = mapping
@@ -318,7 +322,7 @@ class TransformBroadcaster(KeyMapper):
         >>>     # respectively
         >>>     dict(type='TransformBroadcaster',
         >>>         # case 1: from multiple outer fields
-        >>>         mapping=dict(img=['lq', 'gt']),
+        >>>         mapping={'img': ['lq', 'gt']},
         >>>         auto_remap=True,
         >>>         # share_random_param=True means using identical random
         >>>         # parameters in every processing
@@ -338,7 +342,7 @@ class TransformBroadcaster(KeyMapper):
         >>>     dict(type='TransformBroadcaster',
         >>>         # case 2: from one outer field that contains multiple
         >>>         # data elements (e.g. a list)
-        >>>         # mapping=dict(img='images'),
+        >>>         # mapping={'img': 'images'},
         >>>         auto_remap=True,
         >>>         share_random_param=True,
         >>>         transforms=[
@@ -420,10 +424,10 @@ class TransformBroadcaster(KeyMapper):
 
 @TRANSFORMS.register_module()
 class RandomChoice(BaseTransform):
-    """Process data with a randomly chosen pipeline from given candidates.
+    """Process data with a randomly chosen transform from given candidates.
 
     Args:
-        transforms (list[list]): A list of pipeline candidates, each is a
+        transforms (list[list]): A list of transform candidates, each is a
             sequence of transforms.
         prob (list[float], optional): The probabilities associated
             with each pipeline. The length should be equal to the pipeline
@@ -446,6 +450,8 @@ class RandomChoice(BaseTransform):
                  transforms: List[Union[Transform, List[Transform]]],
                  prob: Optional[List[float]] = None):
 
+        super().__init__()
+
         if prob is not None:
             assert mmcv.is_seq_of(prob, float)
             assert len(transforms) == len(prob), \
@@ -467,3 +473,42 @@ class RandomChoice(BaseTransform):
     def transform(self, results):
         idx = self.random_pipeline_index()
         return self.transforms[idx](results)
+
+
+@TRANSFORMS.register_module()
+class RandomApply(BaseTransform):
+    """Apply transforms randomly with a given probability.
+
+    Args:
+        transforms (list[dict | callable]): The transform or transform list
+            to randomly apply.
+        prob (float): The probability to apply transforms. Default: 0.5
+
+    Examples:
+        >>> # config
+        >>> pipeline = [
+        >>>     dict(type='RandomApply',
+        >>>         transforms=[dict(type='HorizontalFlip')],
+        >>>         prob=0.3)
+        >>> ]
+    """
+
+    def __init__(self,
+                 transforms: Union[Transform, List[Transform]],
+                 prob: float = 0.5):
+
+        super().__init__()
+        self.prob = prob
+        self.transforms = Compose(transforms)
+
+    def __iter__(self):
+        return iter(self.transforms)
+
+    @cache_randomness
+    def random_apply(self):
+        return np.random.rand() < self.prob
+
+    def transform(self, results: Dict) -> Dict:
+        if self.random_apply():
+            results = self.transforms(results)
+        return results
