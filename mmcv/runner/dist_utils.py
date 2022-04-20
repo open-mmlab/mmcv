@@ -95,12 +95,9 @@ def _init_dist_slurm(backend, port=None):
     elif 'MASTER_PORT' in os.environ:
         pass  # use MASTER_PORT in the environment variable
     else:
-        # if torch.distributed default port(29500) is available
-        # then use it, else find a free port
-        if _is_free_port(29500):
-            os.environ['MASTER_PORT'] = '29500'
-        else:
-            os.environ['MASTER_PORT'] = str(_find_free_port())
+        # use default port
+        # plan to support find free port
+        os.environ['MASTER_PORT'] = '29500'
     # use MASTER_ADDR in the environment variable if it already exists
     if 'MASTER_ADDR' not in os.environ:
         os.environ['MASTER_ADDR'] = addr
