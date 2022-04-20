@@ -893,12 +893,9 @@ class FileClient:
                 'add "force=True" if you want to override it')
 
         if name in cls._backends and force:
-            clear_key = [
-                arg_key for arg_key, instance in cls._instances.items()
-                if isinstance(instance.client, cls._backends[name])
-            ]
-            for key in clear_key:
-                cls._instances.pop(key)
+            for arg_key, instance in list(cls._instances.items()):
+                if isinstance(instance.client, cls._backends[name]):
+                    cls._instances.pop(arg_key)
         cls._backends[name] = backend
 
         if prefixes is not None:
@@ -910,16 +907,12 @@ class FileClient:
                 if prefix not in cls._prefix_to_backends:
                     cls._prefix_to_backends[prefix] = backend
                 elif (prefix in cls._prefix_to_backends) and force:
-                    clear_backend = cls._prefix_to_backends[prefix]
-                    if isinstance(clear_backend, list):
-                        clear_backend = tuple(clear_backend)
-                    clear_key = [
-                        arg_key
-                        for arg_key, instance in cls._instances.items()
-                        if isinstance(instance.client, clear_backend)
-                    ]
-                    for key in clear_key:
-                        cls._instances.pop(key)
+                    overridden_backend = cls._prefix_to_backends[prefix]
+                    if isinstance(overridden_backend, list):
+                        overridden_backend = tuple(overridden_backend)
+                    for arg_key, instance in list(cls._instances.items()):
+                        if isinstance(instance.client, overridden_backend):
+                            cls._instances.pop(arg_key)
                     cls._prefix_to_backends[prefix] = backend
                 else:
                     raise KeyError(
