@@ -144,11 +144,14 @@ def test_construct():
 def test_fromfile():
     for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(data_path, 'config', filename)
-        cfg = Config.fromfile(cfg_file)
-        assert isinstance(cfg, Config)
-        assert cfg.filename == cfg_file
-        assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
-            open(cfg_file, 'r').read()
+        cfg_file_path = Path(cfg_file)
+        file_list = [cfg_file, cfg_file_path]
+        for item in file_list:
+            cfg = Config.fromfile(item)
+            assert isinstance(cfg, Config)
+            assert isinstance(cfg.filename, str) and cfg.filename == str(item)
+            assert cfg.text == osp.abspath(osp.expanduser(item)) + '\n' + \
+                open(item, 'r').read()
 
     # test custom_imports for Config.fromfile
     cfg_file = osp.join(data_path, 'config', 'q.py')
