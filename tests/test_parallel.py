@@ -11,6 +11,7 @@ from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
 from mmcv.parallel._functions import Scatter, get_input_device, scatter
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
+from mmcv.utils import Registry
 
 
 def mock(*args, **kwargs):
@@ -70,6 +71,36 @@ def test_is_module_wrapper():
             return self.module(*args, **kwargs)
 
     module_wraper = ModuleWrapper(model)
+    assert is_module_wrapper(module_wraper)
+
+    # test module wrapper registry in downstream repo
+    MODULE_WRAPPERS_MMRAZOR = Registry(
+        'mmrazor module wrapper', parent=MODULE_WRAPPERS, scope='mmrazor')
+    MODULE_WRAPPERS_MMPOSE = Registry(
+        'mmpose module wrapper', parent=MODULE_WRAPPERS, scope='mmpose')
+
+    @MODULE_WRAPPERS_MMRAZOR.register_module()
+    class ModuleWrapperRazor(object):
+
+        def __init__(self, module):
+            self.module = module
+
+        def forward(self, *args, **kwargs):
+            return self.module(*args, **kwargs)
+
+    @MODULE_WRAPPERS_MMPOSE.register_module()
+    class ModuleWrapperPose(object):
+
+        def __init__(self, module):
+            self.module = module
+
+        def forward(self, *args, **kwargs):
+            return self.module(*args, **kwargs)
+
+    module_wraper = ModuleWrapperRazor(model)
+    assert is_module_wrapper(module_wraper)
+
+    module_wraper = ModuleWrapperPose(model)
     assert is_module_wrapper(module_wraper)
 
 
