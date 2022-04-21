@@ -38,6 +38,8 @@ def _init_dist_mpi(backend, **kwargs):
     if 'MASTER_PORT' not in os.environ:
         # 29500 is torch.distributed default port
         os.environ['MASTER_PORT'] = '29500'
+    if 'MASTER_ADDR' not in os.environ:
+        raise KeyError('The environment variable MASTER_ADDR is not set')
     os.environ['WORLD_SIZE'] = os.environ['OMPI_COMM_WORLD_SIZE']
     os.environ['RANK'] = os.environ['OMPI_COMM_WORLD_RANK']
     dist.init_process_group(backend=backend, **kwargs)
@@ -64,9 +66,7 @@ def _init_dist_slurm(backend, port=None):
     # specify master port
     if port is not None:
         os.environ['MASTER_PORT'] = str(port)
-    elif 'MASTER_PORT' in os.environ:
-        pass  # use MASTER_PORT in the environment variable
-    else:
+    if 'MASTER_PORT' not in os.environ:
         # 29500 is torch.distributed default port
         os.environ['MASTER_PORT'] = '29500'
     # use MASTER_ADDR in the environment variable if it already exists
