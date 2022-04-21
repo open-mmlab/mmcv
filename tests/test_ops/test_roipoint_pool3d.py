@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
 
@@ -6,7 +7,7 @@ from mmcv.ops import RoIPointPool3d
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-def test_gather_points():
+def test_roipoint():
     feats = torch.tensor(
         [[1, 2, 3.3], [1.2, 2.5, 3.0], [0.8, 2.1, 3.5], [1.6, 2.6, 3.6],
          [0.8, 1.2, 3.9], [-9.2, 21.0, 18.2], [3.8, 7.9, 6.3],

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 _base_ = ['./u.py']
 item21 = {{ _base_.item11 }}
 item22 = item21

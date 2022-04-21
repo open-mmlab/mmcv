@@ -142,7 +142,7 @@ class ProfilerHook(Hook):
             raise ValueError('on_trace_ready should be handler, dict or None, '
                              f'but got {type(self.on_trace_ready)}')
 
-        if runner.max_epochs > 1:
+        if self.by_epoch and runner.max_epochs > 1:
             warnings.warn(f'profiler will profile {runner.max_epochs} epochs '
                           'instead of 1 epoch. Since profiler will slow down '
                           'the training, it is recommended to train 1 epoch '

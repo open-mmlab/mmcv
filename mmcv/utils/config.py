@@ -7,6 +7,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import types
 import uuid
 import warnings
 from argparse import Action, ArgumentParser
@@ -209,6 +210,8 @@ class Config:
                     name: value
                     for name, value in mod.__dict__.items()
                     if not name.startswith('__')
+                    and not isinstance(value, types.ModuleType)
+                    and not isinstance(value, types.FunctionType)
                 }
                 # delete imported module
                 del sys.modules[temp_module_name]
@@ -528,6 +531,23 @@ class Config:
     def __getstate__(self):
         return (self._cfg_dict, self._filename, self._text)
 
+    def __copy__(self):
+        cls = self.__class__
+        other = cls.__new__(cls)
+        other.__dict__.update(self.__dict__)
+
+        return other
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        other = cls.__new__(cls)
+        memo[id(self)] = other
+
+        for key, value in self.__dict__.items():
+            super(Config, other).__setattr__(key, copy.deepcopy(value, memo))
+
+        return other
+
     def __setstate__(self, state):
         _cfg_dict, _filename, _text = state
         super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
@@ -618,6 +638,8 @@ class DictAction(Action):
             pass
         if val.lower() in ['true', 'false']:
             return True if val.lower() == 'true' else False
+        if val == 'None':
+            return None
         return val
 
     @staticmethod
