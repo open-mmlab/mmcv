@@ -555,11 +555,27 @@ class Config:
         super(Config, self).__setattr__('_text', _text)
 
     def dump(self, file=None):
-        """
-            If a file argument is given, saves the config to that file using the format defined by the file argument extension.
-            Otherwise, returns a string representing the config.
-            The formatting of this returned string is defined by the extension of self.filename.
-            If self.filename is not defined, returns a string representation of a dict (lowercased and using ' for strings).
+        """Write config into a file or returns a string representation of the
+        config.
+
+        If a file argument is given, saves the config to that file using the
+        format defined by the file argument extension.
+
+        Otherwise, returns a string representing the config. The formatting of
+        this returned string is defined by the extension of self.filename. If
+        self.filename is not defined, returns a string representation of a dict
+        (lowercased and using ' for strings).
+
+        Examples:
+            >>> cfg_dict = dict(item1=[1, 2], item2=dict(a=0),
+            ...     item3=True, item4='test')
+            >>> cfg = Config(cfg_dict=cfg_dict)
+            >>> dump_file = "a.py"
+            >>> cfg.dump(dump_file)
+
+        Args:
+            file (optional string): path of the output file where the config
+                should be written
         """
         import mmcv
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
@@ -575,7 +591,6 @@ class Config:
         else:
             file_format = file.split('.')[-1]
             return mmcv.dump(cfg_dict, file=file, file_format=file_format)
-                
 
     def merge_from_dict(self, options, allow_list_keys=True):
         """Merge list into cfg_dict.
