@@ -9,7 +9,7 @@ def is_module_wrapper(module):
     module wrappers: DataParallel, DistributedDataParallel,
     MMDistributedDataParallel (the deprecated version). You may add you own
     module wrapper by registering it to mmcv.parallel.MODULE_WRAPPERS or
-    its child registry.
+    its children registries.
 
     Args:
         module (nn.Module): The module to be checked.
@@ -18,13 +18,13 @@ def is_module_wrapper(module):
         bool: True if the input module is a module wrapper.
     """
 
-    def dfs(MODULE_WRAPPER):
-        module_wrappers = tuple(MODULE_WRAPPER.module_dict.values())
+    def is_module_in_wrapper(module, module_wrapper):
+        module_wrappers = tuple(module_wrapper.module_dict.values())
         if isinstance(module, module_wrappers):
             return True
-        for CHILD_MODULE_WRAPPER in MODULE_WRAPPER.children.values():
-            if dfs(CHILD_MODULE_WRAPPER):
+        for child in module_wrapper.children.values():
+            if is_module_in_wrapper(module, child):
                 return True
         return False
 
-    return dfs(MODULE_WRAPPERS)
+    return is_module_in_wrapper(module, MODULE_WRAPPERS)

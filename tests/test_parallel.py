@@ -74,13 +74,13 @@ def test_is_module_wrapper():
     assert is_module_wrapper(module_wraper)
 
     # test module wrapper registry in downstream repo
-    MODULE_WRAPPERS_MMRAZOR = Registry(
+    MMRAZOR_MODULE_WRAPPERS = Registry(
         'mmrazor module wrapper', parent=MODULE_WRAPPERS, scope='mmrazor')
-    MODULE_WRAPPERS_MMPOSE = Registry(
+    MMPOSE_MODULE_WRAPPERS = Registry(
         'mmpose module wrapper', parent=MODULE_WRAPPERS, scope='mmpose')
 
-    @MODULE_WRAPPERS_MMRAZOR.register_module()
-    class ModuleWrapperRazor(object):
+    @MMRAZOR_MODULE_WRAPPERS.register_module()
+    class ModuleWrapperInRazor(object):
 
         def __init__(self, module):
             self.module = module
@@ -88,8 +88,8 @@ def test_is_module_wrapper():
         def forward(self, *args, **kwargs):
             return self.module(*args, **kwargs)
 
-    @MODULE_WRAPPERS_MMPOSE.register_module()
-    class ModuleWrapperPose(object):
+    @MMPOSE_MODULE_WRAPPERS.register_module()
+    class ModuleWrapperInPose(object):
 
         def __init__(self, module):
             self.module = module
@@ -97,11 +97,11 @@ def test_is_module_wrapper():
         def forward(self, *args, **kwargs):
             return self.module(*args, **kwargs)
 
-    module_wraper = ModuleWrapperRazor(model)
-    assert is_module_wrapper(module_wraper)
+    wrapped_module = ModuleWrapperInRazor(model)
+    assert is_module_wrapper(wrapped_module)
 
-    module_wraper = ModuleWrapperPose(model)
-    assert is_module_wrapper(module_wraper)
+    wrapped_module = ModuleWrapperInPose(model)
+    assert is_module_wrapper(wrapped_module)
 
 
 def test_get_input_device():
