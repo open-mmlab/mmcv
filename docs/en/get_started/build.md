@@ -244,3 +244,21 @@ If you are compiling against PyTorch 1.6.0, you might meet some errors from PyTo
 ```
 
 If you meet issues when running or compiling mmcv, we list some common issues in [Frequently Asked Question](../faq.html).
+
+## [Optional] Build MMCV on IPU machine
+Firstly, you need to apply for an IPU cloud machine, see [here](https://www.graphcore.ai/ipus-in-the-cloud).
+
+### Option 1: Docker
+
+1. Pull docker
+  ```shell
+    docker pull graphcore/pytorch
+  ```
+
+2. Build MMCV under same python environment
+
+### Option 2: Install from SDK
+
+1. Build MMCV
+
+2. Use pip to install sdk according to [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html). Also, you need to apply for machine and sdk to Graphcore.
