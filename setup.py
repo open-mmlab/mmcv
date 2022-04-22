@@ -290,6 +290,7 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             extension = CUDAExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         elif (hasattr(torch, 'is_mlu_available') and
