@@ -13,24 +13,23 @@ class ClearMLLoggerHook(LoggerHook):
 
 
     Args:
-        task_init_kwargs (dict): A dict contains the `clearml.Task.init`
-        initialization keys. Check
-            https://clear.ml/docs/latest/docs/references/sdk/task/#taskinit .
+        init_kwargs (dict): A dict contains the `clearml.Task.init`
+        initialization keys. See `taskinit`_  for more details.
         interval (int): Logging interval (every k iterations). Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
-            if less than `interval`.
-            Default: True.
+            if less than `interval`. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
-        by_epoch (bool): Whether EpochBasedRunner is used.
-            Default: True.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
 
     .. _clearml:
         https://clear.ml/docs/latest/docs/
+    .. _taskinit:
+        https://clear.ml/docs/latest/docs/references/sdk/task/#taskinit
     """
 
     def __init__(self,
-                 task_init_kwargs=None,
+                 init_kwargs=None,
                  interval=10,
                  ignore_last=True,
                  reset_flag=False,
@@ -38,7 +37,7 @@ class ClearMLLoggerHook(LoggerHook):
         super(ClearMLLoggerHook, self).__init__(interval, ignore_last,
                                                 reset_flag, by_epoch)
         self.import_clearml()
-        self.task_init_kwargs = task_init_kwargs
+        self.init_kwargs = init_kwargs
 
     def import_clearml(self):
         try:
@@ -51,12 +50,13 @@ class ClearMLLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner):
         super(ClearMLLoggerHook, self).before_run(runner)
-        task_kwargs = self.task_init_kwargs if self.task_init_kwargs else {}
+        task_kwargs = self.init_kwargs if self.init_kwargs else {}
         self.task = self.clearml.Task.init(**task_kwargs)
-        self.logger = self.task.get_logger()
+        self.task_logger = self.task.get_logger()
 
     @master_only
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         for tag, val in tags.items():
-            self.logger.report_scalar(tag, tag, val, self.get_iter(runner))
+            self.task_logger.report_scalar(tag, tag, val,
+                                           self.get_iter(runner))

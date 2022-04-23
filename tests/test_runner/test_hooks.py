@@ -1575,7 +1575,7 @@ def test_dvclive_hook_model_file(tmp_path):
 def test_clearml_hook():
     sys.modules['clearml'] = MagicMock()
     runner = _build_demo_runner()
-    hook = ClearMLLoggerHook(task_init_kwargs={
+    hook = ClearMLLoggerHook(init_kwargs={
         'project_name': 'proj',
         'task_name': 'task',
     })
@@ -1593,7 +1593,7 @@ def test_clearml_hook():
         call('momentum', 'momentum', 0.95, 6),
         call('learning_rate', 'learning_rate', 0.02, 6),
     ]
-    hook.logger.report_scalar.assert_has_calls(
+    hook.task_logger.report_scalar.assert_has_calls(
         report_scalar_calls, any_order=True)
 
 
