@@ -874,10 +874,10 @@ class TestRandomResize:
             (224, 224), (1.0, 2.0),
             resize_cfg=dict(type='Resize', keep_ratio=True))
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
-        assert 224 <= results_update['height']
-        assert 448 >= results_update['height']
-        assert 224 <= results_update['width']
-        assert 448 >= results_update['width']
+        assert 224 <= results_update['img_shape'][0]
+        assert 448 >= results_update['img_shape'][0]
+        assert 224 <= results_update['img_shape'][1]
+        assert 448 >= results_update['img_shape'][1]
         assert results_update['keep_ratio']
         assert results['gt_bboxes'][0][2] >= 112
         assert results['gt_bboxes'][0][2] <= 112
