@@ -14,7 +14,7 @@ class ClearMLLoggerHook(LoggerHook):
 
     Args:
         init_kwargs (dict): A dict contains the `clearml.Task.init`
-        initialization keys. See `taskinit`_  for more details.
+            initialization keys. See `taskinit`_  for more details.
         interval (int): Logging interval (every k iterations). Default 10.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`. Default: True.
