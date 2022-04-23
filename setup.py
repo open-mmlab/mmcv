@@ -397,16 +397,16 @@ def create_compile_commands(path='build'):
         for file in files:
             if file == "build.ninja":
                 ninja_files.append(os.path.join(root, file))
-    if(len(ninja_files==1)):
-      real_path = os.path.realpath(ninja_files[0])
+    if(len(ninja_files)==1):
+        real_path = os.path.realpath(ninja_files[0])
 
-      output_path = os.path.join(path, "compile_commands.json")
-      result = os.popen(f"ninja -f {real_path} -t compdb")
-      with open(output_path, 'w+') as f:
-          f.write(result.read())
-      print(f"Saved compile_commands.json at {os.path.relpath(output_path)}")
+        output_path = os.path.join(path, "compile_commands.json")
+        result = os.popen(f"ninja -f {real_path} -t compdb")
+        with open(output_path, 'w') as f:
+            f.write(result.read())
+        print(f"Saved compile_commands.json at {os.path.relpath(output_path)}")
     else:
-      print("Failed to create compile_commands.json, the number of 'build.ninja' file must be 1.")
+        print("Failed to create compile_commands.json, the number of 'build.ninja' file must be 1.")
 
 setup(
     name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
