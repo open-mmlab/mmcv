@@ -23,8 +23,8 @@ from torch.utils.data import DataLoader
 
 from mmcv.fileio.file_client import PetrelBackend
 # yapf: disable
-from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
-                         Fp16OptimizerHook,
+from mmcv.runner import (CheckpointHook, ClearMLLoggerHook, DvcliveLoggerHook,
+                         EMAHook, Fp16OptimizerHook,
                          GradientCumulativeFp16OptimizerHook,
                          GradientCumulativeOptimizerHook, IterTimerHook,
                          MlflowLoggerHook, NeptuneLoggerHook, OptimizerHook,
@@ -1570,6 +1570,31 @@ def test_dvclive_hook_model_file(tmp_path):
     assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
+
+
+def test_clearml_hook():
+    sys.modules['clearml'] = MagicMock()
+    runner = _build_demo_runner()
+    hook = ClearMLLoggerHook(init_kwargs={
+        'project_name': 'proj',
+        'task_name': 'task',
+    })
+
+    loader = DataLoader(torch.ones((5, 2)))
+
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    hook.clearml.Task.init.assert_called_with(
+        project_name='proj', task_name='task')
+    hook.task.get_logger.assert_called_with()
+    report_scalar_calls = [
+        call('momentum', 'momentum', 0.95, 6),
+        call('learning_rate', 'learning_rate', 0.02, 6),
+    ]
+    hook.task_logger.report_scalar.assert_has_calls(
+        report_scalar_calls, any_order=True)
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
