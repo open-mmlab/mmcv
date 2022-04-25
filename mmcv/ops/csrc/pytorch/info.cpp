@@ -3,8 +3,16 @@
 // https://github.com/facebookresearch/detectron2/blob/master/detectron2/layers/csrc/vision.cpp
 #include "pytorch_cpp_helper.hpp"
 
+
 #ifdef MMCV_WITH_CUDA
-#ifndef MMCV_WITH_HIP
+#if MMCV_WITH_HIP
+#include <cuda_runtime_api.h>
+int get_hiprt_version() {
+  int runtimeVersion;
+  hipRuntimeGetVersion(&runtimeVersion);
+  return runtimeVersion;
+}
+#else
 #include <cuda_runtime_api.h>
 int get_cudart_version() { return CUDART_VERSION; }
 #endif
@@ -25,7 +33,9 @@ std::string get_compiling_cuda_version() {
   printCudaStyleVersion(get_cudart_version());
   return oss.str();
 #else
-  return std::string("rocm not available");
+  std::ostringstream oss;
+  oss << get_hiprt_version();
+  return oss.str();
 #endif
 #else
   return std::string("not available");
