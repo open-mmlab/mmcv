@@ -924,20 +924,20 @@ REGISTER_DEVICE_IMPL(roi_align_forward_impl, CUDA, roi_align_forward_cuda);
 REGISTER_DEVICE_IMPL(roi_align_backward_impl, CUDA, roi_align_backward_cuda);
 
 void ROIAlignRotatedForwardCUDAKernelLauncher(
-    const at::Tensor features, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const at::Tensor input, const at::Tensor rois, const float spatial_scale,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor output);
 
 void ROIAlignRotatedBackwardCUDAKernelLauncher(
     const at::Tensor top_grad, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor bottom_grad);
 
-void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_cuda(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -947,11 +947,11 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
     AT_ERROR("wrong roi size");
   }
 
-  int num_channels = features.size(1);
-  int data_height = features.size(2);
-  int data_width = features.size(3);
+  int num_channels = input.size(1);
+  int data_height = input.size(2);
+  int data_width = input.size(3);
   ROIAlignRotatedForwardCUDAKernelLauncher(
-      features, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      input, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, output);
 }
@@ -959,7 +959,7 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
 void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -972,20 +972,20 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
   ROIAlignRotatedBackwardCUDAKernelLauncher(
-      top_grad, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      top_grad, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, bottom_grad);
 }
 
-void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_impl(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise);
 
 void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise);
 REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CUDA,
                      roi_align_rotated_forward_cuda);
@@ -1396,6 +1396,12 @@ int HardVoxelizeForwardCUDAKernelLauncher(
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3);
 
+int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3);
+
 void DynamicVoxelizeForwardCUDAKernelLauncher(
     const at::Tensor& points, at::Tensor& coors,
     const std::vector<float> voxel_size, const std::vector<float> coors_range,
@@ -1409,6 +1415,16 @@ int hard_voxelize_forward_cuda(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim) {
   return HardVoxelizeForwardCUDAKernelLauncher(
+      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+      max_points, max_voxels, NDim);
+};
+
+int nondeterministic_hard_voxelize_forward_cuda(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim) {
+  return NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
       points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
       max_points, max_voxels, NDim);
 };
@@ -1429,6 +1445,12 @@ int hard_voxelize_forward_impl(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim);
 
+int nondeterministic_hard_voxelize_forward_impl(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim);
+
 void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
                                    const std::vector<float> voxel_size,
                                    const std::vector<float> coors_range,
@@ -1436,6 +1458,8 @@ void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
 
 REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
                      hard_voxelize_forward_cuda);
+REGISTER_DEVICE_IMPL(nondeterministic_hard_voxelize_forward_impl, CUDA,
+                     nondeterministic_hard_voxelize_forward_cuda);
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
 
