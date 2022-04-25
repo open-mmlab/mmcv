@@ -229,7 +229,7 @@ pipeline = [
            auto_remap=True,
            # 是否在对各目标的变换中共享随机变量
            # 更多介绍参加后续章节（随机变量共享）
-           share_random_param=True,
+           share_random_params=True,
            transforms=[
                # 在 `RandomFlip` 变换类中，我们只需要操作 "img" 字段即可
                dict(type='RandomFlip'),
@@ -249,7 +249,7 @@ pipeline = [
            # 在完成变换后，将 "img" 字段下的图片重映射回 "images" 字段的列表中
            auto_remap=True,
            # 是否在对各目标的变换中共享随机变量
-           share_random_param=True,
+           share_random_params=True,
            transforms=[
                # 在 `RandomFlip` 变换类中，我们只需要操作 "img" 字段即可
                dict(type='RandomFlip'),
@@ -257,7 +257,10 @@ pipeline = [
    ]
    ```
 
-在 `TransformBroadcaster` 中，我们提供了 `share_random_param` 选项来支持在多次数据变换中共享随机状态。例如，在超分辨率任务中，我们希望将随机变换**同步**作用于低分辨率图像和原始图像。如果我们希望在自定义的数据变换类中使用这一功能，我们需要在类中标注哪些随机变量是支持共享的。
+
+#### 装饰器 `cache_randomness`
+
+在 `TransformBroadcaster` 中，我们提供了 `share_random_params` 选项来支持在多次数据变换中共享随机状态。例如，在超分辨率任务中，我们希望将随机变换**同步**作用于低分辨率图像和原始图像。如果我们希望在自定义的数据变换类中使用这一功能，需要在类中标注哪些随机变量是支持共享的。这可以通过装饰器 `cache_randomness` 来实现。
 
 以上文中的 `MyFlip` 为例，我们希望以一定的概率随机执行翻转：
 
@@ -283,4 +286,29 @@ class MyRandomFlip(BaseTransform):
         return results
 ```
 
-通过 `cache_randomness` 装饰器，方法返回值 `flip` 被标注为一个支持共享的随机变量。进而，在 `TransformBroadcaster` 对多个目标的变换中，这一变量的值都会保持一致。
+在上面的例子中，我们用`cache_randomness` 装饰 `do_flip`方法，即将该方法返回值 `flip` 标注为一个支持共享的随机变量。进而，在 `TransformBroadcaster` 对多个目标的变换中，这一变量的值都会保持一致。
+
+#### 装饰器 `avoid_cache_randomness`
+
+在一些情况下，我们无法将数据变换中产生随机变量的过程单独放在类方法中。例如，数据变换中使用了来自第三方库的模块，这些模块将随机变量相关的部分封装在了内部，导致无法将其抽出为数据变换的类方法。这样的数据变换无法通过装饰器 `cache_randomness` 标注支持共享的随机变量，进而无法在多目标扩展时共享随机变量。
+
+为了避免在多目标扩展中误用此类数据变换，我们提供了另一个装饰器 `avoid_cache_randomness`，用来对此类数据变换进行标记：
+
+```python
+from mmcv.transforms.utils import avoid_cache_randomness
+
+@TRANSFORMS.register_module()
+@avoid_cache_randomness
+class MyRandomTransform(BaseTransform):
+
+    def transform(self, results: dict) -> dict:
+        ...
+```
+
+用 `avoid_cache_randomness` 标记的数据变换类，当其实例被 `TransformBroadcaster` 包装且将参数 `share_random_params` 设置为 True 时，会抛出异常，以此提醒用户不能这样使用。
+
+在使用 `avoid_cache_randomness` 时需要注意以下几点：
+
+1. `avoid_cache_randomness` 只用于装饰数据变换类（BaseTransfrom 的子类），而不能用与装饰其他一般的类、类方法或函数
+2. 被 `avoid_cache_randomness` 修饰的数据变换作为基类时，其子类将**不会继承**这一特性。如果子类仍无法共享随机变量，则应再次使用 `avoid_cache_randomness` 修饰
+3. 只有当一个数据变换具有随机性，且无法共享随机参数时，才需要以 `avoid_cache_randomness` 修饰。无随机性的数据变换不需要修饰

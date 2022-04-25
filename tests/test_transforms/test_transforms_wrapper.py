@@ -275,7 +275,7 @@ def test_key_mapper():
     _ = str(pipeline)
 
 
-def test_apply_to_multiple():
+def test_transform_broadcaster():
 
     # Case 1: apply to list in results
     pipeline = TransformBroadcaster(
