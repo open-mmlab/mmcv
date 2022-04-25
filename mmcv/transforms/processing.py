@@ -438,8 +438,7 @@ class CenterCrop(BaseTransform):
     Modified Keys:
 
     - img
-    - height
-    - width
+    - img_shape
     - gt_seg_map (optional)
     - gt_bboxes (optional)
     - gt_keypoints (optional)
@@ -499,10 +498,9 @@ class CenterCrop(BaseTransform):
         """
         if results.get('img', None) is not None:
             img = mmcv.imcrop(results['img'], bboxes=bboxes)
-            img_shape = img.shape
+            img_shape = img.shape[:2]
             results['img'] = img
-            results['height'] = img_shape[0]
-            results['width'] = img_shape[1]
+            results['img_shape'] = img_shape
             results['pad_shape'] = img_shape
 
     def _crop_seg_map(self, results: dict, bboxes: np.ndarray) -> None:
@@ -725,7 +723,7 @@ class MultiScaleFlipAug(BaseTransform):
 
         dict(
             type='MultiScaleFlipAug',
-            img_scale=[(1333, 400), (1333, 800)],
+            scales=[(1333, 400), (1333, 800)],
             flip=True,
             transforms=[
                 dict(type='Normalize', **img_norm_cfg),
@@ -734,7 +732,7 @@ class MultiScaleFlipAug(BaseTransform):
                 dict(type='Collect', keys=['img'])
             ])
 
-    ``results`` will be resized using all the sizes in ``img_scale``.
+    ``results`` will be resized using all the sizes in ``scales``.
     If ``flip`` is True, then flipped results will also be added into output
     list.
 
@@ -769,7 +767,7 @@ class MultiScaleFlipAug(BaseTransform):
     Args:
         transforms (list[dict]): Transforms to be applied to each resized
             and flipped data.
-        img_scale (tuple | list[tuple] | None): Images scales for resizing.
+        scales (tuple | list[tuple] | None): Images scales for resizing.
         scale_factor (float or tuple[float]): Scale factors for resizing.
             Defaults to None.
         allow_flip (bool): Whether apply flip augmentation. Defaults to False.
@@ -787,7 +785,7 @@ class MultiScaleFlipAug(BaseTransform):
     def __init__(
         self,
         transforms: List[dict],
-        img_scale: Optional[Union[Tuple, List[Tuple]]] = None,
+        scales: Optional[Union[Tuple, List[Tuple]]] = None,
         scale_factor: Optional[Union[float, List[float]]] = None,
         allow_flip: bool = False,
         flip_direction: Union[str, List[str]] = 'horizontal',
@@ -797,17 +795,16 @@ class MultiScaleFlipAug(BaseTransform):
         super().__init__()
         self.transforms = Compose(transforms)  # type: ignore
 
-        if img_scale is not None:
-            self.img_scale = img_scale if isinstance(img_scale,
-                                                     list) else [img_scale]
+        if scales is not None:
+            self.scales = scales if isinstance(scales, list) else [scales]
             self.scale_key = 'scale'
-            assert mmcv.is_list_of(self.img_scale, tuple)
+            assert mmcv.is_list_of(self.scales, tuple)
         else:
-            # if ``img_scale`` and ``scale_factor`` both be ``None``
+            # if ``scales`` and ``scale_factor`` both be ``None``
             if scale_factor is None:
-                self.img_scale = [1.]
+                self.scales = [1.]
             else:
-                self.img_scale = scale_factor if isinstance(
+                self.scales = scale_factor if isinstance(
                     scale_factor, list) else [scale_factor]
             self.scale_key = 'scale_factor'
 
@@ -838,7 +835,7 @@ class MultiScaleFlipAug(BaseTransform):
         if self.allow_flip:
             flip_args += [(True, direction)
                           for direction in self.flip_direction]
-        for scale in self.img_scale:
+        for scale in self.scales:
             for flip, direction in flip_args:
                 _resize_cfg = self.resize_cfg.copy()
                 _resize_cfg.update({self.scale_key: scale})
@@ -864,7 +861,7 @@ class MultiScaleFlipAug(BaseTransform):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f', transforms={self.transforms}'
-        repr_str += f', img_scale={self.img_scale}'
+        repr_str += f', scales={self.scales}'
         repr_str += f', allow_flip={self.allow_flip}'
         repr_str += f', flip_direction={self.flip_direction}'
         return repr_str
@@ -933,8 +930,8 @@ class RandomChoiceResize(BaseTransform):
         """Randomly select an scale from given candidates.
 
         Returns:
-            (tuple, int): Returns a tuple ``(img_scale, scale_dix)``,
-            where ``img_scale`` is the selected image scale and
+            (tuple, int): Returns a tuple ``(scale, scale_dix)``,
+            where ``scale`` is the selected image scale and
             ``scale_idx`` is the selected index in the given candidates.
         """
 
