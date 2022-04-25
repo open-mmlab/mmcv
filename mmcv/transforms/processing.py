@@ -99,8 +99,7 @@ class Resize(BaseTransform):
     - gt_bboxes
     - gt_seg_map
     - gt_keypoints
-    - height
-    - width
+    - img_shape
 
     Added Keys:
 
@@ -187,7 +186,7 @@ class Resize(BaseTransform):
                     return_scale=True,
                     backend=self.backend)
             results['img'] = img
-            results['height'], results['width'] = img.shape[:2]
+            results['img_shape'] = img.shape[:2]
             results['scale'] = img.shape[:2][::-1]
             results['scale_factor'] = (w_scale, h_scale)
             results['keep_ratio'] = self.keep_ratio
@@ -198,9 +197,10 @@ class Resize(BaseTransform):
             bboxes = results['gt_bboxes'] * np.tile(
                 np.array(results['scale_factor']), 2)
             if self.clip_object_border:
-                bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, results['width'])
+                bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0,
+                                          results['img_shape'][1])
                 bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0,
-                                          results['height'])
+                                          results['img_shape'][0])
             results['gt_bboxes'] = bboxes
 
     def _resize_seg(self, results: dict) -> None:
@@ -229,9 +229,9 @@ class Resize(BaseTransform):
                 results['scale_factor'])
             if self.clip_object_border:
                 keypoints[:, :, 0] = np.clip(keypoints[:, :, 0], 0,
-                                             results['width'])
+                                             results['img_shape'][1])
                 keypoints[:, :, 1] = np.clip(keypoints[:, :, 1], 0,
-                                             results['height'])
+                                             results['img_shape'][0])
             results['gt_keypoints'] = keypoints
 
     def transform(self, results: dict) -> dict:
@@ -242,7 +242,7 @@ class Resize(BaseTransform):
             results (dict): Result dict from loading pipeline.
         Returns:
             dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
-            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
+            'gt_keypoints', 'scale', 'scale_factor', 'img_shape',
             and 'keep_ratio' keys are updated in result dict.
         """
 
@@ -895,8 +895,7 @@ class RandomChoiceResize(BaseTransform):
     Modified Keys:
 
     - img
-    - height
-    - width
+    - img_shape
     - gt_bboxes (optional)
     - gt_seg_map (optional)
     - gt_keypoints (optional)
@@ -952,7 +951,7 @@ class RandomChoiceResize(BaseTransform):
 
         Returns:
             dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
-            'gt_keypoints', 'scale', 'scale_factor', 'height', 'width',
+            'gt_keypoints', 'scale', 'scale_factor', 'img_shape',
             and 'keep_ratio' keys are updated in result dict.
         """
 
@@ -1226,6 +1225,7 @@ class RandomResize(BaseTransform):
     - gt_bboxes
     - gt_seg_map
     - gt_keypoints
+    - img_shape
 
     Added Keys:
 
@@ -1335,8 +1335,8 @@ class RandomResize(BaseTransform):
             results (dict): Result dict from loading pipeline.
         Returns:
             dict: Resized results, ``img``, ``gt_bboxes``, ``gt_semantic_seg``,
-            ``gt_keypoints``, ``scale``, ``scale_factor``, ``height``,
-            ``width``, and ``keep_ratio`` keys are updated in result dict.
+            ``gt_keypoints``, ``scale``, ``scale_factor``, ``img_shape``, and
+            ``keep_ratio`` keys are updated in result dict.
         """
         results['scale'] = self._random_scale()
         self.resize.scale = results['scale']
