@@ -6,8 +6,8 @@ import pytest
 
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import (cache_random_params, cache_randomness,
-                                   prohibit_cache_randomness)
+from mmcv.transforms.utils import (avoid_cache_randomness, cache_random_params,
+                                   cache_randomness)
 from mmcv.transforms.wrappers import (Compose, KeyMapper,  RandomApply, RandomChoice,
                                       TransformBroadcaster)
 
@@ -444,10 +444,10 @@ def test_utils():
             def transform(self, results):
                 return results
 
-    # Test prohibit_cache_randomness: invalid mixture with cache_randomness
+    # Test avoid_cache_randomness: invalid mixture with cache_randomness
     with pytest.raises(RuntimeError):
 
-        @prohibit_cache_randomness
+        @avoid_cache_randomness
         class DummyTransform(BaseTransform):
 
             @cache_randomness
@@ -457,10 +457,10 @@ def test_utils():
             def transform(self, results):
                 return results
 
-    # Test prohibit_cache_randomness: raise error in cache_random_params
+    # Test avoid_cache_randomness: raise error in cache_random_params
     with pytest.raises(RuntimeError):
 
-        @prohibit_cache_randomness
+        @avoid_cache_randomness
         class DummyTransform(BaseTransform):
 
             def transform(self, results):
@@ -469,3 +469,17 @@ def test_utils():
         transform = DummyTransform()
         with cache_random_params(transform):
             pass
+
+    # Test avoid_cache_randomness: non-inheritable
+    @avoid_cache_randomness
+    class DummyBaseTransform(BaseTransform):
+
+        def transform(self, results):
+            return results
+
+    class DummyTransform(DummyBaseTransform):
+        pass
+
+    transform = DummyTransform()
+    with cache_random_params(transform):
+        pass

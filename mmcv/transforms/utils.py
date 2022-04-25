@@ -83,7 +83,7 @@ class cache_randomness:
         return self
 
 
-def prohibit_cache_randomness(cls):
+def avoid_cache_randomness(cls):
     """Decorator that marks a data transform class (subclass of
     :class:`BaseTransform`) prohibited from caching randomness. With this
     decorator, errors will be raised in following cases:
@@ -93,7 +93,7 @@ def prohibit_cache_randomness(cls):
         2. An instance of the class is invoked with the context
     `cache_random_params`.
 
-    A typical usage of `prohibit_cache_randomness` is to decorate the data
+    A typical usage of `avoid_cache_randomness` is to decorate the data
     transforms with non-cacheable random behaviors (e.g., the random behavior
     can not be defined in a method, thus can not be decorated with
     `cache_randomness`). This is for preventing unintentinoal use of such data
@@ -108,11 +108,23 @@ def prohibit_cache_randomness(cls):
     if getattr(cls, '_methods_with_randomness', None):
         raise RuntimeError(
             f'Class {cls.__name__} decorated with '
-            '``prohibit_cache_randomness`` should not have methods decorated '
+            '``avoid_cache_randomness`` should not have methods decorated '
             'with ``cache_randomness`` (invalid methods: '
             f'{cls._methods_with_randomness})')
 
-    setattr(cls, '_prohibit_cache_randomness', True)
+    class AvoidCacheRandomness:
+
+        def __get__(self, obj, objtype=None):
+            # Here we check the value in `objtype.__dict__` instead of
+            # directly checking the attribute
+            # `objtype._avoid_cache_randomness`. So if the base class is
+            # decorated with :func:`avoid_cache_randomness`, it will not be
+            # inherited by subclasses.
+            return objtype.__dict__.get('_avoid_cache_randomness', False)
+
+    cls.avoid_cache_randomness = AvoidCacheRandomness()
+    cls._avoid_cache_randomness = True
+
     return cls
 
 
@@ -183,10 +195,10 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
 
     def _start_cache(t: BaseTransform):
         # Check if cache is allowed for `t`
-        if getattr(t, '_prohibit_cache_randomness', False):
+        if getattr(t, 'avoid_cache_randomness', False):
             raise RuntimeError(
                 f'Class {t.__class__.__name__} decorated with '
-                '``prohibit_cache_randomness`` is not allowed to be used with'
+                '``avoid_cache_randomness`` is not allowed to be used with'
                 ' ``cache_random_params`` (e.g. wrapped by '
                 '``ApplyToMultiple`` with ``share_random_params==True``).')
 
