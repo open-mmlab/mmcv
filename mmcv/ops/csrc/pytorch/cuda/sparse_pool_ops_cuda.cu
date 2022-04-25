@@ -1,8 +1,8 @@
 #include <cuda_runtime_api.h>
 #include <torch/script.h>
+#include "../spconv_utils.h"
 #include <utils/spconv/spconv/maxpool.h>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,

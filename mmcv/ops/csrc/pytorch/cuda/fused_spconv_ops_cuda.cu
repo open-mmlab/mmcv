@@ -1,9 +1,9 @@
 #include <cuda_runtime_api.h>
 #include <torch/script.h>
+#include "../spconv_utils.h"
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/reordering.h>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
