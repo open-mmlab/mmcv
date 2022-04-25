@@ -8,8 +8,8 @@ from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
 from mmcv.transforms.utils import (avoid_cache_randomness, cache_random_params,
                                    cache_randomness)
-from mmcv.transforms.wrappers import (Compose, KeyMapper,  RandomApply, RandomChoice,
-                                      TransformBroadcaster)
+from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomApply,
+                                      RandomChoice, TransformBroadcaster)
 
 
 @TRANSFORMS.register_module()
