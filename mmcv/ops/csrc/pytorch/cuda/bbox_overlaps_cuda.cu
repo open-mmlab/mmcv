@@ -3,7 +3,7 @@
 #include "pytorch_cuda_helper.hpp"
 
 // Disable fp16 on ROCm device
-#ifndef HIP_DIFF
+#ifndef MMCV_WITH_HIP
 template <>
 __global__ void bbox_overlaps_cuda_kernel<at::Half>(
     const at::Half* bbox1, const at::Half* bbox2, at::Half* ious,
@@ -14,7 +14,7 @@ __global__ void bbox_overlaps_cuda_kernel<at::Half>(
                                  reinterpret_cast<__half*>(ious), num_bbox1,
                                  num_bbox2, mode, aligned, offset);
 }
-#endif  // HIP_DIFF
+#endif  // MMCV_WITH_HIP
 
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,
