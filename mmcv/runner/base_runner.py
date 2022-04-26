@@ -380,6 +380,11 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
+            # Update config with the new config set in meta
+            # when creating the runner, otherwise runner's config is reset
+            # to the old one. https://github.com/open-mmlab/mmcv/issues/1875
+            if 'config' in self.meta:
+                checkpoint['meta']['config'] = self.meta['config']
 
         # resume meta information meta
         self.meta = checkpoint['meta']
