@@ -380,14 +380,6 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
-            # Update config with the new config set in meta
-            # when creating the runner, otherwise runner's config is reset
-            # to the old one. https://github.com/open-mmlab/mmcv/issues/1875
-            if 'config' in self.meta:
-                checkpoint['meta']['config'] = self.meta['config']
-
-        # resume meta information meta
-        self.meta = checkpoint['meta']
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
@@ -400,6 +392,9 @@ class BaseRunner(metaclass=ABCMeta):
                 raise TypeError(
                     'Optimizer should be dict or torch.optim.Optimizer '
                     f'but got {type(self.optimizer)}')
+
+        if 'fp16' in checkpoint['meta']:
+            self.meta['fp16'] = checkpoint['meta']['fp16']
 
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
