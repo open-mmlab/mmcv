@@ -8,7 +8,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 class TestBBox(object):
 
-    def _test_bbox_overlaps(self, dtype=torch.float, device='cpu'):
+    def _test_bbox_overlaps(self, device='cpu', dtype=torch.float):
         from mmcv.ops import bbox_overlaps
         b1 = torch.tensor([[1.0, 1.0, 3.0, 4.0], [2.0, 2.0, 3.0, 4.0],
                            [7.0, 7.0, 8.0, 8.0]]).to(device).type(dtype)
