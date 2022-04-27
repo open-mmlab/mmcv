@@ -6,7 +6,8 @@ import pytest
 
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import cache_random_params, cache_randomness
+from mmcv.transforms.utils import (avoid_cache_randomness, cache_random_params,
+                                   cache_randomness)
 from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomApply,
                                       RandomChoice, TransformBroadcaster)
 
@@ -274,7 +275,7 @@ def test_key_mapper():
     _ = str(pipeline)
 
 
-def test_apply_to_multiple():
+def test_transform_broadcaster():
 
     # Case 1: apply to list in results
     pipeline = TransformBroadcaster(
@@ -421,18 +422,64 @@ def test_utils():
     # Test cache_randomness: invalid function type
     with pytest.raises(TypeError):
 
-        class DummyTransform():
+        class DummyTransform(BaseTransform):
 
             @cache_randomness
             @staticmethod
             def func():
                 return np.random.rand()
 
+            def transform(self, results):
+                return results
+
     # Test cache_randomness: invalid function argument list
     with pytest.raises(TypeError):
 
-        class DummyTransform():
+        class DummyTransform(BaseTransform):
 
             @cache_randomness
             def func(cls):
                 return np.random.rand()
+
+            def transform(self, results):
+                return results
+
+    # Test avoid_cache_randomness: invalid mixture with cache_randomness
+    with pytest.raises(RuntimeError):
+
+        @avoid_cache_randomness
+        class DummyTransform(BaseTransform):
+
+            @cache_randomness
+            def func(self):
+                pass
+
+            def transform(self, results):
+                return results
+
+    # Test avoid_cache_randomness: raise error in cache_random_params
+    with pytest.raises(RuntimeError):
+
+        @avoid_cache_randomness
+        class DummyTransform(BaseTransform):
+
+            def transform(self, results):
+                return results
+
+        transform = DummyTransform()
+        with cache_random_params(transform):
+            pass
+
+    # Test avoid_cache_randomness: non-inheritable
+    @avoid_cache_randomness
+    class DummyBaseTransform(BaseTransform):
+
+        def transform(self, results):
+            return results
+
+    class DummyTransform(DummyBaseTransform):
+        pass
+
+    transform = DummyTransform()
+    with cache_random_params(transform):
+        pass
