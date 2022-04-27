@@ -5,7 +5,7 @@
 
 #ifdef MMCV_WITH_CUDA
 #ifdef MMCV_WITH_HIP
-#include <cuda_runtime_api.h>
+#include <hip/hip_runtime_api.h>
 int get_hiprt_version() {
   int runtimeVersion;
   hipRuntimeGetVersion(&runtimeVersion);
