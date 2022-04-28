@@ -120,13 +120,13 @@ class LoadAnnotations(BaseTransform):
 
         {
             # In (x1, y1, x2, y2) order, float type. N is the number of bboxes
-            # in an image
+            # in np.float32
             'gt_bboxes': np.ndarray(N, 4)
-             # In int type.
+             # In np.int32 type.
             'gt_bboxes_labels': np.ndarray(N, )
              # In uint8 type.
             'gt_seg_map': np.ndarray (H, W)
-             # in (x, y, v) order, float type.
+             # with (x, y, v) order, in np.float32 type.
             'gt_keypoints': np.ndarray(N, NK, 3)
         }
 
@@ -142,10 +142,10 @@ class LoadAnnotations(BaseTransform):
 
     Added Keys:
 
-    - gt_bboxes
-    - gt_bboxes_labels
-    - gt_seg_map
-    - gt_keypoints
+    - gt_bboxes (np.float32)
+    - gt_bboxes_labels (np.int32)
+    - gt_seg_map (np.uint8)
+    - gt_keypoints (np.float32)
 
     Args:
         with_bbox (bool): Whether to parse and load the bbox annotation.
@@ -194,7 +194,7 @@ class LoadAnnotations(BaseTransform):
         gt_bboxes = []
         for instance in results['instances']:
             gt_bboxes.append(instance['bbox'])
-        results['gt_bboxes'] = np.array(gt_bboxes)
+        results['gt_bboxes'] = np.array(gt_bboxes, dtype=np.float32)
 
     def _load_labels(self, results: dict) -> None:
         """Private function to load label annotations.
@@ -208,7 +208,8 @@ class LoadAnnotations(BaseTransform):
         gt_bboxes_labels = []
         for instance in results['instances']:
             gt_bboxes_labels.append(instance['bbox_label'])
-        results['gt_bboxes_labels'] = np.array(gt_bboxes_labels)
+        results['gt_bboxes_labels'] = np.array(
+            gt_bboxes_labels, dtype=np.int32)
 
     def _load_seg_map(self, results: dict) -> None:
         """Private function to load semantic segmentation annotations.
@@ -236,7 +237,7 @@ class LoadAnnotations(BaseTransform):
         gt_keypoints = []
         for instance in results['instances']:
             gt_keypoints.append(instance['keypoints'])
-        results['gt_keypoints'] = np.array(gt_keypoints).reshape(
+        results['gt_keypoints'] = np.array(gt_keypoints, np.float32).reshape(
             (len(gt_keypoints), -1, 3))
 
     def transform(self, results: dict) -> dict:
