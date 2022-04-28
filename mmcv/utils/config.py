@@ -7,11 +7,13 @@ import platform
 import shutil
 import sys
 import tempfile
+import types
 import uuid
 import warnings
 from argparse import Action, ArgumentParser
 from collections import abc
 from importlib import import_module
+from pathlib import Path
 
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
@@ -209,6 +211,8 @@ class Config:
                     name: value
                     for name, value in mod.__dict__.items()
                     if not name.startswith('__')
+                    and not isinstance(value, types.ModuleType)
+                    and not isinstance(value, types.FunctionType)
                 }
                 # delete imported module
                 del sys.modules[temp_module_name]
@@ -331,6 +335,8 @@ class Config:
     def fromfile(filename,
                  use_predefined_variables=True,
                  import_custom_modules=True):
+        if isinstance(filename, Path):
+            filename = str(filename)
         cfg_dict, cfg_text = Config._file2dict(filename,
                                                use_predefined_variables)
         if import_custom_modules and cfg_dict.get('custom_imports', None):
@@ -386,6 +392,9 @@ class Config:
         for key in cfg_dict:
             if key in RESERVED_KEYS:
                 raise KeyError(f'{key} is reserved for config file')
+
+        if isinstance(filename, Path):
+            filename = str(filename)
 
         super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
         super(Config, self).__setattr__('_filename', filename)
@@ -528,6 +537,13 @@ class Config:
     def __getstate__(self):
         return (self._cfg_dict, self._filename, self._text)
 
+    def __copy__(self):
+        cls = self.__class__
+        other = cls.__new__(cls)
+        other.__dict__.update(self.__dict__)
+
+        return other
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         other = cls.__new__(cls)
@@ -628,6 +644,8 @@ class DictAction(Action):
             pass
         if val.lower() in ['true', 'false']:
             return True if val.lower() == 'true' else False
+        if val == 'None':
+            return None
         return val
 
     @staticmethod

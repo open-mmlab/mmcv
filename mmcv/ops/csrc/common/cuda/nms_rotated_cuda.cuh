@@ -43,18 +43,16 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
     // (x_center, y_center, width, height, angle_degrees) here.
     __shared__ T block_boxes[threadsPerBlock * 5];
     if (threadIdx.x < col_size) {
-      block_boxes[threadIdx.x * 6 + 0] =
+      block_boxes[threadIdx.x * 5 + 0] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 0];
-      block_boxes[threadIdx.x * 6 + 1] =
+      block_boxes[threadIdx.x * 5 + 1] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 1];
-      block_boxes[threadIdx.x * 6 + 2] =
+      block_boxes[threadIdx.x * 5 + 2] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 2];
-      block_boxes[threadIdx.x * 6 + 3] =
+      block_boxes[threadIdx.x * 5 + 3] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 3];
-      block_boxes[threadIdx.x * 6 + 4] =
+      block_boxes[threadIdx.x * 5 + 4] =
           dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 4];
-      block_boxes[threadIdx.x * 6 + 5] =
-          dev_boxes[(threadsPerBlock * col_start + threadIdx.x) * 6 + 5];
     }
     __syncthreads();
 
@@ -71,7 +69,7 @@ __global__ void nms_rotated_cuda_kernel(const int n_boxes,
         // Instead of devIoU used by original horizontal nms, here
         // we use the single_box_iou_rotated function from
         // box_iou_rotated_utils.h
-        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 6, 0) >
+        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 5, 0) >
             iou_threshold) {
           t |= 1ULL << i;
         }
