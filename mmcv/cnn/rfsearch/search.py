@@ -2,8 +2,10 @@
 import logging
 import os
 
+import torch  # noqa
+
 from mmcv.runner import HOOKS, Hook
-from .operator import BaseRFSearchOperator
+from .operator import BaseRFSearchOperator, Conv2dRFSearchOp  # noqa
 from .utils import load_structure, write_to_json
 
 logging.basicConfig(
