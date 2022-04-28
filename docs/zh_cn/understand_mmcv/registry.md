@@ -3,7 +3,7 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 在 OpenMMLab 家族中的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting) 等。
 
 ```{note}
-在 v1.4.9 版本开始支持注册函数的功能。
+在 v1.5.1 版本开始支持注册函数的功能。
 ```
 
 ### 什么是注册器

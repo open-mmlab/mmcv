@@ -4,7 +4,7 @@ MMCV implements [registry](https://github.com/open-mmlab/mmcv/blob/master/mmcv/u
 Most projects in OpenMMLab use registry to manage modules of datasets and models, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting), etc.
 
 ```{note}
-In v1.4.9 and later, the Registry supports registering functions and calling them.
+In v1.5.1 and later, the Registry supports registering functions and calling them.
 ```
 
 ### What is registry
