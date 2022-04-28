@@ -21,7 +21,7 @@ def build_from_cfg(cfg, registry, default_args=None):
         >>> def resnet50():
         >>>     pass
         >>> resnet = build_from_cfg(dict(type='resnet50'), MODELS)
-        >>> # Return a function call result
+        >>> # Return a result of the calling function
 
     Args:
         cfg (dict): Config dict. It should at least contain the key "type".
