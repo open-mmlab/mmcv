@@ -74,6 +74,7 @@ class TestLoadAnnotations:
         assert 'gt_bboxes' in results
         assert (results['gt_bboxes'] == np.array([[0, 0, 10, 20],
                                                   [10, 10, 110, 120]])).all()
+        assert results['gt_bboxes'].dtype == np.float32
 
     def test_load_labels(self):
         transform = LoadAnnotations(
@@ -85,6 +86,7 @@ class TestLoadAnnotations:
         results = transform(copy.deepcopy(self.results))
         assert 'gt_bboxes_labels' in results
         assert (results['gt_bboxes_labels'] == np.array([1, 2])).all()
+        assert results['gt_bboxes_labels'].dtype == np.int32
 
     def test_load_kps(self):
         transform = LoadAnnotations(
@@ -97,6 +99,7 @@ class TestLoadAnnotations:
         assert 'gt_keypoints' in results
         assert (results['gt_keypoints'] == np.array([[[1, 2, 3]],
                                                      [[4, 5, 6]]])).all()
+        assert results['gt_keypoints'].dtype == np.float32
 
     def test_load_seg_map(self):
         transform = LoadAnnotations(
@@ -108,6 +111,7 @@ class TestLoadAnnotations:
         results = transform(copy.deepcopy(self.results))
         assert 'gt_seg_map' in results
         assert results['gt_seg_map'].shape[:2] == (300, 400)
+        assert results['gt_seg_map'].dtype == np.uint8
 
     def test_repr(self):
         transform = LoadAnnotations(
