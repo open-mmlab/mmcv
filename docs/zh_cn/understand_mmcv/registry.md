@@ -73,7 +73,8 @@ def converter2(a, b)
 converter1_cfg = dict(type='Converter1', a=a_value, b=b_value)
 converter2_cfg = dict(type='converter2', a=a_value, b=b_value)
 converter1 = CONVERTERS.build(converter1_cfg)
-converter2 = CONVERTERS.build(converter2_cfg)
+# returns the calling result
+result = CONVERTERS.build(converter2_cfg)
 ```
 
 ### 自定义构建函数
