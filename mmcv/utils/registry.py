@@ -3,7 +3,7 @@ import inspect
 import warnings
 from functools import partial
 
-from .misc import is_seq_of
+from .misc import deprecated_api_warning, is_seq_of
 
 
 def build_from_cfg(cfg, registry, default_args=None):
@@ -254,21 +254,21 @@ class Registry:
             f'scope {registry.scope} exists in {self.name} registry'
         self.children[registry.scope] = registry
 
-    def _register_module(self, module_class, module_name=None, force=False):
-        if not inspect.isclass(module_class) and not inspect.isfunction(
-                module_class):
+    @deprecated_api_warning(name_dict=dict(module_class='module'))
+    def _register_module(self, module, module_name=None, force=False):
+        if not inspect.isclass(module) and not inspect.isfunction(module):
             raise TypeError('module must be a class or a function, '
-                            f'but got {type(module_class)}')
+                            f'but got {type(module)}')
 
         if module_name is None:
-            module_name = module_class.__name__
+            module_name = module.__name__
         if isinstance(module_name, str):
             module_name = [module_name]
         for name in module_name:
             if not force and name in self._module_dict:
                 raise KeyError(f'{name} is already registered '
                                f'in {self.name}')
-            self._module_dict[name] = module_class
+            self._module_dict[name] = module
 
     def deprecated_register_module(self, cls=None, force=False):
         warnings.warn(
@@ -326,14 +326,12 @@ class Registry:
 
         # use it as a normal method: x.register_module(module=SomeClass)
         if module is not None:
-            self._register_module(
-                module_class=module, module_name=name, force=force)
+            self._register_module(module=module, module_name=name, force=force)
             return module
 
         # use it as a decorator: @x.register_module()
-        def _register(cls):
-            self._register_module(
-                module_class=cls, module_name=name, force=force)
-            return cls
+        def _register(module):
+            self._register_module(module=module, module_name=name, force=force)
+            return module
 
         return _register
