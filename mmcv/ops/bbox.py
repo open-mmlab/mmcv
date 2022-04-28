@@ -1,7 +1,46 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['bbox_overlaps'])
+
+
+def _bbox_overlaps_cpu(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
+    assert mode in ['iou', 'iof']
+
+    if aligned:
+        lt = torch.max(bboxes1[:, :2], bboxes2[:, :2])  # [rows, 2]
+        rb = torch.min(bboxes1[:, 2:], bboxes2[:, 2:])  # [rows, 2]
+
+        wh = (rb - lt + offset).clamp(min=0)  # [rows, 2]
+        overlap = wh[:, 0] * wh[:, 1]
+        area1 = (bboxes1[:, 2] - bboxes1[:, 0] + offset) * (
+            bboxes1[:, 3] - bboxes1[:, 1] + offset)
+
+        if mode == 'iou':
+            area2 = (bboxes2[:, 2] - bboxes2[:, 0] + offset) * (
+                bboxes2[:, 3] - bboxes2[:, 1] + offset)
+            ious = overlap / (area1 + area2 - overlap)
+        else:
+            ious = overlap / area1
+    else:
+        lt = torch.max(bboxes1[:, None, :2], bboxes2[:, :2])  # [rows, cols, 2]
+        rb = torch.min(bboxes1[:, None, 2:], bboxes2[:, 2:])  # [rows, cols, 2]
+
+        wh = (rb - lt + offset).clamp(min=0)  # [rows, cols, 2]
+        overlap = wh[:, :, 0] * wh[:, :, 1]
+        area1 = (bboxes1[:, 2] - bboxes1[:, 0] + offset) * (
+            bboxes1[:, 3] - bboxes1[:, 1] + offset)
+
+        if mode == 'iou':
+            area2 = (bboxes2[:, 2] - bboxes2[:, 0] + offset) * (
+                bboxes2[:, 3] - bboxes2[:, 1] + offset)
+            ious = overlap / (area1[:, None] + area2 - overlap)
+        else:
+            ious = overlap / (area1[:, None])
+
+    return ious
 
 
 def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
@@ -65,10 +104,19 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
     if rows * cols == 0:
         return bboxes1.new(rows, 1) if aligned else bboxes1.new(rows, cols)
 
-    if aligned:
-        ious = bboxes1.new_zeros(rows)
+    if bboxes1.device.type == 'cpu':
+        return _bbox_overlaps_cpu(
+            bboxes1, bboxes2, mode=mode, aligned=aligned, offset=offset)
     else:
-        ious = bboxes1.new_zeros((rows, cols))
-    ext_module.bbox_overlaps(
-        bboxes1, bboxes2, ious, mode=mode_flag, aligned=aligned, offset=offset)
-    return ious
+        if aligned:
+            ious = bboxes1.new_zeros(rows)
+        else:
+            ious = bboxes1.new_zeros((rows, cols))
+        ext_module.bbox_overlaps(
+            bboxes1,
+            bboxes2,
+            ious,
+            mode=mode_flag,
+            aligned=aligned,
+            offset=offset)
+        return ious
