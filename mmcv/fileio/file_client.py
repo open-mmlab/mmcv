@@ -473,6 +473,11 @@ class LmdbBackend(BaseStorageBackend):
                  lock=False,
                  readahead=False,
                  **kwargs):
+        try:
+            import lmdb  # NOQA
+        except ImportError:
+            raise ImportError('Please install lmdb to enable LmdbBackend.')
+
         self.db_path = str(db_path)
         self.readonly = readonly
         self.lock = lock
@@ -499,10 +504,7 @@ class LmdbBackend(BaseStorageBackend):
         return value_buf
 
     def _get_env(self):
-        try:
-            import lmdb
-        except ImportError:
-            raise ImportError('Please install lmdb to enable LmdbBackend.')
+        import lmdb
 
         return lmdb.open(
             self.db_path,
