@@ -36,6 +36,7 @@ else:
         'ms_deform_attn_forward',
         'pixel_group',
         'contour_expand',
+        'diff_iou_rotated_sort_vertices_forward',
     ]
 
     def get_fake_func(name, e):
