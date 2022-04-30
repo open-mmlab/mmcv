@@ -38,14 +38,24 @@ cv2_interp_codes = {
 }
 
 if Image is not None:
-    pillow_interp_codes = {
-        'nearest': Image.NEAREST,
-        'bilinear': Image.BILINEAR,
-        'bicubic': Image.BICUBIC,
-        'box': Image.BOX,
-        'lanczos': Image.LANCZOS,
-        'hamming': Image.HAMMING
-    }
+    if hasattr(Image, 'Resampling'):
+        pillow_interp_codes = {
+            'nearest': Image.Resampling.NEAREST,
+            'bilinear': Image.Resampling.BILINEAR,
+            'bicubic': Image.Resampling.BICUBIC,
+            'box': Image.Resampling.BOX,
+            'lanczos': Image.Resampling.LANCZOS,
+            'hamming': Image.Resampling.HAMMING
+        }
+    else:
+        pillow_interp_codes = {
+            'nearest': Image.NEAREST,
+            'bilinear': Image.BILINEAR,
+            'bicubic': Image.BICUBIC,
+            'box': Image.BOX,
+            'lanczos': Image.LANCZOS,
+            'hamming': Image.HAMMING
+        }
 
 
 def imresize(img,
