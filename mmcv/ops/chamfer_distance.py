@@ -7,15 +7,15 @@ from torch.autograd.function import once_differentiable
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    '_ext',
-    ['chamfer_distance_forward', 'chamfer_distance_backward'])
+    '_ext', ['chamfer_distance_forward', 'chamfer_distance_backward'])
 
 
 class ChamferDistanceFunction(Function):
     """This is an implementation of the 2D Chamfer Distance.
 
-    It has been used in the paper `Oriented RepPoints for Aerial
-    Object Detection (CVPR 2022) <https://arxiv.org/abs/2105.11111>_`. """
+    It has been used in the paper `Oriented RepPoints for Aerial Object
+    Detection (CVPR 2022) <https://arxiv.org/abs/2105.11111>_`.
+    """
 
     @staticmethod
     def forward(ctx, xyz1, xyz2):
@@ -52,7 +52,8 @@ class ChamferDistanceFunction(Function):
         idx2 = idx2.to(device)
         torch.cuda.set_device(device)
 
-        ext_module.chamfer_distance_forward(xyz1, xyz2, dist1, dist2, idx1, idx2)
+        ext_module.chamfer_distance_forward(xyz1, xyz2, dist1, dist2, idx1,
+                                            idx2)
         ctx.save_for_backward(xyz1, xyz2, idx1, idx2)
         return dist1, dist2, idx1, idx2
 
@@ -89,14 +90,14 @@ class ChamferDistanceFunction(Function):
 
         gradxyz1 = gradxyz1.to(device)
         gradxyz2 = gradxyz2.to(device)
-        ext_module.chamfer_distance_backward(
-            xyz1, xyz2, gradxyz1, gradxyz2, graddist1, graddist2,
-            idx1, idx2
-        )
+        ext_module.chamfer_distance_backward(xyz1, xyz2, gradxyz1, gradxyz2,
+                                             graddist1, graddist2, idx1, idx2)
         return gradxyz1, gradxyz2
+
 
 class ChamferDistance(nn.Module):
     """This is an implementation of the 2D Chamfer Distance."""
+
     def forward(self, input1, input2):
         """
         Args:
