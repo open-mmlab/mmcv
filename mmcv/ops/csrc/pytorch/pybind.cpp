@@ -404,6 +404,15 @@ at::Tensor diff_iou_rotated_sort_vertices_forward(at::Tensor vertices,
                                                   at::Tensor mask,
                                                   at::Tensor num_valid);
 
+void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
+                              const Tensor dist1, const Tensor dist2,
+                              const Tensor idx1, const Tensor idx);
+
+void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
+                               Tensor gradxyz1, Tensor gradxyz2,
+                               Tensor graddist1, Tensor graddist2, Tensor idx1,
+                               Tensor idx2);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -817,4 +826,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         &diff_iou_rotated_sort_vertices_forward,
         "diff_iou_rotated_sort_vertices_forward", py::arg("vertices"),
         py::arg("mask"), py::arg("num_valid"));
+  m.def("chamfer_distance_forward", &chamfer_distance_forward,
+        "chamfer_distance_forward", py::arg("xyz1"), py::arg("xyz2"),
+        py::arg("dist1"), py::arg("dist2"), py::arg("idx1"), py::arg("idx2"));
+  m.def("chamfer_distance_backward", &chamfer_distance_backward,
+        "chamfer_distance_backward", py::arg("xyz1"), py::arg("xyz2"),
+        py::arg("gradxyz1"), py::arg("gradxyz2"), py::arg("graddist1"),
+        py::arg("graddist2"), py::arg("idx1"), py::arg("idx2"));
 }
