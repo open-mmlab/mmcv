@@ -798,7 +798,6 @@ class FileClient:
         for key, value in kwargs.items():
             arg_key += f':{key}:{value}'
 
-        # if a backend was overridden, it will create a new object
         if arg_key in cls._instances:
             _instance = cls._instances[arg_key]
         else:
