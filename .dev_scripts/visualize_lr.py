@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 import torch.nn as nn
 from torch.optim import SGD
 from torch.utils.data import DataLoader
@@ -29,13 +28,13 @@ def parse_args():
     parser.add_argument(
         '--num-iters', default=300, help='The number of iters per epoch')
     parser.add_argument(
-        '--num-epochs', default=300, help='Only used in EpochBasedRinner')
+        '--num-epochs', default=300, help='Only used in EpochBasedRunner')
     parser.add_argument(
         '--window-size',
         default='12*14',
         help='Size of the window to display images, in format of "$W*$H".')
     parser.add_argument(
-        '--log-interval', default=10, help='The iterval of TextLoggerHook')
+        '--log-interval', default=10, help='The interval of TextLoggerHook')
     args = parser.parse_args()
     return args
 
@@ -78,11 +77,7 @@ def epoch_train(self, data_loader, **kwargs):
 
 
 def log(self, runner):
-    if 'eval_iter_num' in runner.log_buffer.output:
-        # this doesn't modify runner.iter and is regardless of by_epoch
-        cur_iter = runner.log_buffer.output.pop('eval_iter_num')
-    else:
-        cur_iter = self.get_iter(runner, inner_iter=True)
+    cur_iter = self.get_iter(runner, inner_iter=True)
 
     log_dict = OrderedDict(
         mode=self.get_mode(runner),
@@ -100,11 +95,6 @@ def log(self, runner):
             assert isinstance(lr_, list)
             log_dict['lr'].update({k: lr_[0]})
 
-    if 'time' in runner.log_buffer.output:
-        # statistic memory
-        if torch.cuda.is_available():
-            log_dict['memory'] = self._get_max_memory(runner)
-
     cur_momentum = runner.current_momentum()
     if isinstance(cur_momentum, list):
         log_dict['momentum'] = cur_momentum[0]
@@ -120,6 +110,7 @@ def log(self, runner):
     return log_dict
 
 
+@patch('torch.cuda.is_available', lambda: False)
 @patch('mmcv.runner.EpochBasedRunner.train', epoch_train)
 @patch('mmcv.runner.IterBasedRunner.train', iter_train)
 @patch('mmcv.runner.hooks.TextLoggerHook.log', log)
@@ -179,7 +170,7 @@ def plot_lr_curve(json_file, cfg):
     fig, axes = plt.subplots(2, 1, figsize=(wind_w, wind_h))
     plt.subplots_adjust(hspace=0.5)
     font_size = 20
-    for index, (mode, data_list) in enumerate(data_dict.items()):
+    for index, (updater_type, data_list) in enumerate(data_dict.items()):
         ax = axes[index]
         if cfg.runner.type == 'EpochBasedRunner':
             ax.plot(data_list, linewidth=1)
@@ -197,24 +188,24 @@ def plot_lr_curve(json_file, cfg):
             x_list = np.arange(len(data_list)) * cfg.log_interval
             ax.plot(x_list, data_list)
             ax.set_xlabel('Iters', fontsize=font_size)
-        ax.set_ylabel(mode, fontsize=font_size)
-        if mode == 'LearningRate':
+        ax.set_ylabel(updater_type, fontsize=font_size)
+        if updater_type == 'LearningRate':
             if cfg.get('lr_config'):
                 title = cfg.lr_config.type
             else:
-                title = 'No learning rate schedule'
+                title = 'No learning rate scheduler'
         else:
             if cfg.get('momentum_config'):
                 title = cfg.momentum_config.type
             else:
-                title = 'No momentum schedule'
+                title = 'No momentum scheduler'
         ax.set_title(title, fontsize=font_size)
         ax.grid()
         # set tick font size
         ax.tick_params(labelsize=font_size)
     save_path = osp.join(cfg.work_dir, 'visualization-result')
     plt.savefig(save_path)
-    print(f'The learning rate graph is saved at {save_path}')
+    print(f'The learning rate graph is saved at {save_path}.png')
     plt.show()
 
 
