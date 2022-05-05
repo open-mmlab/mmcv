@@ -64,10 +64,15 @@ def _init_dist_pytorch(backend, **kwargs):
 
 
 def _init_dist_mpi(backend, **kwargs):
-    # TODO: use local_rank instead of rank % num_gpus
-    rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
-    num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(rank % num_gpus)
+    local_rank = int(os.environ['OMPI_COMM_WORLD_LOCAL_RANK'])
+    torch.cuda.set_device(local_rank)
+    if 'MASTER_PORT' not in os.environ:
+        # 29500 is torch.distributed default port
+        os.environ['MASTER_PORT'] = '29500'
+    if 'MASTER_ADDR' not in os.environ:
+        raise KeyError('The environment variable MASTER_ADDR is not set')
+    os.environ['WORLD_SIZE'] = os.environ['OMPI_COMM_WORLD_SIZE']
+    os.environ['RANK'] = os.environ['OMPI_COMM_WORLD_RANK']
     dist.init_process_group(backend=backend, **kwargs)
 
 
