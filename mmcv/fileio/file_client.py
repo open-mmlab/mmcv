@@ -483,6 +483,7 @@ class LmdbBackend(BaseStorageBackend):
         self.lock = lock
         self.readahead = readahead
         self.kwargs = kwargs
+        self._client = None
 
     def get(self, filepath):
         """Get values according to the filepath.
@@ -490,17 +491,17 @@ class LmdbBackend(BaseStorageBackend):
         Args:
             filepath (str | obj:`Path`): Here, filepath is the lmdb key.
         """
-        if not hasattr(self, 'env'):
-            self.env = self._get_env()
+        if self._client is None:
+            self._client = self._get_client()
 
-        with self.env.begin(write=False) as txn:
+        with self._client.begin(write=False) as txn:
             value_buf = txn.get(str(filepath).encode('utf-8'))
         return value_buf
 
     def get_text(self, filepath, encoding=None):
         raise NotImplementedError
 
-    def _get_env(self):
+    def _get_client(self):
         import lmdb
 
         return lmdb.open(
@@ -511,7 +512,7 @@ class LmdbBackend(BaseStorageBackend):
             **self.kwargs)
 
     def __del__(self):
-        self.env.close()
+        self._client.close()
 
 
 class HardDiskBackend(BaseStorageBackend):
