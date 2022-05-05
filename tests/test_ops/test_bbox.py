@@ -8,7 +8,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 class TestBBox(object):
 
-    def _test_bbox_overlaps(self, device, dtype=torch.float):
+    def _test_bbox_overlaps(self, device='cpu', dtype=torch.float):
         from mmcv.ops import bbox_overlaps
         b1 = torch.tensor([[1.0, 1.0, 3.0, 4.0], [2.0, 2.0, 3.0, 4.0],
                            [7.0, 7.0, 8.0, 8.0]]).to(device).type(dtype)
@@ -35,6 +35,7 @@ class TestBBox(object):
         assert np.allclose(out.cpu().numpy(), should_output, 1e-2)
 
     @pytest.mark.parametrize('device', [
+        'cpu',
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(

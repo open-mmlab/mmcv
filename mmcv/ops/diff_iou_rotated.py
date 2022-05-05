@@ -17,7 +17,8 @@ class SortVertices(Function):
     def forward(ctx, vertices, mask, num_valid):
         idx = ext_module.diff_iou_rotated_sort_vertices_forward(
             vertices, mask, num_valid)
-        ctx.mark_non_differentiable(idx)
+        if torch.__version__ != 'parrots':
+            ctx.mark_non_differentiable(idx)
         return idx
 
     @staticmethod
