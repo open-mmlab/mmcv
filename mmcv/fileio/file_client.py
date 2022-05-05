@@ -490,18 +490,15 @@ class LmdbBackend(BaseStorageBackend):
         Args:
             filepath (str | obj:`Path`): Here, filepath is the lmdb key.
         """
-        return self[filepath]
-
-    def get_text(self, filepath, encoding=None):
-        raise NotImplementedError
-
-    def __getitem__(self, index):
         if not hasattr(self, 'env'):
             self.env = self._get_env()
 
         with self.env.begin(write=False) as txn:
-            value_buf = txn.get(str(index).encode('utf-8'))
+            value_buf = txn.get(str(filepath).encode('utf-8'))
         return value_buf
+
+    def get_text(self, filepath, encoding=None):
+        raise NotImplementedError
 
     def _get_env(self):
         import lmdb
