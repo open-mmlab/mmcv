@@ -37,7 +37,7 @@ cv2_interp_codes = {
     'lanczos': cv2.INTER_LANCZOS4
 }
 
-# Latest PIL versions use a slightly different naming scheme for the Resampling filters.
+# Latest PIL versions use a slightly different naming scheme for filters.
 # Set pillow_interp_codes according to the naming scheme used.
 if Image is not None:
     if hasattr(Image, 'Resampling'):
