@@ -37,6 +37,7 @@ repos:
         additional_dependencies:
           - mdformat-gfm
           - mdformat_frontmatter
+          - linkify-it-py
   - repo: https://github.com/myint/docformatter
     rev: v1.3.1
     hooks:
