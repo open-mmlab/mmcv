@@ -25,10 +25,11 @@
 
 [PEP8](https://www.python.org/dev/peps/pep-0008/) 作为 OpenMMLab 算法库首选的代码规范，我们使用以下工具检查和格式化代码
 
-- [flake8](http://flake8.pycqa.org/en/latest/): Python 官方发布的代码规范检查工具，是多个检查工具的封装
-- [yapf](https://github.com/google/yapf): Google 发布的代码规范检查工具
+- [flake8](https://github.com/PyCQA/flake8): Python 官方发布的代码规范检查工具，是多个检查工具的封装
 - [isort](https://github.com/timothycrosley/isort): 自动调整模块导入顺序的工具
-- [markdownlint](https://github.com/markdownlint/markdownlint): 检查 markdown 文件的工具
+- [yapf](https://github.com/google/yapf): Google 发布的代码规范检查工具
+- [codespell](https://github.com/codespell-project/codespell): 检查单词拼写是否有误
+- [mdformat](https://github.com/executablebooks/mdformat): 检查 markdown 文件的工具
 - [docformatter](https://github.com/myint/docformatter): 格式化 docstring 的工具
 
 yapf 和 isort 的配置可以在 [setup.cfg](./setup.cfg) 找到
@@ -48,22 +49,6 @@ pip install -U pre-commit
 ```shell
 pre-commit install
 ```
-
-如果安装 markdownlint 遇到了问题，可以尝试使用以下的步骤安装 ruby
-
-```shell
-# install rvm
-curl -L https://get.rvm.io | bash -s -- --autolibs=read-fail
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-rvm autolibs disable
-
-# install ruby
-rvm install 2.7.1
-```
-
-或者参考 [这个代码库](https://github.com/innerlee/setup) 和 [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh)。
-
-至此，每一次 commit 修改都会触发 pre-commit 检查代码格式。
 
 > 提交拉取请求前，请确保你的代码符合 yapf 的格式
 
