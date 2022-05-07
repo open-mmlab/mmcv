@@ -40,7 +40,10 @@ repos:
     hooks:
       - id: docformatter
         args: ["--in-place", "--wrap-descriptions", "79"]
-
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
   - repo: https://github.com/open-mmlab/pre-commit-hooks
     rev: v0.2.0  # Use the ref you want to point at
     hooks:
