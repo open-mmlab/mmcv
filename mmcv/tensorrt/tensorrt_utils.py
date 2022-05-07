@@ -53,7 +53,7 @@ def onnx2trt(onnx_model,
     msg += reset_style
     warnings.warn(msg)
 
-    device = torch.device('cuda:{}'.format(device_id))
+    device = torch.device(f'cuda:{device_id}')
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
@@ -207,7 +207,7 @@ class TRTWrapper(torch.nn.Module):
         msg += reset_style
         warnings.warn(msg)
 
-        super(TRTWrapper, self).__init__()
+        super().__init__()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)

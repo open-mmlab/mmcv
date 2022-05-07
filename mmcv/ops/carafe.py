@@ -84,7 +84,7 @@ carafe_naive = CARAFENaiveFunction.apply
 class CARAFENaive(Module):
 
     def __init__(self, kernel_size, group_size, scale_factor):
-        super(CARAFENaive, self).__init__()
+        super().__init__()
 
         assert isinstance(kernel_size, int) and isinstance(
             group_size, int) and isinstance(scale_factor, int)
@@ -193,7 +193,7 @@ class CARAFE(Module):
     """
 
     def __init__(self, kernel_size, group_size, scale_factor):
-        super(CARAFE, self).__init__()
+        super().__init__()
 
         assert isinstance(kernel_size, int) and isinstance(
             group_size, int) and isinstance(scale_factor, int)
@@ -236,7 +236,7 @@ class CARAFEPack(nn.Module):
                  encoder_kernel=3,
                  encoder_dilation=1,
                  compressed_channels=64):
-        super(CARAFEPack, self).__init__()
+        super().__init__()
         self.channels = channels
         self.scale_factor = scale_factor
         self.up_kernel = up_kernel

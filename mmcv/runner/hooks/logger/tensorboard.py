@@ -28,13 +28,12 @@ class TensorboardLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=False,
                  by_epoch=True):
-        super(TensorboardLoggerHook, self).__init__(interval, ignore_last,
-                                                    reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.log_dir = log_dir
 
     @master_only
     def before_run(self, runner):
-        super(TensorboardLoggerHook, self).before_run(runner)
+        super().before_run(runner)
         if (TORCH_VERSION == 'parrots'
                 or digit_version(TORCH_VERSION) < digit_version('1.1')):
             try:

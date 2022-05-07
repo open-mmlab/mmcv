@@ -31,7 +31,7 @@ def run_before_and_after_test():
 class WrapFunction(nn.Module):
 
     def __init__(self, wrapped_function):
-        super(WrapFunction, self).__init__()
+        super().__init__()
         self.wrapped_function = wrapped_function
 
     def forward(self, *args, **kwargs):

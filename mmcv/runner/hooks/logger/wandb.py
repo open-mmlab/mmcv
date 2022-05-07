@@ -57,8 +57,7 @@ class WandbLoggerHook(LoggerHook):
                  with_step=True,
                  log_artifact=True,
                  out_suffix=('.log.json', '.log', '.py')):
-        super(WandbLoggerHook, self).__init__(interval, ignore_last,
-                                              reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
         self.commit = commit
@@ -76,7 +75,7 @@ class WandbLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        super(WandbLoggerHook, self).before_run(runner)
+        super().before_run(runner)
         if self.wandb is None:
             self.import_wandb()
         if self.init_kwargs:

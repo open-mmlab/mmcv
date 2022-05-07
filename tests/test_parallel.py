@@ -61,7 +61,7 @@ def test_is_module_wrapper():
 
     # test module wrapper registry
     @MODULE_WRAPPERS.register_module()
-    class ModuleWrapper(object):
+    class ModuleWrapper:
 
         def __init__(self, module):
             self.module = module

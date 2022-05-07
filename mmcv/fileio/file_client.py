@@ -532,7 +532,7 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             str: Expected text reading from ``filepath``.
         """
-        with open(filepath, 'r', encoding=encoding) as f:
+        with open(filepath, encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
 

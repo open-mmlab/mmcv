@@ -35,12 +35,12 @@ def test_construct():
         cfg = Config(cfg_dict, filename=item)
         assert isinstance(cfg, Config)
         assert isinstance(cfg.filename, str) and cfg.filename == str(item)
-        assert cfg.text == open(item, 'r').read()
+        assert cfg.text == open(item).read()
         assert cfg.dump() == cfg.pretty_text
         with tempfile.TemporaryDirectory() as temp_config_dir:
             dump_file = osp.join(temp_config_dir, 'a.py')
             cfg.dump(dump_file)
-            assert cfg.dump() == open(dump_file, 'r').read()
+            assert cfg.dump() == open(dump_file).read()
             assert Config.fromfile(dump_file)
 
     # test b.json
@@ -48,12 +48,12 @@ def test_construct():
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.text == open(cfg_file).read()
     assert cfg.dump() == json.dumps(cfg_dict)
     with tempfile.TemporaryDirectory() as temp_config_dir:
         dump_file = osp.join(temp_config_dir, 'b.json')
         cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
+        assert cfg.dump() == open(dump_file).read()
         assert Config.fromfile(dump_file)
 
     # test c.yaml
@@ -61,12 +61,12 @@ def test_construct():
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.text == open(cfg_file).read()
     assert cfg.dump() == yaml.dump(cfg_dict)
     with tempfile.TemporaryDirectory() as temp_config_dir:
         dump_file = osp.join(temp_config_dir, 'c.yaml')
         cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
+        assert cfg.dump() == open(dump_file).read()
         assert Config.fromfile(dump_file)
 
     # test h.py
@@ -82,12 +82,12 @@ def test_construct():
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.text == open(cfg_file).read()
     assert cfg.dump() == cfg.pretty_text
     with tempfile.TemporaryDirectory() as temp_config_dir:
         dump_file = osp.join(temp_config_dir, 'h.py')
         cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
+        assert cfg.dump() == open(dump_file).read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
         assert Config.fromfile(dump_file)['item2'] == cfg_dict['item2']
@@ -109,12 +109,12 @@ def test_construct():
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.text == open(cfg_file).read()
     assert cfg.dump() == yaml.dump(cfg_dict)
     with tempfile.TemporaryDirectory() as temp_config_dir:
         dump_file = osp.join(temp_config_dir, 'p.yaml')
         cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
+        assert cfg.dump() == open(dump_file).read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
 
@@ -128,12 +128,12 @@ def test_construct():
     cfg = Config(cfg_dict, filename=cfg_file)
     assert isinstance(cfg, Config)
     assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
+    assert cfg.text == open(cfg_file).read()
     assert cfg.dump() == json.dumps(cfg_dict)
     with tempfile.TemporaryDirectory() as temp_config_dir:
         dump_file = osp.join(temp_config_dir, 'o.json')
         cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
+        assert cfg.dump() == open(dump_file).read()
         assert Config.fromfile(dump_file)
         assert Config.fromfile(dump_file)['item1'] == cfg_dict['item1']
 
@@ -152,7 +152,7 @@ def test_fromfile():
             assert isinstance(cfg, Config)
             assert isinstance(cfg.filename, str) and cfg.filename == str(item)
             assert cfg.text == osp.abspath(osp.expanduser(item)) + '\n' + \
-                open(item, 'r').read()
+                open(item).read()
 
     # test custom_imports for Config.fromfile
     cfg_file = osp.join(data_path, 'config', 'q.py')
@@ -182,7 +182,7 @@ def test_fromstring():
         out_cfg = Config.fromstring(in_cfg.pretty_text, '.py')
         assert in_cfg._cfg_dict == out_cfg._cfg_dict
 
-        cfg_str = open(cfg_file, 'r').read()
+        cfg_str = open(cfg_file).read()
         out_cfg = Config.fromstring(cfg_str, file_format)
         assert in_cfg._cfg_dict == out_cfg._cfg_dict
 
@@ -193,7 +193,7 @@ def test_fromstring():
         Config.fromstring(in_cfg.pretty_text, '.json')
 
     # test file format error
-    cfg_str = open(cfg_file, 'r').read()
+    cfg_str = open(cfg_file).read()
     with pytest.raises(Exception):
         Config.fromstring(cfg_str, '.py')
 
@@ -205,9 +205,9 @@ def test_merge_from_base():
     assert cfg.filename == cfg_file
     base_cfg_file = osp.join(data_path, 'config/base.py')
     merge_text = osp.abspath(osp.expanduser(base_cfg_file)) + '\n' + \
-        open(base_cfg_file, 'r').read()
+        open(base_cfg_file).read()
     merge_text += '\n' + osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
-                  open(cfg_file, 'r').read()
+                  open(cfg_file).read()
     assert cfg.text == merge_text
     assert cfg.item1 == [2, 3]
     assert cfg.item2.a == 1

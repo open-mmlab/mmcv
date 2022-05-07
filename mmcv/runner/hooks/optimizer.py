@@ -110,7 +110,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
     """
 
     def __init__(self, cumulative_iters=1, **kwargs):
-        super(GradientCumulativeOptimizerHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         assert isinstance(cumulative_iters, int) and cumulative_iters > 0, \
             f'cumulative_iters only accepts positive int, but got ' \
@@ -297,8 +297,7 @@ if (TORCH_VERSION != 'parrots'
         """
 
         def __init__(self, *args, **kwargs):
-            super(GradientCumulativeFp16OptimizerHook,
-                  self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def after_train_iter(self, runner):
             if not self.initialized:
@@ -490,8 +489,7 @@ else:
         iters gradient cumulating."""
 
         def __init__(self, *args, **kwargs):
-            super(GradientCumulativeFp16OptimizerHook,
-                  self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def after_train_iter(self, runner):
             if not self.initialized:

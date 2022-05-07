@@ -71,7 +71,7 @@ roi_pool = RoIPoolFunction.apply
 class RoIPool(nn.Module):
 
     def __init__(self, output_size, spatial_scale=1.0):
-        super(RoIPool, self).__init__()
+        super().__init__()
 
         self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)

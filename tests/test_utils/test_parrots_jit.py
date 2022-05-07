@@ -9,7 +9,7 @@ skip_no_parrots = pytest.mark.skipif(
     TORCH_VERSION != 'parrots', reason='test case under parrots environment')
 
 
-class TestJit(object):
+class TestJit:
 
     def test_add_dict(self):
 
@@ -254,7 +254,7 @@ class TestJit(object):
 
     def test_instance_method(self):
 
-        class T(object):
+        class T:
 
             def __init__(self, shape):
                 self._c = torch.rand(shape)

@@ -6,7 +6,7 @@ import torch
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
-class Testnms(object):
+class Testnms:
 
     @pytest.mark.parametrize('device', [
         pytest.param(

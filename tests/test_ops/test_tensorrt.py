@@ -30,7 +30,7 @@ if not is_tensorrt_plugin_loaded():
 class WrapFunction(nn.Module):
 
     def __init__(self, wrapped_function):
-        super(WrapFunction, self).__init__()
+        super().__init__()
         self.wrapped_function = wrapped_function
 
     def forward(self, *args, **kwargs):
@@ -756,7 +756,7 @@ def test_corner_pool(mode):
     class CornerPoolWrapper(CornerPool):
 
         def __init__(self, mode):
-            super(CornerPoolWrapper, self).__init__(mode)
+            super().__init__(mode)
 
         def forward(self, x):
             # no use `torch.cummax`, instead `corner_pool` is used

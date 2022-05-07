@@ -5,7 +5,7 @@ import time
 try:
     from unittest.mock import patch
 except ImportError:
-    from mock import patch
+    from unittest.mock import patch
 
 try:
     from StringIO import StringIO

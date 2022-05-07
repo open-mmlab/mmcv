@@ -62,8 +62,7 @@ class TextLoggerHook(LoggerHook):
                  out_suffix=('.log.json', '.log', '.py'),
                  keep_local=True,
                  file_client_args=None):
-        super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
-                                             by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.by_epoch = by_epoch
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
@@ -87,7 +86,7 @@ class TextLoggerHook(LoggerHook):
                                                        self.out_dir)
 
     def before_run(self, runner):
-        super(TextLoggerHook, self).before_run(runner)
+        super().before_run(runner)
 
         if self.out_dir is not None:
             self.file_client = FileClient.infer_client(self.file_client_args,
@@ -242,7 +241,7 @@ class TextLoggerHook(LoggerHook):
                 local_filepath = osp.join(runner.work_dir, filename)
                 out_filepath = self.file_client.join_path(
                     self.out_dir, filename)
-                with open(local_filepath, 'r') as f:
+                with open(local_filepath) as f:
                     self.file_client.put_text(f.read(), out_filepath)
 
                 runner.logger.info(

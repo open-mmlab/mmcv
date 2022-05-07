@@ -263,7 +263,7 @@ class IterBasedRunner(BaseRunner):
         if log_config is not None:
             for info in log_config['hooks']:
                 info.setdefault('by_epoch', False)
-        super(IterBasedRunner, self).register_training_hooks(
+        super().register_training_hooks(
             lr_config=lr_config,
             momentum_config=momentum_config,
             optimizer_config=optimizer_config,

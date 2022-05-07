@@ -2,7 +2,7 @@
 import torch
 
 
-class TestMaskedConv2d(object):
+class TestMaskedConv2d:
 
     def test_masked_conv2d(self):
         if not torch.cuda.is_available():

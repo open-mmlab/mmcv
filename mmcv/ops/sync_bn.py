@@ -198,7 +198,7 @@ class SyncBatchNorm(Module):
                  track_running_stats=True,
                  group=None,
                  stats_mode='default'):
-        super(SyncBatchNorm, self).__init__()
+        super().__init__()
         self.num_features = num_features
         self.eps = eps
         self.momentum = momentum

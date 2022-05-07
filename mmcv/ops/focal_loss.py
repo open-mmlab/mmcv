@@ -89,7 +89,7 @@ sigmoid_focal_loss = SigmoidFocalLossFunction.apply
 class SigmoidFocalLoss(nn.Module):
 
     def __init__(self, gamma, alpha, weight=None, reduction='mean'):
-        super(SigmoidFocalLoss, self).__init__()
+        super().__init__()
         self.gamma = gamma
         self.alpha = alpha
         self.register_buffer('weight', weight)
@@ -195,7 +195,7 @@ softmax_focal_loss = SoftmaxFocalLossFunction.apply
 class SoftmaxFocalLoss(nn.Module):
 
     def __init__(self, gamma, alpha, weight=None, reduction='mean'):
-        super(SoftmaxFocalLoss, self).__init__()
+        super().__init__()
         self.gamma = gamma
         self.alpha = alpha
         self.register_buffer('weight', weight)

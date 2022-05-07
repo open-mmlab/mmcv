@@ -83,7 +83,7 @@ class ConvModule(nn.Module):
                  with_spectral_norm=False,
                  padding_mode='zeros',
                  order=('conv', 'norm', 'act')):
-        super(ConvModule, self).__init__()
+        super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
         assert act_cfg is None or isinstance(act_cfg, dict)

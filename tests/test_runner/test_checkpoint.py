@@ -22,7 +22,7 @@ sys.modules['petrel_client.client'] = MagicMock()
 
 
 @MODULE_WRAPPERS.register_module()
-class DDPWrapper(object):
+class DDPWrapper:
 
     def __init__(self, module):
         self.module = module
@@ -44,7 +44,7 @@ class Model(nn.Module):
         self.conv = nn.Conv2d(3, 3, 1)
 
 
-class Mockpavimodel(object):
+class Mockpavimodel:
 
     def __init__(self, name='fakename'):
         self.name = name

@@ -296,7 +296,7 @@ class SimpleRoIAlign(nn.Module):
                 If True, align the results more perfectly.
         """
 
-        super(SimpleRoIAlign, self).__init__()
+        super().__init__()
         self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)
         # to be consistent with other RoI ops

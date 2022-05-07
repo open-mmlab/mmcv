@@ -96,7 +96,7 @@ class AdaptivePadding(nn.Module):
     """
 
     def __init__(self, kernel_size=1, stride=1, dilation=1, padding='corner'):
-        super(AdaptivePadding, self).__init__()
+        super().__init__()
         assert padding in ('same', 'corner')
 
         kernel_size = to_2tuple(kernel_size)
@@ -190,7 +190,7 @@ class PatchEmbed(BaseModule):
                  norm_cfg=None,
                  input_size=None,
                  init_cfg=None):
-        super(PatchEmbed, self).__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
         if stride is None:
@@ -435,7 +435,7 @@ class MultiheadAttention(BaseModule):
                  init_cfg=None,
                  batch_first=False,
                  **kwargs):
-        super(MultiheadAttention, self).__init__(init_cfg)
+        super().__init__(init_cfg)
         if 'dropout' in kwargs:
             warnings.warn(
                 'The arguments `dropout` in MultiheadAttention '
@@ -590,7 +590,7 @@ class FFN(BaseModule):
                  add_identity=True,
                  init_cfg=None,
                  **kwargs):
-        super(FFN, self).__init__(init_cfg)
+        super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
         self.embed_dims = embed_dims
@@ -694,7 +694,7 @@ class BaseTransformerLayer(BaseModule):
                     f'to a dict named `ffn_cfgs`. ', DeprecationWarning)
                 ffn_cfgs[new_name] = kwargs[ori_name]
 
-        super(BaseTransformerLayer, self).__init__(init_cfg)
+        super().__init__(init_cfg)
 
         self.batch_first = batch_first
 
@@ -880,7 +880,7 @@ class TransformerLayerSequence(BaseModule):
     """
 
     def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
-        super(TransformerLayerSequence, self).__init__(init_cfg)
+        super().__init__(init_cfg)
         if isinstance(transformerlayers, dict):
             transformerlayers = [
                 copy.deepcopy(transformerlayers) for _ in range(num_layers)

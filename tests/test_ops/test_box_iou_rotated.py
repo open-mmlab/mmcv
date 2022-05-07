@@ -4,7 +4,7 @@ import pytest
 import torch
 
 
-class TestBoxIoURotated(object):
+class TestBoxIoURotated:
 
     def test_box_iou_rotated_cpu(self):
         from mmcv.ops import box_iou_rotated
