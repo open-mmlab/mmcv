@@ -4,6 +4,7 @@
 
 TensorRT support will be deprecated in the future.
 Welcome to use the unified model deployment toolbox MMDeploy: https://github.com/open-mmlab/mmdeploy
+
 <!-- TOC -->
 
 - [TensorRT Deployment](#tensorrt-deployment)
@@ -30,7 +31,7 @@ To ease the deployment of trained models with custom operators from `mmcv.ops` u
 ### List of TensorRT plugins supported in MMCV
 
 | ONNX Operator             | TensorRT Plugin                                                                 | MMCV Releases |
-|:--------------------------|:--------------------------------------------------------------------------------|:-------------:|
+| :------------------------ | :------------------------------------------------------------------------------ | :-----------: |
 | MMCVRoiAlign              | [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)                           |     1.2.6     |
 | ScatterND                 | [ScatterND](./tensorrt_custom_ops.md#scatternd)                                 |     1.2.6     |
 | NonMaxSuppression         | [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)                 |     1.3.0     |
@@ -151,21 +152,24 @@ Below are the main steps:
 **Take RoIAlign plugin `roi_align` for example.**
 
 1. Add header `trt_roi_align.hpp` to TensorRT include directory `mmcv/ops/csrc/tensorrt/`
+
 2. Add source `trt_roi_align.cpp` to TensorRT source directory `mmcv/ops/csrc/tensorrt/plugins/`
+
 3. Add cuda kernel `trt_roi_align_kernel.cu` to TensorRT source directory `mmcv/ops/csrc/tensorrt/plugins/`
+
 4. Register `roi_align` plugin in [trt_plugin.cpp](https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc/tensorrt/plugins/trt_plugin.cpp)
 
-    ```c++
-    #include "trt_plugin.hpp"
+   ```c++
+   #include "trt_plugin.hpp"
 
-    #include "trt_roi_align.hpp"
+   #include "trt_roi_align.hpp"
 
-    REGISTER_TENSORRT_PLUGIN(RoIAlignPluginDynamicCreator);
+   REGISTER_TENSORRT_PLUGIN(RoIAlignPluginDynamicCreator);
 
-    extern "C" {
-    bool initLibMMCVInferPlugins() { return true; }
-    }  // extern "C"
-    ```
+   extern "C" {
+   bool initLibMMCVInferPlugins() { return true; }
+   }  // extern "C"
+   ```
 
 5. Add unit test into `tests/test_ops/test_tensorrt.py`
    Check [here](https://github.com/open-mmlab/mmcv/blob/master/tests/test_ops/test_tensorrt.py) for examples.

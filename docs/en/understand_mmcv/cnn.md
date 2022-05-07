@@ -30,25 +30,25 @@ We also allow extending the building methods with custom layers and operators.
 
 1. Write and register your own module.
 
-    ```python
-    from mmcv.cnn import UPSAMPLE_LAYERS
+   ```python
+   from mmcv.cnn import UPSAMPLE_LAYERS
 
-    @UPSAMPLE_LAYERS.register_module()
-    class MyUpsample:
+   @UPSAMPLE_LAYERS.register_module()
+   class MyUpsample:
 
-        def __init__(self, scale_factor):
-            pass
+       def __init__(self, scale_factor):
+           pass
 
-        def forward(self, x):
-            pass
-    ```
+       def forward(self, x):
+           pass
+   ```
 
 2. Import `MyUpsample` somewhere (e.g., in `__init__.py`) and then use it.
 
-    ```python
-    cfg = dict(type='MyUpsample', scale_factor=2)
-    layer = build_upsample_layer(cfg)
-    ```
+   ```python
+   cfg = dict(type='MyUpsample', scale_factor=2)
+   layer = build_upsample_layer(cfg)
+   ```
 
 ### Module bundles
 
@@ -92,51 +92,51 @@ We provide the following initialization methods.
 
   Initialize module parameters with constant values.
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import constant_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # constant_init(module, val, bias=0)
-    >>> constant_init(conv1, 1, 0)
-    >>> conv1.weight
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import constant_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # constant_init(module, val, bias=0)
+  >>> constant_init(conv1, 1, 0)
+  >>> conv1.weight
+  ```
 
 - xavier_init
 
   Initialize module parameters with values according to the method
   described in [Understanding the difficulty of training deep feedforward neural networks - Glorot, X. & Bengio, Y. (2010)](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import xavier_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # xavier_init(module, gain=1, bias=0, distribution='normal')
-    >>> xavier_init(conv1, distribution='normal')
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import xavier_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # xavier_init(module, gain=1, bias=0, distribution='normal')
+  >>> xavier_init(conv1, distribution='normal')
+  ```
 
 - normal_init
 
   Initialize module parameters with the values drawn from a normal distribution.
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import normal_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # normal_init(module, mean=0, std=1, bias=0)
-    >>> normal_init(conv1, std=0.01, bias=0)
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import normal_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # normal_init(module, mean=0, std=1, bias=0)
+  >>> normal_init(conv1, std=0.01, bias=0)
+  ```
 
 - uniform_init
 
   Initialize module parameters with values drawn from a uniform distribution.
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import uniform_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # uniform_init(module, a=0, b=1, bias=0)
-    >>> uniform_init(conv1, a=0, b=1)
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import uniform_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # uniform_init(module, a=0, b=1, bias=0)
+  >>> uniform_init(conv1, a=0, b=1)
+  ```
 
 - kaiming_init
 
@@ -144,37 +144,37 @@ We provide the following initialization methods.
   described in [Delving deep into rectifiers: Surpassing human-level
   performance on ImageNet classification - He, K. et al. (2015)](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import kaiming_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # kaiming_init(module, a=0, mode='fan_out', nonlinearity='relu', bias=0, distribution='normal')
-    >>> kaiming_init(conv1)
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import kaiming_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # kaiming_init(module, a=0, mode='fan_out', nonlinearity='relu', bias=0, distribution='normal')
+  >>> kaiming_init(conv1)
+  ```
 
 - caffe2_xavier_init
 
   The xavier initialization is implemented in caffe2, which corresponds to `kaiming_uniform_` in PyTorch.
 
-    ```python
-    >>> import torch.nn as nn
-    >>> from mmcv.cnn import caffe2_xavier_init
-    >>> conv1 = nn.Conv2d(3, 3, 1)
-    >>> # caffe2_xavier_init(module, bias=0)
-    >>> caffe2_xavier_init(conv1)
-    ```
+  ```python
+  >>> import torch.nn as nn
+  >>> from mmcv.cnn import caffe2_xavier_init
+  >>> conv1 = nn.Conv2d(3, 3, 1)
+  >>> # caffe2_xavier_init(module, bias=0)
+  >>> caffe2_xavier_init(conv1)
+  ```
 
 - bias_init_with_prob
 
   Initialize conv/fc bias value according to a given probability, as proposed in [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf).
 
-    ```python
-    >>> from mmcv.cnn import bias_init_with_prob
-    >>> # bias_init_with_prob is proposed in Focal Loss
-    >>> bias = bias_init_with_prob(0.01)
-    >>> bias
-    -4.59511985013459
-    ```
+  ```python
+  >>> from mmcv.cnn import bias_init_with_prob
+  >>> # bias_init_with_prob is proposed in Focal Loss
+  >>> bias = bias_init_with_prob(0.01)
+  >>> bias
+  -4.59511985013459
+  ```
 
 #### Initializers and configs
 
@@ -195,9 +195,9 @@ Let us introduce the usage of `initialize` in detail.
 
 1. Initialize model by `layer` key
 
-    If we only define `layer`, it just initialize the layer in `layer` key.
+   If we only define `layer`, it just initialize the layer in `layer` key.
 
-    NOTE: Value of `layer` key is the class name with attributes weights and bias of Pytorch, so `MultiheadAttention layer` is not supported.
+   NOTE: Value of `layer` key is the class name with attributes weights and bias of Pytorch, so `MultiheadAttention layer` is not supported.
 
 - Define `layer` key for initializing module with same configuration.
 
@@ -259,287 +259,287 @@ Let us introduce the usage of `initialize` in detail.
 
 - When initializing some specific part with its attribute name, we can use `override` key, and the value in `override` will ignore the value in init_cfg.
 
-    ```python
-    import torch.nn as nn
-    from mmcv.cnn import initialize
+  ```python
+  import torch.nn as nn
+  from mmcv.cnn import initialize
 
-    class FooNet(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.feat = nn.Conv1d(3, 1, 3)
-            self.reg = nn.Conv2d(3, 3, 3)
-            self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
+  class FooNet(nn.Module):
+      def __init__(self):
+          super().__init__()
+          self.feat = nn.Conv1d(3, 1, 3)
+          self.reg = nn.Conv2d(3, 3, 3)
+          self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
-    # if we would like to initialize model's weights as 1 and bias as 2
-    # but weight in `cls` as 3 and bias 4, we can use override key
-    model = FooNet()
-    init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
-                    override=dict(type='Constant', name='reg', val=3, bias=4))
-    # self.feat and self.cls will be initialized with dict(type='Constant', val=1, bias=2)
-    # The module called 'reg' will be initialized with dict(type='Constant', val=3, bias=4)
-    initialize(model, init_cfg)
-    # model.reg.weight
-    # Parameter containing:
-    # tensor([[[[3., 3., 3.],
-    #           [3., 3., 3.],
-    #           [3., 3., 3.]],
-    #           ...,
-    #           [[3., 3., 3.],
-    #            [3., 3., 3.],
-    #            [3., 3., 3.]]]], requires_grad=True)
-    ```
+  # if we would like to initialize model's weights as 1 and bias as 2
+  # but weight in `cls` as 3 and bias 4, we can use override key
+  model = FooNet()
+  init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
+                  override=dict(type='Constant', name='reg', val=3, bias=4))
+  # self.feat and self.cls will be initialized with dict(type='Constant', val=1, bias=2)
+  # The module called 'reg' will be initialized with dict(type='Constant', val=3, bias=4)
+  initialize(model, init_cfg)
+  # model.reg.weight
+  # Parameter containing:
+  # tensor([[[[3., 3., 3.],
+  #           [3., 3., 3.],
+  #           [3., 3., 3.]],
+  #           ...,
+  #           [[3., 3., 3.],
+  #            [3., 3., 3.],
+  #            [3., 3., 3.]]]], requires_grad=True)
+  ```
 
 - If `layer` is None in init_cfg, only sub-module with the name in override will be initialized, and type and other args in override can be omitted.
 
-    ```python
-    model = FooNet()
-    init_cfg = dict(type='Constant', val=1, bias=2, override=dict(name='reg'))
-    # self.feat and self.cls will be initialized by Pytorch
-    # The module called 'reg' will be initialized with dict(type='Constant', val=1, bias=2)
-    initialize(model, init_cfg)
-    # model.reg.weight
-    # Parameter containing:
-    # tensor([[[[1., 1., 1.],
-    #           [1., 1., 1.],
-    #           [1., 1., 1.]],
-    #           ...,
-    #           [[1., 1., 1.],
-    #            [1., 1., 1.],
-    #            [1., 1., 1.]]]], requires_grad=True)
-    ```
+  ```python
+  model = FooNet()
+  init_cfg = dict(type='Constant', val=1, bias=2, override=dict(name='reg'))
+  # self.feat and self.cls will be initialized by Pytorch
+  # The module called 'reg' will be initialized with dict(type='Constant', val=1, bias=2)
+  initialize(model, init_cfg)
+  # model.reg.weight
+  # Parameter containing:
+  # tensor([[[[1., 1., 1.],
+  #           [1., 1., 1.],
+  #           [1., 1., 1.]],
+  #           ...,
+  #           [[1., 1., 1.],
+  #            [1., 1., 1.],
+  #            [1., 1., 1.]]]], requires_grad=True)
+  ```
 
 - If we don't define `layer` key or `override` key, it will not initialize anything.
 
 - Invalid usage
 
-   ```python
-   # It is invalid that override don't have name key
-   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
-                   val=1, bias=2,
-                   override=dict(type='Constant', val=3, bias=4))
+  ```python
+  # It is invalid that override don't have name key
+  init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
+                  val=1, bias=2,
+                  override=dict(type='Constant', val=3, bias=4))
 
-   # It is also invalid that override has name and other args except type
-   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
-                   val=1, bias=2,
-                   override=dict(name='reg', val=3, bias=4))
-   ```
+  # It is also invalid that override has name and other args except type
+  init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'],
+                  val=1, bias=2,
+                  override=dict(name='reg', val=3, bias=4))
+  ```
 
 3. Initialize model with the pretrained model
 
-    ```python
-    import torch.nn as nn
-    import torchvision.models as models
-    from mmcv.cnn import initialize
+   ```python
+   import torch.nn as nn
+   import torchvision.models as models
+   from mmcv.cnn import initialize
 
-    # initialize model with pretrained model
-    model = models.resnet50()
-    # model.conv1.weight
-    # Parameter containing:
-    # tensor([[[[-6.7435e-03, -2.3531e-02, -9.0143e-03,  ..., -2.1245e-03,
-    #            -1.8077e-03,  3.0338e-03],
-    #           [-1.2603e-02, -2.7831e-02,  2.3187e-02,  ..., -1.5793e-02,
-    #             1.1655e-02,  4.5889e-03],
-    #           [-3.7916e-02,  1.2014e-02,  1.3815e-02,  ..., -4.2651e-03,
-    #             1.7314e-02, -9.9998e-03],
-    #           ...,
+   # initialize model with pretrained model
+   model = models.resnet50()
+   # model.conv1.weight
+   # Parameter containing:
+   # tensor([[[[-6.7435e-03, -2.3531e-02, -9.0143e-03,  ..., -2.1245e-03,
+   #            -1.8077e-03,  3.0338e-03],
+   #           [-1.2603e-02, -2.7831e-02,  2.3187e-02,  ..., -1.5793e-02,
+   #             1.1655e-02,  4.5889e-03],
+   #           [-3.7916e-02,  1.2014e-02,  1.3815e-02,  ..., -4.2651e-03,
+   #             1.7314e-02, -9.9998e-03],
+   #           ...,
 
-    init_cfg = dict(type='Pretrained',
-                    checkpoint='torchvision://resnet50')
-    initialize(model, init_cfg)
-    # model.conv1.weight
-    # Parameter containing:
-    # tensor([[[[ 1.3335e-02,  1.4664e-02, -1.5351e-02,  ..., -4.0896e-02,
-    #            -4.3034e-02, -7.0755e-02],
-    #           [ 4.1205e-03,  5.8477e-03,  1.4948e-02,  ...,  2.2060e-03,
-    #            -2.0912e-02, -3.8517e-02],
-    #           [ 2.2331e-02,  2.3595e-02,  1.6120e-02,  ...,  1.0281e-01,
-    #             6.2641e-02,  5.1977e-02],
-    #           ...,
+   init_cfg = dict(type='Pretrained',
+                   checkpoint='torchvision://resnet50')
+   initialize(model, init_cfg)
+   # model.conv1.weight
+   # Parameter containing:
+   # tensor([[[[ 1.3335e-02,  1.4664e-02, -1.5351e-02,  ..., -4.0896e-02,
+   #            -4.3034e-02, -7.0755e-02],
+   #           [ 4.1205e-03,  5.8477e-03,  1.4948e-02,  ...,  2.2060e-03,
+   #            -2.0912e-02, -3.8517e-02],
+   #           [ 2.2331e-02,  2.3595e-02,  1.6120e-02,  ...,  1.0281e-01,
+   #             6.2641e-02,  5.1977e-02],
+   #           ...,
 
-    # initialize weights of a sub-module with the specific part of a pretrained model by using 'prefix'
-    model = models.resnet50()
-    url = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
-          'retinanet_r50_fpn_1x_coco/'\
-          'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
-    init_cfg = dict(type='Pretrained',
-                    checkpoint=url, prefix='backbone.')
-    initialize(model, init_cfg)
-    ```
+   # initialize weights of a sub-module with the specific part of a pretrained model by using 'prefix'
+   model = models.resnet50()
+   url = 'http://download.openmmlab.com/mmdetection/v2.0/retinanet/'\
+         'retinanet_r50_fpn_1x_coco/'\
+         'retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth'
+   init_cfg = dict(type='Pretrained',
+                   checkpoint=url, prefix='backbone.')
+   initialize(model, init_cfg)
+   ```
 
 4. Initialize model inherited from BaseModule, Sequential, ModuleList, ModuleDict
 
-    `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weights()`.
+   `BaseModule` is inherited from `torch.nn.Module`, and the only different between them is that `BaseModule` implements `init_weights()`.
 
-    `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
+   `Sequential` is inherited from `BaseModule` and `torch.nn.Sequential`.
 
-    `ModuleList` is inherited from `BaseModule` and `torch.nn.ModuleList`.
+   `ModuleList` is inherited from `BaseModule` and `torch.nn.ModuleList`.
 
-    `ModuleDict` is inherited from `BaseModule` and `torch.nn.ModuleDict`.
+   `ModuleDict` is inherited from `BaseModule` and `torch.nn.ModuleDict`.
 
-    `````python
-    import torch.nn as nn
-    from mmcv.runner import BaseModule, Sequential, ModuleList, ModuleDict
+   ```python
+   import torch.nn as nn
+   from mmcv.runner import BaseModule, Sequential, ModuleList, ModuleDict
 
-    class FooConv1d(BaseModule):
+   class FooConv1d(BaseModule):
 
-        def __init__(self, init_cfg=None):
-            super().__init__(init_cfg)
-            self.conv1d = nn.Conv1d(4, 1, 4)
+       def __init__(self, init_cfg=None):
+           super().__init__(init_cfg)
+           self.conv1d = nn.Conv1d(4, 1, 4)
 
-        def forward(self, x):
-            return self.conv1d(x)
+       def forward(self, x):
+           return self.conv1d(x)
 
-    class FooConv2d(BaseModule):
+   class FooConv2d(BaseModule):
 
-        def __init__(self, init_cfg=None):
-            super().__init__(init_cfg)
-            self.conv2d = nn.Conv2d(3, 1, 3)
+       def __init__(self, init_cfg=None):
+           super().__init__(init_cfg)
+           self.conv2d = nn.Conv2d(3, 1, 3)
 
-        def forward(self, x):
-            return self.conv2d(x)
+       def forward(self, x):
+           return self.conv2d(x)
 
-    # BaseModule
-    init_cfg = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
-    model = FooConv1d(init_cfg)
-    model.init_weights()
-    # model.conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #        [0., 0., 0., 0.],
-    #        [0., 0., 0., 0.],
-    #        [0., 0., 0., 0.]]], requires_grad=True)
+   # BaseModule
+   init_cfg = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
+   model = FooConv1d(init_cfg)
+   model.init_weights()
+   # model.conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #        [0., 0., 0., 0.],
+   #        [0., 0., 0., 0.],
+   #        [0., 0., 0., 0.]]], requires_grad=True)
 
-    # Sequential
-    init_cfg1 = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
-    init_cfg2 = dict(type='Constant', layer='Conv2d', val=2., bias=3.)
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    seq_model = Sequential(model1, model2)
-    seq_model.init_weights()
-    # seq_model[0].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # seq_model[1].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
+   # Sequential
+   init_cfg1 = dict(type='Constant', layer='Conv1d', val=0., bias=1.)
+   init_cfg2 = dict(type='Constant', layer='Conv2d', val=2., bias=3.)
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   seq_model = Sequential(model1, model2)
+   seq_model.init_weights()
+   # seq_model[0].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # seq_model[1].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
 
-    # inner init_cfg has higher priority
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
-    seq_model = Sequential(model1, model2, init_cfg=init_cfg)
-    seq_model.init_weights()
-    # seq_model[0].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # seq_model[1].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
+   # inner init_cfg has higher priority
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+   seq_model = Sequential(model1, model2, init_cfg=init_cfg)
+   seq_model.init_weights()
+   # seq_model[0].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # seq_model[1].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
 
-    # ModuleList
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    modellist = ModuleList([model1, model2])
-    modellist.init_weights()
-    # modellist[0].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # modellist[1].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
+   # ModuleList
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   modellist = ModuleList([model1, model2])
+   modellist.init_weights()
+   # modellist[0].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # modellist[1].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
 
-    # inner init_cfg has higher priority
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
-    modellist = ModuleList([model1, model2], init_cfg=init_cfg)
-    modellist.init_weights()
-    # modellist[0].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # modellist[1].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
+   # inner init_cfg has higher priority
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+   modellist = ModuleList([model1, model2], init_cfg=init_cfg)
+   modellist.init_weights()
+   # modellist[0].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # modellist[1].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
 
-    # ModuleDict
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    modeldict = ModuleDict(dict(model1=model1, model2=model2))
-    modeldict.init_weights()
-    # modeldict['model1'].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # modeldict['model2'].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
+   # ModuleDict
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   modeldict = ModuleDict(dict(model1=model1, model2=model2))
+   modeldict.init_weights()
+   # modeldict['model1'].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # modeldict['model2'].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
 
-    # inner init_cfg has higher priority
-    model1 = FooConv1d(init_cfg1)
-    model2 = FooConv2d(init_cfg2)
-    init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
-    modeldict = ModuleDict(dict(model1=model1, model2=model2), init_cfg=init_cfg)
-    modeldict.init_weights()
-    # modeldict['model1'].conv1d.weight
-    # Parameter containing:
-    # tensor([[[0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.],
-    #         [0., 0., 0., 0.]]], requires_grad=True)
-    # modeldict['model2'].conv2d.weight
-    # Parameter containing:
-    # tensor([[[[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]],
-    #         ...,
-    #          [[2., 2., 2.],
-    #           [2., 2., 2.],
-    #           [2., 2., 2.]]]], requires_grad=True)
-    `````
+   # inner init_cfg has higher priority
+   model1 = FooConv1d(init_cfg1)
+   model2 = FooConv2d(init_cfg2)
+   init_cfg = dict(type='Constant', layer=['Conv1d', 'Conv2d'], val=4., bias=5.)
+   modeldict = ModuleDict(dict(model1=model1, model2=model2), init_cfg=init_cfg)
+   modeldict.init_weights()
+   # modeldict['model1'].conv1d.weight
+   # Parameter containing:
+   # tensor([[[0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.],
+   #         [0., 0., 0., 0.]]], requires_grad=True)
+   # modeldict['model2'].conv2d.weight
+   # Parameter containing:
+   # tensor([[[[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]],
+   #         ...,
+   #          [[2., 2., 2.],
+   #           [2., 2., 2.],
+   #           [2., 2., 2.]]]], requires_grad=True)
+   ```
 
 ### Model Zoo
 

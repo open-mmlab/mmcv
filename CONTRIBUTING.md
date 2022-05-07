@@ -16,6 +16,7 @@ All kinds of contributions are welcome, including but not limited to the followi
 ```{note}
 If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
 ```
+
 ### Code style
 
 #### Python
@@ -64,7 +65,7 @@ Or refer to [this repo](https://github.com/innerlee/setup) and take [`zzruby.sh`
 
 After this on every commit check code linters and formatter will be enforced.
 
->Before you create a PR, make sure that your code lints and is formatted by yapf.
+> Before you create a PR, make sure that your code lints and is formatted by yapf.
 
 #### C++ and CUDA
 

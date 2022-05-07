@@ -33,10 +33,6 @@ repos:
         additional_dependencies:
           - mdformat-gfm
           - mdformat_frontmatter
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.1.0
-    hooks:
-      - id: codespell
   - repo: https://github.com/myint/docformatter
     rev: v1.3.1
     hooks:
