@@ -29,6 +29,7 @@ repos:
     rev: 0.7.14
     hooks:
       - id: mdformat
+        args: ["--number"]
         additional_dependencies:
           - mdformat-gfm
           - mdformat_frontmatter
