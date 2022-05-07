@@ -38,7 +38,6 @@ repos:
           - mdformat-gfm
           - mdformat_frontmatter
           - linkify-it-py
-          - mdformat-myst
   - repo: https://github.com/myint/docformatter
     rev: v1.3.1
     hooks:
