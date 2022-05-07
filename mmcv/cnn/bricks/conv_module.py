@@ -96,7 +96,7 @@ class ConvModule(nn.Module):
         self.with_explicit_padding = padding_mode not in official_padding_mode
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(['conv', 'norm', 'act'])
+        assert set(order) == {'conv', 'norm', 'act'}
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None

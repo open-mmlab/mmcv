@@ -59,18 +59,18 @@ def assert_tensor_equal(tensor_a, tensor_b):
 
 def test_get_state_dict():
     if torch.__version__ == 'parrots':
-        state_dict_keys = set([
+        state_dict_keys = {
             'block.conv.weight', 'block.conv.bias', 'block.norm.weight',
             'block.norm.bias', 'block.norm.running_mean',
             'block.norm.running_var', 'conv.weight', 'conv.bias'
-        ])
+        }
     else:
-        state_dict_keys = set([
+        state_dict_keys = {
             'block.conv.weight', 'block.conv.bias', 'block.norm.weight',
             'block.norm.bias', 'block.norm.running_mean',
             'block.norm.running_var', 'block.norm.num_batches_tracked',
             'conv.weight', 'conv.bias'
-        ])
+        }
 
     model = Model()
     state_dict = get_state_dict(model)

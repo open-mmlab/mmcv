@@ -698,8 +698,8 @@ class BaseTransformerLayer(BaseModule):
 
         self.batch_first = batch_first
 
-        assert set(operation_order) & set(
-            ['self_attn', 'norm', 'ffn', 'cross_attn']) == \
+        assert set(operation_order) & {
+            'self_attn', 'norm', 'ffn', 'cross_attn'} == \
             set(operation_order), f'The operation_order of' \
             f' {self.__class__.__name__} should ' \
             f'contains all four operation type ' \

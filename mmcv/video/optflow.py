@@ -76,7 +76,7 @@ def flowwrite(flow, filename, quantize=False, concat_axis=0, *args, **kwargs):
     """
     if not quantize:
         with open(filename, 'wb') as f:
-            f.write('PIEH'.encode('utf-8'))
+            f.write(b'PIEH')
             np.array([flow.shape[1], flow.shape[0]], dtype=np.int32).tofile(f)
             flow = flow.astype(np.float32)
             flow.tofile(f)

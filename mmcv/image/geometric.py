@@ -145,7 +145,7 @@ def imresize_to_multiple(img,
         size = _scale_size((w, h), scale_factor)
 
     divisor = to_2tuple(divisor)
-    size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
+    size = tuple(int(np.ceil(s / d)) * d for s, d in zip(size, divisor))
     resized_img, w_scale, h_scale = imresize(
         img,
         size,

@@ -674,7 +674,7 @@ def test_cummax_cummin(key, opset=11):
     input_list = [
         # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
         torch.rand((2, 3, 4, 1, 5)),
-        torch.rand((1)),
+        torch.rand(1),
         torch.rand((2, 0, 1)),  # tensor.numel() is 0
         torch.FloatTensor(),  # empty tensor
     ]

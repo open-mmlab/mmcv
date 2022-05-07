@@ -129,8 +129,7 @@ class Testnms(object):
         scores = tensor_dets[:, 4]
         nms_keep_inds = nms(boxes.contiguous(), scores.contiguous(),
                             iou_thr)[1]
-        assert set([g[0].item()
-                    for g in np_groups]) == set(nms_keep_inds.tolist())
+        assert {g[0].item() for g in np_groups} == set(nms_keep_inds.tolist())
 
         # non empty tensor input
         tensor_dets = torch.from_numpy(np_dets)

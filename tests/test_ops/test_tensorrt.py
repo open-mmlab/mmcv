@@ -576,7 +576,7 @@ def test_cummin_cummax(func: Callable):
     input_list = [
         # arbitrary shape, e.g. 1-D, 2-D, 3-D, ...
         torch.rand((2, 3, 4, 1, 5)).cuda(),
-        torch.rand((1)).cuda()
+        torch.rand(1).cuda()
     ]
 
     input_names = ['input']

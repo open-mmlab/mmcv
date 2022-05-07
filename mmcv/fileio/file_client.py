@@ -210,9 +210,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'delete'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `delete` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `delete` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -230,9 +230,9 @@ class PetrelBackend(BaseStorageBackend):
         if not (has_method(self._client, 'contains')
                 and has_method(self._client, 'isdir')):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` and `isdir` methods, please use a higher'
-                 'version or dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` and `isdir` methods, please use a higher'
+                'version or dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -251,9 +251,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'isdir'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `isdir` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `isdir` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -271,9 +271,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'contains'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` method, please use a higher version or '
-                 'dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` method, please use a higher version or '
+                'dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -363,9 +363,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'list'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `list` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `list` method, please use a higher version or dev'
+                ' branch instead.')
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
