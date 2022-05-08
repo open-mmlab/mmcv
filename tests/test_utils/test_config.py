@@ -430,7 +430,8 @@ def test_dict():
 
 
 @pytest.mark.parametrize('file', ['a.json', 'b.py', 'c.yaml', 'd.yml', None])
-def test_dump_from_dict(file):
+def test_dump(file):
+    # Test dump config load from dict.
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
     cfg = Config(cfg_dict=cfg_dict)
     assert cfg.item1 == cfg_dict['item1']
@@ -439,14 +440,38 @@ def test_dump_from_dict(file):
     assert cfg.item4 == cfg_dict['item4']
     assert cfg._filename is None
     if file is not None:
-        # dump without a filename argument is only returning pretty_text
+        # dump without a filename argument is only returning pretty_text.
         with tempfile.TemporaryDirectory() as temp_config_dir:
             dump_file = osp.join(temp_config_dir, file)
             cfg.dump(dump_file)
-            cfg = Config.fromfile(dump_file)
-            assert cfg.dump() == open(dump_file, 'r').read()
+            dumped_cfg = Config.fromfile(dump_file)
+            assert dumped_cfg._cfg_dict == cfg._cfg_dict
     else:
         assert cfg.dump() == cfg.pretty_text
+
+    # The key of json must be string, key `1` will be converted to `'1'`.
+    def check_dump_json_cfg(ori_cfg, dumped_json_cfg):
+        for key, value in ori_cfg.items():
+            assert str(key) in dumped_json_cfg
+            if not isinstance(value, dict):
+                assert ori_cfg[key] == dumped_json_cfg[str(key)]
+            else:
+                check_dump_json_cfg(value, dumped_json_cfg[str(key)])
+
+    # Test dump config.
+    cfg_file = osp.join(data_path, 'config/n.py')
+    cfg = Config.fromfile(cfg_file)
+    if file is not None:
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            dump_file = osp.join(temp_config_dir, file)
+            cfg.dump(dump_file)
+            dumped_cfg = Config.fromfile(dump_file)
+        if not file.endswith('.json'):
+            assert dumped_cfg._cfg_dict == cfg._cfg_dict
+        else:
+            check_dump_json_cfg(cfg._cfg_dict, dumped_cfg._cfg_dict)
+    else:
+        cfg.dump() == cfg.pretty_text
 
 
 def test_setattr():
@@ -499,18 +524,6 @@ def test_dict_action():
     cfg.merge_from_dict(args.options)
     assert cfg.item2 == dict(a=1, b=0.1, c='x')
     assert cfg.item3 is False
-
-
-def test_dump_mapping():
-    cfg_file = osp.join(data_path, 'config/n.py')
-    cfg = Config.fromfile(cfg_file)
-
-    with tempfile.TemporaryDirectory() as temp_config_dir:
-        text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
-        cfg.dump(text_cfg_filename)
-        text_cfg = Config.fromfile(text_cfg_filename)
-
-    assert text_cfg._cfg_dict == cfg._cfg_dict
 
 
 def test_reserved_key():
