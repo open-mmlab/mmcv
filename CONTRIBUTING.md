@@ -74,7 +74,7 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 
     >Before you create a PR, make sure that your code lints and is formatted by yapf.
 
-    **pre-commit failed**
+    **pre-commit failed**(some code will be fixed automatically)
 
     ![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
 
