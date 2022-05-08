@@ -60,7 +60,7 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
     ```shell
     # install rvm
     curl -L https://get.rvm.io | bash -s -- --autolibs=read-fail
-    [[ -s "$HOME/.rvm/scripts/rvm" ]] && echo source "$HOME/.rvm/scripts/rvm" > ~/.bashrc
+    [[ -s "$HOME/.rvm/scripts/rvm" ]] && echo source "$HOME/.rvm/scripts/rvm" >> ~/.bashrc
     source ~/.bashrc
     rvm autolibs disable
 
