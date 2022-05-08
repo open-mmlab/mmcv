@@ -2,11 +2,12 @@
 import cv2
 import numpy as np
 
+
 from mmcv.image import imread, imwrite
 from .color import color_val
+from typing import List, Tuple, Dict, Callable, TypeVar, Optional, Union
 
-
-def imshow(img, win_name='', wait_time=0):
+def imshow(img:Union[str, np.ndarray], win_name:str = '', wait_time:int = 0):
     """Show an image.
 
     Args:
@@ -27,15 +28,15 @@ def imshow(img, win_name='', wait_time=0):
         ret = cv2.waitKey(wait_time)
 
 
-def imshow_bboxes(img,
-                  bboxes,
-                  colors='green',
-                  top_k=-1,
-                  thickness=1,
-                  show=True,
-                  win_name='',
-                  wait_time=0,
-                  out_file=None):
+def imshow_bboxes(img:Union[str, np.ndarray],
+                  bboxes:List[int, float],
+                  colors:Union[str, tuple, int, ndarray] = 'green',
+                  top_k:int = -1,
+                  thickness:int = 1,
+                  show: bool = True,
+                  win_name:str = '',
+                  wait_time:int = 0,
+                  out_file:Optional[str] = None):
     """Draw bboxes on an image.
 
     Args:
@@ -81,11 +82,11 @@ def imshow_bboxes(img,
     return img
 
 
-def imshow_det_bboxes(img,
-                      bboxes,
-                      labels,
-                      class_names=None,
-                      score_thr=0,
+def imshow_det_bboxes(img:Union[str, np.ndarray],
+                      bboxes:np.ndarray,
+                      labels:np.ndarray,
+                      class_names:List[str] = None,
+                      score_thr:float = 0,
                       bbox_color='green',
                       text_color='green',
                       thickness=1,
