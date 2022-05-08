@@ -474,17 +474,16 @@ class LmdbBackend(BaseStorageBackend):
                  readahead=False,
                  **kwargs):
         try:
-            import lmdb
+            import lmdb  # NOQA
         except ImportError:
             raise ImportError('Please install lmdb to enable LmdbBackend.')
 
         self.db_path = str(db_path)
-        self._client = lmdb.open(
-            self.db_path,
-            readonly=readonly,
-            lock=lock,
-            readahead=readahead,
-            **kwargs)
+        self.readonly = readonly
+        self.lock = lock
+        self.readahead = readahead
+        self.kwargs = kwargs
+        self._client = None
 
     def get(self, filepath):
         """Get values according to the filepath.
@@ -492,13 +491,28 @@ class LmdbBackend(BaseStorageBackend):
         Args:
             filepath (str | obj:`Path`): Here, filepath is the lmdb key.
         """
-        filepath = str(filepath)
+        if self._client is None:
+            self._client = self._get_client()
+
         with self._client.begin(write=False) as txn:
-            value_buf = txn.get(filepath.encode('ascii'))
+            value_buf = txn.get(str(filepath).encode('utf-8'))
         return value_buf
 
     def get_text(self, filepath, encoding=None):
         raise NotImplementedError
+
+    def _get_client(self):
+        import lmdb
+
+        return lmdb.open(
+            self.db_path,
+            readonly=self.readonly,
+            lock=self.lock,
+            readahead=self.readahead,
+            **self.kwargs)
+
+    def __del__(self):
+        self._client.close()
 
 
 class HardDiskBackend(BaseStorageBackend):
