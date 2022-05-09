@@ -6,6 +6,13 @@ import torch
 TORCH_VERSION = torch.__version__
 
 
+def is_cuda_available() -> bool:
+    return torch.cuda.is_available()
+
+
+IS_CUDA_AVAILABLE = is_cuda_available()
+
+
 def is_rocm_pytorch() -> bool:
     is_rocm = False
     if TORCH_VERSION != 'parrots':

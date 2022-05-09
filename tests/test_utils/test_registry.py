@@ -89,12 +89,23 @@ def test_registry():
     with pytest.raises(TypeError):
         CATS.register_module(0)
 
-    # can only decorate a class
+    @CATS.register_module()
+    def muchkin():
+        pass
+
+    assert CATS.get('muchkin') is muchkin
+    assert 'muchkin' in CATS
+
+    # can only decorate a class or a function
     with pytest.raises(TypeError):
 
-        @CATS.register_module()
-        def some_method():
-            pass
+        class Demo:
+
+            def some_method(self):
+                pass
+
+        method = Demo().some_method
+        CATS.register_module(name='some_method', module=method)
 
     # begin: test old APIs
     with pytest.warns(DeprecationWarning):

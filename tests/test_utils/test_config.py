@@ -29,16 +29,19 @@ def test_construct():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
     # test a.py
     cfg_file = osp.join(data_path, 'config/a.py')
-    cfg = Config(cfg_dict, filename=cfg_file)
-    assert isinstance(cfg, Config)
-    assert cfg.filename == cfg_file
-    assert cfg.text == open(cfg_file, 'r').read()
-    assert cfg.dump() == cfg.pretty_text
-    with tempfile.TemporaryDirectory() as temp_config_dir:
-        dump_file = osp.join(temp_config_dir, 'a.py')
-        cfg.dump(dump_file)
-        assert cfg.dump() == open(dump_file, 'r').read()
-        assert Config.fromfile(dump_file)
+    cfg_file_path = Path(cfg_file)
+    file_list = [cfg_file, cfg_file_path]
+    for item in file_list:
+        cfg = Config(cfg_dict, filename=item)
+        assert isinstance(cfg, Config)
+        assert isinstance(cfg.filename, str) and cfg.filename == str(item)
+        assert cfg.text == open(item, 'r').read()
+        assert cfg.dump() == cfg.pretty_text
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            dump_file = osp.join(temp_config_dir, 'a.py')
+            cfg.dump(dump_file)
+            assert cfg.dump() == open(dump_file, 'r').read()
+            assert Config.fromfile(dump_file)
 
     # test b.json
     cfg_file = osp.join(data_path, 'config/b.json')
@@ -142,11 +145,14 @@ def test_construct():
 def test_fromfile():
     for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(data_path, 'config', filename)
-        cfg = Config.fromfile(cfg_file)
-        assert isinstance(cfg, Config)
-        assert cfg.filename == cfg_file
-        assert cfg.text == osp.abspath(osp.expanduser(cfg_file)) + '\n' + \
-            open(cfg_file, 'r').read()
+        cfg_file_path = Path(cfg_file)
+        file_list = [cfg_file, cfg_file_path]
+        for item in file_list:
+            cfg = Config.fromfile(item)
+            assert isinstance(cfg, Config)
+            assert isinstance(cfg.filename, str) and cfg.filename == str(item)
+            assert cfg.text == osp.abspath(osp.expanduser(item)) + '\n' + \
+                open(item, 'r').read()
 
     # test custom_imports for Config.fromfile
     cfg_file = osp.join(data_path, 'config', 'q.py')
@@ -515,9 +521,18 @@ def test_dict_action():
     with pytest.raises(AssertionError):
         parser.parse_args(['--options', 'item2.a=[(a,b), [1,2], false'])
     # Normal values
-    args = parser.parse_args(
-        ['--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false'])
-    out_dict = {'item2.a': 1, 'item2.b': 0.1, 'item2.c': 'x', 'item3': False}
+    args = parser.parse_args([
+        '--options', 'item2.a=1', 'item2.b=0.1', 'item2.c=x', 'item3=false',
+        'item4=none', 'item5=None'
+    ])
+    out_dict = {
+        'item2.a': 1,
+        'item2.b': 0.1,
+        'item2.c': 'x',
+        'item3': False,
+        'item4': 'none',
+        'item5': None,
+    }
     assert args.options == out_dict
     cfg_file = osp.join(data_path, 'config/a.py')
     cfg = Config.fromfile(cfg_file)
