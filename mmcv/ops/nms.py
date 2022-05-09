@@ -161,16 +161,8 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
     assert boxes.size(0) == scores.size(0)
     assert offset in (0, 1)
 
-    if torch.__version__ == 'parrots':
-        indata_list = [boxes, scores]
-        indata_dict = {
-            'iou_threshold': float(iou_threshold),
-            'offset': int(offset)
-        }
-        inds = ext_module.nms(*indata_list, **indata_dict)
-    else:
-        inds = NMSop.apply(boxes, scores, iou_threshold, offset,
-                           score_threshold, max_num)
+    inds = NMSop.apply(boxes, scores, iou_threshold, offset, score_threshold,
+                       max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
