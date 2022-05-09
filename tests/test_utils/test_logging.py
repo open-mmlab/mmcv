@@ -10,9 +10,9 @@ import pytest
 from mmcv import get_logger, print_log
 
 if platform.system() == 'Windows':
-    import regex as re
+    import regex as re  # type: ignore
 else:
-    import re
+    import re  # type: ignore
 
 
 @patch('torch.distributed.get_rank', lambda: 0)
