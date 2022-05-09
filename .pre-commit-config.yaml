@@ -50,7 +50,7 @@ repos:
     rev: v0.812
     hooks:
       - id: mypy
-        exclude: ^tests
+        exclude: docs | ^tests
   # - repo: local
   #   hooks:
   #     - id: clang-format
