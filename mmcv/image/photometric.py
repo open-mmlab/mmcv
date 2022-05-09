@@ -429,10 +429,13 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
 
 
 def adjust_hue(img: np.ndarray, hue_factor: float) -> np.ndarray:
-    """Adjust hue of an image. The image hue is adjusted by converting the
-    image to HSV and cyclically shifting the intensities in the hue channel
-    (H). The image is then converted back to original image mode. `hue_factor`
-    is the amount of shift in H channel and must be in the interval `[-0.5,
+    """Adjust hue of an image. 
+    
+    The image hue is adjusted by converting the image to HSV and cyclically
+    shifting the intensities in the hue channel (H). The image is then converted
+    back to original image mode.
+    
+    `hue_factor` is the amount of shift in H channel and must be in the interval `[-0.5,
     0.5]`.
 
     Args:
