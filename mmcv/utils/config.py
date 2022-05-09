@@ -22,9 +22,9 @@ from .misc import import_modules_from_strings
 from .path import check_file_exist
 
 if platform.system() == 'Windows':
-    import regex as re
+    import regex as re  # type: ignore
 else:
-    import re
+    import re  # type: ignore
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'

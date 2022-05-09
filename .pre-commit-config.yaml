@@ -46,6 +46,11 @@ repos:
     hooks:
       - id: check-copyright
         args: ["mmcv", "tests", "--excludes", "mmcv/ops"]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+      - id: mypy
+        exclude: "docs"
   # - repo: local
   #   hooks:
   #     - id: clang-format
