@@ -3,9 +3,9 @@ import os
 import time
 
 try:
-    from unittest.mock import patch  # type: ignore
+    from unittest.mock import patch
 except ImportError:
-    from mock import patch  # type: ignore
+    from mock import patch
 
 try:
     from StringIO import StringIO

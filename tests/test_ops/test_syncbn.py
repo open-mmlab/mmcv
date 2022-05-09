@@ -9,9 +9,9 @@ import torch.distributed as dist
 import torch.nn as nn
 
 if platform.system() == 'Windows':
-    import regex as re  # type: ignore
+    import regex as re
 else:
-    import re  # type: ignore
+    import re
 
 
 class TestSyncBN(object):

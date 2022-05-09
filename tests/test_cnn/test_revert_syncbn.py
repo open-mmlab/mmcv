@@ -11,9 +11,9 @@ from mmcv.cnn.bricks import ConvModule
 from mmcv.cnn.utils import revert_sync_batchnorm
 
 if platform.system() == 'Windows':
-    import regex as re  # type: ignore
+    import regex as re
 else:
-    import re  # type: ignore
+    import re
 
 
 def test_revert_syncbn():
