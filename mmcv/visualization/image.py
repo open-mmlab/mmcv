@@ -1,13 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional, Union
+
 import cv2
 import numpy as np
 
-
 from mmcv.image import imread, imwrite
 from .color import color_val
-from typing import List, Tuple, Dict, Callable, TypeVar, Optional, Union
 
-def imshow(img:Union[str, np.ndarray], win_name:str = '', wait_time:int = 0):
+
+def imshow(img: Union[str, np.ndarray],
+           win_name: str = '',
+           wait_time: int = 0):
     """Show an image.
 
     Args:
@@ -28,15 +31,15 @@ def imshow(img:Union[str, np.ndarray], win_name:str = '', wait_time:int = 0):
         ret = cv2.waitKey(wait_time)
 
 
-def imshow_bboxes(img:Union[str, np.ndarray],
-                  bboxes:List[int, float],
-                  colors:Union[str, tuple, int, ndarray] = 'green',
-                  top_k:int = -1,
-                  thickness:int = 1,
+def imshow_bboxes(img: Union[str, np.ndarray],
+                  bboxes: List[int, float],
+                  colors: Union[str, tuple, int, np.ndarray] = 'green',
+                  top_k: int = -1,
+                  thickness: int = 1,
                   show: bool = True,
-                  win_name:str = '',
-                  wait_time:int = 0,
-                  out_file:Optional[str] = None):
+                  win_name: str = '',
+                  wait_time: int = 0,
+                  out_file: Optional[str] = None):
     """Draw bboxes on an image.
 
     Args:
@@ -82,19 +85,19 @@ def imshow_bboxes(img:Union[str, np.ndarray],
     return img
 
 
-def imshow_det_bboxes(img:Union[str, np.ndarray],
-                      bboxes:np.ndarray,
-                      labels:np.ndarray,
-                      class_names:List[str] = None,
-                      score_thr:float = 0,
-                      bbox_color='green',
-                      text_color='green',
-                      thickness=1,
-                      font_scale=0.5,
-                      show=True,
-                      win_name='',
-                      wait_time=0,
-                      out_file=None):
+def imshow_det_bboxes(img: Union[str, np.ndarray],
+                      bboxes: np.ndarray,
+                      labels: np.ndarray,
+                      class_names: List[str] = None,
+                      score_thr: float = 0,
+                      bbox_color: Union[str, tuple] = 'green',
+                      text_color: Union[str, tuple] = 'green',
+                      thickness: int = 1,
+                      font_scale: float = 0.5,
+                      show: bool = True,
+                      win_name: str = '',
+                      wait_time: int = 0,
+                      out_file: Optional[str] = None):
     """Draw bboxes and class labels (with scores) on an image.
 
     Args:
