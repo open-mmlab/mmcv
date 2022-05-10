@@ -26,8 +26,6 @@ if platform.system() == 'Windows':
 else:
     import re
 
-import mmcv
-
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
 DEPRECATION_KEY = '_deprecation_'
@@ -584,6 +582,7 @@ class Config:
             file (str, optional): Path of the output file where the config
                 will be dumped. Defaults to None.
         """
+        import mmcv
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
         if file is None:
             if self.filename is None or self.filename.endswith('.py'):
