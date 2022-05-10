@@ -1,15 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import division
+from typing import Optional, Union
 
 import numpy as np
 
 from mmcv.image import rgb2bgr
 from mmcv.video import flowread
 from .image import imshow
-from typing import Any, Tuple, Union
 
 
-def flowshow(flow:Union[np.ndarray,str], win_name:str ='', wait_time=0):
+def flowshow(flow: Union[np.ndarray, str],
+             win_name: str = '',
+             wait_time: int = 0) -> None:
     """Show optical flow.
 
     Args:
@@ -22,14 +24,16 @@ def flowshow(flow:Union[np.ndarray,str], win_name:str ='', wait_time=0):
     imshow(rgb2bgr(flow_img), win_name, wait_time)
 
 
-def flow2rgb(flow, color_wheel=None, unknown_thr=1e6):
+def flow2rgb(flow: np.ndarray,
+             color_wheel: Optional[np.ndarray] = None,
+             unknown_thr: float = 1e6) -> np.ndarray:
     """Convert flow map to RGB image.
 
     Args:
         flow (ndarray): Array of optical flow.
         color_wheel (ndarray or None): Color wheel used to map flow field to
             RGB colorspace. Default color wheel will be used if not specified.
-        unknown_thr (str): Values above this threshold will be marked as
+        unknown_thr (float): Values above this threshold will be marked asx
             unknown and thus ignored.
 
     Returns:
@@ -74,7 +78,7 @@ def flow2rgb(flow, color_wheel=None, unknown_thr=1e6):
     return flow_img
 
 
-def make_color_wheel(bins=None):
+def make_color_wheel(bins: Optional[Union[list, tuple]] = None) -> np.ndarray:
     """Build a color wheel.
 
     Args:
