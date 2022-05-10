@@ -437,7 +437,7 @@ def test_dict():
 
 @pytest.mark.parametrize('file', ['a.json', 'b.py', 'c.yaml', 'd.yml', None])
 def test_dump(file):
-    # Test dump config load from dict.
+    # config loaded from dict
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
     cfg = Config(cfg_dict=cfg_dict)
     assert cfg.item1 == cfg_dict['item1']
@@ -448,36 +448,36 @@ def test_dump(file):
     if file is not None:
         # dump without a filename argument is only returning pretty_text.
         with tempfile.TemporaryDirectory() as temp_config_dir:
-            dump_file = osp.join(temp_config_dir, file)
-            cfg.dump(dump_file)
-            dumped_cfg = Config.fromfile(dump_file)
+            cfg_file = osp.join(temp_config_dir, file)
+            cfg.dump(cfg_file)
+            dumped_cfg = Config.fromfile(cfg_file)
             assert dumped_cfg._cfg_dict == cfg._cfg_dict
     else:
         assert cfg.dump() == cfg.pretty_text
 
-    # The key of json must be string, key `1` will be converted to `'1'`.
-    def check_dump_json_cfg(ori_cfg, dumped_json_cfg):
+    # The key of json must be a string, so key `1` will be converted to `'1'`.
+    def compare_json_cfg(ori_cfg, dumped_json_cfg):
         for key, value in ori_cfg.items():
             assert str(key) in dumped_json_cfg
             if not isinstance(value, dict):
                 assert ori_cfg[key] == dumped_json_cfg[str(key)]
             else:
-                check_dump_json_cfg(value, dumped_json_cfg[str(key)])
+                compare_json_cfg(value, dumped_json_cfg[str(key)])
 
-    # Test dump config.
+    # config loaded from file
     cfg_file = osp.join(data_path, 'config/n.py')
     cfg = Config.fromfile(cfg_file)
     if file is not None:
         with tempfile.TemporaryDirectory() as temp_config_dir:
-            dump_file = osp.join(temp_config_dir, file)
-            cfg.dump(dump_file)
-            dumped_cfg = Config.fromfile(dump_file)
+            cfg_file = osp.join(temp_config_dir, file)
+            cfg.dump(cfg_file)
+            dumped_cfg = Config.fromfile(cfg_file)
         if not file.endswith('.json'):
             assert dumped_cfg._cfg_dict == cfg._cfg_dict
         else:
-            check_dump_json_cfg(cfg._cfg_dict, dumped_cfg._cfg_dict)
+            compare_json_cfg(cfg._cfg_dict, dumped_cfg._cfg_dict)
     else:
-        cfg.dump() == cfg.pretty_text
+        assert cfg.dump() == cfg.pretty_text
 
 
 def test_setattr():
