@@ -4,8 +4,6 @@ from typing import Any, Tuple, Union
 
 import numpy as np
 
-from mmcv.utils import is_str
-
 
 class Color(Enum):
     """An enum that defines common colors.
@@ -32,7 +30,7 @@ def color_val(
     Returns:
         tuple[int]: A tuple of 3 integers indicating BGR channels.
     """
-    if is_str(color):
+    if isinstance(color, str):
         return Color[color].value  # type: ignore
     elif isinstance(color, Color):
         return color.value

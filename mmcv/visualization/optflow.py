@@ -6,9 +6,10 @@ import numpy as np
 from mmcv.image import rgb2bgr
 from mmcv.video import flowread
 from .image import imshow
+from typing import Any, Tuple, Union
 
 
-def flowshow(flow, win_name='', wait_time=0):
+def flowshow(flow:Union[np.ndarray,str], win_name:str ='', wait_time=0):
     """Show optical flow.
 
     Args:
