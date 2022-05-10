@@ -438,6 +438,10 @@ def adjust_hue(img: np.ndarray, hue_factor: float) -> np.ndarray:
     `hue_factor` is the amount of shift in H channel and must be in the
     interval `[-0.5, 0.5]`.
 
+    Modified from
+    https://github.com/pytorch/vision/blob/main/torchvision/
+    transforms/functional.py
+
     Args:
         img (ndarray): Image to be adjusted.
         hue_factor (float):  How much to shift the hue channel. Should be in
