@@ -569,8 +569,8 @@ class Config:
 
         Otherwise, returns a string representing the config. The formatting of
         this returned string is defined by the extension of `self.filename`. If
-        `self.filename` is not defined, returns a string representation of a dict
-        (lowercased and using ' for strings).
+        `self.filename` is not defined, returns a string representation of a
+         dict (lowercased and using ' for strings).
 
         Examples:
             >>> cfg_dict = dict(item1=[1, 2], item2=dict(a=0),
