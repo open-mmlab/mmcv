@@ -342,7 +342,7 @@ if (TORCH_VERSION != 'parrots'
 else:
 
     @HOOKS.register_module()
-    class Fp16OptimizerHook(OptimizerHook):
+    class Fp16OptimizerHook(OptimizerHook):  # type: ignore
         """FP16 optimizer hook (mmcv's implementation).
 
         The steps of fp16 optimizer is as follows.
@@ -484,8 +484,8 @@ else:
                 'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()
 
     @HOOKS.register_module()
-    class GradientCumulativeFp16OptimizerHook(GradientCumulativeOptimizerHook,
-                                              Fp16OptimizerHook):
+    class GradientCumulativeFp16OptimizerHook(  # type: ignore
+            GradientCumulativeOptimizerHook, Fp16OptimizerHook):
         """Fp16 optimizer Hook (using mmcv implementation) implements multi-
         iters gradient cumulating."""
 
