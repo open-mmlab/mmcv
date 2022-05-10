@@ -562,15 +562,15 @@ class Config:
         super(Config, self).__setattr__('_text', _text)
 
     def dump(self, file=None):
-        """Write config into a file or returns a string representation of the
+        """Dumps config into a file or returns a string representation of the
         config.
 
         If a file argument is given, saves the config to that file using the
         format defined by the file argument extension.
 
         Otherwise, returns a string representing the config. The formatting of
-        this returned string is defined by the extension of self.filename. If
-        self.filename is not defined, returns a string representation of a dict
+        this returned string is defined by the extension of `self.filename`. If
+        `self.filename` is not defined, returns a string representation of a dict
         (lowercased and using ' for strings).
 
         Examples:
@@ -581,8 +581,8 @@ class Config:
             >>> cfg.dump(dump_file)
 
         Args:
-            file (optional string): path of the output file where the config
-                should be written
+            file (str, optional): Path of the output file where the config
+                will be dumped. Defaults to None.
         """
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
         if file is None:
