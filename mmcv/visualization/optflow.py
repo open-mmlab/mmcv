@@ -33,7 +33,7 @@ def flow2rgb(flow: np.ndarray,
         flow (ndarray): Array of optical flow.
         color_wheel (ndarray or None): Color wheel used to map flow field to
             RGB colorspace. Default color wheel will be used if not specified.
-        unknown_thr (float): Values above this threshold will be marked asx
+        unknown_thr (float): Values above this threshold will be marked as
             unknown and thus ignored.
 
     Returns:
