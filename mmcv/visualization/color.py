@@ -30,7 +30,7 @@ def color_val(
     Returns:
         tuple[int]: A tuple of 3 integers indicating BGR channels.
     """
-    if isinstance(color, str):
+    if is_str(color, str):
         return Color[color].value  # type: ignore
     elif isinstance(color, Color):
         return color.value
