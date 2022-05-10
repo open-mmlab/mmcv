@@ -32,7 +32,7 @@ def imshow(img: Union[str, np.ndarray],
 
 
 def imshow_bboxes(img: Union[str, np.ndarray],
-                  bboxes: List[int, float],
+                  bboxes: Union[list, np.ndarray],
                   colors: Union[str, tuple, int, np.ndarray] = 'green',
                   top_k: int = -1,
                   thickness: int = 1,
