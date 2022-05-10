@@ -14,6 +14,9 @@ from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
                       initialize, kaiming_init, normal_init, trunc_normal_init,
                       uniform_init, xavier_init)
 
+if torch.__version__ == 'parrots':
+    pytest.skip('not supported in parrots now', allow_module_level=True)
+
 
 def test_constant_init():
     conv_module = nn.Conv2d(3, 16, 3)

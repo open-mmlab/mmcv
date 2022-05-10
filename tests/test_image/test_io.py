@@ -9,10 +9,14 @@ from unittest.mock import MagicMock, patch
 import cv2
 import numpy as np
 import pytest
+import torch
 from numpy.testing import assert_allclose, assert_array_equal
 
 import mmcv
 from mmcv.fileio.file_client import HTTPBackend, PetrelBackend
+
+if torch.__version__ == 'parrots':
+    pytest.skip('not necessary in parrots test', allow_module_level=True)
 
 
 class TestIO:

@@ -44,6 +44,8 @@ sys.modules['petrel_client'] = MagicMock()
 sys.modules['petrel_client.client'] = MagicMock()
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 def test_optimizerhook():
 
     class Model(nn.Module):
@@ -929,6 +931,8 @@ def test_flat_cosine_runner_hook(multi_optimizers, by_epoch):
     hook.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 @pytest.mark.parametrize('multi_optimizers, max_iters', [(True, 10), (True, 2),
                                                          (False, 10),
                                                          (False, 2)])
