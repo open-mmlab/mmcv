@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from mmcv.image import imread, imwrite
-from .color import color_val
+from .color import Color, color_val
 
 
 def imshow(img: Union[str, np.ndarray],
@@ -33,7 +33,7 @@ def imshow(img: Union[str, np.ndarray],
 
 def imshow_bboxes(img: Union[str, np.ndarray],
                   bboxes: Union[list, np.ndarray],
-                  colors: Union[str, tuple, int, np.ndarray] = 'green',
+                  colors: Union[Color, str, tuple, int, np.ndarray] = 'green',
                   top_k: int = -1,
                   thickness: int = 1,
                   show: bool = True,
@@ -90,8 +90,8 @@ def imshow_det_bboxes(img: Union[str, np.ndarray],
                       labels: np.ndarray,
                       class_names: List[str] = None,
                       score_thr: float = 0,
-                      bbox_color: Union[str, tuple] = 'green',
-                      text_color: Union[str, tuple] = 'green',
+                      bbox_color: Union[str, tuple, int, np.ndarray] = 'green',
+                      text_color: Union[str, tuple, int, np.ndarray] = 'green',
                       thickness: int = 1,
                       font_scale: float = 0.5,
                       show: bool = True,
