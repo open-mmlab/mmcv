@@ -12,10 +12,12 @@ void hard_voxelize_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                         const OperatorBase::in_list_t& ins,
                                         OperatorBase::out_list_t& outs) {
   int max_points, max_voxels, NDim;
+  bool deterministic;
   SSAttrs(attr)
       .get<int>("max_points", max_points)
       .get<int>("max_voxels", max_voxels)
       .get<int>("NDim", NDim)
+      .get<bool>("deterministic", deterministic)
       .done();
   const auto& points = buildATensor(ctx, ins[0]);
   const auto& voxel_size = buildATensor(ctx, ins[1]);
@@ -28,7 +30,7 @@ void hard_voxelize_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
 
   hard_voxelize_forward(points, voxel_size, coors_range, voxels, coors,
                         num_points_per_voxel, voxel_num, max_points, max_voxels,
-                        NDim);
+                        NDim, deterministic);
 }
 
 void dynamic_voxelize_forward_cuda_parrots(CudaContext& ctx,
@@ -51,10 +53,12 @@ void hard_voxelize_forward_cpu_parrots(HostContext& ctx, const SSElement& attr,
                                        const OperatorBase::in_list_t& ins,
                                        OperatorBase::out_list_t& outs) {
   int max_points, max_voxels, NDim;
+  bool deterministic;
   SSAttrs(attr)
       .get<int>("max_points", max_points)
       .get<int>("max_voxels", max_voxels)
       .get<int>("NDim", NDim)
+      .get<bool>("deterministic", deterministic)
       .done();
   const auto& points = buildATensor(ctx, ins[0]);
   const auto& voxel_size = buildATensor(ctx, ins[1]);
@@ -67,7 +71,7 @@ void hard_voxelize_forward_cpu_parrots(HostContext& ctx, const SSElement& attr,
 
   hard_voxelize_forward(points, voxel_size, coors_range, voxels, coors,
                         num_points_per_voxel, voxel_num, max_points, max_voxels,
-                        NDim);
+                        NDim, deterministic);
 }
 
 void dynamic_voxelize_forward_cpu_parrots(HostContext& ctx,
@@ -89,6 +93,7 @@ PARROTS_EXTENSION_REGISTER(hard_voxelize_forward)
     .attr("max_points")
     .attr("max_voxels")
     .attr("NDim")
+    .attr("deterministic")
     .input(3)
     .output(4)
     .apply(hard_voxelize_forward_cpu_parrots)
