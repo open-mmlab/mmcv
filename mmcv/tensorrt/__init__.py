@@ -13,7 +13,7 @@ def is_tensorrt_available():
         return False
 
 
-__all__ = []  # type: ignore
+__all__ = []
 
 if is_tensorrt_available():
     from .tensorrt_utils import (TRTWraper, TRTWrapper, load_trt_engine,
