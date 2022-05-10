@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from enum import Enum
+from typing import Any, Tuple, Union
 
 import numpy as np
 
@@ -21,7 +22,8 @@ class Color(Enum):
     black = (0, 0, 0)
 
 
-def color_val(color):
+def color_val(
+        color: Union[Color, str, Tuple, int, np.ndarray]) -> Tuple[Any, ...]:
     """Convert various input to color tuples.
 
     Args:
@@ -31,7 +33,7 @@ def color_val(color):
         tuple[int]: A tuple of 3 integers indicating BGR channels.
     """
     if is_str(color):
-        return Color[color].value
+        return Color[color].value  # type: ignore
     elif isinstance(color, Color):
         return color.value
     elif isinstance(color, tuple):
@@ -45,7 +47,7 @@ def color_val(color):
     elif isinstance(color, np.ndarray):
         assert color.ndim == 1 and color.size == 3
         assert np.all((color >= 0) & (color <= 255))
-        color = color.astype(np.uint8)
+        color = color.astype(np.uint8).tolist()
         return tuple(color)
     else:
         raise TypeError(f'Invalid type for color: {type(color)}')
