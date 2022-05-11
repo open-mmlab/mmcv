@@ -45,7 +45,7 @@ def imshow_bboxes(img: Union[str, np.ndarray],
     Args:
         img (str or ndarray): The image to be displayed.
         bboxes (list or ndarray): A list of ndarray of shape (k, 4).
-        colors (list[str or tuple or Color]): A list of colors.
+        colors (Color, str, tuple, int, ndarray): A list of colors.
         top_k (int): Plot the first k bboxes only if set positive.
         thickness (int): Thickness of lines.
         show (bool): Whether to show the image.
@@ -90,8 +90,10 @@ def imshow_det_bboxes(img: Union[str, np.ndarray],
                       labels: np.ndarray,
                       class_names: List[str] = None,
                       score_thr: float = 0,
-                      bbox_color: Union[str, tuple, int, np.ndarray] = 'green',
-                      text_color: Union[str, tuple, int, np.ndarray] = 'green',
+                      bbox_color: Union[Color, str, tuple, int,
+                                        np.ndarray] = 'green',
+                      text_color: Union[Color, str, tuple, int,
+                                        np.ndarray] = 'green',
                       thickness: int = 1,
                       font_scale: float = 0.5,
                       show: bool = True,
@@ -107,8 +109,8 @@ def imshow_det_bboxes(img: Union[str, np.ndarray],
         labels (ndarray): Labels of bboxes.
         class_names (list[str]): Names of each classes.
         score_thr (float): Minimum score of bboxes to be shown.
-        bbox_color (str or tuple or :obj:`Color`): Color of bbox lines.
-        text_color (str or tuple or :obj:`Color`): Color of texts.
+        bbox_color (Color, str, tuple, int, ndarray): Color of bbox lines.
+        text_color (Color, str, tuple, int, ndarray): Color of texts.
         thickness (int): Thickness of lines.
         font_scale (float): Font scales of texts.
         show (bool): Whether to show the image.
