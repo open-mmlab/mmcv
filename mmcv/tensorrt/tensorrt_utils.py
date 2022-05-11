@@ -9,7 +9,7 @@ import torch
 from .preprocess import preprocess_onnx
 
 
-def onnx2trt(onnx_model: onnx.ModelProto,
+def onnx2trt(onnx_model: Union[str, onnx.ModelProto],
              opt_shape_dict: dict,
              log_level: trt.ILogger.Severity = trt.Logger.ERROR,
              fp16_mode: bool = False,
