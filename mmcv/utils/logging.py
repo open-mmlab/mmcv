@@ -29,16 +29,16 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)
-    
     if name in logger_initialized:
         return logger
+
     # handle hierarchical names
     # e.g., logger "a" is initialized, then logger "a.b" will skip the
     # initialization since it is a child of "a".
     for logger_name in logger_initialized:
         if name.startswith(logger_name):
             return logger
-    
+
     # Handling of duplicate console logs.
     # PyTorch DDP attaches a StreamHandler (NOTSET)
     # to the root logger. As logger.propagate is True by default, this root
