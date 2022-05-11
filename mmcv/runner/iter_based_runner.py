@@ -57,6 +57,7 @@ class IterBasedRunner(BaseRunner):
         self.data_loader = data_loader
         self._epoch = data_loader.epoch
         data_batch = next(data_loader)
+        self.data_batch = data_batch
         self.call_hook('before_train_iter')
         outputs = self.model.train_step(data_batch, self.optimizer, **kwargs)
         if not isinstance(outputs, dict):
@@ -74,6 +75,7 @@ class IterBasedRunner(BaseRunner):
         self.mode = 'val'
         self.data_loader = data_loader
         data_batch = next(data_loader)
+        self.data_batch = data_batch
         self.call_hook('before_val_iter')
         outputs = self.model.val_step(data_batch, **kwargs)
         if not isinstance(outputs, dict):
