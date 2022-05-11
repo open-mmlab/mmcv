@@ -426,3 +426,46 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
 
     clahe = cv2.createCLAHE(clip_limit, tile_grid_size)
     return clahe.apply(np.array(img, dtype=np.uint8))
+
+
+def adjust_hue(img: np.ndarray, hue_factor: float) -> np.ndarray:
+    """Adjust hue of an image.
+
+    The image hue is adjusted by converting the image to HSV and cyclically
+    shifting the intensities in the hue channel (H). The image is then
+    converted back to original image mode.
+
+    `hue_factor` is the amount of shift in H channel and must be in the
+    interval `[-0.5, 0.5]`.
+
+    Modified from
+    https://github.com/pytorch/vision/blob/main/torchvision/
+    transforms/functional.py
+
+    Args:
+        img (ndarray): Image to be adjusted.
+        hue_factor (float):  How much to shift the hue channel. Should be in
+            [-0.5, 0.5]. 0.5 and -0.5 give complete reversal of hue channel in
+            HSV space in positive and negative direction respectively.
+            0 means no shift. Therefore, both -0.5 and 0.5 will give an image
+            with complementary colors while 0 gives the original image.
+
+    Returns:
+        ndarray: Hue adjusted image.
+    """
+
+    if not (-0.5 <= hue_factor <= 0.5):
+        raise ValueError(f'hue_factor:{hue_factor} is not in [-0.5, 0.5].')
+    if not (isinstance(img, np.ndarray) and (img.ndim in {2, 3})):
+        raise TypeError('img should be ndarray with dim=[2 or 3].')
+
+    dtype = img.dtype
+    img = img.astype(np.uint8)
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)
+    h, s, v = cv2.split(hsv_img)
+    h = h.astype(np.uint8)
+    # uint8 addition take cares of rotation across boundaries
+    with np.errstate(over='ignore'):
+        h += np.uint8(hue_factor * 255)
+    hsv_img = cv2.merge([h, s, v])
+    return cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB_FULL).astype(dtype)

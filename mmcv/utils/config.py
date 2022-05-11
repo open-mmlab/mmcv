@@ -22,9 +22,9 @@ from .misc import import_modules_from_strings
 from .path import check_file_exist
 
 if platform.system() == 'Windows':
-    import regex as re
+    import regex as re  # type: ignore
 else:
-    import re
+    import re  # type: ignore
 
 BASE_KEY = '_base_'
 DELETE_KEY = '_delete_'
@@ -561,20 +561,42 @@ class Config:
         super(Config, self).__setattr__('_text', _text)
 
     def dump(self, file=None):
+        """Dumps config into a file or returns a string representation of the
+        config.
+
+        If a file argument is given, saves the config to that file using the
+        format defined by the file argument extension.
+
+        Otherwise, returns a string representing the config. The formatting of
+        this returned string is defined by the extension of `self.filename`. If
+        `self.filename` is not defined, returns a string representation of a
+         dict (lowercased and using ' for strings).
+
+        Examples:
+            >>> cfg_dict = dict(item1=[1, 2], item2=dict(a=0),
+            ...     item3=True, item4='test')
+            >>> cfg = Config(cfg_dict=cfg_dict)
+            >>> dump_file = "a.py"
+            >>> cfg.dump(dump_file)
+
+        Args:
+            file (str, optional): Path of the output file where the config
+                will be dumped. Defaults to None.
+        """
+        import mmcv
         cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
-        if self.filename.endswith('.py'):
-            if file is None:
+        if file is None:
+            if self.filename is None or self.filename.endswith('.py'):
                 return self.pretty_text
             else:
-                with open(file, 'w', encoding='utf-8') as f:
-                    f.write(self.pretty_text)
-        else:
-            import mmcv
-            if file is None:
                 file_format = self.filename.split('.')[-1]
                 return mmcv.dump(cfg_dict, file_format=file_format)
-            else:
-                mmcv.dump(cfg_dict, file)
+        elif file.endswith('.py'):
+            with open(file, 'w', encoding='utf-8') as f:
+                f.write(self.pretty_text)
+        else:
+            file_format = file.split('.')[-1]
+            return mmcv.dump(cfg_dict, file=file, file_format=file_format)
 
     def merge_from_dict(self, options, allow_list_keys=True):
         """Merge list into cfg_dict.
