@@ -39,7 +39,7 @@ def dequantize(arr: np.ndarray,
                min_val: Union[int, float],
                max_val: Union[int, float],
                levels: int,
-               dtype: np.type = np.float64) -> tuple:
+               dtype=np.float64) -> tuple:
     """Dequantize an array.
 
     Args:
