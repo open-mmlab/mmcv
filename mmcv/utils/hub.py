@@ -128,4 +128,4 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
                     'loaded in torch<1.5.')
             raise error
 else:
-    from torch.utils.model_zoo import load_url  # noqa: F401
+    from torch.utils.model_zoo import load_url  # type: ignore # noqa: F401
