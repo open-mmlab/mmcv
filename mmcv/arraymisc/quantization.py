@@ -2,13 +2,17 @@
 import numpy as np
 
 
-def quantize(arr, min_val, max_val, levels, dtype=np.int64):
+def quantize(arr: np.ndarray,
+             min_val: float,
+             max_val: float,
+             levels: int,
+             dtype: np.type = np.int64) -> tuple:
     """Quantize an array of (-inf, inf) to [0, levels-1].
 
     Args:
         arr (ndarray): Input array.
-        min_val (scalar): Minimum value to be clipped.
-        max_val (scalar): Maximum value to be clipped.
+        min_val (float): Minimum value to be clipped.
+        max_val (float): Maximum value to be clipped.
         levels (int): Quantization levels.
         dtype (np.type): The type of the quantized array.
 
@@ -29,13 +33,17 @@ def quantize(arr, min_val, max_val, levels, dtype=np.int64):
     return quantized_arr
 
 
-def dequantize(arr, min_val, max_val, levels, dtype=np.float64):
+def dequantize(arr: np.ndarray,
+               min_val: float,
+               max_val: float,
+               levels: int,
+               dtype: np.type = np.float64) -> tuple:
     """Dequantize an array.
 
     Args:
         arr (ndarray): Input array.
-        min_val (scalar): Minimum value to be clipped.
-        max_val (scalar): Maximum value to be clipped.
+        min_val (float): Minimum value to be clipped.
+        max_val (float): Maximum value to be clipped.
         levels (int): Quantization levels.
         dtype (np.type): The type of the dequantized array.
 
