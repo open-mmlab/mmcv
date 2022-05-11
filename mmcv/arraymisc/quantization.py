@@ -1,18 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Union
+
 import numpy as np
 
 
 def quantize(arr: np.ndarray,
-             min_val: float,
-             max_val: float,
+             min_val: Union[int, float],
+             max_val: Union[int, float],
              levels: int,
              dtype: np.type = np.int64) -> tuple:
     """Quantize an array of (-inf, inf) to [0, levels-1].
 
     Args:
         arr (ndarray): Input array.
-        min_val (float): Minimum value to be clipped.
-        max_val (float): Maximum value to be clipped.
+        min_val (int or float): Minimum value to be clipped.
+        max_val (int or float): Maximum value to be clipped.
         levels (int): Quantization levels.
         dtype (np.type): The type of the quantized array.
 
@@ -34,16 +36,16 @@ def quantize(arr: np.ndarray,
 
 
 def dequantize(arr: np.ndarray,
-               min_val: float,
-               max_val: float,
+               min_val: Union[int, float],
+               max_val: Union[int, float],
                levels: int,
                dtype: np.type = np.float64) -> tuple:
     """Dequantize an array.
 
     Args:
         arr (ndarray): Input array.
-        min_val (float): Minimum value to be clipped.
-        max_val (float): Maximum value to be clipped.
+        min_val (int or float): Minimum value to be clipped.
+        max_val (int or float): Maximum value to be clipped.
         levels (int): Quantization levels.
         dtype (np.type): The type of the dequantized array.
 
