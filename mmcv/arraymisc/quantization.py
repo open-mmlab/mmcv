@@ -8,7 +8,7 @@ def quantize(arr: np.ndarray,
              min_val: Union[int, float],
              max_val: Union[int, float],
              levels: int,
-             dtype: np.type = np.int64) -> tuple:
+             dtype=np.int64) -> tuple:
     """Quantize an array of (-inf, inf) to [0, levels-1].
 
     Args:
