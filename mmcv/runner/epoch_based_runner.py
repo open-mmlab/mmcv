@@ -50,6 +50,7 @@ class EpochBasedRunner(BaseRunner):
             self.call_hook('before_train_iter')
             self.run_iter(data_batch, train_mode=True, **kwargs)
             self.call_hook('after_train_iter')
+            del self.data_batch
             self._iter += 1
 
         self.call_hook('after_train_epoch')
