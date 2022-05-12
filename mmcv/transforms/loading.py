@@ -195,7 +195,8 @@ class LoadAnnotations(BaseTransform):
         gt_bboxes = []
         for instance in results['instances']:
             gt_bboxes.append(instance['bbox'])
-        results['gt_bboxes'] = np.array(gt_bboxes, dtype=np.float32)
+        results['gt_bboxes'] = np.array(
+            gt_bboxes, dtype=np.float32).reshape(-1, 4)
 
     def _load_labels(self, results: dict) -> None:
         """Private function to load label annotations.
