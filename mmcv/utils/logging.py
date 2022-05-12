@@ -44,6 +44,8 @@ def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
     # to the root logger. As logger.propagate is True by default, this root
     # level handler causes logging messages from rank>0 processes to
     # unexpectedly show up on the console, creating much unwanted clutter.
+    # To fix this issue, we set the root logger's StreamHandler to log
+    # at the ERROR level.
     # More details can be found at PR #1683.
     for handler in logger.root.handlers:
         if type(handler) is logging.StreamHandler:
