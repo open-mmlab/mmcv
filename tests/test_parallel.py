@@ -17,6 +17,8 @@ def mock(*args, **kwargs):
     pass
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 @patch('torch.distributed._broadcast_coalesced', mock)
 @patch('torch.distributed.broadcast', mock)
 @patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', mock)
@@ -122,6 +124,8 @@ def test_scatter():
         scatter(5, [-1])
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 def test_Scatter():
     # if the device is CPU, just return the input
     target_gpus = [-1]

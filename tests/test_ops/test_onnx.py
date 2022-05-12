@@ -13,6 +13,8 @@ import torch.nn.functional as F
 from packaging import version
 
 onnx_file = 'tmp.onnx'
+if torch.__version__ == 'parrots':
+    pytest.skip('not supported in parrots now', allow_module_level=True)
 
 
 @pytest.fixture(autouse=True)
@@ -123,8 +125,6 @@ def test_bilinear_grid_sample(align_corners):
 
 
 def test_nms():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import get_onnxruntime_op_path, nms
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
@@ -171,8 +171,6 @@ def test_nms():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_softnms():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import get_onnxruntime_op_path, soft_nms
 
     # only support pytorch >= 1.7.0
@@ -247,8 +245,6 @@ def test_softnms():
 
 
 def test_roialign():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
     try:
         from mmcv.ops import get_onnxruntime_op_path, roi_align
     except (ImportError, ModuleNotFoundError):
@@ -319,8 +315,6 @@ def test_roialign():
 
 
 def test_roialign_rotated():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
     try:
         from mmcv.ops import get_onnxruntime_op_path, roi_align_rotated
     except (ImportError, ModuleNotFoundError):
@@ -398,8 +392,6 @@ def test_roialign_rotated():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
     from mmcv.ops import roi_pool
 
     # roi pool config
@@ -602,8 +594,6 @@ def test_rotated_feature_align():
 
 @pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
 def test_corner_pool(mode, opset=11):
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
 
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
@@ -648,8 +638,6 @@ def test_corner_pool(mode, opset=11):
 
 @pytest.mark.parametrize('key', ['cummax', 'cummin'])
 def test_cummax_cummin(key, opset=11):
-    if torch.__version__ == 'parrots':
-        pytest.skip('onnx is not supported in parrots directly')
 
     # Note generally `cummax` or `cummin` is exportable to ONNX
     # as long as the pytorch version >= 1.5.0, since `torch.cummax`
@@ -759,9 +747,6 @@ def test_roll(shifts_dims_pair):
 
 
 @pytest.mark.skipif(
-    torch.__version__ == 'parrots',
-    reason='onnx is not supported in parrots directly')
-@pytest.mark.skipif(
     not torch.cuda.is_available(),
     reason='modulated_deform_conv2d only supports in GPU')
 def test_modulated_deform_conv2d():
@@ -852,9 +837,6 @@ def test_modulated_deform_conv2d():
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
 
 
-@pytest.mark.skipif(
-    torch.__version__ == 'parrots',
-    reason='onnx is not supported in parrots directly')
 def test_deform_conv2d(threshold=1e-3):
     try:
         from mmcv.ops import DeformConv2d, get_onnxruntime_op_path

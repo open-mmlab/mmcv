@@ -200,7 +200,7 @@ def _process_mmcls_checkpoint(checkpoint):
 class CheckpointLoader:
     """A general checkpoint loader to manage all schemes."""
 
-    _schemes = {}
+    _schemes: dict = {}
 
     @classmethod
     def _register_scheme(cls, prefixes, loader, force=False):

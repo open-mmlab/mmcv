@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from typing import Tuple, Union
 
 import cv2
 import numpy as np
@@ -9,7 +10,11 @@ from mmcv.image import imread, imwrite
 from mmcv.utils import is_str
 
 
-def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
+def flowread(flow_or_path: Union[np.ndarray, str],
+             quantize: bool = False,
+             concat_axis: int = 0,
+             *args,
+             **kwargs) -> np.ndarray:
     """Read an optical flow map.
 
     Args:
@@ -58,7 +63,12 @@ def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):
     return flow.astype(np.float32)
 
 
-def flowwrite(flow, filename, quantize=False, concat_axis=0, *args, **kwargs):
+def flowwrite(flow: np.ndarray,
+              filename: str,
+              quantize: bool = False,
+              concat_axis: int = 0,
+              *args,
+              **kwargs) -> None:
     """Write optical flow to file.
 
     If the flow is not quantized, it will be saved as a .flo file losslessly,
@@ -88,7 +98,9 @@ def flowwrite(flow, filename, quantize=False, concat_axis=0, *args, **kwargs):
         imwrite(dxdy, filename)
 
 
-def quantize_flow(flow, max_val=0.02, norm=True):
+def quantize_flow(flow: np.ndarray,
+                  max_val: float = 0.02,
+                  norm: bool = True) -> tuple:
     """Quantize flow to [0, 255].
 
     After this step, the size of flow will be much smaller, and can be
@@ -116,7 +128,10 @@ def quantize_flow(flow, max_val=0.02, norm=True):
     return tuple(flow_comps)
 
 
-def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
+def dequantize_flow(dx: np.ndarray,
+                    dy: np.ndarray,
+                    max_val: float = 0.02,
+                    denorm: bool = True) -> np.ndarray:
     """Recover from quantized flow.
 
     Args:
@@ -140,12 +155,15 @@ def dequantize_flow(dx, dy, max_val=0.02, denorm=True):
     return flow
 
 
-def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
+def flow_warp(img: np.ndarray,
+              flow: np.ndarray,
+              filling_value: int = 0,
+              interpolate_mode: str = 'nearest') -> np.ndarray:
     """Use flow to warp img.
 
     Args:
-        img (ndarray, float or uint8): Image to be warped.
-        flow (ndarray, float): Optical Flow.
+        img (ndarray): Image to be warped.
+        flow (ndarray): Optical Flow.
         filling_value (int): The missing pixels will be set with filling_value.
         interpolate_mode (str): bilinear -> Bilinear Interpolation;
                                 nearest -> Nearest Neighbor.
@@ -201,7 +219,7 @@ def flow_warp(img, flow, filling_value=0, interpolate_mode='nearest'):
     return output.astype(img.dtype)
 
 
-def flow_from_bytes(content):
+def flow_from_bytes(content: bytes) -> np.ndarray:
     """Read dense optical flow from bytes.
 
     .. note::
@@ -231,7 +249,7 @@ def flow_from_bytes(content):
     return flow
 
 
-def sparse_flow_from_bytes(content):
+def sparse_flow_from_bytes(content: bytes) -> Tuple[np.ndarray, np.ndarray]:
     """Read the optical flow in KITTI datasets from bytes.
 
     This function is modified from RAFT load the `KITTI datasets

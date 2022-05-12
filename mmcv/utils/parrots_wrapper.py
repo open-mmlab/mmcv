@@ -103,7 +103,7 @@ _BatchNorm, _InstanceNorm, SyncBatchNorm_ = _get_norm()
 _AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd = _get_pool()
 
 
-class SyncBatchNorm(SyncBatchNorm_):
+class SyncBatchNorm(SyncBatchNorm_):  # type: ignore
 
     def _check_input_dim(self, input):
         if TORCH_VERSION == 'parrots':
