@@ -413,6 +413,28 @@ class PetrelBackend(BaseStorageBackend):
         return _list_dir_or_file(dir_path, list_dir, list_file, suffix,
                                  recursive)
 
+    def generate_presigned_url(self,
+                               url: str,
+                               client_method: str = 'get_object',
+                               expires_in: int = 3600) -> str:
+        """Generate the presigned url of video stream which can be passed to
+        mmcv.VideoReader. Now only work on Petrel backend.
+
+        Note:
+            Now only work on Petrel backend.
+
+        Args:
+            url (str): Url of video stream.
+            client_method (str): Method of client, 'get_object' or
+                'put_object'. Default: 'get_object'.
+            expires_in (int): expires, in seconds. Default: 3600.
+
+        Returns:
+            str: Generated presigned url.
+        """
+        return self._client.generate_presigned_url(url, client_method,
+                                                   expires_in)
+
 
 class MemcachedBackend(BaseStorageBackend):
     """Memcached storage backend.
@@ -1172,3 +1194,25 @@ class FileClient:
         """
         yield from self.client.list_dir_or_file(dir_path, list_dir, list_file,
                                                 suffix, recursive)
+
+    def generate_presigned_url(self,
+                               url: str,
+                               client_method: str = 'get_object',
+                               expires_in: int = 3600) -> str:
+        """Generate the presigned url of video stream which can be passed to
+        mmcv.VideoReader. Now only work on Petrel backend.
+
+        Note:
+            Now only work on Petrel backend.
+
+        Args:
+            url (str): Url of video stream.
+            client_method (str): Method of client, 'get_object' or
+                'put_object'. Default: 'get_object'.
+            expires_in (int): expires, in seconds. Default: 3600.
+
+        Returns:
+            str: Generated presigned url.
+        """
+        return self.client.generate_presigned_url(url, client_method,
+                                                  expires_in)
