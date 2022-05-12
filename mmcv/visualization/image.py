@@ -6,6 +6,7 @@ import numpy as np
 
 from mmcv.image import imread, imwrite
 from .color import Color, color_val
+
 # a type alias declares the optional types of color argument
 ColorType = Union[Color, str, tuple, int, np.ndarray]
 
