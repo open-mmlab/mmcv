@@ -59,7 +59,7 @@ class ChamferDistanceFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, graddist1, graddist2, gradidx1, gradidx2):
+    def backward(ctx, grad_dist1, grad_dist2, grad_idx1, grad_idx2):
         """
 
         Args:
