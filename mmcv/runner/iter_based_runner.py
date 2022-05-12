@@ -66,6 +66,7 @@ class IterBasedRunner(BaseRunner):
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
         self.outputs = outputs
         self.call_hook('after_train_iter')
+        del self.data_batch
         self._inner_iter += 1
         self._iter += 1
 
@@ -84,6 +85,7 @@ class IterBasedRunner(BaseRunner):
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
         self.outputs = outputs
         self.call_hook('after_val_iter')
+        del self.data_batch
         self._inner_iter += 1
 
     def run(self, data_loaders, workflow, max_iters=None, **kwargs):
