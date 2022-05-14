@@ -18,7 +18,7 @@ import mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
-from ..utils import load_url, mkdir_or_exist
+from ..utils import digit_version, load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
 
 ENV_MMCV_HOME = 'MMCV_HOME'
@@ -106,14 +106,48 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def get_torchvision_models():
-    model_urls = dict()
-    for _, name, ispkg in pkgutil.walk_packages(torchvision.models.__path__):
-        if ispkg:
-            continue
-        _zoo = import_module(f'torchvision.models.{name}')
-        if hasattr(_zoo, 'model_urls'):
-            _urls = getattr(_zoo, 'model_urls')
-            model_urls.update(_urls)
+    if digit_version(torchvision.__version__) < digit_version('0.13.0a0'):
+        model_urls = dict()
+        # When the version of torchvision is lower than 0.13, the model url is
+        # not declared in `torchvision.model.__init__.py`, so we need to
+        # iterate through `torchvision.models.__path__` to get the url for each
+        # model.
+        for _, name, ispkg in pkgutil.walk_packages(
+                torchvision.models.__path__):
+            if ispkg:
+                continue
+            _zoo = import_module(f'torchvision.models.{name}')
+            if hasattr(_zoo, 'model_urls'):
+                _urls = getattr(_zoo, 'model_urls')
+                model_urls.update(_urls)
+    else:
+        # Since torchvision bumps to v0.13, the weight loading logic,
+        # model keys and model urls have been changed. Here the URLs of old
+        # version is loaded to avoid breaking back compatibility. If the
+        # torchvision version>=0.13.0, new URLs will be added. Users can get
+        # the resnet50 checkpoint by setting 'resnet50.imagent1k_v1',
+        # 'resnet50' or 'ResNet50_Weights.IMAGENET1K_V1' in the config.
+        json_path = osp.join(mmcv.__path__[0],
+                             'model_zoo/torchvision_0.12.json')
+        model_urls = mmcv.load(json_path)
+        for cls_name, cls in torchvision.models.__dict__.items():
+            # The name of torchvision model weights classes ends with
+            # `_Weights` such as `ResNet18_Weights`. However, some model weight
+            # classes, such as `MNASNet0_75_Weights` does not have any urls in
+            # torchvision 0.13.0 and cannot be iterated. Here we simply check
+            # `DEFAULT` attribute to ensure the class is not empty.
+            if (not cls_name.endswith('_Weights')
+                    or not hasattr(cls, 'DEFAULT')):
+                continue
+            # Since `cls.DEFAULT` can not be accessed by iterating cls, we set
+            # default urls explicitly.
+            cls_key = cls_name.replace('_Weights', '').lower()
+            model_urls[f'{cls_key}.default'] = cls.DEFAULT.url
+            for weight_enum in cls:
+                cls_key = cls_name.replace('_Weights', '').lower()
+                cls_key = f'{cls_key}.{weight_enum.name.lower()}'
+                model_urls[cls_key] = weight_enum.url
+
     return model_urls
 
 
@@ -166,7 +200,7 @@ def _process_mmcls_checkpoint(checkpoint):
 class CheckpointLoader:
     """A general checkpoint loader to manage all schemes."""
 
-    _schemes = {}
+    _schemes: dict = {}
 
     @classmethod
     def _register_scheme(cls, prefixes, loader, force=False):
@@ -220,11 +254,13 @@ class CheckpointLoader:
             path (str): checkpoint path
 
         Returns:
-            loader (function): checkpoint loader
+            callable: checkpoint loader
         """
-
         for p in cls._schemes:
-            if path.startswith(p):
+            # use regular match to handle some cases that where the prefix of
+            # loader has a prefix. For example, both 's3://path' and
+            # 'open-mmlab:s3://path' should return `load_from_ceph`
+            if re.match(p, path) is not None:
                 return cls._schemes[p]
 
     @classmethod
@@ -260,9 +296,9 @@ def load_from_local(filename, map_location):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-
+    filename = osp.expanduser(filename)
     if not osp.isfile(filename):
-        raise IOError(f'{filename} is not a checkpoint file')
+        raise FileNotFoundError(f'{filename} can not be found.')
     checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -326,11 +362,16 @@ def load_from_pavi(filename, map_location=None):
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes='s3://')
+@CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')
 def load_from_ceph(filename, map_location=None, backend='petrel'):
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
+
+    Note:
+        Since v1.4.1, the registered scheme prefixes have been enhanced to
+        support bucket names in the path prefix, e.g. 's3://xx.xx/xx.path',
+        'bucket1:s3://xx.xx/xx.path'.
 
     Args:
         filename (str): checkpoint file path with s3 prefix
@@ -351,7 +392,8 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
 
     if backend == 'ceph':
         warnings.warn(
-            'CephBackend will be deprecated, please use PetrelBackend instead')
+            'CephBackend will be deprecated, please use PetrelBackend instead',
+            DeprecationWarning)
 
     # CephClient and PetrelBackend have the same prefix 's3://' and the latter
     # will be chosen as default. If PetrelBackend can not be instantiated
@@ -382,11 +424,17 @@ def load_from_torchvision(filename, map_location=None):
     """
     model_urls = get_torchvision_models()
     if filename.startswith('modelzoo://'):
-        warnings.warn('The URL scheme of "modelzoo://" is deprecated, please '
-                      'use "torchvision://" instead')
+        warnings.warn(
+            'The URL scheme of "modelzoo://" is deprecated, please '
+            'use "torchvision://" instead', DeprecationWarning)
         model_name = filename[11:]
     else:
         model_name = filename[14:]
+
+    # Support getting model urls in the same way as torchvision
+    # `ResNet50_Weights.IMAGENET1K_V1` will be mapped to
+    # resnet50.imagenet1k_v1.
+    model_name = model_name.lower().replace('_weights', '')
     return load_from_http(model_urls[model_name], map_location=map_location)
 
 
@@ -415,8 +463,10 @@ def load_from_openmmlab(filename, map_location=None):
 
     deprecated_urls = get_deprecated_model_names()
     if model_name in deprecated_urls:
-        warnings.warn(f'{prefix_str}{model_name} is deprecated in favor '
-                      f'of {prefix_str}{deprecated_urls[model_name]}')
+        warnings.warn(
+            f'{prefix_str}{model_name} is deprecated in favor '
+            f'of {prefix_str}{deprecated_urls[model_name]}',
+            DeprecationWarning)
         model_name = deprecated_urls[model_name]
     model_url = model_urls[model_name]
     # check if is url
@@ -425,7 +475,7 @@ def load_from_openmmlab(filename, map_location=None):
     else:
         filename = osp.join(_get_mmcv_home(), model_url)
         if not osp.isfile(filename):
-            raise IOError(f'{filename} is not a checkpoint file')
+            raise FileNotFoundError(f'{filename} can not be found.')
         checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
 
@@ -685,8 +735,7 @@ def save_checkpoint(model,
                 'file_client_args should be "None" if filename starts with'
                 f'"pavi://", but got {file_client_args}')
         try:
-            from pavi import modelcloud
-            from pavi import exception
+            from pavi import exception, modelcloud
         except ImportError:
             raise ImportError(
                 'Please install pavi to load checkpoint from modelcloud.')

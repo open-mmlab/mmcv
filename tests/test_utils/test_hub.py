@@ -1,9 +1,13 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
+import torch
 from torch.utils import model_zoo
 
 from mmcv.utils import TORCH_VERSION, digit_version, load_url
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not necessary in parrots test')
 def test_load_url():
     url1 = 'https://download.openmmlab.com/mmcv/test_data/saved_in_pt1.5.pth'
     url2 = 'https://download.openmmlab.com/mmcv/test_data/saved_in_pt1.6.pth'

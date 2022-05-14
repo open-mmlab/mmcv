@@ -1,11 +1,16 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 from functools import wraps
 
 import onnx
+import pytest
 import torch
 
 from mmcv.ops import nms
 from mmcv.tensorrt.preprocess import preprocess_onnx
+
+if torch.__version__ == 'parrots':
+    pytest.skip('not supported in parrots now', allow_module_level=True)
 
 
 def remove_tmp_file(func):

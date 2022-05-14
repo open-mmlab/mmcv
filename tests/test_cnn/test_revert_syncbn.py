@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
 import platform
 
@@ -15,6 +16,8 @@ else:
     import re
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 def test_revert_syncbn():
     conv = ConvModule(3, 8, 2, norm_cfg=dict(type='SyncBN'))
     x = torch.randn(1, 3, 10, 10)

@@ -131,7 +131,7 @@ class GeneralizedAttention(nn.Module):
 
             max_len_kv = int((max_len - 1.0) / self.kv_stride + 1)
             local_constraint_map = np.ones(
-                (max_len, max_len, max_len_kv, max_len_kv), dtype=np.int)
+                (max_len, max_len, max_len_kv, max_len_kv), dtype=int)
             for iy in range(max_len):
                 for ix in range(max_len):
                     local_constraint_map[
@@ -351,7 +351,7 @@ class GeneralizedAttention(nn.Module):
                         repeat(n, 1, 1, 1)
 
                     position_feat_x_reshape = position_feat_x.\
-                        view(n, num_heads, w*w_kv, self.qk_embed_dim)
+                        view(n, num_heads, w * w_kv, self.qk_embed_dim)
 
                     position_feat_y_reshape = position_feat_y.\
                         view(n, num_heads, h * h_kv, self.qk_embed_dim)

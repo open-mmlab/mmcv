@@ -67,7 +67,7 @@ void TRTONNXScatterNDKernelLauncher(const T* data, const int* indices,
     num_update_indice *= indice_desc.shape[i];
   }
   // scatter
-  const int col_block = DIVUP(num_update_indice, threadsPerBlock);
+  const int col_block = GET_BLOCKS(num_update_indice, threadsPerBlock);
   onnx_scatternd_kernel<<<col_block, threadsPerBlock, 0, stream>>>(
       num_update_indice, indices, update, output, tensor_desc, indice_desc);
 }

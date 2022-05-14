@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from typing import Union
 
 import onnx
 import tensorrt as trt
@@ -8,12 +9,12 @@ import torch
 from .preprocess import preprocess_onnx
 
 
-def onnx2trt(onnx_model,
-             opt_shape_dict,
-             log_level=trt.Logger.ERROR,
-             fp16_mode=False,
-             max_workspace_size=0,
-             device_id=0):
+def onnx2trt(onnx_model: Union[str, onnx.ModelProto],
+             opt_shape_dict: dict,
+             log_level: trt.ILogger.Severity = trt.Logger.ERROR,
+             fp16_mode: bool = False,
+             max_workspace_size: int = 0,
+             device_id: int = 0) -> trt.ICudaEngine:
     """Convert onnx model to tensorrt engine.
 
     Arguments:
@@ -40,6 +41,19 @@ def onnx2trt(onnx_model,
         >>>             device_id=0)
         >>>             })
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
@@ -87,18 +101,31 @@ def onnx2trt(onnx_model,
     return engine
 
 
-def save_trt_engine(engine, path):
+def save_trt_engine(engine: trt.ICudaEngine, path: str) -> None:
     """Serialize TensorRT engine to disk.
 
     Arguments:
         engine (tensorrt.ICudaEngine): TensorRT engine to serialize
         path (str): disk path to write the engine
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     with open(path, mode='wb') as f:
         f.write(bytearray(engine.serialize()))
 
 
-def load_trt_engine(path):
+def load_trt_engine(path: str) -> trt.ICudaEngine:
     """Deserialize TensorRT engine from disk.
 
     Arguments:
@@ -107,6 +134,19 @@ def load_trt_engine(path):
     Returns:
         tensorrt.ICudaEngine: the TensorRT engine loaded from disk
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
@@ -114,7 +154,7 @@ def load_trt_engine(path):
         return engine
 
 
-def torch_dtype_from_trt(dtype):
+def torch_dtype_from_trt(dtype: trt.DataType) -> Union[torch.dtype, TypeError]:
     """Convert pytorch dtype to TensorRT dtype."""
     if dtype == trt.bool:
         return torch.bool
@@ -130,7 +170,8 @@ def torch_dtype_from_trt(dtype):
         raise TypeError('%s is not supported by torch' % dtype)
 
 
-def torch_device_from_trt(device):
+def torch_device_from_trt(
+        device: trt.TensorLocation) -> Union[torch.device, TypeError]:
     """Convert pytorch device to TensorRT device."""
     if device == trt.TensorLocation.DEVICE:
         return torch.device('cuda')
@@ -154,6 +195,20 @@ class TRTWrapper(torch.nn.Module):
     """
 
     def __init__(self, engine, input_names=None, output_names=None):
+
+        # Following strings of text style are from colorama package
+        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+        red_text, blue_text = '\x1b[31m', '\x1b[34m'
+        white_background = '\x1b[107m'
+
+        msg = white_background + bright_style + red_text
+        msg += 'DeprecationWarning: This tool will be deprecated in future. '
+        msg += blue_text + \
+            'Welcome to use the unified model deployment toolbox '
+        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+        msg += reset_style
+        warnings.warn(msg)
+
         super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
@@ -231,5 +286,6 @@ class TRTWraper(TRTWrapper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        warnings.warn('TRTWraper will be deprecated in'
-                      ' future. Please use TRTWrapper instead')
+        warnings.warn(
+            'TRTWraper will be deprecated in'
+            ' future. Please use TRTWrapper instead', DeprecationWarning)

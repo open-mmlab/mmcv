@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
 import mmcv
@@ -88,23 +89,34 @@ def test_registry():
     with pytest.raises(TypeError):
         CATS.register_module(0)
 
-    # can only decorate a class
+    @CATS.register_module()
+    def muchkin():
+        pass
+
+    assert CATS.get('muchkin') is muchkin
+    assert 'muchkin' in CATS
+
+    # can only decorate a class or a function
     with pytest.raises(TypeError):
 
-        @CATS.register_module()
-        def some_method():
-            pass
+        class Demo:
+
+            def some_method(self):
+                pass
+
+        method = Demo().some_method
+        CATS.register_module(name='some_method', module=method)
 
     # begin: test old APIs
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.register_module(SphynxCat)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.register_module(SphynxCat, force=True)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.register_module
         class NewCat:
@@ -112,11 +124,11 @@ def test_registry():
 
         assert CATS.get('NewCat').__name__ == 'NewCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
         CATS.deprecated_register_module(SphynxCat, force=True)
         assert CATS.get('SphynxCat').__name__ == 'SphynxCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.deprecated_register_module
         class CuteCat:
@@ -124,7 +136,7 @@ def test_registry():
 
         assert CATS.get('CuteCat').__name__ == 'CuteCat'
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(DeprecationWarning):
 
         @CATS.deprecated_register_module(force=True)
         class NewCat2:

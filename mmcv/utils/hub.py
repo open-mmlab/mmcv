@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # The 1.6 release of PyTorch switched torch.save to use a new zipfile-based
 # file format. It will cause RuntimeError when a checkpoint was saved in
 # torch >= 1.6.0 but loaded in torch < 1.7.0.
@@ -10,12 +11,13 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         '1.7.0'):
     # Modified from https://github.com/pytorch/pytorch/blob/master/torch/hub.py
     import os
-    import torch
-    import warnings
-    from urllib.parse import urlparse
     import sys
+    import warnings
     import zipfile
-    from torch.hub import download_url_to_file, _get_torch_home, HASH_REGEX
+    from urllib.parse import urlparse
+
+    import torch
+    from torch.hub import HASH_REGEX, _get_torch_home, download_url_to_file
 
     # Hub used to support automatically extracts from zipfile manually
     # compressed by users. The legacy zip format expects only one file from
@@ -28,10 +30,11 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         return False
 
     def _legacy_zip_load(filename, model_dir, map_location):
-        warnings.warn('Falling back to the old format < 1.6. This support will'
-                      ' be deprecated in favor of default zipfile format '
-                      'introduced in 1.6. Please redo torch.save() to save it '
-                      'in the new zipfile format.')
+        warnings.warn(
+            'Falling back to the old format < 1.6. This support will'
+            ' be deprecated in favor of default zipfile format '
+            'introduced in 1.6. Please redo torch.save() to save it '
+            'in the new zipfile format.', DeprecationWarning)
         # Note: extractall() defaults to overwrite file if exists. No need to
         #       clean up beforehand. We deliberately don't handle tarfile here
         #       since our legacy serialization format was in tar.
@@ -84,8 +87,9 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
         """
         # Issue warning to move data if old env is set
         if os.getenv('TORCH_MODEL_ZOO'):
-            warnings.warn('TORCH_MODEL_ZOO is deprecated, please use env '
-                          'TORCH_HOME instead')
+            warnings.warn(
+                'TORCH_MODEL_ZOO is deprecated, please use env '
+                'TORCH_HOME instead', DeprecationWarning)
 
         if model_dir is None:
             torch_home = _get_torch_home()
@@ -124,4 +128,4 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
                     'loaded in torch<1.5.')
             raise error
 else:
-    from torch.utils.model_zoo import load_url  # noqa: F401
+    from torch.utils.model_zoo import load_url  # type: ignore # noqa: F401

@@ -114,7 +114,8 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
       mmcv::getAlignedSize(spatial_dimension * boxes_word_size);
   size_t boxes_workspace =
       mmcv::getAlignedSize(spatial_dimension * 4 * boxes_word_size);
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks =
+      (spatial_dimension + threadsPerBlock - 1) / threadsPerBlock;
   size_t mask_workspace = mmcv::getAlignedSize(spatial_dimension * col_blocks *
                                                sizeof(unsigned long long));
   size_t index_template_workspace =
@@ -163,7 +164,8 @@ void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                     int spatial_dimension, int num_classes,
                                     size_t output_length, void* workspace,
                                     cudaStream_t stream) {
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks =
+      (spatial_dimension + threadsPerBlock - 1) / threadsPerBlock;
   float* boxes_sorted = (float*)workspace;
   workspace = static_cast<char*>(workspace) +
               mmcv::getAlignedSize(spatial_dimension * 4 * sizeof(float));

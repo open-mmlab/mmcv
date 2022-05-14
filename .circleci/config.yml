@@ -205,9 +205,13 @@ workflows:
           python: "3.8.0"
           requires:
             - lint
-      - build_cu102:
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           requires:
             - build_py3.8_pt1.9_cpu
       - build_windows:
           requires:
-            - build_py3.8_pt1.9_cpu
+            - hold
+      - build_cu102:
+          requires:
+            - hold

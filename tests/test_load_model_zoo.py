@@ -4,6 +4,7 @@ import os.path as osp
 from unittest.mock import patch
 
 import pytest
+import torchvision
 
 import mmcv
 from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
@@ -11,7 +12,7 @@ from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
-from mmcv.utils import TORCH_VERSION
+from mmcv.utils import digit_version
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])
@@ -77,24 +78,33 @@ def load(filepath, map_location=None):
 @patch('torch.load', load)
 def test_load_external_url():
     # test modelzoo://
-    url = _load_checkpoint('modelzoo://resnet50')
-    if TORCH_VERSION < '1.9.0':
-        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
-                       '357.pth')
+    torchvision_version = torchvision.__version__
+    if digit_version(torchvision_version) < digit_version('0.10.0a0'):
+        assert (_load_checkpoint('modelzoo://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-19c8e'
+                '357.pth')
+        assert (_load_checkpoint('torchvision://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-19c8e'
+                '357.pth')
     else:
-        # filename of checkpoint is renamed in torch1.9.0
-        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
-                       'a61.pth')
+        assert (_load_checkpoint('modelzoo://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-0676b'
+                'a61.pth')
+        assert (_load_checkpoint('torchvision://resnet50') ==
+                'url:https://download.pytorch.org/models/resnet50-0676b'
+                'a61.pth')
 
-    # test torchvision://
-    url = _load_checkpoint('torchvision://resnet50')
-    if TORCH_VERSION < '1.9.0':
-        assert url == ('url:https://download.pytorch.org/models/resnet50-19c8e'
-                       '357.pth')
-    else:
-        # filename of checkpoint is renamed in torch1.9.0
-        assert url == ('url:https://download.pytorch.org/models/resnet50-0676b'
-                       'a61.pth')
+    if digit_version(torchvision_version) >= digit_version('0.13.0a0'):
+        # Test load new format torchvision models.
+        assert (
+            _load_checkpoint('torchvision://resnet50.imagenet1k_v1') ==
+            'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+
+        assert (
+            _load_checkpoint('torchvision://ResNet50_Weights.IMAGENET1K_V1') ==
+            'url:https://download.pytorch.org/models/resnet50-0676ba61.pth')
+
+        _load_checkpoint('torchvision://resnet50.default')
 
     # test open-mmlab:// with default MMCV_HOME
     os.environ.pop(ENV_MMCV_HOME, None)
@@ -128,7 +138,7 @@ def test_load_external_url():
     os.environ[ENV_MMCV_HOME] = mmcv_home
     url = _load_checkpoint('open-mmlab://train')
     assert url == 'url:https://localhost/train.pth'
-    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
+    with pytest.raises(FileNotFoundError, match='train.pth can not be found.'):
         _load_checkpoint('open-mmlab://train_empty')
     url = _load_checkpoint('open-mmlab://test')
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'
@@ -140,7 +150,7 @@ def test_load_external_url():
     assert url == 'url:http://localhost/train.pth'
 
     # test local file
-    with pytest.raises(IOError, match='train.pth is not a checkpoint file'):
+    with pytest.raises(FileNotFoundError, match='train.pth can not be found.'):
         _load_checkpoint('train.pth')
     url = _load_checkpoint(osp.join(_get_mmcv_home(), 'test.pth'))
     assert url == f'local:{osp.join(_get_mmcv_home(), "test.pth")}'

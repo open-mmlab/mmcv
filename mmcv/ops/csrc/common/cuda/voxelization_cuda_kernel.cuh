@@ -23,20 +23,20 @@ __global__ void dynamic_voxelize_kernel(
     // To save some computation
     auto points_offset = points + index * num_features;
     auto coors_offset = coors + index * NDim;
-    int c_x = floor((points_offset[0] - coors_x_min) / voxel_x);
+    int c_x = floorf((points_offset[0] - coors_x_min) / voxel_x);
     if (c_x < 0 || c_x >= grid_x) {
       coors_offset[0] = -1;
       continue;
     }
 
-    int c_y = floor((points_offset[1] - coors_y_min) / voxel_y);
+    int c_y = floorf((points_offset[1] - coors_y_min) / voxel_y);
     if (c_y < 0 || c_y >= grid_y) {
       coors_offset[0] = -1;
       coors_offset[1] = -1;
       continue;
     }
 
-    int c_z = floor((points_offset[2] - coors_z_min) / voxel_z);
+    int c_z = floorf((points_offset[2] - coors_z_min) / voxel_z);
     if (c_z < 0 || c_z >= grid_z) {
       coors_offset[0] = -1;
       coors_offset[1] = -1;
@@ -101,7 +101,7 @@ __global__ void point_to_voxelidx_kernel(const T_int* coor,
   CUDA_1D_KERNEL_LOOP(index, num_points) {
     auto coor_offset = coor + index * NDim;
     // skip invalid points
-    if ((index >= num_points) || (coor_offset[0] == -1)) return;
+    if (coor_offset[0] == -1) continue;
 
     int num = 0;
     int coor_x = coor_offset[0];
@@ -122,7 +122,7 @@ __global__ void point_to_voxelidx_kernel(const T_int* coor,
           point_to_pointidx[index] = i;
         } else if (num >= max_points) {
           // out of boundary
-          return;
+          break;
         }
       }
     }
@@ -161,6 +161,53 @@ __global__ void determin_voxel_num(
       if (voxelidx != -1) {
         coor_to_voxelidx[i] = voxelidx;
         num_points_per_voxel[voxelidx] += 1;
+      }
+    }
+  }
+}
+
+__global__ void nondeterministic_get_assign_pos(
+    const int nthreads, const int32_t* coors_map, int32_t* pts_id,
+    int32_t* coors_count, int32_t* reduce_count, int32_t* coors_order) {
+  CUDA_1D_KERNEL_LOOP(thread_idx, nthreads) {
+    int coors_idx = coors_map[thread_idx];
+    if (coors_idx > -1) {
+      int32_t coors_pts_pos = atomicAdd(&reduce_count[coors_idx], 1);
+      pts_id[thread_idx] = coors_pts_pos;
+      if (coors_pts_pos == 0) {
+        coors_order[coors_idx] = atomicAdd(coors_count, 1);
+      }
+    }
+  }
+}
+
+template <typename T>
+__global__ void nondeterministic_assign_point_voxel(
+    const int nthreads, const T* points, const int32_t* coors_map,
+    const int32_t* pts_id, const int32_t* coors_in, const int32_t* reduce_count,
+    const int32_t* coors_order, T* voxels, int32_t* coors, int32_t* pts_count,
+    const int max_voxels, const int max_points, const int num_features,
+    const int NDim) {
+  CUDA_1D_KERNEL_LOOP(thread_idx, nthreads) {
+    int coors_idx = coors_map[thread_idx];
+    int coors_pts_pos = pts_id[thread_idx];
+    if (coors_idx > -1 && coors_pts_pos < max_points) {
+      int coors_pos = coors_order[coors_idx];
+      if (coors_pos < max_voxels) {
+        auto voxels_offset =
+            voxels + (coors_pos * max_points + coors_pts_pos) * num_features;
+        auto points_offset = points + thread_idx * num_features;
+        for (int k = 0; k < num_features; k++) {
+          voxels_offset[k] = points_offset[k];
+        }
+        if (coors_pts_pos == 0) {
+          pts_count[coors_pos] = min(reduce_count[coors_idx], max_points);
+          auto coors_offset = coors + coors_pos * NDim;
+          auto coors_in_offset = coors_in + coors_idx * NDim;
+          for (int k = 0; k < NDim; k++) {
+            coors_offset[k] = coors_in_offset[k];
+          }
+        }
       }
     }
   }

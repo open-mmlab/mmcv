@@ -48,6 +48,7 @@ class NMSop(torch.autograd.Function):
                 offset_i=int(offset))
         else:
             from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+
             from ..onnx.onnx_utils.symbolic_helper import _size_helper
 
             boxes = unsqueeze(g, bboxes, 0)
@@ -160,16 +161,8 @@ def nms(boxes, scores, iou_threshold, offset=0, score_threshold=0, max_num=-1):
     assert boxes.size(0) == scores.size(0)
     assert offset in (0, 1)
 
-    if torch.__version__ == 'parrots':
-        indata_list = [boxes, scores]
-        indata_dict = {
-            'iou_threshold': float(iou_threshold),
-            'offset': int(offset)
-        }
-        inds = ext_module.nms(*indata_list, **indata_dict)
-    else:
-        inds = NMSop.apply(boxes, scores, iou_threshold, offset,
-                           score_threshold, max_num)
+    inds = NMSop.apply(boxes, scores, iou_threshold, offset, score_threshold,
+                       max_num)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
@@ -260,11 +253,16 @@ def soft_nms(boxes,
 def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     r"""Performs non-maximum suppression in a batched fashion.
 
-    Modified from https://github.com/pytorch/vision/blob\
-    /505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39.
+    Modified from `torchvision/ops/boxes.py#L39
+    <https://github.com/pytorch/vision/blob/
+    505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39>`_.
     In order to perform NMS independently per class, we add an offset to all
     the boxes. The offset is dependent only on the class idx, and is large
     enough so that boxes from different classes do not overlap.
+
+    Note:
+        In v1.4.1 and later, ``batched_nms`` supports skipping the NMS and
+        returns sorted raw results when `nms_cfg` is None.
 
     Args:
         boxes (torch.Tensor): boxes in shape (N, 4).
@@ -272,8 +270,9 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         idxs (torch.Tensor): each index value correspond to a bbox cluster,
             and NMS will not be applied between elements of different idxs,
             shape (N, ).
-        nms_cfg (dict): specify nms type and other parameters like iou_thr.
-            Possible keys includes the following.
+        nms_cfg (dict | None): Supports skipping the nms when `nms_cfg`
+            is None, otherwise it should specify nms type and other
+            parameters like `iou_thr`. Possible keys includes the following.
 
             - iou_thr (float): IoU threshold used for NMS.
             - split_thr (float): threshold number of boxes. In some cases the
@@ -288,7 +287,19 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
 
     Returns:
         tuple: kept dets and indice.
+
+        - boxes (Tensor): Bboxes with score after nms, has shape
+          (num_bboxes, 5). last dimension 5 arrange as
+          (x1, y1, x2, y2, score)
+        - keep (Tensor): The indices of remaining boxes in input
+          boxes.
     """
+    # skip nms when nms_cfg is None
+    if nms_cfg is None:
+        scores, inds = scores.sort(descending=True)
+        boxes = boxes[inds]
+        return torch.cat([boxes, scores[:, None]], -1), inds
+
     nms_cfg_ = nms_cfg.copy()
     class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
     if class_agnostic:
@@ -306,12 +317,13 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
     if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        # -1 indexing works abnormal in TensorRT
-        # This assumes `dets` has 5 dimensions where
+
+        # This assumes `dets` has arbitrary dimensions where
         # the last dimension is score.
-        # TODO: more elegant way to handle the dimension issue.
-        # Some type of nms would reweight the score, such as SoftNMS
-        scores = dets[:, 4]
+        # Currently it supports bounding boxes [x1, y1, x2, y2, score] or
+        # rotated boxes [cx, cy, w, h, angle_radian, score].
+
+        scores = dets[:, -1]
     else:
         max_num = nms_cfg_.pop('max_num', -1)
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
@@ -333,7 +345,8 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
             boxes = boxes[:max_num]
             scores = scores[:max_num]
 
-    return torch.cat([boxes, scores[:, None]], -1), keep
+    boxes = torch.cat([boxes, scores[:, None]], -1)
+    return boxes, keep
 
 
 def nms_match(dets, iou_threshold):
@@ -370,10 +383,10 @@ def nms_match(dets, iou_threshold):
     if isinstance(dets, torch.Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
     else:
-        return [np.array(m, dtype=np.int) for m in matched]
+        return [np.array(m, dtype=int) for m in matched]
 
 
-def nms_rotated(dets, scores, iou_threshold, labels=None):
+def nms_rotated(dets, scores, iou_threshold, labels=None, clockwise=True):
     """Performs non-maximum suppression (NMS) on the rotated boxes according to
     their intersection-over-union (IoU).
 
@@ -381,11 +394,14 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     IoU greater than iou_threshold with another (higher scoring) rotated box.
 
     Args:
-        boxes (Tensor):  Rotated boxes in shape (N, 5). They are expected to
+        dets (Tensor):  Rotated boxes in shape (N, 5). They are expected to
             be in (x_ctr, y_ctr, width, height, angle_radian) format.
         scores (Tensor): scores in shape (N, ).
         iou_threshold (float): IoU thresh for NMS.
         labels (Tensor): boxes' label in shape (N,).
+        clockwise (bool): flag indicating whether the positive angular
+            orientation is clockwise. default True.
+            `New in version 1.4.3.`
 
     Returns:
         tuple: kept dets(boxes and scores) and indice, which is always the
@@ -393,11 +409,17 @@ def nms_rotated(dets, scores, iou_threshold, labels=None):
     """
     if dets.shape[0] == 0:
         return dets, None
+    if not clockwise:
+        flip_mat = dets.new_ones(dets.shape[-1])
+        flip_mat[-1] = -1
+        dets_cw = dets * flip_mat
+    else:
+        dets_cw = dets
     multi_label = labels is not None
     if multi_label:
-        dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)
+        dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)
     else:
-        dets_wl = dets
+        dets_wl = dets_cw
     _, order = scores.sort(0, descending=True)
     dets_sorted = dets_wl.index_select(0, order)
 

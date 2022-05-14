@@ -102,7 +102,6 @@ std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
   IntArrayRef data_shape = kernel_mask.sizes();
 
   auto data_label_map = internal_kernel_label.data_ptr<int32_t>();
-  IntArrayRef label_map_shape = internal_kernel_label.sizes();
   vector<vector<int>> text_line;
 
   kernel_dilate(ptr_data, data_shape, data_label_map, kernel_num,

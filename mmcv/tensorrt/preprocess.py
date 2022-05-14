@@ -1,8 +1,11 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import numpy as np
 import onnx
 
 
-def preprocess_onnx(onnx_model):
+def preprocess_onnx(onnx_model: onnx.ModelProto) -> onnx.ModelProto:
     """Modify onnx model to match with TensorRT plugins in mmcv.
 
     There are some conflict between onnx node definition and TensorRT limit.
@@ -18,6 +21,19 @@ def preprocess_onnx(onnx_model):
     Returns:
         onnx.ModelProto: Modified onnx model.
     """
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This function will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
+
     graph = onnx_model.graph
     nodes = graph.node
     initializers = graph.initializer

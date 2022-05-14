@@ -1,0 +1,44 @@
+## CUDA 算子
+
+MMCV 提供了检测、分割等任务中常用的 CUDA 算子
+
+- ActiveRotatedFilter
+- AssignScoreWithK
+- BallQuery
+- BBoxOverlaps
+- CARAFE
+- CrissCrossAttention
+- ContextBlock
+- ConvexIoU
+- CornerPool
+- Deformable Convolution v1/v2
+- Deformable RoIPool
+- DiffIoURotated
+- DynamicScatter
+- GatherPoints
+- FurthestPointSample
+- FurthestPointSampleWithDist
+- GeneralizedAttention
+- KNN
+- MaskedConv
+- MinAreaPolygon
+- NMS
+- PointsInPolygons
+- PSAMask
+- RotatedFeatureAlign
+- RoIPointPool3d
+- RoIPool
+- RiRoIAlignRotated
+- RoIAlign
+- RoIAwarePool3d
+- SimpleRoIAlign
+- SigmoidFocalLoss
+- SoftmaxFocalLoss
+- SoftNMS
+- Sparse Convolution
+- Synchronized BatchNorm
+- Voxelization
+- ThreeInterpolate
+- ThreeNN
+- Weight standardization
+- Correlation

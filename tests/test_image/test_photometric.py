@@ -112,7 +112,7 @@ class TestPhotometric:
 
         def _imequalize(img):
             # equalize the image using PIL.ImageOps.equalize
-            from PIL import ImageOps, Image
+            from PIL import Image, ImageOps
             img = Image.fromarray(img)
             equalized_img = np.asarray(ImageOps.equalize(img))
             return equalized_img
@@ -141,8 +141,8 @@ class TestPhotometric:
         def _adjust_brightness(img, factor):
             # adjust the brightness of image using
             # PIL.ImageEnhance.Brightness
-            from PIL.ImageEnhance import Brightness
             from PIL import Image
+            from PIL.ImageEnhance import Brightness
             img = Image.fromarray(img)
             brightened_img = Brightness(img).enhance(factor)
             return np.asarray(brightened_img)
@@ -169,8 +169,9 @@ class TestPhotometric:
     def test_adjust_contrast(self, nb_rand_test=100):
 
         def _adjust_contrast(img, factor):
-            from PIL.ImageEnhance import Contrast
             from PIL import Image
+            from PIL.ImageEnhance import Contrast
+
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
@@ -204,8 +205,9 @@ class TestPhotometric:
     def test_auto_contrast(self, nb_rand_test=100):
 
         def _auto_contrast(img, cutoff=0):
-            from PIL.ImageOps import autocontrast
             from PIL import Image
+            from PIL.ImageOps import autocontrast
+
             # Image.fromarray defaultly supports RGB, not BGR.
             # convert from BGR to RGB
             img = Image.fromarray(img[..., ::-1], mode='RGB')
@@ -250,8 +252,8 @@ class TestPhotometric:
         def _adjust_sharpness(img, factor):
             # adjust the sharpness of image using
             # PIL.ImageEnhance.Sharpness
-            from PIL.ImageEnhance import Sharpness
             from PIL import Image
+            from PIL.ImageEnhance import Sharpness
             img = Image.fromarray(img)
             sharpened_img = Sharpness(img).enhance(factor)
             return np.asarray(sharpened_img)
@@ -333,7 +335,7 @@ class TestPhotometric:
 
         input_img = np.array(
             [[[0, 128, 255], [255, 128, 0]], [[0, 128, 255], [255, 128, 0]]],
-            dtype=np.float)
+            dtype=float)
         img = mmcv.lut_transform(input_img, lut_table)
         baseline = cv2.LUT(np.array(input_img, dtype=np.uint8), lut_table)
         assert np.allclose(img, baseline)
@@ -376,3 +378,37 @@ class TestPhotometric:
             assert np.allclose(img, img_std)
             assert id(img) != id(self.img[:, :, i])
             assert id(img_std) != id(self.img[:, :, i])
+
+    def test_adjust_hue(self):
+        from PIL import Image
+
+        def _adjust_hue(img, hue_factor):
+            input_mode = img.mode
+            if input_mode in {'L', '1', 'I', 'F'}:
+                return img
+            h, s, v = img.convert('HSV').split()
+            np_h = np.array(h, dtype=np.uint8)
+            # uint8 addition take cares of rotation across boundaries
+            with np.errstate(over='ignore'):
+                np_h += np.uint8(hue_factor * 255)
+            h = Image.fromarray(np_h, 'L')
+            img = Image.merge('HSV', (h, s, v)).convert(input_mode)
+            return img
+
+        pil_img = Image.fromarray(self.img)
+
+        # test case with img is not ndarray
+        with pytest.raises(TypeError):
+            mmcv.adjust_hue(pil_img, hue_factor=0.0)
+
+        # test case with hue_factor > 0.5 or hue_factor < -0.5
+        with pytest.raises(ValueError):
+            mmcv.adjust_hue(self.img, hue_factor=-0.6)
+        with pytest.raises(ValueError):
+            mmcv.adjust_hue(self.img, hue_factor=0.6)
+
+        for i in np.arange(-0.5, 0.5, 0.2):
+            pil_res = _adjust_hue(pil_img, hue_factor=i)
+            pil_res = np.array(pil_res)
+            cv2_res = mmcv.adjust_hue(self.img, hue_factor=i)
+            assert np.allclose(pil_res, cv2_res, atol=10.0)

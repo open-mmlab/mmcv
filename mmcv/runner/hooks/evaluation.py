@@ -65,7 +65,7 @@ class EvalHook(Hook):
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
 
-    Notes:
+    Note:
         If new arguments are added for EvalHook, tools/test.py,
         tools/eval_metric.py may be affected.
     """
@@ -344,7 +344,9 @@ class EvalHook(Hook):
             runner.meta['hook_msgs']['best_ckpt'] = self.best_ckpt_path
 
             runner.save_checkpoint(
-                self.out_dir, best_ckpt_name, create_symlink=False)
+                self.out_dir,
+                filename_tmpl=best_ckpt_name,
+                create_symlink=False)
             runner.logger.info(
                 f'Now best checkpoint is saved as {best_ckpt_name}.')
             runner.logger.info(

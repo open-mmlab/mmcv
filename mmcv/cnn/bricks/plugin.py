@@ -1,12 +1,13 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import platform
 
 from .registry import PLUGIN_LAYERS
 
 if platform.system() == 'Windows':
-    import regex as re
+    import regex as re  # type: ignore
 else:
-    import re
+    import re  # type: ignore
 
 
 def infer_abbr(class_type):
