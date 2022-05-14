@@ -98,10 +98,12 @@ class BaseMergeCell(nn.Module):
             if x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0:
                 H_pad = (x.shape[-2] // size[-2] + 1) * size[-2] - x.shape[-2]
                 W_pad = (x.shape[-1] // size[-1] + 1) * size[-1] - x.shape[-1]
-                padding_left, padding_right = W_pad//2, W_pad-W_pad//2
-                padding_top, padding_bottom = H_pad//2, H_pad-H_pad//2
-                x = nn.ConstantPad2d((padding_left, padding_right,
-                                      padding_top, padding_bottom), 0)(x)
+                padding_left, padding_right = W_pad // 2, W_pad - W_pad // 2
+                padding_top, padding_bottom = H_pad // 2, H_pad - H_pad // 2
+                x = nn.ConstantPad2d(
+                    (padding_left, padding_right, padding_top, padding_bottom),
+                    0)(
+                        x)
             kernel_size = (x.shape[-2] // size[-2], x.shape[-1] // size[-1])
             x = F.max_pool2d(x, kernel_size=kernel_size, stride=kernel_size)
             return x
