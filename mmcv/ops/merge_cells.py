@@ -4,6 +4,7 @@ from abc import abstractmethod
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..cnn import ConvModule
 
 
@@ -104,7 +105,7 @@ class BaseMergeCell(nn.Module):
             kernel_size = (x.shape[-2] // size[-2], x.shape[-1] // size[-1])
             x = F.max_pool2d(x, kernel_size=kernel_size, stride=kernel_size)
             return x
-        
+
     def forward(self, x1, x2, out_size=None):
         assert x1.shape[:2] == x2.shape[:2]
         assert out_size is None or len(out_size) == 2
