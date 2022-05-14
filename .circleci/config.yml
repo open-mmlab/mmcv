@@ -65,6 +65,7 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          # use ninja to accelerate compilation
           name: Install psutil and ninja
           command: python -m pip install psutil ninja
       - run:
@@ -133,6 +134,7 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          # use ninja to accelerate compilation
           name: Install psutil and ninja
           command: python -m pip install psutil ninja
       - run:
@@ -175,6 +177,7 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          # use ninja to accelerate compilation
           name: Install psutil and ninja
           command: python -m pip install psutil ninja
       - run:
