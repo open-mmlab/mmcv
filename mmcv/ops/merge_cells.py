@@ -95,8 +95,19 @@ class BaseMergeCell(nn.Module):
         elif x.shape[-2:] < size:
             return F.interpolate(x, size=size, mode=self.upsample_mode)
         else:
-            assert x.shape[-2] % size[-2] == 0 and x.shape[-1] % size[-1] == 0
-            kernel_size = x.shape[-1] // size[-1]
+            # assert x.shape[-2] % size[-2] == 0 and x.shape[-1] % size[-1] == 0
+            # kernel_size = x.shape[-1] // size[-1]
+
+            # When x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0, pad zero around x to make it can be divisible by size.
+            if x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0:
+                H_pad = (x.shape[-2] // size[-2] +1) * size[-2] - x.shape[-2]
+                W_pad = (x.shape[-1] // size[-1] +1) * size[-1] - x.shape[-1]
+                padding_left, padding_right = W_pad//2, W_pad-W_pad//2
+                padding_top, padding_bottom = H_pad//2, H_pad-H_pad//2
+                x = nn.ConstantPad2d((padding_left, padding_right, padding_top, padding_bottom), 0)(x)
+                
+            # Considering the different downsampling scale of H and W, shape[-2] and shape[-1] are involed in the definition of kernel_size.
+            kernel_size = (x.shape[-2] // size[-2], x.shape[-1] // size[-1])
             x = F.max_pool2d(x, kernel_size=kernel_size, stride=kernel_size)
             return x
 
