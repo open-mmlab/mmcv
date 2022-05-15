@@ -96,14 +96,17 @@ class BaseMergeCell(nn.Module):
             return F.interpolate(x, size=size, mode=self.upsample_mode)
         else:
             if x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0:
-                padding_h = (x.shape[-2] // size[-2] + 1) * size[-2] - x.shape[-2]
-                padding_w = (x.shape[-1] // size[-1] + 1) * size[-1] - x.shape[-1]
-                padding_left, padding_right = W_pad // 2, W_pad - W_pad // 2
-                padding_top, padding_bottom = H_pad // 2, H_pad - H_pad // 2
-                x = nn.ConstantPad2d(
-                    (padding_left, padding_right, padding_top, padding_bottom),
-                    0)(
-                        x)
+                h, w = x.shape[-2:]
+                h_t, w_t = size
+                padding_h = (h // h_t + 1) * h_t - h
+                padding_w = (w // w_t + 1) * w_t - w
+                padding_left = padding_w // 2
+                padding_right = padding_w - padding_left
+                padding_top = padding_h // 2
+                padding_bottom = padding_h - padding_top
+                pad = (padding_left, padding_right, padding_top,
+                       padding_bottom)
+                x = F.pad(x, pad, mode='constant', value=0.0)
             kernel_size = (x.shape[-2] // size[-2], x.shape[-1] // size[-1])
             x = F.max_pool2d(x, kernel_size=kernel_size, stride=kernel_size)
             return x
