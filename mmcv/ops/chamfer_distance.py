@@ -63,36 +63,37 @@ class ChamferDistanceFunction(Function):
         """
 
         Args:
-            graddist1 (torch.Tensor): Gradient of chamfer ditacne
+            grad_dist1 (torch.Tensor): Gradient of chamfer ditacne
                 (xyz1 to xyz2) with shape (B, N).
-            graddist2 (torch.Tensor): Gradient of chamfer ditacne
+            grad_dist2 (torch.Tensor): Gradient of chamfer ditacne
                 (xyz2 to xyz1) with shape (B, N).
-            gradidx1 (torch.Tensor): Index of chamfer ditacne (xyz1 to xyz2)
+            grad_idx1 (torch.Tensor): Index of chamfer ditacne (xyz1 to xyz2)
                     with shape (B, N), which be used in compute gradient.
-            gradidx2 (torch.Tensor): Index of chamfer ditacne (xyz2 to xyz2)
+            grad_idx2 (torch.Tensor): Index of chamfer ditacne (xyz2 to xyz2)
                     with shape (B, N), which be used in compute gradient.
 
         Returns:
             tuple:
 
-            - gradxyz1 (torch.Tensor): Gradient of the point set with shape \
+            - grad_xyz1 (torch.Tensor): Gradient of the point set with shape \
                 (B, N, 2).
-            - gradxyz2 (torch.Tensor):Gradient of the point set with shape \
+            - grad_xyz2 (torch.Tensor):Gradient of the point set with shape \
                 (B, N, 2).
         """
         xyz1, xyz2, idx1, idx2 = ctx.saved_tensors
-        graddist1 = graddist1.contiguous()
-        graddist2 = graddist2.contiguous()
-        device = graddist1.device
+        grad_dist1 = grad_dist1.contiguous()
+        grad_dist2 = grad_dist2.contiguous()
+        device = grad_dist1.device
 
-        gradxyz1 = torch.zeros(xyz1.size())
-        gradxyz2 = torch.zeros(xyz2.size())
+        grad_xyz1 = torch.zeros(xyz1.size())
+        grad_xyz2 = torch.zeros(xyz2.size())
 
-        gradxyz1 = gradxyz1.to(device)
-        gradxyz2 = gradxyz2.to(device)
-        ext_module.chamfer_distance_backward(xyz1, xyz2, gradxyz1, gradxyz2,
-                                             graddist1, graddist2, idx1, idx2)
-        return gradxyz1, gradxyz2
+        grad_xyz1 = grad_xyz1.to(device)
+        grad_xyz2 = grad_xyz2.to(device)
+        ext_module.chamfer_distance_backward(xyz1, xyz2, grad_xyz1, grad_xyz2,
+                                             grad_dist1, grad_dist2, idx1,
+                                             idx2)
+        return grad_xyz1, grad_xyz2
 
 
 class ChamferDistance(nn.Module):
