@@ -10,6 +10,7 @@ class LogBuffer:
         self.val_history = OrderedDict()
         self.n_history = OrderedDict()
         self.output = OrderedDict()
+        self._mode = None
         self.ready = False
 
     def clear(self):
@@ -19,7 +20,17 @@ class LogBuffer:
 
     def clear_output(self):
         self.output.clear()
+        self._mode = None
         self.ready = False
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, mode):
+        assert mode in ('train', 'val')
+        self._mode = mode
 
     def update(self, vars, count=1):
         assert isinstance(vars, dict)
