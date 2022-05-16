@@ -24,16 +24,16 @@ class SMExperimentsLoggerHook(LoggerHook):
         https://boto3.readthedocs.io/
     """
 
-    def __init__(
-        self,
-        interval=10,
-        ignore_last=True,
-        reset_flag=False,
-        by_epoch=True,
-    ):
+    def __init__(self,
+                 interval=10,
+                 ignore_last=True,
+                 reset_flag=False,
+                 by_epoch=True,
+                 init_kwargs=None):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_smexperiments()
         self.tracker = None
+        self.init_kwargs = init_kwargs
 
     def import_smexperiments(self):
         try:
@@ -52,7 +52,8 @@ class SMExperimentsLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner):
         super().before_run(runner)
-        self._create_tracker()
+        tracker_kwargs = self.init_kwargs if self.init_kwargs else {}
+        self._create_tracker(**tracker_kwargs)
 
     @master_only
     def log(self, runner):
