@@ -1,18 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import time
+from io import StringIO
+from unittest.mock import patch
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from unittest.mock import patch
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-import mmcv  # isort:skip
+import mmcv
 
 
 def reset_string_io(io):
