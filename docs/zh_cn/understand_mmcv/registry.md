@@ -1,4 +1,5 @@
 ## 注册器
+
 MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) 来管理具有相似功能的不同模块, 例如, 检测器中的主干网络、头部、和模型颈部。
 在 OpenMMLab 家族中的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting) 等。
 
@@ -7,6 +8,7 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 ```
 
 ### 什么是注册器
+
 在MMCV中，注册器可以看作类或函数到字符串的映射。
 一个注册器中的类或函数通常有相似的接口，但是可以实现不同的算法或支持不同的数据集。
 借助注册器，用户可以通过使用相应的字符串查找类或函数，并根据他们的需要实例化对应模块或调用函数获取结果。
@@ -46,6 +48,7 @@ class Converter1(object):
         self.a = a
         self.b = b
 ```
+
 ```python
 # converter2.py
 from .builder import CONVERTERS
@@ -56,6 +59,7 @@ from .converter1 import Converter1
 def converter2(a, b)
     return Converter1(a, b)
 ```
+
 使用注册器管理模块的关键步骤是，将实现的模块注册到注册表 `CONVERTERS` 中。通过 `@CONVERTERS.register_module()` 装饰所实现的模块，字符串到类或函数之间的映射就可以由 `CONVERTERS` 构建和维护，如下所示：
 
 通过这种方式，就可以通过 `CONVERTERS` 建立字符串与类或函数之间的映射，如下所示：
@@ -64,9 +68,11 @@ def converter2(a, b)
 'Converter1' -> <class 'Converter1'>
 'converter2' -> <function 'converter2'>
 ```
+
 ```{note}
 只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件。更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
 ```
+
 如果模块被成功注册了，你可以通过配置文件使用这个转换器（converter），如下所示：
 
 ```python

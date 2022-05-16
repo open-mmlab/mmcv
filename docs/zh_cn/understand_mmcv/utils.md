@@ -58,7 +58,6 @@ with mmcv.Timer():
 
 你也可以使用 `since_start()` 和 `since_last_check()` 。前者返回计时器启动后的运行时长，后者返回最近一次查看计时器后的运行时长。
 
-
 ```python
 timer = mmcv.Timer()
 # code block 1 here
