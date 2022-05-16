@@ -8,7 +8,7 @@ The runner class is designed to manage the training. It eases the training proce
 
 ### EpochBasedRunner
 
-As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, [('train', 2), ('val', 1)] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iterations. Currently, MMDetection uses `EpochBasedRunner` by default.
+As its name indicates, workflow in `EpochBasedRunner` should be set based on epochs. For example, \[('train', 2), ('val', 1)\] means running 2 epochs for training and 1 epoch for validation, iteratively. And each epoch may contain multiple iterations. Currently, MMDetection uses `EpochBasedRunner` by default.
 
 Let's take a look at its core logic:
 
@@ -44,7 +44,7 @@ def train(self, data_loader, **kwargs):
 
 ### IterBasedRunner
 
-Different from `EpochBasedRunner`, workflow in `IterBasedRunner` should be set based on iterations. For example, [('train', 2), ('val', 1)] means running 2 iters for training and 1 iter for validation, iteratively. Currently, MMSegmentation uses `IterBasedRunner` by default.
+Different from `EpochBasedRunner`, workflow in `IterBasedRunner` should be set based on iterations. For example, \[('train', 2), ('val', 1)\] means running 2 iters for training and 1 iter for validation, iteratively. Currently, MMSegmentation uses `IterBasedRunner` by default.
 
 Let's take a look at its core logic:
 
@@ -156,8 +156,8 @@ runner.run(data_loaders, cfg.workflow)
 
 Let's take `EpochBasedRunner` for example and go a little bit into details about setting workflow:
 
-- Say we only want to put train in the workflow, then we can set: workflow = [('train', 1)]. The runner will only execute train iteratively in this case.
-- Say we want to put both train and val in the workflow, then we can set: workflow = [('train', 3), ('val',1)]. The runner will first execute train for 3 epochs and then switch to val mode and execute val for 1 epoch. The workflow will be repeated until the current epoch hit the max_epochs.
-- Workflow is highly flexible. Therefore, you can set workflow = [('val', 1), ('train',1)] if you would like the runner to validate first and train after.
+- Say we only want to put train in the workflow, then we can set: workflow = \[('train', 1)\]. The runner will only execute train iteratively in this case.
+- Say we want to put both train and val in the workflow, then we can set: workflow = \[('train', 3), ('val',1)\]. The runner will first execute train for 3 epochs and then switch to val mode and execute val for 1 epoch. The workflow will be repeated until the current epoch hit the max_epochs.
+- Workflow is highly flexible. Therefore, you can set workflow = \[('val', 1), ('train',1)\] if you would like the runner to validate first and train after.
 
 The code we demonstrated above is already in `train.py` in MM repositories. Simply modify the corresponding keys in the configuration files and the script will execute the expected workflow automatically.
