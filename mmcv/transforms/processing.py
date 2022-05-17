@@ -286,8 +286,7 @@ class Pad(BaseTransform):
 
     - img
     - gt_seg_map
-    - height
-    - width
+    - img_shape
 
     Added Keys:
 
@@ -382,8 +381,7 @@ class Pad(BaseTransform):
         results['pad_shape'] = padded_img.shape
         results['pad_fixed_size'] = self.size
         results['pad_size_divisor'] = self.size_divisor
-        results['height'] = padded_img.shape[0]
-        results['width'] = padded_img.shape[1]
+        results['img_shape'] = padded_img.shape[:2]
 
     def _pad_seg(self, results: dict) -> None:
         """Pad semantic segmentation map according to
