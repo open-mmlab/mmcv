@@ -17,10 +17,8 @@ class LoadImageFromFile(BaseTransform):
     Modified Keys:
 
     - img
-    - width
-    - height
-    - ori_width
-    - ori_height
+    - img_shape
+    - ori_shape
 
     Args:
         to_float32 (bool): Whether to convert the loaded image to a float32
@@ -68,11 +66,8 @@ class LoadImageFromFile(BaseTransform):
             img = img.astype(np.float32)
 
         results['img'] = img
-        height, width = img.shape[:2]
-        results['height'] = height
-        results['width'] = width
-        results['ori_height'] = height
-        results['ori_width'] = width
+        results['img_shape'] = img.shape[:2]
+        results['ori_shape'] = img.shape[:2]
         return results
 
     def __repr__(self):
@@ -123,7 +118,7 @@ class LoadAnnotations(BaseTransform):
             # In (x1, y1, x2, y2) order, float type. N is the number of bboxes
             # in np.float32
             'gt_bboxes': np.ndarray(N, 4)
-             # In np.int32 type.
+             # In np.int64 type.
             'gt_bboxes_labels': np.ndarray(N, )
              # In uint8 type.
             'gt_seg_map': np.ndarray (H, W)
@@ -144,7 +139,7 @@ class LoadAnnotations(BaseTransform):
     Added Keys:
 
     - gt_bboxes (np.float32)
-    - gt_bboxes_labels (np.int32)
+    - gt_bboxes_labels (np.int64)
     - gt_seg_map (np.uint8)
     - gt_keypoints (np.float32)
 
@@ -211,7 +206,7 @@ class LoadAnnotations(BaseTransform):
         for instance in results['instances']:
             gt_bboxes_labels.append(instance['bbox_label'])
         results['gt_bboxes_labels'] = np.array(
-            gt_bboxes_labels, dtype=np.int32)
+            gt_bboxes_labels, dtype=np.int64)
 
     def _load_seg_map(self, results: dict) -> None:
         """Private function to load semantic segmentation annotations.

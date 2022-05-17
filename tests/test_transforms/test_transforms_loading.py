@@ -18,10 +18,8 @@ class TestLoadImageFromFile:
         assert results['img_path'] == osp.join(data_prefix, 'color.jpg')
         assert results['img'].shape == (300, 400, 3)
         assert results['img'].dtype == np.uint8
-        assert results['height'] == 300
-        assert results['width'] == 400
-        assert results['ori_height'] == 300
-        assert results['ori_width'] == 400
+        assert results['img_shape'] == (300, 400)
+        assert results['ori_shape'] == (300, 400)
         assert repr(transform) == transform.__class__.__name__ + \
             "(to_float32=False, color_type='color', " + \
             "imdecode_backend='cv2', file_client_args={'backend': 'disk'})"
@@ -86,7 +84,7 @@ class TestLoadAnnotations:
         results = transform(copy.deepcopy(self.results))
         assert 'gt_bboxes_labels' in results
         assert (results['gt_bboxes_labels'] == np.array([1, 2])).all()
-        assert results['gt_bboxes_labels'].dtype == np.int32
+        assert results['gt_bboxes_labels'].dtype == np.int64
 
     def test_load_kps(self):
         transform = LoadAnnotations(
