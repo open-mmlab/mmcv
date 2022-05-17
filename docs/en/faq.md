@@ -8,7 +8,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 - KeyError: "xxx: 'yyy is not in the zzz registry'"
 
   The registry mechanism will be triggered only when the file of the module is imported.
-  So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.
+  So you need to import that file somewhere. More details can be found at [KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"](https://github.com/open-mmlab/mmdetection/issues/5974).
 
 - "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"
 
@@ -61,11 +61,11 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - "error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized"
 
-  If your version of PyTorch is 1.5.0 and you are building mmcv-full on Windows, you will probably encounter the error `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`. The way to solve the error is to replace all the `static constexpr bool all_slots = false;` with `static bool all_slots = false;` at this file `https://github.com/pytorch/pytorch/blob/v1.5.0/torch/csrc/jit/api/module.h`. More details can be found at https://github.com/pytorch/pytorch/issues/39394.
+  If your version of PyTorch is 1.5.0 and you are building mmcv-full on Windows, you will probably encounter the error `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`. The way to solve the error is to replace all the `static constexpr bool all_slots = false;` with `static bool all_slots = false;` at this file `https://github.com/pytorch/pytorch/blob/v1.5.0/torch/csrc/jit/api/module.h`. More details can be found at [member "torch::jit::detail::AttributePolicy::all_slots" may not be initialized](https://github.com/pytorch/pytorch/issues/39394).
 
 - "error: a member with an in-class initializer must be const"
 
-  If your version of PyTorch is 1.6.0 and you are building mmcv-full on Windows, you will probably encounter the error `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. The way to solve the error is to replace all the `CONSTEXPR_EXCEPT_WIN_CUDA ` with `const` at `torch/include\torch/csrc/jit/api/module.h`. More details can be found at https://github.com/open-mmlab/mmcv/issues/575.
+  If your version of PyTorch is 1.6.0 and you are building mmcv-full on Windows, you will probably encounter the error `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. The way to solve the error is to replace all the `CONSTEXPR_EXCEPT_WIN_CUDA ` with `const` at `torch/include\torch/csrc/jit/api/module.h`. More details can be found at [Ninja: build stopped: subcommand failed](https://github.com/open-mmlab/mmcv/issues/575).
 
 - "error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized"
 
@@ -75,17 +75,19 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
   - replace `explicit operator type&() { return *(this->value); }` with `explicit operator type&() { return *((type*)this->value); }` at `torch\include\pybind11\cast.h`
   - replace all the `CONSTEXPR_EXCEPT_WIN_CUDA` with `const` at `torch/include\torch/csrc/jit/api/module.h`
 
+  More details can be found at [Ensure default extra_compile_args](https://github.com/pytorch/pytorch/pull/45956).
+
 - Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
 
-  Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation). More details can be found at https://github.com/pytorch/pytorch/pull/45956.
+  Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation).
 
 ### Usage
 
 - "RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one"
 
-  1. This error indicates that your module has parameters that were not used in producing loss. This phenomenon may be caused by running different branches in your code in DDP mode. More datails at https://github.com/pytorch/pytorch/issues/55582
+  1. This error indicates that your module has parameters that were not used in producing loss. This phenomenon may be caused by running different branches in your code in DDP mode. More datails at [Expected to have finished reduction in the prior iteration before starting a new one](https://github.com/pytorch/pytorch/issues/55582).
   2. You can set ` find_unused_parameters = True` in the config to solve the above problems or find those unused parameters manually
 
 - "RuntimeError: Trying to backward through the graph a second time"
 
-  `GradientCumulativeOptimizerHook` and `OptimizerHook` are both set which causes the `loss.backward()` to be called twice so `RuntimeError` was raised. We can only use one of these. More datails at https://github.com/open-mmlab/mmcv/issues/1379.
+  `GradientCumulativeOptimizerHook` and `OptimizerHook` are both set which causes the `loss.backward()` to be called twice so `RuntimeError` was raised. We can only use one of these. More datails at [Trying to backward through the graph a second time](https://github.com/open-mmlab/mmcv/issues/1379).

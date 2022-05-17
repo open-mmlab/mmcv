@@ -7,7 +7,7 @@
 
 - KeyError: "xxx: 'yyy is not in the zzz registry'"
 
-  只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件，更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974
+  只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件，更多详情请查看 [KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"](https://github.com/open-mmlab/mmdetection/issues/5974)。
 
 - "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"
 
@@ -59,11 +59,11 @@
 
 - "error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized"
 
-  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.5.0，您很可能会遇到这个问题 `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`。解决这个问题的方法是将 `torch/csrc/jit/api/module.h` 文件中所有 `static constexpr bool all_slots = false;` 替换为 `static bool all_slots = false;`。更多细节可以查看 https://github.com/pytorch/pytorch/issues/39394
+  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.5.0，您很可能会遇到这个问题 `- torch/csrc/jit/api/module.h(474): error: member "torch::jit::detail::ModulePolicy::all_slots" may not be initialized`。解决这个问题的方法是将 `torch/csrc/jit/api/module.h` 文件中所有 `static constexpr bool all_slots = false;` 替换为 `static bool all_slots = false;`。更多细节可以查看 [member "torch::jit::detail::AttributePolicy::all_slots" may not be initialized](https://github.com/pytorch/pytorch/issues/39394)。
 
 - "error: a member with an in-class initializer must be const"
 
-  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.6.0，您很可能会遇到这个问题 `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. 解决这个问题的方法是将 `torch/include\torch/csrc/jit/api/module.h` 文件中的所有 `CONSTEXPR_EXCEPT_WIN_CUDA ` 替换为 `const`。更多细节可以查看 https://github.com/open-mmlab/mmcv/issues/575
+  如果您在 Windows 上编译 mmcv-full 并且 PyTorch 的版本是 1.6.0，您很可能会遇到这个问题 `"- torch/include\torch/csrc/jit/api/module.h(483): error: a member with an in-class initializer must be const"`. 解决这个问题的方法是将 `torch/include\torch/csrc/jit/api/module.h` 文件中的所有 `CONSTEXPR_EXCEPT_WIN_CUDA ` 替换为 `const`。更多细节可以查看 [Ninja: build stopped: subcommand failed](https://github.com/open-mmlab/mmcv/issues/575)。
 
 - "error: member "torch::jit::ProfileOptionalOp::Kind" may not be initialized"
 
@@ -73,7 +73,7 @@
   - 将 `torch\include\pybind11\cast.h` 文件中的 `explicit operator type&() { return *(this->value); }` 替换为 `explicit operator type&() { return *((type*)this->value); }`
   - 将 `torch/include\torch/csrc/jit/api/module.h` 文件中的 所有 `CONSTEXPR_EXCEPT_WIN_CUDA` 替换为 `const`
 
-  更多细节可以查看 https://github.com/pytorch/pytorch/pull/45956
+  更多细节可以查看 [Ensure default extra_compile_args](https://github.com/pytorch/pytorch/pull/45956)。
 
 - MMCV 和 MMDetection 的兼容性问题；"ConvWS is already registered in conv layer"
 
@@ -83,9 +83,9 @@
 
 - "RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one"
 
-  1. 这个错误是因为有些参数没有参与 loss 的计算，可能是代码中存在多个分支，导致有些分支没有参与 loss 的计算。更多细节见 https://github.com/pytorch/pytorch/issues/55582
+  1. 这个错误是因为有些参数没有参与 loss 的计算，可能是代码中存在多个分支，导致有些分支没有参与 loss 的计算。更多细节见 [Expected to have finished reduction in the prior iteration before starting a new one](https://github.com/pytorch/pytorch/issues/55582)。
   2. 你可以设置 DDP 中的 `find_unused_parameters` 为 `True`，或者手动查找哪些参数没有用到。
 
 - "RuntimeError: Trying to backward through the graph a second time"
 
-  不能同时设置 `GradientCumulativeOptimizerHook` 和 `OptimizerHook`，这会导致 `loss.backward()` 被调用两次，于是程序抛出 `RuntimeError`。我们只需设置其中的一个。更多细节见 https://github.com/open-mmlab/mmcv/issues/1379
+  不能同时设置 `GradientCumulativeOptimizerHook` 和 `OptimizerHook`，这会导致 `loss.backward()` 被调用两次，于是程序抛出 `RuntimeError`。我们只需设置其中的一个。更多细节见 [Trying to backward through the graph a second time](https://github.com/open-mmlab/mmcv/issues/1379)。
