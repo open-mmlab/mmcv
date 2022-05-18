@@ -59,12 +59,13 @@ def init_random_seed(seed=None, device='cuda'):
 
 def set_random_seed(seed, deterministic=False):
     """Set random seed.
+
     Args:
         seed (int): Seed to be used.
         deterministic (bool): Whether to set the deterministic option for
             CUDNN backend, i.e., set `torch.backends.cudnn.deterministic`
             to True and `torch.backends.cudnn.benchmark` to False.
-            Default: False.
+            Defaults to False.
     """
     random.seed(seed)
     np.random.seed(seed)
