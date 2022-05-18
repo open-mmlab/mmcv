@@ -33,7 +33,7 @@ class MLUDataParallel(MMDataParallel):
     """
 
     def __init__(self, *args, dim=0, **kwargs):
-        super(MLUDataParallel, self).__init__(*args, dim=dim, **kwargs)
+        super().__init__(*args, dim=dim, **kwargs)
         self.device_ids = [0]
         self.src_device_obj = torch.device('mlu:0')
 

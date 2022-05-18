@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from __future__ import division
 from typing import Optional, Union
 
 import numpy as np

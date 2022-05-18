@@ -129,7 +129,7 @@ def _get_bases_name(m):
     return [b.__name__ for b in m.__class__.__bases__]
 
 
-class BaseInit(object):
+class BaseInit:
 
     def __init__(self, *, bias=0, bias_prob=None, layer=None):
         self.wholemodule = False
@@ -461,7 +461,7 @@ class Caffe2XavierInit(KaimingInit):
 
 
 @INITIALIZERS.register_module(name='Pretrained')
-class PretrainedInit(object):
+class PretrainedInit:
     """Initialize module by loading a pretrained model.
 
     Args:

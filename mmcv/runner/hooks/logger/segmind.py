@@ -27,8 +27,7 @@ class SegmindLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=False,
                  by_epoch=True):
-        super(SegmindLoggerHook, self).__init__(interval, ignore_last,
-                                                reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_segmind()
 
     def import_segmind(self):

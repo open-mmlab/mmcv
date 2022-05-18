@@ -37,7 +37,7 @@ dcn_offset_b_grad = [
 ]
 
 
-class TestMdconv(object):
+class TestMdconv:
 
     def _test_mdconv(self, dtype=torch.float, device='cuda'):
         if not torch.cuda.is_available() and device == 'cuda':

@@ -22,7 +22,7 @@ class HSwish(nn.Module):
     """
 
     def __init__(self, inplace=False):
-        super(HSwish, self).__init__()
+        super().__init__()
         self.act = nn.ReLU6(inplace)
 
     def forward(self, x):

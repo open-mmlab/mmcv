@@ -86,7 +86,7 @@ class SparseSequential(SparseModule):
     """
 
     def __init__(self, *args, **kwargs):
-        super(SparseSequential, self).__init__()
+        super().__init__()
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
                 self.add_module(key, module)
@@ -103,7 +103,7 @@ class SparseSequential(SparseModule):
 
     def __getitem__(self, idx):
         if not (-len(self) <= idx < len(self)):
-            raise IndexError('index {} is out of range'.format(idx))
+            raise IndexError(f'index {idx} is out of range')
         if idx < 0:
             idx += len(self)
         it = iter(self._modules.values())

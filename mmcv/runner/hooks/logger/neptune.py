@@ -49,8 +49,7 @@ class NeptuneLoggerHook(LoggerHook):
                  with_step=True,
                  by_epoch=True):
 
-        super(NeptuneLoggerHook, self).__init__(interval, ignore_last,
-                                                reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_neptune()
         self.init_kwargs = init_kwargs
         self.with_step = with_step

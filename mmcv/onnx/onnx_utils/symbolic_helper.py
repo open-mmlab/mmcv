@@ -59,7 +59,7 @@ def _parse_arg(value, desc):
             raise RuntimeError(
                 "ONNX symbolic doesn't know to interpret ListConstruct node")
 
-    raise RuntimeError('Unexpected node type: {}'.format(value.node().kind()))
+    raise RuntimeError(f'Unexpected node type: {value.node().kind()}')
 
 
 def _maybe_get_const(value, desc):

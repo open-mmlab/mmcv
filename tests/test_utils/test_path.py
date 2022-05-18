@@ -30,12 +30,14 @@ def test_scandir():
     filenames = ['a.bin', '1.txt', '2.txt', '1.json', '2.json', '3.TXT']
     assert set(mmcv.scandir(folder)) == set(filenames)
     assert set(mmcv.scandir(Path(folder))) == set(filenames)
-    assert set(mmcv.scandir(folder, '.txt')) == set(
-        [filename for filename in filenames if filename.endswith('.txt')])
-    assert set(mmcv.scandir(folder, ('.json', '.txt'))) == set([
-        filename for filename in filenames
-        if filename.endswith(('.txt', '.json'))
-    ])
+    assert set(mmcv.scandir(folder, '.txt')) == {
+        filename
+        for filename in filenames if filename.endswith('.txt')
+    }
+    assert set(mmcv.scandir(folder, ('.json', '.txt'))) == {
+        filename
+        for filename in filenames if filename.endswith(('.txt', '.json'))
+    }
     assert set(mmcv.scandir(folder, '.png')) == set()
 
     # path of sep is `\\` in windows but `/` in linux, so osp.join should be
@@ -46,27 +48,33 @@ def test_scandir():
         osp.join('sub', '1.txt'), '.file'
     ]
     # .file starts with '.' and is a file so it will not be scanned
-    assert set(mmcv.scandir(folder, recursive=True)) == set(
-        [filename for filename in filenames_recursive if filename != '.file'])
-    assert set(mmcv.scandir(Path(folder), recursive=True)) == set(
-        [filename for filename in filenames_recursive if filename != '.file'])
-    assert set(mmcv.scandir(folder, '.txt', recursive=True)) == set([
-        filename for filename in filenames_recursive
-        if filename.endswith('.txt')
-    ])
+    assert set(mmcv.scandir(folder, recursive=True)) == {
+        filename
+        for filename in filenames_recursive if filename != '.file'
+    }
+    assert set(mmcv.scandir(Path(folder), recursive=True)) == {
+        filename
+        for filename in filenames_recursive if filename != '.file'
+    }
+    assert set(mmcv.scandir(folder, '.txt', recursive=True)) == {
+        filename
+        for filename in filenames_recursive if filename.endswith('.txt')
+    }
     assert set(
         mmcv.scandir(folder, '.TXT', recursive=True,
-                     case_sensitive=False)) == set([
-                         filename for filename in filenames_recursive
+                     case_sensitive=False)) == {
+                         filename
+                         for filename in filenames_recursive
                          if filename.endswith(('.txt', '.TXT'))
-                     ])
+                     }
     assert set(
         mmcv.scandir(
             folder, ('.TXT', '.JSON'), recursive=True,
-            case_sensitive=False)) == set([
-                filename for filename in filenames_recursive
+            case_sensitive=False)) == {
+                filename
+                for filename in filenames_recursive
                 if filename.endswith(('.txt', '.json', '.TXT'))
-            ])
+            }
     with pytest.raises(TypeError):
         list(mmcv.scandir(123))
     with pytest.raises(TypeError):

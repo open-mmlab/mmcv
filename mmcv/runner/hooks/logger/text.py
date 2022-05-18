@@ -62,8 +62,7 @@ class TextLoggerHook(LoggerHook):
                  out_suffix=('.log.json', '.log', '.py'),
                  keep_local=True,
                  file_client_args=None):
-        super(TextLoggerHook, self).__init__(interval, ignore_last, reset_flag,
-                                             by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.by_epoch = by_epoch
         self.time_sec_tot = 0
         self.interval_exp_name = interval_exp_name
@@ -87,7 +86,7 @@ class TextLoggerHook(LoggerHook):
                                                        self.out_dir)
 
     def before_run(self, runner):
-        super(TextLoggerHook, self).before_run(runner)
+        super().before_run(runner)
 
         if self.out_dir is not None:
             self.file_client = FileClient.infer_client(self.file_client_args,
@@ -97,8 +96,8 @@ class TextLoggerHook(LoggerHook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
             runner.logger.info(
-                (f'Text logs will be saved to {self.out_dir} by '
-                 f'{self.file_client.name} after the training process.'))
+                f'Text logs will be saved to {self.out_dir} by '
+                f'{self.file_client.name} after the training process.')
 
         self.start_iter = runner.iter
         self.json_log_path = osp.join(runner.work_dir,
@@ -242,15 +241,15 @@ class TextLoggerHook(LoggerHook):
                 local_filepath = osp.join(runner.work_dir, filename)
                 out_filepath = self.file_client.join_path(
                     self.out_dir, filename)
-                with open(local_filepath, 'r') as f:
+                with open(local_filepath) as f:
                     self.file_client.put_text(f.read(), out_filepath)
 
                 runner.logger.info(
-                    (f'The file {local_filepath} has been uploaded to '
-                     f'{out_filepath}.'))
+                    f'The file {local_filepath} has been uploaded to '
+                    f'{out_filepath}.')
 
                 if not self.keep_local:
                     os.remove(local_filepath)
                     runner.logger.info(
-                        (f'{local_filepath} was removed due to the '
-                         '`self.keep_local=False`'))
+                        f'{local_filepath} was removed due to the '
+                        '`self.keep_local=False`')
