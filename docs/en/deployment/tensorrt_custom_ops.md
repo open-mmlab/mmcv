@@ -102,7 +102,7 @@ detectors.
 
 #### Description
 
-ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape[-1] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
+ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape\[-1\] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
 
 The `output` is calculated via the following equation:
 
@@ -151,9 +151,9 @@ Filter out boxes has high IoU overlap with previously selected boxes or low scor
 
 | Type    | Parameter                    | Description                                                                                                                          |
 | ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `int`   | `center_point_box`           | 0 - the box data is supplied as [y1, x1, y2, x2], 1-the box data is supplied as [x_center, y_center, width, height].                 |
+| `int`   | `center_point_box`           | 0 - the box data is supplied as \[y1, x1, y2, x2\], 1-the box data is supplied as \[x_center, y_center, width, height\].             |
 | `int`   | `max_output_boxes_per_class` | The maximum number of boxes to be selected per batch per class. Default to 0, number of output boxes equal to number of input boxes. |
-| `float` | `iou_threshold`              | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0.                     |
+| `float` | `iou_threshold`              | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range \[0, 1\]. Default to 0.                   |
 | `float` | `score_threshold`            | The threshold for deciding when to remove boxes based on score.                                                                      |
 | `int`   | `offset`                     | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                                                |
 

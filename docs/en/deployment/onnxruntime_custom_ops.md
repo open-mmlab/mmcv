@@ -69,7 +69,7 @@ Perform soft NMS on `boxes` with `scores`. Read [Soft-NMS -- Improving Object De
 #### Parameters
 
 | Type    | Parameter       | Description                                                    |
-|---------|-----------------|----------------------------------------------------------------|
+| ------- | --------------- | -------------------------------------------------------------- |
 | `float` | `iou_threshold` | IoU threshold for NMS                                          |
 | `float` | `sigma`         | hyperparameter for gaussian method                             |
 | `float` | `min_score`     | score filter threshold                                         |
@@ -107,7 +107,7 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 #### Parameters
 
 | Type    | Parameter        | Description                                                                                                   |
-|---------|------------------|---------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
 | `int`   | `output_height`  | height of output roi                                                                                          |
 | `int`   | `output_width`   | width of output roi                                                                                           |
 | `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
@@ -143,10 +143,10 @@ Filter out boxes has high IoU overlap with previously selected boxes.
 
 #### Parameters
 
-| Type    | Parameter       | Description                                                                                                      |
-|---------|-----------------|------------------------------------------------------------------------------------------------------------------|
-| `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range [0, 1]. Default to 0. |
-| `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                            |
+| Type    | Parameter       | Description                                                                                                        |
+| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `float` | `iou_threshold` | The threshold for deciding whether boxes overlap too much with respect to IoU. Value range \[0, 1\]. Default to 0. |
+| `int`   | `offset`        | 0 or 1, boxes' width or height is (x2 - x1 + offset).                                                              |
 
 #### Inputs
 
@@ -177,7 +177,7 @@ Perform sample from `input` with pixel locations from `grid`.
 #### Parameters
 
 | Type  | Parameter            | Description                                                                                                                                                                                                                                                                                     |
-|-------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `int` | `interpolation_mode` | Interpolation mode to calculate output values. (0: `bilinear` , 1: `nearest`)                                                                                                                                                                                                                   |
 | `int` | `padding_mode`       | Padding mode for outside grid values. (0: `zeros`, 1: `border`, 2: `reflection`)                                                                                                                                                                                                                |
 | `int` | `align_corners`      | If `align_corners=1`, the extrema (`-1` and `1`) are considered as referring to the center points of the input's corner pixels. If `align_corners=0`, they are instead considered as referring to the corner points of the input's corner pixels, making the sampling more resolution agnostic. |
@@ -211,7 +211,7 @@ Perform CornerPool on `input` features. Read [CornerNet -- Detecting Objects as 
 #### Parameters
 
 | Type  | Parameter | Description                                                      |
-|-------|-----------|------------------------------------------------------------------|
+| ----- | --------- | ---------------------------------------------------------------- |
 | `int` | `mode`    | corner pool mode, (0: `top`, 1: `bottom`, 2: `left`, 3: `right`) |
 
 #### Inputs
@@ -241,7 +241,7 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative maximum e
 #### Parameters
 
 | Type  | Parameter | Description                            |
-|-------|-----------|----------------------------------------|
+| ----- | --------- | -------------------------------------- |
 | `int` | `dim`     | the dimension to do the operation over |
 
 #### Inputs
@@ -273,7 +273,7 @@ Returns a tuple (`values`, `indices`) where `values` is the cumulative minimum e
 #### Parameters
 
 | Type  | Parameter | Description                            |
-|-------|-----------|----------------------------------------|
+| ----- | --------- | -------------------------------------- |
 | `int` | `dim`     | the dimension to do the operation over |
 
 #### Inputs
@@ -305,7 +305,7 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 #### Parameters
 
 | Type           | Parameter           | Description                                                                           |
-|----------------|---------------------|---------------------------------------------------------------------------------------|
+| -------------- | ------------------- | ------------------------------------------------------------------------------------- |
 | `list of ints` | `stride`            | The stride of the convolving kernel. (sH, sW)                                         |
 | `list of ints` | `padding`           | Paddings on both sides of the input. (padH, padW)                                     |
 | `list of ints` | `dilation`          | The spacing between kernel elements. (dH, dW)                                         |
@@ -347,7 +347,7 @@ Perform Deformable Convolution on input feature, read [Deformable Convolutional 
 #### Parameters
 
 | Type           | Parameter          | Description                                                                                                                       |
-|----------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| -------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `list of ints` | `stride`           | The stride of the convolving kernel. (sH, sW)                                                                                     |
 | `list of ints` | `padding`          | Paddings on both sides of the input. (padH, padW)                                                                                 |
 | `list of ints` | `dilation`         | The spacing between kernel elements. (dH, dW)                                                                                     |

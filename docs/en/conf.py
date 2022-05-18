@@ -54,6 +54,8 @@ extensions = [
     'sphinx_copybutton',
 ]  # yapf: disable
 
+myst_heading_anchors = 4
+
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 
 # Add any paths that contain templates here, relative to this directory.
