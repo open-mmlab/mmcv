@@ -92,8 +92,9 @@ def _init_dist_slurm(backend, port=None):
     node_list = os.environ['SLURM_NODELIST']
     num_gpus = torch.cuda.device_count()
     torch.cuda.set_device(proc_id % num_gpus)
-    addr = subprocess.getoutput(
-        f'scontrol show hostname {node_list} | head -n1')
+    cmd = f'scontrol show hostname {node_list}'.split()
+    out = subprocess.check_output(cmd).decode(sys.stdout.encoding)
+    addr = out.split("\n")[0]
     # specify master port
     if port is not None:
         os.environ['MASTER_PORT'] = str(port)
