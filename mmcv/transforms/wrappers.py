@@ -265,8 +265,9 @@ class KeyMapper(BaseTransform):
         return _map(data, remapping)
 
     def transform(self, results: Dict) -> Dict:
-
-        inputs = self.map_input(results, self.mapping)
+        inputs = results
+        if self.mapping:
+            inputs = self.map_input(inputs, self.mapping)
         outputs = self.transforms(inputs)
 
         if self.remapping:
@@ -368,8 +369,12 @@ class TransformBroadcaster(KeyMapper):
         # infer split number from input
         seq_len = None
         key_rep = None
-        for key in self.mapping:
+        if self.mapping:
+            keys = self.mapping.keys()
+        else:
+            keys = data.keys()
 
+        for key in keys:
             assert isinstance(data[key], Sequence)
             if seq_len is not None:
                 if len(data[key]) != seq_len:
@@ -383,14 +388,16 @@ class TransformBroadcaster(KeyMapper):
         scatters = []
         for i in range(seq_len):
             scatter = data.copy()
-            for key in self.mapping:
+            for key in keys:
                 scatter[key] = data[key][i]
             scatters.append(scatter)
         return scatters
 
     def transform(self, results: Dict):
         # Apply input remapping
-        inputs = self.map_input(results, self.mapping)
+        inputs = results
+        if self.mapping:
+            inputs = self.map_input(inputs, self.mapping)
 
         # Scatter sequential inputs into a list
         inputs = self.scatter_sequence(inputs)
