@@ -138,6 +138,15 @@ def test_cache_random_parameters():
 
 
 def test_key_mapper():
+    # Case 0: only remap
+    pipeline = KeyMapper(
+        transforms=[AddToValue(addend=1)], remapping={'value': 'v_out'})
+
+    results = dict(value=0)
+    results = pipeline(results)
+
+    np.testing.assert_equal(results['value'], 0)  # should be unchanged
+    np.testing.assert_equal(results['v_out'], 1)
 
     # Case 1: simple remap
     pipeline = KeyMapper(
@@ -312,6 +321,15 @@ def test_transform_broadcaster():
 
     np.testing.assert_equal(results['a'], 3)
     np.testing.assert_equal(results['b'], 7)
+
+    # Case 3: apply to all keys
+    pipeline = TransformBroadcaster(
+        transforms=[SumTwoValues()], mapping=None, remapping=None)
+    results = dict(num_1=[1, 2, 3], num_2=[4, 5, 6])
+
+    results = pipeline(results)
+
+    np.testing.assert_equal(results['sum'], [5, 7, 9])
 
     # Case 4: inconsistent sequence length
     with pytest.raises(ValueError):
