@@ -99,7 +99,7 @@ class BaseMergeCell(nn.Module):
                 h, w = x.shape[-2:]
                 target_h, target_w = size
                 pad_h = (h // target_h + 1) * target_h - h
-                pad_w = (w // target_w + 1) * target_w - w
+                pad_w = ((w + target_w - 1)//taget_w) * target_w - w
                 pad_l = pad_w // 2
                 pad_r = pad_w - pad_l
                 pad_t = pad_h // 2
