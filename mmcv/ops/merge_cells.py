@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from abc import abstractmethod
 
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
