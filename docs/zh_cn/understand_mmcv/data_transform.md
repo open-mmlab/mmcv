@@ -160,7 +160,10 @@ pipeline = [
 pipeline = [
     ...
     dict(type='KeyMapper',
-        mapping={'img': 'gt_img'},  # 将 "gt_img" 字段映射至 "img" 字段
+        mapping={
+            'img': 'gt_img',  # 将 "gt_img" 字段映射至 "img" 字段
+            'mask': ...,  # 不使用原始数据中的 "mask" 字段。即对于被包装的数据变换，数据中不包含 "mask" 字段
+        },
         auto_remap=True,  # 在完成变换后，将 "img" 重映射回 "gt_img" 字段
         transforms=[
             # 在 `RandomFlip` 变换类中，我们只需要操作 "img" 字段即可
@@ -236,6 +239,29 @@ pipeline = [
            ])
    ]
    ```
+
+   在多目标扩展的 `mapping` 设置中，我们同样可以使用 `...` 来忽略指定的原始字段。如以下例子中，被包裹的 `RandomCrop` 会对字段 `"img"` 中的图像进行裁剪，并且在字段 `"img_shape"` 存在时更新剪裁后的图像大小。如果我们希望同时对两个图像字段 `"lq"` 和 `"gt"` 进行相同的随机裁剪，但只更新一次 `"img_shape"` 字段，可以通过例子中的方式实现：
+
+   ```python
+   pipeline = [
+       dict(type='TransformBroadcaster',
+           mapping={
+               'img': ['lq', 'gt'],
+               'img_shape': ['img_shape', ...],
+            },
+           # 在完成变换后，将 "img" 和 "img_shape" 字段重映射回原先的字段
+           auto_remap=True,
+           # 是否在对各目标的变换中共享随机变量
+           # 更多介绍参加后续章节（随机变量共享）
+           share_random_params=True,
+           transforms=[
+               # `RandomCrop` 类中会操作 "img" 和 "img_shape" 字段。若 "img_shape" 空缺，
+               # 则只操作 "img"
+               dict(type='RandomCrop'),
+           ])
+   ]
+   ```
+
 
 2. 应用于一个字段的一组目标
 
