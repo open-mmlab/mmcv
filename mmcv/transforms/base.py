@@ -1,16 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Dict
+from typing import Dict, Optional
 
 
 class BaseTransform(metaclass=ABCMeta):
 
-    def __call__(self, results: Dict) -> Dict:
+    def __call__(self, results: Dict) -> Optional[Dict]:
 
         return self.transform(results)
 
     @abstractmethod
-    def transform(self, results: Dict) -> Dict:
+    def transform(self, results: Dict) -> Optional[Dict]:
         """The transform function. All subclass of BaseTransform should
         override this method.
 

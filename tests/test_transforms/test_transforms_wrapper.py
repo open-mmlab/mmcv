@@ -67,6 +67,10 @@ class SumTwoValues(BaseTransform):
     def transform(self, results):
         if 'num_1' in results and 'num_2' in results:
             results['sum'] = results['num_1'] + results['num_2']
+        elif 'num_1' in results:
+            results['sum'] = results['num_1']
+        elif 'num_2' in results:
+            results['sum'] = results['num_2']
         else:
             results['sum'] = np.nan
         return results
@@ -262,13 +266,24 @@ def test_key_mapper():
     np.testing.assert_equal(results['sum'], 3)
 
     results = pipeline(dict(a=1))
-    assert np.isnan(results['sum'])
+    np.testing.assert_equal(results['sum'], 1)
 
     # Case 9: use wrapper as a transform
     transform = KeyMapper(mapping=dict(b='a'), auto_remap=False)
     results = transform(dict(a=1))
     # note that the original key 'a' will not be removed
     assert results == dict(a=1, b=1)
+
+    # Case 10: manually set keys ignored
+    pipeline = KeyMapper(
+        transforms=[SumTwoValues()],
+        mapping=dict(num_1='a', num_2=...),  # num_2 (b) will be ignored
+        auto_remap=False,
+        # allow_nonexist_keys will not affect manually ignored keys
+        allow_nonexist_keys=False)
+
+    results = pipeline(dict(a=1, b=2))
+    np.testing.assert_equal(results['sum'], 1)
 
     # Test basic functions
     pipeline = KeyMapper(
@@ -352,6 +367,31 @@ def test_transform_broadcaster():
     results = pipeline(results)
 
     np.testing.assert_equal(results['values'][0], results['values'][1])
+
+    # Case 6: partial broadcasting
+    pipeline = TransformBroadcaster(
+        transforms=[SumTwoValues()],
+        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', ...]),
+        remapping=dict(sum=['a', 'b']),
+        auto_remap=False)
+
+    results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
+    results = pipeline(results)
+
+    np.testing.assert_equal(results['a'], 3)
+    np.testing.assert_equal(results['b'], 3)
+
+    pipeline = TransformBroadcaster(
+        transforms=[SumTwoValues()],
+        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
+        remapping=dict(sum=['a', ...]),
+        auto_remap=False)
+
+    results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
+    results = pipeline(results)
+
+    np.testing.assert_equal(results['a'], 3)
+    assert 'b' not in results
 
     # Test repr
     _ = str(pipeline)

@@ -13,8 +13,14 @@ from .utils import cache_random_params, cache_randomness
 # Define type of transform or transform config
 Transform = Union[Dict, Callable[[Dict], Dict]]
 
-# Indicator for required but missing keys in results
-NotInResults = object()
+# Indicator of keys marked by KeyMapper._map_input, which means ignoring the
+# marked keys in KeyMapper._apply_transform so they will be invisible to
+# wrapped transforms.
+# This can be 2 possible case:
+# 1. The key is required but missing in results
+# 2. The key is manually set as ... (Ellipsis) in ``mapping``, which means
+# the original value in results should be ignored
+IgnoreKey = object()
 
 # Import nullcontext if python>=3.7, otherwise use a simple alternative
 # implementation.
@@ -23,7 +29,7 @@ try:
 except ImportError:
     from contextlib import contextmanager
 
-    @contextmanager
+    @contextmanager  # type: ignore
     def nullcontext(resource=None):
         try:
             yield resource
@@ -54,7 +60,7 @@ class Compose(BaseTransform):
 
         if not isinstance(transforms, list):
             transforms = [transforms]
-        self.transforms = []
+        self.transforms: List = []
         for transform in transforms:
             if isinstance(transform, dict):
                 transform = TRANSFORMS.build(transform)
@@ -137,6 +143,7 @@ class KeyMapper(BaseTransform):
         >>>             dict(type='Normalize'),
         >>>         ])
         >>> ]
+
         >>> # Example 2: Collect and structure multiple items
         >>> pipeline = [
         >>>     # The inner field 'imgs' will be a dict with keys 'img_src'
@@ -150,6 +157,22 @@ class KeyMapper(BaseTransform):
         >>>                     img_src='img1',
         >>>                     img_tar='img2')),
         >>>         transforms=...)
+        >>> ]
+
+        >>> # Example 3: Manually set ignored keys by "..."
+        >>> pipeline = [
+        >>>     ...
+        >>>     dict(type='KeyMapper',
+        >>>         mapping={
+        >>>             # map outer key "gt_img" to inner key "img"
+        >>>             'img': 'gt_img',
+        >>>             # ignore outer key "mask"
+        >>>             'mask': ...,
+        >>>         },
+        >>>         transforms=[
+        >>>             dict(type='RandomFlip'),
+        >>>         ])
+        >>>     ...
         >>> ]
     """
 
@@ -185,19 +208,24 @@ class KeyMapper(BaseTransform):
         """Allow easy iteration over the transform sequence."""
         return iter(self.transforms)
 
-    def map_input(self, data: Dict, mapping: Dict) -> Dict[str, Any]:
+    def _map_input(self, data: Dict,
+                   mapping: Optional[Dict]) -> Dict[str, Any]:
         """KeyMapper inputs for the wrapped transforms by gathering and
         renaming data items according to the mapping.
 
         Args:
             data (dict): The original input data
-            mapping (dict): The input key mapping. See the document of
-                ``mmcv.transforms.wrappers.KeyMapper`` for details.
+            mapping (dict, optional): The input key mapping. See the document
+                of ``mmcv.transforms.wrappers.KeyMapper`` for details. In
+                set None, return the input data directly.
 
         Returns:
             dict: The input data with remapped keys. This will be the actual
                 input of the wrapped pipeline.
         """
+
+        if mapping is None:
+            return data.copy()
 
         def _map(data, m):
             if isinstance(m, dict):
@@ -210,17 +238,17 @@ class KeyMapper(BaseTransform):
                 # transforms.
                 return m.__class__(_map(data, e) for e in m)
 
+            # allow manually mark a key to be ignored by ...
+            if m is ...:
+                return IgnoreKey
+
             # m is an outer_key
             if self.allow_nonexist_keys:
-                return data.get(m, NotInResults)
+                return data.get(m, IgnoreKey)
             else:
                 return data.get(m)
 
         collected = _map(data, mapping)
-        collected = {
-            k: v
-            for k, v in collected.items() if v is not NotInResults
-        }
 
         # Retain unmapped items
         inputs = data.copy()
@@ -228,18 +256,25 @@ class KeyMapper(BaseTransform):
 
         return inputs
 
-    def map_output(self, data: Dict, remapping: Dict) -> Dict[str, Any]:
+    def _map_output(self, data: Dict,
+                    remapping: Optional[Dict]) -> Dict[str, Any]:
         """KeyMapper outputs from the wrapped transforms by gathering and
         renaming data items according to the remapping.
 
         Args:
             data (dict): The output of the wrapped pipeline.
-            remapping (dict): The output key mapping. See the document of
-                ``mmcv.transforms.wrappers.KeyMapper`` for details.
+            remapping (dict, optional): The output key mapping. See the
+                document of ``mmcv.transforms.wrappers.KeyMapper`` for
+                details. If ``remapping is None``, no key mapping will be
+                applied but only remove the special token ``IgnoreKey``.
 
         Returns:
             dict: The output with remapped keys.
         """
+
+        # Remove ``IgnoreKey``
+        if remapping is None:
+            return {k: v for k, v in data.items() if v is not IgnoreKey}
 
         def _map(data, m):
             if isinstance(m, dict):
@@ -257,21 +292,44 @@ class KeyMapper(BaseTransform):
                     results.update(_map(d_i, m_i))
                 return results
 
+            if m is IgnoreKey:
+                return {}
+
             return {m: data}
 
         # Note that unmapped items are not retained, which is different from
-        # the behavior in map_input. This is to avoid original data items
+        # the behavior in _map_input. This is to avoid original data items
         # being overwritten by intermediate namesakes
         return _map(data, remapping)
 
-    def transform(self, results: Dict) -> Dict:
-        inputs = results
-        if self.mapping:
-            inputs = self.map_input(inputs, self.mapping)
+    def _apply_transforms(self, inputs: Dict) -> Dict:
+        """Apply ``self.transforms``.
+
+        Note that the special token ``IgnoreKey`` will be invisible to
+        ``self.transforms``, but not removed in this method. It will be
+        eventually removed in :func:``self._map_output``.
+        """
+        results = inputs.copy()
+        inputs = {k: v for k, v in inputs.items() if v is not IgnoreKey}
         outputs = self.transforms(inputs)
 
-        if self.remapping:
-            outputs = self.map_output(outputs, self.remapping)
+        if outputs is None:
+            raise ValueError(
+                f'Transforms wrapped by {self.__class__.__name__} should '
+                'not return None.')
+
+        results.update(outputs)  # type: ignore
+        return results
+
+    def transform(self, results: Dict) -> Dict:
+        """Apply mapping, wrapped transforms and remapping."""
+
+        # Apply mapping
+        inputs = self._map_input(results, self.mapping)
+        # Apply wrapped transforms
+        outputs = self._apply_transforms(inputs)
+        # Apply remapping
+        outputs = self._map_output(outputs, self.remapping)
 
         results.update(outputs)
         return results
@@ -314,7 +372,8 @@ class TransformBroadcaster(KeyMapper):
         example.
 
     Examples:
-        >>> # Example 1:
+        >>> # Example 1: Broadcast to enumerated keys, each contains a single
+        >>> # data element
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
@@ -333,7 +392,8 @@ class TransformBroadcaster(KeyMapper):
         >>>             dict(type='Normalize'),
         >>>         ])
         >>> ]
-        >>> # Example 2:
+
+        >>> # Example 2: Broadcast to keys that contains data sequences
         >>> pipeline = [
         >>>     dict(type='LoadImageFromFile', key='lq'),  # low-quality img
         >>>     dict(type='LoadImageFromFile', key='gt'),  # ground-truth img
@@ -351,6 +411,24 @@ class TransformBroadcaster(KeyMapper):
         >>>             dict(type='Normalize'),
         >>>         ])
         >>> ]
+
+        >>> Example 3: Set ignored keys in broadcasting
+        >>> pipeline = [
+        >>>        dict(type='TransformBroadcaster',
+        >>>            # Broadcast the wrapped transforms to multiple images
+        >>>            # 'lq' and 'gt, but only update 'img_shape' once
+        >>>            mapping={
+        >>>                'img': ['lq', 'gt'],
+        >>>                'img_shape': ['img_shape', ...],
+        >>>             },
+        >>>            auto_remap=True,
+        >>>            share_random_params=True,
+        >>>            transforms=[
+        >>>                # `RandomCrop` will modify the field "img",
+        >>>                # and optionally update "img_shape" if it exists
+        >>>                dict(type='RandomCrop'),
+        >>>            ])
+        >>>    ]
     """
 
     def __init__(self,
@@ -366,17 +444,23 @@ class TransformBroadcaster(KeyMapper):
         self.share_random_params = share_random_params
 
     def scatter_sequence(self, data: Dict) -> List[Dict]:
+        """Scatter the broadcasting targets to a list of inputs of the wrapped
+        transforms.
+        """
+
         # infer split number from input
-        seq_len = None
+        seq_len = 0
         key_rep = None
+
         if self.mapping:
             keys = self.mapping.keys()
         else:
             keys = data.keys()
 
         for key in keys:
+
             assert isinstance(data[key], Sequence)
-            if seq_len is not None:
+            if seq_len:
                 if len(data[key]) != seq_len:
                     raise ValueError('Got inconsistent sequence length: '
                                      f'{seq_len} ({key_rep}) vs. '
@@ -384,6 +468,8 @@ class TransformBroadcaster(KeyMapper):
             else:
                 seq_len = len(data[key])
                 key_rep = key
+
+        assert seq_len > 0, 'Fail to get the number of broadcasting targets'
 
         scatters = []
         for i in range(seq_len):
@@ -394,13 +480,13 @@ class TransformBroadcaster(KeyMapper):
         return scatters
 
     def transform(self, results: Dict):
+        """Broadcast wrapped transforms to multiple targets."""
+
         # Apply input remapping
-        inputs = results
-        if self.mapping:
-            inputs = self.map_input(inputs, self.mapping)
+        inputs = self._map_input(results, self.mapping)
 
         # Scatter sequential inputs into a list
-        inputs = self.scatter_sequence(inputs)
+        input_scatters = self.scatter_sequence(inputs)
 
         # Control random parameter sharing with a context manager
         if self.share_random_params:
@@ -410,20 +496,21 @@ class TransformBroadcaster(KeyMapper):
             # by all data items.
             ctx = cache_random_params
         else:
-            ctx = nullcontext
+            ctx = nullcontext  # type: ignore
 
         with ctx(self.transforms):
-            outputs = [self.transforms(_input) for _input in inputs]
+            output_scatters = [
+                self._apply_transforms(_input) for _input in input_scatters
+            ]
 
         # Collate output scatters (list of dict to dict of list)
         outputs = {
-            key: [_output[key] for _output in outputs]
-            for key in outputs[0]
+            key: [_output[key] for _output in output_scatters]
+            for key in output_scatters[0]
         }
 
-        # Apply output remapping
-        if self.remapping:
-            outputs = self.map_output(outputs, self.remapping)
+        # Apply remapping
+        outputs = self._map_output(outputs, self.remapping)
 
         results.update(outputs)
         return results
@@ -473,11 +560,13 @@ class RandomChoice(BaseTransform):
         return iter(self.transforms)
 
     @cache_randomness
-    def random_pipeline_index(self):
+    def random_pipeline_index(self) -> int:
+        """Return a random transform index."""
         indices = np.arange(len(self.transforms))
         return np.random.choice(indices, p=self.prob)
 
-    def transform(self, results):
+    def transform(self, results: Dict) -> Optional[Dict]:
+        """Randomly choose a transform to apply."""
         idx = self.random_pipeline_index()
         return self.transforms[idx](results)
 
@@ -512,10 +601,14 @@ class RandomApply(BaseTransform):
         return iter(self.transforms)
 
     @cache_randomness
-    def random_apply(self):
+    def random_apply(self) -> bool:
+        """Return a random bool value indicating whether apply the transform.
+        """
         return np.random.rand() < self.prob
 
-    def transform(self, results: Dict) -> Dict:
+    def transform(self, results: Dict) -> Optional[Dict]:
+        """Randomly apply the transform."""
         if self.random_apply():
-            results = self.transforms(results)
-        return results
+            return self.transforms(results)
+        else:
+            return results
