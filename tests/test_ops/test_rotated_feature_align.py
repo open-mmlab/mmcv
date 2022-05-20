@@ -2,8 +2,8 @@
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE
 from mmcv.ops import rotated_feature_align
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 
 @pytest.mark.skipif(
