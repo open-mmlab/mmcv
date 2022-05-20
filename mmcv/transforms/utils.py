@@ -151,7 +151,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
     # key2counter stores the usage number of each cache_randomness. This is
     # used to check that any cache_randomness is invoked once during processing
     # on data sample.
-    key2counter = defaultdict(int)
+    key2counter: dict = defaultdict(int)
 
     def _add_invoke_counter(obj, method_name):
         method = getattr(obj, method_name)
@@ -212,7 +212,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
         # Store the original method and init the counter
         if hasattr(t, '_methods_with_randomness'):
             setattr(t, 'transform', _add_invoke_checker(t, 'transform'))
-            for name in t._methods_with_randomness:
+            for name in getattr(t, '_methods_with_randomness'):
                 setattr(t, name, _add_invoke_counter(t, name))
 
     def _end_cache(t: BaseTransform):
@@ -221,20 +221,21 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
             return
 
         # Remove cache enabled flag
-        del t._cache_enabled
+        delattr(t, '_cache_enabled')
         if hasattr(t, '_cache'):
-            del t._cache
+            delattr(t, '_cache')
 
         # Restore the original method
         if hasattr(t, '_methods_with_randomness'):
-            for name in t._methods_with_randomness:
+            for name in getattr(t, '_methods_with_randomness'):
                 key = f'{id(t)}.{name}'
                 setattr(t, name, key2method[key])
 
             key_transform = f'{id(t)}.transform'
             setattr(t, 'transform', key2method[key_transform])
 
-    def _apply(t: BaseTransform, func: Callable[[BaseTransform], None]):
+    def _apply(t: Union[BaseTransform, Iterable],
+               func: Callable[[BaseTransform], None]):
         if isinstance(t, BaseTransform):
             func(t)
         if isinstance(t, Iterable):
