@@ -3,10 +3,12 @@
 CommandLine:
     pytest tests/test_merge_cells.py
 """
+import math
+
 import pytest
 import torch
 import torch.nn.functional as F
-import math
+
 from mmcv.ops.merge_cells import (BaseMergeCell, ConcatCell, GlobalPoolingCell,
                                   SumCell)
 
