@@ -98,7 +98,7 @@ class BaseMergeCell(nn.Module):
         else:
             if x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0:
                 h, w = x.shape[-2:]
-                target_h, target_w = size            
+                target_h, target_w = size
                 pad_h = math.ceil(h / target_h) * target_h - h
                 pad_w = math.ceil(w / target_w) * target_w - w
                 pad_l = pad_w // 2
