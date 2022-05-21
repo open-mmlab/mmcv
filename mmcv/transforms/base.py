@@ -1,16 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 
 class BaseTransform(metaclass=ABCMeta):
 
-    def __call__(self, results: Dict) -> Optional[Dict]:
+    def __call__(self,
+                 results: Dict) -> Optional[Union[Dict, Tuple[List, List]]]:
 
         return self.transform(results)
 
     @abstractmethod
-    def transform(self, results: Dict) -> Optional[Dict]:
+    def transform(self,
+                  results: Dict) -> Optional[Union[Dict, Tuple[List, List]]]:
         """The transform function. All subclass of BaseTransform should
         override this method.
 
