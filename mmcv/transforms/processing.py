@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -800,10 +800,12 @@ class MultiScaleFlipAug(BaseTransform):
         else:
             # if ``scales`` and ``scale_factor`` both be ``None``
             if scale_factor is None:
-                self.scales = [1.]
+                self.scales = [1.]  # type: ignore
+            elif isinstance(scale_factor, list):
+                self.scales = scale_factor  # type: ignore
             else:
-                self.scales = scale_factor if isinstance(
-                    scale_factor, list) else [scale_factor]
+                self.scales = [scale_factor]  # type: ignore
+
             self.scale_key = 'scale_factor'
 
         self.allow_flip = allow_flip
@@ -816,7 +818,7 @@ class MultiScaleFlipAug(BaseTransform):
         self.resize_cfg = resize_cfg.copy()
         self.flip_cfg = flip_cfg
 
-    def transform(self, results: dict) -> Tuple[List, List]:
+    def transform(self, results: dict) -> Dict:
         """Apply test time augment transforms on results.
 
         Args:
@@ -848,12 +850,12 @@ class MultiScaleFlipAug(BaseTransform):
                     results['flip_direction'] = None
 
                 resize_flip = Compose(_resize_flip)
-                _results = results.copy()
-                _results = resize_flip(_results)
-                packed_results = self.transforms(_results)
+                _results = resize_flip(results.copy())
+                packed_results = self.transforms(_results)  # type: ignore
 
-                inputs.append(packed_results['inputs'])
-                data_samples.append(packed_results['data_sample'])
+                inputs.append(packed_results['inputs'])  # type: ignore
+                data_samples.append(
+                    packed_results['data_sample'])  # type: ignore
         return dict(inputs=inputs, data_sample=data_samples)
 
     def __repr__(self) -> str:
@@ -1312,8 +1314,7 @@ class RandomResize(BaseTransform):
 
         if isinstance(self.scale, tuple):
             assert self.ratio_range is not None and len(self.ratio_range) == 2
-            scale: Tuple[int, int] = self._random_sample_ratio(
-                self.scale, self.ratio_range)
+            scale = self._random_sample_ratio(self.scale, self.ratio_range)
         elif mmcv.is_list_of(self.scale, tuple):
             scale = self._random_sample(self.scale)
         else:

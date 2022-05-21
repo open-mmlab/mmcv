@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from collections.abc import Sequence
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -25,7 +24,7 @@ IgnoreKey = object()
 # Import nullcontext if python>=3.7, otherwise use a simple alternative
 # implementation.
 try:
-    from contextlib import nullcontext
+    from contextlib import nullcontext  # type: ignore
 except ImportError:
     from contextlib import contextmanager
 
@@ -55,10 +54,10 @@ class Compose(BaseTransform):
         >>> ]
     """
 
-    def __init__(self, transforms: Union[Transform, List[Transform]]):
+    def __init__(self, transforms: Union[Transform, Sequence[Transform]]):
         super().__init__()
 
-        if not isinstance(transforms, list):
+        if not isinstance(transforms, Sequence):
             transforms = [transforms]
         self.transforms: List = []
         for transform in transforms:
@@ -85,7 +84,7 @@ class Compose(BaseTransform):
             dict or None: Transformed results.
         """
         for t in self.transforms:
-            results = t(results)
+            results = t(results)  # type: ignore
             if results is None:
                 return None
         return results
@@ -331,7 +330,7 @@ class KeyMapper(BaseTransform):
         # Apply remapping
         outputs = self._map_output(outputs, self.remapping)
 
-        results.update(outputs)
+        results.update(outputs)  # type: ignore
         return results
 
 
@@ -445,8 +444,7 @@ class TransformBroadcaster(KeyMapper):
 
     def scatter_sequence(self, data: Dict) -> List[Dict]:
         """Scatter the broadcasting targets to a list of inputs of the wrapped
-        transforms.
-        """
+        transforms."""
 
         # infer split number from input
         seq_len = 0
@@ -458,7 +456,6 @@ class TransformBroadcaster(KeyMapper):
             keys = data.keys()
 
         for key in keys:
-
             assert isinstance(data[key], Sequence)
             if seq_len:
                 if len(data[key]) != seq_len:
@@ -472,7 +469,7 @@ class TransformBroadcaster(KeyMapper):
         assert seq_len > 0, 'Fail to get the number of broadcasting targets'
 
         scatters = []
-        for i in range(seq_len):
+        for i in range(seq_len):  # type: ignore
             scatter = data.copy()
             for key in keys:
                 scatter[key] = data[key][i]
@@ -494,7 +491,7 @@ class TransformBroadcaster(KeyMapper):
             # cacheable method of the transforms cache their outputs. Thus
             # the random parameters will only generated once and shared
             # by all data items.
-            ctx = cache_random_params
+            ctx = cache_random_params  # type: ignore
         else:
             ctx = nullcontext  # type: ignore
 
@@ -602,13 +599,13 @@ class RandomApply(BaseTransform):
 
     @cache_randomness
     def random_apply(self) -> bool:
-        """Return a random bool value indicating whether apply the transform.
-        """
+        """Return a random bool value indicating whether apply the
+        transform."""
         return np.random.rand() < self.prob
 
     def transform(self, results: Dict) -> Optional[Dict]:
         """Randomly apply the transform."""
         if self.random_apply():
-            return self.transforms(results)
+            return self.transforms(results)  # type: ignore
         else:
             return results
