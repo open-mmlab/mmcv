@@ -8,6 +8,7 @@ on:
       - 'docs/**'
       - 'examples/**'
       - '.dev_scripts/**'
+      - 'docker/**'
 
   pull_request:
     paths-ignore:
@@ -16,6 +17,7 @@ on:
       - 'docs/**'
       - 'examples/**'
       - '.dev_scripts/**'
+      - 'docker/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
