@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -39,18 +38,13 @@ class ChamferDistanceFunction(Function):
         batchsize, n, _ = xyz1.size()
         _, m, _ = xyz2.size()
         device = xyz1.device
+        xyz1 = xyz1.contiguous()
+        xyz2 = xyz2.contiguous()
 
-        dist1 = torch.zeros(batchsize, n)
-        dist2 = torch.zeros(batchsize, m)
-
-        idx1 = torch.zeros(batchsize, n).type(torch.IntTensor)
-        idx2 = torch.zeros(batchsize, m).type(torch.IntTensor)
-
-        dist1 = dist1.to(device)
-        dist2 = dist2.to(device)
-        idx1 = idx1.to(device)
-        idx2 = idx2.to(device)
-        torch.cuda.set_device(device)
+        dist1 = torch.zeros(batchsize, n).to(device)
+        dist2 = torch.zeros(batchsize, m).to(device)
+        idx1 = torch.zeros(batchsize, n).type(torch.IntTensor).to(device)
+        idx2 = torch.zeros(batchsize, m).type(torch.IntTensor).to(device)
 
         ext_module.chamfer_distance_forward(xyz1, xyz2, dist1, dist2, idx1,
                                             idx2)
@@ -81,30 +75,16 @@ class ChamferDistanceFunction(Function):
                 (B, N, 2).
         """
         xyz1, xyz2, idx1, idx2 = ctx.saved_tensors
+        device = grad_dist1.device
         grad_dist1 = grad_dist1.contiguous()
         grad_dist2 = grad_dist2.contiguous()
-        device = grad_dist1.device
+        grad_xyz1 = torch.zeros(xyz1.size()).to(device)
+        grad_xyz2 = torch.zeros(xyz2.size()).to(device)
 
-        grad_xyz1 = torch.zeros(xyz1.size())
-        grad_xyz2 = torch.zeros(xyz2.size())
-
-        grad_xyz1 = grad_xyz1.to(device)
-        grad_xyz2 = grad_xyz2.to(device)
         ext_module.chamfer_distance_backward(xyz1, xyz2, grad_xyz1, grad_xyz2,
                                              grad_dist1, grad_dist2, idx1,
                                              idx2)
         return grad_xyz1, grad_xyz2
 
 
-class ChamferDistance(nn.Module):
-    """This is an implementation of the 2D Chamfer Distance."""
-
-    def forward(self, input1, input2):
-        """
-        Args:
-            input1 (torch.Tensor): Point set with shape (B, N, 2).
-            input2 (torch.Tensor): Point set with shape (B, N, 2).
-        """
-        input1 = input1.contiguous()
-        input2 = input2.contiguous()
-        return ChamferDistanceFunction.apply(input1, input2)
+chamfer_distance = ChamferDistanceFunction.apply

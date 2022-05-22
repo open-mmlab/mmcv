@@ -7,7 +7,7 @@ from .border_align import BorderAlign, border_align
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
-from .chamfer_distance import ChamferDistance
+from .chamfer_distance import chamfer_distance
 from .contour_expand import contour_expand
 from .convex_iou import convex_giou, convex_iou
 from .corner_pool import CornerPool
@@ -99,5 +99,5 @@ __all__ = [
     'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
     'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
     'convex_iou', 'convex_giou', 'diff_iou_rotated_2d', 'diff_iou_rotated_3d',
-    'ChamferDistance'
+    'chamfer_distance'
 ]
