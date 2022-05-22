@@ -16,7 +16,7 @@ __global__ void chamfer_distance_forward_cuda_kernel(int b, int n,
                                                      const scalar_t* xyz2,
                                                      scalar_t* result,
                                                      int* result_i) {
-  __shared__ scalar_t buf[THREADS_PER_BLOCK * 2];
+  __shared__ scalar_t buf[b * m];
   for (int i = blockIdx.x; i < b; i += gridDim.x) {
     for (int k2 = 0; k2 < m; k2 += THREADS_PER_BLOCK) {
       int end_k = min(m, k2 + THREADS_PER_BLOCK) - k2;
@@ -24,90 +24,20 @@ __global__ void chamfer_distance_forward_cuda_kernel(int b, int n,
         buf[j] = xyz2[(i * m + k2) * 2 + j];
       }
       __syncthreads();
-      for (int j = threadIdx.x + blockIdx.y * blockDim.x; j < n;
-           j += blockDim.x * gridDim.y) {
+      for (int j = threadIdx.x; j < n; j += blockDim.x * gridDim.y) {
         scalar_t x1 = xyz[(i * n + j) * 2 + 0];
         scalar_t y1 = xyz[(i * n + j) * 2 + 1];
         int best_i = 0;
-        scalar_t best = 0;
-        int end_ka = end_k - (end_k & 2);
-        if (end_ka == THREADS_PER_BLOCK) {
-          for (int k = 0; k < THREADS_PER_BLOCK; k += 4) {
-            {
-              scalar_t x2 = buf[k * 2 + 0] - x1;
-              scalar_t y2 = buf[k * 2 + 1] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (k == 0 || d < best) {
-                best = d;
-                best_i = k + k2;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 2] - x1;
-              scalar_t y2 = buf[k * 2 + 3] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 1;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 4] - x1;
-              scalar_t y2 = buf[k * 2 + 5] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 2;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 6] - x1;
-              scalar_t y2 = buf[k * 2 + 7] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 3;
-              }
-            }
-          }
-        } else {
-          for (int k = 0; k < end_ka; k += 4) {
-            {
-              scalar_t x2 = buf[k * 2 + 0] - x1;
-              scalar_t y2 = buf[k * 2 + 1] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (k == 0 || d < best) {
-                best = d;
-                best_i = k + k2;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 2] - x1;
-              scalar_t y2 = buf[k * 2 + 3] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 1;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 4] - x1;
-              scalar_t y2 = buf[k * 2 + 5] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 2;
-              }
-            }
-            {
-              scalar_t x2 = buf[k * 2 + 6] - x1;
-              scalar_t y2 = buf[k * 2 + 7] - y1;
-              scalar_t d = x2 * x2 + y2 * y2;
-              if (d < best) {
-                best = d;
-                best_i = k + k2 + 3;
-              }
-            }
+        scalar_t best = 1e10;
+        int end_ka = end_k & (~2);
+#progma unroll
+        for (int k = 0; k < end_ka; k) {
+          scalar_t x2 = buf[k * 2 + 0] - x1;
+          scalar_t y2 = buf[k * 2 + 1] - y1;
+          scalar_t d = x2 * x2 + y2 * y2;
+          if (d < best) {
+            best = d;
+            best_i = k + k2;
           }
         }
         for (int k = end_ka; k < end_k; k++) {
@@ -135,8 +65,7 @@ __global__ void chamfer_distance_backward_cuda_kernel(
     const scalar_t* grad_dist1, const int* idx1, scalar_t* grad_xyz1,
     scalar_t* grad_xyz2) {
   for (int i = blockIdx.x; i < b; i += gridDim.x) {
-    for (int j = threadIdx.x + blockIdx.y * blockDim.x; j < n;
-         j += blockDim.x * gridDim.y) {
+    for (int j = threadIdx.x; j < n; j += blockDim.x * gridDim.y) {
       scalar_t x1 = xyz1[(i * n + j) * 2 + 0];
       scalar_t y1 = xyz1[(i * n + j) * 2 + 1];
       int j2 = idx1[i * n + j];
