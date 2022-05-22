@@ -464,7 +464,7 @@ def test_logger(runner, by_epoch, eval_hook_priority):
     with tempfile.TemporaryDirectory() as tmpdir:
         logger = get_logger('test_logger')
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        runner = EpochBasedRunner(
+        runner = runner(
             model=model, optimizer=optimizer, work_dir=tmpdir, logger=logger)
         runner.register_logger_hooks(
             dict(
