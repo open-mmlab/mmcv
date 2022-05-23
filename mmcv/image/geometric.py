@@ -37,15 +37,27 @@ cv2_interp_codes = {
     'lanczos': cv2.INTER_LANCZOS4
 }
 
+# Pillow >=v9.1.0 use a slightly different naming scheme for filters.
+# Set pillow_interp_codes according to the naming scheme used.
 if Image is not None:
-    pillow_interp_codes = {
-        'nearest': Image.NEAREST,
-        'bilinear': Image.BILINEAR,
-        'bicubic': Image.BICUBIC,
-        'box': Image.BOX,
-        'lanczos': Image.LANCZOS,
-        'hamming': Image.HAMMING
-    }
+    if hasattr(Image, 'Resampling'):
+        pillow_interp_codes = {
+            'nearest': Image.Resampling.NEAREST,
+            'bilinear': Image.Resampling.BILINEAR,
+            'bicubic': Image.Resampling.BICUBIC,
+            'box': Image.Resampling.BOX,
+            'lanczos': Image.Resampling.LANCZOS,
+            'hamming': Image.Resampling.HAMMING
+        }
+    else:
+        pillow_interp_codes = {
+            'nearest': Image.NEAREST,
+            'bilinear': Image.BILINEAR,
+            'bicubic': Image.BICUBIC,
+            'box': Image.BOX,
+            'lanczos': Image.LANCZOS,
+            'hamming': Image.HAMMING
+        }
 
 
 def imresize(img,
@@ -145,7 +157,7 @@ def imresize_to_multiple(img,
         size = _scale_size((w, h), scale_factor)
 
     divisor = to_2tuple(divisor)
-    size = tuple([int(np.ceil(s / d)) * d for s, d in zip(size, divisor)])
+    size = tuple(int(np.ceil(s / d)) * d for s, d in zip(size, divisor))
     resized_img, w_scale, h_scale = imresize(
         img,
         size,

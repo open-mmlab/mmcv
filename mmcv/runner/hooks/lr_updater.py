@@ -157,7 +157,7 @@ class LrUpdaterHook(Hook):
 class FixedLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, **kwargs):
-        super(FixedLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         return base_lr
@@ -188,7 +188,7 @@ class StepLrUpdaterHook(LrUpdaterHook):
         self.step = step
         self.gamma = gamma
         self.min_lr = min_lr
-        super(StepLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
@@ -215,7 +215,7 @@ class ExpLrUpdaterHook(LrUpdaterHook):
 
     def __init__(self, gamma, **kwargs):
         self.gamma = gamma
-        super(ExpLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
@@ -228,7 +228,7 @@ class PolyLrUpdaterHook(LrUpdaterHook):
     def __init__(self, power=1., min_lr=0., **kwargs):
         self.power = power
         self.min_lr = min_lr
-        super(PolyLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
@@ -247,7 +247,7 @@ class InvLrUpdaterHook(LrUpdaterHook):
     def __init__(self, gamma, power=1., **kwargs):
         self.gamma = gamma
         self.power = power
-        super(InvLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         progress = runner.epoch if self.by_epoch else runner.iter
@@ -269,7 +269,7 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
         assert (min_lr is None) ^ (min_lr_ratio is None)
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
-        super(CosineAnnealingLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
@@ -317,7 +317,7 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
         self.start_percent = start_percent
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
-        super(FlatCosineAnnealingLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:
@@ -367,7 +367,7 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
         self.restart_weights = restart_weights
         assert (len(self.periods) == len(self.restart_weights)
                 ), 'periods and restart_weights should have the same length.'
-        super(CosineRestartLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.cumulative_periods = [
             sum(self.periods[0:i + 1]) for i in range(0, len(self.periods))
@@ -484,10 +484,10 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
 
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
-        super(CyclicLrUpdaterHook, self).__init__(by_epoch, **kwargs)
+        super().__init__(by_epoch, **kwargs)
 
     def before_run(self, runner):
-        super(CyclicLrUpdaterHook, self).before_run(runner)
+        super().before_run(runner)
         # initiate lr_phases
         # total lr_phases are separated as up and down
         self.max_iter_per_phase = runner.max_iters // self.cyclic_times
@@ -598,7 +598,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
         self.final_div_factor = final_div_factor
         self.three_phase = three_phase
         self.lr_phases = []  # init lr_phases
-        super(OneCycleLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def before_run(self, runner):
         if hasattr(self, 'total_steps'):
@@ -668,7 +668,7 @@ class LinearAnnealingLrUpdaterHook(LrUpdaterHook):
         assert (min_lr is None) ^ (min_lr_ratio is None)
         self.min_lr = min_lr
         self.min_lr_ratio = min_lr_ratio
-        super(LinearAnnealingLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_lr(self, runner, base_lr):
         if self.by_epoch:

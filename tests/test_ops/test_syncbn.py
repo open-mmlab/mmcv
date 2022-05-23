@@ -14,7 +14,7 @@ else:
     import re
 
 
-class TestSyncBN(object):
+class TestSyncBN:
 
     def dist_init(self):
         rank = int(os.environ['SLURM_PROCID'])

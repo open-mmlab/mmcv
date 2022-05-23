@@ -15,16 +15,16 @@
 
 ### MMCV已支持的算子
 
-|                                       算子                                       |  CPU  |  GPU  | MMCV版本 |
-| :------------------------------------------------------------------------------: | :---: | :---: | :------: |
-|                   [SoftNMS](onnxruntime_custom_ops.md#softnms)                   |   Y   |   N   |  1.2.3   |
-|                  [RoIAlign](onnxruntime_custom_ops.md#roialign)                  |   Y   |   N   |  1.2.5   |
-|                       [NMS](onnxruntime_custom_ops.md#nms)                       |   Y   |   N   |  1.2.7   |
-|              [grid_sampler](onnxruntime_custom_ops.md#grid_sampler)              |   Y   |   N   |  1.3.1   |
-|                [CornerPool](onnxruntime_custom_ops.md#cornerpool)                |   Y   |   N   |  1.3.4   |
-|                    [cummax](onnxruntime_custom_ops.md#cummax)                    |   Y   |   N   |  1.3.4   |
-|                    [cummin](onnxruntime_custom_ops.md#cummin)                    |   Y   |   N   |  1.3.4   |
-| [MMCVModulatedDeformConv2d](onnxruntime_custom_ops.md#mmcvmodulateddeformconv2d) |   Y   |   N   |  1.3.12  |
+|                                        算子                                        | CPU | GPU | MMCV版本 |
+| :------------------------------------------------------------------------------: | :-: | :-: | :----: |
+|                   [SoftNMS](onnxruntime_custom_ops.md#softnms)                   |  Y  |  N  | 1.2.3  |
+|                  [RoIAlign](onnxruntime_custom_ops.md#roialign)                  |  Y  |  N  | 1.2.5  |
+|                       [NMS](onnxruntime_custom_ops.md#nms)                       |  Y  |  N  | 1.2.7  |
+|              [grid_sampler](onnxruntime_custom_ops.md#grid_sampler)              |  Y  |  N  | 1.3.1  |
+|                [CornerPool](onnxruntime_custom_ops.md#cornerpool)                |  Y  |  N  | 1.3.4  |
+|                    [cummax](onnxruntime_custom_ops.md#cummax)                    |  Y  |  N  | 1.3.4  |
+|                    [cummin](onnxruntime_custom_ops.md#cummin)                    |  Y  |  N  | 1.3.4  |
+| [MMCVModulatedDeformConv2d](onnxruntime_custom_ops.md#mmcvmodulateddeformconv2d) |  Y  |  N  | 1.3.12 |
 
 ### 如何编译ONNX Runtime自定义算子？
 
@@ -97,18 +97,20 @@ onnx_results = sess.run(None, {'input' : input_data})
 以`soft_nms`为例：
 
 1. 在ONNX Runtime头文件目录`mmcv/ops/csrc/onnxruntime/`下添加头文件`soft_nms.h`
+
 2. 在ONNX Runtime源码目录`mmcv/ops/csrc/onnxruntime/cpu/`下添加算子实现`soft_nms.cpp`
+
 3. 在[onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)中注册实现的算子`soft_nms`
 
-    ```c++
-    #include "soft_nms.h"
+   ```c++
+   #include "soft_nms.h"
 
-    SoftNmsOp c_SoftNmsOp;
+   SoftNmsOp c_SoftNmsOp;
 
-    if (auto status = ortApi->CustomOpDomain_Add(domain, &c_SoftNmsOp)) {
-    return status;
-    }
-    ```
+   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_SoftNmsOp)) {
+   return status;
+   }
+   ```
 
 4. 在`tests/test_ops/test_onnx.py`添加单元测试，
    可以参考[here](../../tests/test_ops/test_onnx.py)。
@@ -118,8 +120,8 @@ onnx_results = sess.run(None, {'input' : input_data})
 ### 已知问题
 
 - "RuntimeError: tuple appears in op that does not forward tuples, unsupported kind: `prim::PythonOp`."
-   1. 请注意`cummax`和`cummin`算子是在torch >= 1.5.0被添加的。但他们需要在torch version >= 1.7.0才能正确导出。否则会在导出时发生上面的错误。
-   2. 解决方法：升级PyTorch到1.7.0以上版本
+  1. 请注意`cummax`和`cummin`算子是在torch >= 1.5.0被添加的。但他们需要在torch version >= 1.7.0才能正确导出。否则会在导出时发生上面的错误。
+  2. 解决方法：升级PyTorch到1.7.0以上版本
 
 ### 引用
 

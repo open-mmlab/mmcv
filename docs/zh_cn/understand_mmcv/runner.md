@@ -8,7 +8,7 @@
 
 ### EpochBasedRunner
 
-顾名思义，`EpochBasedRunner` 是指以 epoch 为周期的工作流，例如设置 workflow = [('train', 2), ('val', 1)] 表示循环迭代地训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
+顾名思义，`EpochBasedRunner` 是指以 epoch 为周期的工作流，例如设置 workflow = \[('train', 2), ('val', 1)\] 表示循环迭代地训练 2 个 epoch，然后验证 1 个 epoch。MMDetection 目标检测框架默认采用的是 `EpochBasedRunner`。
 
 其抽象逻辑如下所示：
 
@@ -25,6 +25,7 @@ while curr_epoch < max_epochs:
         for _ in range(epochs):
             epoch_runner(data_loaders[i], **kwargs)
 ```
+
 目前支持训练和验证两个工作流，以训练函数为例，其抽象逻辑是：
 
 ```python
@@ -40,7 +41,8 @@ def train(self, data_loader, **kwargs):
 ```
 
 ### IterBasedRunner
-不同于 `EpochBasedRunner`，`IterBasedRunner` 是指以 iter 为周期的工作流，例如设置 workflow = [('train', 2)， ('val', 1)] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `IterBasedRunner`。
+
+不同于 `EpochBasedRunner`，`IterBasedRunner` 是指以 iter 为周期的工作流，例如设置 workflow = \[('train', 2)， ('val', 1)\] 表示循环迭代的训练 2 个 iter，然后验证 1 个 iter，MMSegmentation 语义分割框架默认采用的是  `IterBasedRunner`。
 
 其抽象逻辑如下所示：
 
@@ -59,6 +61,7 @@ while curr_iter < max_iters:
         for _ in range(iters):
             iter_runner(iter_loaders[i], **kwargs)
 ```
+
 目前支持训练和验证两个工作流，以验证函数为例，其抽象逻辑是：
 
 ```python
@@ -75,6 +78,7 @@ def val(self, data_loader, **kwargs):
 除了上述基础功能外，`EpochBasedRunner` 和 `IterBasedRunner` 还提供了 resume 、 save_checkpoint 和注册 hook 功能。
 
 ### 一个简单例子
+
 以最常用的分类任务为例详细说明 `runner` 的使用方法。 开启任何一个训练任务，都需要包括如下步骤：
 
 **(1) dataloader、model 和优化器等类初始化**
@@ -148,8 +152,8 @@ runner.run(data_loaders, cfg.workflow)
 
 关于 workflow 设置，以 `EpochBasedRunner` 为例，详情如下：
 
-- 假设只想运行训练工作流，则可以设置 workflow = [('train', 1)]，表示只进行迭代训练
-- 假设想运行训练和验证工作流，则可以设置 workflow = [('train',  3), ('val', 1)]，表示先训练 3 个 epoch ，然后切换到 val 工作流，运行 1 个 epoch，然后循环，直到训练 epoch 次数达到指定值
-- 工作流设置还自由定制，例如你可以先验证再训练 workflow = [('val', 1), ('train', 1)]
+- 假设只想运行训练工作流，则可以设置 workflow = \[('train', 1)\]，表示只进行迭代训练
+- 假设想运行训练和验证工作流，则可以设置 workflow = \[('train',  3), ('val', 1)\]，表示先训练 3 个 epoch ，然后切换到 val 工作流，运行 1 个 epoch，然后循环，直到训练 epoch 次数达到指定值
+- 工作流设置还自由定制，例如你可以先验证再训练 workflow = \[('val', 1), ('train', 1)\]
 
 上述代码都已经封装到了各个代码库的 train.py 中，用户只需要设置相应的配置即可，上述流程会自动运行。

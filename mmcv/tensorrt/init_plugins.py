@@ -5,7 +5,7 @@ import os
 import warnings
 
 
-def get_tensorrt_op_path():
+def get_tensorrt_op_path() -> str:
     """Get TensorRT plugins library path."""
     # Following strings of text style are from colorama package
     bright_style, reset_style = '\x1b[1m', '\x1b[0m'
@@ -31,7 +31,7 @@ def get_tensorrt_op_path():
 plugin_is_loaded = False
 
 
-def is_tensorrt_plugin_loaded():
+def is_tensorrt_plugin_loaded() -> bool:
     """Check if TensorRT plugins library is loaded or not.
 
     Returns:
@@ -54,7 +54,7 @@ def is_tensorrt_plugin_loaded():
     return plugin_is_loaded
 
 
-def load_tensorrt_plugin():
+def load_tensorrt_plugin() -> None:
     """load TensorRT plugins library."""
 
     # Following strings of text style are from colorama package

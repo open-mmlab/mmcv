@@ -15,7 +15,7 @@ class Loss(nn.Module):
         return torch.mean(input - target)
 
 
-class TestPSAMask(object):
+class TestPSAMask:
 
     def test_psa_mask_collect(self):
         if not torch.cuda.is_available():

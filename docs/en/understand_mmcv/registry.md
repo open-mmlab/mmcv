@@ -3,11 +3,15 @@
 MMCV implements [registry](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) to manage different modules that share similar functionalities, e.g., backbones, head, and necks, in detectors.
 Most projects in OpenMMLab use registry to manage modules of datasets and models, such as [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting), etc.
 
+```{note}
+In v1.5.1 and later, the Registry supports registering functions and calling them.
+```
+
 ### What is registry
 
-In MMCV, registry can be regarded as a mapping that maps a class to a string.
-These classes contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
-With the registry, users can find and instantiate the class through its corresponding string, and use the instantiated module as they want.
+In MMCV, registry can be regarded as a mapping that maps a class or function to a string.
+These classes or functions contained by a single registry usually have similar APIs but implement different algorithms or support different datasets.
+With the registry, users can find the class or function through its corresponding string, and instantiate the corresponding module or call the function to obtain the result according to needs.
 One typical example is the config systems in most OpenMMLab projects, which use the registry to create hooks, runners, models, and datasets, through configs.
 The API reference could be found [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry).
 
@@ -17,7 +21,7 @@ To manage your modules in the codebase by `Registry`, there are three steps as b
 2. Create a registry.
 3. Use this registry to manage the modules.
 
-`build_func` argument of `Registry` is to customize how to instantiate the class instance, the default one is `build_from_cfg` implemented [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg).
+`build_func` argument of `Registry` is to customize how to instantiate the class instance or how to call the function to obtain the result, the default one is `build_from_cfg` implemented [here](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg).
 
 ### A Simple Example
 
@@ -34,7 +38,7 @@ from mmcv.utils import Registry
 CONVERTERS = Registry('converters')
 ```
 
-Then we can implement different converters in the package. For example, implement `Converter1` in `converters/converter1.py`
+Then we can implement different converters that is class or function in the package. For example, implement `Converter1` in `converters/converter1.py`, and `converter2` in `converters/converter2.py`.
 
 ```python
 
@@ -47,12 +51,26 @@ class Converter1(object):
         self.a = a
         self.b = b
 ```
+
+```python
+# converter2.py
+from .builder import CONVERTERS
+from .converter1 import Converter1
+
+# 使用注册器管理模块
+@CONVERTERS.register_module()
+def converter2(a, b)
+    return Converter1(a, b)
+```
+
 The key step to use registry for managing the modules is to register the implemented module into the registry `CONVERTERS` through
-`@CONVERTERS.register_module()` when you are creating the module. By this way, a mapping between a string and the class is built and maintained by `CONVERTERS` as below
+`@CONVERTERS.register_module()` when you are creating the module. By this way, a mapping between a string and the class (function) is built and maintained by `CONVERTERS` as below
 
 ```python
 'Converter1' -> <class 'Converter1'>
+'converter2' -> <function 'converter2'>
 ```
+
 ```{note}
 The registry mechanism will be triggered only when the file where the module is located is imported.
 So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.
@@ -61,8 +79,11 @@ So you need to import that file somewhere. More details can be found at https://
 If the module is successfully registered, you can use this converter through configs as
 
 ```python
-converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
-converter = CONVERTERS.build(converter_cfg)
+converter1_cfg = dict(type='Converter1', a=a_value, b=b_value)
+converter2_cfg = dict(type='converter2', a=a_value, b=b_value)
+converter1 = CONVERTERS.build(converter1_cfg)
+# returns the calling result
+result = CONVERTERS.build(converter2_cfg)
 ```
 
 ### Customize Build Function

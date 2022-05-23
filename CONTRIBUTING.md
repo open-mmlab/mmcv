@@ -9,6 +9,7 @@ All kinds of contributions are welcome, including but not limited to the followi
 ```{note}
 If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
 ```
+
 ### Code style
 
 #### Python
@@ -17,10 +18,11 @@ We adopt [PEP8](https://www.python.org/dev/peps/pep-0008/) as the preferred code
 
 We use the following tools for linting and formatting:
 
-- [flake8](http://flake8.pycqa.org/en/latest/): A wrapper around some linter tools.
-- [yapf](https://github.com/google/yapf): A formatter for Python files.
+- [flake8](https://github.com/PyCQA/flake8): A wrapper around some linter tools.
 - [isort](https://github.com/timothycrosley/isort): A Python utility to sort imports.
-- [markdownlint](https://github.com/markdownlint/markdownlint): A linter to check markdown files and flag style issues.
+- [yapf](https://github.com/google/yapf): A formatter for Python files.
+- [codespell](https://github.com/codespell-project/codespell): A Python utility to fix common misspellings in text files.
+- [mdformat](https://github.com/executablebooks/mdformat): Mdformat is an opinionated Markdown formatter that can be used to enforce a consistent style in Markdown files.
 - [docformatter](https://github.com/myint/docformatter): A formatter to format docstring.
 
 Style configurations of yapf and isort can be found in [setup.cfg](./setup.cfg).
@@ -47,32 +49,12 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 
     ```shell
     pip install -U pre-commit
-    ```
-
-    From the repository folder
-
-    ```shell
     pre-commit install
     ```
 
-    Try the following steps to install ruby when you encounter an issue on installing markdownlint
+   After this on every commit check code linters and formatter will be enforced.
 
-    ```shell
-    # install rvm
-    curl -L https://get.rvm.io | bash -s -- --autolibs=read-fail
-    [[ -s "$HOME/.rvm/scripts/rvm" ]] && echo source "$HOME/.rvm/scripts/rvm" >> ~/.bashrc
-    source ~/.bashrc
-    rvm autolibs disable
-
-    # install ruby
-    rvm install 2.7.1
-    ```
-
-    Or refer to [this repo](https://github.com/innerlee/setup) and take [`zzruby.sh`](https://github.com/innerlee/setup/blob/master/zzruby.sh) according its instruction.
-
-    After this on every commit check code linters and formatter will be enforced.
-
-    >Before you create a PR, make sure that your code lints and is formatted by yapf.
+   > Before you create a PR, make sure that your code lints and is formatted by yapf.
 
     **pre-commit failed**(some code will be fixed automatically)
 
@@ -99,6 +81,7 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 4. make changes and add unit test if necessary
 
     If your pr add some features or affect the logic of the previous implementation, a corresponding unit test should be added to the directory `tests`.
+
 
 5. Pass corresponding unit test.
 

@@ -64,7 +64,7 @@ class SparseConvolution(SparseModule):
                  inverse=False,
                  indice_key=None,
                  fused_bn=False):
-        super(SparseConvolution, self).__init__()
+        super().__init__()
         assert groups == 1
         if not isinstance(kernel_size, (list, tuple)):
             kernel_size = [kernel_size] * ndim
@@ -217,7 +217,7 @@ class SparseConv2d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SparseConv2d, self).__init__(
+        super().__init__(
             2,
             in_channels,
             out_channels,
@@ -243,7 +243,7 @@ class SparseConv3d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SparseConv3d, self).__init__(
+        super().__init__(
             3,
             in_channels,
             out_channels,
@@ -269,7 +269,7 @@ class SparseConv4d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SparseConv4d, self).__init__(
+        super().__init__(
             4,
             in_channels,
             out_channels,
@@ -295,7 +295,7 @@ class SparseConvTranspose2d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SparseConvTranspose2d, self).__init__(
+        super().__init__(
             2,
             in_channels,
             out_channels,
@@ -322,7 +322,7 @@ class SparseConvTranspose3d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SparseConvTranspose3d, self).__init__(
+        super().__init__(
             3,
             in_channels,
             out_channels,
@@ -345,7 +345,7 @@ class SparseInverseConv2d(SparseConvolution):
                  kernel_size,
                  indice_key=None,
                  bias=True):
-        super(SparseInverseConv2d, self).__init__(
+        super().__init__(
             2,
             in_channels,
             out_channels,
@@ -364,7 +364,7 @@ class SparseInverseConv3d(SparseConvolution):
                  kernel_size,
                  indice_key=None,
                  bias=True):
-        super(SparseInverseConv3d, self).__init__(
+        super().__init__(
             3,
             in_channels,
             out_channels,
@@ -387,7 +387,7 @@ class SubMConv2d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SubMConv2d, self).__init__(
+        super().__init__(
             2,
             in_channels,
             out_channels,
@@ -414,7 +414,7 @@ class SubMConv3d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SubMConv3d, self).__init__(
+        super().__init__(
             3,
             in_channels,
             out_channels,
@@ -441,7 +441,7 @@ class SubMConv4d(SparseConvolution):
                  groups=1,
                  bias=True,
                  indice_key=None):
-        super(SubMConv4d, self).__init__(
+        super().__init__(
             4,
             in_channels,
             out_channels,

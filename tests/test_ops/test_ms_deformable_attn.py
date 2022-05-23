@@ -55,7 +55,7 @@ def test_forward_multi_scale_deformable_attn_pytorch():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
     shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long)
-    S = sum([(H * W).item() for H, W in shapes])
+    S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
     value = torch.rand(N, S, M, D) * 0.01
@@ -78,7 +78,7 @@ def test_forward_equal_with_pytorch_double():
     shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
-    S = sum([(H * W).item() for H, W in shapes])
+    S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
     value = torch.rand(N, S, M, D).cuda() * 0.01
@@ -111,7 +111,7 @@ def test_forward_equal_with_pytorch_float():
     shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
-    S = sum([(H * W).item() for H, W in shapes])
+    S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
     value = torch.rand(N, S, M, D).cuda() * 0.01
@@ -155,7 +155,7 @@ def test_gradient_numerical(channels,
     shapes = torch.as_tensor([(3, 2), (2, 1)], dtype=torch.long).cuda()
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
-    S = sum([(H * W).item() for H, W in shapes])
+    S = sum((H * W).item() for H, W in shapes)
 
     value = torch.rand(N, S, M, channels).cuda() * 0.01
     sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()

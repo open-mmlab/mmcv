@@ -40,6 +40,7 @@ d = 'string'
 这里是一个带有预定义变量的配置文件的例子。
 
 `config_a.py`
+
 ```python
 a = 1
 b = './work_dir/{{ fileBasenameNoExtension }}'
@@ -65,6 +66,7 @@ c = '{{ fileExtname }}'
 a = 1
 b = dict(b1=[0, 1, 2], b2=None)
 ```
+
 ### 不含重复键值对从基类配置文件继承
 
 `config_b.py`
@@ -83,6 +85,7 @@ d = 'string'
 ...      c=(1, 2),
 ...      d='string')
 ```
+
 在`config_b.py`里的新字段与在`config_a.py`里的旧字段拼接
 
 ### 含重复键值对从基类配置文件继承

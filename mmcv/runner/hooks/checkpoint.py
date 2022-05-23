@@ -83,8 +83,8 @@ class CheckpointHook(Hook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
 
-        runner.logger.info((f'Checkpoints will be saved to {self.out_dir} by '
-                            f'{self.file_client.name}.'))
+        runner.logger.info(f'Checkpoints will be saved to {self.out_dir} by '
+                           f'{self.file_client.name}.')
 
         # disable the create_symlink option because some file backends do not
         # allow to create a symlink
@@ -93,9 +93,9 @@ class CheckpointHook(Hook):
                     'create_symlink'] and not self.file_client.allow_symlink:
                 self.args['create_symlink'] = False
                 warnings.warn(
-                    ('create_symlink is set as True by the user but is changed'
-                     'to be False because creating symbolic link is not '
-                     f'allowed in {self.file_client.name}'))
+                    'create_symlink is set as True by the user but is changed'
+                    'to be False because creating symbolic link is not '
+                    f'allowed in {self.file_client.name}')
         else:
             self.args['create_symlink'] = self.file_client.allow_symlink
 

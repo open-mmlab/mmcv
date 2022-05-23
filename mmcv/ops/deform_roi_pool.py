@@ -96,7 +96,7 @@ class DeformRoIPool(nn.Module):
                  spatial_scale=1.0,
                  sampling_ratio=0,
                  gamma=0.1):
-        super(DeformRoIPool, self).__init__()
+        super().__init__()
         self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)
         self.sampling_ratio = int(sampling_ratio)
@@ -117,8 +117,7 @@ class DeformRoIPoolPack(DeformRoIPool):
                  spatial_scale=1.0,
                  sampling_ratio=0,
                  gamma=0.1):
-        super(DeformRoIPoolPack, self).__init__(output_size, spatial_scale,
-                                                sampling_ratio, gamma)
+        super().__init__(output_size, spatial_scale, sampling_ratio, gamma)
 
         self.output_channels = output_channels
         self.deform_fc_channels = deform_fc_channels
@@ -158,8 +157,7 @@ class ModulatedDeformRoIPoolPack(DeformRoIPool):
                  spatial_scale=1.0,
                  sampling_ratio=0,
                  gamma=0.1):
-        super(ModulatedDeformRoIPoolPack,
-              self).__init__(output_size, spatial_scale, sampling_ratio, gamma)
+        super().__init__(output_size, spatial_scale, sampling_ratio, gamma)
 
         self.output_channels = output_channels
         self.deform_fc_channels = deform_fc_channels

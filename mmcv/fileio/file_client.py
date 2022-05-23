@@ -8,7 +8,7 @@ import warnings
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, Iterator, Optional, Tuple, Union
+from typing import Any, Generator, Iterator, Optional, Tuple, Union
 from urllib.request import urlopen
 
 import mmcv
@@ -210,9 +210,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'delete'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `delete` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `delete` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -230,9 +230,9 @@ class PetrelBackend(BaseStorageBackend):
         if not (has_method(self._client, 'contains')
                 and has_method(self._client, 'isdir')):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` and `isdir` methods, please use a higher'
-                 'version or dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` and `isdir` methods, please use a higher'
+                'version or dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -251,9 +251,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'isdir'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `isdir` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `isdir` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -271,9 +271,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'contains'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` method, please use a higher version or '
-                 'dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` method, please use a higher version or '
+                'dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -298,7 +298,10 @@ class PetrelBackend(BaseStorageBackend):
         return '/'.join(formatted_paths)
 
     @contextmanager
-    def get_local_path(self, filepath: Union[str, Path]) -> Iterable[str]:
+    def get_local_path(
+            self,
+            filepath: Union[str,
+                            Path]) -> Generator[Union[str, Path], None, None]:
         """Download a file from ``filepath`` and return a temporary path.
 
         ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
@@ -363,9 +366,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'list'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `list` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `list` method, please use a higher version or dev'
+                ' branch instead.')
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
@@ -474,17 +477,16 @@ class LmdbBackend(BaseStorageBackend):
                  readahead=False,
                  **kwargs):
         try:
-            import lmdb
+            import lmdb  # NOQA
         except ImportError:
             raise ImportError('Please install lmdb to enable LmdbBackend.')
 
         self.db_path = str(db_path)
-        self._client = lmdb.open(
-            self.db_path,
-            readonly=readonly,
-            lock=lock,
-            readahead=readahead,
-            **kwargs)
+        self.readonly = readonly
+        self.lock = lock
+        self.readahead = readahead
+        self.kwargs = kwargs
+        self._client = None
 
     def get(self, filepath):
         """Get values according to the filepath.
@@ -492,13 +494,28 @@ class LmdbBackend(BaseStorageBackend):
         Args:
             filepath (str | obj:`Path`): Here, filepath is the lmdb key.
         """
-        filepath = str(filepath)
+        if self._client is None:
+            self._client = self._get_client()
+
         with self._client.begin(write=False) as txn:
-            value_buf = txn.get(filepath.encode('ascii'))
+            value_buf = txn.get(str(filepath).encode('utf-8'))
         return value_buf
 
     def get_text(self, filepath, encoding=None):
         raise NotImplementedError
+
+    def _get_client(self):
+        import lmdb
+
+        return lmdb.open(
+            self.db_path,
+            readonly=self.readonly,
+            lock=self.lock,
+            readahead=self.readahead,
+            **self.kwargs)
+
+    def __del__(self):
+        self._client.close()
 
 
 class HardDiskBackend(BaseStorageBackend):
@@ -532,7 +549,7 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             str: Expected text reading from ``filepath``.
         """
-        with open(filepath, 'r', encoding=encoding) as f:
+        with open(filepath, encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
 
@@ -632,7 +649,9 @@ class HardDiskBackend(BaseStorageBackend):
 
     @contextmanager
     def get_local_path(
-            self, filepath: Union[str, Path]) -> Iterable[Union[str, Path]]:
+            self,
+            filepath: Union[str,
+                            Path]) -> Generator[Union[str, Path], None, None]:
         """Only for unified API and do nothing."""
         yield filepath
 
@@ -701,7 +720,8 @@ class HTTPBackend(BaseStorageBackend):
         return value_buf.decode(encoding)
 
     @contextmanager
-    def get_local_path(self, filepath: str) -> Iterable[str]:
+    def get_local_path(
+            self, filepath: str) -> Generator[Union[str, Path], None, None]:
         """Download a file from ``filepath``.
 
         ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It
@@ -775,15 +795,17 @@ class FileClient:
     # backend appears in the collection, the singleton pattern is disabled for
     # that backend, because if the singleton pattern is used, then the object
     # returned will be the backend before overwriting
-    _overridden_backends = set()
-    _prefix_to_backends = {
+    _overridden_backends: set = set()
+    _prefix_to_backends: dict = {
         's3': PetrelBackend,
         'http': HTTPBackend,
         'https': HTTPBackend,
     }
-    _overridden_prefixes = set()
+    _overridden_prefixes: set = set()
 
-    _instances = {}
+    _instances: dict = {}
+
+    client: Any
 
     def __new__(cls, backend=None, prefix=None, **kwargs):
         if backend is None and prefix is None:
@@ -1093,7 +1115,10 @@ class FileClient:
         return self.client.join_path(filepath, *filepaths)
 
     @contextmanager
-    def get_local_path(self, filepath: Union[str, Path]) -> Iterable[str]:
+    def get_local_path(
+            self,
+            filepath: Union[str,
+                            Path]) -> Generator[Union[str, Path], None, None]:
         """Download data from ``filepath`` and write the data to local path.
 
         ``get_local_path`` is decorated by :meth:`contxtlib.contextmanager`. It

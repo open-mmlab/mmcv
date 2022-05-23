@@ -21,6 +21,16 @@ class RotatedFeatureAlignFunction(Function):
     """
 
     @staticmethod
+    def symbolic(g, features, best_rbboxes, spatial_scale, points):
+        assert points in [1, 5]
+        return g.op(
+            'mmcv::MMCVRotatedFeatureAlign',
+            features,
+            best_rbboxes,
+            spatial_scale_f=spatial_scale,
+            points_i=points)
+
+    @staticmethod
     def forward(ctx, features, best_rbboxes, spatial_scale, points):
         """
         Args:

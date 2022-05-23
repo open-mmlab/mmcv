@@ -32,7 +32,7 @@ class MMDataParallel(DataParallel):
     """
 
     def __init__(self, *args, dim=0, **kwargs):
-        super(MMDataParallel, self).__init__(*args, dim=dim, **kwargs)
+        super().__init__(*args, dim=dim, **kwargs)
         self.dim = dim
 
     def forward(self, *inputs, **kwargs):
