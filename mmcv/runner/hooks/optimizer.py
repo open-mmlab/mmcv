@@ -130,6 +130,13 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         return False
 
     def _init(self, runner):
+        runner.logger.warning(
+            'When using IterBasedRunner and GradientCumulativeOptimizerHook, '
+            'if one wants to get almost equal result with '
+            '`samples_per_gpu=mn` by setting `samples_per_gpu=m` and '
+            '`cumulative_iters = n`, then iter need to times '
+            '`cumulative_iters` to get same optimize steps')
+
         if runner.iter % self.cumulative_iters != 0:
             runner.logger.warning(
                 'Resume iter number is not divisible by cumulative_iters in '
