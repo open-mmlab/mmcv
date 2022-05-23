@@ -83,7 +83,6 @@ def _init_dist_slurm(backend, port=None):
     If argument ``port`` is not specified, then the master port will be system
     environment variable ``MASTER_PORT``. If ``MASTER_PORT`` is not in system
     environment variable, then a default port ``29500`` will be used.
-
     Args:
         backend (str): Backend of torch.distributed.
         port (int, optional): Master port. Defaults to None.
@@ -95,7 +94,7 @@ def _init_dist_slurm(backend, port=None):
     torch.cuda.set_device(proc_id % num_gpus)
     cmd = f'scontrol show hostname {node_list}'.split()
     out = subprocess.check_output(cmd).decode(sys.stdout.encoding)
-    addr = out.split("\n")[0]
+    addr = out.split('\n')[0]
     # specify master port
     if port is not None:
         os.environ['MASTER_PORT'] = str(port)
