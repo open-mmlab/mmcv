@@ -886,10 +886,10 @@ class TestRandomResize:
                                   resize_cfg=dict(
                                       type='Resize', keep_ratio=True))
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
-        assert results_update['scale'][0] >= 224 and results_update['scale'][
-            0] <= 448
-        assert results_update['scale'][1] >= 112 and results_update['scale'][
-            1] <= 224
+        assert results_update['scale'][1] >= 224 and results_update['scale'][
+            1] <= 448
+        assert results_update['scale'][0] >= 112 and results_update['scale'][
+            0] <= 224
 
         # the type of scale is invalid in init
         with pytest.raises(NotImplementedError):

@@ -1197,17 +1197,34 @@ class RandomResize(BaseTransform):
     How to choose the target scale to resize the image will follow the rules
     below:
 
-    - if ``scale`` is a list of tuple, the first value of the target scale is
-      sampled from [``scale[0][0]``, ``scale[1][0]``] uniformally and the
-      second value of the target scale is sampled from
-      [``scale[0][1]``, ``scale[1][1]``] uniformally. Following the resize
-      order of weight and height in cv2, scale[i][0] is for width, and
-      scale[i][1] is for height.
-    - if ``scale`` is a tuple, the first and second values of the target scale
-      is equal to the first and second values of ``scale`` multiplied by a
-      value sampled from [``ratio_range[0]``, ``ratio_range[1]``] uniformally.
-      Following the resize order of weight and height in cv2, ratio_range[0] is
-      for width, and ratio_range[1] is for height.
+    - if ``scale`` is a sequence of tuple
+
+    .. math::
+        target\\_scale[0] \\sim Uniform([scale[0][0], scale[1][0]])
+    .. math::
+        target\\_scale[1] \\sim Uniform([scale[0][1], scale[1][1]])
+
+    Following the resize order of weight and height in cv2, ``scale[i][0]``
+    is for width, and ``scale[i][1]`` is for height.
+
+    - if ``scale`` is a tuple
+
+    .. math::
+        target\\_scale[0] \\sim Uniform([ratio\\_range[0], ratio\\_range[1]])
+            * scale[0]
+    .. math::
+        target\\_scale[0] \\sim Uniform([ratio\\_range[0], ratio\\_range[1]])
+            * scale[1]
+
+    Following the resize order of weight and height in cv2, ``ratio_range[0]``
+    is for width, and ``ratio_range[1]`` is for height.
+
+    - if ``keep_ratio`` is True, the minimum value of ``target_scale`` will be
+    used to set the shorter side and the maximum value will be used to
+    set the longer side.
+
+    - if ``keep_ratio`` is False, the value of ``target_scale`` will be used to
+    reisze the width and height accordingly.
 
     Required Keys:
 
@@ -1231,7 +1248,7 @@ class RandomResize(BaseTransform):
     - keep_ratio
 
     Args:
-        scale (tuple or list[tuple]): Images scales for resizing.
+        scale (tuple or Sequence[tuple]): Images scales for resizing.
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
@@ -1242,7 +1259,7 @@ class RandomResize(BaseTransform):
 
     def __init__(
         self,
-        scale: Union[Tuple[int, int], List[Tuple[int, int]]],
+        scale: Union[Tuple[int, int], Sequence[Tuple[int, int]]],
         ratio_range: Tuple[float, float] = None,
         resize_cfg: dict = dict(
             type='Resize',
@@ -1268,16 +1285,17 @@ class RandomResize(BaseTransform):
             scales (list[tuple]): Images scale range for sampling.
                 There must be two tuples in scales, which specify the lower
                 and upper bound of image scales.
+
         Returns:
             tuple: The targeted scale of the image to be resized.
         """
 
         assert mmcv.is_list_of(scales, tuple) and len(scales) == 2
-        scale_long = [max(s) for s in scales]
-        scale_short = [min(s) for s in scales]
-        long_edge = np.random.randint(min(scale_long), max(scale_long) + 1)
-        short_edge = np.random.randint(min(scale_short), max(scale_short) + 1)
-        scale = (long_edge, short_edge)
+        scale_0 = [scales[0][0], scales[1][0]]
+        scale_1 = [scales[0][1], scales[1][1]]
+        edge_0 = np.random.randint(min(scale_0), max(scale_0) + 1)
+        edge_1 = np.random.randint(min(scale_1), max(scale_1) + 1)
+        scale = (edge_0, edge_1)
         return scale
 
     @staticmethod
@@ -1288,10 +1306,12 @@ class RandomResize(BaseTransform):
         A ratio will be randomly sampled from the range specified by
         ``ratio_range``. Then it would be multiplied with ``scale`` to
         generate sampled scale.
+
         Args:
             scale (tuple): Images scale base to multiply with ratio.
             ratio_range (tuple[float]): The minimum and maximum ratio to scale
                 the ``scale``.
+
         Returns:
             tuple: The targeted scale of the image to be resized.
         """
@@ -1312,14 +1332,16 @@ class RandomResize(BaseTransform):
             tuple: The targeted scale of the image to be resized.
         """
 
-        if isinstance(self.scale, tuple):
+        if mmcv.is_tuple_of(self.scale, int):
             assert self.ratio_range is not None and len(self.ratio_range) == 2
-            scale = self._random_sample_ratio(self.scale, self.ratio_range)
-        elif mmcv.is_list_of(self.scale, tuple):
-            scale = self._random_sample(self.scale)
+            scale = self._random_sample_ratio(
+                self.scale,  # type: ignore
+                self.ratio_range)
+        elif mmcv.is_seq_of(self.scale, tuple):
+            scale = self._random_sample(self.scale)  # type: ignore
         else:
-            raise NotImplementedError(f"Do not support sampling function \
-                                        for '{self.scale}'")
+            raise NotImplementedError('Do not support sampling function '
+                                      f'for "{self.scale}"')
 
         return scale
 
@@ -1329,6 +1351,7 @@ class RandomResize(BaseTransform):
 
         Args:
             results (dict): Result dict from loading pipeline.
+
         Returns:
             dict: Resized results, ``img``, ``gt_bboxes``, ``gt_semantic_seg``,
             ``gt_keypoints``, ``scale``, ``scale_factor``, ``img_shape``, and
