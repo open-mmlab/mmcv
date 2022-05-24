@@ -291,7 +291,13 @@ class KeyMapper(BaseTransform):
                     results.update(_map(d_i, m_i))
                 return results
 
-            if m is IgnoreKey:
+            # ``m is ...`` means the key is marked ignored, in which case the
+            # inner resuls will not affect the outer results in remapping.
+            # Another case that will have ``data is IgnoreKey`` is that the
+            # key is missing in the inputs. In this case, if the inner key is
+            # created by the wrapped transforms, it will be remapped to the
+            # corresponding outer key during remapping.
+            if m is ... or data is IgnoreKey:
                 return {}
 
             return {m: data}
