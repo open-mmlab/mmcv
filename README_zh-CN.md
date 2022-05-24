@@ -108,7 +108,7 @@ mim install mmcv-full==1.5.0
       <td align="left"></td><td align="left"></td>
     </tr>
     <tr>
-      <td align="left">10.2</td><td align="left">1.4.7</td><td align="left">1.3.16</td>
+      <td align="left">10.2</td><td align="left">1.4.7 (Linux only)</td><td align="left">1.3.16</td>
       <td align="left">1.3.9</td><td align="left">1.3.0</td><td align="left">1.2.0</td>
       <td align="left">1.0.5</td><td align="left">1.0.0</td>
     </tr>
@@ -119,8 +119,8 @@ mim install mmcv-full==1.5.0
     </tr>
     <tr>
       <td align="left">9.2</td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left"></td><td align="left">1.2.0</td>
-      <td align="left">1.0.5</td><td align="left">1.0.0</td>
+      <td align="left"></td><td align="left"></td><td align="left">1.2.0 (Linux only)</td>
+      <td align="left">1.0.5 (Linux only)</td><td align="left">1.0.0</td>
     </tr>
     <tr>
       <td align="left">cpu</td><td align="left">1.4.7</td><td align="left">1.3.16</td>
