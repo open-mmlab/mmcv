@@ -3,6 +3,7 @@ import logging
 
 import torch.nn as nn
 
+from typing import Optional
 
 class AlexNet(nn.Module):
     """AlexNet backbone.
@@ -41,7 +42,7 @@ class AlexNet(nn.Module):
                 nn.Linear(4096, num_classes),
             )
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: Optional[str] =None):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             from ..runner import load_checkpoint
@@ -52,7 +53,7 @@ class AlexNet(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
 
         x = self.features(x)
         if self.num_classes > 0:
