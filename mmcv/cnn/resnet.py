@@ -224,7 +224,7 @@ class ResNet(nn.Module):
             raise KeyError(f'invalid depth {depth} for resnet')
         assert num_stages >= 1 and num_stages <= 4
         block, stage_blocks = self.arch_settings[
-            depth]  # type: Any, Tuple[int,  ...]
+            depth]  # type: Any, Tuple[int, ...]
         stage_blocks = stage_blocks[:num_stages]
         assert len(strides) == len(dilations) == num_stages
         assert max(out_indices) < num_stages
