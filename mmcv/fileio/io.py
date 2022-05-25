@@ -3,7 +3,7 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Union
 
-from ..utils import is_list_of, is_str
+from ..utils import is_list_of
 from .file_client import FileClient
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 
@@ -47,15 +47,16 @@ def load(file: Union[str, Path],
     Returns:
         The content from the file.
     """
+    f: Union[StringIO, BytesIO]
     if isinstance(file, Path):
         file = str(file)
-    if file_format is None and is_str(file):
+    if file_format is None and isinstance(file, str):
         file_format = file.split('.')[-1]
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
 
     handler = file_handlers[file_format]
-    if is_str(file):
+    if isinstance(file, str):
         file_client = FileClient.infer_client(file_client_args, file)
         if handler.str_like:
             with StringIO(file_client.get_text(file)) as f:
@@ -101,10 +102,11 @@ def dump(obj: Any,
     Returns:
         bool: True for success, False otherwise.
     """
+    f: Union[StringIO, BytesIO]
     if isinstance(file, Path):
         file = str(file)
     if file_format is None:
-        if is_str(file):
+        if isinstance(file, str):
             file_format = file.split('.')[-1]
         elif file is None:
             raise ValueError(
@@ -115,7 +117,7 @@ def dump(obj: Any,
     handler = file_handlers[file_format]
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
-    elif is_str(file):
+    elif isinstance(file, str):
         file_client = FileClient.infer_client(file_client_args, file)
         if handler.str_like:
             with StringIO() as f:

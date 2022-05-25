@@ -26,7 +26,7 @@
 import sys
 import warnings
 from functools import partial
-from typing import Callable, Optional, TextIO, Tuple, Union
+from typing import Callable, Optional, TextIO
 
 import numpy as np
 import torch
