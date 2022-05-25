@@ -1,5 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence, Tuple
+
 import torch
+from torch import Tensor
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -17,22 +20,22 @@ class ChamferDistanceFunction(Function):
     """
 
     @staticmethod
-    def forward(ctx, xyz1, xyz2):
+    def forward(ctx, xyz1: Tensor, xyz2: Tensor) -> Sequence[Tensor]:
         """
         Args:
-            xyz1 (torch.Tensor): Point set with shape (B, N, 2).
-            xyz2 (torch.Tensor): Point set with shape (B, N, 2).
+            xyz1 (Tensor): Point set with shape (B, N, 2).
+            xyz2 (Tensor): Point set with shape (B, N, 2).
 
         Returns:
-            tuple:
+            Sequence[Tensor]:
 
-                - dist1 (torch.Tensor): Chamfer ditacne (xyz1 to xyz2) with
+                - dist1 (Tensor): Chamfer ditacne (xyz1 to xyz2) with
                     shape (B, N).
-                - dist2 (torch.Tensor): Chamfer ditacne (xyz2 to xyz1) with
+                - dist2 (Tensor): Chamfer ditacne (xyz2 to xyz1) with
                     shape (B, N).
-                - idx1 (torch.Tensor): Index of chamfer ditacne (xyz1 to xyz2)
+                - idx1 (Tensor): Index of chamfer ditacne (xyz1 to xyz2)
                     with shape (B, N), which be used in compute gradient.
-                - idx2 (torch.Tensor): Index of chamfer ditacne (xyz2 to xyz2)
+                - idx2 (Tensor): Index of chamfer ditacne (xyz2 to xyz2)
                     with shape (B, N), which be used in compute gradient.
         """
         batchsize, n, _ = xyz1.size()
@@ -53,25 +56,27 @@ class ChamferDistanceFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_dist1, grad_dist2, grad_idx1, grad_idx2):
+    def backward(ctx, grad_dist1: Tensor, grad_dist2: Tensor,
+                 grad_idx1: Tensor,
+                 grad_idx2: Tensor) -> Tuple[Tensor, Tensor]:
         """
 
         Args:
-            grad_dist1 (torch.Tensor): Gradient of chamfer ditacne
+            grad_dist1 (Tensor): Gradient of chamfer ditacne
                 (xyz1 to xyz2) with shape (B, N).
-            grad_dist2 (torch.Tensor): Gradient of chamfer ditacne
+            grad_dist2 (Tensor): Gradient of chamfer ditacne
                 (xyz2 to xyz1) with shape (B, N).
-            grad_idx1 (torch.Tensor): Index of chamfer ditacne (xyz1 to xyz2)
+            grad_idx1 (Tensor): Index of chamfer ditacne (xyz1 to xyz2)
                     with shape (B, N), which be used in compute gradient.
-            grad_idx2 (torch.Tensor): Index of chamfer ditacne (xyz2 to xyz2)
+            grad_idx2 (Tensor): Index of chamfer ditacne (xyz2 to xyz2)
                     with shape (B, N), which be used in compute gradient.
 
         Returns:
-            tuple:
+            Tuple[Tensor, Tensor]:
 
-            - grad_xyz1 (torch.Tensor): Gradient of the point set with shape \
+            - grad_xyz1 (Tensor): Gradient of the point set with shape \
                 (B, N, 2).
-            - grad_xyz2 (torch.Tensor):Gradient of the point set with shape \
+            - grad_xyz2 (Tensor):Gradient of the point set with shape \
                 (B, N, 2).
         """
         xyz1, xyz2, idx1, idx2 = ctx.saved_tensors

@@ -10,13 +10,15 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
+#define MAX_SHARED_SCALAR_T 6144  // 49152 / 8 = 6144
+
 template <typename scalar_t>
 __global__ void chamfer_distance_forward_cuda_kernel(int b, int n,
                                                      const scalar_t* xyz, int m,
                                                      const scalar_t* xyz2,
                                                      scalar_t* result,
                                                      int* result_i) {
-  __shared__ scalar_t buf[b * m];
+  __shared__ scalar_t buf[MAX_SHARED_SCALAR_T];
   for (int i = blockIdx.x; i < b; i += gridDim.x) {
     for (int k2 = 0; k2 < m; k2 += THREADS_PER_BLOCK) {
       int end_k = min(m, k2 + THREADS_PER_BLOCK) - k2;
