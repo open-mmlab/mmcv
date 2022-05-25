@@ -3,16 +3,17 @@ import os
 import os.path as osp
 import subprocess
 import tempfile
+from typing import Dict, List, Optional, Union
 
 from mmcv.utils import requires_executable
 
 
 @requires_executable('ffmpeg')
-def convert_video(in_file,
-                  out_file,
-                  print_cmd=False,
-                  pre_options='',
-                  **kwargs):
+def convert_video(in_file: str,
+                  out_file: str,
+                  print_cmd: bool = False,
+                  pre_options: str = '',
+                  **kwargs) -> None:
     """Convert a video with ffmpeg.
 
     This provides a general api to ffmpeg, the executed command is::
@@ -52,13 +53,13 @@ def convert_video(in_file,
 
 
 @requires_executable('ffmpeg')
-def resize_video(in_file,
-                 out_file,
-                 size=None,
-                 ratio=None,
-                 keep_ar=False,
-                 log_level='info',
-                 print_cmd=False):
+def resize_video(in_file: str,
+                 out_file: str,
+                 size: Optional[tuple] = None,
+                 ratio: Union[tuple, float] = None,
+                 keep_ar: bool = False,
+                 log_level: str = 'info',
+                 print_cmd: bool = False) -> None:
     """Resize a video.
 
     Args:
@@ -90,14 +91,14 @@ def resize_video(in_file,
 
 
 @requires_executable('ffmpeg')
-def cut_video(in_file,
-              out_file,
-              start=None,
-              end=None,
-              vcodec=None,
-              acodec=None,
-              log_level='info',
-              print_cmd=False):
+def cut_video(in_file: str,
+              out_file: str,
+              start: Optional[float] = None,
+              end: Optional[float] = None,
+              vcodec: Optional[str] = None,
+              acodec: Optional[str] = None,
+              log_level: str = 'info',
+              print_cmd: bool = False) -> None:
     """Cut a clip from a video.
 
     Args:
@@ -110,7 +111,9 @@ def cut_video(in_file,
         log_level (str): Logging level of ffmpeg.
         print_cmd (bool): Whether to print the final ffmpeg command.
     """
-    options = {'log_level': log_level}
+    options: Optional[Dict[str, Union[str, float]]] = {
+        'log_level': log_level
+    }  # type: ignore
     if vcodec is None:
         options['vcodec'] = 'copy'
     if acodec is None:
@@ -125,12 +128,12 @@ def cut_video(in_file,
 
 
 @requires_executable('ffmpeg')
-def concat_video(video_list,
-                 out_file,
-                 vcodec=None,
-                 acodec=None,
-                 log_level='info',
-                 print_cmd=False):
+def concat_video(video_list: List,
+                 out_file: str,
+                 vcodec: Optional[str] = None,
+                 acodec: Optional[str] = None,
+                 log_level: str = 'info',
+                 print_cmd: bool = False) -> None:
     """Concatenate multiple videos into a single one.
 
     Args:

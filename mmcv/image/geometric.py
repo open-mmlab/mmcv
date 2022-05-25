@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
+from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -13,7 +14,8 @@ except ImportError:
     Image = None
 
 
-def _scale_size(size, scale):
+def _scale_size(size: Tuple[int, int], scale: Union[int, float,
+                                                    tuple]) -> tuple:
     """Rescale a size by a ratio.
 
     Args:
@@ -60,12 +62,12 @@ if Image is not None:
         }
 
 
-def imresize(img,
-             size,
-             return_scale=False,
-             interpolation='bilinear',
-             out=None,
-             backend=None):
+def imresize(img: np.ndarray,
+             size: Tuple[int, int],
+             return_scale: bool = False,
+             interpolation: str = 'bilinear',
+             out: Optional[np.ndarray] = None,
+             backend: Optional[str] = None) -> Union[Tuple, np.ndarray]:
     """Resize image to a given size.
 
     Args:
@@ -107,15 +109,16 @@ def imresize(img,
         return resized_img, w_scale, h_scale
 
 
-def imresize_to_multiple(img,
-                         divisor,
-                         size=None,
-                         scale_factor=None,
-                         keep_ratio=False,
-                         return_scale=False,
-                         interpolation='bilinear',
-                         out=None,
-                         backend=None):
+def imresize_to_multiple(
+        img: np.ndarray,
+        divisor: Union[int, tuple],
+        size: Optional[Union[int, tuple]] = None,
+        scale_factor: Optional[Union[float, Tuple[float, float]]] = None,
+        keep_ratio: bool = False,
+        return_scale: bool = False,
+        interpolation: str = 'bilinear',
+        out: Optional[np.ndarray] = None,
+        backend: Optional[str] = None) -> Union[Tuple, np.ndarray]:
     """Resize image according to a given size or scale factor and then rounds
     up the the resized or rescaled image size to the nearest value that can be
     divided by the divisor.
@@ -171,11 +174,11 @@ def imresize_to_multiple(img,
         return resized_img
 
 
-def imresize_like(img,
-                  dst_img,
-                  return_scale=False,
-                  interpolation='bilinear',
-                  backend=None):
+def imresize_like(img: np.ndarray,
+                  dst_img: np.ndarray,
+                  return_scale: bool = False,
+                  interpolation: str = 'bilinear',
+                  backend: Optional[str] = None) -> Union[Tuple, np.ndarray]:
     """Resize image to the same size of a given image.
 
     Args:
@@ -193,7 +196,9 @@ def imresize_like(img,
     return imresize(img, (w, h), return_scale, interpolation, backend=backend)
 
 
-def rescale_size(old_size, scale, return_scale=False):
+def rescale_size(old_size: tuple,
+                 scale: Union[float, tuple],
+                 return_scale: bool = False) -> tuple:
     """Calculate the new size to be rescaled to.
 
     Args:
@@ -230,11 +235,11 @@ def rescale_size(old_size, scale, return_scale=False):
         return new_size
 
 
-def imrescale(img,
-              scale,
-              return_scale=False,
-              interpolation='bilinear',
-              backend=None):
+def imrescale(img: np.ndarray,
+              scale: Union[float, Tuple[int]],
+              return_scale: bool = False,
+              interpolation: str = 'bilinear',
+              backend: Optional[str] = None) -> np.ndarray:
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -261,7 +266,7 @@ def imrescale(img,
         return rescaled_img
 
 
-def imflip(img, direction='horizontal'):
+def imflip(img: np.ndarray, direction: str = 'horizontal') -> np.ndarray:
     """Flip an image horizontally or vertically.
 
     Args:
@@ -281,7 +286,7 @@ def imflip(img, direction='horizontal'):
         return np.flip(img, axis=(0, 1))
 
 
-def imflip_(img, direction='horizontal'):
+def imflip_(img: np.ndarray, direction: str = 'horizontal') -> np.ndarray:
     """Inplace flip an image horizontally or vertically.
 
     Args:
@@ -301,13 +306,13 @@ def imflip_(img, direction='horizontal'):
         return cv2.flip(img, -1, img)
 
 
-def imrotate(img,
-             angle,
-             center=None,
-             scale=1.0,
-             border_value=0,
-             interpolation='bilinear',
-             auto_bound=False):
+def imrotate(img: np.ndarray,
+             angle: float,
+             center: Optional[Tuple[float]] = None,
+             scale: float = 1.0,
+             border_value: int = 0,
+             interpolation: str = 'bilinear',
+             auto_bound: bool = False) -> np.ndarray:
     """Rotate an image.
 
     Args:
@@ -351,7 +356,7 @@ def imrotate(img,
     return rotated
 
 
-def bbox_clip(bboxes, img_shape):
+def bbox_clip(bboxes: np.ndarray, img_shape: Tuple[int]) -> np.ndarray:
     """Clip bboxes to fit the image shape.
 
     Args:
@@ -369,7 +374,9 @@ def bbox_clip(bboxes, img_shape):
     return clipped_bboxes
 
 
-def bbox_scaling(bboxes, scale, clip_shape=None):
+def bbox_scaling(bboxes: np.ndarray,
+                 scale: float,
+                 clip_shape: Optional[Tuple[int]] = None) -> np.ndarray:
     """Scaling bboxes w.r.t the box center.
 
     Args:
@@ -395,7 +402,11 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
         return scaled_bboxes
 
 
-def imcrop(img, bboxes, scale=1.0, pad_fill=None):
+def imcrop(
+        img: np.ndarray,
+        bboxes: np.ndarray,
+        scale: Optional[float] = 1.0,
+        pad_fill: Optional[Union[int, List[int]]] = None) -> List[np.ndarray]:
     """Crop image patches.
 
     3 steps: scale the bboxes -> clip bboxes -> crop and pad.
@@ -449,12 +460,12 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         return patches
 
 
-def impad(img,
+def impad(img: np.ndarray,
           *,
-          shape=None,
-          padding=None,
-          pad_val=0,
-          padding_mode='constant'):
+          shape: Optional[Tuple[int]] = None,
+          padding: Optional[int, Tuple[int]] = None,
+          pad_val: Union[int, List[int]] = 0,
+          padding_mode: str = 'constant') -> np.ndarray:
     """Pad the given image to a certain shape or pad on all sides with
     specified padding mode and padding value.
 
@@ -532,7 +543,9 @@ def impad(img,
     return img
 
 
-def impad_to_multiple(img, divisor, pad_val=0):
+def impad_to_multiple(img: np.ndarray,
+                      divisor: int,
+                      pad_val: Union[int, List[int]] = 0) -> np.ndarray:
     """Pad an image to ensure each edge to be multiple to some number.
 
     Args:
@@ -548,7 +561,11 @@ def impad_to_multiple(img, divisor, pad_val=0):
     return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
-def cutout(img, shape, pad_val=0):
+def cutout(
+        img: np.ndarray,
+        shape: Union[int, Tuple[int]],
+        pad_val: Union[int, float, Tuple[Union[int,
+                                               float]]] = 0) -> np.ndarray:
     """Randomly cut out a rectangle from the original img.
 
     Args:
@@ -603,7 +620,8 @@ def cutout(img, shape, pad_val=0):
     return img_cutout
 
 
-def _get_shear_matrix(magnitude, direction='horizontal'):
+def _get_shear_matrix(magnitude: Union[int, float],
+                      direction: str = 'horizontal') -> np.ndarray:
     """Generate the shear matrix for transformation.
 
     Args:
@@ -621,11 +639,11 @@ def _get_shear_matrix(magnitude, direction='horizontal'):
     return shear_matrix
 
 
-def imshear(img,
-            magnitude,
-            direction='horizontal',
-            border_value=0,
-            interpolation='bilinear'):
+def imshear(img: np.ndarray,
+            magnitude: Union[int, float],
+            direction: str = 'horizontal',
+            border_value: int = 0,
+            interpolation: str = 'bilinear') -> np.ndarray:
     """Shear an image.
 
     Args:
@@ -672,7 +690,8 @@ def imshear(img,
     return sheared
 
 
-def _get_translate_matrix(offset, direction='horizontal'):
+def _get_translate_matrix(offset: Union[int, float],
+                          direction: str = 'horizontal') -> np.ndarray:
     """Generate the translate matrix.
 
     Args:
@@ -690,11 +709,11 @@ def _get_translate_matrix(offset, direction='horizontal'):
     return translate_matrix
 
 
-def imtranslate(img,
-                offset,
-                direction='horizontal',
-                border_value=0,
-                interpolation='bilinear'):
+def imtranslate(img: np.ndarray,
+                offset: Union[int, float],
+                direction: str = 'horizontal',
+                border_value: Union[int, Tuple[int]] = 0,
+                interpolation: str = 'bilinear') -> np.ndarray:
     """Translate an image.
 
     Args:
