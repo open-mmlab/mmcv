@@ -40,10 +40,10 @@ def flowread(flow_or_path: Union[np.ndarray, str],
             try:
                 header = f.read(4).decode('utf-8')
             except Exception:
-                raise IOError(f'Invalid flow file: {flow_or_path}')
+                raise OSError(f'Invalid flow file: {flow_or_path}')
             else:
                 if header != 'PIEH':
-                    raise IOError(f'Invalid flow file: {flow_or_path}, '
+                    raise OSError(f'Invalid flow file: {flow_or_path}, '
                                   'header does not contain PIEH')
 
             w = np.fromfile(f, np.int32, 1).squeeze()
@@ -53,7 +53,7 @@ def flowread(flow_or_path: Union[np.ndarray, str],
         assert concat_axis in [0, 1]
         cat_flow = imread(flow_or_path, flag='unchanged')
         if cat_flow.ndim != 2:
-            raise IOError(
+            raise OSError(
                 f'{flow_or_path} is not a valid quantized flow file, '
                 f'its dimension is {cat_flow.ndim}.')
         assert cat_flow.shape[concat_axis] % 2 == 0
@@ -86,7 +86,7 @@ def flowwrite(flow: np.ndarray,
     """
     if not quantize:
         with open(filename, 'wb') as f:
-            f.write('PIEH'.encode('utf-8'))
+            f.write(b'PIEH')
             np.array([flow.shape[1], flow.shape[0]], dtype=np.int32).tofile(f)
             flow = flow.astype(np.float32)
             flow.tofile(f)
@@ -146,7 +146,7 @@ def dequantize_flow(dx: np.ndarray,
     assert dx.shape == dy.shape
     assert dx.ndim == 2 or (dx.ndim == 3 and dx.shape[-1] == 1)
 
-    dx, dy = [dequantize(d, -max_val, max_val, 255) for d in [dx, dy]]
+    dx, dy = (dequantize(d, -max_val, max_val, 255) for d in [dx, dy])
 
     if denorm:
         dx *= dx.shape[1]

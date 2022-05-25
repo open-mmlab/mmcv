@@ -34,8 +34,7 @@ class ClearMLLoggerHook(LoggerHook):
                  ignore_last=True,
                  reset_flag=False,
                  by_epoch=True):
-        super(ClearMLLoggerHook, self).__init__(interval, ignore_last,
-                                                reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_clearml()
         self.init_kwargs = init_kwargs
 
@@ -49,7 +48,7 @@ class ClearMLLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        super(ClearMLLoggerHook, self).before_run(runner)
+        super().before_run(runner)
         task_kwargs = self.init_kwargs if self.init_kwargs else {}
         self.task = self.clearml.Task.init(**task_kwargs)
         self.task_logger = self.task.get_logger()

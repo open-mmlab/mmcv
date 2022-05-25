@@ -39,7 +39,7 @@ class ConfigDict(Dict):
 
     def __getattr__(self, name):
         try:
-            value = super(ConfigDict, self).__getattr__(name)
+            value = super().__getattr__(name)
         except KeyError:
             ex = AttributeError(f"'{self.__class__.__name__}' object has no "
                                 f"attribute '{name}'")
@@ -96,7 +96,7 @@ class Config:
 
     @staticmethod
     def _validate_py_syntax(filename):
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             # Setting encoding explicitly to resolve coding issue on windows
             content = f.read()
         try:
@@ -116,7 +116,7 @@ class Config:
             fileBasename=file_basename,
             fileBasenameNoExtension=file_basename_no_extension,
             fileExtname=file_extname)
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             # Setting encoding explicitly to resolve coding issue on windows
             config_file = f.read()
         for key, value in support_templates.items():
@@ -130,7 +130,7 @@ class Config:
     def _pre_substitute_base_vars(filename, temp_config_name):
         """Substitute base variable placehoders to string, so that parsing
         would work."""
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             # Setting encoding explicitly to resolve coding issue on windows
             config_file = f.read()
         base_var_dict = {}
@@ -183,7 +183,7 @@ class Config:
         check_file_exist(filename)
         fileExtname = osp.splitext(filename)[1]
         if fileExtname not in ['.py', '.json', '.yaml', '.yml']:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
+            raise OSError('Only py/yml/yaml/json type are supported now!')
 
         with tempfile.TemporaryDirectory() as temp_config_dir:
             temp_config_file = tempfile.NamedTemporaryFile(
@@ -236,7 +236,7 @@ class Config:
             warnings.warn(warning_msg, DeprecationWarning)
 
         cfg_text = filename + '\n'
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             # Setting encoding explicitly to resolve coding issue on windows
             cfg_text += f.read()
 
@@ -356,7 +356,7 @@ class Config:
             :obj:`Config`: Config obj.
         """
         if file_format not in ['.py', '.json', '.yaml', '.yml']:
-            raise IOError('Only py/yml/yaml/json type are supported now!')
+            raise OSError('Only py/yml/yaml/json type are supported now!')
         if file_format != '.py' and 'dict(' in cfg_str:
             # check if users specify a wrong suffix for python
             warnings.warn(
@@ -396,16 +396,16 @@ class Config:
         if isinstance(filename, Path):
             filename = str(filename)
 
-        super(Config, self).__setattr__('_cfg_dict', ConfigDict(cfg_dict))
-        super(Config, self).__setattr__('_filename', filename)
+        super().__setattr__('_cfg_dict', ConfigDict(cfg_dict))
+        super().__setattr__('_filename', filename)
         if cfg_text:
             text = cfg_text
         elif filename:
-            with open(filename, 'r') as f:
+            with open(filename) as f:
                 text = f.read()
         else:
             text = ''
-        super(Config, self).__setattr__('_text', text)
+        super().__setattr__('_text', text)
 
     @property
     def filename(self):
@@ -556,9 +556,9 @@ class Config:
 
     def __setstate__(self, state):
         _cfg_dict, _filename, _text = state
-        super(Config, self).__setattr__('_cfg_dict', _cfg_dict)
-        super(Config, self).__setattr__('_filename', _filename)
-        super(Config, self).__setattr__('_text', _text)
+        super().__setattr__('_cfg_dict', _cfg_dict)
+        super().__setattr__('_filename', _filename)
+        super().__setattr__('_text', _text)
 
     def dump(self, file=None):
         """Dumps config into a file or returns a string representation of the
@@ -584,7 +584,7 @@ class Config:
                 will be dumped. Defaults to None.
         """
         import mmcv
-        cfg_dict = super(Config, self).__getattribute__('_cfg_dict').to_dict()
+        cfg_dict = super().__getattribute__('_cfg_dict').to_dict()
         if file is None:
             if self.filename is None or self.filename.endswith('.py'):
                 return self.pretty_text
@@ -638,8 +638,8 @@ class Config:
             subkey = key_list[-1]
             d[subkey] = v
 
-        cfg_dict = super(Config, self).__getattribute__('_cfg_dict')
-        super(Config, self).__setattr__(
+        cfg_dict = super().__getattribute__('_cfg_dict')
+        super().__setattr__(
             '_cfg_dict',
             Config._merge_a_into_b(
                 option_cfg_dict, cfg_dict, allow_list_keys=allow_list_keys))

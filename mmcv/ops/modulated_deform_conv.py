@@ -168,7 +168,7 @@ class ModulatedDeformConv2d(nn.Module):
                  groups=1,
                  deform_groups=1,
                  bias=True):
-        super(ModulatedDeformConv2d, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = _pair(kernel_size)
@@ -227,7 +227,7 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
     _version = 2
 
     def __init__(self, *args, **kwargs):
-        super(ModulatedDeformConv2dPack, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.conv_offset = nn.Conv2d(
             self.in_channels,
             self.deform_groups * 3 * self.kernel_size[0] * self.kernel_size[1],
@@ -239,7 +239,7 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
         self.init_weights()
 
     def init_weights(self):
-        super(ModulatedDeformConv2dPack, self).init_weights()
+        super().init_weights()
         if hasattr(self, 'conv_offset'):
             self.conv_offset.weight.data.zero_()
             self.conv_offset.bias.data.zero_()

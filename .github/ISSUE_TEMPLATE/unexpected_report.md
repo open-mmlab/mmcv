@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: ''
 assignees: ''
-
 ---
 
 Thanks for reporting the unexpected results and we appreciate it a lot.
@@ -32,8 +31,8 @@ A placeholder for the command.
 
 1. Please run `python -c "from mmcv.utils import collect_env; print(collect_env())"` to collect necessary environment information and paste it here.
 2. You may add addition that may be helpful for locating the problem, such as
-    - How you installed PyTorch [e.g., pip, conda, source]
-    - Other environment variables that may be related (such as `$PATH`, `$LD_LIBRARY_PATH`, `$PYTHONPATH`, etc.)
+   - How you installed PyTorch \[e.g., pip, conda, source\]
+   - Other environment variables that may be related (such as `$PATH`, `$LD_LIBRARY_PATH`, `$PYTHONPATH`, etc.)
 
 **Error traceback**
 If applicable, paste the error traceback here.

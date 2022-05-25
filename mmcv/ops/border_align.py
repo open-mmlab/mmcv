@@ -86,7 +86,7 @@ class BorderAlign(nn.Module):
     """
 
     def __init__(self, pool_size):
-        super(BorderAlign, self).__init__()
+        super().__init__()
         self.pool_size = pool_size
 
     def forward(self, input, boxes):

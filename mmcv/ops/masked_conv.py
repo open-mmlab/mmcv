@@ -98,13 +98,12 @@ class MaskedConv2d(nn.Conv2d):
                  dilation=1,
                  groups=1,
                  bias=True):
-        super(MaskedConv2d,
-              self).__init__(in_channels, out_channels, kernel_size, stride,
-                             padding, dilation, groups, bias)
+        super().__init__(in_channels, out_channels, kernel_size, stride,
+                         padding, dilation, groups, bias)
 
     def forward(self, input, mask=None):
         if mask is None:  # fallback to the normal Conv2d
-            return super(MaskedConv2d, self).forward(input)
+            return super().forward(input)
         else:
             return masked_conv2d(input, mask, self.weight, self.bias,
                                  self.padding)

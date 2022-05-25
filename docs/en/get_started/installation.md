@@ -3,7 +3,7 @@
 There are two versions of MMCV:
 
 - **mmcv-full**: comprehensive, with full features and various CUDA ops out of box. It takes longer time to build.
-- **mmcv**: lite, without CUDA ops but all other features, similar to mmcv<1.0.0. It is useful when you do not need those CUDA ops.
+- **mmcv**: lite, without CUDA ops but all other features, similar to mmcv\<1.0.0. It is useful when you do not need those CUDA ops.
 
 ```{warning}
 Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full version is highly recommended if CUDA is avaliable`.
@@ -17,32 +17,32 @@ We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA
 
 i. Install the latest version.
 
-The rule for installing the latest ``mmcv-full`` is as follows:
+The rule for installing the latest `mmcv-full` is as follows:
 
 ```shell
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-Please replace ``{cu_version}`` and ``{torch_version}`` in the url to your desired one. For example,
-to install the latest ``mmcv-full`` with ``CUDA 11.1`` and ``PyTorch 1.9.0``, use the following command:
+Please replace `{cu_version}` and `{torch_version}` in the url to your desired one. For example,
+to install the latest `mmcv-full` with `CUDA 11.1` and `PyTorch 1.9.0`, use the following command:
 
 ```shell
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
-For more details, please refer the the following tables and delete ``=={mmcv_version}``.
+For more details, please refer the the following tables and delete `=={mmcv_version}`.
 
 ii. Install a specified version.
 
-The rule for installing a specified ``mmcv-full`` is as follows:
+The rule for installing a specified `mmcv-full` is as follows:
 
 ```shell
 pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-First of all, please refer to the Releases and replace ``{mmcv_version}`` a specified one. e.g. ``1.3.9``.
-Then replace ``{cu_version}`` and ``{torch_version}`` in the url to your desired versions. For example,
-to install ``mmcv-full==1.3.9`` with ``CUDA 11.1`` and ``PyTorch 1.9.0``, use the following command:
+First of all, please refer to the Releases and replace `{mmcv_version}` a specified one. e.g. `1.3.9`.
+Then replace `{cu_version}` and `{torch_version}` in the url to your desired versions. For example,
+to install `mmcv-full==1.3.9` with `CUDA 11.1` and `PyTorch 1.9.0`, use the following command:
 
 ```shell
 pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html

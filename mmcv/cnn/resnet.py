@@ -30,7 +30,7 @@ class BasicBlock(nn.Module):
                  downsample=None,
                  style='pytorch',
                  with_cp=False):
-        super(BasicBlock, self).__init__()
+        super().__init__()
         assert style in ['pytorch', 'caffe']
         self.conv1 = conv3x3(inplanes, planes, stride, dilation)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -77,7 +77,7 @@ class Bottleneck(nn.Module):
         If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
         it is "caffe", the stride-two layer is the first 1x1 conv layer.
         """
-        super(Bottleneck, self).__init__()
+        super().__init__()
         assert style in ['pytorch', 'caffe']
         if style == 'pytorch':
             conv1_stride = 1
@@ -218,7 +218,7 @@ class ResNet(nn.Module):
                  bn_eval=True,
                  bn_frozen=False,
                  with_cp=False):
-        super(ResNet, self).__init__()
+        super().__init__()
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for resnet')
         assert num_stages >= 1 and num_stages <= 4
@@ -293,7 +293,7 @@ class ResNet(nn.Module):
             return tuple(outs)
 
     def train(self, mode=True):
-        super(ResNet, self).train(mode)
+        super().train(mode)
         if self.bn_eval:
             for m in self.modules():
                 if isinstance(m, nn.BatchNorm2d):

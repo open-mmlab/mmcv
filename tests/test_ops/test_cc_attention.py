@@ -15,7 +15,7 @@ class Loss(nn.Module):
         return torch.mean(input - target)
 
 
-class TestCrissCrossAttention(object):
+class TestCrissCrossAttention:
 
     def test_cc_attention(self):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

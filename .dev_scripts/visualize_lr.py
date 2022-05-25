@@ -42,7 +42,7 @@ def parse_args():
 class SimpleModel(nn.Module):
 
     def __init__(self):
-        super(SimpleModel, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(1, 1, 1)
 
     def train_step(self, *args, **kwargs):
@@ -159,13 +159,13 @@ def run(cfg, logger):
 def plot_lr_curve(json_file, cfg):
     data_dict = dict(LearningRate=[], Momentum=[])
     assert os.path.isfile(json_file)
-    with open(json_file, 'r') as f:
+    with open(json_file) as f:
         for line in f:
             log = json.loads(line.strip())
             data_dict['LearningRate'].append(log['lr'])
             data_dict['Momentum'].append(log['momentum'])
 
-    wind_w, wind_h = [int(size) for size in cfg.window_size.split('*')]
+    wind_w, wind_h = (int(size) for size in cfg.window_size.split('*'))
     # if legend is None, use {filename}_{key} as legend
     fig, axes = plt.subplots(2, 1, figsize=(wind_w, wind_h))
     plt.subplots_adjust(hspace=0.5)

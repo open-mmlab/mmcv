@@ -18,7 +18,7 @@ def scatter_nd(indices, updates, shape):
     return ret
 
 
-class SparseConvTensor(object):
+class SparseConvTensor:
 
     def __init__(self,
                  features,

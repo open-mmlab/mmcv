@@ -125,7 +125,7 @@ class CornerPool(nn.Module):
     }
 
     def __init__(self, mode):
-        super(CornerPool, self).__init__()
+        super().__init__()
         assert mode in self.pool_functions
         self.mode = mode
         self.corner_pool = self.pool_functions[mode]

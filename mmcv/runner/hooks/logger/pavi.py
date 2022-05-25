@@ -40,8 +40,7 @@ class PaviLoggerHook(LoggerHook):
                  reset_flag=False,
                  by_epoch=True,
                  img_key='img_info'):
-        super(PaviLoggerHook, self).__init__(interval, ignore_last, reset_flag,
-                                             by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt
@@ -49,7 +48,7 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def before_run(self, runner):
-        super(PaviLoggerHook, self).before_run(runner)
+        super().before_run(runner)
         try:
             from pavi import SummaryWriter
         except ImportError:

@@ -35,7 +35,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         # NOTE init_cfg can be defined in different levels, but init_cfg
         # in low levels has a higher priority.
 
-        super(BaseModule, self).__init__()
+        super().__init__()
         # define default value of init_cfg instead of hard code
         # in init_weights() function
         self._is_init = False

@@ -212,7 +212,7 @@ class FusedBiasLeakyReLU(nn.Module):
     """
 
     def __init__(self, num_channels, negative_slope=0.2, scale=2**0.5):
-        super(FusedBiasLeakyReLU, self).__init__()
+        super().__init__()
 
         self.bias = nn.Parameter(torch.zeros(num_channels))
         self.negative_slope = negative_slope

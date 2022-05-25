@@ -210,9 +210,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'delete'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `delete` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `delete` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -230,9 +230,9 @@ class PetrelBackend(BaseStorageBackend):
         if not (has_method(self._client, 'contains')
                 and has_method(self._client, 'isdir')):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` and `isdir` methods, please use a higher'
-                 'version or dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` and `isdir` methods, please use a higher'
+                'version or dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -251,9 +251,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'isdir'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `isdir` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `isdir` method, please use a higher version or dev'
+                ' branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -271,9 +271,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'contains'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `contains` method, please use a higher version or '
-                 'dev branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `contains` method, please use a higher version or '
+                'dev branch instead.')
 
         filepath = self._map_path(filepath)
         filepath = self._format_path(filepath)
@@ -366,9 +366,9 @@ class PetrelBackend(BaseStorageBackend):
         """
         if not has_method(self._client, 'list'):
             raise NotImplementedError(
-                ('Current version of Petrel Python SDK has not supported '
-                 'the `list` method, please use a higher version or dev'
-                 ' branch instead.'))
+                'Current version of Petrel Python SDK has not supported '
+                'the `list` method, please use a higher version or dev'
+                ' branch instead.')
 
         dir_path = self._map_path(dir_path)
         dir_path = self._format_path(dir_path)
@@ -549,7 +549,7 @@ class HardDiskBackend(BaseStorageBackend):
         Returns:
             str: Expected text reading from ``filepath``.
         """
-        with open(filepath, 'r', encoding=encoding) as f:
+        with open(filepath, encoding=encoding) as f:
             value_buf = f.read()
         return value_buf
 
@@ -791,17 +791,12 @@ class FileClient:
         'petrel': PetrelBackend,
         'http': HTTPBackend,
     }
-    # This collection is used to record the overridden backends, and when a
-    # backend appears in the collection, the singleton pattern is disabled for
-    # that backend, because if the singleton pattern is used, then the object
-    # returned will be the backend before overwriting
-    _overridden_backends: set = set()
-    _prefix_to_backends: dict = {
+
+    _prefix_to_backends = {
         's3': PetrelBackend,
         'http': HTTPBackend,
         'https': HTTPBackend,
     }
-    _overridden_prefixes: set = set()
 
     _instances: dict = {}
 
@@ -825,10 +820,7 @@ class FileClient:
         for key, value in kwargs.items():
             arg_key += f':{key}:{value}'
 
-        # if a backend was overridden, it will create a new object
-        if (arg_key in cls._instances
-                and backend not in cls._overridden_backends
-                and prefix not in cls._overridden_prefixes):
+        if arg_key in cls._instances:
             _instance = cls._instances[arg_key]
         else:
             # create a new object and put it to _instance
@@ -922,7 +914,9 @@ class FileClient:
                 'add "force=True" if you want to override it')
 
         if name in cls._backends and force:
-            cls._overridden_backends.add(name)
+            for arg_key, instance in list(cls._instances.items()):
+                if isinstance(instance.client, cls._backends[name]):
+                    cls._instances.pop(arg_key)
         cls._backends[name] = backend
 
         if prefixes is not None:
@@ -934,7 +928,12 @@ class FileClient:
                 if prefix not in cls._prefix_to_backends:
                     cls._prefix_to_backends[prefix] = backend
                 elif (prefix in cls._prefix_to_backends) and force:
-                    cls._overridden_prefixes.add(prefix)
+                    overridden_backend = cls._prefix_to_backends[prefix]
+                    if isinstance(overridden_backend, list):
+                        overridden_backend = tuple(overridden_backend)
+                    for arg_key, instance in list(cls._instances.items()):
+                        if isinstance(instance.client, overridden_backend):
+                            cls._instances.pop(arg_key)
                     cls._prefix_to_backends[prefix] = backend
                 else:
                     raise KeyError(

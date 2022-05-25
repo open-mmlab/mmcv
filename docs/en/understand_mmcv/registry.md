@@ -51,6 +51,7 @@ class Converter1(object):
         self.a = a
         self.b = b
 ```
+
 ```python
 # converter2.py
 from .builder import CONVERTERS
@@ -61,6 +62,7 @@ from .converter1 import Converter1
 def converter2(a, b)
     return Converter1(a, b)
 ```
+
 The key step to use registry for managing the modules is to register the implemented module into the registry `CONVERTERS` through
 `@CONVERTERS.register_module()` when you are creating the module. By this way, a mapping between a string and the class (function) is built and maintained by `CONVERTERS` as below
 
@@ -68,6 +70,7 @@ The key step to use registry for managing the modules is to register the impleme
 'Converter1' -> <class 'Converter1'>
 'converter2' -> <function 'converter2'>
 ```
+
 ```{note}
 The registry mechanism will be triggered only when the file where the module is located is imported.
 So you need to import that file somewhere. More details can be found at https://github.com/open-mmlab/mmdetection/issues/5974.

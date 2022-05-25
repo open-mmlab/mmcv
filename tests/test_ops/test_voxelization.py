@@ -96,8 +96,8 @@ def test_voxelization_nondeterministic():
     coors_all = dynamic_voxelization.forward(points)
     coors_all = coors_all.cpu().detach().numpy().tolist()
 
-    coors_set = set([tuple(c) for c in coors])
-    coors_all_set = set([tuple(c) for c in coors_all])
+    coors_set = {tuple(c) for c in coors}
+    coors_all_set = {tuple(c) for c in coors_all}
 
     assert len(coors_set) == len(coors)
     assert len(coors_set - coors_all_set) == 0
@@ -112,7 +112,7 @@ def test_voxelization_nondeterministic():
 
     for c, ps, n in zip(coors, voxels, num_points_per_voxel):
         ideal_voxel_points_set = coors_points_dict[tuple(c)]
-        voxel_points_set = set([tuple(p) for p in ps[:n]])
+        voxel_points_set = {tuple(p) for p in ps[:n]}
         assert len(voxel_points_set) == n
         if n < max_num_points:
             assert voxel_points_set == ideal_voxel_points_set
@@ -133,7 +133,7 @@ def test_voxelization_nondeterministic():
     voxels, coors, num_points_per_voxel = hard_voxelization.forward(points)
     coors = coors.cpu().detach().numpy().tolist()
 
-    coors_set = set([tuple(c) for c in coors])
-    coors_all_set = set([tuple(c) for c in coors_all])
+    coors_set = {tuple(c) for c in coors}
+    coors_all_set = {tuple(c) for c in coors_all}
 
     assert len(coors_set) == len(coors) == len(coors_all_set)
