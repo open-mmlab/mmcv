@@ -36,10 +36,10 @@ class ContextBlock(nn.Module):
     _abbr_ = 'context_block'
 
     def __init__(self,
-                 in_channels,
-                 ratio,
-                 pooling_type='att',
-                 fusion_types=('channel_add', )):
+                 in_channels: int,
+                 ratio: float,
+                 pooling_type: str = 'att',
+                 fusion_types: tuple = ('channel_add', )):
         super().__init__()
         assert pooling_type in ['avg', 'att']
         assert isinstance(fusion_types, (list, tuple))
@@ -84,7 +84,7 @@ class ContextBlock(nn.Module):
         if self.channel_mul_conv is not None:
             last_zero_init(self.channel_mul_conv)
 
-    def spatial_pool(self, x):
+    def spatial_pool(self, x: torch.Tensor) -> torch.Tensor:
         batch, channel, height, width = x.size()
         if self.pooling_type == 'att':
             input_x = x
@@ -110,7 +110,7 @@ class ContextBlock(nn.Module):
 
         return context
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         # [N, C, 1, 1]
         context = self.spatial_pool(x)
 

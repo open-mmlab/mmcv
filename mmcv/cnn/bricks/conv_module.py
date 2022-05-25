@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from typing import Dict, Optional, Tuple, Union
 
+import torch
 import torch.nn as nn
 
 from mmcv.utils import _BatchNorm, _InstanceNorm
@@ -68,21 +70,21 @@ class ConvModule(nn.Module):
     _abbr_ = 'conv_block'
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 bias='auto',
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 act_cfg=dict(type='ReLU'),
-                 inplace=True,
-                 with_spectral_norm=False,
-                 padding_mode='zeros',
-                 order=('conv', 'norm', 'act')):
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, Tuple[int, int]],
+                 stride: Union[int, Tuple[int, int]] = 1,
+                 padding: Union[int, Tuple[int, int]] = 0,
+                 dilation: Union[int, Tuple[int, int]] = 1,
+                 groups: int = 1,
+                 bias: Union[bool, str] = 'auto',
+                 conv_cfg: Optional[Dict] = None,
+                 norm_cfg: Optional[Dict] = None,
+                 act_cfg: Dict = dict(type='ReLU'),
+                 inplace: bool = True,
+                 with_spectral_norm: bool = False,
+                 padding_mode: str = 'zeros',
+                 order: tuple = ('conv', 'norm', 'act')):
         super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
@@ -193,7 +195,10 @@ class ConvModule(nn.Module):
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
-    def forward(self, x, activate=True, norm=True):
+    def forward(self,
+                x: torch.Tensor,
+                activate: bool = True,
+                norm: bool = True) -> torch.Tensor:
         for layer in self.order:
             if layer == 'conv':
                 if self.with_explicit_padding:
