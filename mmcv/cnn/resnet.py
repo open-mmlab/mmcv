@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+from typing import Sequence
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -208,16 +209,16 @@ class ResNet(nn.Module):
     }
 
     def __init__(self,
-                 depth,
-                 num_stages=4,
-                 strides=(1, 2, 2, 2),
-                 dilations=(1, 1, 1, 1),
-                 out_indices=(0, 1, 2, 3),
-                 style='pytorch',
-                 frozen_stages=-1,
-                 bn_eval=True,
-                 bn_frozen=False,
-                 with_cp=False):
+                 depth: int,
+                 num_stages: int = 4,
+                 strides: Sequence[int] = (1, 2, 2, 2),
+                 dilations: Sequence[int] = (1, 1, 1, 1),
+                 out_indices: Sequence[int] = (0, 1, 2, 3),
+                 style: str = 'pytorch',
+                 frozen_stages: int = -1,
+                 bn_eval: bool = True,
+                 bn_frozen: bool = False,
+                 with_cp: bool = False):
         super().__init__()
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for resnet')
