@@ -80,7 +80,7 @@ class ConvModule(nn.Module):
                  bias: Union[bool, str] = 'auto',
                  conv_cfg: Optional[Dict] = None,
                  norm_cfg: Optional[Dict] = None,
-                 act_cfg: Dict = dict(type='ReLU'),
+                 act_cfg: Optional[Dict] = dict(type='ReLU'),
                  inplace: bool = True,
                  with_spectral_norm: bool = False,
                  padding_mode: str = 'zeros',
@@ -145,18 +145,18 @@ class ConvModule(nn.Module):
                 norm_channels = out_channels
             else:
                 norm_channels = in_channels
-            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
+            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels) # type: ignore
             self.add_module(self.norm_name, norm)
             if self.with_bias:
                 if isinstance(norm, (_BatchNorm, _InstanceNorm)):
                     warnings.warn(
                         'Unnecessary conv bias before batch/instance norm')
         else:
-            self.norm_name = None
+            self.norm_name = None # type: ignore
 
         # build activation layer
         if self.with_activation:
-            act_cfg_ = act_cfg.copy()
+            act_cfg_ = act_cfg.copy() # type: ignore
             # nn.Tanh has no 'inplace' argument
             if act_cfg_['type'] not in [
                     'Tanh', 'PReLU', 'Sigmoid', 'HSigmoid', 'Swish', 'GELU'

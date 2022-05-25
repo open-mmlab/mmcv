@@ -57,19 +57,19 @@ class DepthwiseSeparableConvModule(nn.Module):
                  dilation: Union[int, Tuple[int, int]] = 1,
                  norm_cfg: Optional[Dict] = None,
                  act_cfg: Dict = dict(type='ReLU'),
-                 dw_norm_cfg: Optional[Union[Dict, str]] = 'default',
-                 dw_act_cfg: Optional[Union[Dict, str]] = 'default',
-                 pw_norm_cfg: Optional[Union[Dict, str]] = 'default',
-                 pw_act_cfg: Optional[Union[Dict, str]] = 'default',
+                 dw_norm_cfg: Union[Dict, str] = 'default',
+                 dw_act_cfg: Union[Dict, str] = 'default',
+                 pw_norm_cfg: Union[Dict, str] = 'default',
+                 pw_act_cfg: Union[Dict, str] = 'default',
                  **kwargs):
         super().__init__()
         assert 'groups' not in kwargs, 'groups should not be specified'
 
         # if norm/activation config of depthwise/pointwise ConvModule is not
         # specified, use default config.
-        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != 'default' else norm_cfg
+        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != 'default' else norm_cfg  # type: ignore # noqa E501
         dw_act_cfg = dw_act_cfg if dw_act_cfg != 'default' else act_cfg
-        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != 'default' else norm_cfg
+        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != 'default' else norm_cfg  # type: ignore # noqa E501
         pw_act_cfg = pw_act_cfg if pw_act_cfg != 'default' else act_cfg
 
         # depthwise convolution
@@ -81,16 +81,16 @@ class DepthwiseSeparableConvModule(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=in_channels,
-            norm_cfg=dw_norm_cfg,
-            act_cfg=dw_act_cfg,
+            norm_cfg=dw_norm_cfg,  # type: ignore
+            act_cfg=dw_act_cfg,  # type: ignore
             **kwargs)
 
         self.pointwise_conv = ConvModule(
             in_channels,
             out_channels,
             1,
-            norm_cfg=pw_norm_cfg,
-            act_cfg=pw_act_cfg,
+            norm_cfg=pw_norm_cfg,  # type: ignore
+            act_cfg=pw_act_cfg,  # type: ignore
             **kwargs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
