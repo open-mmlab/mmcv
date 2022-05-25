@@ -13,7 +13,7 @@ from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 INITIALIZERS = Registry('initializer')
 
 
-def update_init_info(module, init_info):
+def update_init_info(module: nn.Module, init_info: str) -> None:
     """Update the `_params_init_info` in the module if the value of parameters
     are changed.
 
@@ -45,14 +45,17 @@ def update_init_info(module, init_info):
             module._params_init_info[param]['tmp_mean_value'] = mean_value
 
 
-def constant_init(module, val, bias=0):
+def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.constant_(module.weight, val)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
 
 
-def xavier_init(module, gain=1, bias=0, distribution='normal'):
+def xavier_init(module: nn.Module,
+                gain: float = 1,
+                bias: float = 0,
+                distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
         if distribution == 'uniform':
@@ -63,7 +66,10 @@ def xavier_init(module, gain=1, bias=0, distribution='normal'):
         nn.init.constant_(module.bias, bias)
 
 
-def normal_init(module, mean=0, std=1, bias=0):
+def normal_init(module: nn.Module,
+                mean: float = 0,
+                std: float = 1,
+                bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.normal_(module.weight, mean, std)
     if hasattr(module, 'bias') and module.bias is not None:
@@ -82,19 +88,22 @@ def trunc_normal_init(module: nn.Module,
         nn.init.constant_(module.bias, bias)  # type: ignore
 
 
-def uniform_init(module, a=0, b=1, bias=0):
+def uniform_init(module: nn.Module,
+                 a: float = 0,
+                 b: float = 1,
+                 bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.uniform_(module.weight, a, b)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
 
 
-def kaiming_init(module,
-                 a=0,
-                 mode='fan_out',
-                 nonlinearity='relu',
-                 bias=0,
-                 distribution='normal'):
+def kaiming_init(module: nn.Module,
+                 a: float = 0,
+                 mode: str = 'fan_out',
+                 nonlinearity: str = 'relu',
+                 bias: float = 0,
+                 distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
         if distribution == 'uniform':
@@ -107,7 +116,7 @@ def kaiming_init(module,
         nn.init.constant_(module.bias, bias)
 
 
-def caffe2_xavier_init(module, bias=0):
+def caffe2_xavier_init(module: nn.Module, bias: float = 0) -> None:
     # `XavierFill` in Caffe2 corresponds to `kaiming_uniform_` in PyTorch
     # Acknowledgment to FAIR's internal code
     kaiming_init(
@@ -119,7 +128,7 @@ def caffe2_xavier_init(module, bias=0):
         distribution='uniform')
 
 
-def bias_init_with_prob(prior_prob):
+def bias_init_with_prob(prior_prob: float) -> float:
     """initialize conv/fc bias value according to a given probability value."""
     bias_init = float(-np.log((1 - prior_prob) / prior_prob))
     return bias_init
@@ -508,7 +517,7 @@ class PretrainedInit:
         return info
 
 
-def _initialize(module, cfg, wholemodule=False):
+def _initialize(module: nn.Module, cfg, wholemodule: bool = False) -> None:
     func = build_from_cfg(cfg, INITIALIZERS)
     # wholemodule flag is for override mode, there is no layer key in override
     # and initializer will give init values for the whole module with the name
@@ -517,7 +526,7 @@ def _initialize(module, cfg, wholemodule=False):
     func(module)
 
 
-def _initialize_override(module, override, cfg):
+def _initialize_override(module: nn.Module, override, cfg) -> None:
     if not isinstance(override, (dict, list)):
         raise TypeError(f'override must be a dict or a list of dict, \
                 but got {type(override)}')
@@ -547,7 +556,7 @@ def _initialize_override(module, override, cfg):
                                f'but init_cfg is {cp_override}.')
 
 
-def initialize(module, init_cfg):
+def initialize(module: nn.Module, init_cfg) -> None:
     r"""Initialize a module.
 
     Args:
