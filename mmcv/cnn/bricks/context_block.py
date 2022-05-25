@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Union
+
 import torch
 from torch import nn
 
@@ -6,7 +8,7 @@ from ..utils import constant_init, kaiming_init
 from .registry import PLUGIN_LAYERS
 
 
-def last_zero_init(m):
+def last_zero_init(m: Union[nn.Module, nn.Sequential]) -> None:
     if isinstance(m, nn.Sequential):
         constant_init(m[-1], val=0)
     else:
