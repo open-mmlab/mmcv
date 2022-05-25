@@ -26,6 +26,7 @@
 import sys
 import warnings
 from functools import partial
+from typing import Callable, Optional, TextIO, Tuple, Union
 
 import numpy as np
 import torch
@@ -34,13 +35,13 @@ import torch.nn as nn
 import mmcv
 
 
-def get_model_complexity_info(model,
-                              input_shape,
-                              print_per_layer_stat=True,
-                              as_strings=True,
-                              input_constructor=None,
-                              flush=False,
-                              ost=sys.stdout):
+def get_model_complexity_info(model: nn.Module,
+                              input_shape: tuple,
+                              print_per_layer_stat: bool = True,
+                              as_strings: bool = True,
+                              input_constructor: Optional[Callable] = None,
+                              flush: bool = False,
+                              ost: TextIO = sys.stdout) -> tuple:
     """Get complexity information of a model.
 
     This method can calculate FLOPs and parameter counts of a model with
@@ -116,7 +117,9 @@ def get_model_complexity_info(model,
     return flops_count, params_count
 
 
-def flops_to_string(flops, units='GFLOPs', precision=2):
+def flops_to_string(flops: float,
+                    units: Optional[str] = 'GFLOPs',
+                    precision: int = 2) -> str:
     """Convert FLOPs number into a string.
 
     Note that Here we take a multiply-add counts as one FLOP.
@@ -159,7 +162,9 @@ def flops_to_string(flops, units='GFLOPs', precision=2):
             return str(flops) + ' FLOPs'
 
 
-def params_to_string(num_params, units=None, precision=2):
+def params_to_string(num_params: float,
+                     units: Optional[str] = None,
+                     precision: int = 2) -> str:
     """Convert parameter number into a string.
 
     Args:
@@ -196,13 +201,13 @@ def params_to_string(num_params, units=None, precision=2):
             return str(num_params)
 
 
-def print_model_with_flops(model,
-                           total_flops,
-                           total_params,
-                           units='GFLOPs',
-                           precision=3,
-                           ost=sys.stdout,
-                           flush=False):
+def print_model_with_flops(model: nn.Module,
+                           total_flops: float,
+                           total_params: float,
+                           units: str = 'GFLOPs',
+                           precision: int = 3,
+                           ost: TextIO = sys.stdout,
+                           flush: bool = False) -> None:
     """Print a model with FLOPs for each layer.
 
     Args:
@@ -305,7 +310,7 @@ def print_model_with_flops(model,
     model.apply(del_extra_repr)
 
 
-def get_model_parameters_number(model):
+def get_model_parameters_number(model: nn.Module) -> float:
     """Calculate parameter number of a model.
 
     Args:
