@@ -6,11 +6,7 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['bbox_overlaps'])
 
 
-def _bbox_overlaps_cpu(bboxes1: torch.Tensor,
-                       bboxes2: torch.Tensor,
-                       mode: str = 'iou',
-                       aligned: bool = False,
-                       offset: int = 0) -> torch.Tensor:
+def _bbox_overlaps_cpu(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
     assert mode in ['iou', 'iof']
 
     if aligned:
@@ -47,11 +43,7 @@ def _bbox_overlaps_cpu(bboxes1: torch.Tensor,
     return ious
 
 
-def bbox_overlaps(bboxes1: torch.Tensor,
-                  bboxes2: torch.Tensor,
-                  mode: str = 'iou',
-                  aligned: bool = False,
-                  offset: int = 0) -> torch.Tensor:
+def bbox_overlaps(bboxes1, bboxes2, mode='iou', aligned=False, offset=0):
     """Calculate overlap between two set of bboxes.
 
     If ``aligned`` is ``False``, then calculate the ious between each bbox
