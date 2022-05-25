@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO, StringIO
 from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Union
 
 from ..utils import is_list_of, is_str
 from .file_client import FileClient
@@ -15,7 +16,10 @@ file_handlers = {
 }
 
 
-def load(file, file_format=None, file_client_args=None, **kwargs):
+def load(file: Union[str, Path],
+         file_format: Optional[str] = None,
+         file_client_args: Optional[Dict] = None,
+         **kwargs):
     """Load data from json/yaml/pickle files.
 
     This method provides a unified api for loading data from serialized files.
@@ -66,7 +70,11 @@ def load(file, file_format=None, file_client_args=None, **kwargs):
     return obj
 
 
-def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
+def dump(obj: Any,
+         file: Optional[Union[str, Path]] = None,
+         file_format: Optional[str] = None,
+         file_client_args: Optional[Dict] = None,
+         **kwargs):
     """Dump data to json/yaml/pickle strings or files.
 
     This method provides a unified api for dumping data as strings or to files,
@@ -123,7 +131,8 @@ def dump(obj, file=None, file_format=None, file_client_args=None, **kwargs):
         raise TypeError('"file" must be a filename str or a file-object')
 
 
-def _register_handler(handler, file_formats):
+def _register_handler(handler: BaseFileHandler,
+                      file_formats: Union[str, list]) -> None:
     """Register a handler for some file extensions.
 
     Args:
@@ -142,7 +151,7 @@ def _register_handler(handler, file_formats):
         file_handlers[ext] = handler
 
 
-def register_handler(file_formats, **kwargs):
+def register_handler(file_formats: Union[str, list], **kwargs) -> Callable:
 
     def wrap(cls):
         _register_handler(cls(**kwargs), file_formats)
