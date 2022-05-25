@@ -1,9 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict, List, Optional, Union
+
+import torch.nn as nn
+
 from ..runner import Sequential
 from ..utils import Registry, build_from_cfg
 
 
-def build_model_from_cfg(cfg, registry, default_args=None):
+def build_model_from_cfg(cfg: Union[Dict, List],
+                         registry: Registry,
+                         default_args: Optional[Dict] = None) -> nn.Module:
     """Build a PyTorch model from config dict(s). Different from
     ``build_from_cfg``, if cfg is a list, a ``nn.Sequential`` will be built.
 
