@@ -30,14 +30,31 @@ __global__ void chamfer_distance_forward_cuda_kernel(int b, int n,
         int best_i = 0;
         scalar_t best = 1e10;
         int end_ka = end_k & (~2);
-#progma unroll
-        for (int k = 0; k < end_ka; k) {
-          scalar_t x2 = buf[k * 2 + 0] - x1;
-          scalar_t y2 = buf[k * 2 + 1] - y1;
-          scalar_t d = x2 * x2 + y2 * y2;
-          if (d < best) {
-            best = d;
-            best_i = k + k2;
+        if (end_ka == THREADS_PER_BLOCK) {
+          for (int k = 0; k < THREADS_PER_BLOCK; k += 4) {
+#pragma unroll
+            for (int j = 0; j < 4; ++j) {
+              scalar_t x2 = buf[(k + j) * 2] - x1;
+              scalar_t y2 = buf[(k + j) * 2 + 1] - y1;
+              scalar_t d = x2 * x2 + y2 * y2;
+              if (d < best) {
+                best = d;
+                best_i = k + k2 + j;
+              }
+            }
+          }
+        } else {
+          for (int k = 0; k < end_ka; k += 4) {
+#pragma unroll
+            for (int j = 0; j < 4; ++j) {
+              scalar_t x2 = buf[(k + j) * 2] - x1;
+              scalar_t y2 = buf[(k + j) * 2 + 1] - y1;
+              scalar_t d = x2 * x2 + y2 * y2;
+              if (d < best) {
+                best = d;
+                best_i = k + k2 + j;
+              }
+            }
           }
         }
         for (int k = end_ka; k < end_k; k++) {
