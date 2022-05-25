@@ -11,9 +11,10 @@ import torch
 
 import mmcv
 from .parrots_wrapper import get_build_config
+from typing import Dict
 
 
-def collect_env():
+def collect_env() -> Dict:
     """Collect the information of the running environments.
 
     Returns:
