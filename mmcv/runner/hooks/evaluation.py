@@ -2,6 +2,7 @@
 import os.path as osp
 import warnings
 from math import inf
+from typing import Callable, List, Optional
 
 import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -83,17 +84,17 @@ class EvalHook(Hook):
     _default_less_keys = ['loss']
 
     def __init__(self,
-                 dataloader,
-                 start=None,
-                 interval=1,
-                 by_epoch=True,
-                 save_best=None,
-                 rule=None,
-                 test_fn=None,
-                 greater_keys=None,
-                 less_keys=None,
-                 out_dir=None,
-                 file_client_args=None,
+                 dataloader: DataLoader,
+                 start: Optional[int] = None,
+                 interval: int = 1,
+                 by_epoch: bool = True,
+                 save_best: Optional[str] = None,
+                 rule: Optional[str] = None,
+                 test_fn: Optional[Callable] = None,
+                 greater_keys: Optional[List[str]] = None,
+                 less_keys: Optional[List[str]] = None,
+                 out_dir: Optional[str] = None,
+                 file_client_args: Optional[dict] = None,
                  **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError(f'dataloader must be a pytorch DataLoader, '
@@ -131,6 +132,7 @@ class EvalHook(Hook):
             self.greater_keys = self._default_greater_keys
         else:
             if not isinstance(greater_keys, (list, tuple)):
+                assert isinstance(greater_keys, str)
                 greater_keys = (greater_keys, )
             assert is_seq_of(greater_keys, str)
             self.greater_keys = greater_keys
@@ -139,6 +141,7 @@ class EvalHook(Hook):
             self.less_keys = self._default_less_keys
         else:
             if not isinstance(less_keys, (list, tuple)):
+                assert isinstance(greater_keys, str)
                 less_keys = (less_keys, )
             assert is_seq_of(less_keys, str)
             self.less_keys = less_keys
@@ -150,7 +153,7 @@ class EvalHook(Hook):
         self.out_dir = out_dir
         self.file_client_args = file_client_args
 
-    def _init_rule(self, rule, key_indicator):
+    def _init_rule(self, rule: Optional[str], key_indicator: Optional[str]):
         """Initialize rule, key_indicator, comparison_func, and best score.
 
         Here is the rule to determine which rule is used for key indicator
@@ -178,6 +181,7 @@ class EvalHook(Hook):
             if key_indicator != 'auto':
                 # `_lc` here means we use the lower case of keys for
                 # case-insensitive matching
+                assert isinstance(key_indicator, str)
                 key_indicator_lc = key_indicator.lower()
                 greater_keys = [key.lower() for key in self.greater_keys]
                 less_keys = [key.lower() for key in self.less_keys]
@@ -439,20 +443,20 @@ class DistEvalHook(EvalHook):
     """
 
     def __init__(self,
-                 dataloader,
-                 start=None,
-                 interval=1,
-                 by_epoch=True,
-                 save_best=None,
-                 rule=None,
-                 test_fn=None,
-                 greater_keys=None,
-                 less_keys=None,
-                 broadcast_bn_buffer=True,
-                 tmpdir=None,
-                 gpu_collect=False,
-                 out_dir=None,
-                 file_client_args=None,
+                 dataloader: DataLoader,
+                 start: Optional[int] = None,
+                 interval: int = 1,
+                 by_epoch: bool = True,
+                 save_best: Optional[str] = None,
+                 rule: Optional[str] = None,
+                 test_fn: Optional[Callable] = None,
+                 greater_keys: Optional[List[str]] = None,
+                 less_keys: Optional[List[str]] = None,
+                 broadcast_bn_buffer: bool = True,
+                 tmpdir: Optional[str] = None,
+                 gpu_collect: bool = False,
+                 out_dir: Optional[str] = None,
+                 file_client_args: Optional[dict] = None,
                  **eval_kwargs):
 
         if test_fn is None:

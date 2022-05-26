@@ -684,7 +684,10 @@ class LinearAnnealingLrUpdaterHook(LrUpdaterHook):
         return annealing_linear(base_lr, target_lr, progress / max_progress)
 
 
-def annealing_cos(start, end, factor, weight=1):
+def annealing_cos(start: float,
+                  end: float,
+                  factor: float,
+                  weight: float = 1.) -> float:
     """Calculate annealing cos learning rate.
 
     Cosine anneal from `weight * start + (1 - weight) * end` to `end` as
@@ -702,7 +705,7 @@ def annealing_cos(start, end, factor, weight=1):
     return end + 0.5 * weight * (start - end) * cos_out
 
 
-def annealing_linear(start, end, factor):
+def annealing_linear(start: float, end: float, factor: float) -> float:
     """Calculate annealing linear learning rate.
 
     Linear anneal from `start` to `end` as percentage goes from 0.0 to 1.0.

@@ -3,7 +3,10 @@ import copy
 import logging
 from collections import defaultdict
 from itertools import chain
+from typing import Optional, Union
 
+import torch.nn as nn
+from torch import Tensor
 from torch.nn.utils import clip_grad
 
 from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version
@@ -39,7 +42,9 @@ class OptimizerHook(Hook):
             Default: False.
     """
 
-    def __init__(self, grad_clip=None, detect_anomalous_params=False):
+    def __init__(self,
+                 grad_clip: Optional[dict] = None,
+                 detect_anomalous_params: bool = False):
         self.grad_clip = grad_clip
         self.detect_anomalous_params = detect_anomalous_params
 
@@ -63,7 +68,7 @@ class OptimizerHook(Hook):
                                          runner.outputs['num_samples'])
         runner.optimizer.step()
 
-    def detect_anomalous_parameters(self, loss, runner):
+    def detect_anomalous_parameters(self, loss: Tensor, runner):
         logger = runner.logger
         parameters_in_graph = set()
         visited = set()
@@ -109,7 +114,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         >>> optim_hook = OptimizerHook()
     """
 
-    def __init__(self, cumulative_iters=1, **kwargs):
+    def __init__(self, cumulative_iters: int = 1, **kwargs):
         super().__init__(**kwargs)
 
         assert isinstance(cumulative_iters, int) and cumulative_iters > 0, \
@@ -121,7 +126,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         self.remainder_iters = 0
         self.initialized = False
 
-    def has_batch_norm(self, module):
+    def has_batch_norm(self, module: nn.Module) -> bool:
         if isinstance(module, _BatchNorm):
             return True
         for m in module.children():
@@ -208,11 +213,11 @@ if (TORCH_VERSION != 'parrots'
         """
 
         def __init__(self,
-                     grad_clip=None,
-                     coalesce=True,
-                     bucket_size_mb=-1,
-                     loss_scale=512.,
-                     distributed=True):
+                     grad_clip: Optional[dict] = None,
+                     coalesce: bool = True,
+                     bucket_size_mb: int = -1,
+                     loss_scale: Union[float, str, dict] = 512.,
+                     distributed: bool = True):
             self.grad_clip = grad_clip
             self.coalesce = coalesce
             self.bucket_size_mb = bucket_size_mb
@@ -238,7 +243,8 @@ if (TORCH_VERSION != 'parrots'
                 scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
-        def copy_grads_to_fp32(self, fp16_net, fp32_weights):
+        def copy_grads_to_fp32(self, fp16_net: nn.Module,
+                               fp32_weights: Tensor):
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -248,7 +254,8 @@ if (TORCH_VERSION != 'parrots'
                             fp32_param.size())
                     fp32_param.grad.copy_(fp16_param.grad)
 
-        def copy_params_to_fp16(self, fp16_net, fp32_weights):
+        def copy_params_to_fp16(self, fp16_net: nn.Module,
+                                fp32_weights: Tensor):
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
@@ -363,11 +370,11 @@ else:
         """
 
         def __init__(self,
-                     grad_clip=None,
-                     coalesce=True,
-                     bucket_size_mb=-1,
-                     loss_scale=512.,
-                     distributed=True):
+                     grad_clip: Optional[dict] = None,
+                     coalesce: bool = True,
+                     bucket_size_mb: int = -1,
+                     loss_scale: Union[float, str, dict] = 512.,
+                     distributed: bool = True):
             self.grad_clip = grad_clip
             self.coalesce = coalesce
             self.bucket_size_mb = bucket_size_mb
@@ -411,7 +418,8 @@ else:
                 scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
-        def copy_grads_to_fp32(self, fp16_net, fp32_weights):
+        def copy_grads_to_fp32(self, fp16_net: nn.Module,
+                               fp32_weights: Tensor):
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -421,7 +429,8 @@ else:
                             fp32_param.size())
                     fp32_param.grad.copy_(fp16_param.grad)
 
-        def copy_params_to_fp16(self, fp16_net, fp32_weights):
+        def copy_params_to_fp16(self, fp16_net: nn.Module,
+                                fp32_weights: Tensor):
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
