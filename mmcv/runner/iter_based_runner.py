@@ -4,9 +4,11 @@ import platform
 import shutil
 import time
 import warnings
+from typing import Any, Dict, List, Optional
 
 import torch
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 
 import mmcv
 from .base_runner import BaseRunner
@@ -18,16 +20,16 @@ from .utils import get_host_info
 
 class IterLoader:
 
-    def __init__(self, dataloader):
+    def __init__(self, dataloader: DataLoader) -> None:
         self._dataloader = dataloader
         self.iter_loader = iter(self._dataloader)
         self._epoch = 0
 
     @property
-    def epoch(self):
+    def epoch(self) -> int:
         return self._epoch
 
-    def __next__(self):
+    def __next__(self) -> Any:
         try:
             data = next(self.iter_loader)
         except StopIteration:
@@ -40,7 +42,7 @@ class IterLoader:
 
         return data
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._dataloader)
 
 
@@ -88,7 +90,11 @@ class IterBasedRunner(BaseRunner):
         del self.data_batch
         self._inner_iter += 1
 
-    def run(self, data_loaders, workflow, max_iters=None, **kwargs):
+    def run(self,
+            data_loaders: List[DataLoader],
+            workflow: List[tuple],
+            max_iters: Optional[int] = None,
+            **kwargs) -> None:
         """Start running.
 
         Args:
@@ -142,9 +148,9 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('after_run')
 
     def resume(self,
-               checkpoint,
-               resume_optimizer=True,
-               map_location='default'):
+               checkpoint: str,
+               resume_optimizer: bool = True,
+               map_location: str = 'default') -> None:
         """Resume model from checkpoint.
 
         Args:
@@ -156,23 +162,24 @@ class IterBasedRunner(BaseRunner):
         """
         if map_location == 'default':
             device_id = torch.cuda.current_device()
-            checkpoint = self.load_checkpoint(
+            loaded_checkpoint = self.load_checkpoint(
                 checkpoint,
-                map_location=lambda storage, loc: storage.cuda(device_id))
+                map_location=lambda  # type: ignore
+                storage, loc: storage.cuda(device_id))
         else:
-            checkpoint = self.load_checkpoint(
+            loaded_checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
 
-        self._epoch = checkpoint['meta']['epoch']
-        self._iter = checkpoint['meta']['iter']
-        self._inner_iter = checkpoint['meta']['iter']
-        if 'optimizer' in checkpoint and resume_optimizer:
+        self._epoch = loaded_checkpoint['meta']['epoch']
+        self._iter = loaded_checkpoint['meta']['iter']
+        self._inner_iter = loaded_checkpoint['meta']['iter']
+        if 'optimizer' in loaded_checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
-                self.optimizer.load_state_dict(checkpoint['optimizer'])
+                self.optimizer.load_state_dict(loaded_checkpoint['optimizer'])
             elif isinstance(self.optimizer, dict):
                 for k in self.optimizer.keys():
                     self.optimizer[k].load_state_dict(
-                        checkpoint['optimizer'][k])
+                        loaded_checkpoint['optimizer'][k])
             else:
                 raise TypeError(
                     'Optimizer should be dict or torch.optim.Optimizer '
@@ -181,21 +188,21 @@ class IterBasedRunner(BaseRunner):
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
 
     def save_checkpoint(self,
-                        out_dir,
-                        filename_tmpl='iter_{}.pth',
-                        meta=None,
-                        save_optimizer=True,
-                        create_symlink=True):
+                        out_dir: str,
+                        filename_tmpl: str = 'iter_{}.pth',
+                        save_optimizer: bool = True,
+                        meta: Optional[Dict] = None,
+                        create_symlink: bool = True) -> None:
         """Save checkpoint to file.
 
         Args:
             out_dir (str): Directory to save checkpoint files.
             filename_tmpl (str, optional): Checkpoint file template.
                 Defaults to 'iter_{}.pth'.
-            meta (dict, optional): Metadata to be saved in checkpoint.
-                Defaults to None.
             save_optimizer (bool, optional): Whether save optimizer.
                 Defaults to True.
+            meta (dict, optional): Metadata to be saved in checkpoint.
+                Defaults to None.
             create_symlink (bool, optional): Whether create symlink to the
                 latest checkpoint file. Defaults to True.
         """
@@ -261,9 +268,9 @@ class IterBasedRunner(BaseRunner):
         will be triggered after default hooks.
         """
         if checkpoint_config is not None:
-            checkpoint_config.setdefault('by_epoch', False)
+            checkpoint_config.setdefault('by_epoch', False)  # type: ignore
         if lr_config is not None:
-            lr_config.setdefault('by_epoch', False)
+            lr_config.setdefault('by_epoch', False)  # type: ignore
         if log_config is not None:
             for info in log_config['hooks']:
                 info.setdefault('by_epoch', False)

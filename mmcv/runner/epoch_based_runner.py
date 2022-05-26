@@ -4,8 +4,10 @@ import platform
 import shutil
 import time
 import warnings
+from typing import Any, Dict, List, Optional
 
 import torch
+from torch.utils.data import DataLoader
 
 import mmcv
 from .base_runner import BaseRunner
@@ -21,7 +23,7 @@ class EpochBasedRunner(BaseRunner):
     This runner train models epoch by epoch.
     """
 
-    def run_iter(self, data_batch, train_mode, **kwargs):
+    def run_iter(self, data_batch: Any, train_mode: bool, **kwargs) -> None:
         if self.batch_processor is not None:
             outputs = self.batch_processor(
                 self.model, data_batch, train_mode=train_mode, **kwargs)
@@ -41,7 +43,9 @@ class EpochBasedRunner(BaseRunner):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(self.data_loader)
+        length_data_loader = len(self.data_loader)
+        self._max_iters = self._max_epochs * length_data_loader
+
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
@@ -72,7 +76,11 @@ class EpochBasedRunner(BaseRunner):
             del self.data_batch
         self.call_hook('after_val_epoch')
 
-    def run(self, data_loaders, workflow, max_epochs=None, **kwargs):
+    def run(self,
+            data_loaders: List[DataLoader],
+            workflow: List[tuple],
+            max_epochs: Optional[int] = None,
+            **kwargs) -> None:
         """Start running.
 
         Args:
@@ -133,11 +141,11 @@ class EpochBasedRunner(BaseRunner):
         self.call_hook('after_run')
 
     def save_checkpoint(self,
-                        out_dir,
-                        filename_tmpl='epoch_{}.pth',
-                        save_optimizer=True,
-                        meta=None,
-                        create_symlink=True):
+                        out_dir: str,
+                        filename_tmpl: str = 'epoch_{}.pth',
+                        save_optimizer: bool = True,
+                        meta: Optional[Dict] = None,
+                        create_symlink: bool = True) -> None:
         """Save the checkpoint.
 
         Args:
