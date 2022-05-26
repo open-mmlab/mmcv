@@ -52,7 +52,7 @@ class AlexNet(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         x = self.features(x)
         if self.num_classes > 0:
