@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-
+from typing import Optional
 import torch.nn as nn
 
-from typing import Optional
+
 
 class AlexNet(nn.Module):
     """AlexNet backbone.
