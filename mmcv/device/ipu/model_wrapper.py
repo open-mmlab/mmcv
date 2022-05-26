@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from collections import OrderedDict
 import inspect
 import logging
+from collections import OrderedDict
 from typing import Dict, List, Optional, Union
 
 import poptorch
-from poptorch import identity_loss, PoplarExecutor, __version__
-from poptorch._args_parser import ArgsParser
 import torch
 import torch.nn as nn
+from poptorch import PoplarExecutor, __version__, identity_loss
+from poptorch._args_parser import ArgsParser
 
 from mmcv import Config
 from mmcv.runner import auto_fp16
@@ -46,7 +46,8 @@ class WrappedNet(nn.Module):
             converting outputs from dictionary to tuple.
         inter_outputs_in_cpu (dict): Specify the features to be
             recorded.
-        modules_to_record (mmcv.Config, list): Index or name of modules which
+        modules_to_record (mmcv.Config or list, optional):
+            Index or name of modules which
             will be recorded for output. It is necessary to specify output for
             static graph of model training or inference.
     """
@@ -127,7 +128,10 @@ class WrappedNet(nn.Module):
         outputs = self.train_step(kwargs, optimizer)
         return outputs
 
-    def train_step(self, data: dict, optimizer=None, **kwargs) -> dict:
+    def train_step(self,
+                   data: dict,
+                   optimizer: Optional[torch.optim.Optimizer] = None,
+                   **kwargs) -> dict:
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -216,7 +220,7 @@ class MMPoplarExecutor(PoplarExecutor):
 
     def __init__(self,
                  model: nn.Module,
-                 logger: logging.Logger = None,
+                 logger: Optional[logging.Logger] = None,
                  training: bool = True,
                  modules_to_record: Optional[Union[Config, List]] = None,
                  *args,
@@ -272,7 +276,7 @@ class MMPoplarExecutor(PoplarExecutor):
         # temporarily use this function to fix the problem
         return self._training  # comes from self.model._training
 
-    @auto_fp16(supported_types=(PoplarExecutor,))
+    @auto_fp16(supported_types=(PoplarExecutor, ))
     def run_model(self, data_dict):
         # this function is used to parse input_dict
         # and convert to output_dict
@@ -394,8 +398,8 @@ class TrainEvalModel:
                  train_model: nn.Module,
                  eval_model: nn.Module,
                  options: Union[Config, dict],
-                 optimizer: Optional[torch.optim.Optimizer],
-                 modules_to_record: Union[Config, list] = None,
+                 optimizer: torch.optim.Optimizer,
+                 modules_to_record: Optional[Union[Config, list]] = None,
                  logger: Optional[logging.Logger] = None):
         if train_model is None:
             self._train_executor = None
@@ -542,11 +546,11 @@ class TrainEvalModel:
 
 
 def get_training_model(
-        model: nn.Module,
-        options: Optional[poptorch.Options] = None,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        logger: logging.Logger = None,
-        modules_to_record: Optional[Union[Config, list]] = None
+    model: nn.Module,
+    options: Optional[poptorch.Options] = None,
+    optimizer: Optional[torch.optim.Optimizer] = None,
+    logger: Optional[logging.Logger] = None,
+    modules_to_record: Optional[Union[Config, list]] = None
 ) -> poptorch.PoplarExecutor:
     """Create a PopTorch training model from a PyTorch model, running on IPU
     hardware in training mode.
@@ -593,8 +597,7 @@ def get_training_model(
 def get_inference_model(
         model: Union[nn.Module, poptorch.PoplarExecutor],
         options: Optional[poptorch.Options] = None,
-        logger: logging.Logger = None
-) -> poptorch.PoplarExecutor:
+        logger: Optional[logging.Logger] = None) -> poptorch.PoplarExecutor:
     """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 

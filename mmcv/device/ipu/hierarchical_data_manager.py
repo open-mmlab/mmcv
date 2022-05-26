@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Any, Optional
 import warnings
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -70,11 +70,13 @@ class HierarchicalDataManager:
         return self._hierarchical_data
 
     def update_hierarchical_data(self,
-                                 dataA: Any,
-                                 dataB: Any = HierarchicalDataNone,
+                                 dataA: Union[Dict, List, Tuple],
+                                 dataB: Union[Dict, List,
+                                              Tuple] = HierarchicalDataNone,
                                  strict: bool = True,
                                  address: str = 'data'):
         """Update dataB with dataA in-place.
+
         Args:
             dataA (list or dict or tuple): New hierarchical data.
             dataB (list or dict or tuple): hierarchical data to update.
@@ -96,8 +98,8 @@ class HierarchicalDataManager:
                 new_address = ''
                 if not self.quick_mode:
                     new_address = address + f'[{str(idx)}]'
-                    assert isinstance(node, type(dataB[idx])), \
-                        f'data structure changed: {new_address}'
+                    assert isinstance(node, type(dataB[idx])), (
+                        f'data structure changed: {new_address}')
                 if isinstance(node, torch.Tensor):
                     dataB[idx] = node
                 else:
@@ -108,8 +110,8 @@ class HierarchicalDataManager:
                 new_address = ''
                 if not self.quick_mode:
                     new_address = address + f'[{str(k)}]'
-                    assert isinstance(v, type(dataB[k])), \
-                        f'data structure changed: {new_address}'
+                    assert isinstance(v, type(
+                        dataB[k])), (f'data structure changed: {new_address}')
                 if isinstance(v, torch.Tensor):
                     dataB[k] = v
                 else:

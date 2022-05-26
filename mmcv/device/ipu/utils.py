@@ -99,10 +99,8 @@ def _cast_to_options(cfg):
     return options
 
 
-def model_sharding(
-        model: nn.Module,
-        split_edges: Union[List, Dict]
-) -> nn.Module:
+def model_sharding(model: nn.Module, split_edges: Union[List,
+                                                        Dict]) -> nn.Module:
     """split models in-place into multi-IPUs.
 
     Args:
@@ -190,12 +188,10 @@ def compare_ndarray(featA, featB, rtol=1e-3, atol=1e-5):
         print(e)
 
 
-def build_from_cfg_with_wrapper(
-        cfg: dict,
-        registry: Registry,
-        wrapper_func: Optional[Callable] = None,
-        default_args: Optional[Dict] = None
-):
+def build_from_cfg_with_wrapper(cfg: dict,
+                                registry: Registry,
+                                wrapper_func: Optional[Callable] = None,
+                                default_args: Optional[Dict] = None):
     """Build a module from config dict and wrap module with "wrapper_func".
 
     Args:
