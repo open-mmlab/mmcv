@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import inspect
 from collections import OrderedDict
+import inspect
 import logging
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
 import poptorch
 import torch

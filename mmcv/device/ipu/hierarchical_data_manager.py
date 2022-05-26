@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+from typing import Any, Optional
 import warnings
-from typing import Any, Union, List, Dict, Tuple, Optional
 
 import numpy as np
 import torch

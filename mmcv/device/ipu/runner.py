@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Optional, Union, Callable
+from typing import Callable, Optional, Union
 
 import torch.nn as nn
 

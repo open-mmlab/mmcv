@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Callable, Dict, Union, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 import popart

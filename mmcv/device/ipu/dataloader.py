@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Dict, Any
+
 from collections.abc import Mapping, Sequence
 from functools import partial
+from typing import Any, Dict, Optional
 
 import torch
 import poptorch
