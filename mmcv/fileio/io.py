@@ -18,7 +18,7 @@ file_handlers = {
 }
 
 
-def load(file: Union[str, Path],
+def load(file: Union[str, Path, FileLikeObject],
          file_format: Optional[str] = None,
          file_client_args: Optional[Dict] = None,
          **kwargs):
