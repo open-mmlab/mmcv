@@ -1,8 +1,11 @@
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import torch
 
 
-def scatter_nd(indices, updates, shape):
+def scatter_nd(indices: torch.Tensor, updates: torch.Tensor,
+               shape: torch.Tensor) -> torch.Tensor:
     """pytorch edition of tensorflow scatter_nd.
 
     this function don't contain except handle code. so use this carefully when
@@ -21,18 +24,18 @@ def scatter_nd(indices, updates, shape):
 class SparseConvTensor:
 
     def __init__(self,
-                 features,
-                 indices,
-                 spatial_shape,
-                 batch_size,
-                 grid=None):
+                 features: torch.Tensor,
+                 indices: torch.Tensor,
+                 spatial_shape: Union[List, Tuple],
+                 batch_size: int,
+                 grid: Optional[torch.Tensor] = None):
         self.features = features
         self.indices = indices
         if self.indices.dtype != torch.int32:
             self.indices.int()
         self.spatial_shape = spatial_shape
         self.batch_size = batch_size
-        self.indice_dict = {}
+        self.indice_dict: Dict = {}
         self.grid = grid
 
     @property
@@ -46,7 +49,7 @@ class SparseConvTensor:
             return self.indice_dict[key]
         return None
 
-    def dense(self, channels_first=True):
+    def dense(self, channels_first: bool = True) -> torch.Tensor:
         output_shape = [self.batch_size] + list(
             self.spatial_shape) + [self.features.shape[1]]
         res = scatter_nd(self.indices.long(), self.features, output_shape)

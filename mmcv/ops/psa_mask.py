@@ -1,4 +1,7 @@
 # Modified from https://github.com/hszhao/semseg/blob/master/lib/psa
+from typing import Optional
+
+import torch
 from torch import nn
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
@@ -12,7 +15,7 @@ ext_module = ext_loader.load_ext('_ext',
 class PSAMaskFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, psa_type, mask_size):
+    def symbolic(g, input: torch.Tensor, psa_type: str, mask_size: int):
         return g.op(
             'mmcv::MMCVPSAMask',
             input,
@@ -20,7 +23,7 @@ class PSAMaskFunction(Function):
             mask_size_i=mask_size)
 
     @staticmethod
-    def forward(ctx, input, psa_type, mask_size):
+    def forward(ctx, input: torch.Tensor, psa_type: str, mask_size: int):
         ctx.psa_type = psa_type
         ctx.mask_size = _pair(mask_size)
         ctx.save_for_backward(input)
@@ -45,7 +48,7 @@ class PSAMaskFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx, grad_output: torch.Tensor):
         input = ctx.saved_tensors[0]
         psa_type = ctx.psa_type
         h_mask, w_mask = ctx.mask_size
@@ -71,7 +74,7 @@ psa_mask = PSAMaskFunction.apply
 
 class PSAMask(nn.Module):
 
-    def __init__(self, psa_type, mask_size=None):
+    def __init__(self, psa_type: str, mask_size: Optional[tuple] = None):
         super().__init__()
         assert psa_type in ['collect', 'distribute']
         if psa_type == 'collect':
@@ -82,7 +85,7 @@ class PSAMask(nn.Module):
         self.mask_size = mask_size
         self.psa_type = psa_type
 
-    def forward(self, input):
+    def forward(self, input: torch.Tensor):
         return psa_mask(input, self.psa_type_enum, self.mask_size)
 
     def __repr__(self):

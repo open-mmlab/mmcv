@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
+import torch
 from torch.autograd import Function
 
 from . import sparse_ops as ops
@@ -25,8 +27,10 @@ class SparseConvFunction(Function):
     """
 
     @staticmethod
-    def forward(ctx, features, filters, indice_pairs, indice_pair_num,
-                num_activate_out):
+    def forward(ctx: Any, features: torch.Tensor,
+                filters: torch.nn.parameter.Parameter,
+                indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
+                num_activate_out: torch.Tensor) -> torch.Tensor:
         """
         Args:
             features (torch.Tensor): Features that needs to convolute.
@@ -44,7 +48,7 @@ class SparseConvFunction(Function):
                                indice_pair_num, num_activate_out, False)
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         indice_pairs, indice_pair_num, features, filters = ctx.saved_tensors
         input_bp, filters_bp = ops.indice_conv_backward(
             features, filters, grad_output, indice_pairs, indice_pair_num,
@@ -56,8 +60,10 @@ class SparseConvFunction(Function):
 class SparseInverseConvFunction(Function):
 
     @staticmethod
-    def forward(ctx, features, filters, indice_pairs, indice_pair_num,
-                num_activate_out):
+    def forward(ctx: Any, features: torch.Tensor,
+                filters: torch.nn.parameter.Parameter,
+                indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
+                num_activate_out: torch.Tensor) -> torch.Tensor:
         """
         Args:
             features (torch.Tensor): Features that needs to convolute.
@@ -75,7 +81,7 @@ class SparseInverseConvFunction(Function):
                                indice_pair_num, num_activate_out, True, False)
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         indice_pairs, indice_pair_num, features, filters = ctx.saved_tensors
         input_bp, filters_bp = ops.indice_conv_backward(
             features, filters, grad_output, indice_pairs, indice_pair_num,
@@ -87,8 +93,10 @@ class SparseInverseConvFunction(Function):
 class SubMConvFunction(Function):
 
     @staticmethod
-    def forward(ctx, features, filters, indice_pairs, indice_pair_num,
-                num_activate_out):
+    def forward(ctx: Any, features: torch.Tensor,
+                filters: torch.nn.parameter.Parameter,
+                indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
+                num_activate_out: torch.Tensor) -> torch.Tensor:
         """
         Args:
             features (torch.Tensor): Features that needs to convolute.
@@ -106,7 +114,7 @@ class SubMConvFunction(Function):
                                indice_pair_num, num_activate_out, False, True)
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         indice_pairs, indice_pair_num, features, filters = ctx.saved_tensors
         input_bp, filters_bp = ops.indice_conv_backward(
             features, filters, grad_output, indice_pairs, indice_pair_num,
@@ -118,8 +126,9 @@ class SubMConvFunction(Function):
 class SparseMaxPoolFunction(Function):
 
     @staticmethod
-    def forward(ctx, features, indice_pairs, indice_pair_num,
-                num_activate_out):
+    def forward(ctx, features: torch.Tensor, indice_pairs: torch.Tensor,
+                indice_pair_num: torch.Tensor,
+                num_activate_out: torch.Tensor) -> torch.Tensor:
         """
         Args:
             features (torch.Tensor): Features that needs to convolute.
@@ -137,7 +146,7 @@ class SparseMaxPoolFunction(Function):
         return out
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         indice_pairs, indice_pair_num, features, out = ctx.saved_tensors
         input_bp = ops.indice_maxpool_backward(features, out, grad_output,
                                                indice_pairs, indice_pair_num)

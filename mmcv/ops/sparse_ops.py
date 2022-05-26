@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Optional, Tuple, Union
+
 import torch
 
 from ..utils import ext_loader
@@ -25,7 +27,12 @@ ext_module = ext_loader.load_ext('_ext', [
 ])
 
 
-def get_conv_output_size(input_size, kernel_size, stride, padding, dilation):
+def get_conv_output_size(input_size: Union[List,
+                                           Tuple], kernel_size: Union[List,
+                                                                      Tuple],
+                         stride: Union[List, Tuple], padding: Union[List,
+                                                                    Tuple],
+                         dilation: Union[List, Tuple]) -> List:
     ndim = len(input_size)
     output_size = []
     for i in range(ndim):
@@ -38,8 +45,13 @@ def get_conv_output_size(input_size, kernel_size, stride, padding, dilation):
     return output_size
 
 
-def get_deconv_output_size(input_size, kernel_size, stride, padding, dilation,
-                           output_padding):
+def get_deconv_output_size(input_size: Union[List, Tuple],
+                           kernel_size: Union[List,
+                                              Tuple], stride: Union[List,
+                                                                    Tuple],
+                           padding: Union[List, Tuple], dilation: Union[List,
+                                                                        Tuple],
+                           output_padding: Union[List, Tuple]) -> List:
     ndim = len(input_size)
     output_size = []
     for i in range(ndim):
@@ -51,36 +63,37 @@ def get_deconv_output_size(input_size, kernel_size, stride, padding, dilation,
     return output_size
 
 
-def get_indice_pairs(indices,
-                     batch_size,
-                     spatial_shape,
-                     ksize=3,
-                     stride=1,
-                     padding=0,
-                     dilation=1,
-                     out_padding=0,
-                     subm=False,
-                     transpose=False,
-                     grid=None):
+def get_indice_pairs(indices: torch.Tensor,
+                     batch_size: int,
+                     spatial_shape: Union[List, Tuple],
+                     ksize: int = 3,
+                     stride: int = 1,
+                     padding: int = 0,
+                     dilation: int = 1,
+                     out_padding: int = 0,
+                     subm: bool = False,
+                     transpose: bool = False,
+                     grid: Optional[torch.Tensor] = None):
     ndim = indices.shape[1] - 1
     if not isinstance(ksize, (list, tuple)):
-        ksize = [ksize] * ndim
+        ksize = [ksize] * ndim  # type: ignore
     if not isinstance(stride, (list, tuple)):
-        stride = [stride] * ndim
+        stride = [stride] * ndim  # type: ignore
     if not isinstance(padding, (list, tuple)):
-        padding = [padding] * ndim
+        padding = [padding] * ndim  # type: ignore
     if not isinstance(dilation, (list, tuple)):
-        dilation = [dilation] * ndim
+        dilation = [dilation] * ndim  # type: ignore
     if not isinstance(out_padding, (list, tuple)):
-        out_padding = [out_padding] * ndim
+        out_padding = [out_padding] * ndim  # type: ignore
 
-    for d, s in zip(dilation, stride):
+    for d, s in zip(dilation, stride):  # type: ignore
         assert any([s == 1, d == 1]), "don't support this."
 
     if not subm:
         if transpose:
             out_shape = get_deconv_output_size(spatial_shape, ksize, stride,
-                                               padding, dilation, out_padding)
+                                               padding, dilation,
+                                               out_padding)  # type: ignore
         else:
             out_shape = get_conv_output_size(spatial_shape, ksize, stride,
                                              padding, dilation)
@@ -113,13 +126,13 @@ def get_indice_pairs(indices,
                                      int(transpose))
 
 
-def indice_conv(features,
-                filters,
-                indice_pairs,
-                indice_pair_num,
-                num_activate_out,
-                inverse=False,
-                subm=False):
+def indice_conv(features: torch.Tensor,
+                filters: torch.Tensor,
+                indice_pairs: torch.Tensor,
+                indice_pair_num: torch.Tensor,
+                num_activate_out: torch.Tensor,
+                inverse: bool = False,
+                subm: bool = False):
     if filters.dtype == torch.float32 or filters.dtype == torch.half:
         return ext_module.indice_conv_forward(features, filters, indice_pairs,
                                               indice_pair_num,
@@ -129,8 +142,10 @@ def indice_conv(features,
         raise NotImplementedError
 
 
-def fused_indice_conv(features, filters, bias, indice_pairs, indice_pair_num,
-                      num_activate_out, inverse, subm):
+def fused_indice_conv(features: torch.Tensor, filters: torch.Tensor,
+                      bias: torch.Tensor, indice_pairs: torch.Tensor,
+                      indice_pair_num: torch.Tensor,
+                      num_activate_out: torch.Tensor, inverse: int, subm: int):
     if features.dtype == torch.half or filters.dtypes == torch.float32:
         func = ext_module.fused_indice_conv_forward
     else:
@@ -140,13 +155,13 @@ def fused_indice_conv(features, filters, bias, indice_pairs, indice_pair_num,
                 num_activate_out, int(inverse), int(subm))
 
 
-def indice_conv_backward(features,
-                         filters,
-                         out_bp,
-                         indice_pairs,
-                         indice_pair_num,
-                         inverse=False,
-                         subm=False):
+def indice_conv_backward(features: torch.Tensor,
+                         filters: torch.Tensor,
+                         out_bp: torch.Tensor,
+                         indice_pairs: torch.Tensor,
+                         indice_pair_num: torch.Tensor,
+                         inverse: bool = False,
+                         subm: bool = False):
     if filters.dtype == torch.float32 or filters.dtype == torch.half:
         return ext_module.indice_conv_backward(features, filters, out_bp,
                                                indice_pairs, indice_pair_num,
@@ -155,7 +170,9 @@ def indice_conv_backward(features,
         raise NotImplementedError
 
 
-def indice_maxpool(features, indice_pairs, indice_pair_num, num_activate_out):
+def indice_maxpool(features: torch.Tensor, indice_pairs: torch.Tensor,
+                   indice_pair_num: torch.Tensor,
+                   num_activate_out: torch.Tensor):
     if features.dtype == torch.float32 or features.dtype == torch.half:
         return ext_module.indice_maxpool_forward(features, indice_pairs,
                                                  indice_pair_num,
@@ -164,8 +181,9 @@ def indice_maxpool(features, indice_pairs, indice_pair_num, num_activate_out):
         raise NotImplementedError
 
 
-def indice_maxpool_backward(features, out_features, out_bp, indice_pairs,
-                            indice_pair_num):
+def indice_maxpool_backward(features: torch.Tensor, out_features: torch.Tensor,
+                            out_bp: torch.Tensor, indice_pairs: torch.Tensor,
+                            indice_pair_num: torch.Tensor):
     if features.dtype == torch.float32 or features.dtype == torch.half:
         return ext_module.indice_maxpool_backward(features, out_features,
                                                   out_bp, indice_pairs,
